@@ -6054,7 +6054,14 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         )
         assert (
             sct.signature_algorithm
-            == x509.certificate_transparency.SignatureAlgorithm.RSA
+            == x509.certificate_transparency.SignatureAlgorithm.ECDSA
+        )
+        assert sct.signature == (
+            b"\x30\x45\x02\x21\x00\xB8\x03\xAD\x34\xF6\xFC\x0F\x2C\xFF\x84\xA0"
+            b"\x86\xE5\xD7\xCF\x5A\xF0\x0A\x07\x62\x6A\x7F\xB3\xA6\x44\x64\xF1"
+            b"\x95\xA4\x48\x45\x11\x02\x20\x2F\x61\x8D\x53\x1B\x6F\x4A\xB8\x0A"
+            b"\x67\xB2\x07\xE1\x8F\x6D\xAD\xD1\x04\x4A\x5E\xB3\x89\xEF\x7C\x60"
+            b"\xC2\x68\x53\xF9\x3D\x1F\x6D"
         )
 
     def test_generate(self, backend):
