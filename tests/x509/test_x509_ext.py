@@ -6048,6 +6048,14 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             sct.entry_type
             == x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
+        assert (
+            sct.hash_algorithm
+            == x509.certificate_transparency.HashAlgorithm.SHA256
+        )
+        assert (
+            sct.signature_algorithm
+            == x509.certificate_transparency.SignatureAlgorithm.RSA
+        )
 
     def test_generate(self, backend):
         cert = _load_cert(
