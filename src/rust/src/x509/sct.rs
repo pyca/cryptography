@@ -54,6 +54,9 @@ pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,
     entry_type: LogEntryType,
+    hash_algorithm: u8,
+    signature_algorithm: u8,
+    signature: Vec<u8>,
     pub(crate) sct_data: Vec<u8>,
 }
 
@@ -93,6 +96,21 @@ impl Sct {
             LogEntryType::PreCertificate => "PRE_CERTIFICATE",
         };
         et_class.getattr(attr_name)
+    }
+
+    #[getter]
+    fn hash_algorithm(&self) -> u8 {
+        self.hash_algorithm
+    }
+
+    #[getter]
+    fn signature_algorithm(&self) -> u8 {
+        self.signature_algorithm
+    }
+
+    #[getter]
+    fn signature(&self) -> &[u8] {
+        &self.signature
     }
 }
 
@@ -139,13 +157,18 @@ pub(crate) fn parse_scts(
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
-        let _sig_alg = sct_data.read_exact(2)?;
-        let _signature = sct_data.read_length_prefixed()?;
+        // TODO(alex): Convert the algorithms to enumerations
+        let hash_algorithm = u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap());
+        let signature_algorithm = u8::from_be_bytes(sct_data.read_exact(1)?.try_into().unwrap());
+        let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
         let sct = Sct {
             log_id,
             timestamp,
             entry_type: entry_type.clone(),
+            hash_algorithm,
+            signature_algorithm,
+            signature,
             sct_data: raw_sct_data,
         };
         py_scts.append(pyo3::PyCell::new(py, sct)?)?;

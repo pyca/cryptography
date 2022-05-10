@@ -44,5 +44,22 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         Returns whether this is an SCT for a certificate or pre-certificate.
         """
 
+    @abc.abstractproperty
+    def hash_algorithm(self) -> int:
+        """
+        Returns the hash algorithm used for the SCT's signature.
+        """
+
+    @abc.abstractproperty
+    def signature_algorithm(self) -> int:
+        """
+        Returns the signing algorithm used for the SCT's signature.
+        """
+
+    @abc.abstractproperty
+    def signature(self) -> bytes:
+        """
+        Returns the signature for this SCT.
+        """
 
 SignedCertificateTimestamp.register(rust_x509.Sct)

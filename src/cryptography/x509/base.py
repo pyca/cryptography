@@ -230,6 +230,12 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
+    def tbs_precertificate_bytes(self, issuer: bytes) -> bytes:
+        """
+        Returns the tbsCertificate payload bytes as defined in RFC 5280.
+        """
+
+    @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
