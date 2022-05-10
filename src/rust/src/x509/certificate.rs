@@ -18,7 +18,6 @@ pub(crate) struct RawCertificate<'a> {
     pub(crate) tbs_cert: TbsCertificate<'a>,
     signature_alg: x509::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
-    filtered_extensions: Option<x509::Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
@@ -214,24 +213,6 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
         let result = asn1::write_single(&self.raw.borrow_value().tbs_cert);
-        Ok(pyo3::types::PyBytes::new(py, &result))
-    }
-
-    fn tbs_precertificate_bytes<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        issuer: &pyo3::PyAny,
-    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
-        let val = self.raw.borrow_value();
-        let mut tbs_precert = val.tbs_cert.clone();
-        // Check if we need to replace the issuer
-        if !issuer.is_none() {
-            let issuer_bytes = issuer.downcast::<pyo3::types::PyBytes>();
-            // NOTE(alex): Now write to the TBS cert fields. Again, the types are confusing me so
-            // it isn't obvious to me how this should look.
-        }
-        tbs_precert.extensions = val.filtered_extensions.clone();
-        let result = asn1::write_single(&tbs_precert);
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
@@ -981,22 +962,12 @@ fn create_x509_certificate(
         )?,
     };
 
-    // NOTE(alex): Kind of a hack. I should figure out how to mutate an existing sequence of
-    // extensions instead of just keeping this filtered one on hand.
-    let mut filtered_extensions = x509::common::encode_filtered_extensions(
-        py,
-        builder.getattr("_extensions")?,
-        extensions::encode_extension,
-        oid::PRECERT_POISON_OID,
-    ).unwrap();
-
     let tbs_bytes = asn1::write_single(&tbs_cert);
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
     let data = asn1::write_single(&RawCertificate {
         tbs_cert,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
-        filtered_extensions: filtered_extensions,
     });
     // TODO: extra copy as we round-trip through a slice
     load_der_x509_certificate(py, &data)

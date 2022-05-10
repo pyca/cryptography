@@ -619,65 +619,6 @@ pub(crate) fn encode_extensions<
     )))
 }
 
-// NOTE(alex): Either refactor this into `encode_extensions` or remove this entirely if we can just
-// mutate the sequence.
-pub(crate) fn encode_filtered_extensions<
-    'p,
-    F: Fn(&asn1::ObjectIdentifier, &pyo3::PyAny) -> pyo3::PyResult<Option<Vec<u8>>>,
->(
-    py: pyo3::Python<'p>,
-    py_exts: &'p pyo3::PyAny,
-    encode_ext: F,
-    filter_oid: asn1::ObjectIdentifier,
-) -> pyo3::PyResult<Option<Extensions<'p>>> {
-    let unrecognized_extension_type: &pyo3::types::PyType = py
-        .import("cryptography.x509")?
-        .getattr("UnrecognizedExtension")?
-        .extract()?;
-
-    let mut exts = vec![];
-    for py_ext in py_exts.iter()? {
-        let py_ext = py_ext?;
-        let oid = py_oid_to_oid(py_ext.getattr("oid")?)?;
-        if oid == filter_oid {
-            continue;
-        }
-
-        let ext_val = py_ext.getattr("value")?;
-        if unrecognized_extension_type.is_instance(ext_val)? {
-            exts.push(Extension {
-                extn_id: oid,
-                critical: py_ext.getattr("critical")?.extract()?,
-                extn_value: ext_val.getattr("value")?.extract::<&[u8]>()?,
-            });
-            continue;
-        }
-        match encode_ext(&oid, ext_val)? {
-            Some(data) => {
-                // TODO: extra copy
-                let py_data = pyo3::types::PyBytes::new(py, &data);
-                exts.push(Extension {
-                    extn_id: oid,
-                    critical: py_ext.getattr("critical")?.extract()?,
-                    extn_value: py_data.as_bytes(),
-                })
-            }
-            None => {
-                return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-                    "Extension not supported: {}",
-                    oid
-                )))
-            }
-        }
-    }
-    if exts.is_empty() {
-        return Ok(None);
-    }
-    Ok(Some(Asn1ReadableOrWritable::new_write(
-        asn1::SequenceOfWriter::new(exts),
-    )))
-}
-
 #[pyo3::prelude::pyfunction]
 fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
