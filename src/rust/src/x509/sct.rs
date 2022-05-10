@@ -49,6 +49,12 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
+// This trait exists solely to lift the bodies of `hash_algorithm`
+// and `signature_algoritm` out of a PyO3 context, for code coverage.
+pub(crate) trait ToAttr {
+    fn to_attr(&self) -> &'static str;
+}
+
 #[derive(Debug, PartialEq)]
 pub(crate) enum HashAlgorithm {
     None,
@@ -81,12 +87,37 @@ impl TryFrom<u8> for HashAlgorithm {
     }
 }
 
+impl ToAttr for HashAlgorithm {
+    fn to_attr(&self) -> &'static str {
+        match self {
+            HashAlgorithm::None => "NONE",
+            HashAlgorithm::Md5 => "MD5",
+            HashAlgorithm::Sha1 => "SHA1",
+            HashAlgorithm::Sha224 => "SHA224",
+            HashAlgorithm::Sha256 => "SHA256",
+            HashAlgorithm::Sha384 => "SHA384",
+            HashAlgorithm::Sha512 => "SHA512",
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub(crate) enum SignatureAlgorithm {
     Anonymous,
     Rsa,
     Dsa,
     Ecdsa,
+}
+
+impl ToAttr for SignatureAlgorithm {
+    fn to_attr(&self) -> &'static str {
+        match self {
+            SignatureAlgorithm::Anonymous => "ANONYMOUS",
+            SignatureAlgorithm::Rsa => "RSA",
+            SignatureAlgorithm::Dsa => "DSA",
+            SignatureAlgorithm::Ecdsa => "ECDSA",
+        }
+    }
 }
 
 impl TryFrom<u8> for SignatureAlgorithm {
@@ -161,18 +192,7 @@ impl Sct {
         let ha_class = py
             .import("cryptography.x509.certificate_transparency")?
             .getattr("HashAlgorithm")?;
-
-        let attr_name = match self.hash_algorithm {
-            HashAlgorithm::None => "NONE",
-            HashAlgorithm::Md5 => "MD5",
-            HashAlgorithm::Sha1 => "NONE",
-            HashAlgorithm::Sha224 => "SHA224",
-            HashAlgorithm::Sha256 => "SHA256",
-            HashAlgorithm::Sha384 => "SHA384",
-            HashAlgorithm::Sha512 => "SHA512",
-        };
-
-        ha_class.getattr(attr_name)
+        ha_class.getattr(self.hash_algorithm.to_attr())
     }
 
     #[getter]
@@ -180,15 +200,7 @@ impl Sct {
         let sa_class = py
             .import("cryptography.x509.certificate_transparency")?
             .getattr("SignatureAlgorithm")?;
-
-        let attr_name = match self.signature_algorithm {
-            SignatureAlgorithm::Anonymous => "ANONYMOUS",
-            SignatureAlgorithm::Rsa => "RSA",
-            SignatureAlgorithm::Dsa => "DSA",
-            SignatureAlgorithm::Ecdsa => "ECDSA",
-        };
-
-        sa_class.getattr(attr_name)
+        sa_class.getattr(self.signature_algorithm.to_attr())
     }
 
     #[getter]
@@ -271,7 +283,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_hash_algorithm_tryfrom() {
+    fn test_hash_algorithm_try_from() {
         for (n, ha) in &[
             (0_u8, HashAlgorithm::None),
             (1_u8, HashAlgorithm::Md5),
@@ -289,7 +301,22 @@ mod tests {
     }
 
     #[test]
-    fn test_signature_algorithm_tryfrom() {
+    fn test_hash_algorithm_to_attr() {
+        for (ha, attr) in &[
+            (HashAlgorithm::None, "NONE"),
+            (HashAlgorithm::Md5, "MD5"),
+            (HashAlgorithm::Sha1, "SHA1"),
+            (HashAlgorithm::Sha224, "SHA224"),
+            (HashAlgorithm::Sha256, "SHA256"),
+            (HashAlgorithm::Sha384, "SHA384"),
+            (HashAlgorithm::Sha512, "SHA512"),
+        ] {
+            assert_eq!(ha.to_attr(), *attr);
+        }
+    }
+
+    #[test]
+    fn test_signature_algorithm_try_from() {
         for (n, ha) in &[
             (0_u8, SignatureAlgorithm::Anonymous),
             (1_u8, SignatureAlgorithm::Rsa),
@@ -301,5 +328,17 @@ mod tests {
         }
 
         assert!(SignatureAlgorithm::try_from(4).is_err());
+    }
+
+    #[test]
+    fn test_signature_algorithm_to_attr() {
+        for (sa, attr) in &[
+            (SignatureAlgorithm::Anonymous, "ANONYMOUS"),
+            (SignatureAlgorithm::Rsa, "RSA"),
+            (SignatureAlgorithm::Dsa, "DSA"),
+            (SignatureAlgorithm::Ecdsa, "ECDSA"),
+        ] {
+            assert_eq!(sa.to_attr(), *attr);
+        }
     }
 }
