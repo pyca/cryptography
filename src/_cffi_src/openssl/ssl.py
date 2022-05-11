@@ -200,6 +200,8 @@ int SSL_shutdown(SSL *);
 int SSL_renegotiate(SSL *);
 int SSL_renegotiate_pending(SSL *);
 const char *SSL_get_cipher_list(const SSL *, int);
+int SSL_use_certificate(SSL *, X509 *);
+int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
 
 /*  context */
 void SSL_CTX_free(SSL_CTX *);
