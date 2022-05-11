@@ -505,6 +505,7 @@ jobs:
           - paramiko
           - pyopenssl
           - pyopenssl-release
+          - twisted
           - aws-encryption-sdk
           - dynamodb-encryption-sdk
           - certbot
