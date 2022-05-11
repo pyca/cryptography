@@ -108,6 +108,8 @@ issued.
 
     An enumeration for SignedCertificateTimestamp hash algorithms.
 
+    These are exactly the same as HashAlgorithm in :rfc:`5246` (TLS 1.2).
+
     .. attribute:: NONE
 
     .. attribute:: MD5
@@ -128,6 +130,8 @@ issued.
     .. versionadded:: 38.0
 
     An enumeration for SignedCertificateTimestamp signature algorithms.
+
+    These are exactly the same as SignatureAlgorithm in :rfc:`5246` (TLS 1.2).
 
     .. attribute:: ANONYMOUS
 
