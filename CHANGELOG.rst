@@ -23,6 +23,8 @@ Changelog
   that the ``Extension`` ``critical`` field must be correctly encoded DER. See
   `the issue <https://github.com/pyca/cryptography/issues/6368>`_ for complete
   details.
+* Added two new OpenSSL functions to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
 
 .. _v37-0-2:
 
