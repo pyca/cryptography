@@ -26,9 +26,9 @@ dependencies = [
 
 [[package]]
 name = "asn1_derive"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f2def889c6cfb2d3ba9f1fd2010438b758e9a141ef8b40f30c15b6b3caf1787"
+checksum = "0bdf4df7e9337f0f25054f21ba59ed6aa3ee640217b213e9ca851a8e61cd24ad"
 dependencies = [
  "proc-macro2",
  "quote",
