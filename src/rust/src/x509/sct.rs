@@ -255,7 +255,19 @@ pub(crate) fn parse_scts(
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
         let hash_algorithm = sct_data.read_byte()?.try_into()?;
+        if hash_algorithm == HashAlgorithm::None {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Invalid SCT hash algorithm",
+            )));
+        }
+
         let signature_algorithm = sct_data.read_byte()?.try_into()?;
+        if signature_algorithm == SignatureAlgorithm::Anonymous {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Invalid SCT signature algorithm",
+            )));
+        }
+
         let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
         let sct = Sct {
