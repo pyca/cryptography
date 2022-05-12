@@ -487,18 +487,19 @@ Custom X.509 Request Vectors
   request using RSA and SHA1 with a subject alternative name extension
   generated using OpenSSL.
 * ``two_basic_constraints.pem`` - A certificate signing request
-  for an RSA 2048 bit key containing two basic constraints extensions.
+  for an RSA 2048 bit key containing two basic constraints extensions. The
+  signature on this CSR is invalid.
 * ``unsupported_extension.pem`` - A certificate signing request
   for an RSA 2048 bit key containing containing an unsupported
   extension type. The OID was encoded as "1.2.3.4" with an
-  ``extnValue`` of "value".
+  ``extnValue`` of "value". The signature on this CSR is invalid.
 * ``unsupported_extension_critical.pem`` - A certificate signing
   request for an RSA 2048 bit key containing containing an unsupported
   extension type marked critical. The OID was encoded as "1.2.3.4"
-  with an ``extnValue`` of "value".
+  with an ``extnValue`` of "value". The signature on this CSR is invalid.
 * ``basic_constraints.pem`` - A certificate signing request for an RSA
   2048 bit key containing a basic constraints extension marked as
-  critical.
+  critical. The signature on this CSR is invalid.
 * ``invalid_signature.pem`` - A certificate signing request for an RSA
   1024 bit key containing an invalid signature with correct padding.
 * ``challenge.pem`` - A certificate signing request for an RSA 2048 bit key
@@ -522,16 +523,18 @@ Custom X.509 Certificate Revocation List Vectors
   serials match their list position. It includes one revocation without
   any entry extensions, 10 revocations with every supported reason code and one
   revocation with an unsupported, non-critical entry extension with the OID
-  value set to "1.2.3.4".
+  value set to "1.2.3.4". The signature on this CRL is invalid.
 * ``crl_dup_entry_ext.pem`` - Contains a CRL with one revocation which has a
-  duplicate entry extension.
+  duplicate entry extension. The signature on this CRL is invalid.
 * ``crl_md2_unknown_crit_entry_ext.pem`` - Contains a CRL with one revocation
   which contains an unsupported critical entry extension with the OID value set
-  to "1.2.3.4". The CRL uses an unsupported MD2 signature algorithm.
+  to "1.2.3.4". The CRL uses an unsupported MD2 signature algorithm, and the
+  signature on this CRL is invalid.
 * ``crl_unsupported_reason.pem`` - Contains a CRL with one revocation which has
-  an unsupported reason code.
+  an unsupported reason code. The signature on this CRL is invalid.
 * ``crl_inval_cert_issuer_entry_ext.pem`` - Contains a CRL with one revocation
-  which has one entry extension for certificate issuer with an empty value.
+  which has one entry extension for certificate issuer with an empty value. The
+  signature on this CRL is invalid.
 * ``crl_empty.pem`` - Contains a CRL with no revoked certificates.
 * ``crl_empty_no_sequence.der`` - Contains a CRL with no revoked certificates
   and the optional ASN.1 sequence for revoked certificates is omitted.
