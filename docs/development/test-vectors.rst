@@ -244,6 +244,11 @@ X.509
   signature OID for RSA with SHA1. This certificate has an invalid signature.
 * ``badssl-sct.pem`` - A certificate with the certificate transparency signed
   certificate timestamp extension.
+* ``badssl-sct-none-hash.der`` - The same as ``badssl-sct.pem``, but DER-encoded
+  and with the SCT's signature hash manually changed to "none" (``0x00``).
+* ``badssl-sct-anonymous-sig.der`` - The same as ``badssl-sct.pem``, but
+  DER-encoded and with the SCT's signature algorithm manually changed to
+  "anonymous" (``0x00``).
 * ``bigoid.pem`` - A certificate with a rather long OID in the
   Certificate Policies extension.  We need to make sure we can parse
   long OIDs.
