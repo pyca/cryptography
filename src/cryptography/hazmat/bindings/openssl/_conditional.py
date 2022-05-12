@@ -305,6 +305,10 @@ def cryptography_has_unexpected_eof_while_reading() -> typing.List[str]:
     return ["SSL_R_UNEXPECTED_EOF_WHILE_READING"]
 
 
+def cryptography_has_pkcs12_set_mac() -> typing.List[str]:
+    return ["PKCS12_set_mac"]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -364,4 +368,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
     ),
+    "Cryptography_HAS_PKCS12_SET_MAC": cryptography_has_pkcs12_set_mac,
 }
