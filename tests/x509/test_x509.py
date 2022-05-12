@@ -86,7 +86,7 @@ class TestCertificateRevocationList:
 
         assert isinstance(crl, x509.CertificateRevocationList)
         fingerprint = binascii.hexlify(crl.fingerprint(hashes.SHA1()))
-        assert fingerprint == b"3234b0cb4c0cedf6423724b736729dcfc9e441ef"
+        assert fingerprint == b"191b3428bf9d0dafa4edd42bc98603e182614c57"
         assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
         assert (
             crl.signature_algorithm_oid
