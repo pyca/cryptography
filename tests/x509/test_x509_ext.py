@@ -6096,6 +6096,26 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         with pytest.raises(ValueError):
             cert.extensions
 
+    def test_invalid_hash_algorithm(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct-none-hash.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError, match="Invalid SCT hash algorithm"):
+            cert.extensions
+
+    def test_invalid_signature_algorithm(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct-anonymous-sig.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(
+            ValueError, match="Invalid SCT signature algorithm"
+        ):
+            cert.extensions
+
     def test_invalid_length(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid-sct-length.der"),
