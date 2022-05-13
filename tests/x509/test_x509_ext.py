@@ -6048,6 +6048,18 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             sct.entry_type
             == x509.certificate_transparency.LogEntryType.PRE_CERTIFICATE
         )
+        assert isinstance(sct.signature_hash_algorithm, hashes.SHA256)
+        assert (
+            sct.signature_algorithm
+            == x509.certificate_transparency.SignatureAlgorithm.ECDSA
+        )
+        assert sct.signature == (
+            b"\x30\x45\x02\x21\x00\xB8\x03\xAD\x34\xF6\xFC\x0F\x2C\xFF\x84\xA0"
+            b"\x86\xE5\xD7\xCF\x5A\xF0\x0A\x07\x62\x6A\x7F\xB3\xA6\x44\x64\xF1"
+            b"\x95\xA4\x48\x45\x11\x02\x20\x2F\x61\x8D\x53\x1B\x6F\x4A\xB8\x0A"
+            b"\x67\xB2\x07\xE1\x8F\x6D\xAD\xD1\x04\x4A\x5E\xB3\x89\xEF\x7C\x60"
+            b"\xC2\x68\x53\xF9\x3D\x1F\x6D"
+        )
 
     def test_generate(self, backend):
         cert = _load_cert(
@@ -6079,6 +6091,29 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             backend,
         )
         with pytest.raises(ValueError):
+            cert.extensions
+
+    def test_invalid_hash_algorithm(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct-none-hash.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(
+            ValueError, match="Invalid/unsupported hash algorithm for SCT: 0"
+        ):
+            cert.extensions
+
+    def test_invalid_signature_algorithm(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "badssl-sct-anonymous-sig.der"),
+            x509.load_der_x509_certificate,
+            backend,
+        )
+        with pytest.raises(
+            ValueError,
+            match="Invalid/unsupported signature algorithm for SCT: 0",
+        ):
             cert.extensions
 
     def test_invalid_length(self, backend):

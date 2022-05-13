@@ -50,6 +50,32 @@ issued.
         indicate a binding-intent to issue a certificate for the same data,
         with SCTs embedded in it.
 
+    .. attribute:: signature_hash_algorithm
+
+        .. versionadded:: 38.0
+
+        :type:
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        The hashing algorithm used by this SCT's signature.
+
+    .. attribute:: signature_algorithm
+
+        .. versionadded:: 38.0
+
+        :type:
+            :class:`~cryptography.x509.certificate_transparency.SignatureAlgorithm`
+
+        The signing algorithm used by this SCT's signature.
+
+    .. attribute:: signature
+
+        .. versionadded:: 38.0
+
+        :type: bytes
+
+        The raw bytes of the signatures embedded in the SCT.
+
 
 .. class:: Version
 
@@ -75,5 +101,20 @@ issued.
 
         For SCTs corresponding to pre-certificates.
 
+.. class:: SignatureAlgorithm
+
+    .. versionadded:: 38.0
+
+    An enumeration for SignedCertificateTimestamp signature algorithms.
+
+    These are exactly the same as SignatureAlgorithm in :rfc:`5246` (TLS 1.2).
+
+    .. attribute:: ANONYMOUS
+
+    .. attribute:: RSA
+
+    .. attribute:: DSA
+
+    .. attribute:: ECDSA
 
 .. _`Certificate Transparency`: https://www.certificate-transparency.org/

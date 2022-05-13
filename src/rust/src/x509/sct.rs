@@ -6,7 +6,7 @@ use crate::asn1::PyAsn1Error;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::hash::{Hash, Hasher};
 
 struct TLSReader<'a> {
@@ -49,11 +49,94 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
+#[derive(Debug, PartialEq)]
+pub(crate) enum HashAlgorithm {
+    Md5,
+    Sha1,
+    Sha224,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+impl TryFrom<u8> for HashAlgorithm {
+    type Error = pyo3::PyErr;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            1 => HashAlgorithm::Md5,
+            2 => HashAlgorithm::Sha1,
+            3 => HashAlgorithm::Sha224,
+            4 => HashAlgorithm::Sha256,
+            5 => HashAlgorithm::Sha384,
+            6 => HashAlgorithm::Sha512,
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Invalid/unsupported hash algorithm for SCT: {}",
+                    value
+                )))
+            }
+        })
+    }
+}
+
+impl HashAlgorithm {
+    fn to_attr(&self) -> &'static str {
+        match self {
+            HashAlgorithm::Md5 => "MD5",
+            HashAlgorithm::Sha1 => "SHA1",
+            HashAlgorithm::Sha224 => "SHA224",
+            HashAlgorithm::Sha256 => "SHA256",
+            HashAlgorithm::Sha384 => "SHA384",
+            HashAlgorithm::Sha512 => "SHA512",
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) enum SignatureAlgorithm {
+    Rsa,
+    Dsa,
+    Ecdsa,
+}
+
+impl SignatureAlgorithm {
+    fn to_attr(&self) -> &'static str {
+        match self {
+            SignatureAlgorithm::Rsa => "RSA",
+            SignatureAlgorithm::Dsa => "DSA",
+            SignatureAlgorithm::Ecdsa => "ECDSA",
+        }
+    }
+}
+
+impl TryFrom<u8> for SignatureAlgorithm {
+    type Error = pyo3::PyErr;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            1 => SignatureAlgorithm::Rsa,
+            2 => SignatureAlgorithm::Dsa,
+            3 => SignatureAlgorithm::Ecdsa,
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Invalid/unsupported signature algorithm for SCT: {}",
+                    value
+                )))
+            }
+        })
+    }
+}
+
 #[pyo3::prelude::pyclass]
 pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,
     entry_type: LogEntryType,
+    hash_algorithm: HashAlgorithm,
+    signature_algorithm: SignatureAlgorithm,
+    // TODO: This could be a 'self reference back into sct_data with ouroboros.
+    signature: Vec<u8>,
     pub(crate) sct_data: Vec<u8>,
 }
 
@@ -93,6 +176,28 @@ impl Sct {
             LogEntryType::PreCertificate => "PRE_CERTIFICATE",
         };
         et_class.getattr(attr_name)
+    }
+
+    #[getter]
+    fn signature_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
+        hashes_mod.call_method0(self.hash_algorithm.to_attr())
+    }
+
+    #[getter]
+    fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let sa_class = py
+            .import("cryptography.x509.certificate_transparency")?
+            .getattr("SignatureAlgorithm")?;
+        sa_class.getattr(self.signature_algorithm.to_attr())
+    }
+
+    #[getter]
+    fn signature(&self) -> &[u8] {
+        &self.signature
     }
 }
 
@@ -139,13 +244,18 @@ pub(crate) fn parse_scts(
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
-        let _sig_alg = sct_data.read_exact(2)?;
-        let _signature = sct_data.read_length_prefixed()?;
+        let hash_algorithm = sct_data.read_byte()?.try_into()?;
+        let signature_algorithm = sct_data.read_byte()?.try_into()?;
+
+        let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
         let sct = Sct {
             log_id,
             timestamp,
             entry_type: entry_type.clone(),
+            hash_algorithm,
+            signature_algorithm,
+            signature,
             sct_data: raw_sct_data,
         };
         py_scts.append(pyo3::PyCell::new(py, sct)?)?;
@@ -157,4 +267,69 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     module.add_class::<Sct>()?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hash_algorithm_try_from() {
+        for (n, ha) in &[
+            (1_u8, HashAlgorithm::Md5),
+            (2_u8, HashAlgorithm::Sha1),
+            (3_u8, HashAlgorithm::Sha224),
+            (4_u8, HashAlgorithm::Sha256),
+            (5_u8, HashAlgorithm::Sha384),
+            (6_u8, HashAlgorithm::Sha512),
+        ] {
+            let res = HashAlgorithm::try_from(*n).unwrap();
+            assert_eq!(&res, ha);
+        }
+
+        // We don't support "none" hash algorithms.
+        assert!(HashAlgorithm::try_from(0).is_err());
+        assert!(HashAlgorithm::try_from(7).is_err());
+    }
+
+    #[test]
+    fn test_hash_algorithm_to_attr() {
+        for (ha, attr) in &[
+            (HashAlgorithm::Md5, "MD5"),
+            (HashAlgorithm::Sha1, "SHA1"),
+            (HashAlgorithm::Sha224, "SHA224"),
+            (HashAlgorithm::Sha256, "SHA256"),
+            (HashAlgorithm::Sha384, "SHA384"),
+            (HashAlgorithm::Sha512, "SHA512"),
+        ] {
+            assert_eq!(ha.to_attr(), *attr);
+        }
+    }
+
+    #[test]
+    fn test_signature_algorithm_try_from() {
+        for (n, ha) in &[
+            (1_u8, SignatureAlgorithm::Rsa),
+            (2_u8, SignatureAlgorithm::Dsa),
+            (3_u8, SignatureAlgorithm::Ecdsa),
+        ] {
+            let res = SignatureAlgorithm::try_from(*n).unwrap();
+            assert_eq!(&res, ha);
+        }
+
+        // We don't support "anonymous" signature algorithms.
+        assert!(SignatureAlgorithm::try_from(0).is_err());
+        assert!(SignatureAlgorithm::try_from(4).is_err());
+    }
+
+    #[test]
+    fn test_signature_algorithm_to_attr() {
+        for (sa, attr) in &[
+            (SignatureAlgorithm::Rsa, "RSA"),
+            (SignatureAlgorithm::Dsa, "DSA"),
+            (SignatureAlgorithm::Ecdsa, "ECDSA"),
+        ] {
+            assert_eq!(sa.to_attr(), *attr);
+        }
+    }
 }
