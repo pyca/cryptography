@@ -135,6 +135,7 @@ pub(crate) struct Sct {
     entry_type: LogEntryType,
     hash_algorithm: HashAlgorithm,
     signature_algorithm: SignatureAlgorithm,
+    // TODO: This could be a 'self reference back into sct_data with ouroboros.
     signature: Vec<u8>,
     pub(crate) sct_data: Vec<u8>,
 }
