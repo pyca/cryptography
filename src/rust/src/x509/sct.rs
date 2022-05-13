@@ -179,9 +179,11 @@ impl Sct {
     }
 
     #[getter]
-    fn signature_hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let hashes_mod = py
-            .import("cryptography.hazmat.primitives.hashes")?;
+    fn signature_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
         hashes_mod.call_method0(self.hash_algorithm.to_attr())
     }
 
