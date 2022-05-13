@@ -6102,7 +6102,9 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             x509.load_der_x509_certificate,
             backend,
         )
-        with pytest.raises(ValueError, match="Invalid SCT hash algorithm"):
+        with pytest.raises(
+            ValueError, match="Invalid/unsupported hash algorithm for SCT: 0"
+        ):
             cert.extensions
 
     def test_invalid_signature_algorithm(self, backend):
@@ -6112,7 +6114,8 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             backend,
         )
         with pytest.raises(
-            ValueError, match="Invalid SCT signature algorithm"
+            ValueError,
+            match="Invalid/unsupported signature algorithm for SCT: 0",
         ):
             cert.extensions
 
