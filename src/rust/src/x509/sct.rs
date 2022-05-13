@@ -179,11 +179,10 @@ impl Sct {
     }
 
     #[getter]
-    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let ha_class = py
-            .import("cryptography.x509.certificate_transparency")?
-            .getattr("HashAlgorithm")?;
-        ha_class.getattr(self.hash_algorithm.to_attr())
+    fn signature_hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let hashes_mod = py
+            .import("cryptography.hazmat.primitives.hashes")?;
+        hashes_mod.call_method0(self.hash_algorithm.to_attr())
     }
 
     #[getter]

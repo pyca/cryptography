@@ -50,12 +50,12 @@ issued.
         indicate a binding-intent to issue a certificate for the same data,
         with SCTs embedded in it.
 
-    .. attribute:: hash_algorithm
+    .. attribute:: signature_hash_algorithm
 
         .. versionadded:: 38.0
 
         :type:
-            :class:`~cryptography.x509.certificate_transparency.HashAlgorithm`
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
         The hashing algorithm used by this SCT's signature.
 
@@ -100,30 +100,6 @@ issued.
     .. attribute:: PRE_CERTIFICATE
 
         For SCTs corresponding to pre-certificates.
-
-
-.. class:: HashAlgorithm
-
-    .. versionadded:: 38.0
-
-    An enumeration for SignedCertificateTimestamp hash algorithms.
-
-    These are exactly the same as HashAlgorithm in :rfc:`5246` (TLS 1.2).
-
-    .. attribute:: NONE
-
-    .. attribute:: MD5
-
-    .. attribute:: SHA1
-
-    .. attribute:: SHA224
-
-    .. attribute:: SHA256
-
-    .. attribute:: SHA384
-
-    .. attribute:: SHA512
-
 
 .. class:: SignatureAlgorithm
 

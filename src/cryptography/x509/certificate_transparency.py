@@ -8,6 +8,7 @@ import datetime
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
+from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 
 class LogEntryType(utils.Enum):
@@ -17,24 +18,6 @@ class LogEntryType(utils.Enum):
 
 class Version(utils.Enum):
     v1 = 0
-
-
-class HashAlgorithm(utils.Enum):
-    """
-    Hash algorithms that are valid for SCTs.
-
-    These are exactly the same as HashAlgorithm in RFC 5246 (TLS 1.2).
-
-    See: <https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.1.4.1>
-    """
-
-    NONE = 0
-    MD5 = 1
-    SHA1 = 2
-    SHA224 = 3
-    SHA256 = 4
-    SHA384 = 5
-    SHA512 = 6
 
 
 class SignatureAlgorithm(utils.Enum):
