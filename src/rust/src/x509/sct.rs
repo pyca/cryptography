@@ -49,12 +49,6 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
-// This trait exists solely to lift the bodies of `hash_algorithm`
-// and `signature_algoritm` out of a PyO3 context, for code coverage.
-pub(crate) trait ToAttr {
-    fn to_attr(&self) -> &'static str;
-}
-
 #[derive(Debug, PartialEq)]
 pub(crate) enum HashAlgorithm {
     None,
@@ -88,7 +82,7 @@ impl TryFrom<u8> for HashAlgorithm {
     }
 }
 
-impl ToAttr for HashAlgorithm {
+impl HashAlgorithm {
     fn to_attr(&self) -> &'static str {
         match self {
             HashAlgorithm::None => "NONE",
@@ -110,7 +104,7 @@ pub(crate) enum SignatureAlgorithm {
     Ecdsa,
 }
 
-impl ToAttr for SignatureAlgorithm {
+impl SignatureAlgorithm {
     fn to_attr(&self) -> &'static str {
         match self {
             SignatureAlgorithm::Anonymous => "ANONYMOUS",
