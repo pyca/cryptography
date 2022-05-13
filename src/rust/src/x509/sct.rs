@@ -64,12 +64,6 @@ impl TryFrom<u8> for HashAlgorithm {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
-            0 => {
-                return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "Invalid SCT hash algorithm ({})",
-                    value
-                )))
-            }
             1 => HashAlgorithm::Md5,
             2 => HashAlgorithm::Sha1,
             3 => HashAlgorithm::Sha224,
@@ -78,7 +72,7 @@ impl TryFrom<u8> for HashAlgorithm {
             6 => HashAlgorithm::Sha512,
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "Invalid HashAlgorithm variant ({})",
+                    "Invalid/unsupported hash algorithm for SCT: {}",
                     value
                 )))
             }
@@ -121,17 +115,12 @@ impl TryFrom<u8> for SignatureAlgorithm {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
-            0 => {
-                return Err(pyo3::exceptions::PyValueError::new_err(
-                    "Invalid SCT signature algorithm",
-                ))
-            }
             1 => SignatureAlgorithm::Rsa,
             2 => SignatureAlgorithm::Dsa,
             3 => SignatureAlgorithm::Ecdsa,
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "Invalid SignatureAlgorithm variant ({})",
+                    "Invalid/unsupported signature algorithm for SCT: {}",
                     value
                 )))
             }
