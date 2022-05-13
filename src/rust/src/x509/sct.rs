@@ -51,7 +51,6 @@ pub(crate) enum LogEntryType {
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum HashAlgorithm {
-    None,
     Md5,
     Sha1,
     Sha224,
@@ -65,7 +64,12 @@ impl TryFrom<u8> for HashAlgorithm {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
-            0 => HashAlgorithm::None,
+            0 => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Invalid SCT hash algorithm ({})",
+                    value
+                )))
+            }
             1 => HashAlgorithm::Md5,
             2 => HashAlgorithm::Sha1,
             3 => HashAlgorithm::Sha224,
@@ -85,7 +89,6 @@ impl TryFrom<u8> for HashAlgorithm {
 impl HashAlgorithm {
     fn to_attr(&self) -> &'static str {
         match self {
-            HashAlgorithm::None => "NONE",
             HashAlgorithm::Md5 => "MD5",
             HashAlgorithm::Sha1 => "SHA1",
             HashAlgorithm::Sha224 => "SHA224",
@@ -98,7 +101,6 @@ impl HashAlgorithm {
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum SignatureAlgorithm {
-    Anonymous,
     Rsa,
     Dsa,
     Ecdsa,
@@ -107,7 +109,6 @@ pub(crate) enum SignatureAlgorithm {
 impl SignatureAlgorithm {
     fn to_attr(&self) -> &'static str {
         match self {
-            SignatureAlgorithm::Anonymous => "ANONYMOUS",
             SignatureAlgorithm::Rsa => "RSA",
             SignatureAlgorithm::Dsa => "DSA",
             SignatureAlgorithm::Ecdsa => "ECDSA",
@@ -120,7 +121,11 @@ impl TryFrom<u8> for SignatureAlgorithm {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
-            0 => SignatureAlgorithm::Anonymous,
+            0 => {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "Invalid SCT signature algorithm",
+                ))
+            }
             1 => SignatureAlgorithm::Rsa,
             2 => SignatureAlgorithm::Dsa,
             3 => SignatureAlgorithm::Ecdsa,
@@ -249,18 +254,7 @@ pub(crate) fn parse_scts(
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
         let _extensions = sct_data.read_length_prefixed()?;
         let hash_algorithm = sct_data.read_byte()?.try_into()?;
-        if hash_algorithm == HashAlgorithm::None {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Invalid SCT hash algorithm",
-            )));
-        }
-
         let signature_algorithm = sct_data.read_byte()?.try_into()?;
-        if signature_algorithm == SignatureAlgorithm::Anonymous {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Invalid SCT signature algorithm",
-            )));
-        }
 
         let signature = sct_data.read_length_prefixed()?.data.to_vec();
 
@@ -291,7 +285,6 @@ mod tests {
     #[test]
     fn test_hash_algorithm_try_from() {
         for (n, ha) in &[
-            (0_u8, HashAlgorithm::None),
             (1_u8, HashAlgorithm::Md5),
             (2_u8, HashAlgorithm::Sha1),
             (3_u8, HashAlgorithm::Sha224),
@@ -303,13 +296,14 @@ mod tests {
             assert_eq!(&res, ha);
         }
 
+        // We don't support "none" hash algorithms.
+        assert!(HashAlgorithm::try_from(0).is_err());
         assert!(HashAlgorithm::try_from(7).is_err());
     }
 
     #[test]
     fn test_hash_algorithm_to_attr() {
         for (ha, attr) in &[
-            (HashAlgorithm::None, "NONE"),
             (HashAlgorithm::Md5, "MD5"),
             (HashAlgorithm::Sha1, "SHA1"),
             (HashAlgorithm::Sha224, "SHA224"),
@@ -324,7 +318,6 @@ mod tests {
     #[test]
     fn test_signature_algorithm_try_from() {
         for (n, ha) in &[
-            (0_u8, SignatureAlgorithm::Anonymous),
             (1_u8, SignatureAlgorithm::Rsa),
             (2_u8, SignatureAlgorithm::Dsa),
             (3_u8, SignatureAlgorithm::Ecdsa),
@@ -333,13 +326,14 @@ mod tests {
             assert_eq!(&res, ha);
         }
 
+        // We don't support "anonymous" signature algorithms.
+        assert!(SignatureAlgorithm::try_from(0).is_err());
         assert!(SignatureAlgorithm::try_from(4).is_err());
     }
 
     #[test]
     fn test_signature_algorithm_to_attr() {
         for (sa, attr) in &[
-            (SignatureAlgorithm::Anonymous, "ANONYMOUS"),
             (SignatureAlgorithm::Rsa, "RSA"),
             (SignatureAlgorithm::Dsa, "DSA"),
             (SignatureAlgorithm::Ecdsa, "ECDSA"),
