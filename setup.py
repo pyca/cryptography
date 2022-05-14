@@ -44,6 +44,7 @@ try:
             RustExtension(
                 "_rust",
                 "src/rust/Cargo.toml",
+                args=["--timings"],
                 py_limited_api=True,
                 # Enable abi3 mode if we're not using PyPy.
                 features=(

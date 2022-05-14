@@ -487,11 +487,17 @@ jobs:
           RUSTFLAGS: "-Zself-profile"
           RUSTC_BOOTSTRAP: 1
 
-      - name: Upload HTML report.
+      - name: Upload profile data
         uses: actions/upload-artifact@v3.0.0
         with:
-          name: _profile
-          path: "src/rust/*.mm_profdata"
+          name: _profile-${{ matrix.PYTHON.TOXENV }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.JOB_NUMBER }}
+          path: "**/*.mm_profdata"
+          if-no-files-found: ignore
+      - name: Upload profile data
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: _profile-${{ matrix.PYTHON.TOXENV }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.JOB_NUMBER }}
+          path: "**/cargo-timings"
           if-no-files-found: ignore
       - uses: ./.github/actions/upload-coverage
         with:
