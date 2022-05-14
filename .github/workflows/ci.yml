@@ -484,7 +484,15 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          RUSTFLAGS: "-Zself-profile"
+          RUSTC_BOOTSTRAP: 1
 
+      - name: Upload HTML report.
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: _profile
+          path: "src/rust/*.mm_profdata"
+          if-no-files-found: ignore
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
