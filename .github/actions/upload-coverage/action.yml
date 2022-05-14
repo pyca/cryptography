@@ -1,5 +1,5 @@
 name: Upload Coverage
-description: Upload coverage to codecov
+description: Upload coverage files
 
 inputs:
   name:
@@ -22,4 +22,9 @@ runs:
       with:
         name: coverage-${{ steps.coverage-uuid.outputs.COVERAGE_UUID }}
         path: ".coverage.*"
+        if-no-files-found: ignore
+    - uses: actions/upload-artifact@v3.0.0
+      with:
+        name: rust-coverage-${{ steps.coverage-uuid.outputs.COVERAGE_UUID }}
+        path: "*.lcov"
         if-no-files-found: ignore

@@ -321,36 +321,28 @@ jobs:
           LLVM_PROFILE_FILE: "rust-cov/cov-%m-%p.profraw"
       - name: Process coverage data
         run: |
+            set -xe
             cd src/rust/
             cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o pytest-rust-cov.profdata
             cargo profdata -- merge -sparse rust-cov/*.profraw -o cargo-test-rust-cov.profdata
+            COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
+            COV_UUID2=$(python3 -c "import uuid; print(uuid.uuid4())")
 
             cargo cov -- export \
               ../../.tox/${{ matrix.PYTHON.TOXENV }}/lib/python${{ matrix.PYTHON.VERSION }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
               -instr-profile=pytest-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../pytest-rust-cov.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../${COV_UUID}.lcov
             cargo cov -- export \
               $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
               -instr-profile=cargo-test-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../cargo-test-rust-cov.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../${COV_UUID2}.lcov
 
-            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../pytest-rust-cov.lcov
-            sed -E -i 's/SF:src\/(.*)/SF:src\/rust\/src\/\1/g' ../../cargo-test-rust-cov.lcov
-
-      # We use codecov solely for rust coverage now, not Python
-      - run: |
-          curl -o codecov.sh -f https://codecov.io/bash || \
-            curl -o codecov.sh -f https://codecov.io/bash || \
-            curl -o codecov.sh -f https://codecov.io/bash
-          bash codecov.sh -n "Rust Coverage" -f '*.lcov' -X coveragepy
-
+            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' ../../*.lcov
       - uses: ./.github/actions/upload-coverage
-        with:
-          name: "Rust Coverage"
 
   macos:
     runs-on: macos-12
@@ -596,12 +588,20 @@ jobs:
       - run: pip install coverage
       - name: Download coverage data
         uses: actions/download-artifact@v3.0.0
-      - run: mv **/.coverage* .
+      - run: mv **/.coverage* . && mv **/*.lcov .
       - name: Combine coverage and fail if it's <100%.
         id: combinecoverage
         run: |
           python -m coverage combine
           python -m coverage report --fail-under=100
+      - name: Combine rust coverage and fail if it's <100%.
+        id: combinerustcoverage
+        run: |
+          sudo apt-get install -y lcov
+          lcov $(for f in *.lcov; do echo --add-tracefile "$f"; done) -o combined.lcov | grep lines | grep "100.0%"
+      - name: Create rust coverage HTML
+        run: genhtml combined.lcov -o rust-coverage
+        if: ${{ failure() && steps.combinerustcoverage.outcome == 'failure' }}
       - name: Create coverage HTML
         run: python -m coverage html
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
@@ -612,3 +612,10 @@ jobs:
           path: htmlcov
           if-no-files-found: ignore
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
+      - name: Upload rust HTML report.
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: _html-rust-report
+          path: rust-coverage
+          if-no-files-found: ignore
+        if: ${{ failure() && steps.combinerustcoverage.outcome == 'failure' }}
