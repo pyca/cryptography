@@ -411,6 +411,13 @@ jobs:
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
+      - name: Upload profile data
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: _profile-${{ matrix.PYTHON.TOXENV }}-macos
+          path: "**/cargo-timings"
+          if-no-files-found: ignore
+
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.PYTHON.TOXENV }} on macOS"
@@ -484,15 +491,7 @@ jobs:
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-          RUSTFLAGS: "-Zself-profile"
-          RUSTC_BOOTSTRAP: 1
 
-      - name: Upload profile data
-        uses: actions/upload-artifact@v3.0.0
-        with:
-          name: _profile-${{ matrix.PYTHON.TOXENV }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.JOB_NUMBER }}
-          path: "**/*.mm_profdata"
-          if-no-files-found: ignore
       - name: Upload profile data
         uses: actions/upload-artifact@v3.0.0
         with:
