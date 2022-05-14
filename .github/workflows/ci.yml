@@ -345,8 +345,6 @@ jobs:
         with:
           name: "Rust Coverage"
 
-
-
   macos:
     runs-on: macos-12
     strategy:
