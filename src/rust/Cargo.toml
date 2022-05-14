@@ -22,5 +22,6 @@ name = "cryptography_rust"
 crate-type = ["cdylib"]
 
 [profile.release]
+incremental = true
 lto = "thin"
 overflow-checks = true
