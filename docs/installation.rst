@@ -18,7 +18,7 @@ operating systems.
 
 * x86-64 RHEL 8.x
 * x86-64 Fedora (latest)
-* x86-64 macOS 11 Big Sur
+* x86-64 macOS 12 Monterey
 * ARM64 macOS 12 Monterey
 * x86-64 Ubuntu 18.04, 20.04, 22.04, rolling
 * ARM64 Ubuntu 20.04
