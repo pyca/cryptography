@@ -61,7 +61,7 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def hash_algorithm(self) -> HashAlgorithm:
+    def signature_hash_algorithm(self) -> HashAlgorithm:
         """
         Returns the hash algorithm used for the SCT's signature.
         """
