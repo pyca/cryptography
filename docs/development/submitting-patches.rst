@@ -95,7 +95,7 @@ Documentation
 -------------
 
 All features should be documented with prose in the ``docs`` section. To ensure
-it builds and passes `doc8`_ style checks you can run ``tox -e docs``.
+it builds you can run ``tox -e docs``.
 
 Because of the inherent challenges in implementing correct cryptographic
 systems, we want to make our documentation point people in the right directions
@@ -148,4 +148,3 @@ So, specifically:
 .. _`syntax`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#info-field-lists
 .. _`Studies have shown`: https://smartbear.com/learn/code-review/best-practices-for-peer-code-review/
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`doc8`: https://github.com/openstack/doc8
