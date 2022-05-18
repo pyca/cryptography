@@ -39,29 +39,6 @@ def _check_byteslike(name: str, value: bytes) -> None:
         raise TypeError("{} must be bytes-like".format(name))
 
 
-if typing.TYPE_CHECKING:
-    from typing_extensions import Protocol
-
-    _T_class = typing.TypeVar("_T_class", bound=type)
-
-    class _RegisterDecoratorType(Protocol):
-        def __call__(
-            self, klass: _T_class, *, check_annotations: bool = False
-        ) -> _T_class:
-            ...
-
-
-def register_interface(iface: abc.ABCMeta) -> "_RegisterDecoratorType":
-    def register_decorator(
-        klass: "_T_class", *, check_annotations: bool = False
-    ) -> "_T_class":
-        verify_interface(iface, klass, check_annotations=check_annotations)
-        iface.register(klass)
-        return klass
-
-    return register_decorator
-
-
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"
