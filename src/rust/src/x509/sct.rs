@@ -135,8 +135,9 @@ pub(crate) struct Sct {
     entry_type: LogEntryType,
     hash_algorithm: HashAlgorithm,
     signature_algorithm: SignatureAlgorithm,
-    // TODO: This could be a 'self reference back into sct_data with ouroboros.
+    // TODO: These could be 'self references back into sct_data with ouroboros.
     signature: Vec<u8>,
+    extensions: Vec<u8>,
     pub(crate) sct_data: Vec<u8>,
 }
 
@@ -199,6 +200,11 @@ impl Sct {
     fn signature(&self) -> &[u8] {
         &self.signature
     }
+
+    #[getter]
+    fn extensions(&self) -> &[u8] {
+        &self.extensions
+    }
 }
 
 #[pyo3::prelude::pyproto]
@@ -243,7 +249,7 @@ pub(crate) fn parse_scts(
         }
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());
-        let _extensions = sct_data.read_length_prefixed()?;
+        let extensions = sct_data.read_length_prefixed()?.data.to_vec();
         let hash_algorithm = sct_data.read_byte()?.try_into()?;
         let signature_algorithm = sct_data.read_byte()?.try_into()?;
 
@@ -256,6 +262,7 @@ pub(crate) fn parse_scts(
             hash_algorithm,
             signature_algorithm,
             signature,
+            extensions,
             sct_data: raw_sct_data,
         };
         py_scts.append(pyo3::PyCell::new(py, sct)?)?;

@@ -76,6 +76,14 @@ issued.
 
         The raw bytes of the signatures embedded in the SCT.
 
+    .. attribute:: extensions
+
+        .. versionadded:: 38.0
+
+        :type: bytes
+
+        Any raw extension bytes.
+
 
 .. class:: Version
 

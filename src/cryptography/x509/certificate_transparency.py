@@ -78,5 +78,11 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         Returns the signature for this SCT.
         """
 
+    @abc.abstractproperty
+    def extensions(self) -> bytes:
+        """
+        Returns the raw bytes of any extensions for this SCT.
+        """
+
 
 SignedCertificateTimestamp.register(rust_x509.Sct)
