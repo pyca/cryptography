@@ -79,7 +79,7 @@ class SignedCertificateTimestamp(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractproperty
-    def extensions(self) -> bytes:
+    def extension_bytes(self) -> bytes:
         """
         Returns the raw bytes of any extensions for this SCT.
         """

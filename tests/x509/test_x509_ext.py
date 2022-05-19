@@ -6060,7 +6060,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             b"\x67\xB2\x07\xE1\x8F\x6D\xAD\xD1\x04\x4A\x5E\xB3\x89\xEF\x7C\x60"
             b"\xC2\x68\x53\xF9\x3D\x1F\x6D"
         )
-        assert sct.extensions == b""
+        assert sct.extension_bytes == b""
 
     def test_generate(self, backend):
         cert = _load_cert(
