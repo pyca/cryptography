@@ -62,9 +62,9 @@ def test_ecdsa_signature(backend, wycheproof):
         )
         assert isinstance(key, ec.EllipticCurvePublicKey)
     except (UnsupportedAlgorithm, ValueError):
-        # In some OpenSSL 1.0.2s, some keys fail to load with ValueError,
-        # instead of  Unsupported Algorithm. We can remove handling for that
-        # exception when we drop support.
+        # In some OpenSSL 1.1.1 versions (RHEL and Fedora), some keys fail to
+        # load with ValueError, instead of  Unsupported Algorithm. We can
+        # remove handling for that exception when we drop support.
         pytest.skip(
             "unable to load key (curve {})".format(
                 wycheproof.testgroup["key"]["curve"]
