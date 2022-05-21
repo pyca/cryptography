@@ -43,8 +43,8 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.2"}}
           - {VERSION: "3.11-dev", TOXENV: "py311-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
-          # Latest commit on the master branch, as of May 19, 2022.
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "7fd831c44cdd328078081ae996fd33ca6b04adc4"}}
+          # Latest commit on the master branch, as of May 20, 2022.
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "f7e28796678019b5c0701c39fc534decb7a33e4c"}}
         RUST:
           - stable
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
