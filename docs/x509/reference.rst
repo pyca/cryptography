@@ -7,7 +7,7 @@ X.509 Reference
 
     pem_crl_data = b"""
     -----BEGIN X509 CRL-----
-    MIIBtDCBnQIBAjANBgkqhkiG9w0BAQsFADAnMQswCQYDVQQGEwJVUzEYMBYGA1UE
+    MIIBtDCBnQIBATANBgkqhkiG9w0BAQsFADAnMQswCQYDVQQGEwJVUzEYMBYGA1UE
     AwwPY3J5cHRvZ3JhcGh5LmlvGA8yMDE1MDEwMTAwMDAwMFoYDzIwMTYwMTAxMDAw
     MDAwWjA+MDwCAQAYDzIwMTUwMTAxMDAwMDAwWjAmMBgGA1UdGAQRGA8yMDE1MDEw
     MTAwMDAwMFowCgYDVR0VBAMKAQEwDQYJKoZIhvcNAQELBQADggEBABRA4ww50Lz5
@@ -508,7 +508,7 @@ X.509 CRL (Certificate Revocation List) Object
 
             >>> from cryptography.hazmat.primitives import hashes
             >>> crl.fingerprint(hashes.SHA256())
-            b'e\xcf.\xc4:\x83?1\xdc\xf3\xfc\x95\xd7\xb3\x87\xb3\x8e\xf8\xb93!\x87\x07\x9d\x1b\xb4!\xb9\xe4W\xf4\x1f'
+            b'\xe3\x1d\xb5P\x18\x9ed\x9f\x16O\x9dm\xc1>\x8c\xca\xb1\xc6x?T\x9f\xe9t_\x1d\x8dF8V\xf78'
 
     .. method:: get_revoked_certificate_by_serial_number(serial_number)
 

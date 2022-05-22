@@ -328,11 +328,19 @@ fn load_pem_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certific
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_csr(
-    _py: pyo3::Python<'_>,
-    data: &[u8],
-) -> PyAsn1Result<CertificateSigningRequest> {
+fn load_der_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<CertificateSigningRequest> {
     let raw = OwnedRawCsr::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+
+    let version = raw.borrow_value().csr_info.version;
+    if version != 0 {
+        let x509_module = py.import("cryptography.x509")?;
+        return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            x509_module
+                .getattr("InvalidVersion")?
+                .call1((format!("{} is not a valid CSR version", version), version))?,
+        )));
+    }
+
     Ok(CertificateSigningRequest {
         raw,
         cached_extensions: None,
