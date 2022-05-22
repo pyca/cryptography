@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_crl(
-    _py: pyo3::Python<'_>,
+    py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<CertificateRevocationList, PyAsn1Error> {
     let raw = OwnedRawCertificateRevocationList::try_new(
@@ -21,6 +21,16 @@ fn load_der_x509_crl(
         |data| asn1::parse_single(data),
         |_| Ok(pyo3::once_cell::GILOnceCell::new()),
     )?;
+
+    let version = raw.borrow_value().tbs_cert_list.version.unwrap_or(1);
+    if version != 1 {
+        let x509_module = py.import("cryptography.x509")?;
+        return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            x509_module
+                .getattr("InvalidVersion")?
+                .call1((format!("{} is not a valid CRL version", version), version))?,
+        )));
+    }
 
     Ok(CertificateRevocationList {
         raw: Arc::new(raw),

@@ -25,6 +25,10 @@ Changelog
   details.
 * Added two new OpenSSL functions to the bindings to support an upcoming
   ``pyOpenSSL`` release.
+* When parsing :class:`~cryptography.x509.CertificateRevocationList` and
+  :class:`~cryptography.x509.CertificateSigningRequest` values, it is now
+  enforced that the ``version`` value in the input must be valid according to
+  the rules of :rfc:`2986` and :rfc:`5280`.
 
 .. _v37-0-2:
 

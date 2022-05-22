@@ -156,6 +156,14 @@ class TestCertificateRevocationList:
         with pytest.raises(UnsupportedAlgorithm):
             crl.signature_hash_algorithm
 
+    def test_invalid_version(self, backend):
+        with pytest.raises(x509.InvalidVersion):
+            _load_cert(
+                os.path.join("x509", "custom", "crl_bad_version.pem"),
+                x509.load_pem_x509_crl,
+                backend,
+            )
+
     def test_issuer(self, backend):
         crl = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
@@ -1476,6 +1484,14 @@ class TestRSACertificateRequest:
         )
         with pytest.raises(UnsupportedAlgorithm):
             request.signature_hash_algorithm
+
+    def test_invalid_version(self, backend):
+        with pytest.raises(x509.InvalidVersion):
+            _load_cert(
+                os.path.join("x509", "requests", "bad-version.pem"),
+                x509.load_pem_x509_csr,
+                backend,
+            )
 
     def test_duplicate_extension(self, backend):
         request = _load_cert(
