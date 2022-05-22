@@ -520,6 +520,8 @@ Custom X.509 Request Vectors
   inside the ASN.1 set. The signature on this request is invalid.
 * ``freeipa-bad-critical.pem`` - A certificate signing request where the
   extensions value has a ``critical`` value of ``False`` explicitly encoded.
+* ``bad-version.pem`` - A certificate signing request where the version is
+  invalid.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -588,6 +590,7 @@ Custom X.509 Certificate Revocation List Vectors
   value in ``thisUpdate``. The signature on this CRL is invalid.
 * ``crl_no_next_time.pem`` - Contains a CRL with no ``nextUpdate`` value. The
   signature on this CRL is invalid.
+* ``crl_bad_version.pem`` -Contains a CRL with an invalid version.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
