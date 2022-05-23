@@ -76,7 +76,7 @@ class TestOpenSSL:
         version = backend.openssl_version_text()
         assert version.startswith(("OpenSSL", "LibreSSL", "BoringSSL"))
 
-        # Verify the correspoence between these two. And do it in a way that
+        # Verify the correspondence between these two. And do it in a way that
         # ensures coverage.
         if version.startswith("LibreSSL"):
             assert backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
