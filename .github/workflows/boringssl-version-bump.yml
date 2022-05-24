@@ -1,6 +1,5 @@
 name: Bump BoringSSL version
 permissions:
-  issues: write
   contents: read
 
 on:
@@ -11,25 +10,35 @@ on:
 
 jobs:
   bump:
+    if: github.repository_owner == 'pyca'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.0.2
-      - run: git clone https://boringssl.googlesource.com/boringssl
       - id: check-sha
         run: |
-          SHA=$(git -C boringssl/ rev-parse HEAD)
+          SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/master | cut -f1)
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "::set-output name=BORING_SHA::$SHA"
           fi
-      - uses: actions/github-script@v6
+      - name: Update boring
+        run: |
+          set -xe
+          CURRENT_DATE=$(date "+%b %d, %Y")
+          sed -E -i "s/Latest commit on the master branch.*/Latest commit on the master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha.outputs.BORING_SHA }}\"/" .github/workflows/ci.yml
+          git status
+        if: steps.check-sha.outputs.BORING_SHA
+      - uses: tibdex/github-app-token@586e1a624db6a5a4ac2c53daeeded60c5e3d50fe
+        id: generate-token
         with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "BoringSSL in ci.yml needs to be updated",
-              body: `The latest version of BoringSSL is \`${process.env.BORING_SHA}\``,
-            })
-        env:
-          BORING_SHA: ${{ steps.check-sha.outputs.BORING_SHA }}
+          app_id: ${{ secrets.BORINGBOT_APP_ID }}
+          private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+        if: steps.check-sha.outputs.BORING_SHA
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@f094b77505fb89581e68a1163fbd2fffece39da1
+        with:
+          commit-message: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
+          title: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
+          author: "BoringSSL Bot <pyca-boringbot@users.noreply.github.com>"
+          token: ${{ steps.generate-token.outputs.token }}
         if: steps.check-sha.outputs.BORING_SHA
