@@ -447,6 +447,32 @@ class TestRSA:
                 ),
             )
 
+    def test_lazy_blinding(self, backend):
+        private_key = RSA_KEY_2048.private_key(backend)
+        public_key = private_key.public_key()
+        msg = b"encrypt me!"
+        ct = public_key.encrypt(
+            msg,
+            padding.PKCS1v15(),
+        )
+        assert private_key._blinded is False  # type: ignore[attr-defined]
+        pt = private_key.decrypt(
+            ct,
+            padding.PKCS1v15(),
+        )
+        assert private_key._blinded is True  # type: ignore[attr-defined]
+        # Call a second time to cover the branch where blinding
+        # has already occurred and we don't want to do it again.
+        pt2 = private_key.decrypt(
+            ct,
+            padding.PKCS1v15(),
+        )
+        assert pt == pt2
+        assert private_key._blinded is True
+        # Private method call to cover the racy branch within the lock
+        private_key._non_threadsafe_enable_blinding()
+        assert private_key._blinded is True
+
 
 class TestRSASignature:
     @pytest.mark.supported(

@@ -2,7 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-
+import threading
 import typing
 
 from cryptography.exceptions import (
@@ -393,14 +393,12 @@ class _RSAPrivateKey(RSAPrivateKey):
                 errors = backend._consume_errors_with_text()
                 raise ValueError("Invalid private key", errors)
 
-        # Blinding is on by default in many versions of OpenSSL, but let's
-        # just be conservative here.
-        res = backend._lib.RSA_blinding_on(rsa_cdata, backend._ffi.NULL)
-        backend.openssl_assert(res == 1)
-
         self._backend = backend
         self._rsa_cdata = rsa_cdata
         self._evp_pkey = evp_pkey
+        # Used for lazy blinding
+        self._blinded = False
+        self._blinding_lock = threading.Lock()
 
         n = self._backend._ffi.new("BIGNUM **")
         self._backend._lib.RSA_get0_key(
@@ -412,11 +410,31 @@ class _RSAPrivateKey(RSAPrivateKey):
         self._backend.openssl_assert(n[0] != self._backend._ffi.NULL)
         self._key_size = self._backend._lib.BN_num_bits(n[0])
 
+    def _enable_blinding(self) -> None:
+        # If you call blind on an already blinded RSA key OpenSSL will turn
+        # it off and back on, which is a performance hit we want to avoid.
+        if not self._blinded:
+            with self._blinding_lock:
+                self._non_threadsafe_enable_blinding()
+
+    def _non_threadsafe_enable_blinding(self) -> None:
+        # This is only a separate function to allow for testing to cover both
+        # branches. It should never be invoked except through _enable_blinding.
+        # Check if it's not True again in case another thread raced past the
+        # first non-locked check.
+        if not self._blinded:
+            res = self._backend._lib.RSA_blinding_on(
+                self._rsa_cdata, self._backend._ffi.NULL
+            )
+            self._backend.openssl_assert(res == 1)
+            self._blinded = True
+
     @property
     def key_size(self) -> int:
         return self._key_size
 
     def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
+        self._enable_blinding()
         key_size_bytes = (self.key_size + 7) // 8
         if key_size_bytes != len(ciphertext):
             raise ValueError("Ciphertext length must be equal to key size.")
@@ -486,6 +504,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         padding: AsymmetricPadding,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
     ) -> bytes:
+        self._enable_blinding()
         data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
         return _rsa_sig_sign(self._backend, padding, algorithm, self, data)
 
