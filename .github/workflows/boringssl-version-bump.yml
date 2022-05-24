@@ -1,8 +1,6 @@
 name: Bump BoringSSL version
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
 
 on:
   workflow_dispatch:
