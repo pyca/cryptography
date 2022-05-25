@@ -20,11 +20,8 @@ runs:
       shell: bash
     - uses: actions/upload-artifact@v3.0.0
       with:
-        name: coverage-${{ steps.coverage-uuid.outputs.COVERAGE_UUID }}
-        path: ".coverage.*"
-        if-no-files-found: ignore
-    - uses: actions/upload-artifact@v3.0.0
-      with:
-        name: rust-coverage-${{ steps.coverage-uuid.outputs.COVERAGE_UUID }}
-        path: "*.lcov"
+        name: coverage-data
+        path: |
+          .coverage.*
+          *.lcov
         if-no-files-found: ignore
