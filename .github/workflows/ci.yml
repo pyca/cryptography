@@ -589,7 +589,8 @@ jobs:
       - run: pip install coverage
       - name: Download coverage data
         uses: actions/download-artifact@v3.0.0
-      - run: mv **/.coverage* . && mv **/*.lcov .
+        with:
+          name: coverage-data
       - name: Combine coverage and fail if it's <100%.
         id: combinecoverage
         run: |
