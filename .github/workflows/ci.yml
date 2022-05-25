@@ -72,7 +72,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -227,7 +227,7 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -284,14 +284,14 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
           override: true
           default: true
           components: llvm-tools-preview
-      - uses: actions-rs/install@v0.1.2
+      - uses: actions-rs/install@9da1d2adcfe5e7c16992e8242ca33a56b6d9b101
         with:
           crate: cargo-binutils
           version: latest
@@ -379,7 +379,7 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -455,7 +455,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -532,7 +532,7 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: ${{ matrix.RUST }}
@@ -558,7 +558,7 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: 3.9
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: stable
