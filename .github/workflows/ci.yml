@@ -596,11 +596,11 @@ jobs:
         run: |
           python -m coverage combine
           echo "## Python Coverage" >> $GITHUB_STEP_SUMMARY
-          COV_REPORT=$(python -m coverage report -m --fail-under=100)
+          python -m coverage report -m --fail-under=100 > COV_REPORT
           COV_EXIT_CODE=$?
-          echo $COV_REPORT
+          cat COV_REPORT
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo $COV_REPORT >> $GITHUB_STEP_SUMMARY
+          cat COV_REPORT >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           if [ $COV_EXIT_CODE -ne 0 ]; then
             echo "🚨 Python Coverage failed. Under 100"
