@@ -13,7 +13,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/wheel-builder.yml
-    
+
 
 jobs:
   manylinux:
@@ -145,7 +145,7 @@ jobs:
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: stable
@@ -215,7 +215,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           profile: minimal
           toolchain: stable
