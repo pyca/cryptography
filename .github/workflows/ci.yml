@@ -625,7 +625,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo $RUST_COVERAGE_OUTPUT >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          if echo "$RUST_COVERAGE_OUTPUT" | grep "100.0%"; then
+          if ! echo "$RUST_COVERAGE_OUTPUT" | grep "100.0%"; then
             echo "🚨 Rust Coverage failed. Under 100"
             exit 1
           fi
