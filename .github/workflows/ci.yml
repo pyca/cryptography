@@ -601,6 +601,7 @@ jobs:
         if: ${{ always() }}
         id: combinecoverage
         run: |
+          set +e
           python -m coverage combine
           echo "## Python Coverage" >> $GITHUB_STEP_SUMMARY
           python -m coverage report -m --fail-under=100 > COV_REPORT
@@ -617,6 +618,7 @@ jobs:
         if: ${{ always() }}
         id: combinerustcoverage
         run: |
+          set +e
           sudo apt-get install -y lcov
           RUST_COVERAGE_OUTPUT=$(lcov $(for f in *.lcov; do echo --add-tracefile "$f"; done) -o combined.lcov | grep lines)
           echo "## Rust Coverage" >> $GITHUB_STEP_SUMMARY
