@@ -579,36 +579,46 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - run: echo "😢"; exit 1
+      - run: |
+          echo "# 😢 😢" >> $GITHUB_STEP_SUMMARY
+          echo "At least one CI job failed."
+          exit 1
         if: ${{ needs.linux.result != 'success' || needs.linux-distros.result != 'success' || needs.linux-rust.result != 'success' || needs.linux-rust-coverage.result != 'success' || needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux-downstream.result != 'success' }}
-      - run: echo "🎉"
+      - run: echo "# 🎉 🎉" >> $GITHUB_STEP_SUMMARY
       - name: Setup python
+        if: ${{ always() }}
         uses: actions/setup-python@v3.1.2
         with:
           python-version: '3.10'
       - run: pip install coverage
+        if: ${{ always() }}
       - name: Download coverage data
+        if: ${{ always() }}
         uses: actions/download-artifact@v3.0.0
         with:
           name: coverage-data
       - name: Combine coverage and fail if it's <100%.
+        if: ${{ always() }}
         id: combinecoverage
         run: |
+          set +e
           python -m coverage combine
           echo "## Python Coverage" >> $GITHUB_STEP_SUMMARY
           python -m coverage report -m --fail-under=100 > COV_REPORT
           COV_EXIT_CODE=$?
           cat COV_REPORT
+          if [ $COV_EXIT_CODE -ne 0 ]; then
+            echo "🚨 Python Coverage failed. Under 100"
+          fi
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat COV_REPORT >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          if [ $COV_EXIT_CODE -ne 0 ]; then
-            echo "🚨 Python Coverage failed. Under 100"
-            exit 1
-          fi
+          exit $COV_EXIT_CODE
       - name: Combine rust coverage and fail if it's <100%.
+        if: ${{ always() }}
         id: combinerustcoverage
         run: |
+          set +e
           sudo apt-get install -y lcov
           RUST_COVERAGE_OUTPUT=$(lcov $(for f in *.lcov; do echo --add-tracefile "$f"; done) -o combined.lcov | grep lines)
           echo "## Rust Coverage" >> $GITHUB_STEP_SUMMARY
