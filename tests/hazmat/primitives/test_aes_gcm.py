@@ -10,9 +10,6 @@ import pytest
 
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
-from .utils import generate_aead_test
-from ...utils import load_nist_vectors
-
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
@@ -21,21 +18,6 @@ from ...utils import load_nist_vectors
     skip_message="Does not support AES GCM",
 )
 class TestAESModeGCM:
-    test_gcm = generate_aead_test(
-        load_nist_vectors,
-        os.path.join("ciphers", "AES", "GCM"),
-        [
-            "gcmDecrypt128.rsp",
-            "gcmDecrypt192.rsp",
-            "gcmDecrypt256.rsp",
-            "gcmEncryptExtIV128.rsp",
-            "gcmEncryptExtIV192.rsp",
-            "gcmEncryptExtIV256.rsp",
-        ],
-        algorithms.AES,
-        modes.GCM,
-    )
-
     def test_gcm_tag_with_only_aad(self, backend):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
         iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
