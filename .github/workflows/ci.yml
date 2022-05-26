@@ -608,7 +608,7 @@ jobs:
           COV_EXIT_CODE=$?
           cat COV_REPORT
           if [ $COV_EXIT_CODE -ne 0 ]; then
-            echo "🚨 Python Coverage failed. Under 100"
+            echo "🚨 Python Coverage failed. Under 100" >> $GITHUB_STEP_SUMMARY
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat COV_REPORT >> $GITHUB_STEP_SUMMARY
@@ -626,7 +626,7 @@ jobs:
           echo $RUST_COVERAGE_OUTPUT >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           if ! echo "$RUST_COVERAGE_OUTPUT" | grep "100.0%"; then
-            echo "🚨 Rust Coverage failed. Under 100"
+            echo "🚨 Rust Coverage failed. Under 100" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
       - name: Create rust coverage HTML
