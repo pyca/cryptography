@@ -462,6 +462,24 @@ X.509 Certificate Object
        An :class:`~cryptography.exceptions.InvalidSignature` exception will be
        raised if the signature fails to verify.
 
+
+    .. attribute:: tbs_precertificate_bytes
+
+        .. versionadded:: 38.0
+
+        :type: bytes
+
+        The DER encoded bytes payload (as defined by :rfc:6962) that is hashed
+        and then signed by the private key of the precertificate's issuer.
+        This data may be used to validate a Signed Certificate Timestamp's
+        signature, but use extreme caution as SCT validation is a complex
+        problem that involves much more than just signature checks.
+
+        .. note::
+
+            This method is not particularly useful outside of Certificate
+            Transparency contexts.
+
     .. method:: public_bytes(encoding)
 
         .. versionadded:: 1.0
