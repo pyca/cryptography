@@ -33,3 +33,31 @@ module = [
     "pretend"
 ]
 ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = [
+    "cryptography",
+    "tests/",
+]
+
+[tool.coverage.paths]
+source = [
+   "src/cryptography",
+   "*.tox/*/lib*/python*/site-packages/cryptography",
+   "*.tox\\*\\Lib\\site-packages\\cryptography",
+   "*.tox/pypy/site-packages/cryptography",
+]
+tests =[
+   "tests/",
+   "*tests\\",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "@abc.abstractmethod",
+    "@abc.abstractproperty",
+    "@typing.overload",
+    "if typing.TYPE_CHECKING",
+]

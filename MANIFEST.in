@@ -19,6 +19,6 @@ recursive-exclude vectors *
 
 recursive-exclude .github *
 
-exclude release.py .coveragerc .readthedocs.yml dev-requirements.txt tox.ini mypy.ini
+exclude release.py .readthedocs.yml dev-requirements.txt tox.ini mypy.ini
 
 recursive-exclude .circleci *
