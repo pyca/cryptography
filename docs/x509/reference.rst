@@ -469,8 +469,8 @@ X.509 Certificate Object
 
         :type: bytes
 
-        The DER encoded bytes payload (as defined by :rfc:6962) that is hashed
-        and then signed by the private key of the precertificate's issuer.
+        The DER encoded bytes payload (as defined by :rfc:`6962`) that is hashed
+        and then signed by the private key of the pre-certificate's issuer.
         This data may be used to validate a Signed Certificate Timestamp's
         signature, but use extreme caution as SCT validation is a complex
         problem that involves much more than just signature checks.
