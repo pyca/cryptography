@@ -232,7 +232,8 @@ class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def tbs_precertificate_bytes(self) -> bytes:
         """
-        Returns the tbsCertificate payload bytes with the SCT list extension stripped.
+        Returns the tbsCertificate payload bytes with the SCT list extension
+        stripped.
         """
 
     @abc.abstractmethod
