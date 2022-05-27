@@ -5,11 +5,14 @@
 use crate::x509;
 use crate::x509::oid;
 
-lazy_static::lazy_static! {
+use once_cell::sync::Lazy;
+
+static NULL_DER: Lazy<Vec<u8>> = Lazy::new(|| {
     // TODO: kind of verbose way to say "\x05\x00".
-    static ref NULL_DER: Vec<u8> = asn1::write_single(&());
-    pub(crate) static ref NULL_TLV: asn1::Tlv<'static> = asn1::parse_single(&NULL_DER).unwrap();
-}
+    asn1::write_single(&())
+});
+pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
+    Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());
 
 enum KeyType {
     Rsa,
