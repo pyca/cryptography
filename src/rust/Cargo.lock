@@ -77,7 +77,7 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "chrono",
- "lazy_static",
+ "once_cell",
  "ouroboros",
  "pem",
  "pyo3",
@@ -114,12 +114,6 @@ checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
 dependencies = [
  "cfg-if",
 ]
-
-[[package]]
-name = "lazy_static"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
