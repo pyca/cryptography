@@ -876,8 +876,8 @@ class TestRSACertificate:
         assert len(cert.signature) == public_key.key_size // 8
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.signature_hash_supported(
-            hashes.SHA1()
+        only_if=lambda backend: backend.rsa_signature_hash_supported(
+            padding.PKCS1v15(), hashes.SHA1()
         ),
         skip_message="Does not support SHA-1 signature.",
     )
@@ -1711,8 +1711,8 @@ class TestRSACertificateRequest:
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.signature_hash_supported(
-            hashes.SHA1()
+        only_if=lambda backend: backend.rsa_signature_hash_supported(
+            padding.PKCS1v15(), hashes.SHA1()
         ),
         skip_message="Does not support SHA-1 signature.",
     )

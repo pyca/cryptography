@@ -11,7 +11,7 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 from .utils import skip_signature_hash
@@ -354,7 +354,7 @@ class TestPKCS7Builder:
     def test_sign_alternate_digests_der(
         self, hash_alg, expected_value, backend
     ):
-        skip_signature_hash(backend, hash_alg)
+        skip_signature_hash(backend, padding.PKCS1v15(), hash_alg)
 
         data = b"hello world"
         cert, key = _load_cert_key()
@@ -382,7 +382,7 @@ class TestPKCS7Builder:
     def test_sign_alternate_digests_detached(
         self, hash_alg, expected_value, backend
     ):
-        skip_signature_hash(backend, hash_alg)
+        skip_signature_hash(backend, padding.PKCS1v15(), hash_alg)
 
         data = b"hello world"
         cert, key = _load_cert_key()

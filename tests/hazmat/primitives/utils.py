@@ -574,6 +574,6 @@ def skip_fips_traditional_openssl(backend, fmt):
         )
 
 
-def skip_signature_hash(backend, hash_alg: hashes.HashAlgorithm):
-    if not backend.signature_hash_supported(hash_alg):
-        pytest.skip(f"{hash_alg} is not a supported signature hash algorithm.")
+def skip_signature_hash(backend, padding, hash_alg: hashes.HashAlgorithm):
+    if not backend.rsa_signature_hash_supported(padding, hash_alg):
+        pytest.skip(f"Does not support {padding} with {hash_alg}.")

@@ -70,9 +70,13 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
     assert isinstance(key, rsa.RSAPublicKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
-    if digest is None or not backend.hash_supported(digest):
+    if digest is None or not backend.rsa_signature_hash_supported(
+        padding.PKCS1v15(), digest
+    ):
         pytest.skip(
-            "Hash {} not supported".format(wycheproof.testgroup["sha"])
+            "Hash {} not supported for PKCS1v15".format(
+                wycheproof.testgroup["sha"]
+            )
         )
 
     if should_verify(backend, wycheproof):
@@ -111,6 +115,13 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
                 )
             )
 
+    if not backend.rsa_signature_hash_supported(padding.PKCS1v15(), digest):
+        pytest.skip(
+            "Hash {} not supported for PKCS1v15".format(
+                wycheproof.testgroup["sha"]
+            )
+        )
+
     sig = key.sign(
         binascii.unhexlify(wycheproof.testcase["msg"]),
         padding.PKCS1v15(),
@@ -138,7 +149,17 @@ def test_rsa_pss_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
 
-    if digest is None or mgf_digest is None:
+    if (
+        digest is None
+        or mgf_digest is None
+        or not backend.rsa_signature_hash_supported(
+            padding.PSS(
+                mgf=padding.MGF1(mgf_digest),
+                salt_length=wycheproof.testgroup["sLen"],
+            ),
+            digest,
+        )
+    ):
         pytest.skip(
             "PSS with digest={} and MGF digest={} not supported".format(
                 wycheproof.testgroup["sha"],

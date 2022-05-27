@@ -6,6 +6,7 @@
 import collections
 import contextlib
 import itertools
+import textwrap
 import typing
 import warnings
 from contextlib import contextmanager
@@ -181,6 +182,7 @@ class Backend:
     _fips_dsa_min_modulus = 1 << 2048
     _fips_dh_min_key_size = 2048
     _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
+    _rsa_signature_hash_supported: typing.Dict[typing.Any, typing.Any] = {}
 
     def __init__(self):
         self._binding = binding.Binding()
@@ -335,10 +337,59 @@ class Backend:
         self, algorithm: hashes.HashAlgorithm
     ) -> bool:
         # Dedicated check for hashing algorithm use in message digest for
-        # signatures, e.g. RSA PKCS#1 v1.5 SHA1 (sha1WithRSAEncryption).
+        # signatures, but not RSA (see: rsa_signature_hash_supported)
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
         return self.hash_supported(algorithm)
+
+    def rsa_signature_hash_supported(
+        self, padding, algorithm: hashes.HashAlgorithm
+    ) -> bool:
+        try:
+            return self._rsa_signature_hash_supported[
+                type(padding), type(algorithm)
+            ]
+        except KeyError:
+            # A dummy 1024-bit key to use for the test signature.
+            # It is not a sensitive value.
+            dummy_key = textwrap.dedent(
+                """
+                -----BEGIN PRIVATE KEY-----
+                MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK2LWjezOajFaBgP
+                jR7hVnPYGJbPMPlbgZZfg/OED/H1etPMYjJkA3kXrlwC5Hb2pKaw1c3yk6eQ/J7Q
+                k6sN/fpYjMoRge7u+yLwmBz5IRJbbII3uiAZhBCJ47y7bJfu/KI4ignOv77GnCZL
+                ekg41FfTrMcYd3ytQWPK+hhYgm07AgMBAAECgYBO5JfJ1Ic0yzEsJv2veR8VILrk
+                7CHGaiv6EUfqDzI0e7Uvza0iXUca6IISQBpeXnexc5huvIUVWxsMk6Nd0smPIfnv
+                4YNyvAmz6AC01e2lmsOTYJt9POoMrI2VzaGRtGDizYE9jWn2MHK9A6Rr04W21vGp
+                hlJmbRniV4KZU+WIsQJBAOcAfW6bSmd0rLkqd3NYqTjLm4J17kecu4Nd/+jW3j9U
+                MfqAFp1l59XbyPuvSEr9dOGzbAQSXA2P87oiniMpbhkCQQDAUxl41CHOP1Lt3JHz
+                pNvB38FJHuvP98PHeeKjCec+pIksvdYGF1yljtmOyCAx4TYzuqSOKWb8BtpsAFhk
+                ZLhzAkA90ErASzu4vWbu0adPLV1y/kDpwyb08MLYn1G4e67TIXOSRa5Hhhpohryc
+                ZMYikvow3zM7T7JkSq38lADfBdoZAkAruDhIIWD186s0azm6ezWBow3bQ24zvo0A
+                4ZJFodCxitGsHBN1GwZylECclp3K+PlLVRhnQL4qeJxahNGTMNpFAkEA21jGTTC6
+                k2+7B0QdRz2e7uoHHTPePTwVPNYLyuLSogDyBRD/Bda0x/9IgX3xVtNjmgYPKZTa
+                UMLM1EEkOsaPJg==
+                -----END PRIVATE KEY-----
+            """
+            ).encode("ascii")
+            key = self.load_pem_private_key(
+                dummy_key, None, unsafe_skip_rsa_key_validation=True
+            )
+            assert isinstance(key, rsa.RSAPrivateKey)
+            try:
+                key.sign(
+                    b"sign me",
+                    padding,
+                    algorithm,
+                )
+                supported = True
+            except (UnsupportedAlgorithm, ValueError):
+                supported = False
+
+            self._rsa_signature_hash_supported[
+                type(padding), type(algorithm)
+            ] = supported
+            return supported
 
     def scrypt_supported(self) -> bool:
         if self._fips_enabled:
