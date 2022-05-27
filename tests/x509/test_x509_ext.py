@@ -5769,6 +5769,15 @@ class TestPrecertPoisonExtension:
 
 
 class TestSignedCertificateTimestamps:
+    def test_strip_scts(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        assert cert.tbs_certificate_bytes != cert.tbs_precertificate_bytes
+
     def test_eq(self, backend):
         sct = (
             _load_cert(

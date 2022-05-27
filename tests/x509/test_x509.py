@@ -912,6 +912,58 @@ class TestRSACertificate:
             cert.signature_hash_algorithm,
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA-1 signature.",
+    )
+    def test_tbs_precertificate_bytes(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "post2000utctime.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        # This cert doesn't have an SCT list extension, so its
+        # precertificate bytes are the same as its certificate bytes.
+        assert cert.tbs_certificate_bytes == cert.tbs_precertificate_bytes
+        assert cert.tbs_precertificate_bytes == binascii.unhexlify(
+            b"308202d8a003020102020900a06cb4b955f7f4db300d06092a864886f70d010"
+            b"10505003058310b3009060355040613024155311330110603550408130a536f"
+            b"6d652d53746174653121301f060355040a1318496e7465726e6574205769646"
+            b"769747320507479204c74643111300f0603550403130848656c6c6f20434130"
+            b"1e170d3134313132363231343132305a170d3134313232363231343132305a3"
+            b"058310b3009060355040613024155311330110603550408130a536f6d652d53"
+            b"746174653121301f060355040a1318496e7465726e657420576964676974732"
+            b"0507479204c74643111300f0603550403130848656c6c6f2043413082012230"
+            b"0d06092a864886f70d01010105000382010f003082010a0282010100b03af70"
+            b"2059e27f1e2284b56bbb26c039153bf81f295b73a49132990645ede4d2da0a9"
+            b"13c42e7d38d3589a00d3940d194f6e6d877c2ef812da22a275e83d8be786467"
+            b"48b4e7f23d10e873fd72f57a13dec732fc56ab138b1bb308399bb412cd73921"
+            b"4ef714e1976e09603405e2556299a05522510ac4574db5e9cb2cf5f99e8f48c"
+            b"1696ab3ea2d6d2ddab7d4e1b317188b76a572977f6ece0a4ad396f0150e7d8b"
+            b"1a9986c0cb90527ec26ca56e2914c270d2a198b632fa8a2fda55079d3d39864"
+            b"b6fb96ddbe331cacb3cb8783a8494ccccd886a3525078847ca01ca5f803e892"
+            b"14403e8a4b5499539c0b86f7a0daa45b204a8e079d8a5b03db7ba1ba3d7011a"
+            b"70203010001a381bc3081b9301d0603551d0e04160414d8e89dc777e4472656"
+            b"f1864695a9f66b7b0400ae3081890603551d23048181307f8014d8e89dc777e"
+            b"4472656f1864695a9f66b7b0400aea15ca45a3058310b300906035504061302"
+            b"4155311330110603550408130a536f6d652d53746174653121301f060355040"
+            b"a1318496e7465726e6574205769646769747320507479204c74643111300f06"
+            b"03550403130848656c6c6f204341820900a06cb4b955f7f4db300c0603551d1"
+            b"3040530030101ff"
+        )
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert cert.signature_hash_algorithm is not None
+        public_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),
+            cert.signature_hash_algorithm,
+        )
+
     def test_issuer(self, backend):
         cert = _load_cert(
             os.path.join(
