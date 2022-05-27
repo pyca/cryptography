@@ -10,6 +10,8 @@ pub(crate) const PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifi
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 2);
 pub(crate) const PRECERT_POISON_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 3);
+pub(crate) const CERTIFICATE_TRANSPARENCY_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 4);
 pub(crate) const SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 5);
 pub(crate) const AUTHORITY_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier =
