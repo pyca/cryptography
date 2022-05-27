@@ -147,7 +147,7 @@ jobs:
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
           - {IMAGE: "fedora", TOXENV: "py310"}
-          - {IMAGE: "alpine", TOXENV: "py39"}
+          - {IMAGE: "alpine", TOXENV: "py310"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
     steps:
