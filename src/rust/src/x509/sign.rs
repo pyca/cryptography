@@ -94,8 +94,33 @@ fn identify_hash_type(
     }
 
     match hash_algorithm.getattr("name")?.extract()? {
-        "md5" => Ok(HashType::Md5),
-        "sha1" => Ok(HashType::Sha1),
+        "md5" => {
+            let cryptography_warning =
+                py.import("cryptography.utils")?.getattr("DeprecatedIn38")?;
+            let warnings = py.import("warnings")?;
+            warnings.call_method1(
+                "warn",
+                (
+                    "MD5 signatures are deprecated and support for them will be removed in the next version.",
+                    cryptography_warning,
+                ),
+            )?;
+
+            Ok(HashType::Md5)
+        }
+        "sha1" => {
+            let cryptography_warning =
+                py.import("cryptography.utils")?.getattr("DeprecatedIn38")?;
+            let warnings = py.import("warnings")?;
+            warnings.call_method1(
+                "warn",
+                (
+                    "SHA1 signatures are deprecated and support for them will be removed in the next version.",
+                    cryptography_warning,
+                ),
+            )?;
+            Ok(HashType::Sha1)
+        }
         "sha224" => Ok(HashType::Sha224),
         "sha256" => Ok(HashType::Sha256),
         "sha384" => Ok(HashType::Sha384),

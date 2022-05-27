@@ -29,6 +29,9 @@ Changelog
   :class:`~cryptography.x509.CertificateSigningRequest` values, it is now
   enforced that the ``version`` value in the input must be valid according to
   the rules of :rfc:`2986` and :rfc:`5280`.
+* Using MD5 or SHA1 in :class:`~cryptography.x509.CertificateBuilder` and
+  other X.509 builders is deprecated and support will be removed in the next
+  version.
 
 .. _v37-0-2:
 
