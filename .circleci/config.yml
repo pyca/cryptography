@@ -6,7 +6,7 @@ commands:
       image:
         type: string
     steps:
-      - run: docker pull <<parameters.image>>
+      - run: docker pull <<parameters.image>> || docker pull <<parameters.image>>
   docker-run:
     parameters:
       image:
