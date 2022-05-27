@@ -54,8 +54,7 @@ class DummyExtension(x509.ExtensionType):
     oid = x509.ObjectIdentifier("1.2.3.4")
 
 
-@utils.register_interface(x509.GeneralName)
-class FakeGeneralName:
+class FakeGeneralName(x509.GeneralName):
     def __init__(self, value):
         self._value = value
 
@@ -4413,9 +4412,7 @@ class TestCertificateSigningRequestBuilder:
                 x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "SAN")])
             )
             .add_extension(
-                x509.SubjectAlternativeName(
-                    [FakeGeneralName("")]  # type:ignore[list-item]
-                ),
+                x509.SubjectAlternativeName([FakeGeneralName("")]),
                 critical=False,
             )
         )
