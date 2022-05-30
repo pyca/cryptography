@@ -224,17 +224,29 @@ impl Certificate {
         let val = self.raw.borrow_value();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
-        if let Some(extensions) = tbs_precert.extensions {
-            let readable_extensions = extensions.unwrap_read().clone();
-            let filtered_extensions = readable_extensions
-                .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
-                .collect();
-            let filtered_extensions: x509::Extensions<'_> =
-                Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(filtered_extensions));
-            tbs_precert.extensions = Some(filtered_extensions);
+        match tbs_precert.extensions {
+            Some(extensions) => {
+                let readable_extensions = extensions.unwrap_read().clone();
+                let ext_count = readable_extensions.len();
+                let filtered_extensions: Vec<x509::common::Extension<'_>> = readable_extensions
+                    .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
+                    .collect();
+                if filtered_extensions.len() == ext_count {
+                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                        "Could not find SCT list extension in TBS certificate",
+                    )));
+                }
+                let filtered_extensions: x509::Extensions<'_> = Asn1ReadableOrWritable::new_write(
+                    asn1::SequenceOfWriter::new(filtered_extensions),
+                );
+                tbs_precert.extensions = Some(filtered_extensions);
+                let result = asn1::write_single(&tbs_precert);
+                Ok(pyo3::types::PyBytes::new(py, &result))
+            }
+            None => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Could not find any extensions in TBS certificate",
+            ))),
         }
-        let result = asn1::write_single(&tbs_precert);
-        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
