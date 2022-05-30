@@ -5776,7 +5776,14 @@ class TestSignedCertificateTimestamps:
             backend,
         )
 
-        assert cert.tbs_certificate_bytes != cert.tbs_precertificate_bytes
+        expected_tbs_precertificate_bytes = load_vectors_from_file(
+            filename=os.path.join("x509", "cryptography-scts-tbs-precert.der"),
+            loader=lambda data: data.read(),
+            mode="rb",
+        )
+        assert (
+            expected_tbs_precertificate_bytes == cert.tbs_precertificate_bytes
+        )
 
     def test_eq(self, backend):
         sct = (
