@@ -20,6 +20,8 @@ jobs:
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "::set-output name=BORING_SHA::$SHA"
           fi
+          LAST_COMMIT=$(grep boringssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-z0-9]{40}')
+          echo "::set-output name=LAST_COMMIT::$LAST_COMMIT"
       - name: Update boring
         run: |
           set -xe
@@ -40,5 +42,9 @@ jobs:
           commit-message: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
           title: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
           author: "BoringSSL Bot <pyca-boringbot@users.noreply.github.com>"
+          body: |
+            [Commit: ${{{ steps.check-sha.outputs.LAST_COMMIT }}](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.LAST_COMMIT }})
+
+            [Diff](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.LAST_COMMIT }}..${{ steps.check-sha.outputs.BORING_SHA }}) between the last commit hash merged to this repository and the new commit.
           token: ${{ steps.generate-token.outputs.token }}
         if: steps.check-sha.outputs.BORING_SHA
