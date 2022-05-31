@@ -120,10 +120,12 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - name: Tests
         run: |
+            echo "::group::tox setup phase"
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          CI_GROUPING: 'echo "::endgroup::"'
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -182,11 +184,15 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: '/venv/bin/tox -vvv -- --wycheproof-root="wycheproof"'
+      - name: Tests
+        run: |
+          echo "::group::tox setup phase"
+          /venv/bin/tox -vvv -- --wycheproof-root="wycheproof"
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          CI_GROUPING: 'echo "::endgroup::"'
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
@@ -242,10 +248,12 @@ jobs:
       - run: python -m pip install tox coverage[toml]
       - name: Tests
         run: |
+            echo "::group::tox setup phase"
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          CI_GROUPING: 'echo "::endgroup::"'
       - uses: ./.github/actions/upload-coverage
         with:
           name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
@@ -306,12 +314,14 @@ jobs:
       - run: python -m pip install tox coverage[toml]
       - name: Tests
         run: |
+            echo "::group::tox setup phase"
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
+          CI_GROUPING: 'echo "::endgroup::"'
       - name: Rust Tests
         run: |
             cd src/rust
@@ -402,6 +412,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tests
         run: |
+          echo "::group::tox setup phase"
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-x86-64/lib/libcrypto.a ${HOME}/openssl-macos-x86-64/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-x86-64/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.10 -march=core2 $EXTRA_CFLAGS" \
@@ -410,6 +421,7 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          CI_GROUPING: 'echo "::endgroup::"'
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -480,10 +492,14 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+      - name: Tests
+        run: |
+          echo "::group::tox setup phase"
+          tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          CI_GROUPING: 'echo "::endgroup::"'
 
       - uses: ./.github/actions/upload-coverage
         with:
@@ -565,9 +581,12 @@ jobs:
           override: true
           default: true
       - run: python -m pip install -U tox
-      - run: tox -r --  --color=yes
+      - run: |
+          echo "::group::tox setup phase"
+          tox -r --  --color=yes
         env:
           TOXENV: docs-linkcheck
+          CI_GROUPING: 'echo "::endgroup::"'
 
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
