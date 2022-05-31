@@ -912,15 +912,9 @@ class TestRSACertificate:
             cert.signature_hash_algorithm,
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.signature_hash_supported(
-            hashes.SHA1()
-        ),
-        skip_message="Does not support SHA-1 signature.",
-    )
     def test_tbs_precertificate_bytes_raises(self, backend):
         cert = _load_cert(
-            os.path.join("x509", "custom", "post2000utctime.pem"),
+            os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
             backend,
         )
