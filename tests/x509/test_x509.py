@@ -912,7 +912,20 @@ class TestRSACertificate:
             cert.signature_hash_algorithm,
         )
 
-    def test_tbs_precertificate_bytes_raises(self, backend):
+    def test_tbs_precertificate_bytes_no_extensions_raises(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "v1_cert.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Could not find any extensions in TBS certificate",
+        ):
+            cert.tbs_precertificate_bytes
+
+    def test_tbs_precertificate_bytes_missing_extension_raises(self, backend):
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
