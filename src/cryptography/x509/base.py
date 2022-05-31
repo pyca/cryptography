@@ -229,6 +229,13 @@ class Certificate(metaclass=abc.ABCMeta):
         Returns the tbsCertificate payload bytes as defined in RFC 5280.
         """
 
+    @abc.abstractproperty
+    def tbs_precertificate_bytes(self) -> bytes:
+        """
+        Returns the tbsCertificate payload bytes with the SCT list extension
+        stripped.
+        """
+
     @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
         """

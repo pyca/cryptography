@@ -6,7 +6,7 @@ use crate::asn1::{
     big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
-use crate::x509::{crl, extensions, oid, sct};
+use crate::x509::{crl, extensions, oid, sct, Asn1ReadableOrWritable};
 use chrono::Datelike;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
@@ -214,6 +214,39 @@ impl Certificate {
     ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
         let result = asn1::write_single(&self.raw.borrow_value().tbs_cert);
         Ok(pyo3::types::PyBytes::new(py, &result))
+    }
+
+    #[getter]
+    fn tbs_precertificate_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+        let val = self.raw.borrow_value();
+        let mut tbs_precert = val.tbs_cert.clone();
+        // Remove the SCT list extension
+        match tbs_precert.extensions {
+            Some(extensions) => {
+                let readable_extensions = extensions.unwrap_read().clone();
+                let ext_count = readable_extensions.len();
+                let filtered_extensions: Vec<x509::common::Extension<'_>> = readable_extensions
+                    .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
+                    .collect();
+                if filtered_extensions.len() == ext_count {
+                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                        "Could not find pre-certificate SCT list extension",
+                    )));
+                }
+                let filtered_extensions: x509::Extensions<'_> = Asn1ReadableOrWritable::new_write(
+                    asn1::SequenceOfWriter::new(filtered_extensions),
+                );
+                tbs_precert.extensions = Some(filtered_extensions);
+                let result = asn1::write_single(&tbs_precert);
+                Ok(pyo3::types::PyBytes::new(py, &result))
+            }
+            None => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Could not find any extensions in TBS certificate",
+            ))),
+        }
     }
 
     #[getter]

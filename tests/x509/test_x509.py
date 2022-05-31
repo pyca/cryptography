@@ -912,6 +912,51 @@ class TestRSACertificate:
             cert.signature_hash_algorithm,
         )
 
+    def test_tbs_precertificate_bytes_no_extensions_raises(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "v1_cert.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Could not find any extensions in TBS certificate",
+        ):
+            cert.tbs_precertificate_bytes
+
+    def test_tbs_precertificate_bytes_missing_extension_raises(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        # This cert doesn't have an SCT list extension, so it will throw a
+        # `ValueError` when we try to retrieve the property
+        with pytest.raises(
+            ValueError,
+            match="Could not find pre-certificate SCT list extension",
+        ):
+            cert.tbs_precertificate_bytes
+
+    def test_tbs_precertificate_bytes_strips_scts(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        expected_tbs_precertificate_bytes = load_vectors_from_file(
+            filename=os.path.join("x509", "cryptography-scts-tbs-precert.der"),
+            loader=lambda data: data.read(),
+            mode="rb",
+        )
+        assert (
+            expected_tbs_precertificate_bytes == cert.tbs_precertificate_bytes
+        )
+        assert cert.tbs_precertificate_bytes != cert.tbs_certificate_bytes
+
     def test_issuer(self, backend):
         cert = _load_cert(
             os.path.join(

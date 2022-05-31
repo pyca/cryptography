@@ -155,6 +155,7 @@ class ExtendedKeyUsageOID:
     SMARTCARD_LOGON = ObjectIdentifier("1.3.6.1.4.1.311.20.2.2")
     KERBEROS_PKINIT_KDC = ObjectIdentifier("1.3.6.1.5.2.3.5")
     IPSEC_IKE = ObjectIdentifier("1.3.6.1.5.5.7.3.17")
+    CERTIFICATE_TRANSPARENCY = ObjectIdentifier("1.3.6.1.4.1.11129.2.4.4")
 
 
 class AuthorityInformationAccessOID:

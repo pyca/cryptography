@@ -462,6 +462,30 @@ X.509 Certificate Object
        An :class:`~cryptography.exceptions.InvalidSignature` exception will be
        raised if the signature fails to verify.
 
+
+    .. attribute:: tbs_precertificate_bytes
+
+        .. versionadded:: 38.0
+
+        :type: bytes
+
+        :raises ValueError: If the certificate doesn't have the expected
+            Certificate Transparency extensions.
+
+        The DER encoded bytes payload (as defined by :rfc:`6962`) that is hashed
+        and then signed by the private key of the pre-certificate's issuer.
+        This data may be used to validate a Signed Certificate Timestamp's
+        signature, but use extreme caution as SCT validation is a complex
+        problem that involves much more than just signature checks.
+
+        This method is primarily useful in the context of programs that
+        interact with and verify the products of Certificate Transparency logs,
+        as specified in :rfc:`6962`. If you are not directly interacting with a
+        Certificate Transparency log, this method unlikely to be what you
+        want. To make unintentional misuse less likely, it raises a
+        ``ValueError`` if the underlying certificate does not contain the
+        expected Certificate Transparency extensions.
+
     .. method:: public_bytes(encoding)
 
         .. versionadded:: 1.0
@@ -3174,6 +3198,15 @@ instances. The following common OIDs are available as constants.
         is used to denote that a certificate may be assigned to an IPSEC SA,
         and can be used by the assignee to initiate an IPSec Internet Key
         Exchange. For more information see :rfc:`4945`.
+
+    .. attribute:: CERTIFICATE_TRANSPARENCY
+
+        .. versionadded:: 38.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.4"``. This
+        is used to denote that a certificate may be used as a pre-certificate
+        signing certificate for Certificate Transparency log operation
+        purposes. For more information see :rfc:`6962`.
 
 
 .. class:: AuthorityInformationAccessOID
