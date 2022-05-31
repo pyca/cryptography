@@ -469,16 +469,22 @@ X.509 Certificate Object
 
         :type: bytes
 
+        :raises ValueError: If the certificate doesn't have the expected
+            Certificate Transparency extensions.
+
         The DER encoded bytes payload (as defined by :rfc:`6962`) that is hashed
         and then signed by the private key of the pre-certificate's issuer.
         This data may be used to validate a Signed Certificate Timestamp's
         signature, but use extreme caution as SCT validation is a complex
         problem that involves much more than just signature checks.
 
-        .. note::
-
-            This method is not particularly useful outside of Certificate
-            Transparency contexts.
+        This method is primarily useful in the context of programs that
+        interact with and verify the products of Certificate Transparency logs,
+        as specified in :rfc:`6962`. If you are not directly interacting with a
+        Certificate Transparency log, this method unlikely to be what you
+        want. To make unintentional misuse less likely, it raises a
+        ``ValueError`` if the underlying certificate does not contain the
+        expected Certificate Transparency extensions.
 
     .. method:: public_bytes(encoding)
 
