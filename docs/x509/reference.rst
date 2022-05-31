@@ -3204,8 +3204,8 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 38.0
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.4"``. This
-        is used to denote that a certificate may be used as a "Precertificate
-        Signing Certificate" for Certificate Transparency log operation
+        is used to denote that a certificate may be used as a pre-certificate
+        signing certificate for Certificate Transparency log operation
         purposes. For more information see :rfc:`6962`.
 
 

@@ -281,7 +281,7 @@ X.509
   ``explicitText`` entry with a ``BMPString`` type.
 * ``scottishpower-bitstring-dn.pem`` - An ECDSA certificate that contains
   a subject DN with a bit string type.
-* ``cryptography-scts-tbs-precert.der`` - The "to-be-signed" precertificate
+* ``cryptography-scts-tbs-precert.der`` - The "to-be-signed" pre-certificate
   bytes from ``cryptography-scts.pem``, with the SCT list extension removed.
 
 Custom X.509 Vectors
