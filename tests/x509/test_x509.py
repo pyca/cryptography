@@ -929,9 +929,26 @@ class TestRSACertificate:
         # `ValueError` when we try to retrieve the property
         with pytest.raises(
             ValueError,
-            match="Could not find SCT list extension in TBS precertificate",
+            match="Could not find pre-certificate SCT list extension",
         ):
             cert.tbs_precertificate_bytes
+
+    def test_tbs_precertificate_bytes_strips_scts(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography-scts.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+
+        expected_tbs_precertificate_bytes = load_vectors_from_file(
+            filename=os.path.join("x509", "cryptography-scts-tbs-precert.der"),
+            loader=lambda data: data.read(),
+            mode="rb",
+        )
+        assert (
+            expected_tbs_precertificate_bytes == cert.tbs_precertificate_bytes
+        )
+        assert cert.tbs_precertificate_bytes != cert.tbs_certificate_bytes
 
     def test_issuer(self, backend):
         cert = _load_cert(

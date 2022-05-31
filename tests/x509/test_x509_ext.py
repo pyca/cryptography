@@ -6154,23 +6154,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             b"\x85\x1f%\xc0#N\\\xdeK\x90d\xe0\x8d<{\xca\xdbdc\xeft\x87g\x10"
         )
 
-    def test_strip_scts(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "cryptography-scts.pem"),
-            x509.load_pem_x509_certificate,
-            backend,
-        )
-
-        expected_tbs_precertificate_bytes = load_vectors_from_file(
-            filename=os.path.join("x509", "cryptography-scts-tbs-precert.der"),
-            loader=lambda data: data.read(),
-            mode="rb",
-        )
-        assert (
-            expected_tbs_precertificate_bytes == cert.tbs_precertificate_bytes
-        )
-        assert cert.tbs_precertificate_bytes != cert.tbs_certificate_bytes
-
 
 class TestInvalidExtension:
     def test_invalid_certificate_policies_data(self, backend):
