@@ -918,7 +918,7 @@ class TestRSACertificate:
         ),
         skip_message="Does not support SHA-1 signature.",
     )
-    def test_tbs_precertificate_bytes(self, backend):
+    def test_tbs_precertificate_bytes_raises(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
@@ -927,18 +927,11 @@ class TestRSACertificate:
 
         # This cert doesn't have an SCT list extension, so it will throw a
         # `ValueError` when we try to retrieve the property
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match="Could not find SCT list extension in TBS precertificate",
+        ):
             cert.tbs_precertificate_bytes
-
-        public_key = cert.public_key()
-        assert isinstance(public_key, rsa.RSAPublicKey)
-        assert cert.signature_hash_algorithm is not None
-        public_key.verify(
-            cert.signature,
-            cert.tbs_certificate_bytes,
-            padding.PKCS1v15(),
-            cert.signature_hash_algorithm,
-        )
 
     def test_issuer(self, backend):
         cert = _load_cert(
