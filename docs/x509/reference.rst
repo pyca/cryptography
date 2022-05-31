@@ -3193,6 +3193,15 @@ instances. The following common OIDs are available as constants.
         and can be used by the assignee to initiate an IPSec Internet Key
         Exchange. For more information see :rfc:`4945`.
 
+    .. attribute:: CERTIFICATE_TRANSPARENCY
+
+        .. versionadded:: 38.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.4"``. This
+        is used to denote that a certificate may be used as a "Precertificate
+        Signing Certificate" for Certificate Transparency log operation
+        purposes. For more information see :rfc:`6962`.
+
 
 .. class:: AuthorityInformationAccessOID
 
