@@ -233,7 +233,7 @@ impl Certificate {
                     .collect();
                 if filtered_extensions.len() == ext_count {
                     return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "Could not find SCT list extension in TBS certificate",
+                        "Could not find SCT list extension in TBS precertificate",
                     )));
                 }
                 let filtered_extensions: x509::Extensions<'_> = Asn1ReadableOrWritable::new_write(
