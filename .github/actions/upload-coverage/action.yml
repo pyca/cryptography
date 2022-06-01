@@ -1,11 +1,6 @@
 name: Upload Coverage
 description: Upload coverage files
 
-inputs:
-  name:
-    description: "Job name"
-    required: true
-
 runs:
   using: "composite"
 
