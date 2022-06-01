@@ -32,8 +32,8 @@ Changelog
 * Using MD5 or SHA1 in :class:`~cryptography.x509.CertificateBuilder` and
   other X.509 builders is deprecated and support will be removed in the next
   version.
-* Added additional APIs exposing
-  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp` fields, including
+* Added additional APIs to
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`, including
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature_hash_algorithm`,
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature_algorithm`,
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature`, and
