@@ -33,14 +33,11 @@ Changelog
   other X.509 builders is deprecated and support will be removed in the next
   version.
 * Added additional APIs exposing
-  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp` internals, including
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp` fields, including
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature_hash_algorithm`,
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature_algorithm`,
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.signature`, and
   :attr:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp.extension_bytes`.
-* Added the :class:`~cryptography.x509.certificate_transparency.SignatureAlgorithm`
-  enum, representing valid signature algorithms per :rfc:`6962`.
-* Added :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CERTIFICATE_TRANSPARENCY`.
 * Added :attr:`~cryptography.x509.Certificate.tbs_precertificate_bytes`, allowing
   users to access the to-be-signed pre-certificate data needed for signed
   certificate timestamp verification.
