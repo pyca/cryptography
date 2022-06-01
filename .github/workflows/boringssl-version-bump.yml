@@ -43,7 +43,7 @@ jobs:
           title: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
           author: "BoringSSL Bot <pyca-boringbot@users.noreply.github.com>"
           body: |
-            [Commit: ${{{ steps.check-sha.outputs.LAST_COMMIT }}](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.LAST_COMMIT }})
+            [Commit: ${{ steps.check-sha.outputs.BORING_SHA }}](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.BORING_SHA }})
 
             [Diff](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.LAST_COMMIT }}..${{ steps.check-sha.outputs.BORING_SHA }}) between the last commit hash merged to this repository and the new commit.
           token: ${{ steps.generate-token.outputs.token }}
