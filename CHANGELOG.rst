@@ -42,7 +42,7 @@ Changelog
   enum, representing valid signature algorithms per :rfc:`6962`.
 * Added :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CERTIFICATE_TRANSPARENCY`.
 * Added :attr:`~cryptography.x509.Certificate.tbs_precertificate_bytes`, allowing
-  users to access the to-be-signed precertificate data needed for signed
+  users to access the to-be-signed pre-certificate data needed for signed
   certificate timestamp verification.
 
 .. _v37-0-2:
