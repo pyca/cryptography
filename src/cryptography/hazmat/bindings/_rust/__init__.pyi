@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
+
 def check_pkcs7_padding(data: bytes) -> bool: ...
 def check_ansix923_padding(data: bytes) -> bool: ...
 
@@ -11,3 +13,17 @@ class ObjectIdentifier:
     def dotted_string(self) -> str: ...
     @property
     def _name(self) -> str: ...
+
+T = typing.TypeVar("T")
+
+class FixedPool(typing.Generic[T]):
+    def __init__(
+        self,
+        create: typing.Callable[[], T],
+        destroy: typing.Callable[[T], None],
+    ) -> None: ...
+    def acquire(self) -> PoolAcquisition[T]: ...
+
+class PoolAcquisition(typing.Generic[T]):
+    def __enter__(self) -> T: ...
+    def __exit__(self, exc_type, exc_value, exc_tb) -> None: ...
