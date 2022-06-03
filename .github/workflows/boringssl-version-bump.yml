@@ -37,7 +37,7 @@ jobs:
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
         if: steps.check-sha.outputs.BORING_SHA
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@f094b77505fb89581e68a1163fbd2fffece39da1
+        uses: peter-evans/create-pull-request@923ad837f191474af6b1721408744feb989a4c27
         with:
           commit-message: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
           title: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
