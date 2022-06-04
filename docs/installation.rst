@@ -133,8 +133,8 @@ Debian/Ubuntu
     $ sudo apt-get install build-essential libssl-dev libffi-dev \
         python3-dev cargo
 
-Fedora/RHEL 8/CentOS 8
-~~~~~~~~~~~~~~~~~~~~~~
+Fedora/RHEL/CentOS
+~~~~~~~~~~~~~~~~~~
 
 .. warning::
 
