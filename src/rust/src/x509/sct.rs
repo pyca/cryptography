@@ -49,7 +49,7 @@ pub(crate) enum LogEntryType {
     PreCertificate,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum HashAlgorithm {
     Md5,
     Sha1,
@@ -93,7 +93,7 @@ impl HashAlgorithm {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum SignatureAlgorithm {
     Rsa,
     Dsa,
