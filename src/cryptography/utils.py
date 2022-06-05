@@ -45,15 +45,6 @@ def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     )
 
 
-def strip_annotation(signature: inspect.Signature) -> inspect.Signature:
-    return inspect.Signature(
-        [
-            param.replace(annotation=inspect.Parameter.empty)
-            for param in signature.parameters.values()
-        ]
-    )
-
-
 class _DeprecatedValue:
     def __init__(self, value: object, message: str, warning_class):
         self.value = value
