@@ -46,10 +46,6 @@ def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     )
 
 
-class InterfaceNotImplemented(Exception):
-    pass
-
-
 def strip_annotation(signature: inspect.Signature) -> inspect.Signature:
     return inspect.Signature(
         [
@@ -57,30 +53,6 @@ def strip_annotation(signature: inspect.Signature) -> inspect.Signature:
             for param in signature.parameters.values()
         ]
     )
-
-
-def verify_interface(
-    iface: abc.ABCMeta, klass: object, *, check_annotations: bool = False
-):
-    for method in iface.__abstractmethods__:
-        if not hasattr(klass, method):
-            raise InterfaceNotImplemented(
-                "{} is missing a {!r} method".format(klass, method)
-            )
-        if isinstance(getattr(iface, method), abc.abstractproperty):
-            # Can't properly verify these yet.
-            continue
-        sig = inspect.signature(getattr(iface, method))
-        actual = inspect.signature(getattr(klass, method))
-        if check_annotations:
-            ok = sig == actual
-        else:
-            ok = strip_annotation(sig) == strip_annotation(actual)
-        if not ok:
-            raise InterfaceNotImplemented(
-                "{}.{}'s signature differs from the expected. Expected: "
-                "{!r}. Received: {!r}".format(klass, method, sig, actual)
-            )
 
 
 class _DeprecatedValue:
