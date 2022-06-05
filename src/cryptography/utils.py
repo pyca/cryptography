@@ -4,7 +4,6 @@
 
 
 import enum
-import inspect
 import sys
 import types
 import typing
