@@ -129,6 +129,10 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
     .. versionadded:: 0.6
 
+    .. note::
+        SSH private keys are a different format and must be loaded with
+        :func:`load_ssh_private_key`.
+
     Deserialize a private key from PEM encoded data to one of the supported
     asymmetric private key types.
 
