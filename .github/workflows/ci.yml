@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-python@v3.1.2
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
@@ -98,7 +98,7 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load cache
-        uses: actions/cache@v3.0.3
+        uses: actions/cache@v3.0.4
         id: ossl-cache
         timeout-minutes: 5
         with:
@@ -153,7 +153,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
@@ -206,7 +206,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
@@ -260,7 +260,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         id: cargo-cache
         timeout-minutes: 5
         with:
@@ -354,7 +354,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
@@ -432,7 +432,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
@@ -503,7 +503,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.0.3
+      - uses: actions/cache@v3.0.4
         timeout-minutes: 5
         with:
           path: |
