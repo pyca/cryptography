@@ -41,6 +41,7 @@ static const long Cryptography_HAS_OP_NO_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
 static const long Cryptography_HAS_SSL_SET_SSL_CTX;
 static const long Cryptography_HAS_SSL_OP_NO_TICKET;
+static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
@@ -602,6 +603,13 @@ static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 1;
 #else
 static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 0;
 static const long SSL_OP_NO_RENEGOTIATION = 0;
+#endif
+
+#ifdef SSL_OP_IGNORE_UNEXPECTED_EOF
+static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF = 1;
+#else
+static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF = 0;
+static const long SSL_OP_IGNORE_UNEXPECTED_EOF = 1;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
