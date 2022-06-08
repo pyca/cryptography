@@ -309,6 +309,12 @@ def cryptography_has_pkcs12_set_mac() -> typing.List[str]:
     return ["PKCS12_set_mac"]
 
 
+def cryptography_has_ssl_op_ignore_unexpected_eof() -> typing.List[str]:
+    return [
+        "SSL_OP_IGNORE_UNEXPECTED_EOF",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -369,4 +375,7 @@ CONDITIONAL_NAMES = {
         cryptography_has_unexpected_eof_while_reading
     ),
     "Cryptography_HAS_PKCS12_SET_MAC": cryptography_has_pkcs12_set_mac,
+    "Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF": (
+        cryptography_has_ssl_op_ignore_unexpected_eof
+    ),
 }
