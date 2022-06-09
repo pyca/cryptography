@@ -4,6 +4,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+
 import os
 import platform
 import sys
@@ -36,25 +37,13 @@ sys.path.insert(0, src_dir)
 
 try:
     # See setup.cfg for most of the config metadata.
-    setup(
-        cffi_modules=[
-            "src/_cffi_src/build_openssl.py:ffi",
-        ],
-        rust_extensions=[
-            RustExtension(
-                "_rust",
-                "src/rust/Cargo.toml",
-                py_limited_api=True,
-                # Enable abi3 mode if we're not using PyPy.
-                features=(
-                    []
-                    if platform.python_implementation() == "PyPy"
-                    else ["pyo3/abi3-py36"]
-                ),
-                rust_version=">=1.48.0",
-            )
-        ],
-    )
+    setup(cffi_modules=["src/_cffi_src/build_openssl.py:ffi", ], 
+          rust_extensions=[RustExtension("_rust", 
+                                         "src/rust/Cargo.toml", 
+                                         py_limited_api=True, 
+                                         # Enable abi3 mode if we're not using PyPy. 
+                                         features=([] if platform.python_implementation() == "PyPy" else ["pyo3/abi3-py36"]), 
+                                         rust_version=">=1.48.0", )], )
 except:  # noqa: E722
     # Note: This is a bare exception that re-raises so that we don't interfere
     # with anything the installation machinery might want to do. Because we
