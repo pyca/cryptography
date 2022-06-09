@@ -14,12 +14,16 @@ message but an attacker can create bogus messages and force the application to
 decrypt them. In many contexts, a lack of authentication on encrypted messages
 can result in a loss of secrecy as well.
 
-For this reason it is **strongly** recommended to combine encryption with a
-message authentication code, such as :doc:`HMAC </hazmat/primitives/mac/hmac>`,
-in an "encrypt-then-MAC" formulation as `described by Colin Percival`_.
-``cryptography`` includes a recipe named :doc:`/fernet` that does this for you.
-**To minimize the risk of security issues you should evaluate Fernet to see if
-it fits your needs before implementing anything using this module.**
+For this reason in nearly all contexts it is necessary to combine encryption
+with a message authentication code, such as
+:doc:`HMAC </hazmat/primitives/mac/hmac>`, in an "encrypt-then-MAC"
+formulation as `described by Colin Percival`_. ``cryptography`` includes a
+recipe named :doc:`/fernet` that does this for you. **To minimize the risk of
+security issues you should evaluate Fernet to see if it fits your needs before
+implementing anything using this module.** If :doc:`/fernet` is not
+appropriate for your use-case then you may still benefit from
+:doc:`/hazmat/primitives/aead` which combines encryption and authentication
+securely.
 
 .. class:: Cipher(algorithm, mode)
 
