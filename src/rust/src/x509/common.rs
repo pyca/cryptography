@@ -632,10 +632,10 @@ fn encode_extension_value<'p>(
         return Ok(py_data);
     }
 
-    return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
         "Extension not supported: {}",
         oid
-    )));
+    )))
 }
 
 pub(crate) fn chrono_to_py<'p>(
