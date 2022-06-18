@@ -16,7 +16,6 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -47,7 +46,11 @@ from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
-from ..utils import load_nist_vectors, load_vectors_from_file
+from ..utils import (
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
+)
 
 
 class DummyExtension(x509.ExtensionType):
@@ -152,7 +155,7 @@ class TestCertificateRevocationList:
             backend,
         )
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             crl.signature_hash_algorithm
 
     def test_invalid_version(self, backend):
@@ -1342,7 +1345,7 @@ class TestRSACertificate:
             x509.load_pem_x509_certificate,
             backend,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             cert.signature_hash_algorithm
 
     def test_public_bytes_pem(self, backend):
@@ -1526,7 +1529,7 @@ class TestRSACertificateRequest:
             x509.load_pem_x509_csr,
             backend,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             request.signature_hash_algorithm
 
     def test_invalid_version(self, backend):
