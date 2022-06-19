@@ -119,6 +119,12 @@ def cryptography_has_fips() -> typing.List[str]:
     ]
 
 
+def cryptography_has_ssl_sigalgs() -> typing.List[str]:
+    return [
+        "SSL_CTX_set1_sigalgs_list",
+    ]
+
+
 def cryptography_has_psk() -> typing.List[str]:
     return [
         "SSL_CTX_use_psk_identity_hint",
@@ -345,6 +351,7 @@ CONDITIONAL_NAMES = {
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
+    "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
