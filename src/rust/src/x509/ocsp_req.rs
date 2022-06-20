@@ -84,10 +84,12 @@ impl OCSPRequest {
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
                 Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
-                    exceptions.getattr("UnsupportedAlgorithm")?.call1((format!(
-                        "Signature algorithm OID: {} not recognized",
-                        cert_id.hash_algorithm.oid
-                    ),))?,
+                    exceptions
+                        .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
+                        .call1((format!(
+                            "Signature algorithm OID: {} not recognized",
+                            cert_id.hash_algorithm.oid
+                        ),))?,
                 )))
             }
         }
@@ -131,8 +133,8 @@ impl OCSPRequest {
     ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
-            .getattr("Encoding")?
-            .getattr("DER")?;
+            .getattr(crate::intern!(py, "Encoding"))?
+            .getattr(crate::intern!(py, "DER"))?;
         if encoding != der {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
@@ -182,11 +184,11 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         pyo3::PyRef<'_, x509::Certificate>,
         pyo3::PyRef<'_, x509::Certificate>,
         &pyo3::PyAny,
-    ) = builder.getattr("_request")?.extract()?;
+    ) = builder.getattr(crate::intern!(py, "_request"))?.extract()?;
 
     let extensions = x509::common::encode_extensions(
         py,
-        builder.getattr("_extensions")?,
+        builder.getattr(crate::intern!(py, "_extensions"))?,
         extensions::encode_extension,
     )?;
     let reqs = [Request {

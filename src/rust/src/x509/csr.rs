@@ -111,7 +111,7 @@ impl CertificateSigningRequest {
             &asn1::write_single(&self.raw.borrow_value().csr_info.spki),
         );
         py.import("cryptography.hazmat.primitives.serialization")?
-            .getattr("load_der_public_key")?
+            .getattr(crate::intern!(py, "load_der_public_key"))?
             .call1((serialized,))
     }
 
@@ -147,7 +147,7 @@ impl CertificateSigningRequest {
     ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
         let sig_oids_to_hash = py
             .import("cryptography.hazmat._oid")?
-            .getattr("_SIG_OIDS_TO_HASH")?;
+            .getattr(crate::intern!(py, "_SIG_OIDS_TO_HASH"))?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
@@ -175,12 +175,12 @@ impl CertificateSigningRequest {
     ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
         let encoding_class = py
             .import("cryptography.hazmat.primitives.serialization")?
-            .getattr("Encoding")?;
+            .getattr(crate::intern!(py, "Encoding"))?;
 
         let result = asn1::write_single(self.raw.borrow_value());
-        if encoding == encoding_class.getattr("DER")? {
+        if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
             Ok(pyo3::types::PyBytes::new(py, &result))
-        } else if encoding == encoding_class.getattr("PEM")? {
+        } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
             let pem = pem::encode_config(
                 &pem::Pem {
                     tag: "CERTIFICATE REQUEST".to_string(),
@@ -204,7 +204,9 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn36")?;
+        let cryptography_warning = py
+            .import("cryptography.utils")?
+            .getattr(crate::intern!(py, "DeprecatedIn36"))?;
         let warnings = py.import("warnings")?;
         warnings.call_method1(
             "warn",
@@ -288,7 +290,7 @@ impl CertificateSigningRequest {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr("backend")?;
+            .getattr(crate::intern!(py, "backend"))?;
         backend.call_method1("_csr_is_signature_valid", (slf,))
     }
 
@@ -299,7 +301,9 @@ impl CertificateSigningRequest {
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let cryptography_warning = py.import("cryptography.utils")?.getattr("DeprecatedIn35")?;
+        let cryptography_warning = py
+            .import("cryptography.utils")?
+            .getattr(crate::intern!(py, "DeprecatedIn35"))?;
         let warnings = py.import("warnings")?;
         warnings.call_method1(
             "warn",
@@ -310,7 +314,7 @@ impl CertificateSigningRequest {
         )?;
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr("backend")?;
+            .getattr(crate::intern!(py, "backend"))?;
         Ok(backend.call_method1("_csr2ossl", (slf,))?)
     }
 }
@@ -336,7 +340,7 @@ fn load_der_x509_csr(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certific
         let x509_module = py.import("cryptography.x509")?;
         return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
             x509_module
-                .getattr("InvalidVersion")?
+                .getattr(crate::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid CSR version", version), version))?,
         )));
     }
@@ -356,10 +360,12 @@ fn create_x509_csr(
 ) -> PyAsn1Result<CertificateSigningRequest> {
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
-    let der_encoding = serialization_mod.getattr("Encoding")?.getattr("DER")?;
+    let der_encoding = serialization_mod
+        .getattr(crate::intern!(py, "Encoding"))?
+        .getattr(crate::intern!(py, "DER"))?;
     let spki_format = serialization_mod
-        .getattr("PublicFormat")?
-        .getattr("SubjectPublicKeyInfo")?;
+        .getattr(crate::intern!(py, "PublicFormat"))?
+        .getattr(crate::intern!(py, "SubjectPublicKeyInfo"))?;
 
     let spki_bytes = private_key
         .call_method0("public_key")?
@@ -370,7 +376,7 @@ fn create_x509_csr(
     let ext_bytes;
     if let Some(exts) = x509::common::encode_extensions(
         py,
-        builder.getattr("_extensions")?,
+        builder.getattr(crate::intern!(py, "_extensions"))?,
         x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts);
@@ -382,7 +388,7 @@ fn create_x509_csr(
         })
     }
 
-    for py_attr in builder.getattr("_attributes")?.iter()? {
+    for py_attr in builder.getattr(crate::intern!(py, "_attributes"))?.iter()? {
         let (py_oid, value, tag): (&pyo3::PyAny, &[u8], Option<u8>) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
         let tag = if let Some(tag) = tag {
@@ -404,9 +410,11 @@ fn create_x509_csr(
         })
     }
 
+    let py_subject_name = builder.getattr(crate::intern!(py, "_subject_name"))?;
+
     let csr_info = CertificationRequestInfo {
         version: 0,
-        subject: x509::common::encode_name(py, builder.getattr("_subject_name")?)?,
+        subject: x509::common::encode_name(py, py_subject_name)?,
         spki: asn1::parse_single(spki_bytes)?,
         attributes: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };

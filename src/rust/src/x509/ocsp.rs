@@ -62,7 +62,10 @@ impl CertID<'_> {
 
         Ok(CertID {
             hash_algorithm: x509::AlgorithmIdentifier {
-                oid: HASH_NAME_TO_OIDS[hash_algorithm.getattr("name")?.extract::<&str>()?].clone(),
+                oid: HASH_NAME_TO_OIDS[hash_algorithm
+                    .getattr(crate::intern!(py, "name"))?
+                    .extract::<&str>()?]
+                .clone(),
                 params: Some(*x509::sign::NULL_TLV),
             },
             issuer_name_hash,
@@ -79,7 +82,7 @@ pub(crate) fn hash_data<'p>(
 ) -> pyo3::PyResult<&'p [u8]> {
     let hash = py
         .import("cryptography.hazmat.primitives.hashes")?
-        .getattr("Hash")?
+        .getattr(crate::intern!(py, "Hash"))?
         .call1((py_hash_alg,))?;
     hash.call_method1("update", (data,))?;
     hash.call_method0("finalize")?.extract()
