@@ -526,7 +526,6 @@ jobs:
           toolchain: ${{ matrix.RUST }}
           override: true
           default: true
-      - run: python -m pip install -U pip wheel
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip install .
         env:
