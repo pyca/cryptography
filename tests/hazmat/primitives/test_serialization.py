@@ -10,7 +10,6 @@ import textwrap
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -46,7 +45,7 @@ from .utils import (
     _check_rsa_private_numbers,
 )
 from ...doubles import DummyKeySerializationEncryption
-from ...utils import load_vectors_from_file
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
 def _skip_fips_format(key_path, password, backend):
@@ -1017,7 +1016,7 @@ class TestRSASSHSerialization:
     def test_load_ssh_public_key_unsupported(self, backend):
         ssh_key = b"ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY="
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_bad_format(self, backend):
@@ -2092,11 +2091,11 @@ class TestOpenSSHSerialization:
             lambda f: f.read(),
             mode="rb",
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             load_ssh_private_key(priv_data, b"password", backend)
 
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             private_key.private_bytes(
                 Encoding.PEM,
                 PrivateFormat.OpenSSH,
@@ -2172,12 +2171,12 @@ class TestOpenSSHSerialization:
     def test_load_ssh_private_key_errors(self, backend):
         # bad kdf
         data = self.make_file(kdfname=b"unknown", ciphername=b"aes256-ctr")
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             load_ssh_private_key(data, None, backend)
 
         # bad cipher
         data = self.make_file(ciphername=b"unknown", kdfname=b"bcrypt")
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             load_ssh_private_key(data, None, backend)
 
         # bad magic
@@ -2198,7 +2197,7 @@ class TestOpenSSHSerialization:
     def test_ssh_errors_bad_values(self, backend):
         # bad curve
         data = self.make_file(pub_type=b"ecdsa-sha2-nistp444")
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             load_ssh_private_key(data, None, backend)
 
         # curve mismatch

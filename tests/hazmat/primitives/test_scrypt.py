@@ -11,11 +11,14 @@ import pytest
 from cryptography.exceptions import (
     AlreadyFinalized,
     InvalidKey,
-    UnsupportedAlgorithm,
 )
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt, _MEM_LIMIT
 
-from tests.utils import load_nist_vectors, load_vectors_from_file
+from tests.utils import (
+    load_nist_vectors,
+    load_vectors_from_file,
+    raises_unsupported_algorithm,
+)
 
 vectors = load_vectors_from_file(
     os.path.join("KDF", "scrypt.txt"), load_nist_vectors
@@ -50,7 +53,7 @@ def test_memory_limit_skip():
 def test_unsupported_backend(backend):
     # This test is currently exercised by LibreSSL, which does
     # not support scrypt
-    with pytest.raises(UnsupportedAlgorithm):
+    with raises_unsupported_algorithm(None):
         Scrypt(b"NaCl", 64, 1024, 8, 16)
 
 

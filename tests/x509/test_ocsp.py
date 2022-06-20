@@ -10,7 +10,6 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
@@ -18,7 +17,7 @@ from cryptography.x509 import ocsp
 
 from .test_x509 import DummyExtension, _load_cert
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
-from ..utils import load_vectors_from_file
+from ..utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
 def _load_data(filename, loader):
@@ -139,7 +138,7 @@ class TestOCSPRequest:
             os.path.join("x509", "ocsp", "req-invalid-hash-alg.der"),
             ocsp.load_der_ocsp_request,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             req.hash_algorithm
 
     def test_serialize_request(self):
@@ -1165,7 +1164,7 @@ class TestOCSPResponse:
         assert resp.signature_algorithm_oid == x509.ObjectIdentifier(
             "1.2.840.113549.1.1.2"
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             resp.signature_hash_algorithm
 
     def test_unknown_hash_algorithm(self):
@@ -1173,7 +1172,7 @@ class TestOCSPResponse:
             os.path.join("x509", "ocsp", "resp-unknown-hash-alg.der"),
             ocsp.load_der_ocsp_response,
         )
-        with pytest.raises(UnsupportedAlgorithm):
+        with raises_unsupported_algorithm(None):
             resp.hash_algorithm
 
     def test_load_responder_key_hash(self):
