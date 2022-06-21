@@ -8,17 +8,16 @@ use crate::x509::oid;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
-pub(crate) static OIDS_TO_HASH: Lazy<HashMap<&'static asn1::ObjectIdentifier, &'static str>> =
-    Lazy::new(|| {
-        let mut h = HashMap::new();
-        h.insert(&oid::SHA1_OID, "SHA1");
-        h.insert(&oid::SHA224_OID, "SHA224");
-        h.insert(&oid::SHA256_OID, "SHA256");
-        h.insert(&oid::SHA384_OID, "SHA384");
-        h.insert(&oid::SHA512_OID, "SHA512");
-        h
-    });
-pub(crate) static HASH_NAME_TO_OIDS: Lazy<HashMap<&'static str, &'static asn1::ObjectIdentifier>> =
+pub(crate) static OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+    let mut h = HashMap::new();
+    h.insert(&oid::SHA1_OID, "SHA1");
+    h.insert(&oid::SHA224_OID, "SHA224");
+    h.insert(&oid::SHA256_OID, "SHA256");
+    h.insert(&oid::SHA384_OID, "SHA384");
+    h.insert(&oid::SHA512_OID, "SHA512");
+    h
+});
+pub(crate) static HASH_NAME_TO_OIDS: Lazy<HashMap<&str, &asn1::ObjectIdentifier>> =
     Lazy::new(|| {
         let mut h = HashMap::new();
         h.insert("sha1", &oid::SHA1_OID);
