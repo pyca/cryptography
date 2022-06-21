@@ -65,26 +65,34 @@ pub(crate) fn encode_distribution_points<'p>(
     py: pyo3::Python<'p>,
     py_dps: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<Vec<certificate::DistributionPoint<'p>>> {
+    #[derive(pyo3::prelude::FromPyObject)]
+    struct PyDistributionPoint<'a> {
+        crl_issuer: Option<&'a pyo3::PyAny>,
+        full_name: Option<&'a pyo3::PyAny>,
+        relative_name: Option<&'a pyo3::PyAny>,
+        reasons: Option<&'a pyo3::PyAny>,
+    }
+
     let mut dps = vec![];
     for py_dp in py_dps.iter()? {
-        let py_dp = py_dp?;
+        let py_dp = py_dp?.extract::<PyDistributionPoint<'_>>()?;
 
-        let crl_issuer = if py_dp.getattr("crl_issuer")?.is_true()? {
-            let gns = x509::common::encode_general_names(py, py_dp.getattr("crl_issuer")?)?;
+        let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
+            let gns = x509::common::encode_general_names(py, py_crl_issuer)?;
             Some(x509::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(gns),
             ))
         } else {
             None
         };
-        let distribution_point = if py_dp.getattr("full_name")?.is_true()? {
-            let gns = x509::common::encode_general_names(py, py_dp.getattr("full_name")?)?;
+        let distribution_point = if let Some(py_full_name) = py_dp.full_name {
+            let gns = x509::common::encode_general_names(py, py_full_name)?;
             Some(certificate::DistributionPointName::FullName(
                 x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
             ))
-        } else if py_dp.getattr("relative_name")?.is_true()? {
+        } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
-            for py_name_entry in py_dp.getattr("relative_name")?.iter()? {
+            for py_name_entry in py_relative_name.iter()? {
                 name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
             }
             Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
@@ -93,8 +101,7 @@ pub(crate) fn encode_distribution_points<'p>(
         } else {
             None
         };
-        let reasons = if py_dp.getattr("reasons")?.is_true()? {
-            let py_reasons = py_dp.getattr("reasons")?;
+        let reasons = if let Some(py_reasons) = py_dp.reasons {
             let reasons = certificate::encode_distribution_point_reasons(py, py_reasons)?;
             Some(x509::Asn1ReadableOrWritable::new_write(reasons))
         } else {
