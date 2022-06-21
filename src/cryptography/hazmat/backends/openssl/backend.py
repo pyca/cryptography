@@ -713,7 +713,9 @@ class Backend:
             return _DSAPublicKey(self, dsa_cdata, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_EC:
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
-            self.openssl_assert(ec_cdata != self._ffi.NULL)
+            if ec_cdata == self._ffi.NULL:
+                errors = self._consume_errors_with_text()
+                raise ValueError("Unable to load EC key", errors)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
         elif key_type in self._dh_types:
