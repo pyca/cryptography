@@ -4,4 +4,5 @@
     - [ ] Wait for the Github Actions job to complete
 - [ ] Changelog entry
 - [ ] Release
+- [ ] Send announcement to mailing lists
 - [ ] Forward port changelog entry (if releasing from release branch)
