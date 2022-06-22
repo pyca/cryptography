@@ -45,8 +45,12 @@ Changelog
 
 .. _v37-0-3:
 
-37.0.3 - 2022-06-21
-~~~~~~~~~~~~~~~~~~~
+37.0.3 - 2022-06-21 (YANKED)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+    This release was subsequently yanked from PyPI due to a regerssion in OpenSSL.
 
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.4.
 
