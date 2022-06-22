@@ -50,7 +50,7 @@ Changelog
 
 .. attention::
 
-    This release was subsequently yanked from PyPI due to a regerssion in OpenSSL.
+    This release was subsequently yanked from PyPI due to a regression in OpenSSL.
 
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.4.
 
