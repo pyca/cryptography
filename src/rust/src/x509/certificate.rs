@@ -728,7 +728,7 @@ pub(crate) fn encode_distribution_point_reasons(
     Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, pyo3::prelude::FromPyObject)]
 pub(crate) struct BasicConstraints {
     #[default(false)]
     pub ca: bool,

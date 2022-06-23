@@ -115,10 +115,7 @@ pub(crate) fn encode_extension(
 ) -> pyo3::PyResult<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
-            let bc = certificate::BasicConstraints {
-                ca: ext.getattr("ca")?.extract::<bool>()?,
-                path_length: ext.getattr("path_length")?.extract::<Option<u64>>()?,
-            };
+            let bc = ext.extract::<certificate::BasicConstraints>()?;
             Ok(Some(asn1::write_single(&bc)))
         }
         &oid::SUBJECT_KEY_IDENTIFIER_OID => Ok(Some(asn1::write_single(
