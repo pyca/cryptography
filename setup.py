@@ -6,6 +6,9 @@
 
 import os
 import platform
+import re
+import shutil
+import subprocess
 import sys
 
 from setuptools import setup
@@ -99,7 +102,7 @@ except:  # noqa: E722
                 timeout=0.5,
                 encoding="utf8",
             ).stdout
-            version = rustc_output.strip().removeprefix("rustc ")
+            version = re.sub("^rustc ", "", rustc_output.strip())
         except subprocess.SubprocessError:
             pass
     print(f"    rustc: {version}")
