@@ -1568,7 +1568,7 @@ X.509 Extensions
 
         :param oid: An :class:`ObjectIdentifier` instance.
 
-        :returns: An instance of the extension class.
+        :returns: An instance of :class:`Extension`.
 
         :raises cryptography.x509.ExtensionNotFound: If the certificate does
             not have the extension requested.
@@ -1585,7 +1585,7 @@ X.509 Extensions
 
         :param extclass: An extension class.
 
-        :returns: An instance of the extension class.
+        :returns: An instance of :class:`Extension`.
 
         :raises cryptography.x509.ExtensionNotFound: If the certificate does
             not have the extension requested.
