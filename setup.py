@@ -93,8 +93,13 @@ except:  # noqa: E722
     if shutil.which("rustc") is not None:
         try:
             # If for any reason `rustc --version` fails, silently ignore it
-            rustc_output = subprocess.run(["rustc", "--version"], capture_output=True, timeout=0.5, encoding="utf8").stdout
-            version = rustc_output.rpartition(" ")[-1]
+            rustc_output = subprocess.run(
+                ["rustc", "--version"],
+                capture_output=True,
+                timeout=0.5,
+                encoding="utf8",
+            ).stdout
+            version = rustc_output.strip().removeprefix("rustc ")
         except subprocess.SubprocessError:
             pass
     print(f"    rustc: {version}")
