@@ -101,6 +101,7 @@ except:  # noqa: E722
                 capture_output=True,
                 timeout=0.5,
                 encoding="utf8",
+                check=True
             ).stdout
             version = re.sub("^rustc ", "", rustc_output.strip())
         except subprocess.SubprocessError:
