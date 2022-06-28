@@ -6,6 +6,9 @@
 
 import os
 import platform
+import re
+import shutil
+import subprocess
 import sys
 
 from setuptools import setup
@@ -89,6 +92,22 @@ except:  # noqa: E722
         except pkg_resources.DistributionNotFound:
             version = "n/a"
         print(f"    {dist}: {version}")
+    version = "n/a"
+    if shutil.which("rustc") is not None:
+        try:
+            # If for any reason `rustc --version` fails, silently ignore it
+            rustc_output = subprocess.run(
+                ["rustc", "--version"],
+                capture_output=True,
+                timeout=0.5,
+                encoding="utf8",
+                check=True,
+            ).stdout
+            version = re.sub("^rustc ", "", rustc_output.strip())
+        except subprocess.SubprocessError:
+            pass
+    print(f"    rustc: {version}")
+
     print(
         """\
     =============================DEBUG ASSISTANCE=============================
