@@ -237,7 +237,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      - run: python -m pip install -U pip wheel cffi setuptools-rust
+      - run: python -m pip install -U pip wheel
+      - run: python -m pip install cffi setuptools-rust
       - run: python setup.py sdist
       - run: tar zxvf dist/cryptography*.tar.gz && mkdir wheelhouse
         shell: bash
