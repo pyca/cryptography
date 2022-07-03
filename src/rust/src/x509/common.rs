@@ -144,7 +144,7 @@ fn encode_name_bytes<'p>(
 pub(crate) struct UnvalidatedIA5String<'a>(pub(crate) &'a str);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
-    const TAG: u8 = 0x16;
+    const TAG: u8 = asn1::IA5String::TAG;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
         Ok(UnvalidatedIA5String(std::str::from_utf8(data).map_err(
             |_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue),
@@ -153,7 +153,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
 }
 
 impl<'a> asn1::SimpleAsn1Writable<'a> for UnvalidatedIA5String<'a> {
-    const TAG: u8 = 0x16;
+    const TAG: u8 = asn1::IA5String::TAG;
     fn write_data(&self, dest: &mut Vec<u8>) {
         dest.extend_from_slice(self.0.as_bytes());
     }
