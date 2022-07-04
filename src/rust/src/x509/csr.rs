@@ -235,7 +235,7 @@ impl CertificateSigningRequest {
                     return Ok(pyo3::types::PyBytes::new(py, val.data()));
                 } else {
                     return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                        "OID {} has a disallowed ASN.1 type: {}",
+                        "OID {} has a disallowed ASN.1 type: {:?}",
                         oid,
                         val.tag()
                     )));
@@ -265,9 +265,14 @@ impl CertificateSigningRequest {
             let oid = oid_to_py_oid(py, &attribute.type_id)?;
             let val = attribute.values.unwrap_read().clone().next().unwrap();
             let serialized = pyo3::types::PyBytes::new(py, val.data());
+            let tag = val.tag().as_u8().ok_or_else(|| {
+                PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                    "Long-form tags are not supported in CSR attribute values",
+                ))
+            })?;
             let pyattr = py
                 .import("cryptography.x509")?
-                .call_method1("Attribute", (oid, serialized, val.tag()))?;
+                .call_method1("Attribute", (oid, serialized, tag))?;
             pyattrs.append(pyattr)?;
         }
         py.import("cryptography.x509")?
@@ -392,7 +397,7 @@ fn create_x509_csr(
         let (py_oid, value, tag): (&pyo3::PyAny, &[u8], Option<u8>) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
         let tag = if let Some(tag) = tag {
-            tag
+            asn1::Tag::from_bytes(&[tag])?.0
         } else {
             if std::str::from_utf8(value).is_err() {
                 return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(

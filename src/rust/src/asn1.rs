@@ -205,7 +205,7 @@ fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
         let mut attributes = rdn.collect::<Vec<_>>();
         assert_eq!(attributes.len(), 1);
 
-        tags.push(attributes.pop().unwrap().value.tag());
+        tags.push(attributes.pop().unwrap().value.tag().as_u8().unwrap());
     }
     Ok(tags)
 }
@@ -215,8 +215,14 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
     let mut asn1_cert = asn1::parse_single::<Asn1Certificate<'_>>(data)?;
 
     Ok(TestCertificate {
-        not_before_tag: asn1_cert.tbs_cert.validity.not_before.tag(),
-        not_after_tag: asn1_cert.tbs_cert.validity.not_after.tag(),
+        not_before_tag: asn1_cert
+            .tbs_cert
+            .validity
+            .not_before
+            .tag()
+            .as_u8()
+            .unwrap(),
+        not_after_tag: asn1_cert.tbs_cert.validity.not_after.tag().as_u8().unwrap(),
         issuer_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.issuer)?,
         subject_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.subject)?,
     })
