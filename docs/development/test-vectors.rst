@@ -474,6 +474,8 @@ Custom X.509 Vectors
   are longer than 2 characters.
 * ``rsa_pss_cert.pem`` - A self-signed certificate with an RSA PSS signature
   with ``asymmetric/PKCS8/rsa_pss_2048.pem`` as its key.
+* ``long-form-name-attribute.pem`` - A certificate with ``subject`` and ``issuer``
+  names containing attributes whose value's tag is encoded in long-form.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -524,6 +526,8 @@ Custom X.509 Request Vectors
   extensions value has a ``critical`` value of ``False`` explicitly encoded.
 * ``bad-version.pem`` - A certificate signing request where the version is
   invalid.
+* ``long-form-attribute.pem`` - A certificate signing request containing an
+  attribute whose value's tag is encoded in the long form.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
