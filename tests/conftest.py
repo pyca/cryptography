@@ -33,6 +33,11 @@ def pytest_runtest_setup(item):
     if openssl_backend._fips_enabled:
         for marker in item.iter_markers(name="skip_fips"):
             pytest.skip(marker.kwargs["reason"])
+    if (openssl_backend._lib and
+            openssl_backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER and
+            openssl_backend._binding._legacy_provider == openssl_backend._binding.ffi.NULL):
+        for marker in item.iter_markers(name="legacy_algorithm"):
+            pytest.skip("Requires OpenSSL legacy provider with OpenSSL 3.0.0+")
 
 
 @pytest.fixture()

@@ -14,6 +14,7 @@ from .utils import generate_stream_encryption_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.ARC4(b"\x00" * 16), None

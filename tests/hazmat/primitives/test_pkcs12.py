@@ -86,6 +86,7 @@ class TestPKCS12Loading:
     def test_load_pkcs12_ec_keys(self, filename, password, backend):
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
+    @pytest.mark.legacy_algorithm
     @pytest.mark.parametrize(
         ("filename", "password"),
         [

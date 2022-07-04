@@ -14,6 +14,7 @@ from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._SEEDInternal(b"\x00" * 16), modes.ECB()
@@ -32,6 +33,7 @@ class TestSEEDModeECB:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._SEEDInternal(b"\x00" * 16), modes.CBC(b"\x00" * 16)
@@ -50,6 +52,7 @@ class TestSEEDModeCBC:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._SEEDInternal(b"\x00" * 16), modes.OFB(b"\x00" * 16)
@@ -68,6 +71,7 @@ class TestSEEDModeOFB:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._SEEDInternal(b"\x00" * 16), modes.CFB(b"\x00" * 16)

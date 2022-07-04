@@ -173,9 +173,6 @@ class Binding:
                     cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
                         cls.ffi.NULL, b"legacy"
                     )
-                    _openssl_assert(
-                        cls.lib, cls._legacy_provider != cls.ffi.NULL
-                    )
                     cls._default_provider = cls.lib.OSSL_PROVIDER_load(
                         cls.ffi.NULL, b"default"
                     )

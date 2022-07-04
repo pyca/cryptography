@@ -14,6 +14,7 @@ from .utils import generate_encrypt_test
 from ...utils import load_nist_vectors
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._BlowfishInternal(b"\x00" * 56), modes.ECB()
@@ -32,6 +33,7 @@ class TestBlowfishModeECB:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._BlowfishInternal(b"\x00" * 56), modes.CBC(b"\x00" * 8)
@@ -50,6 +52,7 @@ class TestBlowfishModeCBC:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._BlowfishInternal(b"\x00" * 56), modes.OFB(b"\x00" * 8)
@@ -68,6 +71,7 @@ class TestBlowfishModeOFB:
     )
 
 
+@pytest.mark.legacy_algorithm
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms._BlowfishInternal(b"\x00" * 56), modes.CFB(b"\x00" * 8)
