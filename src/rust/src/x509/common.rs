@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid, PyAsn1Error};
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
@@ -48,16 +48,16 @@ pub(crate) struct AttributeTypeValue<'a> {
 // an un-encoded tag and value.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub(crate) struct RawTlv<'a> {
-    tag: u8,
+    tag: asn1::Tag,
     value: &'a [u8],
 }
 
 impl<'a> RawTlv<'a> {
-    pub(crate) fn new(tag: u8, value: &'a [u8]) -> Self {
+    pub(crate) fn new(tag: asn1::Tag, value: &'a [u8]) -> Self {
         RawTlv { tag, value }
     }
 
-    pub(crate) fn tag(&self) -> u8 {
+    pub(crate) fn tag(&self) -> asn1::Tag {
         self.tag
     }
     pub(crate) fn data(&self) -> &'a [u8] {
@@ -70,7 +70,7 @@ impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
         Ok(RawTlv::new(tlv.tag(), tlv.data()))
     }
 
-    fn can_parse(_tag: u8) -> bool {
+    fn can_parse(_tag: asn1::Tag) -> bool {
         true
     }
 }
@@ -103,7 +103,7 @@ pub(crate) fn encode_name<'p>(
 pub(crate) fn encode_name_entry<'p>(
     py: pyo3::Python<'p>,
     py_name_entry: &'p pyo3::PyAny,
-) -> pyo3::PyResult<AttributeTypeValue<'p>> {
+) -> PyAsn1Result<AttributeTypeValue<'p>> {
     let asn1_type = py
         .import("cryptography.x509.name")?
         .getattr(crate::intern!(py, "_ASN1Type"))?;
@@ -133,7 +133,7 @@ pub(crate) fn encode_name_entry<'p>(
 
     Ok(AttributeTypeValue {
         type_id: oid,
-        value: RawTlv::new(tag, value),
+        value: RawTlv::new(asn1::Tag::from_bytes(&[tag])?.0, value),
     })
 }
 
@@ -150,7 +150,7 @@ fn encode_name_bytes<'p>(
 pub(crate) struct UnvalidatedIA5String<'a>(pub(crate) &'a str);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
-    const TAG: u8 = asn1::IA5String::TAG;
+    const TAG: asn1::Tag = asn1::IA5String::TAG;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
         Ok(UnvalidatedIA5String(std::str::from_utf8(data).map_err(
             |_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue),
@@ -159,7 +159,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
 }
 
 impl<'a> asn1::SimpleAsn1Writable<'a> for UnvalidatedIA5String<'a> {
-    const TAG: u8 = asn1::IA5String::TAG;
+    const TAG: asn1::Tag = asn1::IA5String::TAG;
     fn write_data(&self, dest: &mut Vec<u8>) {
         dest.extend_from_slice(self.0.as_bytes());
     }
@@ -358,17 +358,27 @@ fn parse_name_attribute(
     let tag_enum = py
         .import("cryptography.x509.name")?
         .getattr(crate::intern!(py, "_ASN1_TYPE_TO_ENUM"))?;
-    let py_tag = tag_enum.get_item(attribute.value.tag().to_object(py))?;
-    let py_data = match attribute.value.tag() {
+    let tag_val = attribute
+        .value
+        .tag()
+        .as_u8()
+        .ok_or_else(|| {
+            PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Long-form tags are not supported in NameAttribute values",
+            ))
+        })?
+        .to_object(py);
+    let py_tag = tag_enum.get_item(tag_val)?;
+    let py_data = match attribute.value.tag().as_u8() {
         // BitString tag value
-        3 => pyo3::types::PyBytes::new(py, attribute.value.data()),
+        Some(3) => pyo3::types::PyBytes::new(py, attribute.value.data()),
         // BMPString tag value
-        30 => {
+        Some(30) => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
             py_bytes.call_method1("decode", ("utf_16_be",))?
         }
         // UniversalString
-        28 => {
+        Some(28) => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
             py_bytes.call_method1("decode", ("utf_32_be",))?
         }
@@ -708,7 +718,7 @@ impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
 impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
     for Asn1ReadableOrWritable<'a, T, U>
 {
-    const TAG: u8 = T::TAG;
+    const TAG: asn1::Tag = T::TAG;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
         Ok(Self::new_read(T::parse_data(data)?))
     }
@@ -717,7 +727,7 @@ impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
 impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
     asn1::SimpleAsn1Writable<'a> for Asn1ReadableOrWritable<'a, T, U>
 {
-    const TAG: u8 = U::TAG;
+    const TAG: asn1::Tag = U::TAG;
     fn write_data(&self, w: &mut Vec<u8>) {
         match self {
             Asn1ReadableOrWritable::Read(v, _) => T::write_data(v, w),
@@ -752,6 +762,7 @@ mod tests {
 
     #[test]
     fn test_raw_tlv_can_parse() {
-        assert!(RawTlv::can_parse(123));
+        let t = asn1::Tag::from_bytes(&[0]).unwrap().0;
+        assert!(RawTlv::can_parse(t));
     }
 }

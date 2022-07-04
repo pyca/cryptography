@@ -4758,6 +4758,17 @@ class TestECDSACertificate:
             "<Name(CN=ScottishPower,OU=02,2.5.4.45=#0070b3d51f305f0001)>"
         )
 
+    def test_load_name_attribute_long_form_asn1_tag(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "long-form-name-attribute.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        with pytest.raises(ValueError, match="Long-form"):
+            cert.subject
+        with pytest.raises(ValueError, match="Long-form"):
+            cert.issuer
+
     def test_signature(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
@@ -5769,6 +5780,15 @@ class TestRequestAttributes:
             x509.oid.AttributeOID.CHALLENGE_PASSWORD
         )
         assert attr._type == 2
+
+    def test_long_form_asn1_tag_in_attribute(self, backend):
+        request = _load_cert(
+            os.path.join("x509", "requests", "long-form-attribute.pem"),
+            x509.load_pem_x509_csr,
+            backend,
+        )
+        with pytest.raises(ValueError, match="Long-form"):
+            request.attributes
 
     def test_challenge_multivalued(self, backend):
         """
