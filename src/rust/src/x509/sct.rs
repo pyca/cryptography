@@ -146,8 +146,8 @@ impl Sct {
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         py.import("cryptography.x509.certificate_transparency")?
-            .getattr("Version")?
-            .getattr("v1")
+            .getattr(crate::intern!(py, "Version"))?
+            .getattr(crate::intern!(py, "v1"))
     }
 
     #[getter]
@@ -157,7 +157,9 @@ impl Sct {
 
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let datetime_class = py.import("datetime")?.getattr("datetime")?;
+        let datetime_class = py
+            .import("datetime")?
+            .getattr(crate::intern!(py, "datetime"))?;
         datetime_class
             .call_method1("utcfromtimestamp", (self.timestamp / 1000,))?
             .call_method(
@@ -171,7 +173,7 @@ impl Sct {
     fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let et_class = py
             .import("cryptography.x509.certificate_transparency")?
-            .getattr("LogEntryType")?;
+            .getattr(crate::intern!(py, "LogEntryType"))?;
         let attr_name = match self.entry_type {
             LogEntryType::Certificate => "X509_CERTIFICATE",
             LogEntryType::PreCertificate => "PRE_CERTIFICATE",
@@ -192,7 +194,7 @@ impl Sct {
     fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let sa_class = py
             .import("cryptography.x509.certificate_transparency")?
-            .getattr("SignatureAlgorithm")?;
+            .getattr(crate::intern!(py, "SignatureAlgorithm"))?;
         sa_class.getattr(self.signature_algorithm.to_attr())
     }
 

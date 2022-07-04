@@ -5,6 +5,7 @@
 #![deny(rust_2018_idioms)]
 
 mod asn1;
+mod intern;
 pub(crate) mod oid;
 mod x509;
 
