@@ -499,6 +499,7 @@ class TestAESOCB3:
         vectors = []
         for f in [
             "rfc7253.txt",
+            "openssl.txt",
             "test-vector-1-nonce104.txt",
             "test-vector-1-nonce112.txt",
             "test-vector-1-nonce120.txt",
