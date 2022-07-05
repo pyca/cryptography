@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v37-0-4:
+
+37.0.4 - 2022-07-05
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.5.
+
 .. _v37-0-3:
 
 37.0.3 - 2022-06-21

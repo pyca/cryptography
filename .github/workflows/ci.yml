@@ -259,7 +259,7 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310"}
         RUST:
           - beta
-          - nightly
+          - nightly-2022-06-30
     name: "Rust Coverage"
     timeout-minutes: 15
     steps:
