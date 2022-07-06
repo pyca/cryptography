@@ -103,6 +103,10 @@ def release(version):
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
+    print(
+        f"Create a new GH PAT at: "
+        f"https://github.com/settings/tokens/new?description={version}&scopes=repo"
+    )
     github_token = getpass.getpass("Github person access token: ")
 
     # Tag and push the tag (this will trigger the wheel builder in Actions)
