@@ -105,7 +105,8 @@ def release(version):
     """
     print(
         f"Create a new GH PAT at: "
-        f"https://github.com/settings/tokens/new?description={version}&scopes=repo"
+        f"https://github.com/settings/tokens/new?"
+        f"description={version}&scopes=repo"
     )
     github_token = getpass.getpass("Github person access token: ")
 
