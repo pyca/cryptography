@@ -3,6 +3,9 @@
 # for complete details.
 
 
+import distutils.util
+import platform
+import sys
 import threading
 import types
 import typing
@@ -228,3 +231,16 @@ _verify_package_version(cryptography.__version__)
 Binding.init_static_locks()
 
 _verify_openssl_version(Binding.lib)
+
+if (
+    sys.platform == "win32"
+    and platform.machine() == "AMD64"
+    and distutils.util.get_platform() == "win32"
+):
+    warnings.warn(
+        "You are using cryptography on a 32-bit Python on a 64-bit Windows "
+        "Operating System. Cryptography will be significantly faster if you "
+        "switch to using a 64-bit Python.",
+        UserWarning,
+        stacklevel=2,
+    )
