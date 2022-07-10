@@ -45,13 +45,13 @@ jobs:
           ref: "master"
       - name: Setup venv and install deps
         run: |
-          arch -arm64 $BIN_PATH -m venv venv
-          arch -arm64 venv/bin/python -m pip install tox requests
+          $BIN_PATH -m venv venv
+          venv/bin/python -m pip install tox requests
         env:
           BIN_PATH: ${{ matrix.PYTHON.BIN_PATH }}
       - name: Download OpenSSL
         run: |
-          arch -arm64 venv/bin/python .github/workflows/download_openssl.py macos openssl-macos-universal2
+          venv/bin/python .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tests
@@ -59,8 +59,7 @@ jobs:
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function $EXTRA_CFLAGS" \
-            arch -arm64 venv/bin/tox -r --  --color=yes --wycheproof-root=wycheproof
+            venv/bin/tox -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
-          ARCHFLAGS: '-arch arm64'
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
