@@ -1,0 +1,50 @@
+name: Benchmark
+on:
+  pull_request: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3.0.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+          path: "cryptography-pr"
+      - uses: actions/checkout@v3.0.2
+        timeout-minutes: 3
+        with:
+          repository: "pyca/cryptography"
+          path: "cryptography-main"
+          ref: "main"
+
+      - name: Setup python
+        id: setup-python
+        uses: actions/setup-python@v4.0.0
+        with:
+          python-version: "3.10"
+
+      - name: Create virtualenv (main)
+        run: |
+          python -m venv .venv-main
+          .venv-main/bin/pip install -v "./cryptography-main[test]" ./cryptography-main/vectors/
+      - name: Create virtualenv (PR)
+        run: |
+          python -m venv .venv-pr
+          .venv-pr/bin/pip install -v "./cryptography-pr[test]" ./cryptography-main/vectors/
+
+      - name: Run benchmarks (main)
+        run: .venv-main/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-main.json
+      - name: Run benchmarks (PR)
+        run: .venv-pr/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-pr.json
+
+      - name: Compare results
+        run: python ./cryptography-pr/.github/compare_benchmarks.py bench-main.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY
