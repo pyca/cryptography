@@ -136,7 +136,7 @@ jobs:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
         if: contains(matrix.PYTHON.VERSION, 'pypy') == false
       - name: Setup pypy
-        uses: actions/setup-python@v4.0.0
+        uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
@@ -212,7 +212,7 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v4.0.0
+        uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
