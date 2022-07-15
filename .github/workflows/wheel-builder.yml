@@ -146,12 +146,9 @@ jobs:
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+      - uses: dtolnay/rust-toolchain@3d5c338b548e8aff8b55d96390e28fa86945e1b2
         with:
-          profile: minimal
           toolchain: stable
-          override: true
-          default: true
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
 
@@ -216,12 +213,9 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
+      - uses: dtolnay/rust-toolchain@3d5c338b548e8aff8b55d96390e28fa86945e1b2
         with:
-          profile: minimal
           toolchain: stable
-          override: true
-          default: true
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - run: pip install requests
