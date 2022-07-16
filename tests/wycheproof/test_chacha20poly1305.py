@@ -19,7 +19,7 @@ from ..hazmat.primitives.test_aead import _aead_supported
     reason="Requires OpenSSL with ChaCha20Poly1305 support",
 )
 @wycheproof_tests("chacha20_poly1305_test.json")
-def test_chacha2poly1305(backend, wycheproof):
+def test_chacha20poly1305(backend, wycheproof):
     key = binascii.unhexlify(wycheproof.testcase["key"])
     iv = binascii.unhexlify(wycheproof.testcase["iv"])
     aad = binascii.unhexlify(wycheproof.testcase["aad"])
