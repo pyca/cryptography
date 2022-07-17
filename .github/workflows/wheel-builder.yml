@@ -164,7 +164,7 @@ jobs:
               CFLAGS="-I${HOME}/openssl-macos-universal2/include" \
               ../venv/bin/python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
         env:
-          MACOSX_DEPLOYMENT_TARGET:  ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
       - run: venv/bin/pip install -f wheelhouse --no-index cryptography
