@@ -40,5 +40,5 @@ lack of forward security.
 If a constant time RSA PKCS1 v1.5 decryption API is truly required, you should
 contribute one to ``cryptography``.
 
-.. _`Memory wiping`:  https://devblogs.microsoft.com/oldnewthing/?p=4223
+.. _`Memory wiping`: https://devblogs.microsoft.com/oldnewthing/?p=4223
 .. _`CERT secure coding guidelines`: https://wiki.sei.cmu.edu/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
