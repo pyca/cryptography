@@ -207,13 +207,11 @@ impl CertificateSigningRequest {
         let cryptography_warning = py
             .import("cryptography.utils")?
             .getattr(crate::intern!(py, "DeprecatedIn36"))?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.",
-                cryptography_warning,
-            ),
+        pyo3::PyErr::warn(
+            py,
+            cryptography_warning,
+            "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.",
+            1,
         )?;
         let rust_oid = py_oid_to_oid(oid)?;
         for attribute in self
@@ -309,13 +307,11 @@ impl CertificateSigningRequest {
         let cryptography_warning = py
             .import("cryptography.utils")?
             .getattr(crate::intern!(py, "DeprecatedIn35"))?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
-                cryptography_warning,
-            ),
+        pyo3::PyErr::warn(
+            py,
+            cryptography_warning,
+            "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
+            1,
         )?;
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
