@@ -407,13 +407,11 @@ impl CertificateRevocationList {
         let cryptography_warning = py
             .import("cryptography.utils")?
             .getattr(crate::intern!(py, "DeprecatedIn35"))?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
-                cryptography_warning,
-            ),
+        pyo3::PyErr::warn(
+            py,
+            cryptography_warning,
+            "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
+            1
         )?;
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?

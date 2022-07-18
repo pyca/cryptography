@@ -351,13 +351,11 @@ impl Certificate {
         let cryptography_warning = py
             .import("cryptography.utils")?
             .getattr(crate::intern!(py, "DeprecatedIn35"))?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
-                cryptography_warning,
-            ),
+        pyo3::PyErr::warn(
+            py,
+            cryptography_warning,
+            "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
+            1
         )?;
         let backend = py
             .import("cryptography.hazmat.backends.openssl.backend")?
@@ -415,13 +413,11 @@ fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyRes
         let cryptography_warning = py
             .import("cryptography.utils")?
             .getattr(crate::intern!(py, "DeprecatedIn36"))?;
-        let warnings = py.import("warnings")?;
-        warnings.call_method1(
-            "warn",
-            (
-                "Parsed a negative serial number, which is disallowed by RFC 5280.",
-                cryptography_warning,
-            ),
+        pyo3::PyErr::warn(
+            py,
+            cryptography_warning,
+            "Parsed a negative serial number, which is disallowed by RFC 5280.",
+            1,
         )?;
     }
     Ok(())

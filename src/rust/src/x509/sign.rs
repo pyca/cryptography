@@ -101,13 +101,11 @@ fn identify_hash_type(
             let cryptography_warning = py
                 .import("cryptography.utils")?
                 .getattr(crate::intern!(py, "DeprecatedIn38"))?;
-            let warnings = py.import("warnings")?;
-            warnings.call_method1(
-                "warn",
-                (
-                    "MD5 signatures are deprecated and support for them will be removed in the next version.",
-                    cryptography_warning,
-                ),
+            pyo3::PyErr::warn(
+                py,
+                cryptography_warning,
+                "MD5 signatures are deprecated and support for them will be removed in the next version.",
+                1
             )?;
 
             Ok(HashType::Md5)
@@ -116,14 +114,13 @@ fn identify_hash_type(
             let cryptography_warning = py
                 .import("cryptography.utils")?
                 .getattr(crate::intern!(py, "DeprecatedIn38"))?;
-            let warnings = py.import("warnings")?;
-            warnings.call_method1(
-                "warn",
-                (
-                    "SHA1 signatures are deprecated and support for them will be removed in the next version.",
-                    cryptography_warning,
-                ),
+            pyo3::PyErr::warn(
+                py,
+                cryptography_warning,
+                "SHA1 signatures are deprecated and support for them will be removed in the next version.",
+                1
             )?;
+
             Ok(HashType::Sha1)
         }
         "sha224" => Ok(HashType::Sha224),
