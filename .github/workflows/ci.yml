@@ -217,7 +217,7 @@ jobs:
         uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@3d5c338b548e8aff8b55d96390e28fa86945e1b2
+      - uses: dtolnay/rust-toolchain@1ce4a7352a1efe5dede2e52c75512b34256e4f44
         with:
           toolchain: ${{ matrix.RUST }}
       - uses: actions/checkout@v3.0.2
@@ -269,7 +269,7 @@ jobs:
         uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@3d5c338b548e8aff8b55d96390e28fa86945e1b2
+      - uses: dtolnay/rust-toolchain@1ce4a7352a1efe5dede2e52c75512b34256e4f44
         with:
           toolchain: ${{ matrix.RUST }}
           components: llvm-tools-preview
