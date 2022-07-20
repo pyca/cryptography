@@ -2342,14 +2342,6 @@ class TestOpenSSHSerialization:
 
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
 
-        # too long password
-        with pytest.raises(ValueError):
-            private_key.private_bytes(
-                Encoding.PEM,
-                PrivateFormat.OpenSSH,
-                BestAvailableEncryption(b"p" * 73),
-            )
-
         # unknown encryption class
         with pytest.raises(ValueError):
             private_key.private_bytes(
@@ -2357,6 +2349,41 @@ class TestOpenSSHSerialization:
                 PrivateFormat.OpenSSH,
                 DummyKeySerializationEncryption(),
             )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: ssh._bcrypt_supported,
+        skip_message="Requires that bcrypt exists",
+    )
+    @pytest.mark.parametrize(
+        "password",
+        (
+            b"1234",
+            b"p@ssw0rd",
+            b"x" * 100,
+        ),
+    )
+    def test_serialize_ssh_private_key_with_password(self, password, backend):
+        original_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        encoded_key_data = ssh.serialize_ssh_private_key(
+            private_key=original_key,
+            password=password,
+        )
+
+        decoded_key = load_ssh_private_key(
+            data=encoded_key_data,
+            password=password,
+            backend=backend,
+        )
+
+        original_public_key = original_key.public_key().public_bytes(
+            Encoding.OpenSSH, PublicFormat.OpenSSH
+        )
+
+        decoded_public_key = decoded_key.public_key().public_bytes(
+            Encoding.OpenSSH, PublicFormat.OpenSSH
+        )
+
+        assert original_public_key == decoded_public_key
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),

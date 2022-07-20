@@ -53,7 +53,6 @@ _BCRYPT = b"bcrypt"
 _NONE = b"none"
 _DEFAULT_CIPHER = b"aes256-ctr"
 _DEFAULT_ROUNDS = 16
-_MAX_PASSWORD = 72
 
 # re is only way to work on bytes-like data
 _PEM_RC = re.compile(_SK_START + b"(.*?)" + _SK_END, re.DOTALL)
@@ -609,11 +608,6 @@ def serialize_ssh_private_key(
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
         utils._check_bytes("password", password)
-    if password and len(password) > _MAX_PASSWORD:
-        raise ValueError(
-            "Passwords longer than 72 bytes are not supported by "
-            "OpenSSH private key format"
-        )
 
     if isinstance(private_key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(private_key.public_key())
