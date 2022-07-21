@@ -994,13 +994,19 @@ Serialization Encryption Types
     All other classes in this section represent the available choices for
     encryption and have this interface.
 
-.. class:: BestAvailableEncryption(password)
+.. class:: BestAvailableEncryption(password, kdf_rounds)
 
     Encrypt using the best available encryption for a given key.
     This is a curated encryption choice and the algorithm may change over
     time.
 
     :param bytes password: The password to use for encryption.
+    
+    :param int kdf_rounds: An optional ``int`` specifying the number of rounds
+        used by the key derivation function during encryption. If not specified
+        the default rounds applied will be ``16``. This parameter will only be
+        applied when using
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.OpenSSH`.
 
 .. class:: NoEncryption
 

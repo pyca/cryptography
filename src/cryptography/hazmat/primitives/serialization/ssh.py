@@ -604,6 +604,7 @@ def load_ssh_private_key(
 def serialize_ssh_private_key(
     private_key: _SSH_PRIVATE_KEY_TYPES,
     password: typing.Optional[bytes] = None,
+    kdf_rounds: typing.Optional[int] = None,
 ) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
     if password is not None:
@@ -621,13 +622,16 @@ def serialize_ssh_private_key(
         raise ValueError("Unsupported key type")
     kformat = _lookup_kformat(key_type)
 
+    if kdf_rounds is not None and kdf_rounds < 1:
+        raise ValueError("KDF rounds must be greater than zero")
+
     # setup parameters
     f_kdfoptions = _FragList()
     if password:
         ciphername = _DEFAULT_CIPHER
         blklen = _SSH_CIPHERS[ciphername][3]
         kdfname = _BCRYPT
-        rounds = _DEFAULT_ROUNDS
+        rounds = kdf_rounds or _DEFAULT_ROUNDS
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)

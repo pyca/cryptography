@@ -2326,8 +2326,9 @@ class TestOpenSSHSerialization:
             )
 
     def test_serialize_ssh_private_key_errors(self, backend):
-        # bad encoding
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+
+        # bad encoding
         with pytest.raises(ValueError):
             private_key.private_bytes(
                 Encoding.DER, PrivateFormat.OpenSSH, NoEncryption()
@@ -2340,14 +2341,29 @@ class TestOpenSSHSerialization:
                 None,
             )
 
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
-
         # unknown encryption class
         with pytest.raises(ValueError):
             private_key.private_bytes(
                 Encoding.PEM,
                 PrivateFormat.OpenSSH,
                 DummyKeySerializationEncryption(),
+            )
+
+        # invalid kdf rounds type
+        with pytest.raises(ValueError):
+            private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                encryption_algorithm=BestAvailableEncryption(
+                    password=b"password",
+                    kdf_rounds=b"1",  # type:ignore[arg-type]
+                ),
+            )
+
+        # invalid number of kdf rounds
+        with pytest.raises(ValueError):
+            ssh.serialize_ssh_private_key(
+                private_key=private_key, password=b"password", kdf_rounds=0
             )
 
     @pytest.mark.supported(
@@ -2362,11 +2378,26 @@ class TestOpenSSHSerialization:
             b"x" * 100,
         ),
     )
-    def test_serialize_ssh_private_key_with_password(self, password, backend):
+    @pytest.mark.parametrize(
+        "kdf_rounds",
+        (
+            1,
+            10,
+            100,
+        ),
+    )
+    def test_serialize_ssh_private_key_with_password(
+        self, password, kdf_rounds, backend
+    ):
         original_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        encoded_key_data = ssh.serialize_ssh_private_key(
-            private_key=original_key,
-            password=password,
+
+        encoded_key_data = original_key.private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.OpenSSH,
+            encryption_algorithm=BestAvailableEncryption(
+                password=password,
+                kdf_rounds=kdf_rounds,
+            ),
         )
 
         decoded_key = load_ssh_private_key(

@@ -1519,6 +1519,8 @@ class Backend:
         # validate password
         if isinstance(encryption_algorithm, serialization.NoEncryption):
             password = b""
+
+            kdf_rounds = None
         elif isinstance(
             encryption_algorithm, serialization.BestAvailableEncryption
         ):
@@ -1528,6 +1530,8 @@ class Backend:
                     "Passwords longer than 1023 bytes are not supported by "
                     "this backend"
                 )
+
+            kdf_rounds = encryption_algorithm.kdf_rounds
         else:
             raise ValueError("Unsupported encryption type")
 
@@ -1592,7 +1596,7 @@ class Backend:
         # OpenSSH + PEM
         if format is serialization.PrivateFormat.OpenSSH:
             if encoding is serialization.Encoding.PEM:
-                return ssh.serialize_ssh_private_key(key, password)
+                return ssh.serialize_ssh_private_key(key, password, kdf_rounds)
 
             raise ValueError(
                 "OpenSSH private key format can only be used"

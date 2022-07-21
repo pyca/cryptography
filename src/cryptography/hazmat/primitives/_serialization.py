@@ -3,6 +3,7 @@
 # for complete details.
 
 import abc
+import typing
 
 from cryptography import utils
 
@@ -44,11 +45,17 @@ class KeySerializationEncryption(metaclass=abc.ABCMeta):
 
 
 class BestAvailableEncryption(KeySerializationEncryption):
-    def __init__(self, password: bytes):
+    def __init__(
+        self, password: bytes, kdf_rounds: typing.Optional[int] = None
+    ):
         if not isinstance(password, bytes) or len(password) == 0:
             raise ValueError("Password must be 1 or more bytes.")
 
+        if kdf_rounds is not None and not isinstance(kdf_rounds, int):
+            raise ValueError("KDF rounds must be of type 'int'")
+
         self.password = password
+        self.kdf_rounds = kdf_rounds
 
 
 class NoEncryption(KeySerializationEncryption):
