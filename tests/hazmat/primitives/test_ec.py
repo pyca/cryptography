@@ -23,7 +23,6 @@ from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_ec import EC_KEY_SECP384R1
 from .utils import skip_fips_traditional_openssl
-from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors,
     load_fips_ecdsa_signing_vectors,
@@ -890,21 +889,6 @@ class TestECSerialization:
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 "notanencalg",  # type: ignore[arg-type]
-            )
-
-    def test_private_bytes_unsupported_encryption_type(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
-            ),
-        )
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.PEM,
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeySerializationEncryption(),
             )
 
     def test_public_bytes_from_derived_public_key(self, backend):

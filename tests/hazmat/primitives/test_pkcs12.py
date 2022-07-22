@@ -31,7 +31,6 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     serialize_key_and_certificates,
 )
 
-from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file
 
 
@@ -517,18 +516,6 @@ class TestPKCS12Creation:
         assert str(exc.value) == (
             "You must supply at least one of key, cert, or cas"
         )
-
-    def test_generate_unsupported_encryption_type(self, backend):
-        cert, key = _load_ca(backend)
-        with pytest.raises(ValueError) as exc:
-            serialize_key_and_certificates(
-                None,
-                key,
-                cert,
-                None,
-                DummyKeySerializationEncryption(),
-            )
-        assert str(exc.value) == "Unsupported key encryption type"
 
 
 @pytest.mark.skip_fips(

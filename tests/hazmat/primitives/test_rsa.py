@@ -51,7 +51,6 @@ from .utils import (
 from ...doubles import (
     DummyAsymmetricPadding,
     DummyHashAlgorithm,
-    DummyKeySerializationEncryption,
 )
 from ...utils import (
     load_nist_vectors,
@@ -2520,15 +2519,6 @@ class TestRSAPrivateKeySerialization:
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 "notanencalg",  # type: ignore[arg-type]
-            )
-
-    def test_private_bytes_unsupported_encryption_type(self, backend):
-        key = RSA_KEY_2048.private_key(backend)
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.PEM,
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeySerializationEncryption(),
             )
 
 

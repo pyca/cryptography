@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 
 from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 from .utils import skip_fips_traditional_openssl
-from ...doubles import DummyHashAlgorithm, DummyKeySerializationEncryption
+from ...doubles import DummyHashAlgorithm
 from ...utils import (
     load_fips_dsa_key_pair_vectors,
     load_fips_dsa_sig_vectors,
@@ -858,20 +858,6 @@ class TestDSASerialization:
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 "notanencalg",  # type: ignore[arg-type]
-            )
-
-    def test_private_bytes_unsupported_encryption_type(self, backend):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
-            ),
-        )
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.PEM,
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                DummyKeySerializationEncryption(),
             )
 
 

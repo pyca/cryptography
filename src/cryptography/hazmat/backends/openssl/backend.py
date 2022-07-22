@@ -1516,24 +1516,14 @@ class Backend:
                 "instance"
             )
 
+        password = encryption_algorithm.password
+
         # validate password
-        if isinstance(encryption_algorithm, serialization.NoEncryption):
-            password = b""
-
-            kdf_rounds = None
-        elif isinstance(
-            encryption_algorithm, serialization.BestAvailableEncryption
-        ):
-            password = encryption_algorithm.password
-            if len(password) > 1023:
-                raise ValueError(
-                    "Passwords longer than 1023 bytes are not supported by "
-                    "this backend"
-                )
-
-            kdf_rounds = encryption_algorithm.kdf_rounds
-        else:
-            raise ValueError("Unsupported encryption type")
+        if len(password) > 1023:
+            raise ValueError(
+                "Passwords longer than 1023 bytes are not supported by "
+                "this backend"
+            )
 
         # PKCS8 + PEM/DER
         if format is serialization.PrivateFormat.PKCS8:
@@ -1595,12 +1585,20 @@ class Backend:
 
         # OpenSSH + PEM
         if format is serialization.PrivateFormat.OpenSSH:
-            if encoding is serialization.Encoding.PEM:
-                return ssh.serialize_ssh_private_key(key, password, kdf_rounds)
+            if encoding is not serialization.Encoding.PEM:
+                raise ValueError(
+                    "OpenSSH private key format can only be used"
+                    " with PEM encoding"
+                )
 
-            raise ValueError(
-                "OpenSSH private key format can only be used"
-                " with PEM encoding"
+            options = encryption_algorithm.options
+
+            return ssh.serialize_ssh_private_key(
+                private_key=key,
+                password=password,
+                kdf_rounds=options.get(
+                    serialization.EncryptionOption.KDF_ROUNDS,
+                ),
             )
 
         # Anything that key-specific code was supposed to handle earlier,

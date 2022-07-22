@@ -14,7 +14,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
 from .fixtures_dh import FFDH3072_P
-from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 # RFC 3526
@@ -639,16 +638,6 @@ class TestDHPrivateKeySerialization:
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
                 "notanencalg",  # type:ignore[arg-type]
-            )
-
-    def test_private_bytes_unsupported_encryption_type(self, backend):
-        parameters = FFDH3072_P.parameters(backend)
-        key = parameters.generate_private_key()
-        with pytest.raises(ValueError):
-            key.private_bytes(
-                serialization.Encoding.PEM,
-                serialization.PrivateFormat.PKCS8,
-                DummyKeySerializationEncryption(),
             )
 
 

@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.serialization import (
     Encoding,
     KeySerializationEncryption,
     NoEncryption,
+    OpenSSHEncryption,
     PrivateFormat,
     PublicFormat,
     load_der_parameters,
@@ -44,7 +45,6 @@ from .utils import (
     _check_dsa_private_numbers,
     _check_rsa_private_numbers,
 )
-from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 
@@ -2341,20 +2341,12 @@ class TestOpenSSHSerialization:
                 None,
             )
 
-        # unknown encryption class
-        with pytest.raises(ValueError):
-            private_key.private_bytes(
-                Encoding.PEM,
-                PrivateFormat.OpenSSH,
-                DummyKeySerializationEncryption(),
-            )
-
         # invalid kdf rounds type
         with pytest.raises(ValueError):
             private_key.private_bytes(
                 Encoding.PEM,
                 PrivateFormat.OpenSSH,
-                encryption_algorithm=BestAvailableEncryption(
+                encryption_algorithm=OpenSSHEncryption(
                     password=b"password",
                     kdf_rounds=b"1",  # type:ignore[arg-type]
                 ),
@@ -2396,12 +2388,26 @@ class TestOpenSSHSerialization:
             format=PrivateFormat.OpenSSH,
             encryption_algorithm=BestAvailableEncryption(
                 password=password,
+            ),
+        )
+
+        encoded_key_data_with_kdf = original_key.private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.OpenSSH,
+            encryption_algorithm=OpenSSHEncryption(
+                password=password,
                 kdf_rounds=kdf_rounds,
             ),
         )
 
         decoded_key = load_ssh_private_key(
             data=encoded_key_data,
+            password=password,
+            backend=backend,
+        )
+
+        decoded_key_with_kdf = load_ssh_private_key(
+            data=encoded_key_data_with_kdf,
             password=password,
             backend=backend,
         )
@@ -2414,7 +2420,17 @@ class TestOpenSSHSerialization:
             Encoding.OpenSSH, PublicFormat.OpenSSH
         )
 
-        assert original_public_key == decoded_public_key
+        decoded_public_key_with_kdf = (
+            decoded_key_with_kdf.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH
+            )
+        )
+
+        assert (
+            original_public_key
+            == decoded_public_key
+            == decoded_public_key_with_kdf
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),

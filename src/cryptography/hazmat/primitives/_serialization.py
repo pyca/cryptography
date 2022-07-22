@@ -40,23 +40,53 @@ class ParameterFormat(utils.Enum):
     PKCS3 = "PKCS3"
 
 
+class EncryptionOption(utils.Enum):
+    KDF_ROUNDS = "KDF Rounds"
+
+
 class KeySerializationEncryption(metaclass=abc.ABCMeta):
-    pass
+    def __init__(self, password: bytes = b""):
+        self.password = password
+
+    @property
+    def options(self) -> typing.Dict[EncryptionOption, typing.Any]:
+        return {}
 
 
 class BestAvailableEncryption(KeySerializationEncryption):
+    def __init__(self, password: bytes):
+        _validate_password(password)
+
+        super().__init__(password)
+
+
+class OpenSSHEncryption(KeySerializationEncryption):
     def __init__(
-        self, password: bytes, kdf_rounds: typing.Optional[int] = None
+        self,
+        password: bytes,
+        kdf_rounds: typing.Optional[int] = None,
     ):
-        if not isinstance(password, bytes) or len(password) == 0:
-            raise ValueError("Password must be 1 or more bytes.")
+        _validate_password(password)
+
+        super().__init__(password)
 
         if kdf_rounds is not None and not isinstance(kdf_rounds, int):
             raise ValueError("KDF rounds must be of type 'int'")
 
-        self.password = password
-        self.kdf_rounds = kdf_rounds
+        self._kdf_rounds = kdf_rounds
+
+    @property
+    def options(self) -> typing.Dict[EncryptionOption, typing.Any]:
+        return {
+            EncryptionOption.KDF_ROUNDS: self._kdf_rounds,
+        }
+
+
+def _validate_password(password: bytes):
+    if not isinstance(password, bytes) or len(password) == 0:
+        raise ValueError("Password must be 1 or more bytes.")
 
 
 class NoEncryption(KeySerializationEncryption):
-    pass
+    def __init__(self):
+        super().__init__()
