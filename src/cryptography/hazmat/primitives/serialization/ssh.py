@@ -672,9 +672,7 @@ def serialize_ssh_private_key(
     if ciph is not None:
         ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
 
-    txt = _ssh_pem_encode(buf[:mlen])
-    buf[ofs:mlen] = bytearray(slen)
-    return txt
+    return _ssh_pem_encode(buf[:mlen])
 
 
 _SSH_PUBLIC_KEY_TYPES = typing.Union[
