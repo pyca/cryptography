@@ -366,6 +366,9 @@ unsigned long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
 unsigned long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
 unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
+void SSL_CTX_set_security_level(SSL_CTX *, int);
+int SSL_CTX_get_security_level(SSL_CTX *);
+
 /*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
 
 /*  methods */
