@@ -147,6 +147,9 @@ fn encode_name_bytes<'p>(
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
+/// An IA5String ASN.1 element whose contents is not validated as meeting the
+/// requirements (ASCII characters only), and instead is only known to be
+/// valid UTF-8.
 pub(crate) struct UnvalidatedIA5String<'a>(pub(crate) &'a str);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
