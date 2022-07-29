@@ -51,5 +51,17 @@ class BestAvailableEncryption(KeySerializationEncryption):
         self.password = password
 
 
+class PKCS12CompatibilityEncryption(KeySerializationEncryption):
+    """
+    Provides the most compatible encryption using 3DES and SHA1 for PKCS12.
+    """
+
+    def __init__(self, password):
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        self.password = password
+
+
 class NoEncryption(KeySerializationEncryption):
     pass

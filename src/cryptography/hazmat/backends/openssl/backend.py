@@ -2247,6 +2247,7 @@ class Backend:
             nid_key = -1
             pkcs12_iter = 0
             mac_iter = 0
+            mac_alg = self._ffi.NULL
         elif isinstance(
             encryption_algorithm, serialization.BestAvailableEncryption
         ):
@@ -2261,6 +2262,20 @@ class Backend:
             # Did we mention how lousy PKCS12 encryption is?
             mac_iter = 1
             password = encryption_algorithm.password
+            mac_alg = self._ffi.NULL
+        elif isinstance(
+            encryption_algorithm, serialization.PKCS12CompatibilityEncryption
+        ):
+            # This is currently mostly identical with BestAvailableEncryption
+            # but is meant to stay 3DES/SHA1 to be able to support operating
+            # systems like Android <= 12/13 and macOS <= 15 that do not support
+            # anything stronger
+            nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            mac_iter = 1
+            pkcs12_iter = 20000
+            password = encryption_algorithm.password
+            mac_alg = self._evp_md_non_null_from_algorithm(hashes.SHA1)
         else:
             raise ValueError("Unsupported key encryption type")
 
@@ -2309,6 +2324,20 @@ class Backend:
                     mac_iter,
                     0,
                 )
+
+                if (
+                    self._lib.Cryptography_HAS_PKCS12_SET_MAC
+                    and mac_alg != self._ffi.NULL
+                ):
+                    self._lib.PKCS12_set_mac(
+                        p12,
+                        password_buf,
+                        -1,
+                        self._ffi.NULL,
+                        0,
+                        mac_iter,
+                        mac_alg,
+                    )
 
         self.openssl_assert(p12 != self._ffi.NULL)
         p12 = self._ffi.gc(p12, self._lib.PKCS12_free)

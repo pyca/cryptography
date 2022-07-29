@@ -341,6 +341,7 @@ class TestPKCS12Creation:
         ("algorithm", "password"),
         [
             (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (serialization.PKCS12CompatibilityEncryption(b"pass"), b"pass"),
             (serialization.NoEncryption(), None),
         ],
     )

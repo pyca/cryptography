@@ -1002,6 +1002,15 @@ Serialization Encryption Types
 
     :param bytes password: The password to use for encryption.
 
+.. class:: PKCS12CompatibilityEncryption(password)
+
+    Encrypt using 3DES and SHA1 for a given key.
+    This is an option that should be only used to allow exporting PKCS12
+    to devices/software that does not support stronger encryption of PKCS12
+    like macOS 15.x or Android 12.
+
+    :param bytes password: The password to use for encryption.
+
 .. class:: NoEncryption
 
     Do not encrypt.
