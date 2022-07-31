@@ -4106,15 +4106,21 @@ a7b17902d34276951ceccab87f9661c3e8816
             "hash": "SHA-512",
             "count": 0,
             "shared_secret_length": 521,
-            "Z": "00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb369348b\
-81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e753f55ef05a2d",
+            "Z": (
+                "00aa5bb79b33e389fa58ceadc047197f14e73712f452caa9fc4c9adb3693"
+                "48b81507392f1a86ddfdb7c4ff8231c4bd0f44e44a1b55b1404747a9e2e7"
+                "53f55ef05a2d"
+            ),
             "sharedinfo_length": 128,
             "sharedinfo": "e3b5b4c1b0d5cf1d2b3a2f9937895d31",
             "key_data_length": 1024,
-            "key_data": "4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7f\
-a733633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee208002267089db\
-f351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda33ca08bd56dd1a59b4106cf2dbbc0ab2\
-aa8e2efa7b17902d34276951ceccab87f9661c3e8816",
+            "key_data": (
+                "4463f869f3cc18769b52264b0112b5858f7ad32a5a2d96d8cffabf7fa733"
+                "633d6e4dd2a599acceb3ea54a6217ce0b50eef4f6b40a5c30250a5a8eeee"
+                "208002267089dbf351f3f5022aa9638bf1ee419dea9c4ff745a25ac27bda"
+                "33ca08bd56dd1a59b4106cf2dbbc0ab2aa8e2efa7b17902d34276951cecc"
+                "ab87f9661c3e8816"
+            ),
         },
     ]
 
@@ -4182,11 +4188,17 @@ b5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7
             "l": 128,
             "ki": b"00a39bd547fb88b2d98727cf64c195c61e1cad6c",
             "fixedinputdatabytelen": b"60",
-            "fixedinputdata": b"98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc\
-30056f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242",
+            "fixedinputdata": (
+                b"98132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f6876f"
+                b"59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a682"
+                b"42"
+            ),
             "binary rep of i": b"01",
-            "instring": b"0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc3005\
-6f6876f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a68242",
+            "instring": (
+                b"0198132c1ffaf59ae5cbc0a3133d84c551bb97e0c75ecaddfc30056f687"
+                b"6f59803009bffc7d75c4ed46f40b8f80426750d15bc1ddb14ac5dcb69a6"
+                b"8242"
+            ),
             "ko": b"0611e1903609b47ad7a5fc2c82e47702",
         },
         {
@@ -4196,11 +4208,17 @@ b5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7
             "l": 128,
             "ki": b"a39bdf744ed7e33fdec060c8736e9725179885a8",
             "fixedinputdatabytelen": b"60",
-            "fixedinputdata": b"af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9\
-c591e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832",
+            "fixedinputdata": (
+                b"af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e182350"
+                b"19f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e8"
+                b"32"
+            ),
             "binary rep of i": b"01",
-            "instring": b"01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591\
-e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832",
+            "instring": (
+                b"01af71b44940acff98949ad17f1ca20e8fdb3957cacdcd41e9c591e1823"
+                b"5019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045"
+                b"e832"
+            ),
             "ko": b"51dc4668947e3685099bc3b5f8527468",
         },
         {
@@ -4210,11 +4228,17 @@ e18235019f90b9f8ee6e75700bcab2f8407525a104799b3e9725e27d738a9045e832",
             "l": 128,
             "ki": b"ab56556b107a3a79fe084df0f1bb3ad049a6cc1490f20da4b3df282c",
             "fixedinputdatabytelen": b"60",
-            "fixedinputdata": b"7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43\
-aa1b91eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a7",
+            "fixedinputdata": (
+                b"7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91eeb57"
+                b"30d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4"
+                b"a7"
+            ),
             "binary rep of i": b"01",
-            "instring": b"7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91\
-eeb5730d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4a701",
+            "instring": (
+                b"7f50fc1f77c3ac752443154c1577d3c47b86fccffe82ff43aa1b91eeb57"
+                b"30d7e9e6aab78374d854aecb7143faba6b1eb90d3d9e7a2f6d78dd9a6c4"
+                b"a701"
+            ),
             "ko": b"b8894c6133a46701909b5c8a84322dec",
         },
     ]
