@@ -169,9 +169,9 @@ dependencies = [
 
 [[package]]
 name = "ouroboros_macro"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "084fd65d5dd8b3772edccb5ffd1e4b7eba43897ecd0f9401e330e8c542959408"
+checksum = "df194bd9cdca62dad63764c2185d1a23b38a11582db74275847c45f99d440725"
 dependencies = [
  "Inflector",
  "proc-macro-error",
