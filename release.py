@@ -130,9 +130,9 @@ def release(version):
         github_token, version
     )
 
-    # Upload sdist and wheels
-    run("twine", "upload", "-s", *sdist)
+    # Upload wheels and sdist
     run("twine", "upload", *github_actions_wheel_paths)
+    run("twine", "upload", "-s", *sdist)
 
 
 if __name__ == "__main__":
