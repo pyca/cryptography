@@ -824,13 +824,13 @@ void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
                                               SSL_SESSION **
                                           )) = NULL;
 #if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || CRYPTOGRAPHY_IS_BORINGSSL
-    const SSL_CIPHER *(*SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
+const SSL_CIPHER *(*SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
 #endif
 int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
                                    size_t) = NULL;
 int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
 #if !CRYPTOGRAPHY_IS_BORINGSSL
-    int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
+int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
 #endif
 SSL_SESSION *(*Cryptography_SSL_SESSION_new)(void) = NULL;
 #else
