@@ -56,7 +56,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: actions/cache@v3.0.5
@@ -214,7 +214,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: dtolnay/rust-toolchain@1ce4a7352a1efe5dede2e52c75512b34256e4f44
@@ -266,7 +266,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ matrix.RUST }}-coverage
 
       - name: Setup python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - uses: dtolnay/rust-toolchain@1ce4a7352a1efe5dede2e52c75512b34256e4f44
@@ -351,7 +351,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
 
@@ -403,7 +403,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
@@ -482,7 +482,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: ${{ matrix.PYTHON }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
@@ -501,7 +501,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: 3.9
       - run: python -m pip install -U tox
@@ -527,7 +527,7 @@ jobs:
       - run: echo "# 🎉 🎉" >> $GITHUB_STEP_SUMMARY
       - name: Setup python
         if: ${{ always() }}
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.2.0
         with:
           python-version: '3.10'
       - run: pip install coverage[toml]
