@@ -37,6 +37,7 @@ static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
 static const long Cryptography_HAS_RAW_KEY;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
+static const int EVP_PKEY_SM2;
 """
 
 FUNCTIONS = """
@@ -89,6 +90,9 @@ int EVP_DigestSignFinal(EVP_MD_CTX *, unsigned char *, size_t *);
 int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
                          ENGINE *, EVP_PKEY *);
 
+int EVP_DigestVerifyUpdate(EVP_MD_CTX *, const void *, size_t);
+int EVP_DigestVerifyFinal(EVP_MD_CTX *ctx, const unsigned char *sig,
+                                 size_t siglen);
 
 
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
@@ -165,6 +169,9 @@ EVP_PKEY *EVP_PKEY_new_raw_public_key(int, ENGINE *, const unsigned char *,
                                       size_t);
 int EVP_PKEY_get_raw_private_key(const EVP_PKEY *, unsigned char *, size_t *);
 int EVP_PKEY_get_raw_public_key(const EVP_PKEY *, unsigned char *, size_t *);
+int EVP_PKEY_set_alias_type(EVP_PKEY *pkey, int type);
+void EVP_MD_CTX_set_pkey_ctx(EVP_MD_CTX *ctx, EVP_PKEY_CTX *pctx);
+const EVP_MD *EVP_sm3(void);
 """
 
 CUSTOMIZATIONS = """
