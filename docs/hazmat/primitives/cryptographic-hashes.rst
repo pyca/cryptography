@@ -247,7 +247,7 @@ SM3
     SM3 is a cryptographic hash function standardized by the Chinese National
     Cryptography Administration in `GM/T 0004-2012`_. It produces 256-bit
     message digests. (An English description is available at
-    `draft-oscca-cfrg-sm3-02`_.) This hash should be used for compatibility
+    `draft-sca-cfrg-sm3`_.) This hash should be used for compatibility
     purposes where required and is not otherwise recommended for use.
 
 
@@ -293,4 +293,4 @@ Interfaces
 .. _`BLAKE2`: https://blake2.net
 .. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
 .. _`GM/T 0004-2012`: http://www.oscca.gov.cn/sca/xxgk/2010-12/17/1002389/files/302a3ada057c4a73830536d03e683110.pdf
-.. _`draft-oscca-cfrg-sm3-02`: https://tools.ietf.org/id/draft-oscca-cfrg-sm3-02.html
+.. _`draft-sca-cfrg-sm3`: https://datatracker.ietf.org/doc/html/draft-sca-cfrg-sm3
