@@ -415,7 +415,7 @@ def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
     return test_kbkdf
 
 
-def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, blocation, params):
+def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
     supported_hash_algorithms: typing.Dict[
         str, typing.Type[hashes.HashAlgorithm]
     ] = {
@@ -441,14 +441,14 @@ def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, blocation, params):
         None,
         binascii.unhexlify(params["fixedinputdata"]),
         backend=backend,
-        blocation=blocation,
+        break_location=brk_loc,
     )
 
     ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
     assert binascii.hexlify(ko) == params["ko"]
 
 
-def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, blocation, params):
+def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
     supported_cipher_algorithms: typing.Dict[
         str, typing.Type[BlockCipherAlgorithm]
     ] = {
@@ -477,7 +477,7 @@ def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, blocation, params):
         None,
         binascii.unhexlify(params["fixedinputdata"]),
         backend=backend,
-        blocation=blocation,
+        break_location=brk_loc,
     )
 
     ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
@@ -492,7 +492,7 @@ def kbkdf_counter_mode_test(backend, params):
     }
 
     ctr_loc = supported_counter_locations[params.pop("ctrlocation")]
-    blocation = None
+    brk_loc = None
 
     if ctr_loc == CounterLocation.MiddleFixed:
         assert "fixedinputdata" not in params
@@ -500,18 +500,18 @@ def kbkdf_counter_mode_test(backend, params):
             "databeforectrdata"
         ) + params.pop("dataafterctrdata")
 
-        blocation = params.pop("databeforectrlen")
-        assert isinstance(blocation, int)
+        brk_loc = params.pop("databeforectrlen")
+        assert isinstance(brk_loc, int)
 
     prf = params.get("prf")
     assert prf is not None
     assert isinstance(prf, str)
     del params["prf"]
     if prf.startswith("hmac"):
-        _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, blocation, params)
+        _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params)
     else:
         assert prf.startswith("cmac")
-        _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, blocation, params)
+        _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params)
 
 
 def generate_rsa_verification_test(

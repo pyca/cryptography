@@ -232,7 +232,7 @@ class TestKBKDFHMAC:
                 backend=backend,
             )
 
-    def test_missing_blocation(self, backend):
+    def test_missing_break_location(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -259,10 +259,10 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=None,
+                break_location=None,
             )
 
-    def test_invalid_blocation(self, backend):
+    def test_invalid_break_location(self, backend):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -275,10 +275,10 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation="10",  # type: ignore[arg-type]
+                break_location="10",  # type: ignore[arg-type]
             )
 
-    def test_ignored_blocation_before(self, backend):
+    def test_ignored_break_location_before(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -291,10 +291,10 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=10,
+                break_location=10,
             )
 
-    def test_ignored_blocation_after(self, backend):
+    def test_ignored_break_location_after(self, backend):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -307,7 +307,7 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=10,
+                break_location=10,
             )
 
     def test_unsupported_hash(self, backend):
@@ -616,7 +616,7 @@ class TestKBKDFCMAC:
                 backend=backend,
             )
 
-    def test_missing_blocation(self, backend):
+    def test_missing_break_location(self, backend):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -643,10 +643,10 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=None,
+                break_location=None,
             )
 
-    def test_invalid_blocation(self, backend):
+    def test_invalid_break_location(self, backend):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -659,10 +659,10 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation="10",  # type: ignore[arg-type]
+                break_location="10",  # type: ignore[arg-type]
             )
 
-    def test_ignored_blocation_before(self, backend):
+    def test_ignored_break_location_before(self, backend):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -675,10 +675,10 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=10,
+                break_location=10,
             )
 
-    def test_ignored_blocation_after(self, backend):
+    def test_ignored_break_location_after(self, backend):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -691,7 +691,7 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend=backend,
-                blocation=10,
+                break_location=10,
             )
 
     def test_unsupported_algorithm(self, backend):

@@ -40,7 +40,7 @@ class _KBKDFDeriver:
         rlen: int,
         llen: typing.Optional[int],
         location: CounterLocation,
-        blocation: typing.Optional[int],
+        break_location: typing.Optional[int],
         label: typing.Optional[bytes],
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
@@ -53,15 +53,18 @@ class _KBKDFDeriver:
         if not isinstance(location, CounterLocation):
             raise TypeError("location must be of type CounterLocation")
 
-        if blocation is None and location is CounterLocation.MiddleFixed:
-            raise ValueError("Please specify a blocation")
+        if break_location is None and location is CounterLocation.MiddleFixed:
+            raise ValueError("Please specify a break_location")
 
-        if blocation is not None and not isinstance(blocation, int):
-            raise TypeError("blocation must be an integer")
+        if break_location is not None and not isinstance(break_location, int):
+            raise TypeError("break_location must be an integer")
 
-        if blocation is not None and location != CounterLocation.MiddleFixed:
+        if (
+            break_location is not None
+            and location != CounterLocation.MiddleFixed
+        ):
             raise ValueError(
-                "blocation is ignored when location is not"
+                "break_location is ignored when location is not"
                 " CounterLocation.MiddleFixed"
             )
 
@@ -93,7 +96,7 @@ class _KBKDFDeriver:
         self._rlen = rlen
         self._llen = llen
         self._location = location
-        self._blocation = blocation
+        self._break_location = break_location
         self._label = label
         self._context = context
         self._used = False
@@ -142,9 +145,9 @@ class _KBKDFDeriver:
                 h.update(fixed)
                 h.update(counter)
             else:
-                h.update(fixed[: self._blocation])
+                h.update(fixed[: self._break_location])
                 h.update(counter)
-                h.update(fixed[self._blocation :])
+                h.update(fixed[self._break_location :])
 
             output.append(h.finalize())
 
@@ -172,7 +175,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
         backend: typing.Any = None,
-        blocation: typing.Optional[int] = None,
+        break_location: typing.Optional[int] = None,
     ):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise UnsupportedAlgorithm(
@@ -199,7 +202,7 @@ class KBKDFHMAC(KeyDerivationFunction):
             rlen,
             llen,
             location,
-            blocation,
+            break_location,
             label,
             context,
             fixed,
@@ -229,7 +232,7 @@ class KBKDFCMAC(KeyDerivationFunction):
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
         backend: typing.Any = None,
-        blocation: typing.Optional[int] = None,
+        break_location: typing.Optional[int] = None,
     ):
         if not issubclass(
             algorithm, ciphers.BlockCipherAlgorithm
@@ -249,7 +252,7 @@ class KBKDFCMAC(KeyDerivationFunction):
             rlen,
             llen,
             location,
-            blocation,
+            break_location,
             label,
             context,
             fixed,
