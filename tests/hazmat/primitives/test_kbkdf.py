@@ -232,6 +232,84 @@ class TestKBKDFHMAC:
                 backend=backend,
             )
 
+    def test_missing_blocation(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+            )
+
+        with pytest.raises(ValueError):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=None,
+            )
+
+    def test_invalid_blocation(self, backend):
+        with pytest.raises(TypeError):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation="10",  # type: ignore[arg-type]
+            )
+
+    def test_ignored_blocation_before(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.BeforeFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=10,
+            )
+
+    def test_ignored_blocation_after(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.AfterFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=10,
+            )
+
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(
@@ -536,6 +614,84 @@ class TestKBKDFCMAC:
                 b"context",
                 b"fixed",
                 backend=backend,
+            )
+
+    def test_missing_blocation(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+            )
+
+        with pytest.raises(ValueError):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=None,
+            )
+
+    def test_invalid_blocation(self, backend):
+        with pytest.raises(TypeError):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation="10",  # type: ignore[arg-type]
+            )
+
+    def test_ignored_blocation_before(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.BeforeFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=10,
+            )
+
+    def test_ignored_blocation_after(self, backend):
+        with pytest.raises(ValueError):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.AfterFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+                blocation=10,
             )
 
     def test_unsupported_algorithm(self, backend):
