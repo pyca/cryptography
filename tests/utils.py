@@ -784,7 +784,7 @@ def load_nist_kbkdf_vectors(vector_data):
             test_data = {}
             test_data.update(tag)
             vectors.append(test_data)
-        elif line.startswith("L"):
+        elif line.startswith(("L", "DataBeforeCtrLen", "DataAfterCtrLen")):
             name, value = [c.strip() for c in line.split("=")]
             test_data[name.lower()] = int(value)
         else:
