@@ -56,9 +56,6 @@ class _KBKDFDeriver:
         if break_location is None and location is CounterLocation.MiddleFixed:
             raise ValueError("Please specify a break_location")
 
-        if break_location is not None and not isinstance(break_location, int):
-            raise TypeError("break_location must be an integer")
-
         if (
             break_location is not None
             and location != CounterLocation.MiddleFixed
@@ -67,6 +64,12 @@ class _KBKDFDeriver:
                 "break_location is ignored when location is not"
                 " CounterLocation.MiddleFixed"
             )
+
+        if break_location is not None and not isinstance(break_location, int):
+            raise TypeError("break_location must be an integer")
+
+        if break_location is not None and break_location < 0:
+            raise ValueError("break_location must be a positive integer")
 
         if (label or context) and fixed:
             raise ValueError(
@@ -134,21 +137,27 @@ class _KBKDFDeriver:
 
         fixed = self._generate_fixed_input()
 
+        if self._location == CounterLocation.BeforeFixed:
+            data_before_ctr = b""
+            data_after_ctr = fixed
+        elif self._location == CounterLocation.AfterFixed:
+            data_before_ctr = fixed
+            data_after_ctr = b""
+        else:
+            if isinstance(
+                self._break_location, int
+            ) and self._break_location > len(fixed):
+                raise ValueError("break_location offset > len(fixed)")
+            data_before_ctr = fixed[: self._break_location]
+            data_after_ctr = fixed[self._break_location :]
+
         for i in range(1, rounds + 1):
             h = self._prf(key_material)
 
             counter = utils.int_to_bytes(i, self._rlen)
+            input_data = data_before_ctr + counter + data_after_ctr
 
-            if self._location == CounterLocation.BeforeFixed:
-                h.update(counter)
-                h.update(fixed)
-            elif self._location == CounterLocation.AfterFixed:
-                h.update(fixed)
-                h.update(counter)
-            else:
-                h.update(fixed[: self._break_location])
-                h.update(counter)
-                h.update(fixed[self._break_location :])
+            h.update(input_data)
 
             output.append(h.finalize())
 
