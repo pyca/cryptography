@@ -132,10 +132,11 @@ class _KBKDFDeriver:
         if rounds > pow(2, len(r_bin) * 8) - 1:
             raise ValueError("There are too many iterations.")
 
+        fixed = self._generate_fixed_input()
+
         for i in range(1, rounds + 1):
             h = self._prf(key_material)
 
-            fixed = self._generate_fixed_input()
             counter = utils.int_to_bytes(i, self._rlen)
 
             if self._location == CounterLocation.BeforeFixed:
