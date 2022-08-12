@@ -71,8 +71,8 @@ struct CertificateRevocationList {
 }
 
 impl CertificateRevocationList {
-    fn public_bytes_der(&self) -> Vec<u8> {
-        asn1::write_single(self.raw.borrow_value())
+    fn public_bytes_der(&self) -> PyAsn1Result<Vec<u8>> {
+        Ok(asn1::write_single(self.raw.borrow_value())?)
     }
 
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> pyo3::PyResult<RevokedCertificate> {
@@ -166,7 +166,7 @@ impl CertificateRevocationList {
         let h = hashes_mod
             .getattr(crate::intern!(py, "Hash"))?
             .call1((algorithm,))?;
-        h.call_method1("update", (self.public_bytes_der().as_slice(),))?;
+        h.call_method1("update", (self.public_bytes_der()?.as_slice(),))?;
         h.call_method0("finalize")
     }
 
@@ -204,21 +204,24 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn tbs_certlist_bytes<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
-        let b = asn1::write_single(&self.raw.borrow_value().tbs_cert_list);
-        pyo3::types::PyBytes::new(py, &b)
+    fn tbs_certlist_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+        let b = asn1::write_single(&self.raw.borrow_value().tbs_cert_list)?;
+        Ok(pyo3::types::PyBytes::new(py, &b))
     }
 
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let encoding_class = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?;
 
-        let result = asn1::write_single(self.raw.borrow_value());
+        let result = asn1::write_single(self.raw.borrow_value())?;
         if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
             Ok(pyo3::types::PyBytes::new(py, &result))
         } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
@@ -236,7 +239,8 @@ impl CertificateRevocationList {
         } else {
             Err(pyo3::exceptions::PyTypeError::new_err(
                 "encoding must be Encoding.DER or Encoding.PEM",
-            ))
+            )
+            .into())
         }
     }
 
@@ -728,13 +732,13 @@ fn create_x509_crl(
         )?,
     };
 
-    let tbs_bytes = asn1::write_single(&tbs_cert_list);
+    let tbs_bytes = asn1::write_single(&tbs_cert_list)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
     let data = asn1::write_single(&RawCertificateRevocationList {
         tbs_cert_list,
         signature_algorithm: sigalg,
         signature_value: asn1::BitString::new(signature, 0).unwrap(),
-    });
+    })?;
     // TODO: extra copy as we round-trip through a slice
     load_der_x509_crl(py, &data)
 }

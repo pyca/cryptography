@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes, PyAsn1Error};
+use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, crl, oid, sct};
 
@@ -120,16 +120,18 @@ pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
     ext: &pyo3::PyAny,
-) -> pyo3::PyResult<Option<Vec<u8>>> {
+) -> PyAsn1Result<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
             let bc = ext.extract::<certificate::BasicConstraints>()?;
-            Ok(Some(asn1::write_single(&bc)))
+            Ok(Some(asn1::write_single(&bc)?))
         }
-        &oid::SUBJECT_KEY_IDENTIFIER_OID => Ok(Some(asn1::write_single(
-            &ext.getattr(crate::intern!(py, "digest"))?
-                .extract::<&[u8]>()?,
-        ))),
+        &oid::SUBJECT_KEY_IDENTIFIER_OID => {
+            let digest = ext
+                .getattr(crate::intern!(py, "digest"))?
+                .extract::<&[u8]>()?;
+            Ok(Some(asn1::write_single(&digest)?))
+        }
         &oid::KEY_USAGE_OID => {
             let mut bs = [0, 0];
             certificate::set_bit(
@@ -200,11 +202,11 @@ pub(crate) fn encode_extension(
                 (&bs[..], bs[1].trailing_zeros() as u8)
             };
             let v = asn1::BitString::new(bits, unused_bits).unwrap();
-            Ok(Some(asn1::write_single(&v)))
+            Ok(Some(asn1::write_single(&v)?))
         }
         &oid::AUTHORITY_INFORMATION_ACCESS_OID | &oid::SUBJECT_INFORMATION_ACCESS_OID => {
             let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&ads)))
+            Ok(Some(asn1::write_single(&ads)?))
         }
         &oid::EXTENDED_KEY_USAGE_OID => {
             let mut oids = vec![];
@@ -212,7 +214,9 @@ pub(crate) fn encode_extension(
                 let oid = py_oid_to_oid(el?)?;
                 oids.push(oid);
             }
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(oids))))
+            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
+                oids,
+            ))?))
         }
         &oid::CERTIFICATE_POLICIES_OID => {
             let mut policy_informations = vec![];
@@ -230,7 +234,8 @@ pub(crate) fn encode_extension(
                                 None => {
                                     return Err(pyo3::exceptions::PyValueError::new_err(
                                         "Qualifier must be an ASCII-string.",
-                                    ))
+                                    )
+                                    .into())
                                 }
                             };
                             certificate::PolicyQualifierInfo {
@@ -303,7 +308,7 @@ pub(crate) fn encode_extension(
             }
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
                 policy_informations,
-            ))))
+            ))?))
         }
         &oid::POLICY_CONSTRAINTS_OID => {
             let pc = certificate::PolicyConstraints {
@@ -314,7 +319,7 @@ pub(crate) fn encode_extension(
                     .getattr(crate::intern!(py, "inhibit_policy_mapping"))?
                     .extract()?,
             };
-            Ok(Some(asn1::write_single(&pc)))
+            Ok(Some(asn1::write_single(&pc)?))
         }
         &oid::NAME_CONSTRAINTS_OID => {
             let permitted = ext.getattr(crate::intern!(py, "permitted_subtrees"))?;
@@ -323,7 +328,7 @@ pub(crate) fn encode_extension(
                 permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
                 excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
             };
-            Ok(Some(asn1::write_single(&nc)))
+            Ok(Some(asn1::write_single(&nc)?))
         }
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
@@ -332,21 +337,21 @@ pub(crate) fn encode_extension(
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
-            )))
+            )?))
         }
         &oid::ISSUER_ALTERNATIVE_NAME_OID | &oid::SUBJECT_ALTERNATIVE_NAME_OID => {
             let gns = x509::common::encode_general_names(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
+            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::AUTHORITY_KEY_IDENTIFIER_OID => {
             let aki = encode_authority_key_identifier(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&aki)))
+            Ok(Some(asn1::write_single(&aki)?))
         }
         &oid::FRESHEST_CRL_OID | &oid::CRL_DISTRIBUTION_POINTS_OID => {
             let dps = encode_distribution_points(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))))
+            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))?))
         }
-        &oid::OCSP_NO_CHECK_OID => Ok(Some(asn1::write_single(&()))),
+        &oid::OCSP_NO_CHECK_OID => Ok(Some(asn1::write_single(&())?)),
         &oid::TLS_FEATURE_OID => {
             // Ideally we'd skip building up a vec and just write directly into the
             // writer. This isn't possible at the moment because the callback to write
@@ -357,9 +362,9 @@ pub(crate) fn encode_extension(
                 els.push(el?.getattr(crate::intern!(py, "value"))?.extract::<u64>()?);
             }
 
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))))
+            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))?))
         }
-        &oid::PRECERT_POISON_OID => Ok(Some(asn1::write_single(&()))),
+        &oid::PRECERT_POISON_OID => Ok(Some(asn1::write_single(&())?)),
         &oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID
         | &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
             let mut length = 0;
@@ -375,7 +380,7 @@ pub(crate) fn encode_extension(
                 result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
                 result.extend_from_slice(&sct.borrow().sct_data);
             }
-            Ok(Some(asn1::write_single(&result.as_slice())))
+            Ok(Some(asn1::write_single(&result.as_slice())?))
         }
         &oid::CRL_REASON_OID => {
             let value = ext
@@ -384,18 +389,18 @@ pub(crate) fn encode_extension(
                 .getattr(crate::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
                 .get_item(ext.getattr(crate::intern!(py, "reason"))?)?
                 .extract::<u32>()?;
-            Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))))
+            Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))
         }
         &oid::CERTIFICATE_ISSUER_OID => {
             let gns = x509::common::encode_general_names(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))))
+            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
             let chrono_dt =
                 x509::py_to_chrono(py, ext.getattr(crate::intern!(py, "invalidity_date"))?)?;
             Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
                 chrono_dt,
-            ))))
+            )?)?))
         }
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
@@ -404,7 +409,7 @@ pub(crate) fn encode_extension(
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
-            )))
+            )?))
         }
         &oid::ISSUING_DISTRIBUTION_POINT_OID => {
             let only_some_reasons = if ext
@@ -452,13 +457,13 @@ pub(crate) fn encode_extension(
                     .extract()?,
                 only_some_reasons,
             };
-            Ok(Some(asn1::write_single(&idp)))
+            Ok(Some(asn1::write_single(&idp)?))
         }
         &oid::NONCE_OID => {
             let nonce = ext
                 .getattr(crate::intern!(py, "nonce"))?
                 .extract::<&[u8]>()?;
-            Ok(Some(asn1::write_single(&nonce)))
+            Ok(Some(asn1::write_single(&nonce)?))
         }
         _ => Ok(None),
     }

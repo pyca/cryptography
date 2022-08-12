@@ -9,7 +9,7 @@ use once_cell::sync::Lazy;
 
 static NULL_DER: Lazy<Vec<u8>> = Lazy::new(|| {
     // TODO: kind of verbose way to say "\x05\x00".
-    asn1::write_single(&())
+    asn1::write_single(&()).unwrap()
 });
 pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
     Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());

@@ -43,11 +43,8 @@ impl CertID<'_> {
         issuer: &'p x509::Certificate,
         hash_algorithm: &'p pyo3::PyAny,
     ) -> PyAsn1Result<CertID<'p>> {
-        let issuer_name_hash = hash_data(
-            py,
-            hash_algorithm,
-            &asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer),
-        )?;
+        let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
+        let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
         let issuer_key_hash = hash_data(
             py,
             hash_algorithm,

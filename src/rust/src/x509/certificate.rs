@@ -120,43 +120,44 @@ impl Certificate {
         slf
     }
 
-    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
-            &asn1::write_single(&self.raw.borrow_value().tbs_cert.spki),
+            &asn1::write_single(&self.raw.borrow_value().tbs_cert.spki)?,
         );
-        py.import("cryptography.hazmat.primitives.serialization")?
+        Ok(py
+            .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "load_der_public_key"))?
-            .call1((serialized,))
+            .call1((serialized,))?)
     }
 
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
         algorithm: pyo3::PyObject,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    ) -> PyAsn1Result<&'p pyo3::PyAny> {
         let hasher = py
             .import("cryptography.hazmat.primitives.hashes")?
             .getattr(crate::intern!(py, "Hash"))?
             .call1((algorithm,))?;
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized =
-            pyo3::types::PyBytes::new(py, &asn1::write_single(&self.raw.borrow_value()));
+            pyo3::types::PyBytes::new(py, &asn1::write_single(&self.raw.borrow_value())?);
         hasher.call_method1("update", (serialized,))?;
-        hasher.call_method0("finalize")
+        Ok(hasher.call_method0("finalize")?)
     }
 
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let encoding_class = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?;
 
-        let result = asn1::write_single(self.raw.borrow_value());
+        let result = asn1::write_single(self.raw.borrow_value())?;
         if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
             Ok(pyo3::types::PyBytes::new(py, &result))
         } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
@@ -174,7 +175,8 @@ impl Certificate {
         } else {
             Err(pyo3::exceptions::PyTypeError::new_err(
                 "encoding must be Encoding.DER or Encoding.PEM",
-            ))
+            )
+            .into())
         }
     }
 
@@ -208,16 +210,19 @@ impl Certificate {
     }
 
     #[getter]
-    fn tbs_certificate_bytes<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
-        let result = asn1::write_single(&self.raw.borrow_value().tbs_cert);
-        pyo3::types::PyBytes::new(py, &result)
+    fn tbs_certificate_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+        let result = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
     fn tbs_precertificate_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let val = self.raw.borrow_value();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
@@ -237,7 +242,7 @@ impl Certificate {
                     asn1::SequenceOfWriter::new(filtered_extensions),
                 );
                 tbs_precert.extensions = Some(filtered_extensions);
-                let result = asn1::write_single(&tbs_precert);
+                let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
             None => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
@@ -971,10 +976,10 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
-pub(crate) fn time_from_py(py: pyo3::Python<'_>, val: &pyo3::PyAny) -> pyo3::PyResult<x509::Time> {
+pub(crate) fn time_from_py(py: pyo3::Python<'_>, val: &pyo3::PyAny) -> PyAsn1Result<x509::Time> {
     let dt = x509::py_to_chrono(py, val)?;
     if dt.year() >= 2050 {
-        Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)))
+        Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
     } else {
         Ok(x509::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
     }
@@ -1033,13 +1038,13 @@ fn create_x509_certificate(
         )?,
     };
 
-    let tbs_bytes = asn1::write_single(&tbs_cert);
+    let tbs_bytes = asn1::write_single(&tbs_cert)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
     let data = asn1::write_single(&RawCertificate {
         tbs_cert,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
-    });
+    })?;
     // TODO: extra copy as we round-trip through a slice
     load_der_x509_certificate(py, &data)
 }

@@ -193,9 +193,9 @@ impl OCSPResponse {
     fn tbs_response_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let resp = self.requires_successful_response()?;
-        let result = asn1::write_single(&resp.tbs_response_data);
+        let result = asn1::write_single(&resp.tbs_response_data)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
@@ -359,7 +359,7 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
@@ -367,9 +367,10 @@ impl OCSPResponse {
         if encoding != der {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
-            ));
+            )
+            .into());
         }
-        let result = asn1::write_single(self.raw.borrow_value());
+        let result = asn1::write_single(self.raw.borrow_value())?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
@@ -580,7 +581,7 @@ fn create_ocsp_basic_response<'p>(
     builder: &'p pyo3::PyAny,
     private_key: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
-) -> pyo3::PyResult<Vec<u8>> {
+) -> PyAsn1Result<Vec<u8>> {
     let ocsp_mod = py.import("cryptography.x509.ocsp")?;
 
     let py_single_resp = builder.getattr(crate::intern!(py, "_response"))?;
@@ -625,7 +626,7 @@ fn create_ocsp_basic_response<'p>(
         };
         // REVOKED
         let py_revocation_time = py_single_resp.getattr(crate::intern!(py, "_revocation_time"))?;
-        let revocation_time = asn1::GeneralizedTime::new(py_to_chrono(py, py_revocation_time)?);
+        let revocation_time = asn1::GeneralizedTime::new(py_to_chrono(py, py_revocation_time)?)?;
         CertStatus::Revoked(RevokedInfo {
             revocation_time,
             revocation_reason,
@@ -639,12 +640,12 @@ fn create_ocsp_basic_response<'p>(
         Some(asn1::GeneralizedTime::new(py_to_chrono(
             py,
             py_next_update,
-        )?))
+        )?)?)
     } else {
         None
     };
     let py_this_update = py_single_resp.getattr(crate::intern!(py, "_this_update"))?;
-    let this_update = asn1::GeneralizedTime::new(py_to_chrono(py, py_this_update)?);
+    let this_update = asn1::GeneralizedTime::new(py_to_chrono(py, py_this_update)?)?;
 
     let responses = vec![SingleResponse {
         cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
@@ -688,7 +689,7 @@ fn create_ocsp_basic_response<'p>(
 
     let tbs_response_data = ResponseData {
         version: 0,
-        produced_at: asn1::GeneralizedTime::new(chrono::Utc::now()),
+        produced_at: asn1::GeneralizedTime::new(chrono::Utc::now())?,
         responder_id,
         responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(responses)),
         response_extensions: x509::common::encode_extensions(
@@ -699,7 +700,7 @@ fn create_ocsp_basic_response<'p>(
     };
 
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
-    let tbs_bytes = asn1::write_single(&tbs_response_data);
+    let tbs_bytes = asn1::write_single(&tbs_response_data)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
 
     py.import("cryptography.hazmat.backends.openssl.backend")?
@@ -729,7 +730,7 @@ fn create_ocsp_basic_response<'p>(
         signature_algorithm: sigalg,
         certs,
     };
-    Ok(asn1::write_single(&basic_resp))
+    Ok(asn1::write_single(&basic_resp)?)
 }
 
 #[pyo3::prelude::pyfunction]
@@ -758,7 +759,7 @@ fn create_ocsp_response(
         response_status: asn1::Enumerated::new(response_status),
         response_bytes,
     };
-    let data = asn1::write_single(&resp);
+    let data = asn1::write_single(&resp)?;
     // TODO: extra copy as we round-trip through a slice
     load_der_ocsp_response(py, &data)
 }
