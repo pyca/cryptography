@@ -48,9 +48,8 @@ struct OCSPRequest {
 }
 
 impl OCSPRequest {
-    fn cert_id(&self) -> Result<ocsp::CertID<'_>, PyAsn1Error> {
-        Ok(self
-            .raw
+    fn cert_id(&self) -> ocsp::CertID<'_> {
+        self.raw
             .borrow_value()
             .tbs_request
             .request_list
@@ -58,25 +57,25 @@ impl OCSPRequest {
             .clone()
             .next()
             .unwrap()
-            .req_cert)
+            .req_cert
     }
 }
 
 #[pyo3::prelude::pymethods]
 impl OCSPRequest {
     #[getter]
-    fn issuer_name_hash(&self) -> Result<&[u8], PyAsn1Error> {
-        Ok(self.cert_id()?.issuer_name_hash)
+    fn issuer_name_hash(&self) -> &[u8] {
+        self.cert_id().issuer_name_hash
     }
 
     #[getter]
-    fn issuer_key_hash(&self) -> Result<&[u8], PyAsn1Error> {
-        Ok(self.cert_id()?.issuer_key_hash)
+    fn issuer_key_hash(&self) -> &[u8] {
+        self.cert_id().issuer_key_hash
     }
 
     #[getter]
     fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let cert_id = self.cert_id()?;
+        let cert_id = self.cert_id();
 
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
         match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
@@ -97,7 +96,7 @@ impl OCSPRequest {
 
     #[getter]
     fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let bytes = self.cert_id()?.serial_number.as_bytes();
+        let bytes = self.cert_id().serial_number.as_bytes();
         Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
 

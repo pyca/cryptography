@@ -829,15 +829,15 @@ impl OCSPSingleResponse {
     }
 
     #[getter]
-    fn issuer_key_hash(&self) -> Result<&[u8], PyAsn1Error> {
+    fn issuer_key_hash(&self) -> &[u8] {
         let single_resp = self.single_response();
-        Ok(single_resp.cert_id.issuer_key_hash)
+        single_resp.cert_id.issuer_key_hash
     }
 
     #[getter]
-    fn issuer_name_hash(&self) -> Result<&[u8], PyAsn1Error> {
+    fn issuer_name_hash(&self) -> &[u8] {
         let single_resp = self.single_response();
-        Ok(single_resp.cert_id.issuer_name_hash)
+        single_resp.cert_id.issuer_name_hash
     }
 
     #[getter]

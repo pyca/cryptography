@@ -199,7 +199,7 @@ struct Validity<'a> {
     not_after: asn1::Tlv<'a>,
 }
 
-fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
+fn parse_name_value_tags(rdns: &mut Name<'_>) -> Vec<u8> {
     let mut tags = vec![];
     for rdn in rdns.unwrap_read().clone() {
         let mut attributes = rdn.collect::<Vec<_>>();
@@ -207,7 +207,7 @@ fn parse_name_value_tags(rdns: &mut Name<'_>) -> Result<Vec<u8>, PyAsn1Error> {
 
         tags.push(attributes.pop().unwrap().value.tag().as_u8().unwrap());
     }
-    Ok(tags)
+    tags
 }
 
 #[pyo3::prelude::pyfunction]
@@ -223,8 +223,8 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
             .as_u8()
             .unwrap(),
         not_after_tag: asn1_cert.tbs_cert.validity.not_after.tag().as_u8().unwrap(),
-        issuer_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.issuer)?,
-        subject_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.subject)?,
+        issuer_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.issuer),
+        subject_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.subject),
     })
 }
 

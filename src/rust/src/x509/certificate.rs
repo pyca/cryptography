@@ -208,12 +208,9 @@ impl Certificate {
     }
 
     #[getter]
-    fn tbs_certificate_bytes<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
+    fn tbs_certificate_bytes<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
         let result = asn1::write_single(&self.raw.borrow_value().tbs_cert);
-        Ok(pyo3::types::PyBytes::new(py, &result))
+        pyo3::types::PyBytes::new(py, &result)
     }
 
     #[getter]
@@ -250,11 +247,8 @@ impl Certificate {
     }
 
     #[getter]
-    fn signature<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::types::PyBytes, PyAsn1Error> {
-        Ok(pyo3::types::PyBytes::new(
-            py,
-            self.raw.borrow_value().signature.as_bytes(),
-        ))
+    fn signature<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
+        pyo3::types::PyBytes::new(py, self.raw.borrow_value().signature.as_bytes())
     }
 
     #[getter]
