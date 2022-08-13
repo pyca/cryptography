@@ -239,8 +239,4 @@ void (*X509_STORE_set_get_issuer)(X509_STORE *,
 #else
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
 #endif
-
-#if CRYPTOGRAPHY_IS_BORINGSSL
-static const long X509_V_FLAG_NO_CHECK_TIME = 0;
-#endif
 """
