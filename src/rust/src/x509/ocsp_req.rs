@@ -129,7 +129,7 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
@@ -137,9 +137,10 @@ impl OCSPRequest {
         if encoding != der {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
-            ));
+            )
+            .into());
         }
-        let result = asn1::write_single(self.raw.borrow_value());
+        let result = asn1::write_single(self.raw.borrow_value())?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
@@ -205,7 +206,7 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         },
         optional_signature: None,
     };
-    let data = asn1::write_single(&ocsp_req);
+    let data = asn1::write_single(&ocsp_req)?;
     // TODO: extra copy as we round-trip through a slice
     load_der_ocsp_request(py, &data)
 }

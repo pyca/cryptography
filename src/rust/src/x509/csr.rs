@@ -104,15 +104,16 @@ impl pyo3::basic::PyObjectProtocol for CertificateSigningRequest {
 
 #[pyo3::prelude::pymethods]
 impl CertificateSigningRequest {
-    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
-            &asn1::write_single(&self.raw.borrow_value().csr_info.spki),
+            &asn1::write_single(&self.raw.borrow_value().csr_info.spki)?,
         );
-        py.import("cryptography.hazmat.primitives.serialization")?
+        Ok(py
+            .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "load_der_public_key"))?
-            .call1((serialized,))
+            .call1((serialized,))?)
     }
 
     #[getter]
@@ -124,9 +125,12 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn tbs_certrequest_bytes<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
-        let result = asn1::write_single(&self.raw.borrow_value().csr_info);
-        pyo3::types::PyBytes::new(py, &result)
+    fn tbs_certrequest_bytes<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+        let result = asn1::write_single(&self.raw.borrow_value().csr_info)?;
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
@@ -166,12 +170,12 @@ impl CertificateSigningRequest {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
         let encoding_class = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?;
 
-        let result = asn1::write_single(self.raw.borrow_value());
+        let result = asn1::write_single(self.raw.borrow_value())?;
         if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
             Ok(pyo3::types::PyBytes::new(py, &result))
         } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
@@ -189,7 +193,8 @@ impl CertificateSigningRequest {
         } else {
             Err(pyo3::exceptions::PyTypeError::new_err(
                 "encoding must be Encoding.DER or Encoding.PEM",
-            ))
+            )
+            .into())
         }
     }
 
@@ -374,7 +379,7 @@ fn create_x509_csr(
         builder.getattr(crate::intern!(py, "_extensions"))?,
         x509::extensions::encode_extension,
     )? {
-        ext_bytes = asn1::write_single(&exts);
+        ext_bytes = asn1::write_single(&exts)?;
         attrs.push(Attribute {
             type_id: (oid::EXTENSION_REQUEST).clone(),
             values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
@@ -414,13 +419,13 @@ fn create_x509_csr(
         attributes: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };
 
-    let tbs_bytes = asn1::write_single(&csr_info);
+    let tbs_bytes = asn1::write_single(&csr_info)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
     let data = asn1::write_single(&RawCsr {
         csr_info,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
-    });
+    })?;
     // TODO: extra copy as we round-trip through a slice
     load_der_x509_csr(py, &data)
 }

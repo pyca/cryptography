@@ -74,9 +74,9 @@ impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
         true
     }
 }
-impl<'a> asn1::Asn1Writable<'a> for RawTlv<'a> {
-    fn write(&self, w: &mut asn1::Writer<'_>) {
-        w.write_tlv(self.tag, move |dest| dest.extend_from_slice(self.value))
+impl<'a> asn1::Asn1Writable for RawTlv<'a> {
+    fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult {
+        w.write_tlv(self.tag, move |dest| dest.push_slice(self.value))
     }
 }
 
@@ -141,9 +141,9 @@ pub(crate) fn encode_name_entry<'p>(
 fn encode_name_bytes<'p>(
     py: pyo3::Python<'p>,
     py_name: &'p pyo3::PyAny,
-) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
+) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
     let name = encode_name(py, py_name)?;
-    let result = asn1::write_single(&name);
+    let result = asn1::write_single(&name)?;
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
@@ -161,10 +161,10 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     }
 }
 
-impl<'a> asn1::SimpleAsn1Writable<'a> for UnvalidatedIA5String<'a> {
+impl<'a> asn1::SimpleAsn1Writable for UnvalidatedIA5String<'a> {
     const TAG: asn1::Tag = asn1::IA5String::TAG;
-    fn write_data(&self, dest: &mut Vec<u8>) {
-        dest.extend_from_slice(self.0.as_bytes());
+    fn write_data(&self, dest: &mut asn1::WriteBuf) -> asn1::WriteResult {
+        dest.push_slice(self.0.as_bytes())
     }
 }
 
@@ -589,7 +589,7 @@ pub(crate) fn parse_and_cache_extensions<
 
 pub(crate) fn encode_extensions<
     'p,
-    F: Fn(pyo3::Python<'_>, &asn1::ObjectIdentifier, &pyo3::PyAny) -> pyo3::PyResult<Option<Vec<u8>>>,
+    F: Fn(pyo3::Python<'_>, &asn1::ObjectIdentifier, &pyo3::PyAny) -> PyAsn1Result<Option<Vec<u8>>>,
 >(
     py: pyo3::Python<'p>,
     py_exts: &'p pyo3::PyAny,
@@ -727,11 +727,11 @@ impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
     }
 }
 
-impl<'a, T: asn1::SimpleAsn1Writable<'a>, U: asn1::SimpleAsn1Writable<'a>>
-    asn1::SimpleAsn1Writable<'a> for Asn1ReadableOrWritable<'a, T, U>
+impl<'a, T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1Writable
+    for Asn1ReadableOrWritable<'a, T, U>
 {
     const TAG: asn1::Tag = U::TAG;
-    fn write_data(&self, w: &mut Vec<u8>) {
+    fn write_data(&self, w: &mut asn1::WriteBuf) -> asn1::WriteResult {
         match self {
             Asn1ReadableOrWritable::Read(v, _) => T::write_data(v, w),
             Asn1ReadableOrWritable::Write(v, _) => U::write_data(v, w),
@@ -760,7 +760,7 @@ mod tests {
     #[test]
     fn test_asn1_readable_or_writable_write_read_data() {
         let v = Asn1ReadableOrWritable::<u32, u32>::new_read(17);
-        assert_eq!(&asn1::write_single(&v), b"\x02\x01\x11");
+        assert_eq!(&asn1::write_single(&v).unwrap(), b"\x02\x01\x11");
     }
 
     #[test]
