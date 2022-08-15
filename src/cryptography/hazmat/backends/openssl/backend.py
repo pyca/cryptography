@@ -2539,7 +2539,22 @@ class GetCipherByName:
 
     def __call__(self, backend: Backend, cipher: CipherAlgorithm, mode: Mode):
         cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
-        return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
+        evp_cipher = backend._lib.EVP_get_cipherbyname(
+            cipher_name.encode("ascii")
+        )
+
+        # try EVP_CIPHER_fetch if present
+        if evp_cipher == backend._ffi.NULL and hasattr(
+            backend._lib, "EVP_CIPHER_fetch"
+        ):
+            evp_cipher = backend._lib.EVP_CIPHER_fetch(
+                backend._ffi.NULL,
+                cipher_name.encode("ascii"),
+                backend._ffi.NULL,
+            )
+
+        backend._consume_errors()
+        return evp_cipher
 
 
 def _get_xts_cipher(backend: Backend, cipher: AES, mode):
