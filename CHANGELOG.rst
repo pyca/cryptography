@@ -42,6 +42,10 @@ Changelog
 * Added :attr:`~cryptography.x509.Certificate.tbs_precertificate_bytes`, allowing
   users to access the to-be-signed pre-certificate data needed for signed
   certificate timestamp verification.
+* :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC` and
+  :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC` now support
+  :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`
+  counter location.
 
 .. _v37-0-4:
 

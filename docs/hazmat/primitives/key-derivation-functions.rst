@@ -670,12 +670,20 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
+    :param int break_location: A keyword-only argument. An integer that
+        indicates the bytes offset where counter bytes are to be located.
+        Required when ``location`` is
+        :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
+
     :raises TypeError: This exception is raised if ``label`` or ``context``
-        is not ``bytes``. Also raised if ``rlen`` or ``llen`` is not ``int``.
+        is not ``bytes``. Also raised if ``rlen``, ``llen``, or
+        ``break_location`` is not ``int``.
 
     :raises ValueError: This exception is raised if ``rlen`` or ``llen``
         is greater than 4 or less than 1. This exception is also raised if
-        you specify a ``label`` or ``context`` and ``fixed``.
+        you specify a ``label`` or ``context`` and ``fixed``. This exception
+        is also raised if you specify ``break_location`` and ``location`` is not
+        :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
 
     .. method:: derive(key_material)
 
@@ -788,20 +796,28 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
+    :param int break_location: A keyword-only argument. An integer that
+        indicates the bytes offset where counter bytes are to be located.
+        Required when ``location`` is
+        :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
+
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
         if ``algorithm`` is not a subclass of
         :class:`~cryptography.hazmat.primitives.ciphers.CipherAlgorithm` and
         :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
 
     :raises TypeError: This exception is raised if ``label`` or ``context``
-        is not ``bytes``, ``rlen`` or ``llen`` is not ``int``, ``mode`` is not
+        is not ``bytes``, ``rlen``, ``llen``, or ``break_location` is not
+        ``int``, ``mode`` is not
         :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` or ``location``
         is not
         :class:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation`.
 
     :raises ValueError: This exception is raised if ``rlen`` or ``llen``
         is greater than 4 or less than 1. This exception is also raised if
-        you specify a ``label`` or ``context`` and ``fixed``.
+        you specify a ``label`` or ``context`` and ``fixed``. This exception
+        is also raised if you specify ``break_location`` and ``location`` is not
+        :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
 
     .. method:: derive(key_material)
 
@@ -860,6 +876,13 @@ KBKDF
 
         The counter iteration variable will be concatenated after
         the fixed input data.
+
+    .. attribute:: MiddleFixed
+
+        .. versionadded:: 38.0
+
+        The counter iteration variable will be concatenated in the middle
+        of the fixed input data.
 
 
 X963KDF
