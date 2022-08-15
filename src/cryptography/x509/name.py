@@ -420,7 +420,7 @@ class _RFC4514NameParser:
             self._read_char(",")
             rdns.append(self._parse_rdn())
 
-        return Name(rdns)
+        return Name(reversed(rdns))
 
     def _parse_rdn(self) -> RelativeDistinguishedName:
         nas = [self._parse_na()]

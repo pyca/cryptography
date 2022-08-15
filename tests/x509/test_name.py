@@ -59,14 +59,7 @@ class TestRFC4514:
                 Name(
                     [
                         RelativeDistinguishedName(
-                            [
-                                NameAttribute(
-                                    NameOID.ORGANIZATIONAL_UNIT_NAME, "Sales"
-                                ),
-                                NameAttribute(
-                                    NameOID.COMMON_NAME, "J.  Smith"
-                                ),
-                            ]
+                            [NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
                         ),
                         RelativeDistinguishedName(
                             [
@@ -76,7 +69,14 @@ class TestRFC4514:
                             ]
                         ),
                         RelativeDistinguishedName(
-                            [NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
+                            [
+                                NameAttribute(
+                                    NameOID.ORGANIZATIONAL_UNIT_NAME, "Sales"
+                                ),
+                                NameAttribute(
+                                    NameOID.COMMON_NAME, "J.  Smith"
+                                ),
+                            ]
                         ),
                     ]
                 ),
@@ -85,11 +85,11 @@ class TestRFC4514:
                 "CN=cryptography.io,O=PyCA,L=,ST=,C=US",
                 Name(
                     [
-                        NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
-                        NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
-                        NameAttribute(NameOID.LOCALITY_NAME, ""),
-                        NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, ""),
                         NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, ""),
+                        NameAttribute(NameOID.LOCALITY_NAME, ""),
+                        NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+                        NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
                     ]
                 ),
             ),
@@ -97,9 +97,9 @@ class TestRFC4514:
                 r"C=US,CN=Joe \, Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
-                        NameAttribute(NameOID.COMMON_NAME, "Joe , Smith"),
                         NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                        NameAttribute(NameOID.COMMON_NAME, "Joe , Smith"),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -107,9 +107,9 @@ class TestRFC4514:
                 r"C=US,CN=Jane \"J\,S\" Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
-                        NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
                         NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                        NameAttribute(NameOID.COMMON_NAME, 'Jane "J,S" Smith'),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -117,9 +117,9 @@ class TestRFC4514:
                 'C=US,CN=\\"Jane J\\,S Smith\\",DC=example',
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
-                        NameAttribute(NameOID.COMMON_NAME, '"Jane J,S Smith"'),
                         NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                        NameAttribute(NameOID.COMMON_NAME, '"Jane J,S Smith"'),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -127,11 +127,11 @@ class TestRFC4514:
                 'C=US,CN=\\"Jane \\"J\\,S\\" Smith\\",DC=example',
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
                         NameAttribute(
                             NameOID.COMMON_NAME, '"Jane "J,S" Smith"'
                         ),
-                        NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -139,9 +139,9 @@ class TestRFC4514:
                 r"C=US,CN=Jane=Smith,DC=example",
                 Name(
                     [
-                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
-                        NameAttribute(NameOID.COMMON_NAME, "Jane=Smith"),
                         NameAttribute(NameOID.DOMAIN_COMPONENT, "example"),
+                        NameAttribute(NameOID.COMMON_NAME, "Jane=Smith"),
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
                     ]
                 ),
             ),
@@ -170,8 +170,8 @@ class TestRFC4514:
             "CN=Santa Claus,E=santa@north.pole", {"E": NameOID.EMAIL_ADDRESS}
         ) == Name(
             [
-                NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
                 NameAttribute(NameOID.EMAIL_ADDRESS, "santa@north.pole"),
+                NameAttribute(NameOID.COMMON_NAME, "Santa Claus"),
             ]
         )
 
@@ -182,3 +182,15 @@ class TestRFC4514:
                 NameAttribute(NameOID.EMAIL_ADDRESS, "Santa Claus"),
             ]
         )
+
+    def test_generate_parse(self):
+        name1 = Name(
+            [
+                NameAttribute(NameOID.COMMON_NAME, "Common Name 1"),
+                NameAttribute(NameOID.LOCALITY_NAME, "City for Name 1"),
+                NameAttribute(NameOID.ORGANIZATION_NAME, "Name 1 Organization"),
+            ]
+        )
+        name1_str = name1.rfc4514_string()
+        assert Name.from_rfc4514_string(name1_str) == name1
+        assert Name.from_rfc4514_string(name1_str).rfc4514_string() == name1_str
