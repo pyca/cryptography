@@ -2544,8 +2544,9 @@ class GetCipherByName:
         )
 
         # try EVP_CIPHER_fetch if present
-        if evp_cipher == backend._ffi.NULL and hasattr(
-            backend._lib, "EVP_CIPHER_fetch"
+        if (
+            evp_cipher == backend._ffi.NULL
+            and backend._lib.Cryptography_HAS_300_EVP_CIPHER
         ):
             evp_cipher = backend._lib.EVP_CIPHER_fetch(
                 backend._ffi.NULL,
