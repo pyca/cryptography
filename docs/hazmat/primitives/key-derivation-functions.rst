@@ -670,8 +670,9 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
-    :param int break_location: An integer that indicates the bytes offset where
-        counter bytes are to be located. Required when ``location`` is
+    :param int break_location: A keyword-only argument. An integer that
+        indicates the bytes offset where counter bytes are to be located.
+        Required when ``location`` is
         :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
 
     :raises TypeError: This exception is raised if ``label`` or ``context``
@@ -795,8 +796,9 @@ KBKDF
         may supply your own fixed data. If ``fixed`` is specified, ``label``
         and ``context`` is ignored.
 
-    :param int break_location: An integer that indicates the bytes offset where
-        counter bytes are to be located. Required when ``location`` is
+    :param int break_location: A keyword-only argument. An integer that
+        indicates the bytes offset where counter bytes are to be located.
+        Required when ``location`` is
         :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised
