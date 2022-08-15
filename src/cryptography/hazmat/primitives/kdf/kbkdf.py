@@ -185,6 +185,7 @@ class KBKDFHMAC(KeyDerivationFunction):
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
         backend: typing.Any = None,
+        *,
         break_location: typing.Optional[int] = None,
     ):
         if not isinstance(algorithm, hashes.HashAlgorithm):
@@ -242,6 +243,7 @@ class KBKDFCMAC(KeyDerivationFunction):
         context: typing.Optional[bytes],
         fixed: typing.Optional[bytes],
         backend: typing.Any = None,
+        *,
         break_location: typing.Optional[int] = None,
     ):
         if not issubclass(

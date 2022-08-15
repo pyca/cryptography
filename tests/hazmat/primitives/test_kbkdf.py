@@ -268,6 +268,24 @@ class TestKBKDFHMAC:
                 break_location=None,
             )
 
+    def test_keyword_only_break_location(self, backend):
+        with pytest.raises(
+            TypeError, match=r"\d+ positional arguments but \d+ were given\Z"
+        ):
+            KBKDFHMAC(
+                hashes.SHA256(),
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend,
+                0,  # break_location
+            )  # type: ignore
+
     def test_invalid_break_location(self, backend):
         with pytest.raises(
             TypeError, match=re.escape("break_location must be an integer")
@@ -705,6 +723,24 @@ class TestKBKDFCMAC:
                 backend=backend,
                 break_location=None,
             )
+
+    def test_keyword_only_break_location(self, backend):
+        with pytest.raises(
+            TypeError, match=r"\d+ positional arguments but \d+ were given\Z"
+        ):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                32,
+                4,
+                4,
+                CounterLocation.MiddleFixed,
+                b"label",
+                b"context",
+                None,
+                backend,
+                0,  # break_location
+            )  # type: ignore
 
     def test_invalid_break_location(self, backend):
         with pytest.raises(
