@@ -45,7 +45,7 @@ try:
         ],
         rust_extensions=[
             RustExtension(
-                "_rust",
+                "cryptography.hazmat.bindings._rust",
                 "src/rust/Cargo.toml",
                 py_limited_api=True,
                 # Enable abi3 mode if we're not using PyPy.

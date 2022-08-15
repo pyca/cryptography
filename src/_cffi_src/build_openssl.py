@@ -70,7 +70,7 @@ def _extra_compile_args(platform):
 
 
 ffi = build_ffi_for_binding(
-    module_name="_openssl",
+    module_name="cryptography.hazmat.bindings._openssl",
     module_prefix="_cffi_src.openssl.",
     modules=[
         # This goes first so we can define some cryptography-wide symbols.
