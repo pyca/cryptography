@@ -3,6 +3,7 @@
 # for complete details.
 
 import abc
+import typing
 
 from cryptography import utils
 
@@ -24,6 +25,13 @@ class PrivateFormat(utils.Enum):
     TraditionalOpenSSL = "TraditionalOpenSSL"
     Raw = "Raw"
     OpenSSH = "OpenSSH"
+
+    def encryption_builder(self) -> "KeySerializationEncryptionBuilder":
+        if self is not PrivateFormat.OpenSSH:
+            raise ValueError(
+                "encryption_builder only supported with PrivateFormat.OpenSSH"
+            )
+        return KeySerializationEncryptionBuilder(self)
 
 
 class PublicFormat(utils.Enum):
@@ -53,3 +61,44 @@ class BestAvailableEncryption(KeySerializationEncryption):
 
 class NoEncryption(KeySerializationEncryption):
     pass
+
+
+class KeySerializationEncryptionBuilder(object):
+    def __init__(
+        self,
+        format: PrivateFormat,
+        *,
+        _kdf_rounds: typing.Optional[int] = None,
+    ) -> None:
+        self._format = format
+
+        self._kdf_rounds = _kdf_rounds
+
+    def kdf_rounds(self, rounds: int) -> "KeySerializationEncryptionBuilder":
+        if self._kdf_rounds is not None:
+            raise ValueError("kdf_rounds already set")
+        return KeySerializationEncryptionBuilder(
+            self._format, _kdf_rounds=rounds
+        )
+
+    def build(self, password: bytes) -> KeySerializationEncryption:
+        if not isinstance(password, bytes) or len(password) == 0:
+            raise ValueError("Password must be 1 or more bytes.")
+
+        return _KeySerializationEncryption(
+            self._format, password, kdf_rounds=self._kdf_rounds
+        )
+
+
+class _KeySerializationEncryption(KeySerializationEncryption):
+    def __init__(
+        self,
+        format: PrivateFormat,
+        password: bytes,
+        *,
+        kdf_rounds: typing.Optional[int],
+    ):
+        self._format = format
+        self.password = password
+
+        self._kdf_rounds = kdf_rounds

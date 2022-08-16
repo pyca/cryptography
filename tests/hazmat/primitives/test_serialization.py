@@ -2335,9 +2335,10 @@ class TestOpenSSHSerialization:
 
         # bad object type
         with pytest.raises(ValueError):
-            ssh.serialize_ssh_private_key(
+            ssh._serialize_ssh_private_key(
                 object(),  # type:ignore[arg-type]
-                None,
+                b"",
+                NoEncryption(),
             )
 
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
@@ -2362,11 +2363,26 @@ class TestOpenSSHSerialization:
             b"x" * 100,
         ),
     )
-    def test_serialize_ssh_private_key_with_password(self, password, backend):
+    @pytest.mark.parametrize(
+        "kdf_rounds",
+        [
+            1,
+            10,
+            30,
+        ],
+    )
+    def test_serialize_ssh_private_key_with_password(
+        self, password, kdf_rounds, backend
+    ):
         original_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        encoded_key_data = ssh.serialize_ssh_private_key(
-            private_key=original_key,
-            password=password,
+        encoded_key_data = original_key.private_bytes(
+            Encoding.PEM,
+            PrivateFormat.OpenSSH,
+            (
+                PrivateFormat.OpenSSH.encryption_builder()
+                .kdf_rounds(kdf_rounds)
+                .build(password)
+            ),
         )
 
         decoded_key = load_ssh_private_key(
@@ -2416,3 +2432,22 @@ class TestOpenSSHSerialization:
                 key.private_bytes(
                     Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
                 )
+
+
+class TestEncryptionBuilder:
+    def test_unsupported_format(self):
+        f = PrivateFormat.PKCS8
+        with pytest.raises(ValueError):
+            f.encryption_builder()
+
+    def test_duplicate_kdf_rounds(self):
+        b = PrivateFormat.OpenSSH.encryption_builder().kdf_rounds(12)
+        with pytest.raises(ValueError):
+            b.kdf_rounds(12)
+
+    def test_invalid_password(self):
+        b = PrivateFormat.OpenSSH.encryption_builder()
+        with pytest.raises(ValueError):
+            b.build(12)  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            b.build(b"")

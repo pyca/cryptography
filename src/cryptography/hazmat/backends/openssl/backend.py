@@ -1528,6 +1528,15 @@ class Backend:
                     "Passwords longer than 1023 bytes are not supported by "
                     "this backend"
                 )
+        elif (
+            isinstance(
+                encryption_algorithm, serialization._KeySerializationEncryption
+            )
+            and encryption_algorithm._format
+            is format
+            is serialization.PrivateFormat.OpenSSH
+        ):
+            password = encryption_algorithm.password
         else:
             raise ValueError("Unsupported encryption type")
 
@@ -1592,7 +1601,9 @@ class Backend:
         # OpenSSH + PEM
         if format is serialization.PrivateFormat.OpenSSH:
             if encoding is serialization.Encoding.PEM:
-                return ssh.serialize_ssh_private_key(key, password)
+                return ssh._serialize_ssh_private_key(
+                    key, password, encryption_algorithm
+                )
 
             raise ValueError(
                 "OpenSSH private key format can only be used"

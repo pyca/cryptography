@@ -15,9 +15,11 @@ from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
+    KeySerializationEncryption,
     NoEncryption,
     PrivateFormat,
     PublicFormat,
+    _KeySerializationEncryption,
 )
 
 try:
@@ -601,13 +603,13 @@ def load_ssh_private_key(
     return private_key
 
 
-def serialize_ssh_private_key(
+def _serialize_ssh_private_key(
     private_key: _SSH_PRIVATE_KEY_TYPES,
-    password: typing.Optional[bytes] = None,
+    password: bytes,
+    encryption_algorithm: KeySerializationEncryption,
 ) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
-    if password is not None:
-        utils._check_bytes("password", password)
+    utils._check_bytes("password", password)
 
     if isinstance(private_key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(private_key.public_key())
@@ -628,6 +630,11 @@ def serialize_ssh_private_key(
         blklen = _SSH_CIPHERS[ciphername][3]
         kdfname = _BCRYPT
         rounds = _DEFAULT_ROUNDS
+        if (
+            isinstance(encryption_algorithm, _KeySerializationEncryption)
+            and encryption_algorithm._kdf_rounds is not None
+        ):
+            rounds = encryption_algorithm._kdf_rounds
         salt = os.urandom(16)
         f_kdfoptions.put_sshstr(salt)
         f_kdfoptions.put_u32(rounds)
