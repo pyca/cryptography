@@ -187,18 +187,19 @@ class TestRFC4514:
         name_value = Name(
             [
                 NameAttribute(NameOID.COMMON_NAME, "Common Name 1"),
-                NameAttribute(NameOID.LOCALITY_NAME,
-                              "City for Name 1"),
-                NameAttribute(NameOID.ORGANIZATION_NAME,
-                              "Name 1 Organization"),
+                NameAttribute(NameOID.LOCALITY_NAME, "City for Name 1"),
+                NameAttribute(
+                    NameOID.ORGANIZATION_NAME, "Name 1 Organization"
+                ),
             ]
         )
 
-        assert Name.from_rfc4514_string(
-            name_value.rfc4514_string()
-        ) == name_value
+        assert (
+            Name.from_rfc4514_string(name_value.rfc4514_string()) == name_value
+        )
 
-        name_string = 'O=Organization,L=City,CN=Common Name'
-        assert Name.from_rfc4514_string(
-            name_string
-        ).rfc4514_string() == name_string
+        name_string = "O=Organization,L=City,CN=Common Name"
+        assert (
+            Name.from_rfc4514_string(name_string).rfc4514_string()
+            == name_string
+        )
