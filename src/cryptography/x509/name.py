@@ -414,13 +414,21 @@ class _RFC4514NameParser:
         return val
 
     def parse(self) -> Name:
+        """
+        Parses the `data` string and converts it to a Name.
+
+        According to RFC4514 section 2.1 the RDNSequence must be
+        reversed when converting to string representation. So, when
+        we parse it, we need to reverse again to get the RDNs on the
+        correct order.
+        """
         rdns = [self._parse_rdn()]
 
         while self._has_data():
             self._read_char(",")
             rdns.append(self._parse_rdn())
 
-        return Name(rdns)
+        return Name(reversed(rdns))
 
     def _parse_rdn(self) -> RelativeDistinguishedName:
         nas = [self._parse_na()]
