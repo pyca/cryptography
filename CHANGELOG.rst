@@ -46,9 +46,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC` now support
   :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`
   counter location.
-* Fixed :rfc:`4514` name parsing in :class:`~cryptography.x509.name._RFC4514NameParser` 
-  to reverse the order of the RDNs according to the section 2.1 of the RFC, affecting
-  method :meth:`~cryptography.x509.Name.from_rfc4514_string`
+* Fixed :rfc:`4514` name parsing to reverse the order of the RDNs according 
+  to the section 2.1 of the RFC, affecting method :meth:`~cryptography.x509.Name.from_rfc4514_string`
   
 .. _v37-0-4:
 
