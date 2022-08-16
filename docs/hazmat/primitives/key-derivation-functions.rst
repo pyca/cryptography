@@ -807,7 +807,7 @@ KBKDF
         :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
 
     :raises TypeError: This exception is raised if ``label`` or ``context``
-        is not ``bytes``, ``rlen``, ``llen``, or ``break_location` is not
+        is not ``bytes``, ``rlen``, ``llen``, or ``break_location`` is not
         ``int``, ``mode`` is not
         :class:`~cryptography.hazmat.primitives.kdf.kbkdf.Mode` or ``location``
         is not
