@@ -48,7 +48,7 @@ Changelog
   counter location.
 * Fixed :rfc:`4514` name parsing in :class:`~cryptography.x509.name._RFC4514NameParser` 
   to reverse the order of the RDNs according to the section 2.1 of the RFC, affecting
-  method :method:`~cryptography.x509.Name.from_rfc4514_string`
+  method :meth:`~cryptography.x509.Name.from_rfc4514_string`
   
 .. _v37-0-4:
 
