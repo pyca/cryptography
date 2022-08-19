@@ -5,6 +5,7 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
+use chrono::Timelike;
 use std::sync::Arc;
 
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
@@ -689,7 +690,7 @@ fn create_ocsp_basic_response<'p>(
 
     let tbs_response_data = ResponseData {
         version: 0,
-        produced_at: asn1::GeneralizedTime::new(chrono::Utc::now())?,
+        produced_at: asn1::GeneralizedTime::new(chrono::Utc::now().with_nanosecond(0).unwrap())?,
         responder_id,
         responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(responses)),
         response_extensions: x509::common::encode_extensions(
