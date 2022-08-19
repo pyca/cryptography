@@ -30,7 +30,7 @@ jobs:
           sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha.outputs.BORING_SHA }}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha.outputs.BORING_SHA
-      - uses: tibdex/github-app-token@586e1a624db6a5a4ac2c53daeeded60c5e3d50fe
+      - uses: tibdex/github-app-token@f717b5ecd4534d3c4df4ce9b5c1c2214f0f7cd06
         id: generate-token
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
