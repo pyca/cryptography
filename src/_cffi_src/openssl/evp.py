@@ -128,10 +128,6 @@ int EVP_PKEY_id(const EVP_PKEY *);
 
 EVP_MD_CTX *EVP_MD_CTX_new(void);
 void EVP_MD_CTX_free(EVP_MD_CTX *);
-/* This function is no longer used by pyOpenSSL >= 22.0 */
-EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
-/* This function is no longer used by pyOpenSSL >= 22.0 */
-void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
 
 /* Added in 1.1.1 */
 int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
