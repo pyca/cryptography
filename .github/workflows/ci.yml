@@ -190,7 +190,8 @@ jobs:
           - {VERSION: "3.9", TOXENV: "py39"}
         RUST:
           # Cover MSRV (and likely next MSRV). In-dev versions are below in
-          # the linux-rust-coverage section.
+          # the linux-rust-coverage section. Once our MSRV is 1.60 we can
+          # remove this section entirely.
           - 1.48.0
           - 1.49.0
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
