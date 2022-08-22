@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives._serialization import (
     ParameterFormat,
     PrivateFormat,
     PublicFormat,
+    _KeySerializationEncryption,
 )
 from cryptography.hazmat.primitives.serialization.base import (
     load_der_parameters,
@@ -42,4 +43,5 @@ __all__ = [
     "KeySerializationEncryption",
     "BestAvailableEncryption",
     "NoEncryption",
+    "_KeySerializationEncryption",
 ]

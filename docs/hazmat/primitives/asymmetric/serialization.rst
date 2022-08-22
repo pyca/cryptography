@@ -638,7 +638,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     :param certs: A list of :class:`~cryptography.x509.Certificate`.
     :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`
         or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`.
-    :return bytes: The serialized PKCS7 data.
+    :returns bytes: The serialized PKCS7 data.
 
 .. testsetup::
 
@@ -730,7 +730,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :param options: A list of
             :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`.
 
-        :return bytes: The signed PKCS7 message.
+        :returns bytes: The signed PKCS7 message.
 
 
 .. class:: PKCS7Options
@@ -840,6 +840,30 @@ Serialization Formats
             -----BEGIN OPENSSH PRIVATE KEY-----
             ...
             -----END OPENSSH PRIVATE KEY-----
+
+    .. method:: encryption_builder()
+
+        .. versionadded:: 38.0.0
+
+        Returns a builder for configuring how values are encrypted with this
+        format.
+
+        For most use cases, :class:`BestAvailableEncryption` is preferred.
+
+        :returns KeySerializationEncryptionBuilder: A new builder.
+
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import serialization
+            >>> encryption = (
+            ...     serialization.PrivateFormat.OpenSSH.encryption_builder().kdf_rounds(30).build(b"my password")
+            ... )
+            >>> key.private_bytes(
+            ...     encoding=serialization.Encoding.PEM,
+            ...     format=serialization.PrivateFormat.OpenSSH,
+            ...     encryption_algorithm=encryption
+            ... )
+            b'-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----\n'
 
 
 .. class:: PublicFormat
@@ -1006,6 +1030,28 @@ Serialization Encryption Types
 
     Do not encrypt.
 
+
+.. class:: KeySerializationEncryptionBuilder
+
+    A builder that can be used to configure how key data is encrypted. To
+    create one, call :meth:`PrivateFormat.encryption_builder`.
+
+    .. method:: kdf_rounds(rounds)
+
+        Set the number of rounds the Key Derivation Function should use. The
+        meaning of the number of rounds varies on the KDF being used.
+
+        :param int rounds: Number of rounds.
+        :returns KeySerializationEncryptionBuilder: A new builder.
+
+    .. method:: build(password)
+
+        Turns the builder into an instance of
+        :class:`KeySerializationEncryption` with a given password.
+
+        :param bytes password: The password.
+        :returns KeySerializationEncryption: A key key serialization
+            encryption that can be passed to ``private_bytes`` methods.
 
 .. _`a bug in Firefox`: https://bugzilla.mozilla.org/show_bug.cgi?id=773111
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf

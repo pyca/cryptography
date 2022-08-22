@@ -49,7 +49,10 @@ Changelog
 * Fixed :rfc:`4514` name parsing to reverse the order of the RDNs according 
   to the section 2.1 of the RFC, affecting method 
   :meth:`~cryptography.x509.Name.from_rfc4514_string`.
-  
+* It is now possible to customize some aspects of encryption when serializing
+  private keys, using
+  :meth:`~cryptography.hazmat.primitives.serialization.PrivateFormat.encryption_builder`.
+
 .. _v37-0-4:
 
 37.0.4 - 2022-07-05
