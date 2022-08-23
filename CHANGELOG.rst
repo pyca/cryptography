@@ -52,6 +52,8 @@ Changelog
 * It is now possible to customize some aspects of encryption when serializing
   private keys, using
   :meth:`~cryptography.hazmat.primitives.serialization.PrivateFormat.encryption_builder`.
+* Removed several legacy symbols from our OpenSSL bindings. Users of pyOpenSSL
+  versions older than 22.0 will need to upgrade.
 
 .. _v37-0-4:
 
