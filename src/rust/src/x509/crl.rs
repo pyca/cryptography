@@ -132,10 +132,11 @@ impl CertificateRevocationList {
         }
     }
 
-    fn __getitem__(&self, idx: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
-        let gil = pyo3::Python::acquire_gil();
-        let py = gil.python();
-
+    fn __getitem__(
+        &self,
+        py: pyo3::Python<'_>,
+        idx: &pyo3::PyAny,
+    ) -> pyo3::PyResult<pyo3::PyObject> {
         self.raw.with(|val| {
             val.revoked_certs.get_or_init(py, || {
                 match &val.value.tbs_cert_list.revoked_certificates {

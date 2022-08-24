@@ -83,7 +83,7 @@ impl OCSPRequest {
 
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
         match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
-            Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
+            Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
                 Err(CryptographyError::from(pyo3::PyErr::from_value(

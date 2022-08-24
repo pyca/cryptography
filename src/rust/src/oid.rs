@@ -40,10 +40,7 @@ impl ObjectIdentifier {
         slf
     }
 
-    fn __repr__(&self) -> pyo3::PyResult<String> {
-        let gil = pyo3::Python::acquire_gil();
-        let py = gil.python();
-
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let self_clone = pyo3::PyCell::new(
             py,
             ObjectIdentifier {

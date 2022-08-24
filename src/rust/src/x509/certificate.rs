@@ -105,10 +105,7 @@ impl Certificate {
         }
     }
 
-    fn __repr__(&self) -> pyo3::PyResult<String> {
-        let gil = pyo3::Python::acquire_gil();
-        let py = gil.python();
-
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let subject = self.subject(py)?;
         let subject_repr = subject.repr()?.extract::<&str>()?;
         Ok(format!("<Certificate(subject={}, ...)>", subject_repr))
