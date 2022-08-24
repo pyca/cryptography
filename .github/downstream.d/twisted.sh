@@ -9,9 +9,7 @@ case "${1}" in
         ;;
     run)
         cd twisted
-        # TODO: temporarily restrict which tests we run on request from @glyph
-        # python -m twisted.trial src/twisted
-        python -m twisted.trial twisted.conch twisted.internet.test.test_tls twisted.protocols.test.test_tls
+        python -m twisted.trial src/twisted
         ;;
     *)
         exit 1
