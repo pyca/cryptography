@@ -130,6 +130,8 @@ jobs:
         IMAGE:
           - {IMAGE: "rhel8", TOXENV: "py36"}
           - {IMAGE: "rhel8-fips", TOXENV: "py36", FIPS: true}
+          - {IMAGE: "rhel8", TOXENV: "py38"}
+          - {IMAGE: "rhel8-fips", TOXENV: "py38", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
           - {IMAGE: "bookworm", TOXENV: "py310"}
