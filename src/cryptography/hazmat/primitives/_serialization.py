@@ -6,9 +6,15 @@ import abc
 import typing
 
 from cryptography import utils
+from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 # This exists to break an import cycle. These classes are normally accessible
 # from the serialization module.
+
+
+class PBES(utils.Enum):
+    PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
+    PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
 
 
 class Encoding(utils.Enum):
@@ -25,11 +31,13 @@ class PrivateFormat(utils.Enum):
     TraditionalOpenSSL = "TraditionalOpenSSL"
     Raw = "Raw"
     OpenSSH = "OpenSSH"
+    PKCS12 = "PKCS12"
 
     def encryption_builder(self) -> "KeySerializationEncryptionBuilder":
-        if self is not PrivateFormat.OpenSSH:
+        if self not in (PrivateFormat.OpenSSH, PrivateFormat.PKCS12):
             raise ValueError(
                 "encryption_builder only supported with PrivateFormat.OpenSSH"
+                " and PrivateFormat.PKCS12"
             )
         return KeySerializationEncryptionBuilder(self)
 
@@ -69,16 +77,61 @@ class KeySerializationEncryptionBuilder(object):
         format: PrivateFormat,
         *,
         _kdf_rounds: typing.Optional[int] = None,
+        _mac_algorithm: typing.Optional[HashAlgorithm] = None,
+        _key_cert_algorithm: typing.Optional[PBES] = None,
     ) -> None:
         self._format = format
 
         self._kdf_rounds = _kdf_rounds
+        self._mac_algorithm = _mac_algorithm
+        self._key_cert_algorithm = _key_cert_algorithm
 
     def kdf_rounds(self, rounds: int) -> "KeySerializationEncryptionBuilder":
         if self._kdf_rounds is not None:
             raise ValueError("kdf_rounds already set")
+
+        if not isinstance(rounds, int) or rounds < 1:
+            raise ValueError("kdf_rounds must be a positive integer")
+
         return KeySerializationEncryptionBuilder(
-            self._format, _kdf_rounds=rounds
+            self._format,
+            _kdf_rounds=rounds,
+            _mac_algorithm=self._mac_algorithm,
+            _key_cert_algorithm=self._key_cert_algorithm,
+        )
+
+    def mac_algorithm(
+        self, algorithm: HashAlgorithm
+    ) -> "KeySerializationEncryptionBuilder":
+        if self._format is not PrivateFormat.PKCS12:
+            raise TypeError(
+                "mac_algorithm only supported with PrivateFormat.PKCS12"
+            )
+
+        if self._mac_algorithm is not None:
+            raise ValueError("mac_algorithm already set")
+        return KeySerializationEncryptionBuilder(
+            self._format,
+            _kdf_rounds=self._kdf_rounds,
+            _mac_algorithm=algorithm,
+            _key_cert_algorithm=self._key_cert_algorithm,
+        )
+
+    def key_cert_algorithm(
+        self, algorithm: PBES
+    ) -> "KeySerializationEncryptionBuilder":
+        if self._format is not PrivateFormat.PKCS12:
+            raise TypeError(
+                "key_cert_algorithm only supported with "
+                "PrivateFormat.PKCS12"
+            )
+        if self._key_cert_algorithm is not None:
+            raise ValueError("key_cert_algorithm already set")
+        return KeySerializationEncryptionBuilder(
+            self._format,
+            _kdf_rounds=self._kdf_rounds,
+            _mac_algorithm=self._mac_algorithm,
+            _key_cert_algorithm=algorithm,
         )
 
     def build(self, password: bytes) -> KeySerializationEncryption:
@@ -86,7 +139,11 @@ class KeySerializationEncryptionBuilder(object):
             raise ValueError("Password must be 1 or more bytes.")
 
         return _KeySerializationEncryption(
-            self._format, password, kdf_rounds=self._kdf_rounds
+            self._format,
+            password,
+            kdf_rounds=self._kdf_rounds,
+            mac_algorithm=self._mac_algorithm,
+            key_cert_algorithm=self._key_cert_algorithm,
         )
 
 
@@ -97,8 +154,12 @@ class _KeySerializationEncryption(KeySerializationEncryption):
         password: bytes,
         *,
         kdf_rounds: typing.Optional[int],
+        mac_algorithm: typing.Optional[HashAlgorithm],
+        key_cert_algorithm: typing.Optional[PBES],
     ):
         self._format = format
         self.password = password
 
         self._kdf_rounds = kdf_rounds
+        self._mac_algorithm = mac_algorithm
+        self._key_cert_algorithm = key_cert_algorithm

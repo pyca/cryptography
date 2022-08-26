@@ -491,12 +491,20 @@ file suffix.
 
     .. versionadded:: 3.0
 
+    .. note::
+        With OpenSSL 3.0.0+ the defaults for encryption when serializing PKCS12
+        have changed and some versions of Windows and macOS will not be able to
+        read the new format. Maximum compatibility can be achieved by using
+        ``SHA1`` for MAC algorithm and
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PBES.PBESv1SHA1And3KeyTripleDESCBC`
+        for encryption algorithm as seen in the example below. However, users
+        should avoid this unless required for compatibility.
+
     .. warning::
 
-        PKCS12 encryption is not secure and should not be used as a security
-        mechanism. Wrap a PKCS12 blob in a more secure envelope if you need
-        to store or send it safely. Encryption is provided for compatibility
-        reasons only.
+        PKCS12 encryption is typically not secure and should not be used as a
+        security mechanism. Wrap a PKCS12 blob in a more secure envelope if you
+        need to store or send it safely.
 
     Serialize a PKCS12 blob.
 
@@ -535,10 +543,40 @@ file suffix.
     :param encryption_algorithm: The encryption algorithm that should be used
         for the key and certificate. An instance of an object conforming to the
         :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-        interface. PKCS12 encryption is **very weak** and should not be used
-        as a security boundary.
+        interface. PKCS12 encryption is typically **very weak** and should not
+        be used as a security boundary.
 
     :return bytes: Serialized PKCS12.
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives.serialization import BestAvailableEncryption, load_pem_private_key, pkcs12
+        >>> cert = x509.load_pem_x509_certificate(ca_cert)
+        >>> key = load_pem_private_key(ca_key, None)
+        >>> p12 = pkcs12.serialize_key_and_certificates(
+        ...     b"friendlyname", key, cert, None, BestAvailableEncryption(b"password")
+        ... )
+
+    This example uses an ``encryption_builder()`` to create a PKCS12 with more
+    compatible, but substantially worse, encryption.
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> from cryptography.hazmat.primitives.serialization import PrivateFormat, load_pem_private_key, pkcs12
+        >>> encryption = (
+        ...     PrivateFormat.PKCS12.encryption_builder().
+        ...     kdf_rounds(50000).
+        ...     key_cert_algorithm(pkcs12.PBES.PBESv1SHA1And3KeyTripleDESCBC).
+        ...     mac_algorithm(hashes.SHA1()).build(b"my password")
+        ... )
+        >>> cert = x509.load_pem_x509_certificate(ca_cert)
+        >>> key = load_pem_private_key(ca_key, None)
+        >>> p12 = pkcs12.serialize_key_and_certificates(
+        ...     b"friendlyname", key, None, None, encryption
+        ... )
 
 .. class:: PKCS12Certificate
 
@@ -578,6 +616,24 @@ file suffix.
 
         A list of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
         instances.
+
+.. class:: PBES
+
+    .. versionadded:: 38.0.0
+
+    An enumeration of password-based encryption schemes used in PKCS12. These
+    values are used with
+    :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryptionBuilder`.
+
+    .. attribute:: PBESv1SHA1And3KeyTripleDESCBC
+
+        PBESv1 using SHA1 as the KDF PRF and 3-key triple DES as the cipher.
+
+    .. attribute:: PBESv2SHA256AndAES256CBC
+
+        PBESv2 using SHA256 as the KDF PRF and AES256 as the cipher. This is
+        only supported on OpenSSL 3.0.0 or newer.
+
 
 PKCS7
 ~~~~~
@@ -841,16 +897,40 @@ Serialization Formats
             ...
             -----END OPENSSH PRIVATE KEY-----
 
+    .. attribute:: PKCS12
+
+        .. versionadded:: 38.0.0
+
+        The PKCS#12 format is a binary format used to store private keys and
+        certificates. This attribute is used in conjunction with
+        ``encryption_builder()`` to allow control of the encryption algorithm
+        and parameters.
+
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.hazmat.primitives.serialization import PrivateFormat, pkcs12
+            >>> encryption = (
+            ...     PrivateFormat.PKCS12.encryption_builder().
+            ...     kdf_rounds(50000).
+            ...     key_cert_algorithm(pkcs12.PBES.PBESv2SHA256AndAES256CBC).
+            ...     mac_algorithm(hashes.SHA256()).build(b"my password")
+            ... )
+            >>> p12 = pkcs12.serialize_key_and_certificates(
+            ...     b"friendlyname", key, None, None, encryption
+            ... )
+
     .. method:: encryption_builder()
 
         .. versionadded:: 38.0.0
 
         Returns a builder for configuring how values are encrypted with this
-        format.
+        format. You must call this method on an element of the enumeration.
+        For example, ``PrivateFormat.OpenSSH.encryption_builder()``.
 
         For most use cases, :class:`BestAvailableEncryption` is preferred.
 
-        :returns KeySerializationEncryptionBuilder: A new builder.
+        :returns: A new instance of :class:`KeySerializationEncryptionBuilder`
 
         .. doctest::
 
@@ -1022,7 +1102,8 @@ Serialization Encryption Types
 
     Encrypt using the best available encryption for a given key.
     This is a curated encryption choice and the algorithm may change over
-    time.
+    time. The encryption algorithm may vary based on which version of OpenSSL
+    the library is compiled against.
 
     :param bytes password: The password to use for encryption.
 
@@ -1033,8 +1114,11 @@ Serialization Encryption Types
 
 .. class:: KeySerializationEncryptionBuilder
 
-    A builder that can be used to configure how key data is encrypted. To
-    create one, call :meth:`PrivateFormat.encryption_builder`.
+    .. versionadded:: 38.0.0
+
+    A builder that can be used to configure how data is encrypted. To
+    create one, call :meth:`PrivateFormat.encryption_builder`. Different
+    serialization types will support different options on this builder.
 
     .. method:: kdf_rounds(rounds)
 
@@ -1042,7 +1126,21 @@ Serialization Encryption Types
         meaning of the number of rounds varies on the KDF being used.
 
         :param int rounds: Number of rounds.
-        :returns KeySerializationEncryptionBuilder: A new builder.
+
+    .. method:: key_cert_algorithm(algorithm)
+
+        Set the encryption algorithm to use when encrypting the key and
+        certificate in a PKCS12 structure.
+
+        :param algorithm: A value from the :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PBES`
+            enumeration.
+
+    .. method:: mac_algorithm(algorithm)
+
+        Set the MAC algorithm to use for a PKCS12 structure.
+
+        :param algorithm: An instance of a
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
 
     .. method:: build(password)
 
@@ -1050,8 +1148,9 @@ Serialization Encryption Types
         :class:`KeySerializationEncryption` with a given password.
 
         :param bytes password: The password.
-        :returns KeySerializationEncryption: A key key serialization
-            encryption that can be passed to ``private_bytes`` methods.
+        :returns: A :class:`KeySerializationEncryption` encryption object
+            that can be passed to methods like ``private_bytes`` or
+            :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_key_and_certificates`.
 
 .. _`a bug in Firefox`: https://bugzilla.mozilla.org/show_bug.cgi?id=773111
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf

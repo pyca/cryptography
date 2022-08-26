@@ -116,6 +116,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import pkcs7, ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    PBES,
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     _ALLOWED_PKCS12_TYPES,
@@ -2263,20 +2264,75 @@ class Backend:
             nid_key = -1
             pkcs12_iter = 0
             mac_iter = 0
+            mac_alg = self._ffi.NULL
         elif isinstance(
             encryption_algorithm, serialization.BestAvailableEncryption
         ):
             # PKCS12 encryption is hopeless trash and can never be fixed.
-            # This is the least terrible option.
-            nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
-            nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            # OpenSSL 3 supports PBESv2, but Libre and Boring do not, so
+            # we use PBESv1 with 3DES on the older paths.
+            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                nid_cert = self._lib.NID_aes_256_cbc
+                nid_key = self._lib.NID_aes_256_cbc
+            else:
+                nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+                nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             # At least we can set this higher than OpenSSL's default
             pkcs12_iter = 20000
             # mac_iter chosen for compatibility reasons, see:
             # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
             # Did we mention how lousy PKCS12 encryption is?
             mac_iter = 1
+            # MAC algorithm can only be set on OpenSSL 3.0.0+
+            mac_alg = self._ffi.NULL
             password = encryption_algorithm.password
+        elif (
+            isinstance(
+                encryption_algorithm, serialization._KeySerializationEncryption
+            )
+            and encryption_algorithm._format
+            is serialization.PrivateFormat.PKCS12
+        ):
+            # Default to OpenSSL's defaults. Behavior will vary based on the
+            # version of OpenSSL cryptography is compiled against.
+            nid_cert = 0
+            nid_key = 0
+            # Use the default iters we use in best available
+            pkcs12_iter = 20000
+            # See the Best Available comment for why this is 1
+            mac_iter = 1
+            password = encryption_algorithm.password
+            keycertalg = encryption_algorithm._key_cert_algorithm
+            if keycertalg is PBES.PBESv1SHA1And3KeyTripleDESCBC:
+                nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+                nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+            elif keycertalg is PBES.PBESv2SHA256AndAES256CBC:
+                if not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                    raise UnsupportedAlgorithm(
+                        "PBESv2 is not supported by this version of OpenSSL"
+                    )
+                nid_cert = self._lib.NID_aes_256_cbc
+                nid_key = self._lib.NID_aes_256_cbc
+            else:
+                assert keycertalg is None
+                # We use OpenSSL's defaults
+
+            if encryption_algorithm._mac_algorithm is not None:
+                if not self._lib.Cryptography_HAS_PKCS12_SET_MAC:
+                    raise UnsupportedAlgorithm(
+                        "Setting MAC algorithm is not supported by this "
+                        "version of OpenSSL."
+                    )
+                mac_alg = self._evp_md_non_null_from_algorithm(
+                    encryption_algorithm._mac_algorithm
+                )
+                self.openssl_assert(mac_alg != self._ffi.NULL)
+            else:
+                mac_alg = self._ffi.NULL
+
+            if encryption_algorithm._kdf_rounds is not None:
+                pkcs12_iter = encryption_algorithm._kdf_rounds
+
         else:
             raise ValueError("Unsupported key encryption type")
 
@@ -2324,6 +2380,20 @@ class Backend:
                     pkcs12_iter,
                     mac_iter,
                     0,
+                )
+
+            if (
+                self._lib.Cryptography_HAS_PKCS12_SET_MAC
+                and mac_alg != self._ffi.NULL
+            ):
+                self._lib.PKCS12_set_mac(
+                    p12,
+                    password_buf,
+                    -1,
+                    self._ffi.NULL,
+                    0,
+                    mac_iter,
+                    mac_alg,
                 )
 
         self.openssl_assert(p12 != self._ffi.NULL)

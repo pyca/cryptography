@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     x25519,
     x448,
 )
+from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
@@ -36,6 +37,7 @@ from cryptography.hazmat.primitives.serialization import (
     load_ssh_public_key,
     ssh,
 )
+from cryptography.hazmat.primitives.serialization.pkcs12 import PBES
 
 
 from .fixtures_rsa import RSA_KEY_2048
@@ -2445,9 +2447,37 @@ class TestEncryptionBuilder:
         with pytest.raises(ValueError):
             b.kdf_rounds(12)
 
+    def test_invalid_kdf_rounds(self):
+        b = PrivateFormat.OpenSSH.encryption_builder()
+        with pytest.raises(ValueError):
+            b.kdf_rounds(0)
+        with pytest.raises(ValueError):
+            b.kdf_rounds(-1)
+        with pytest.raises(ValueError):
+            b.kdf_rounds("string")  # type: ignore[arg-type]
+
     def test_invalid_password(self):
         b = PrivateFormat.OpenSSH.encryption_builder()
         with pytest.raises(ValueError):
             b.build(12)  # type: ignore[arg-type]
         with pytest.raises(ValueError):
             b.build(b"")
+
+    def test_unsupported_type_for_methods(self):
+        b = PrivateFormat.OpenSSH.encryption_builder()
+        with pytest.raises(TypeError):
+            b.key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
+        with pytest.raises(TypeError):
+            b.mac_algorithm(SHA1())
+
+    def test_duplicate_mac_algorithm(self):
+        b = PrivateFormat.PKCS12.encryption_builder().mac_algorithm(SHA1())
+        with pytest.raises(ValueError):
+            b.mac_algorithm(SHA1())
+
+    def test_duplicate_key_cert_algorithm(self):
+        b = PrivateFormat.PKCS12.encryption_builder().key_cert_algorithm(
+            PBES.PBESv1SHA1And3KeyTripleDESCBC
+        )
+        with pytest.raises(ValueError):
+            b.key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)

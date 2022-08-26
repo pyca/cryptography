@@ -6,6 +6,7 @@ import typing
 
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives._serialization import PBES as PBES
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -17,6 +18,14 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     PRIVATE_KEY_TYPES,
 )
 
+__all__ = [
+    "PBES",
+    "PKCS12Certificate",
+    "PKCS12KeyAndCertificates",
+    "load_key_and_certificates",
+    "load_pkcs12",
+    "serialize_key_and_certificates",
+]
 
 _ALLOWED_PKCS12_TYPES = typing.Union[
     rsa.RSAPrivateKey,
