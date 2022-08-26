@@ -45,8 +45,8 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.3"}}
           - {VERSION: "3.11-dev", TOXENV: "py311"}
           - {VERSION: "3.10", TOXENV: "py310-randomorder"}
-          # Latest commit on the master branch, as of Aug 25, 2022.
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "b2d3c10cdc8fb642a842db2c6061743b4604b0b5"}}
+          # Latest commit on the master branch, as of Aug 26, 2022.
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "ebd8b8965c74ab06bb91f7a00b23822e1f1f26ca"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
