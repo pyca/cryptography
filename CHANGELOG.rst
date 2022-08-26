@@ -46,14 +46,21 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC` now support
   :attr:`~cryptography.hazmat.primitives.kdf.kbkdf.CounterLocation.MiddleFixed`
   counter location.
-* Fixed :rfc:`4514` name parsing to reverse the order of the RDNs according 
-  to the section 2.1 of the RFC, affecting method 
+* Fixed :rfc:`4514` name parsing to reverse the order of the RDNs according
+  to the section 2.1 of the RFC, affecting method
   :meth:`~cryptography.x509.Name.from_rfc4514_string`.
 * It is now possible to customize some aspects of encryption when serializing
   private keys, using
   :meth:`~cryptography.hazmat.primitives.serialization.PrivateFormat.encryption_builder`.
 * Removed several legacy symbols from our OpenSSL bindings. Users of pyOpenSSL
   versions older than 22.0 will need to upgrade.
+* Added
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES128` and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES256` classes.
+  These classes do not replace
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` (which
+  allows all AES key lengths), but are intended for applications where
+  developers want to be explicit about key length.
 
 .. _v37-0-4:
 

@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives._cipheralgorithm import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
 )
+from cryptography.hazmat.primitives.ciphers import algorithms
 
 
 class Mode(metaclass=abc.ABCMeta):
@@ -135,6 +136,12 @@ class XTS(ModeWithTweak):
         return self._tweak
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
+        if isinstance(algorithm, (algorithms.AES128, algorithms.AES256)):
+            raise TypeError(
+                "The AES128 and AES256 classes do not support XTS, please use "
+                "the standard AES class instead."
+            )
+
         if algorithm.key_size not in (256, 512):
             raise ValueError(
                 "The XTS specification requires a 256-bit key for AES-128-XTS"
