@@ -90,6 +90,8 @@ from cryptography.hazmat.primitives.ciphers import (
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
+    AES128,
+    AES256,
     ARC4,
     Camellia,
     ChaCha20,
@@ -378,12 +380,15 @@ class Backend:
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
     def _register_default_ciphers(self) -> None:
-        for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8, GCM]:
-            self.register_cipher_adapter(
-                AES,
-                mode_cls,
-                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}"),
-            )
+        for cipher_cls in [AES, AES128, AES256]:
+            for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8, GCM]:
+                self.register_cipher_adapter(
+                    cipher_cls,
+                    mode_cls,
+                    GetCipherByName(
+                        "{cipher.name}-{cipher.key_size}-{mode.name}"
+                    ),
+                )
         for mode_cls in [CBC, CTR, ECB, OFB, CFB]:
             self.register_cipher_adapter(
                 Camellia,

@@ -225,3 +225,15 @@ class TestAESModeGCM:
 
         decryptor.finalize_with_tag(tag)
         assert pt == payload
+
+    @pytest.mark.parametrize("alg", [algorithms.AES128, algorithms.AES256])
+    def test_alternate_aes_classes(self, alg, backend):
+        data = bytearray(b"sixteen_byte_msg")
+        cipher = base.Cipher(
+            alg(b"0" * (alg.key_size // 8)), modes.GCM(b"\x00" * 12), backend
+        )
+        enc = cipher.encryptor()
+        ct = enc.update(data) + enc.finalize()
+        dec = cipher.decryptor()
+        pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
+        assert pt == data

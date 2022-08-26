@@ -73,6 +73,13 @@ class TestAESModeXTS:
         with pytest.raises(ValueError, match="duplicated keys"):
             cipher.encryptor()
 
+    def test_xts_unsupported_with_aes128_aes256_classes(self):
+        with pytest.raises(TypeError):
+            base.Cipher(algorithms.AES128(b"0" * 16), modes.XTS(b"\x00" * 16))
+
+        with pytest.raises(TypeError):
+            base.Cipher(algorithms.AES256(b"0" * 32), modes.XTS(b"\x00" * 16))
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
@@ -269,6 +276,31 @@ def test_buffer_protocol_alternate_modes(mode, backend):
     if not backend.cipher_supported(key, mode):
         pytest.skip("AES in {} mode not supported".format(mode.name))
     cipher = base.Cipher(key, mode, backend)
+    enc = cipher.encryptor()
+    ct = enc.update(data) + enc.finalize()
+    dec = cipher.decryptor()
+    pt = dec.update(ct) + dec.finalize()
+    assert pt == data
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        modes.ECB(),
+        modes.CBC(bytearray(b"\x00" * 16)),
+        modes.CTR(bytearray(b"\x00" * 16)),
+        modes.OFB(bytearray(b"\x00" * 16)),
+        modes.CFB(bytearray(b"\x00" * 16)),
+        modes.CFB8(bytearray(b"\x00" * 16)),
+    ],
+)
+@pytest.mark.parametrize("alg_cls", [algorithms.AES128, algorithms.AES256])
+def test_alternate_aes_classes(mode, alg_cls, backend):
+    alg = alg_cls(b"0" * (alg_cls.key_size // 8))
+    if not backend.cipher_supported(alg, mode):
+        pytest.skip("AES in {} mode not supported".format(mode.name))
+    data = bytearray(b"sixteen_byte_msg")
+    cipher = base.Cipher(alg, mode, backend)
     enc = cipher.encryptor()
     ct = enc.update(data) + enc.finalize()
     dec = cipher.decryptor()

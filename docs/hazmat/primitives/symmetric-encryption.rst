@@ -95,6 +95,28 @@ Algorithms
         ``192``, or ``256`` :term:`bits` long.
     :type key: :term:`bytes-like`
 
+.. class:: AES128(key)
+
+    .. versionadded:: 38.0.0
+
+    An AES class that only accepts 128 bit keys. This is identical to the
+    standard ``AES`` class except that it will only accept a single key length.
+
+    :param key: The secret key. This must be kept secret. ``128``
+        :term:`bits` long.
+    :type key: :term:`bytes-like`
+
+.. class:: AES256(key)
+
+    .. versionadded:: 38.0.0
+
+    An AES class that only accepts 256 bit keys. This is identical to the
+    standard ``AES`` class except that it will only accept a single key length.
+
+    :param key: The secret key. This must be kept secret. ``256``
+        :term:`bits` long.
+    :type key: :term:`bytes-like`
+
 .. class:: Camellia(key)
 
     Camellia is a block cipher approved for use by `CRYPTREC`_ and ISO/IEC.

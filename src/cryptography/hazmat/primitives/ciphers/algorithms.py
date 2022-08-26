@@ -38,6 +38,26 @@ class AES(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
+class AES128(CipherAlgorithm, BlockCipherAlgorithm):
+    name = "AES"
+    block_size = 128
+    key_sizes = frozenset([128])
+    key_size = 128
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
+
+
+class AES256(CipherAlgorithm, BlockCipherAlgorithm):
+    name = "AES"
+    block_size = 128
+    key_sizes = frozenset([256])
+    key_size = 256
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
+
+
 class Camellia(CipherAlgorithm, BlockCipherAlgorithm):
     name = "camellia"
     block_size = 128
