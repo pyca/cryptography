@@ -559,7 +559,7 @@ file suffix.
         ... )
 
     This example uses an ``encryption_builder()`` to create a PKCS12 with more
-    compatible, but substantially worse, encryption.
+    compatible, but substantially less secure, encryption.
 
     .. doctest::
 

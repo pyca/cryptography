@@ -537,18 +537,18 @@ class TestPKCS12Creation:
         [
             (
                 PBES.PBESv2SHA256AndAES256CBC,
-                (
+                [
                     b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x05\x0d",  # PBESv2
                     b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x2a",  # AES
-                ),
+                ],
             ),
             (
                 PBES.PBESv1SHA1And3KeyTripleDESCBC,
-                (b"\x06\x0a\x2a\x86\x48\x86\xf7\x0d\x01\x0c\x01\x03",),
+                [b"\x06\x0a\x2a\x86\x48\x86\xf7\x0d\x01\x0c\x01\x03"],
             ),
             (
                 None,
-                set(),
+                [],
             ),
         ],
     )
@@ -665,7 +665,7 @@ class TestPKCS12Creation:
         skip_message="Requires OpenSSL without PKCS12_set_mac (boring only)",
     )
     @pytest.mark.parametrize(
-        ("algorithm"),
+        "algorithm",
         [
             serialization.PrivateFormat.PKCS12.encryption_builder()
             .key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
