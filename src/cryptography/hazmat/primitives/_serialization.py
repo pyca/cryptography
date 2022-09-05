@@ -77,43 +77,46 @@ class KeySerializationEncryptionBuilder(object):
         format: PrivateFormat,
         *,
         _kdf_rounds: typing.Optional[int] = None,
-        _mac_algorithm: typing.Optional[HashAlgorithm] = None,
+        _hmac_hash: typing.Optional[HashAlgorithm] = None,
         _key_cert_algorithm: typing.Optional[PBES] = None,
     ) -> None:
         self._format = format
 
         self._kdf_rounds = _kdf_rounds
-        self._mac_algorithm = _mac_algorithm
+        self._hmac_hash = _hmac_hash
         self._key_cert_algorithm = _key_cert_algorithm
 
     def kdf_rounds(self, rounds: int) -> "KeySerializationEncryptionBuilder":
         if self._kdf_rounds is not None:
             raise ValueError("kdf_rounds already set")
 
-        if not isinstance(rounds, int) or rounds < 1:
+        if not isinstance(rounds, int):
+            raise TypeError("kdf_rounds must be an integer")
+
+        if rounds < 1:
             raise ValueError("kdf_rounds must be a positive integer")
 
         return KeySerializationEncryptionBuilder(
             self._format,
             _kdf_rounds=rounds,
-            _mac_algorithm=self._mac_algorithm,
+            _hmac_hash=self._hmac_hash,
             _key_cert_algorithm=self._key_cert_algorithm,
         )
 
-    def mac_algorithm(
+    def hmac_hash(
         self, algorithm: HashAlgorithm
     ) -> "KeySerializationEncryptionBuilder":
         if self._format is not PrivateFormat.PKCS12:
             raise TypeError(
-                "mac_algorithm only supported with PrivateFormat.PKCS12"
+                "hmac_hash only supported with PrivateFormat.PKCS12"
             )
 
-        if self._mac_algorithm is not None:
-            raise ValueError("mac_algorithm already set")
+        if self._hmac_hash is not None:
+            raise ValueError("hmac_hash already set")
         return KeySerializationEncryptionBuilder(
             self._format,
             _kdf_rounds=self._kdf_rounds,
-            _mac_algorithm=algorithm,
+            _hmac_hash=algorithm,
             _key_cert_algorithm=self._key_cert_algorithm,
         )
 
@@ -130,7 +133,7 @@ class KeySerializationEncryptionBuilder(object):
         return KeySerializationEncryptionBuilder(
             self._format,
             _kdf_rounds=self._kdf_rounds,
-            _mac_algorithm=self._mac_algorithm,
+            _hmac_hash=self._hmac_hash,
             _key_cert_algorithm=algorithm,
         )
 
@@ -142,7 +145,7 @@ class KeySerializationEncryptionBuilder(object):
             self._format,
             password,
             kdf_rounds=self._kdf_rounds,
-            mac_algorithm=self._mac_algorithm,
+            hmac_hash=self._hmac_hash,
             key_cert_algorithm=self._key_cert_algorithm,
         )
 
@@ -154,12 +157,12 @@ class _KeySerializationEncryption(KeySerializationEncryption):
         password: bytes,
         *,
         kdf_rounds: typing.Optional[int],
-        mac_algorithm: typing.Optional[HashAlgorithm],
+        hmac_hash: typing.Optional[HashAlgorithm],
         key_cert_algorithm: typing.Optional[PBES],
     ):
         self._format = format
         self.password = password
 
         self._kdf_rounds = kdf_rounds
-        self._mac_algorithm = mac_algorithm
+        self._hmac_hash = hmac_hash
         self._key_cert_algorithm = key_cert_algorithm

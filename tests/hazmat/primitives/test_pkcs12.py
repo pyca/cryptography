@@ -593,7 +593,7 @@ class TestPKCS12Creation:
         if enc_alg is not None:
             builder = builder.key_cert_algorithm(enc_alg)
         if mac_alg is not None:
-            builder = builder.mac_algorithm(mac_alg)
+            builder = builder.hmac_hash(mac_alg)
         if iters is not None:
             builder = builder.kdf_rounds(iters)
 
@@ -669,7 +669,7 @@ class TestPKCS12Creation:
         [
             serialization.PrivateFormat.PKCS12.encryption_builder()
             .key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
-            .mac_algorithm(hashes.SHA256())
+            .hmac_hash(hashes.SHA256())
             .build(b"password"),
         ],
     )

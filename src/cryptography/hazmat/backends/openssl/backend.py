@@ -2317,14 +2317,14 @@ class Backend:
                 assert keycertalg is None
                 # We use OpenSSL's defaults
 
-            if encryption_algorithm._mac_algorithm is not None:
+            if encryption_algorithm._hmac_hash is not None:
                 if not self._lib.Cryptography_HAS_PKCS12_SET_MAC:
                     raise UnsupportedAlgorithm(
                         "Setting MAC algorithm is not supported by this "
                         "version of OpenSSL."
                     )
                 mac_alg = self._evp_md_non_null_from_algorithm(
-                    encryption_algorithm._mac_algorithm
+                    encryption_algorithm._hmac_hash
                 )
                 self.openssl_assert(mac_alg != self._ffi.NULL)
             else:

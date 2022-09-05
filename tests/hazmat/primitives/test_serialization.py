@@ -2453,7 +2453,7 @@ class TestEncryptionBuilder:
             b.kdf_rounds(0)
         with pytest.raises(ValueError):
             b.kdf_rounds(-1)
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             b.kdf_rounds("string")  # type: ignore[arg-type]
 
     def test_invalid_password(self):
@@ -2468,12 +2468,12 @@ class TestEncryptionBuilder:
         with pytest.raises(TypeError):
             b.key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
         with pytest.raises(TypeError):
-            b.mac_algorithm(SHA1())
+            b.hmac_hash(SHA1())
 
-    def test_duplicate_mac_algorithm(self):
-        b = PrivateFormat.PKCS12.encryption_builder().mac_algorithm(SHA1())
+    def test_duplicate_hmac_hash(self):
+        b = PrivateFormat.PKCS12.encryption_builder().hmac_hash(SHA1())
         with pytest.raises(ValueError):
-            b.mac_algorithm(SHA1())
+            b.hmac_hash(SHA1())
 
     def test_duplicate_key_cert_algorithm(self):
         b = PrivateFormat.PKCS12.encryption_builder().key_cert_algorithm(

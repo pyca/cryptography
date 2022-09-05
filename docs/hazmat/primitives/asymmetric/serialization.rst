@@ -570,7 +570,7 @@ file suffix.
         ...     PrivateFormat.PKCS12.encryption_builder().
         ...     kdf_rounds(50000).
         ...     key_cert_algorithm(pkcs12.PBES.PBESv1SHA1And3KeyTripleDESCBC).
-        ...     mac_algorithm(hashes.SHA1()).build(b"my password")
+        ...     hmac_hash(hashes.SHA1()).build(b"my password")
         ... )
         >>> cert = x509.load_pem_x509_certificate(ca_cert)
         >>> key = load_pem_private_key(ca_key, None)
@@ -631,8 +631,8 @@ file suffix.
 
     .. attribute:: PBESv2SHA256AndAES256CBC
 
-        PBESv2 using SHA256 as the KDF PRF and AES256 as the cipher. This is
-        only supported on OpenSSL 3.0.0 or newer.
+        PBESv2 using SHA256 as the KDF PRF and AES256-CBC as the cipher. This
+        is only supported on OpenSSL 3.0.0 or newer.
 
 
 PKCS7
@@ -914,7 +914,7 @@ Serialization Formats
             ...     PrivateFormat.PKCS12.encryption_builder().
             ...     kdf_rounds(50000).
             ...     key_cert_algorithm(pkcs12.PBES.PBESv2SHA256AndAES256CBC).
-            ...     mac_algorithm(hashes.SHA256()).build(b"my password")
+            ...     hmac_hash(hashes.SHA256()).build(b"my password")
             ... )
             >>> p12 = pkcs12.serialize_key_and_certificates(
             ...     b"friendlyname", key, None, None, encryption
@@ -1135,9 +1135,9 @@ Serialization Encryption Types
         :param algorithm: A value from the :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PBES`
             enumeration.
 
-    .. method:: mac_algorithm(algorithm)
+    .. method:: hmac_hash(algorithm)
 
-        Set the MAC algorithm to use for a PKCS12 structure.
+        Set the hash algorithm to use within the MAC for a PKCS12 structure.
 
         :param algorithm: An instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
