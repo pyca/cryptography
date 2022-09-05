@@ -9,6 +9,7 @@ from datetime import datetime
 import pytest
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl.backend import _RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -24,6 +25,7 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_private_key,
 )
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    PBES,
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     load_key_and_certificates,
@@ -529,6 +531,156 @@ class TestPKCS12Creation:
                 DummyKeySerializationEncryption(),
             )
         assert str(exc.value) == "Unsupported key encryption type"
+
+    @pytest.mark.parametrize(
+        ("enc_alg", "enc_alg_der"),
+        [
+            (
+                PBES.PBESv2SHA256AndAES256CBC,
+                [
+                    b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x05\x0d",  # PBESv2
+                    b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x2a",  # AES
+                ],
+            ),
+            (
+                PBES.PBESv1SHA1And3KeyTripleDESCBC,
+                [b"\x06\x0a\x2a\x86\x48\x86\xf7\x0d\x01\x0c\x01\x03"],
+            ),
+            (
+                None,
+                [],
+            ),
+        ],
+    )
+    @pytest.mark.parametrize(
+        ("mac_alg", "mac_alg_der"),
+        [
+            (hashes.SHA1(), b"\x06\x05\x2b\x0e\x03\x02\x1a"),
+            (hashes.SHA256(), b"\x06\t`\x86H\x01e\x03\x04\x02\x01"),
+            (None, None),
+        ],
+    )
+    @pytest.mark.parametrize(
+        ("iters", "iter_der"),
+        [
+            (420, b"\x02\x02\x01\xa4"),
+            (22222, b"\x02\x02\x56\xce"),
+            (None, None),
+        ],
+    )
+    def test_key_serialization_encryption(
+        self,
+        backend,
+        enc_alg,
+        enc_alg_der,
+        mac_alg,
+        mac_alg_der,
+        iters,
+        iter_der,
+    ):
+        if (
+            enc_alg is PBES.PBESv2SHA256AndAES256CBC
+        ) and not backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            pytest.skip("PBESv2 is not supported on OpenSSL < 3.0")
+
+        if (
+            mac_alg is not None
+            and not backend._lib.Cryptography_HAS_PKCS12_SET_MAC
+        ):
+            pytest.skip("PKCS12_set_mac is not supported (boring)")
+
+        builder = serialization.PrivateFormat.PKCS12.encryption_builder()
+        if enc_alg is not None:
+            builder = builder.key_cert_algorithm(enc_alg)
+        if mac_alg is not None:
+            builder = builder.hmac_hash(mac_alg)
+        if iters is not None:
+            builder = builder.kdf_rounds(iters)
+
+        encryption = builder.build(b"password")
+        key = ec.generate_private_key(ec.SECP256R1())
+        cacert, cakey = _load_ca(backend)
+        now = datetime.utcnow()
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(cacert.subject)
+            .issuer_name(cacert.subject)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now)
+            .sign(cakey, hashes.SHA256())
+        )
+        assert isinstance(cert, x509.Certificate)
+        p12 = serialize_key_and_certificates(
+            b"name", key, cert, [cacert], encryption
+        )
+        # We want to know if we've serialized something that has the parameters
+        # we expect, so we match on specific byte strings of OIDs & DER values.
+        for der in enc_alg_der:
+            assert der in p12
+        if mac_alg_der is not None:
+            assert mac_alg_der in p12
+        if iter_der is not None:
+            assert iter_der in p12
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12, b"password", backend
+        )
+        assert parsed_cert == cert
+        assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)
+        assert parsed_key.public_key().public_bytes(
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+        ) == key.public_key().public_bytes(
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+        )
+        assert parsed_more_certs == [cacert]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+        ),
+        skip_message="Requires OpenSSL < 3.0.0 (or Libre/Boring)",
+    )
+    @pytest.mark.parametrize(
+        ("algorithm"),
+        [
+            serialization.PrivateFormat.PKCS12.encryption_builder()
+            .key_cert_algorithm(PBES.PBESv2SHA256AndAES256CBC)
+            .build(b"password"),
+        ],
+    )
+    def test_key_serialization_encryption_unsupported(
+        self, algorithm, backend
+    ):
+        cacert, cakey = _load_ca(backend)
+        with pytest.raises(UnsupportedAlgorithm):
+            serialize_key_and_certificates(
+                b"name", cakey, cacert, [], algorithm
+            )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.Cryptography_HAS_PKCS12_SET_MAC
+        ),
+        skip_message="Requires OpenSSL without PKCS12_set_mac (boring only)",
+    )
+    @pytest.mark.parametrize(
+        "algorithm",
+        [
+            serialization.PrivateFormat.PKCS12.encryption_builder()
+            .key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
+            .hmac_hash(hashes.SHA256())
+            .build(b"password"),
+        ],
+    )
+    def test_key_serialization_encryption_set_mac_unsupported(
+        self, algorithm, backend
+    ):
+        cacert, cakey = _load_ca(backend)
+        with pytest.raises(UnsupportedAlgorithm):
+            serialize_key_and_certificates(
+                b"name", cakey, cacert, [], algorithm
+            )
 
 
 @pytest.mark.skip_fips(
