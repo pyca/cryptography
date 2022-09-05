@@ -627,7 +627,7 @@ file suffix.
 
     .. attribute:: PBESv1SHA1And3KeyTripleDESCBC
 
-        PBESv1 using SHA1 as the KDF PRF and 3-key triple DES as the cipher.
+        PBESv1 using SHA1 as the KDF PRF and 3-key triple DES-CBC as the cipher.
 
     .. attribute:: PBESv2SHA256AndAES256CBC
 
