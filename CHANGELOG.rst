@@ -3,10 +3,8 @@ Changelog
 
 .. _v38-0-0:
 
-38.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+38.0.0 - 2022-09-06
+~~~~~~~~~~~~~~~~~~~
 
 * Final deprecation of OpenSSL 1.1.0. The next release of ``cryptography``
   will drop support.
