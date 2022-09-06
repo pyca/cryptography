@@ -9,6 +9,7 @@ import typing
 from cryptography import exceptions, utils
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.backend import backend
+from cryptography.hazmat.bindings._rust import FixedPool
 
 
 class ChaCha20Poly1305:
@@ -26,10 +27,18 @@ class ChaCha20Poly1305:
             raise ValueError("ChaCha20Poly1305 key must be 32 bytes.")
 
         self._key = key
+        self._pool = FixedPool(self._create_fn, lambda: None)
 
     @classmethod
     def generate_key(cls) -> bytes:
         return os.urandom(32)
+
+    def _create_fn(self):
+        cipher_name = aead._aead_cipher_name(self)
+        return aead._aead_create_ctx(
+            backend,
+            cipher_name,
+        )
 
     def encrypt(
         self,
@@ -47,7 +56,10 @@ class ChaCha20Poly1305:
             )
 
         self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, [associated_data], 16)
+        with self._pool.acquire() as ctx:
+            return aead._encrypt(
+                backend, self, nonce, data, [associated_data], 16, ctx
+            )
 
     def decrypt(
         self,
@@ -59,7 +71,10 @@ class ChaCha20Poly1305:
             associated_data = b""
 
         self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, [associated_data], 16)
+        with self._pool.acquire() as ctx:
+            return aead._decrypt(
+                backend, self, nonce, data, [associated_data], 16, ctx
+            )
 
     def _check_params(
         self,

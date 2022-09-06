@@ -63,6 +63,38 @@ def _evp_cipher(cipher_name: bytes, backend: "Backend"):
     return evp_cipher
 
 
+def _aead_create_ctx(
+    backend: "Backend",
+    cipher_name: bytes,
+):
+    ctx = backend._lib.EVP_CIPHER_CTX_new()
+    backend.openssl_assert(ctx != backend._ffi.NULL)
+    ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
+    evp_cipher = _evp_cipher(cipher_name, backend)
+    res = backend._lib.EVP_CipherInit_ex(
+        ctx,
+        evp_cipher,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        0,
+    )
+    backend.openssl_assert(res != 0)
+    return ctx
+
+
+def _ctx_set_operation(backend: "Backend", ctx, operation: int) -> None:
+    res = backend._lib.EVP_CipherInit_ex(
+        ctx,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        int(operation == _ENCRYPT),
+    )
+    backend.openssl_assert(res != 0)
+
+
 def _aead_setup(
     backend: "Backend",
     cipher_name: bytes,
@@ -71,52 +103,71 @@ def _aead_setup(
     tag: typing.Optional[bytes],
     tag_len: int,
     operation: int,
+    ctx=None,
 ):
-    evp_cipher = _evp_cipher(cipher_name, backend)
-    ctx = backend._lib.EVP_CIPHER_CTX_new()
-    ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
-    res = backend._lib.EVP_CipherInit_ex(
-        ctx,
-        evp_cipher,
-        backend._ffi.NULL,
-        backend._ffi.NULL,
-        backend._ffi.NULL,
-        int(operation == _ENCRYPT),
-    )
-    backend.openssl_assert(res != 0)
+    if ctx is None:
+        ctx = _aead_create_ctx(backend, cipher_name)
+
+    _ctx_set_operation(backend, ctx, operation)
     res = backend._lib.EVP_CIPHER_CTX_set_key_length(ctx, len(key))
     backend.openssl_assert(res != 0)
-    res = backend._lib.EVP_CIPHER_CTX_ctrl(
-        ctx,
-        backend._lib.EVP_CTRL_AEAD_SET_IVLEN,
-        len(nonce),
-        backend._ffi.NULL,
-    )
-    backend.openssl_assert(res != 0)
+    # CCM requires the IVLEN to be set before calling SET_TAG on decrypt
+    _set_nonce_iv_length(backend, ctx, nonce)
     if operation == _DECRYPT:
         assert tag is not None
-        res = backend._lib.EVP_CIPHER_CTX_ctrl(
-            ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
-        )
-        backend.openssl_assert(res != 0)
+        _set_tag(backend, ctx, tag)
     elif cipher_name.endswith(b"-ccm"):
         res = backend._lib.EVP_CIPHER_CTX_ctrl(
             ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, tag_len, backend._ffi.NULL
         )
         backend.openssl_assert(res != 0)
 
-    nonce_ptr = backend._ffi.from_buffer(nonce)
+    _set_nonce(backend, ctx, nonce, _ENCRYPT)
+    _set_key(backend, ctx, key, operation)
+    return ctx
+
+
+def _set_key(backend: "Backend", ctx, key: bytes, operation: int):
     key_ptr = backend._ffi.from_buffer(key)
     res = backend._lib.EVP_CipherInit_ex(
         ctx,
         backend._ffi.NULL,
         backend._ffi.NULL,
         key_ptr,
+        backend._ffi.NULL,
+        int(operation == _ENCRYPT),
+    )
+    backend.openssl_assert(res != 0)
+
+
+def _set_tag(backend, ctx, tag: bytes) -> None:
+    res = backend._lib.EVP_CIPHER_CTX_ctrl(
+        ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
+    )
+    backend.openssl_assert(res != 0)
+
+
+def _set_nonce_iv_length(backend, ctx, nonce_iv: bytes) -> None:
+    res = backend._lib.EVP_CIPHER_CTX_ctrl(
+        ctx,
+        backend._lib.EVP_CTRL_AEAD_SET_IVLEN,
+        len(nonce_iv),
+        backend._ffi.NULL,
+    )
+    backend.openssl_assert(res != 0)
+
+
+def _set_nonce(backend, ctx, nonce: bytes, operation: int) -> None:
+    nonce_ptr = backend._ffi.from_buffer(nonce)
+    res = backend._lib.EVP_CipherInit_ex(
+        ctx,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
+        backend._ffi.NULL,
         nonce_ptr,
         int(operation == _ENCRYPT),
     )
     backend.openssl_assert(res != 0)
-    return ctx
 
 
 def _set_length(backend: "Backend", ctx, data_len: int) -> None:
@@ -153,13 +204,22 @@ def _encrypt(
     data: bytes,
     associated_data: typing.List[bytes],
     tag_length: int,
+    _ctx: typing.Any = None,
 ) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
 
     cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
-        backend, cipher_name, cipher._key, nonce, None, tag_length, _ENCRYPT
+        backend,
+        cipher_name,
+        cipher._key,
+        nonce,
+        None,
+        tag_length,
+        _ENCRYPT,
+        _ctx,
     )
+
     # CCM requires us to pass the length of the data before processing anything
     # However calling this with any other AEAD results in an error
     if isinstance(cipher, AESCCM):
@@ -200,6 +260,7 @@ def _decrypt(
     data: bytes,
     associated_data: typing.List[bytes],
     tag_length: int,
+    _ctx: typing.Any = None,
 ) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
 
@@ -217,8 +278,16 @@ def _decrypt(
         data = data[:-tag_length]
     cipher_name = _aead_cipher_name(cipher)
     ctx = _aead_setup(
-        backend, cipher_name, cipher._key, nonce, tag, tag_length, _DECRYPT
+        backend,
+        cipher_name,
+        cipher._key,
+        nonce,
+        tag,
+        tag_length,
+        _DECRYPT,
+        _ctx,
     )
+
     # CCM requires us to pass the length of the data before processing anything
     # However calling this with any other AEAD results in an error
     if isinstance(cipher, AESCCM):
