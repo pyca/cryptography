@@ -19,10 +19,6 @@ def cryptography_has_ssl3_method() -> typing.List[str]:
     ]
 
 
-def cryptography_has_110_verification_params() -> typing.List[str]:
-    return ["X509_CHECK_FLAG_NEVER_CHECK_SUBJECT"]
-
-
 def cryptography_has_set_cert_cb() -> typing.List[str]:
     return [
         "SSL_CTX_set_cert_cb",
@@ -320,9 +316,6 @@ def cryptography_has_ssl_op_ignore_unexpected_eof() -> typing.List[str]:
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC2M": cryptography_has_ec2m,
     "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
-    "Cryptography_HAS_110_VERIFICATION_PARAMS": (
-        cryptography_has_110_verification_params
-    ),
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
