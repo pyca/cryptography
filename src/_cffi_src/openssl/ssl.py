@@ -25,7 +25,6 @@ static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_PSK_TLSv1_3;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
-static const long Cryptography_HAS_GET_PROTO_VERSION;
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 static const long Cryptography_HAS_SSL_COOKIE;
 
@@ -566,8 +565,7 @@ Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 || \
-    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL)
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350
 static const long Cryptography_HAS_KEYLOG = 0;
 void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
                                     void (*) (const SSL *, const char *)
@@ -653,7 +651,7 @@ long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
 long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 #else
@@ -747,8 +745,7 @@ int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
 SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
-    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL)
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340
 static const long Cryptography_HAS_TLSv1_3 = 0;
 static const long TLS1_3_VERSION = 0;
 static const long SSL_OP_NO_TLSv1_3 = 0;
@@ -756,9 +753,7 @@ static const long SSL_OP_NO_TLSv1_3 = 0;
 static const long Cryptography_HAS_TLSv1_3 = 1;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || \
-    (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL) || \
-    CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 0;
 
 static const long SSL_VERIFY_POST_HANDSHAKE = 0;
@@ -772,17 +767,6 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 1;
-#endif
-
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_GET_PROTO_VERSION = 0;
-
-long (*SSL_CTX_get_min_proto_version)(SSL_CTX *) = NULL;
-long (*SSL_CTX_get_max_proto_version)(SSL_CTX *) = NULL;
-long (*SSL_get_min_proto_version)(SSL *) = NULL;
-long (*SSL_get_max_proto_version)(SSL *) = NULL;
-#else
-static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
 #endif
 
 #if CRYPTOGRAPHY_IS_BORINGSSL
@@ -805,8 +789,7 @@ void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
 #else
 static const long Cryptography_HAS_SSL_COOKIE = 1;
 #endif
-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 || \
-    CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_PSK_TLSv1_3 = 0;
 void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
                                            int (*)(

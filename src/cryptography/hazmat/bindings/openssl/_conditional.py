@@ -230,15 +230,6 @@ def cryptography_has_srtp() -> typing.List[str]:
     ]
 
 
-def cryptography_has_get_proto_version() -> typing.List[str]:
-    return [
-        "SSL_CTX_get_min_proto_version",
-        "SSL_CTX_get_max_proto_version",
-        "SSL_get_min_proto_version",
-        "SSL_get_max_proto_version",
-    ]
-
-
 def cryptography_has_providers() -> typing.List[str]:
     return [
         "OSSL_PROVIDER_load",
@@ -366,7 +357,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
-    "Cryptography_HAS_GET_PROTO_VERSION": cryptography_has_get_proto_version,
     "Cryptography_HAS_PROVIDERS": cryptography_has_providers,
     "Cryptography_HAS_OP_NO_RENEGOTIATION": (
         cryptography_has_op_no_renegotiation

@@ -32,7 +32,6 @@ jobs:
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
           - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}

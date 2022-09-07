@@ -111,14 +111,14 @@ earlier the default compiler is extremely old. Use ``pkg_add`` to install a
 newer ``gcc`` and then install ``cryptography`` using
 ``CC=/path/to/newer/gcc pip install cryptography``.
 
-Installing cryptography with OpenSSL 0.9.8, 1.0.0, 1.0.1, 1.0.2 fails
----------------------------------------------------------------------
+Installing cryptography with OpenSSL 0.9.8, 1.0.0, 1.0.1, 1.0.2, 1.1.0 fails
+----------------------------------------------------------------------------
 
-The OpenSSL project has dropped support for the 0.9.8, 1.0.0, 1.0.1, and 1.0.2
-release series. Since they are no longer receiving security patches from
-upstream, ``cryptography`` is also dropping support for them. To fix this issue
-you should upgrade to a newer version of OpenSSL (1.1.0 or later). This may
-require you to upgrade to a newer operating system.
+The OpenSSL project has dropped support for the 0.9.8, 1.0.0, 1.0.1, 1.0.2,
+and 1.1.0 release series. Since they are no longer receiving security patches
+from upstream, ``cryptography`` is also dropping support for them. To fix this
+issue you should upgrade to a newer version of OpenSSL (1.1.1 or later). This
+may require you to upgrade to a newer operating system.
 
 Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
 ----------------------------------------------------------------------------
