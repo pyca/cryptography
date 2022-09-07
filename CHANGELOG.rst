@@ -3,7 +3,7 @@ Changelog
 
 .. _v38-0-1:
 
-38.0.0 - 2022-09-07
+38.0.1 - 2022-09-07
 ~~~~~~~~~~~~~~~~~~~
 
 * Fixed parsing TLVs in ASN.1 with length greater than 65535 bytes (typically
