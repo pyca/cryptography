@@ -24,6 +24,14 @@ Changelog
   :class:`~cryptography.x509.CertificateBuilder` and
   other X.509 builders has been removed.
 
+.. _v38-0-1:
+
+38.0.1 - 2022-09-07
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed parsing TLVs in ASN.1 with length greater than 65535 bytes (typically
+  seen in large CRLs).
+
 .. _v38-0-0:
 
 38.0.0 - 2022-09-06
