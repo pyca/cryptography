@@ -31,16 +31,11 @@ operating systems.
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases:
 
-* ``OpenSSL 1.1.0-latest``
 * ``OpenSSL 1.1.1-latest``
 * ``OpenSSL 3.0-latest``
 
 In addition we test against several versions of LibreSSL and the latest commit
 in BoringSSL.
-
-.. warning::
-
-    Cryptography 37.0.0 has deprecated support for OpenSSL 1.1.0.
 
 
 Building cryptography on Windows

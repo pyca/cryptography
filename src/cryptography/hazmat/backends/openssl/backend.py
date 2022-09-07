@@ -1980,7 +1980,7 @@ class Backend:
         if self._fips_enabled:
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
         )
 

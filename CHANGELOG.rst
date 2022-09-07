@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for OpenSSL 1.1.0 has been removed. Users on older version of
+  OpenSSL will need to upgrade.
 
 .. _v38-0-0:
 
