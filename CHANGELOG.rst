@@ -10,6 +10,8 @@ Changelog
 
 * Support for OpenSSL 1.1.0 has been removed. Users on older version of
   OpenSSL will need to upgrade.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 3.1.x, 3.2.x,
+  3.3.0, and 3.3.1. The new minimum LibreSSL version is 3.3.2+.
 
 .. _v38-0-0:
 
