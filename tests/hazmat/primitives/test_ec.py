@@ -12,14 +12,13 @@ from binascii import hexlify
 
 import pytest
 
-from cryptography import exceptions, utils, x509
+from cryptography import exceptions, x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed,
     encode_dss_signature,
 )
-from cryptography.utils import CryptographyDeprecationWarning
 
 from .fixtures_ec import EC_KEY_SECP384R1
 from .utils import skip_fips_traditional_openssl
@@ -169,73 +168,6 @@ def test_invalid_ec_numbers_args(private_value, x, y, curve):
 def test_invalid_private_numbers_public_numbers():
     with pytest.raises(TypeError):
         ec.EllipticCurvePrivateNumbers(1, None)  # type: ignore[arg-type]
-
-
-def test_encode_point():
-    # secp256r1 point
-    x = int(
-        "233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec", 16
-    )
-    y = int(
-        "3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e", 16
-    )
-    pn = ec.EllipticCurvePublicNumbers(x, y, ec.SECP256R1())
-    with pytest.warns(utils.PersistentlyDeprecated2019):
-        data = pn.encode_point()
-    assert data == binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
-        "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
-    )
-
-
-def test_from_encoded_point():
-    # secp256r1 point
-    data = binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
-        "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e"
-    )
-    with pytest.warns(CryptographyDeprecationWarning):
-        pn = ec.EllipticCurvePublicNumbers.from_encoded_point(
-            ec.SECP256R1(), data
-        )
-    assert pn.x == int(
-        "233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22aec", 16
-    )
-    assert pn.y == int(
-        "3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460b35f442e", 16
-    )
-
-
-def test_from_encoded_point_invalid_length():
-    bad_data = binascii.unhexlify(
-        "04233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22ae"
-        "c3ea2c10a84153862be4ec82940f0543f9ba866af9751a6ee79d38460"
-    )
-    with pytest.raises(ValueError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                ec.SECP384R1(), bad_data
-            )
-
-
-def test_from_encoded_point_unsupported_point_no_backend():
-    # set to point type 2.
-    unsupported_type = binascii.unhexlify(
-        "02233ea3b0027127084cd2cd336a13aeef69c598d8af61369a36454a17c6c22a"
-    )
-    with pytest.raises(ValueError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                ec.SECP256R1(), unsupported_type
-            )
-
-
-def test_from_encoded_point_not_a_curve():
-    with pytest.raises(TypeError):
-        with pytest.warns(CryptographyDeprecationWarning):
-            ec.EllipticCurvePublicNumbers.from_encoded_point(
-                "notacurve", b"\x04data"  # type: ignore[arg-type]
-            )
 
 
 def test_ec_public_numbers_repr():
