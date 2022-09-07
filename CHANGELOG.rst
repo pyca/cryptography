@@ -8,10 +8,18 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Support for OpenSSL 1.1.0 has been removed. Users on older version of
-  OpenSSL will need to upgrade.
+* **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.0 has been removed.
+  Users on older version of OpenSSL will need to upgrade.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 3.1.x, 3.2.x,
   3.3.0, and 3.3.1. The new minimum LibreSSL version is 3.3.2+.
+* **BACKWARDS INCOMPATIBLE:** Removed the ``encode_point`` and
+  ``from_encoded_point`` methods on
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`,
+  which had been deprecated for several years.
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`
+  should be used instead.
 
 .. _v38-0-0:
 
