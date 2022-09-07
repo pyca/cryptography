@@ -597,6 +597,7 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_no_next_time.pem`` - Contains a CRL with no ``nextUpdate`` value. The
   signature on this CRL is invalid.
 * ``crl_bad_version.pem`` - Contains a CRL with an invalid version.
+* ``crl_almost_10k.pem`` - Contains a CRL with 9,999 entries.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
