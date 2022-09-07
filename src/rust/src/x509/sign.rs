@@ -24,8 +24,6 @@ enum KeyType {
 
 enum HashType {
     None,
-    Md5,
-    Sha1,
     Sha224,
     Sha256,
     Sha384,
@@ -97,32 +95,6 @@ fn identify_hash_type(
         .getattr(crate::intern!(py, "name"))?
         .extract()?
     {
-        "md5" => {
-            let cryptography_warning = py
-                .import("cryptography.utils")?
-                .getattr(crate::intern!(py, "DeprecatedIn38"))?;
-            pyo3::PyErr::warn(
-                py,
-                cryptography_warning,
-                "MD5 signatures are deprecated and support for them will be removed in the next version.",
-                1
-            )?;
-
-            Ok(HashType::Md5)
-        }
-        "sha1" => {
-            let cryptography_warning = py
-                .import("cryptography.utils")?
-                .getattr(crate::intern!(py, "DeprecatedIn38"))?;
-            pyo3::PyErr::warn(
-                py,
-                cryptography_warning,
-                "SHA1 signatures are deprecated and support for them will be removed in the next version.",
-                1
-            )?;
-
-            Ok(HashType::Sha1)
-        }
         "sha224" => Ok(HashType::Sha224),
         "sha256" => Ok(HashType::Sha256),
         "sha384" => Ok(HashType::Sha384),
@@ -161,10 +133,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
             ))
         }
 
-        (KeyType::Ec, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA1_OID).clone(),
-            params: None,
-        }),
         (KeyType::Ec, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA224_OID).clone(),
             params: None,
@@ -198,14 +166,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
             params: None,
         }),
 
-        (KeyType::Rsa, HashType::Md5) => Ok(x509::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_MD5_OID).clone(),
-            params: Some(*NULL_TLV),
-        }),
-        (KeyType::Rsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA1_OID).clone(),
-            params: Some(*NULL_TLV),
-        }),
         (KeyType::Rsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA224_OID).clone(),
             params: Some(*NULL_TLV),
@@ -239,10 +199,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
             params: Some(*NULL_TLV),
         }),
 
-        (KeyType::Dsa, HashType::Sha1) => Ok(x509::AlgorithmIdentifier {
-            oid: (oid::DSA_WITH_SHA1_OID).clone(),
-            params: None,
-        }),
         (KeyType::Dsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
             oid: (oid::DSA_WITH_SHA224_OID).clone(),
             params: None,
@@ -268,9 +224,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (_, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
-        )),
-        (_, HashType::Md5) => Err(pyo3::exceptions::PyValueError::new_err(
-            "MD5 hash algorithm is only supported with RSA keys",
         )),
     }
 }

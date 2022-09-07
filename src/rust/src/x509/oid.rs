@@ -43,7 +43,6 @@ pub(crate) const FRESHEST_CRL_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29,
 pub(crate) const INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 54);
 
 // Signing methods
-pub(crate) const ECDSA_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 4, 1);
 pub(crate) const ECDSA_WITH_SHA224_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 2, 840, 10045, 4, 3, 1);
 pub(crate) const ECDSA_WITH_SHA256_OID: asn1::ObjectIdentifier =
@@ -61,8 +60,6 @@ pub(crate) const ECDSA_WITH_SHA3_384_OID: asn1::ObjectIdentifier =
 pub(crate) const ECDSA_WITH_SHA3_512_OID: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 12);
 
-pub(crate) const RSA_WITH_MD5_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 4);
-pub(crate) const RSA_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 5);
 pub(crate) const RSA_WITH_SHA224_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 2, 840, 113549, 1, 1, 14);
 pub(crate) const RSA_WITH_SHA256_OID: asn1::ObjectIdentifier =
@@ -80,7 +77,6 @@ pub(crate) const RSA_WITH_SHA3_384_OID: asn1::ObjectIdentifier =
 pub(crate) const RSA_WITH_SHA3_512_OID: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 16);
 
-pub(crate) const DSA_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10040, 4, 3);
 pub(crate) const DSA_WITH_SHA224_OID: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 1);
 pub(crate) const DSA_WITH_SHA256_OID: asn1::ObjectIdentifier =
