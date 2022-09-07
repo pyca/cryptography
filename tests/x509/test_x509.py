@@ -107,6 +107,14 @@ class TestCertificateRevocationList:
         assert fingerprint == b"dd3db63c50f4c4a13e090f14053227cb1011a5ad"
         assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
 
+    def test_load_large_crl(self, backend):
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_almost_10k.pem"),
+            x509.load_pem_x509_crl,
+            backend,
+        )
+        assert len(crl) == 9999
+
     def test_empty_crl_no_sequence(self, backend):
         # The SEQUENCE for revoked certificates is optional so let's
         # test that we handle it properly.
