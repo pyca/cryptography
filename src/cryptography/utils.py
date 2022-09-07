@@ -21,7 +21,6 @@ class CryptographyDeprecationWarning(UserWarning):
 # Several APIs were deprecated with no specific end-of-life date because of the
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
-DeprecatedIn35 = CryptographyDeprecationWarning
 DeprecatedIn36 = CryptographyDeprecationWarning
 DeprecatedIn37 = CryptographyDeprecationWarning
 

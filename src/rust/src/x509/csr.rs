@@ -295,28 +295,6 @@ impl CertificateSigningRequest {
             .getattr(crate::intern!(py, "backend"))?;
         backend.call_method1("_csr_is_signature_valid", (slf,))
     }
-
-    // This getter exists for compatibility with pyOpenSSL and will be removed.
-    // DO NOT RELY ON IT. WE WILL BREAK YOU WHEN WE FEEL LIKE IT.
-    #[getter]
-    fn _x509_req<'p>(
-        slf: pyo3::PyRef<'_, Self>,
-        py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
-        let cryptography_warning = py
-            .import("cryptography.utils")?
-            .getattr(crate::intern!(py, "DeprecatedIn35"))?;
-        pyo3::PyErr::warn(
-            py,
-            cryptography_warning,
-            "This version of cryptography contains a temporary pyOpenSSL fallback path. Upgrade pyOpenSSL now.",
-            1,
-        )?;
-        let backend = py
-            .import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr(crate::intern!(py, "backend"))?;
-        Ok(backend.call_method1("_csr2ossl", (slf,))?)
-    }
 }
 
 #[pyo3::prelude::pyfunction]

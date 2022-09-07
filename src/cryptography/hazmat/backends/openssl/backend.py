@@ -1084,14 +1084,6 @@ class Backend:
         x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
         return x509_req
 
-    def _ossl2csr(
-        self, x509_req: typing.Any
-    ) -> x509.CertificateSigningRequest:
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_REQ_bio(bio, x509_req)
-        self.openssl_assert(res == 1)
-        return rust_x509.load_der_x509_csr(self._read_mem_bio(bio))
-
     def _crl2ossl(self, crl: x509.CertificateRevocationList) -> typing.Any:
         data = crl.public_bytes(serialization.Encoding.DER)
         mem_bio = self._bytes_to_bio(data)
@@ -1099,14 +1091,6 @@ class Backend:
         self.openssl_assert(x509_crl != self._ffi.NULL)
         x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
         return x509_crl
-
-    def _ossl2crl(
-        self, x509_crl: typing.Any
-    ) -> x509.CertificateRevocationList:
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_CRL_bio(bio, x509_crl)
-        self.openssl_assert(res == 1)
-        return rust_x509.load_der_x509_crl(self._read_mem_bio(bio))
 
     def _crl_is_signature_valid(
         self,
