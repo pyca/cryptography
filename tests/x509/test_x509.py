@@ -1856,7 +1856,6 @@ class TestRSACertificateRequest:
     @pytest.mark.parametrize(
         ("hashalg", "hashalg_oid"),
         [
-            (hashes.SHA1, x509.SignatureAlgorithmOID.RSA_WITH_SHA1),
             (hashes.SHA224, x509.SignatureAlgorithmOID.RSA_WITH_SHA224),
             (hashes.SHA256, x509.SignatureAlgorithmOID.RSA_WITH_SHA256),
             (hashes.SHA384, x509.SignatureAlgorithmOID.RSA_WITH_SHA384),
@@ -2067,7 +2066,7 @@ class TestCertificateBuilder:
         )
 
         with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA1(), backend)
+            builder.sign(private_key, hashes.SHA256(), backend)
 
     def test_encode_nonstandard_aia(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)
@@ -2644,28 +2643,6 @@ class TestCertificateBuilder:
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
-    def test_sign_rsa_with_md5(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateBuilder()
-        builder = (
-            builder.subject_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
-            )
-            .issuer_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
-            )
-            .serial_number(1)
-            .public_key(private_key.public_key())
-            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
-            .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
-        )
-        cert = builder.sign(private_key, hashes.MD5(), backend)
-        assert isinstance(cert.signature_hash_algorithm, hashes.MD5)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
-        skip_message="Requires OpenSSL with MD5 support",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
         skip_message="Does not support DSA.",
@@ -2728,7 +2705,6 @@ class TestCertificateBuilder:
     @pytest.mark.parametrize(
         ("hashalg", "hashalg_oid"),
         [
-            (hashes.SHA1, x509.SignatureAlgorithmOID.DSA_WITH_SHA1),
             (hashes.SHA224, x509.SignatureAlgorithmOID.DSA_WITH_SHA224),
             (hashes.SHA256, x509.SignatureAlgorithmOID.DSA_WITH_SHA256),
             (hashes.SHA384, x509.SignatureAlgorithmOID.DSA_WITH_SHA384),
@@ -2791,7 +2767,6 @@ class TestCertificateBuilder:
     @pytest.mark.parametrize(
         ("hashalg", "hashalg_oid"),
         [
-            (hashes.SHA1, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA1),
             (hashes.SHA224, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA224),
             (hashes.SHA256, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA256),
             (hashes.SHA384, x509.SignatureAlgorithmOID.ECDSA_WITH_SHA384),
@@ -3752,48 +3727,6 @@ class TestCertificateSigningRequestBuilder:
 
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
-        skip_message="Requires OpenSSL with MD5 support",
-    )
-    def test_sign_rsa_with_md5(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
-
-        builder = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA")])
-        )
-        request = builder.sign(private_key, hashes.MD5(), backend)
-        assert isinstance(request.signature_hash_algorithm, hashes.MD5)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
-        skip_message="Requires OpenSSL with MD5 support",
-    )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.dsa_supported(),
-        skip_message="Does not support DSA.",
-    )
-    def test_sign_dsa_with_md5(self, backend):
-        private_key = DSA_KEY_2048.private_key(backend)
-        builder = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA")])
-        )
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
-        skip_message="Requires OpenSSL with MD5 support",
-    )
-    def test_sign_ec_with_md5(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        private_key = EC_KEY_SECP256R1.private_key(backend)
-        builder = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA")])
-        )
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
 
     def test_no_subject_name(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)

@@ -20,6 +20,9 @@ Changelog
   and
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`
   should be used instead.
+* **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
+  :class:`~cryptography.x509.CertificateBuilder` and
+  other X.509 builders has been removed.
 
 .. _v38-0-0:
 
