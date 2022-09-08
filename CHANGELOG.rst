@@ -23,6 +23,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
   :class:`~cryptography.x509.CertificateBuilder` and
   other X.509 builders has been removed.
+* Added several new OpenSSL functions to the bindings to support an upcoming
+  ``pyOpenSSL`` release.
 
 .. _v38-0-1:
 
