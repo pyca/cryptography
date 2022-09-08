@@ -372,5 +372,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF": (
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
-    "Cryptography_HAS_SSL_BIO_EX_FUNCTIONS": cryptography_has_ssl_bio_ex_functions,
+    "Cryptography_HAS_SSL_BIO_EX_FUNCTIONS": (
+        cryptography_has_ssl_bio_ex_functions
+    ),
 }
