@@ -308,6 +308,10 @@ def cryptography_has_ssl_op_ignore_unexpected_eof() -> typing.List[str]:
     ]
 
 
+def cryptography_has_ssl_bio_ex_functions() -> typing.List[str]:
+    return ["SSL_write_ex", "SSL_read_ex", "SSL_peek_ex"]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -368,4 +372,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF": (
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
+    "Cryptography_HAS_SSL_BIO_EX_FUNCTIONS": cryptography_has_ssl_bio_ex_functions,
 }

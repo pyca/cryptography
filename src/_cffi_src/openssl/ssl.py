@@ -27,6 +27,7 @@ static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 static const long Cryptography_HAS_SSL_COOKIE;
+static const long Cryptography_HAS_SSL_BIO_EX_FUNCTIONS;
 
 /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
  * supported
@@ -820,5 +821,14 @@ static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
 SSL_SESSION *Cryptography_SSL_SESSION_new(void) {
     return SSL_SESSION_new();
 }
+#endif
+
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 || CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_SSL_BIO_EX_FUNCTIONS = 0;
+int (*SSL_write_ex)(SSL *, const void *, size_t, size_t *) = NULL;
+int (*SSL_read_ex)(SSL *, void *, size_t, size_t *) = NULL;
+int (*SSL_peek_ex)(SSL *, void *, size_t, size_t *) = NULL;
+#else
+static const long Cryptography_HAS_SSL_BIO_EX_FUNCTIONS = 1;
 #endif
 """
