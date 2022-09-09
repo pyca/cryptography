@@ -203,8 +203,8 @@ linkcheck_ignore = [
     r"https://www.secg.org/sec1-v2.pdf",
     # Incomplete cert chain
     r"https://e-trust.gosuslugi.ru",
-    # Expired cert (1 week at time of writing)
-    r"https://www.cosic.esat.kuleuven.be",
+    # Expired cert (2 days at time of writing)
+    r"https://www.oscca.gov.cn",
 ]
 
 autosectionlabel_prefix_document = True
