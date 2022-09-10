@@ -9,6 +9,22 @@ INCLUDES = """
    after we drop 1.0.2 support in the distant future.  */
 #define OPENSSL_API_COMPAT 0x10001000L
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <Wincrypt.h>
+#include <Winsock2.h>
+/*
+    undef some macros that are defined by wincrypt.h but are also types in
+    boringssl. openssl has worked around this but boring has not yet. see:
+    https://chromium.googlesource.com/chromium/src/+/refs/heads/main/base
+    /win/wincrypt_shim.h
+*/
+#undef X509_NAME
+#undef X509_EXTENSIONS
+#undef PKCS7_SIGNER_INFO
+#endif
+
 #include <openssl/opensslv.h>
 
 
@@ -22,13 +38,6 @@ INCLUDES = """
 #define CRYPTOGRAPHY_IS_BORINGSSL 1
 #else
 #define CRYPTOGRAPHY_IS_BORINGSSL 0
-#endif
-
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <Wincrypt.h>
-#include <Winsock2.h>
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
