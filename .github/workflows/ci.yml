@@ -192,6 +192,7 @@ jobs:
           # the linux-rust-coverage section. Once our MSRV is 1.60 we can
           # remove this section entirely.
           - 1.48.0
+          # 1.49.0 is the MSRV for parking_lot 0.12
           - 1.49.0
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
