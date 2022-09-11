@@ -24,13 +24,6 @@ INCLUDES = """
 #define CRYPTOGRAPHY_IS_BORINGSSL 0
 #endif
 
-/*
-    LibreSSL removed e_os2.h from the public headers so we'll only include it
-    if we're using vanilla OpenSSL.
-*/
-#if !CRYPTOGRAPHY_IS_LIBRESSL
-#include <openssl/e_os2.h>
-#endif
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
