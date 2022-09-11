@@ -4,7 +4,13 @@
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+from cryptography.hazmat.primitives.ciphers.aead import (
+    AESCCM,
+    AESGCM,
+    AESOCB3,
+    AESSIV,
+    ChaCha20Poly1305,
+)
 
 from ..hazmat.primitives.test_aead import _aead_supported
 
@@ -16,3 +22,35 @@ from ..hazmat.primitives.test_aead import _aead_supported
 def test_chacha20poly1305(benchmark):
     chacha = ChaCha20Poly1305(b"\x00" * 32)
     benchmark(chacha.encrypt, b"\x00" * 12, b"hello world plaintext", b"")
+
+
+def test_aesgcm(benchmark):
+    aes = AESGCM(b"\x00" * 32)
+    benchmark(aes.encrypt, b"\x00" * 12, b"hello world plaintext", None)
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESSIV),
+    reason="Requires OpenSSL with AES-SIV support",
+)
+def test_aessiv(benchmark):
+    aes = AESSIV(b"\x00" * 32)
+    benchmark(aes.encrypt, b"hello world plaintext", None)
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESOCB3),
+    reason="Requires OpenSSL with AES-OCB3 support",
+)
+def test_aesocb3(benchmark):
+    aes = AESOCB3(b"\x00" * 32)
+    benchmark(aes.encrypt, b"\x00" * 12, b"hello world plaintext", None)
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESCCM),
+    reason="Requires OpenSSL with AES-CCM support",
+)
+def test_aesccm(benchmark):
+    aes = AESCCM(b"\x00" * 32)
+    benchmark(aes.encrypt, b"\x00" * 12, b"hello world plaintext", None)
