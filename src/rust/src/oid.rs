@@ -35,6 +35,10 @@ impl ObjectIdentifier {
             .getattr(crate::intern!(py, "_OID_NAMES"))?;
         oid_names.call_method1("get", (slf, "Unknown OID"))
     }
+
+    fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
+        slf
+    }
 }
 
 #[pyo3::prelude::pyproto]

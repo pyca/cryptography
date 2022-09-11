@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import copy
 
 import pytest
 
@@ -10,6 +11,15 @@ from cryptography.hazmat._oid import ObjectIdentifier
 
 def test_basic_oid():
     assert ObjectIdentifier("1.2.3.4").dotted_string == "1.2.3.4"
+
+
+def test_oid_equal():
+    assert ObjectIdentifier("1.2.3.4") == ObjectIdentifier("1.2.3.4")
+
+
+def test_oid_deepcopy():
+    oid = ObjectIdentifier("1.2.3.4")
+    assert oid == copy.deepcopy(oid)
 
 
 def test_oid_constraint():
