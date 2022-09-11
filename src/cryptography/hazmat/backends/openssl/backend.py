@@ -685,15 +685,15 @@ class Backend:
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
-            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _Ed25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
-            # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _X448PrivateKey(self, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_X25519:
             return _X25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
-            # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _Ed448PrivateKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
@@ -742,15 +742,15 @@ class Backend:
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPublicKey(self, dh_cdata, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
-            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _Ed25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
-            # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _X448PublicKey(self, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_X25519:
             return _X25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
-            # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return _Ed448PublicKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")

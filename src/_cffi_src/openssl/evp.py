@@ -230,7 +230,7 @@ static const long Cryptography_HAS_RAW_KEY = 1;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 #endif
 
-/* OpenSSL 1.1.0+ does this define for us, but if not present we'll do it */
+/* These defines are needed for CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 */
 #if !defined(EVP_CTRL_AEAD_SET_IVLEN)
 # define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
 #endif
