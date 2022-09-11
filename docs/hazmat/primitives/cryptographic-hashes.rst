@@ -117,7 +117,7 @@ SHA-family of hashes.
 .. note::
 
     While the RFC specifies keying, personalization, and salting features,
-    these are not supported at this time due to limitations in OpenSSL 1.1.0.
+    these are not supported at this time due to limitations in OpenSSL.
 
 .. class:: BLAKE2b(digest_size)
 
