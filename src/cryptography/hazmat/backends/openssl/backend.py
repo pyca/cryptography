@@ -1877,8 +1877,8 @@ class Backend:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_load_public_bytes(self, data: bytes) -> x25519.X25519PublicKey:
-        # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
-        # switch this to EVP_PKEY_new_raw_public_key
+        # If/when LibreSSL adds support for EVP_PKEY_new_raw_public_key we
+        # can switch to it (Cryptography_HAS_RAW_KEY)
         if len(data) != 32:
             raise ValueError("An X25519 public key is 32 bytes long")
 
@@ -1894,8 +1894,8 @@ class Backend:
     def x25519_load_private_bytes(
         self, data: bytes
     ) -> x25519.X25519PrivateKey:
-        # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 we can
-        # switch this to EVP_PKEY_new_raw_private_key and drop the
+        # If/when LibreSSL adds support for EVP_PKEY_new_raw_private_key we
+        # can switch to it (Cryptography_HAS_RAW_KEY) drop the
         # zeroed_bytearray garbage.
         # OpenSSL only has facilities for loading PKCS8 formatted private
         # keys using the algorithm identifiers specified in
