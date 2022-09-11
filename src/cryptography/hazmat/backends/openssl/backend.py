@@ -2446,9 +2446,7 @@ class Backend:
             x509 = self._lib.sk_X509_value(sk_x509, i)
             self.openssl_assert(x509 != self._ffi.NULL)
             res = self._lib.X509_up_ref(x509)
-            # When OpenSSL is less than 1.1.0 up_ref returns the current
-            # refcount. On 1.1.0+ it returns 1 for success.
-            self.openssl_assert(res >= 1)
+            self.openssl_assert(res == 1)
             x509 = self._ffi.gc(x509, self._lib.X509_free)
             cert = self._ossl2cert(x509)
             certs.append(cert)
