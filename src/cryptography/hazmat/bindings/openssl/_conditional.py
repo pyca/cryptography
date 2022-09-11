@@ -74,13 +74,6 @@ def cryptography_has_ed448() -> typing.List[str]:
     ]
 
 
-def cryptography_has_ed25519() -> typing.List[str]:
-    return [
-        "NID_ED25519",
-        "EVP_PKEY_ED25519",
-    ]
-
-
 def cryptography_has_poly1305() -> typing.List[str]:
     return [
         "NID_poly1305",
@@ -326,7 +319,6 @@ CONDITIONAL_NAMES = {
         cryptography_has_x509_store_ctx_get_issuer
     ),
     "Cryptography_HAS_ED448": cryptography_has_ed448,
-    "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_POLY1305": cryptography_has_poly1305,
     "Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY": (
         cryptography_has_oneshot_evp_digest_sign_verify

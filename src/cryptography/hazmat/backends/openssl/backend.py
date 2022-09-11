@@ -684,8 +684,7 @@ class Backend:
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
-        elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
-            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+        elif key_type == self._lib.EVP_PKEY_ED25519:
             return _Ed25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
@@ -742,8 +741,7 @@ class Backend:
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPublicKey(self, dh_cdata, evp_pkey)
-        elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
-            # EVP_PKEY_ED25519 is not present in OpenSSL < 1.1.1
+        elif key_type == self._lib.EVP_PKEY_ED25519:
             return _Ed25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
