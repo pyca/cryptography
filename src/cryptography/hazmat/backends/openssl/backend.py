@@ -690,8 +690,7 @@ class Backend:
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
             return _X448PrivateKey(self, evp_pkey)
-        elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
-            # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
+        elif key_type == self._lib.EVP_PKEY_X25519:
             return _X25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
             # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
@@ -748,11 +747,10 @@ class Backend:
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in OpenSSL < 1.1.1
             return _X448PublicKey(self, evp_pkey)
-        elif key_type == getattr(self._lib, "EVP_PKEY_X25519", None):
-            # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.0
+        elif key_type == self._lib.EVP_PKEY_X25519:
             return _X25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
-            # EVP_PKEY_X25519 is not present in OpenSSL < 1.1.1
+            # EVP_PKEY_ED448 is not present in OpenSSL < 1.1.1
             return _Ed448PublicKey(self, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
