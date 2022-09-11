@@ -4,7 +4,13 @@
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM, AESOCB3, AESCCM, AESSIV, ChaCha20Poly1305
+from cryptography.hazmat.primitives.ciphers.aead import (
+    AESCCM,
+    AESGCM,
+    AESOCB3,
+    AESSIV,
+    ChaCha20Poly1305,
+)
 
 from ..hazmat.primitives.test_aead import _aead_supported
 
