@@ -10,7 +10,6 @@ use std::cell::Cell;
 #[pyo3::prelude::pyclass]
 pub(crate) struct FixedPool {
     create_fn: pyo3::PyObject,
-    destroy_fn: pyo3::PyObject,
 
     value: Cell<Option<pyo3::PyObject>>,
 }
@@ -26,16 +25,11 @@ struct PoolAcquisition {
 #[pyo3::pymethods]
 impl FixedPool {
     #[new]
-    fn new(
-        py: pyo3::Python<'_>,
-        create: pyo3::PyObject,
-        destroy: pyo3::PyObject,
-    ) -> pyo3::PyResult<Self> {
+    fn new(py: pyo3::Python<'_>, create: pyo3::PyObject) -> pyo3::PyResult<Self> {
         let value = create.call0(py)?;
 
         Ok(FixedPool {
             create_fn: create,
-            destroy_fn: destroy,
 
             value: Cell::new(Some(value)),
         })
@@ -60,18 +54,6 @@ impl FixedPool {
     }
 }
 
-impl Drop for FixedPool {
-    fn drop(&mut self) {
-        if let Some(value) = self.value.replace(None) {
-            let gil = pyo3::Python::acquire_gil();
-            let py = gil.python();
-            self.destroy_fn
-                .call1(py, (value,))
-                .expect("FixedPool destroy function failed in destructor");
-        }
-    }
-}
-
 #[pyo3::pymethods]
 impl PoolAcquisition {
     fn __enter__(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
@@ -86,9 +68,7 @@ impl PoolAcquisition {
         _exc_tb: &pyo3::PyAny,
     ) -> pyo3::PyResult<()> {
         let pool = self.pool.as_ref(py).borrow();
-        if self.fresh {
-            pool.destroy_fn.call1(py, (self.value.clone_ref(py),))?;
-        } else {
+        if !self.fresh {
             pool.value.replace(Some(self.value.clone_ref(py)));
         }
         Ok(())
