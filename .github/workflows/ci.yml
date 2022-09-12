@@ -460,6 +460,7 @@ jobs:
           - certbot
           - certbot-josepy
           - mitmproxy
+          - scapy
         PYTHON:
           - 3.9
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
