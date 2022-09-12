@@ -107,8 +107,6 @@ def _aead_setup(
         int(operation == _ENCRYPT),
     )
     backend.openssl_assert(res != 0)
-    res = backend._lib.EVP_CIPHER_CTX_set_key_length(ctx, len(key))
-    backend.openssl_assert(res != 0)
     # CCM requires the IVLEN to be set before calling SET_TAG on decrypt
     res = backend._lib.EVP_CIPHER_CTX_ctrl(
         ctx,
