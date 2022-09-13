@@ -15,7 +15,6 @@ static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
-static const long Cryptography_HAS_TLSv1_3;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
@@ -741,15 +740,7 @@ int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
 SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340
-static const long Cryptography_HAS_TLSv1_3 = 0;
-static const long TLS1_3_VERSION = 0;
-static const long SSL_OP_NO_TLSv1_3 = 0;
-#else
-static const long Cryptography_HAS_TLSv1_3 = 1;
-#endif
-
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 0;
 
 static const long SSL_VERIFY_POST_HANDSHAKE = 0;
@@ -802,7 +793,7 @@ void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
                                               size_t *,
                                               SSL_SESSION **
                                           )) = NULL;
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340 || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL
 const SSL_CIPHER *(*SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
 #endif
 int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,

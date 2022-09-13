@@ -88,13 +88,6 @@ def cryptography_has_poly1305() -> typing.List[str]:
     ]
 
 
-def cryptography_has_oneshot_evp_digest_sign_verify() -> typing.List[str]:
-    return [
-        "EVP_DigestSign",
-        "EVP_DigestVerify",
-    ]
-
-
 def cryptography_has_evp_digestfinal_xof() -> typing.List[str]:
     return [
         "EVP_DigestFinalXOF",
@@ -152,13 +145,6 @@ def cryptography_has_custom_ext() -> typing.List[str]:
 def cryptography_has_openssl_cleanup() -> typing.List[str]:
     return [
         "OPENSSL_cleanup",
-    ]
-
-
-def cryptography_has_tlsv13() -> typing.List[str]:
-    return [
-        "TLS1_3_VERSION",
-        "SSL_OP_NO_TLSv1_3",
     ]
 
 
@@ -328,9 +314,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_POLY1305": cryptography_has_poly1305,
-    "Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY": (
-        cryptography_has_oneshot_evp_digest_sign_verify
-    ),
     "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": (
         cryptography_has_evp_pkey_get_set_tls_encodedpoint
     ),
@@ -340,7 +323,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
-    "Cryptography_HAS_TLSv1_3": cryptography_has_tlsv13,
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
     "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,

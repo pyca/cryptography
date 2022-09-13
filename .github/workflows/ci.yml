@@ -37,7 +37,6 @@ jobs:
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
           - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.5"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.3"}}
           - {VERSION: "3.11-dev", TOXENV: "py311"}

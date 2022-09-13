@@ -34,8 +34,9 @@ OpenSSL releases:
 * ``OpenSSL 1.1.1-latest``
 * ``OpenSSL 3.0-latest``
 
-In addition we test against several versions of LibreSSL and the latest commit
-in BoringSSL.
+In addition we test against versions of LibreSSL that are available in
+versions of OpenBSD that are receiving security support at the time of a given
+``cryptography`` release, and the latest commit in BoringSSL.
 
 
 Building cryptography on Windows
