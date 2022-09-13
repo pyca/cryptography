@@ -10,8 +10,10 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.0 has been removed.
   Users on older version of OpenSSL will need to upgrade.
-* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL 3.1.x, 3.2.x,
-  3.3.0, and 3.3.1. The new minimum LibreSSL version is 3.3.2+.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.4. The new
+  minimum LibreSSL version is 3.4.0. Going forward our policy is to support
+  versions of LibreSSL that are available in versions of OpenBSD that are
+  still receiving security support.
 * **BACKWARDS INCOMPATIBLE:** Removed the ``encode_point`` and
   ``from_encoded_point`` methods on
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers`,
