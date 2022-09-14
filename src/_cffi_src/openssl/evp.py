@@ -282,10 +282,4 @@ int (*EVP_PKEY_set1_DH)(EVP_PKEY *, DH *) = NULL;
 #else
 static const long Cryptography_HAS_EVP_PKEY_DH = 1;
 #endif
-
-// This can be removed when we drop OpenSSL 1.1.0 support
-// OPENSSL_LESS_THAN_111
-#if !defined(EVP_PKEY_RSA_PSS)
-#define EVP_PKEY_RSA_PSS 912
-#endif
 """
