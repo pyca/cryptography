@@ -1051,9 +1051,7 @@ class Backend:
             self._consume_errors()
             res = self._lib.BIO_reset(mem_bio.bio)
             self.openssl_assert(res == 1)
-            dh_cdata = self._lib.Cryptography_d2i_DHxparams_bio(
-                mem_bio.bio, self._ffi.NULL
-            )
+            dh_cdata = self._lib.d2i_DHxparams_bio(mem_bio.bio, self._ffi.NULL)
             if dh_cdata != self._ffi.NULL:
                 dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
                 return _DHParameters(self, dh_cdata)
