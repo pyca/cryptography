@@ -22,7 +22,6 @@ int DSA_sign(int, const unsigned char *, int, unsigned char *, unsigned int *,
 int DSA_verify(int, const unsigned char *, int, const unsigned char *, int,
                DSA *);
 
-/* added in 1.1.0 to access the opaque struct */
 void DSA_get0_pqg(const DSA *, const BIGNUM **, const BIGNUM **,
                   const BIGNUM **);
 int DSA_set0_pqg(DSA *, BIGNUM *, BIGNUM *, BIGNUM *);

@@ -21,7 +21,6 @@ size_t BIO_ctrl_pending(BIO *);
 int BIO_read(BIO *, void *, int);
 int BIO_gets(BIO *, char *, int);
 int BIO_write(BIO *, const void *, int);
-/* Added in 1.1.0 */
 int BIO_up_ref(BIO *);
 
 BIO *BIO_new(BIO_METHOD *);

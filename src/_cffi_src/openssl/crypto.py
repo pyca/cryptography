@@ -33,7 +33,6 @@ const char *SSLeay_version(int);
 unsigned long OpenSSL_version_num(void);
 const char *OpenSSL_version(int);
 
-/* this is a macro in 1.1.0 */
 void *OPENSSL_malloc(size_t);
 void OPENSSL_free(void *);
 
