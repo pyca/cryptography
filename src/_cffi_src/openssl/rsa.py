@@ -27,7 +27,6 @@ RSA *RSAPublicKey_dup(RSA *);
 int RSA_blinding_on(RSA *, BN_CTX *);
 int RSA_print(BIO *, const RSA *, int);
 
-/* added in 1.1.0 when the RSA struct was opaqued */
 int RSA_set0_key(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
 int RSA_set0_factors(RSA *, BIGNUM *, BIGNUM *);
 int RSA_set0_crt_params(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);

@@ -133,13 +133,11 @@ int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
                    const unsigned char *, size_t);
 int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
                      const unsigned char *, size_t);
-/* Added in 1.1.0 */
 size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
 int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
                                    size_t);
 
-/* EVP_PKEY * became const in 1.1.0 */
-int EVP_PKEY_bits(EVP_PKEY *);
+int EVP_PKEY_bits(const EVP_PKEY *);
 
 void OpenSSL_add_all_algorithms(void);
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);

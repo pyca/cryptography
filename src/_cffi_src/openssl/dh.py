@@ -20,7 +20,6 @@ int DH_size(const DH *);
 int DH_generate_key(DH *);
 DH *DHparams_dup(DH *);
 
-/* added in 1.1.0 when the DH struct was opaqued */
 void DH_get0_pqg(const DH *, const BIGNUM **, const BIGNUM **,
                  const BIGNUM **);
 int DH_set0_pqg(DH *, BIGNUM *, BIGNUM *, BIGNUM *);

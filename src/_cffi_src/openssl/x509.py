@@ -156,24 +156,20 @@ RSA *d2i_RSAPublicKey_bio(BIO *, RSA **);
 int i2d_RSAPublicKey_bio(BIO *, RSA *);
 int i2d_DSAPrivateKey_bio(BIO *, DSA *);
 
-/* These became const X509 in 1.1.0 */
-int X509_get_ext_count(X509 *);
-X509_EXTENSION *X509_get_ext(X509 *, int);
-X509_NAME *X509_get_subject_name(X509 *);
-X509_NAME *X509_get_issuer_name(X509 *);
+int X509_get_ext_count(const X509 *);
+X509_EXTENSION *X509_get_ext(const X509 *, int);
+X509_NAME *X509_get_subject_name(const X509 *);
+X509_NAME *X509_get_issuer_name(const X509 *);
 
-/* This became const ASN1_OBJECT * in 1.1.0 */
 X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
-                                             ASN1_OBJECT *, int,
+                                             const ASN1_OBJECT *, int,
                                              ASN1_OCTET_STRING *);
 
 
-/* This became const X509_EXTENSION * in 1.1.0 */
-int X509_EXTENSION_get_critical(X509_EXTENSION *);
+int X509_EXTENSION_get_critical(const X509_EXTENSION *);
 
-/* This became const X509_REVOKED * in 1.1.0 */
-int X509_REVOKED_get_ext_count(X509_REVOKED *);
-X509_EXTENSION *X509_REVOKED_get_ext(X509_REVOKED *, int);
+int X509_REVOKED_get_ext_count(const X509_REVOKED *);
+X509_EXTENSION *X509_REVOKED_get_ext(const X509_REVOKED *, int);
 
 X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
 
@@ -219,7 +215,6 @@ int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
 EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
-/* these functions were added in 1.1.0 */
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
 const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
 """

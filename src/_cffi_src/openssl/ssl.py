@@ -321,9 +321,7 @@ size_t SSL_get_peer_finished(const SSL *, void *, size_t);
 Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 
 const char *SSL_get_servername(const SSL *, const int);
-/* Function signature changed to const char * in 1.1.0 */
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
-/* These became macros in 1.1.0 */
 int SSL_library_init(void);
 void SSL_load_error_strings(void);
 
@@ -470,7 +468,6 @@ void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
 int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
                                 unsigned int);
-/* Added in 1.1.0 for the great opaquing of structs */
 size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
