@@ -82,18 +82,20 @@ the expected OpenSSL version.
 Post-release tasks
 ------------------
 
+* Send an email to the `mailing list`_ and `python-announce`_ announcing the
+  release.
+* Close the `milestone`_ for the previous release on GitHub.
+* For major version releases, send a pull request to pyOpenSSL increasing the
+  maximum ``cryptography`` version pin and perform a pyOpenSSL release.
 * Update the version number to the next major (e.g. ``0.5.dev1``) in
   ``src/cryptography/__about__.py`` and
   ``vectors/cryptography_vectors/__about__.py``.
-* Close the `milestone`_ for the previous release on GitHub.
 * Add new :doc:`/changelog` entry with next version and note that it is under
   active development
 * Send a pull request with these items
 * Check for any outstanding code undergoing a deprecation cycle by looking in
   ``cryptography.utils`` for ``DeprecatedIn**`` definitions. If any exist open
   a ticket to increment them for the next release.
-* Send an email to the `mailing list`_ and `python-announce`_ announcing the
-  release.
 
 .. _`CVE from MITRE`: https://cveform.mitre.org/
 .. _`oss-security`: https://www.openwall.com/lists/oss-security/
