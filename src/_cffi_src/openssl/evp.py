@@ -128,7 +128,6 @@ int EVP_PKEY_id(const EVP_PKEY *);
 EVP_MD_CTX *EVP_MD_CTX_new(void);
 void EVP_MD_CTX_free(EVP_MD_CTX *);
 
-/* Added in 1.1.1 */
 int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
                    const unsigned char *, size_t);
 int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
