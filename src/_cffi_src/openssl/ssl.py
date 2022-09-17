@@ -186,7 +186,6 @@ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
 int SSL_get_verify_mode(const SSL *);
 
-/* Added in 1.0.2 */
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
 X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
 
@@ -393,7 +392,6 @@ const SSL_METHOD *DTLSv1_method(void);
 const SSL_METHOD *DTLSv1_server_method(void);
 const SSL_METHOD *DTLSv1_client_method(void);
 
-/* Added in 1.0.2 */
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
 const SSL_METHOD *DTLS_client_method(void);
@@ -443,9 +441,6 @@ int SSL_select_next_proto(unsigned char **, unsigned char *,
 int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
 const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 
-/* ALPN APIs were introduced in OpenSSL 1.0.2.  To continue to support earlier
- * versions some special handling of these is necessary.
- */
 int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char *, unsigned);
 int SSL_set_alpn_protos(SSL *, const unsigned char *, unsigned);
 void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
@@ -460,9 +455,6 @@ void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
 
 long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
 
-/* SSL_CTX_set_cert_cb is introduced in OpenSSL 1.0.2. To continue to support
- * earlier versions some special handling of these is necessary.
- */
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
