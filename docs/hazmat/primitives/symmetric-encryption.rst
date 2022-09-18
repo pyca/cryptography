@@ -147,12 +147,15 @@ Algorithms
         :term:`bits` (32 bytes) in length.
     :type key: :term:`bytes-like`
 
-    :param nonce: In our context, the 128-bit parameter ``nonce`` is a concatenation
-        of 4-byte little-endian counter (e.g. counter = 7, need to be passed as ``0x07000000``)
-        and 12-byte nonce (as used in :rfc:`7539`). 12-byte nonce should be unique
-        and never reuse with a given key (any reuse of a nonce with the same key
-        compromises the security of every message encrypted with that key).
-        The ``nonce`` does not need to be kept secret and may be included with the ciphertext.
+    :param nonce: Should be unique, a :term:`nonce`. It is
+        critical to never reuse a ``nonce`` with a given key.  Any reuse of a
+        nonce with the same key compromises the security of every message
+        encrypted with that key. The nonce does not need to be kept secret
+        and may be included with the ciphertext. This must be ``128``
+        :term:`bits` in length. Pay attention to the fact that in our context,
+        the 128-bit parameter we called ``nonce`` is a concatenation of 4-byte
+        little-endian counter (e.g. counter = 7, need to be passed as ``0x07000000``)
+        and 12-byte nonce (as used in RFC 7539).
     :type nonce: :term:`bytes-like`
 
         .. note::
