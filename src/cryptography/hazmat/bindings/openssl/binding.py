@@ -97,7 +97,10 @@ def _openssl_assert(
         )
 
 
-def build_conditional_library(lib, conditional_names):
+def build_conditional_library(
+    lib: typing.Any,
+    conditional_names: typing.Dict[str, typing.Callable[[], typing.List[str]]],
+) -> typing.Any:
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib  # type: ignore[attr-defined]
     excluded_names = set()
@@ -124,7 +127,7 @@ class Binding:
     _legacy_provider: typing.Any = None
     _default_provider: typing.Any = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._ensure_ffi_initialized()
 
     def _enable_fips(self) -> None:
@@ -144,7 +147,7 @@ class Binding:
         _openssl_assert(self.lib, res == 1)
 
     @classmethod
-    def _register_osrandom_engine(cls):
+    def _register_osrandom_engine(cls) -> None:
         # Clear any errors extant in the queue before we start. In many
         # scenarios other things may be interacting with OpenSSL in the same
         # process space and it has proven untenable to assume that they will
@@ -156,7 +159,7 @@ class Binding:
             _openssl_assert(cls.lib, result in (1, 2))
 
     @classmethod
-    def _ensure_ffi_initialized(cls):
+    def _ensure_ffi_initialized(cls) -> None:
         with cls._init_lock:
             if not cls._lib_loaded:
                 cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
@@ -182,11 +185,11 @@ class Binding:
                     )
 
     @classmethod
-    def init_static_locks(cls):
+    def init_static_locks(cls) -> None:
         cls._ensure_ffi_initialized()
 
 
-def _verify_package_version(version):
+def _verify_package_version(version: str) -> None:
     # Occasionally we run into situations where the version of the Python
     # package does not match the version of the shared object that is loaded.
     # This may occur in environments where multiple versions of cryptography
