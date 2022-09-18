@@ -152,10 +152,9 @@ Algorithms
         nonce with the same key compromises the security of every message
         encrypted with that key. The nonce does not need to be kept secret
         and may be included with the ciphertext. This must be ``128``
-        :term:`bits` in length. Pay attention to the fact that in our context,
-        the 128-bit parameter we called ``nonce`` is a concatenation of 4-byte
-        little-endian counter (e.g. counter = 7, need to be passed as ``0x07000000``)
-        and 12-byte nonce (as used in RFC 7539).
+        :term:`bits` in length. The 128-bit value is a concatenation of 4-byte
+        little-endian counter and the 12-byte nonce (as described in
+        :rfc:`7539`).
     :type nonce: :term:`bytes-like`
 
         .. note::
