@@ -205,6 +205,8 @@ linkcheck_ignore = [
     r"https://e-trust.gosuslugi.ru",
     # Expired cert
     r"https://www.cosic.esat.kuleuven.be",
+    # Incomplete cert chain
+    r"https://www.oscca.gov.cn",
 ]
 
 autosectionlabel_prefix_document = True

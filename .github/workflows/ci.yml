@@ -493,7 +493,7 @@ jobs:
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'linkcheck'))
     runs-on: ubuntu-latest
     name: "linkcheck"
     timeout-minutes: 15
