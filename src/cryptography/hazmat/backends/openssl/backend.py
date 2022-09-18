@@ -1001,11 +1001,6 @@ class Backend:
     def _evp_pkey_from_der_traditional_key(self, bio_data, password):
         key = self._lib.d2i_PrivateKey_bio(bio_data.bio, self._ffi.NULL)
         if key != self._ffi.NULL:
-            # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
-            # successfully load but errors are still put on the stack. Tracked
-            # as https://github.com/openssl/openssl/issues/14996
-            self._consume_errors()
-
             key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
             if password is not None:
                 raise TypeError(
@@ -1167,11 +1162,6 @@ class Backend:
                     )
             else:
                 self._handle_key_loading_error()
-
-        # In OpenSSL 3.0.0-alpha15 there exist scenarios where the key will
-        # successfully load but errors are still put on the stack. Tracked
-        # as https://github.com/openssl/openssl/issues/14996
-        self._consume_errors()
 
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
