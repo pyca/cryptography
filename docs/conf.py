@@ -203,8 +203,6 @@ linkcheck_ignore = [
     r"https://www.secg.org/sec1-v2.pdf",
     # Incomplete cert chain
     r"https://e-trust.gosuslugi.ru",
-    # Expired cert
-    r"https://www.cosic.esat.kuleuven.be",
     # Incomplete cert chain
     r"https://www.oscca.gov.cn",
 ]
