@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import warnings
 
 from setuptools import setup
 
@@ -29,6 +30,11 @@ except ImportError:
     )
     raise
 
+
+# distutils emits this warning if you pass `setup()` an unknown option. This
+# is what happens if you somehow run this file without `cffi` installed:
+# `cffi_modules` is an unknown option.
+warnings.filterwarnings("error", message="Unknown distribution option")
 
 base_dir = os.path.dirname(__file__)
 src_dir = os.path.join(base_dir, "src")
