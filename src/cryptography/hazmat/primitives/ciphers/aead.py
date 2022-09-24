@@ -366,6 +366,8 @@ class AESSIV(object):
         associated_data: typing.List,
     ) -> None:
         utils._check_bytes("data", data)
+        if len(data) == 0:
+            raise ValueError("data must not be zero length")
         if not isinstance(associated_data, list) or not all(
             isinstance(x, bytes) for x in associated_data
         ):
