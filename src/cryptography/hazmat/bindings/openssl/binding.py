@@ -2,10 +2,12 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-
+import os
+import sys
 import threading
 import types
 import typing
+import warnings
 
 import cryptography
 from cryptography.exceptions import InternalError
@@ -213,3 +215,15 @@ def _verify_package_version(version: str) -> None:
 _verify_package_version(cryptography.__version__)
 
 Binding.init_static_locks()
+
+if (
+    sys.platform == "win32"
+    and os.environ.get("PROCESSOR_ARCHITEW6432") is not None
+):
+    warnings.warn(
+        "You are using cryptography on a 32-bit Python on a 64-bit Windows "
+        "Operating System. Cryptography will be significantly faster if you "
+        "switch to using a 64-bit Python.",
+        UserWarning,
+        stacklevel=2,
+    )
