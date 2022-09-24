@@ -523,12 +523,10 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - run: |
-          echo "# 😢 😢" >> $GITHUB_STEP_SUMMARY
-          echo "At least one CI job failed."
-          exit 1
-        if: ${{ needs.linux.result != 'success' || needs.linux-distros.result != 'success' || needs.linux-rust.result != 'success' || needs.linux-rust-coverage.result != 'success' || needs.macos.result != 'success' || needs.windows.result != 'success' || needs.linux-downstream.result != 'success' }}
-      - run: echo "# 🎉 🎉" >> $GITHUB_STEP_SUMMARY
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@198badcb65a1a44528f27d5da555c4be9f12eac6
+        with:
+          jobs: ${{ toJSON(needs) }}
       - name: Setup python
         if: ${{ always() }}
         uses: actions/setup-python@v4.2.0
