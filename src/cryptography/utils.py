@@ -22,6 +22,7 @@ class CryptographyDeprecationWarning(UserWarning):
 # cycle ends.
 DeprecatedIn36 = CryptographyDeprecationWarning
 DeprecatedIn37 = CryptographyDeprecationWarning
+DeprecatedIn39 = CryptographyDeprecationWarning
 
 
 def _check_bytes(name: str, value: bytes) -> None:
@@ -46,6 +47,8 @@ class InterfaceNotImplemented(Exception):
     pass
 
 
+# DeprecatedIn39 -- Our only known consumer is aws-encryption-sdk, but we've
+# made this a no-op to avoid breaking old versions.
 def verify_interface(
     iface: abc.ABCMeta, klass: object, *, check_annotations: bool = False
 ):
