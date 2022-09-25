@@ -25,6 +25,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
   :class:`~cryptography.x509.CertificateBuilder` and
   other X.509 builders has been removed.
+* Added support for
+  :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
 
 .. _v38-0-1:
 

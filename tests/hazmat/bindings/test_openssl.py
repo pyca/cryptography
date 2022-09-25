@@ -2,13 +2,13 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-
 import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
     _consume_errors,
+    _legacy_provider_error,
     _openssl_assert,
     _verify_package_version,
 )
@@ -117,3 +117,9 @@ class TestOpenSSL:
     def test_version_mismatch(self):
         with pytest.raises(ImportError):
             _verify_package_version("nottherightversion")
+
+    def test_legacy_provider_error(self):
+        with pytest.raises(RuntimeError):
+            _legacy_provider_error(False)
+
+        _legacy_provider_error(True)

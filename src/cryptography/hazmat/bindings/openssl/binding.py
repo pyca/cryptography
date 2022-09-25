@@ -99,6 +99,17 @@ def _openssl_assert(
         )
 
 
+def _legacy_provider_error(loaded: bool) -> None:
+    if not loaded:
+        raise RuntimeError(
+            "OpenSSL 3.0's legacy provider failed to load. This is a fatal "
+            "error by default, but cryptography supports running without "
+            "legacy algorithms by setting the environment variable "
+            "CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error,"
+            " you have likely made a mistake with your OpenSSL configuration."
+        )
+
+
 def build_conditional_library(
     lib: typing.Any,
     conditional_names: typing.Dict[str, typing.Callable[[], typing.List[str]]],
@@ -126,8 +137,9 @@ class Binding:
     ffi = ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
-    _legacy_provider: typing.Any = None
-    _default_provider: typing.Any = None
+    _legacy_provider: typing.Any = ffi.NULL
+    _legacy_provider_loaded = False
+    _default_provider: typing.Any = ffi.NULL
 
     def __init__(self) -> None:
         self._ensure_ffi_initialized()
@@ -173,12 +185,15 @@ class Binding:
                 # are ugly legacy, but we aren't going to get rid of them
                 # any time soon.
                 if cls.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                    cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
-                        cls.ffi.NULL, b"legacy"
-                    )
-                    _openssl_assert(
-                        cls.lib, cls._legacy_provider != cls.ffi.NULL
-                    )
+                    if not os.environ.get("CRYPTOGRAPHY_OPENSSL_NO_LEGACY"):
+                        cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
+                            cls.ffi.NULL, b"legacy"
+                        )
+                        cls._legacy_provider_loaded = (
+                            cls._legacy_provider != cls.ffi.NULL
+                        )
+                        _legacy_provider_error(cls._legacy_provider_loaded)
+
                     cls._default_provider = cls.lib.OSSL_PROVIDER_load(
                         cls.ffi.NULL, b"default"
                     )
