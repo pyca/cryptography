@@ -44,6 +44,18 @@ control.
 
         This will activate the default OpenSSL CSPRNG.
 
+.. _legacy-provider:
+
+Legacy provider in OpenSSL 3.x
+------------------------------
+
+.. versionadded:: 39.0.0
+
+Users can set ``CRYPTOGRAPHY_OPENSSL_NO_LEGACY`` environment variable to
+disable the legacy provider in OpenSSL 3.x. This will disable legacy
+cryptographic algorithms, including ``Blowfish``, ``CAST5``, ``SEED``,
+``ARC4``, and ``RC2`` (which is used by some encrypted serialization formats).
+
 OS random engine
 ----------------
 

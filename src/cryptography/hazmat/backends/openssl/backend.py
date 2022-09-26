@@ -203,8 +203,10 @@ class Backend:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def __repr__(self) -> str:
-        return "<OpenSSLBackend(version: {}, FIPS: {})>".format(
-            self.openssl_version_text(), self._fips_enabled
+        return "<OpenSSLBackend(version: {}, FIPS: {}, Legacy: {})>".format(
+            self.openssl_version_text(),
+            self._fips_enabled,
+            self._binding._legacy_provider_loaded,
         )
 
     def openssl_assert(
@@ -403,26 +405,6 @@ class Backend:
         self.register_cipher_adapter(
             TripleDES, ECB, GetCipherByName("des-ede3")
         )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
-            self.register_cipher_adapter(
-                _BlowfishInternal, mode_cls, GetCipherByName("bf-{mode.name}")
-            )
-        for mode_cls in [CBC, CFB, OFB, ECB]:
-            self.register_cipher_adapter(
-                _SEEDInternal, mode_cls, GetCipherByName("seed-{mode.name}")
-            )
-        for cipher_cls, mode_cls in itertools.product(
-            [_CAST5Internal, _IDEAInternal],
-            [CBC, OFB, CFB, ECB],
-        ):
-            self.register_cipher_adapter(
-                cipher_cls,
-                mode_cls,
-                GetCipherByName("{cipher.name}-{mode.name}"),
-            )
-        self.register_cipher_adapter(ARC4, type(None), GetCipherByName("rc4"))
-        # We don't actually support RC2, this is just used by some tests.
-        self.register_cipher_adapter(_RC2, type(None), GetCipherByName("rc2"))
         self.register_cipher_adapter(
             ChaCha20, type(None), GetCipherByName("chacha20")
         )
@@ -430,6 +412,42 @@ class Backend:
         for mode_cls in [ECB, CBC, OFB, CFB, CTR]:
             self.register_cipher_adapter(
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
+            )
+        # Don't register legacy ciphers if they're unavailable. Hypothetically
+        # this wouldn't be necessary because we test availability by seeing if
+        # we get an EVP_CIPHER * in the _CipherContext __init__, but OpenSSL 3
+        # will return a valid pointer even though the cipher is unavailable.
+        if (
+            self._binding._legacy_provider_loaded
+            or not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+        ):
+            for mode_cls in [CBC, CFB, OFB, ECB]:
+                self.register_cipher_adapter(
+                    _BlowfishInternal,
+                    mode_cls,
+                    GetCipherByName("bf-{mode.name}"),
+                )
+            for mode_cls in [CBC, CFB, OFB, ECB]:
+                self.register_cipher_adapter(
+                    _SEEDInternal,
+                    mode_cls,
+                    GetCipherByName("seed-{mode.name}"),
+                )
+            for cipher_cls, mode_cls in itertools.product(
+                [_CAST5Internal, _IDEAInternal],
+                [CBC, OFB, CFB, ECB],
+            ):
+                self.register_cipher_adapter(
+                    cipher_cls,
+                    mode_cls,
+                    GetCipherByName("{cipher.name}-{mode.name}"),
+                )
+            self.register_cipher_adapter(
+                ARC4, type(None), GetCipherByName("rc4")
+            )
+            # We don't actually support RC2, this is just used by some tests.
+            self.register_cipher_adapter(
+                _RC2, type(None), GetCipherByName("rc2")
             )
 
     def create_symmetric_encryption_ctx(
