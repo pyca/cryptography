@@ -75,7 +75,7 @@ CUSTOMIZATIONS = """
 # define OPENSSL_DIR             SSLEAY_DIR
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_360
 static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
 void (*OPENSSL_cleanup)(void) = NULL;
 #else
