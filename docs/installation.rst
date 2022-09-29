@@ -270,8 +270,8 @@ To build cryptography and dynamically link it:
 
 .. code-block:: console
 
-    $ brew install openssl@1.1 rust
-    $ env LDFLAGS="-L$(brew --prefix openssl@1.1)/lib" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
+    $ brew install openssl@3 rust
+    $ env LDFLAGS="-L$(brew --prefix openssl@3)/lib" CFLAGS="-I$(brew --prefix openssl@3)/include" pip install cryptography
 
 `MacPorts`_:
 
@@ -286,8 +286,8 @@ You can also build cryptography statically:
 
 .. code-block:: console
 
-    $ brew install openssl@1.1 rust
-    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" pip install cryptography
+    $ brew install openssl@3 rust
+    $ env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@3)/lib/libssl.a $(brew --prefix openssl@3)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@3)/include" pip install cryptography
 
 `MacPorts`_:
 
