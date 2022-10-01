@@ -1709,7 +1709,9 @@ class Backend:
         res = self._lib.DH_generate_parameters_ex(
             dh_param_cdata, key_size, generator, self._ffi.NULL
         )
-        self.openssl_assert(res == 1)
+        if res != 1:
+            errors = self._consume_errors_with_text()
+            raise ValueError("Unable to generate DH parameters", errors)
 
         return _DHParameters(self, dh_param_cdata)
 
