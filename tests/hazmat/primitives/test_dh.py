@@ -148,6 +148,10 @@ class TestDH:
         with pytest.raises(ValueError):
             dh.generate_parameters(7, 512, backend)
 
+    def test_large_key_generate_dh(self):
+        with pytest.raises(ValueError):
+            dh.generate_parameters(2, 1 << 30)
+
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_dh_parameters_supported(self, backend):
         valid_p = int(
