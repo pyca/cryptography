@@ -477,7 +477,9 @@ class TestOpenSSLSerializationWithOpenSSL:
     def test_unsupported_evp_pkey_type(self):
         key = backend._create_evp_pkey_gc()
         with raises_unsupported_algorithm(None):
-            backend._evp_pkey_to_private_key(key)
+            backend._evp_pkey_to_private_key(
+                key, unsafe_skip_rsa_key_validation=False
+            )
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_public_key(key)
 
@@ -493,7 +495,9 @@ class TestOpenSSLSerializationWithOpenSSL:
                 ),
                 lambda pemfile: (
                     backend.load_pem_private_key(
-                        pemfile.read().encode(), password
+                        pemfile.read().encode(),
+                        password,
+                        unsafe_skip_rsa_key_validation=False,
                     )
                 ),
             )

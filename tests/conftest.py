@@ -46,12 +46,3 @@ def backend(request):
     # Ensure the error stack is clear after the test
     errors = openssl_backend._consume_errors_with_text()
     assert not errors
-
-
-@pytest.fixture
-def disable_rsa_checks(backend):
-    # Use this fixture to skip RSA key checks in tests that need the
-    # performance.
-    backend._rsa_skip_check_key = True
-    yield
-    backend._rsa_skip_check_key = False
