@@ -147,7 +147,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
         .. versionadded:: 39.0.0
 
-        A ``kwarg`` only argument that defaults to ``False``. If ``True``
+        A keyword-only argument that defaults to ``False``. If ``True``
         RSA private keys will not be validated. This significantly speeds up
         loading the keys, but is is :term:`unsafe` unless you are certain the
         key is valid. User supplied keys should never be loaded with this
@@ -265,7 +265,7 @@ the rest.
 
         .. versionadded:: 39.0.0
 
-        A ``kwarg`` only argument that defaults to ``False``. If ``True``
+        A keyword-only argument that defaults to ``False``. If ``True``
         RSA private keys will not be validated. This significantly speeds up
         loading the keys, but is is :term:`unsafe` unless you are certain the
         key is valid. User supplied keys should never be loaded with this
