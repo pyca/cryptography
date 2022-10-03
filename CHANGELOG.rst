@@ -27,6 +27,14 @@ Changelog
   other X.509 builders has been removed.
 * Added support for
   :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
+* Added support for disabling RSA key validation checks when loading RSA
+  keys via
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`,
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers.private_key`.
+  This speeds up key loading but is :term:`unsafe` if you are loading potentially
+  attacker supplied keys.
 
 .. _v38-0-1:
 

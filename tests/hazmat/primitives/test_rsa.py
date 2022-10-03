@@ -487,7 +487,7 @@ class TestRSASignature:
         ),
         skip_message="Does not support SHA1 signature.",
     )
-    def test_pkcs1v15_signing(self, backend, disable_rsa_checks, subtests):
+    def test_pkcs1v15_signing(self, backend, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
@@ -506,7 +506,7 @@ class TestRSASignature:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend)
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
                 signature = private_key.sign(
                     binascii.unhexlify(example["message"]),
                     padding.PKCS1v15(),
@@ -1682,9 +1682,7 @@ class TestRSADecryption:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_pkcs1v15_vectors(
-        self, backend, disable_rsa_checks, subtests
-    ):
+    def test_decrypt_pkcs1v15_vectors(self, backend, subtests):
         vectors = _flatten_pkcs1_examples(
             load_vectors_from_file(
                 os.path.join("asymmetric", "RSA", "pkcs1v15crypt-vectors.txt"),
@@ -1703,7 +1701,7 @@ class TestRSADecryption:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend)
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
                 ciphertext = binascii.unhexlify(example["encryption"])
                 assert len(ciphertext) == (skey.key_size + 7) // 8
                 message = skey.decrypt(ciphertext, padding.PKCS1v15())
@@ -1804,9 +1802,7 @@ class TestRSADecryption:
             "Does not support OAEP using SHA224 MGF1 and SHA224 hash."
         ),
     )
-    def test_decrypt_oaep_sha2_vectors(
-        self, backend, disable_rsa_checks, subtests
-    ):
+    def test_decrypt_oaep_sha2_vectors(self, backend, subtests):
         vectors = _build_oaep_sha2_vectors()
         for private, public, example, mgf1_alg, hash_alg in vectors:
             with subtests.test():
@@ -1820,7 +1816,7 @@ class TestRSADecryption:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend)
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
                 message = skey.decrypt(
                     binascii.unhexlify(example["encryption"]),
                     padding.OAEP(

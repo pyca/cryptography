@@ -100,6 +100,11 @@ Glossary
         name. U-labels use unicode characters outside the ASCII range and
         are encoded as A-labels when stored in certificates.
 
+    unsafe
+        This is a term used to describe an operation where the user must
+        ensure that the input is correct. Failure to do so can result in
+        crashes, hangs, and other security issues.
+
 .. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
 .. _`idna`: https://pypi.org/project/idna/
 .. _`buffer protocol`: https://docs.python.org/3/c-api/buffer.html
