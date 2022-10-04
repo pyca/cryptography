@@ -13,7 +13,7 @@ jobs:
     if: github.repository_owner == 'pyca'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.1.0
       - id: check-sha
         run: |
           SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/master | cut -f1)
