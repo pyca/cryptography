@@ -35,6 +35,9 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateNumbers.private_key`.
   This speeds up key loading but is :term:`unsafe` if you are loading potentially
   attacker supplied keys.
+* Significantly improved performance for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+  when repeatedly calling ``encrypt`` or ``decrypt`` with the same key.
 
 .. _v38-0-1:
 
