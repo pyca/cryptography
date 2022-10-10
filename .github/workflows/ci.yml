@@ -140,6 +140,7 @@ jobs:
           - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
           - {IMAGE: "fedora", TOXENV: "py310"}
           - {IMAGE: "alpine", TOXENV: "py310"}
+          - {IMAGE: "centos-stream9", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
     steps:
@@ -179,6 +180,8 @@ jobs:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
       - uses: ./.github/actions/upload-coverage
 
   linux-rust:
