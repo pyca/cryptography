@@ -16,6 +16,7 @@ on:
       - setup.py
       - setup.cfg
       - pyproject.toml
+      - src/cryptography/__about__.py
 
 
 jobs:
