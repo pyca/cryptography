@@ -2204,9 +2204,10 @@ class Backend:
             res = self._lib.PKCS12_parse(
                 p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
             )
-
+        # OpenSSL 3.0.6 leaves errors on the stack even in success, so 
+        # we consume all errors unconditionally.
+        self._consume_errors()
         if res == 0:
-            self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
 
         cert = None
