@@ -18,10 +18,10 @@ jobs:
         run: |
           SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/master | cut -f1)
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
-            echo "::set-output name=BORING_SHA::$SHA"
+            echo "BORING_SHA=${SHA}" >> $GITHUB_OUTPUT
           fi
           LAST_COMMIT=$(grep boringssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-z0-9]{40}')
-          echo "::set-output name=LAST_COMMIT::$LAST_COMMIT"
+          echo "LAST_COMMIT=${LAST_COMMIT}" >> $GITHUB_OUTPUT
       - name: Update boring
         run: |
           set -xe
