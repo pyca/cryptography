@@ -2190,14 +2190,11 @@ class Backend:
             res = self._lib.PKCS12_parse(
                 p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
             )
-
-        # Workaround for
-        # https://github.com/libressl-portable/portable/issues/659
-        if self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_340:
-            self._consume_errors()
-
+        # OpenSSL 3.0.6 leaves errors on the stack even in success, so
+        # we consume all errors unconditionally.
+        # https://github.com/openssl/openssl/issues/19389
+        self._consume_errors()
         if res == 0:
-            self._consume_errors()
             raise ValueError("Invalid password or PKCS12 data")
 
         cert = None

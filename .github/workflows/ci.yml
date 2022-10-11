@@ -28,16 +28,16 @@ jobs:
         PYTHON:
           - {VERSION: "3.10", TOXENV: "flake"}
           - {VERSION: "3.10", TOXENV: "rust"}
-          - {VERSION: "3.10", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
+          - {VERSION: "3.10", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.6"}}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.0l"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
-          - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
-          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.5"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1r"}}
+          - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1r"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1r", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.6"}}
+          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.6"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.1.5"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.2.7"}}
           - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.3.6"}}
