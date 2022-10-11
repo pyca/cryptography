@@ -39,6 +39,14 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
   when repeatedly calling ``encrypt`` or ``decrypt`` with the same key.
 
+.. _v38-0-2:
+
+38.0.2 - 2022-10-11
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.6.
+
+
 .. _v38-0-1:
 
 38.0.1 - 2022-09-07
