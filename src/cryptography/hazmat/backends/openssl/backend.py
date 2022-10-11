@@ -2206,6 +2206,7 @@ class Backend:
             )
         # OpenSSL 3.0.6 leaves errors on the stack even in success, so
         # we consume all errors unconditionally.
+        # https://github.com/openssl/openssl/issues/19389
         self._consume_errors()
         if res == 0:
             raise ValueError("Invalid password or PKCS12 data")
