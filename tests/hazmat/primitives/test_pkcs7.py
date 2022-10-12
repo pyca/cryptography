@@ -741,7 +741,7 @@ class TestPKCS7SerializeCerts:
             list(reversed(certs)), serialization.Encoding.DER
         )
         certs2 = pkcs7.load_der_pkcs7_certificates(p7)
-        assert certs != certs2
+        assert certs == certs2
 
     def test_pem_matches_vector(self, backend):
         p7_pem = load_vectors_from_file(
