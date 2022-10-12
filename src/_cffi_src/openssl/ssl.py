@@ -44,6 +44,7 @@ static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
 static const long Cryptography_HAS_SET_CERT_CB;
+static const long Cryptography_HAS_GET_EXTMS_SUPPORT;
 static const long Cryptography_HAS_CUSTOM_EXT;
 static const long Cryptography_HAS_SRTP;
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU;
@@ -185,6 +186,8 @@ X509 *SSL_get_peer_certificate(const SSL *);
 int SSL_get_ex_data_X509_STORE_CTX_idx(void);
 void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
 int SSL_get_verify_mode(const SSL *);
+
+long SSL_get_extms_support(SSL *);
 
 X509_VERIFY_PARAM *SSL_get0_param(SSL *);
 X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
@@ -605,8 +608,12 @@ static const long SSL_OP_IGNORE_UNEXPECTED_EOF = 1;
 void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
 void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
 static const long Cryptography_HAS_SET_CERT_CB = 0;
+
+long (*SSL_get_extms_support)(SSL *) = NULL;
+static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 0;
 #else
 static const long Cryptography_HAS_SET_CERT_CB = 1;
+static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 1;
 #endif
 
 static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
