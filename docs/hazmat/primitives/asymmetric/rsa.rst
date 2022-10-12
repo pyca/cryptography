@@ -555,6 +555,11 @@ Key interfaces
 
         .. versionadded:: 0.4
 
+        .. warning::
+
+            Our implementation of PKCS1 v1.5 decryption is not constant time. See
+            :doc:`/limitations` for details.
+
         Decrypt data that was encrypted with the public key.
 
         :param bytes ciphertext: The ciphertext to decrypt.
