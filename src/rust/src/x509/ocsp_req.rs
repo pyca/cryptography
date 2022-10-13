@@ -201,16 +201,14 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         py_hash = tuple.2;
         ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?
     } else {
-        let (py_issuer_name_hash, py_issuer_key_hash, py_serial, py_hash): (
-            &pyo3::types::PyBytes,
-            &pyo3::types::PyBytes,
+        let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
+            &[u8],
+            &[u8],
             &pyo3::types::PyLong,
             &pyo3::PyAny,
         ) = builder
             .getattr(crate::intern!(py, "_request_hash"))?
             .extract()?;
-        let issuer_name_hash = py_issuer_name_hash.extract::<&[u8]>()?;
-        let issuer_key_hash = py_issuer_key_hash.extract::<&[u8]>()?;
         let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
         ocsp::CertID::new_from_hash(
             py,
