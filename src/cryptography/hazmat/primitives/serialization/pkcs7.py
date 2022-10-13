@@ -2,6 +2,10 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import email.base64mime
+import email.generator
+import email.message
+import io
 import typing
 
 from cryptography import utils
@@ -74,7 +78,7 @@ class PKCS7SignatureBuilder:
         if self._data is not None:
             raise ValueError("data may only be set once")
 
-        return PKCS7SignatureBuilder(data, self._signers)
+        return PKCS7SignatureBuilder(bytes(data), self._signers)
 
     def add_signer(
         self,
@@ -171,8 +175,46 @@ class PKCS7SignatureBuilder:
                 "both values."
             )
 
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
+        return rust_pkcs7.sign_and_serialize(self, encoding, options)
 
-        return ossl.pkcs7_sign(self, encoding, options)
+
+def _smime_encode(data, signature, micalg):
+    # This function works pretty hard to replicate what OpenSSL does
+    # precisely. For good and for ill.
+
+    m = email.message.Message()
+    m.add_header("MIME-Version", "1.0")
+    m.add_header(
+        "Content-Type",
+        "multipart/signed",
+        protocol="application/x-pkcs7-signature",
+        micalg=micalg,
+    )
+
+    m.preamble = "This is an S/MIME signed message\n"
+
+    msg_part = email.message.MIMEPart()
+    msg_part.set_payload(data)
+    msg_part.add_header("Content-Type", "text/plain")
+    m.attach(msg_part)
+
+    sig_part = email.message.MIMEPart()
+    sig_part.add_header(
+        "Content-Type", "application/x-pkcs7-signature", name="smime.p7s"
+    )
+    sig_part.add_header("Content-Transfer-Encoding", "base64")
+    sig_part.add_header(
+        "Content-Disposition", "attachment", filename="smime.p7s"
+    )
+    sig_part.set_payload(
+        email.base64mime.body_encode(signature, maxlinelen=65)
+    )
+    del sig_part["MIME-Version"]
+    m.attach(sig_part)
+
+    fp = io.BytesIO()
+    g = email.generator.BytesGenerator(
+        fp, maxheaderlen=0, mangle_from_=False, policy=m.policy
+    )
+    g.flatten(m)
+    return fp.getvalue()

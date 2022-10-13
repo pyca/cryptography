@@ -114,7 +114,7 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     XTS,
 )
 from cryptography.hazmat.primitives.kdf import scrypt
-from cryptography.hazmat.primitives.serialization import pkcs7, ssh
+from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
     PKCS12Certificate,
@@ -2485,104 +2485,6 @@ class Backend:
             certs.append(cert)
 
         return certs
-
-    def pkcs7_sign(
-        self,
-        builder: pkcs7.PKCS7SignatureBuilder,
-        encoding: serialization.Encoding,
-        options: typing.List[pkcs7.PKCS7Options],
-    ) -> bytes:
-        assert builder._data is not None
-        bio = self._bytes_to_bio(builder._data)
-        init_flags = self._lib.PKCS7_PARTIAL
-        final_flags = 0
-
-        if len(builder._additional_certs) == 0:
-            certs = self._ffi.NULL
-        else:
-            certs = self._lib.sk_X509_new_null()
-            certs = self._ffi.gc(certs, self._lib.sk_X509_free)
-            # This list is to keep the x509 values alive until end of function
-            ossl_certs = []
-            for cert in builder._additional_certs:
-                ossl_cert = self._cert2ossl(cert)
-                ossl_certs.append(ossl_cert)
-                res = self._lib.sk_X509_push(certs, ossl_cert)
-                self.openssl_assert(res >= 1)
-
-        if pkcs7.PKCS7Options.DetachedSignature in options:
-            # Don't embed the data in the PKCS7 structure
-            init_flags |= self._lib.PKCS7_DETACHED
-            final_flags |= self._lib.PKCS7_DETACHED
-
-        # This just inits a structure for us. However, there
-        # are flags we need to set, joy.
-        p7 = self._lib.PKCS7_sign(
-            self._ffi.NULL,
-            self._ffi.NULL,
-            certs,
-            self._ffi.NULL,
-            init_flags,
-        )
-        self.openssl_assert(p7 != self._ffi.NULL)
-        p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
-        signer_flags = 0
-        # These flags are configurable on a per-signature basis
-        # but we've deliberately chosen to make the API only allow
-        # setting it across all signatures for now.
-        if pkcs7.PKCS7Options.NoCapabilities in options:
-            signer_flags |= self._lib.PKCS7_NOSMIMECAP
-        elif pkcs7.PKCS7Options.NoAttributes in options:
-            signer_flags |= self._lib.PKCS7_NOATTR
-
-        if pkcs7.PKCS7Options.NoCerts in options:
-            signer_flags |= self._lib.PKCS7_NOCERTS
-
-        for certificate, private_key, hash_algorithm in builder._signers:
-            ossl_cert = self._cert2ossl(certificate)
-            md = self._evp_md_non_null_from_algorithm(hash_algorithm)
-            p7signerinfo = self._lib.PKCS7_sign_add_signer(
-                p7,
-                ossl_cert,
-                private_key._evp_pkey,  # type: ignore[union-attr]
-                md,
-                signer_flags,
-            )
-            self.openssl_assert(p7signerinfo != self._ffi.NULL)
-
-        for option in options:
-            # DetachedSignature, NoCapabilities, and NoAttributes are already
-            # handled so we just need to check these last two options.
-            if option is pkcs7.PKCS7Options.Text:
-                final_flags |= self._lib.PKCS7_TEXT
-            elif option is pkcs7.PKCS7Options.Binary:
-                final_flags |= self._lib.PKCS7_BINARY
-
-        bio_out = self._create_mem_bio_gc()
-        if encoding is serialization.Encoding.SMIME:
-            # This finalizes the structure
-            res = self._lib.SMIME_write_PKCS7(
-                bio_out, p7, bio.bio, final_flags
-            )
-        elif encoding is serialization.Encoding.PEM:
-            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
-            self.openssl_assert(res == 1)
-            res = self._lib.PEM_write_bio_PKCS7_stream(
-                bio_out, p7, bio.bio, final_flags
-            )
-        else:
-            assert encoding is serialization.Encoding.DER
-            # We need to call finalize here becauase i2d_PKCS7_bio does not
-            # finalize.
-            res = self._lib.PKCS7_final(p7, bio.bio, final_flags)
-            self.openssl_assert(res == 1)
-            # OpenSSL 3.0 leaves a random bio error on the stack:
-            # https://github.com/openssl/openssl/issues/16681
-            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                self._consume_errors()
-            res = self._lib.i2d_PKCS7_bio(bio_out, p7)
-        self.openssl_assert(res == 1)
-        return self._read_mem_bio(bio_out)
 
 
 class GetCipherByName:
