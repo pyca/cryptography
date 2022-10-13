@@ -2486,53 +2486,6 @@ class Backend:
 
         return certs
 
-    def pkcs7_serialize_certificates(
-        self,
-        certs: typing.List[x509.Certificate],
-        encoding: serialization.Encoding,
-    ):
-        certs = list(certs)
-        if not certs or not all(
-            isinstance(cert, x509.Certificate) for cert in certs
-        ):
-            raise TypeError("certs must be a list of certs with length >= 1")
-
-        if encoding not in (
-            serialization.Encoding.PEM,
-            serialization.Encoding.DER,
-        ):
-            raise TypeError("encoding must DER or PEM from the Encoding enum")
-
-        certs_sk = self._lib.sk_X509_new_null()
-        certs_sk = self._ffi.gc(certs_sk, self._lib.sk_X509_free)
-        # This list is to keep the x509 values alive until end of function
-        ossl_certs = []
-        for cert in certs:
-            ossl_cert = self._cert2ossl(cert)
-            ossl_certs.append(ossl_cert)
-            res = self._lib.sk_X509_push(certs_sk, ossl_cert)
-            self.openssl_assert(res >= 1)
-        # We use PKCS7_sign here because it creates the PKCS7 and PKCS7_SIGNED
-        # structures for us rather than requiring manual assignment.
-        p7 = self._lib.PKCS7_sign(
-            self._ffi.NULL,
-            self._ffi.NULL,
-            certs_sk,
-            self._ffi.NULL,
-            self._lib.PKCS7_PARTIAL,
-        )
-        bio_out = self._create_mem_bio_gc()
-        if encoding is serialization.Encoding.PEM:
-            res = self._lib.PEM_write_bio_PKCS7_stream(
-                bio_out, p7, self._ffi.NULL, 0
-            )
-        else:
-            assert encoding is serialization.Encoding.DER
-            res = self._lib.i2d_PKCS7_bio(bio_out, p7)
-
-        self.openssl_assert(res == 1)
-        return self._read_mem_bio(bio_out)
-
     def pkcs7_sign(
         self,
         builder: pkcs7.PKCS7SignatureBuilder,

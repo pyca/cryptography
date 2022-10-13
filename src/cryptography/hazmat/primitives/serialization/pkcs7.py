@@ -6,6 +6,7 @@ import typing
 
 from cryptography import utils
 from cryptography import x509
+from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.utils import _check_byteslike
@@ -27,9 +28,7 @@ def serialize_certificates(
     certs: typing.List[x509.Certificate],
     encoding: serialization.Encoding,
 ) -> bytes:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.pkcs7_serialize_certificates(certs, encoding)
+    return rust_pkcs7.serialize_certificates(certs, encoding)
 
 
 _ALLOWED_PKCS7_HASH_TYPES = typing.Union[

@@ -11,6 +11,7 @@
 mod asn1;
 mod intern;
 pub(crate) mod oid;
+mod pkcs7;
 mod pool;
 mod x509;
 
@@ -85,6 +86,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_class::<pool::FixedPool>()?;
 
     m.add_submodule(asn1::create_submodule(py)?)?;
+    m.add_submodule(pkcs7::create_submodule(py)?)?;
 
     let x509_mod = pyo3::prelude::PyModule::new(py, "x509")?;
     crate::x509::certificate::add_to_module(x509_mod)?;
