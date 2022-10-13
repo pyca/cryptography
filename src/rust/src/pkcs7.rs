@@ -27,15 +27,14 @@ struct ContentInfo<'a> {
 #[derive(asn1::Asn1Write)]
 struct SignedData<'a> {
     version: u8,
-    digest_algorithms: asn1::SetOfWriter<'a, asn1::ObjectIdentifier>,
+    digest_algorithms: asn1::SetOfWriter<'a, x509::AlgorithmIdentifier<'a>>,
     content_info: ContentInfo<'a>,
     #[implicit(0)]
     certificates: Option<asn1::SetOfWriter<'a, &'a x509::certificate::RawCertificate<'a>>>,
 
-    // Not actually just a Tlv, but these are always empty (and omitted) for
-    // now.
+    // We don't ever supply any of these, so for now, don't fill out the fields.
     #[implicit(1)]
-    crls: Option<asn1::SetOfWriter<'a, asn1::Tlv<'a>>>,
+    crls: Option<asn1::SetOfWriter<'a, asn1::Sequence<'a>>>,
 
     // We don't ever supply any of these, so for now, don't fill out the fields.
     signer_infos: asn1::SetOfWriter<'a, asn1::Sequence<'a>>,
