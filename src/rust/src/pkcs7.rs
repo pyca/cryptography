@@ -36,8 +36,28 @@ struct SignedData<'a> {
     #[implicit(1)]
     crls: Option<asn1::SetOfWriter<'a, asn1::Sequence<'a>>>,
 
-    // We don't ever supply any of these, so for now, don't fill out the fields.
-    signer_infos: asn1::SetOfWriter<'a, asn1::Sequence<'a>>,
+    signer_infos: asn1::SetOfWriter<'a, SignerInfo<'a>>,
+}
+
+#[derive(asn1::Asn1Write)]
+struct SignerInfo<'a> {
+    version: u8,
+    issuer_and_serial_number: IssuerAndSerialNumber<'a>,
+    digest_algorithm: x509::AlgorithmIdentifier<'a>,
+    #[implicit(0)]
+    authenticated_attributes: Option<x509::csr::Attributes<'a>>,
+
+    digest_encryption_algorithm: x509::AlgorithmIdentifier<'a>,
+    encrypted_digest: &'a [u8],
+
+    #[implicit(1)]
+    unauthenticated_attributes: Option<x509::csr::Attributes<'a>>,
+}
+
+#[derive(asn1::Asn1Write)]
+struct IssuerAndSerialNumber<'a> {
+    issuer: x509::Name<'a>,
+    serial_number: asn1::BigUint<'a>,
 }
 
 #[pyo3::prelude::pyfunction]

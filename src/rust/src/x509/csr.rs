@@ -22,15 +22,17 @@ struct CertificationRequestInfo<'a> {
     subject: x509::Name<'a>,
     spki: certificate::SubjectPublicKeyInfo<'a>,
     #[implicit(0, required)]
-    attributes: x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SetOf<'a, Attribute<'a>>,
-        asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
-    >,
+    attributes: Attributes<'a>,
 }
 
+pub(crate) type Attributes<'a> = x509::Asn1ReadableOrWritable<
+    'a,
+    asn1::SetOf<'a, Attribute<'a>>,
+    asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
+>;
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct Attribute<'a> {
+pub(crate) struct Attribute<'a> {
     type_id: asn1::ObjectIdentifier,
     values: x509::Asn1ReadableOrWritable<
         'a,
