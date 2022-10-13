@@ -194,10 +194,7 @@ class TestOCSPRequestBuilder:
         builder = ocsp.OCSPRequestBuilder()
         with pytest.raises(ValueError):
             builder.add_certificate_by_hash(
-                b"0" * 20,
-                b"0" * 20,
-                1,
-                "notahash"  # type:ignore[arg-type]
+                b"0" * 20, b"0" * 20, 1, "notahash"  # type:ignore[arg-type]
             )
         with pytest.raises(ValueError):
             builder.add_certificate_by_hash(
@@ -212,7 +209,7 @@ class TestOCSPRequestBuilder:
                 b"0" * 20,
                 b"0" * 20,
                 "notanint",  # type:ignore[arg-type]
-                hashes.SHA1()
+                hashes.SHA1(),
             )
 
     def test_create_ocsp_request_no_req(self):
