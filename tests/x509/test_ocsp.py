@@ -162,12 +162,52 @@ class TestOCSPRequest:
 
 
 class TestOCSPRequestBuilder:
-    def test_add_two_certs(self):
+    def test_add_cert_twice(self):
         cert, issuer = _cert_and_issuer()
         builder = ocsp.OCSPRequestBuilder()
         builder = builder.add_certificate(cert, issuer, hashes.SHA1())
+        # Fails calling a second time
         with pytest.raises(ValueError):
             builder.add_certificate(cert, issuer, hashes.SHA1())
+        # Fails calling a second time with add_certificate_by_hash
+        with pytest.raises(ValueError):
+            builder.add_certificate_by_hash(
+                b"0" * 20, b"0" * 20, 1, hashes.SHA1()
+            )
+
+    def test_add_cert_by_hash_twice(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        builder = builder.add_certificate_by_hash(
+            b"0" * 20, b"0" * 20, 1, hashes.SHA1()
+        )
+        # Fails calling a second time
+        with pytest.raises(ValueError):
+            builder.add_certificate_by_hash(
+                b"0" * 20, b"0" * 20, 1, hashes.SHA1()
+            )
+        # Fails calling a second time with add_certificate
+        with pytest.raises(ValueError):
+            builder.add_certificate(cert, issuer, hashes.SHA1())
+
+    def test_add_cert_by_hash_bad_hash(self):
+        builder = ocsp.OCSPRequestBuilder()
+        with pytest.raises(ValueError):
+            builder.add_certificate_by_hash(
+                b"0" * 20, b"0" * 20, 1, "notahash"
+            )
+        with pytest.raises(ValueError):
+            builder.add_certificate_by_hash(
+                b"0" * 19, b"0" * 20, 1, hashes.SHA1()
+            )
+        with pytest.raises(ValueError):
+            builder.add_certificate_by_hash(
+                b"0" * 20, b"0" * 21, 1, hashes.SHA1()
+            )
+        with pytest.raises(TypeError):
+            builder.add_certificate_by_hash(
+                b"0" * 20, b"0" * 20, "notanint", hashes.SHA1()
+            )
 
     def test_create_ocsp_request_no_req(self):
         builder = ocsp.OCSPRequestBuilder()
@@ -250,6 +290,28 @@ class TestOCSPRequestBuilder:
         assert req.extensions[0].value == ext
         assert req.extensions[0].oid == ext.oid
         assert req.extensions[0].critical is critical
+
+    def test_add_cert_by_hash(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPRequestBuilder()
+        h = hashes.Hash(hashes.SHA1())
+        h.update(cert.issuer.public_bytes())
+        issuer_name_hash = h.finalize()
+        # issuer_key_hash is a hash of the public key BitString DER,
+        # not the subjectPublicKeyInfo
+        issuer_key_hash = base64.b64decode(b"w5zz/NNGCDS7zkZ/oHxb8+IIy1k=")
+        builder = builder.add_certificate_by_hash(
+            issuer_name_hash,
+            issuer_key_hash,
+            cert.serial_number,
+            hashes.SHA1(),
+        )
+        req = builder.build()
+        serialized = req.public_bytes(serialization.Encoding.DER)
+        assert serialized == base64.b64decode(
+            b"MEMwQTA/MD0wOzAJBgUrDgMCGgUABBRAC0Z68eay0wmDug1gfn5ZN0gkxAQUw5zz"
+            b"/NNGCDS7zkZ/oHxb8+IIy1kCAj8g"
+        )
 
 
 class TestOCSPResponseBuilder:

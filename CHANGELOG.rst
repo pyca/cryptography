@@ -38,6 +38,8 @@ Changelog
 * Significantly improved performance for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
   when repeatedly calling ``encrypt`` or ``decrypt`` with the same key.
+* Added support for creating OCSP requests with precomputed hashes using
+  :meth:`~cryptography.x509.ocsp.OCSPRequestBuilder.add_certificate_by_hash`.
 
 .. _v38-0-2:
 
