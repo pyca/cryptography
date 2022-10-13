@@ -3,7 +3,8 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+    big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
+    PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
 use crate::x509::{certificate, extensions, oid};
@@ -215,33 +216,11 @@ impl CertificateRevocationList {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::PyAny,
+        encoding: &'p pyo3::PyAny,
     ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
-        let encoding_class = py
-            .import("cryptography.hazmat.primitives.serialization")?
-            .getattr(crate::intern!(py, "Encoding"))?;
-
         let result = asn1::write_single(self.raw.borrow_value())?;
-        if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
-            Ok(pyo3::types::PyBytes::new(py, &result))
-        } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
-            let pem = pem::encode_config(
-                &pem::Pem {
-                    tag: "X509 CRL".to_string(),
-                    contents: result,
-                },
-                pem::EncodeConfig {
-                    line_ending: pem::LineEnding::LF,
-                },
-            )
-            .into_bytes();
-            Ok(pyo3::types::PyBytes::new(py, &pem))
-        } else {
-            Err(pyo3::exceptions::PyTypeError::new_err(
-                "encoding must be Encoding.DER or Encoding.PEM",
-            )
-            .into())
-        }
+
+        encode_der_data(py, "X509 CRL".to_string(), result, encoding)
     }
 
     #[getter]
