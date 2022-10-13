@@ -96,6 +96,7 @@ plaintext
 Poly
 pre
 precompute
+precomputed
 preprocessor
 preprocessors
 presentational

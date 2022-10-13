@@ -134,13 +134,43 @@ Creating Requests
     .. method:: add_certificate(cert, issuer, algorithm)
 
         Adds a request using a certificate, issuer certificate, and hash
-        algorithm. This can only be called once.
+        algorithm. You can call this method or ``add_certificate_by_hash``
+        only once.
 
         :param cert: The :class:`~cryptography.x509.Certificate` whose validity
             is being checked.
 
         :param issuer: The issuer :class:`~cryptography.x509.Certificate` of
             the certificate that is being checked.
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            instance. For OCSP only
+            :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
+            :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
+
+    .. method:: add_certificate_by_hash(issuer_name_hash, issuer_key_hash, serial_number, algorithm)
+
+        .. versionadded:: 39.0.0
+
+        Adds a request using the issuer's name hash, key hash, the certificate
+        serial number and hash algorithm. You can call this method or
+        ``add_certificate`` only once.
+
+        :param issuer_name_hash: The hash of the issuer's DER encoded name using the
+            same hash algorithm as the one specified in the ``algorithm`` parameter.
+        :type issuer_name_hash: bytes
+
+        :param issuer_key_hash: The hash of the issuer's public key bit string
+            DER encoding using the same hash algorithm as the one specified in
+            the ``algorithm`` parameter.
+        :type issuer_key_hash: bytes
+
+        :param serial_number: The serial number of the certificate being checked.
+        :type serial_number: int
 
         :param algorithm: A
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`

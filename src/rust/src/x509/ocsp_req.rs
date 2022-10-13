@@ -2,7 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{
+    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+};
 use crate::x509;
 use crate::x509::{extensions, ocsp, oid};
 use std::sync::Arc;
@@ -180,11 +182,42 @@ struct Request<'a> {
 
 #[pyo3::prelude::pyfunction]
 fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Result<OCSPRequest> {
+    let builder_request = builder.getattr(crate::intern!(py, "_request"))?;
+
+    // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash): (
         pyo3::PyRef<'_, x509::Certificate>,
         pyo3::PyRef<'_, x509::Certificate>,
         &pyo3::PyAny,
-    ) = builder.getattr(crate::intern!(py, "_request"))?.extract()?;
+    );
+    let req_cert = if !builder_request.is_none() {
+        let tuple = builder_request.extract::<(
+            pyo3::PyRef<'_, x509::Certificate>,
+            pyo3::PyRef<'_, x509::Certificate>,
+            &pyo3::PyAny,
+        )>()?;
+        py_cert = tuple.0;
+        py_issuer = tuple.1;
+        py_hash = tuple.2;
+        ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?
+    } else {
+        let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
+            &[u8],
+            &[u8],
+            &pyo3::types::PyLong,
+            &pyo3::PyAny,
+        ) = builder
+            .getattr(crate::intern!(py, "_request_hash"))?
+            .extract()?;
+        let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
+        ocsp::CertID::new_from_hash(
+            py,
+            issuer_name_hash,
+            issuer_key_hash,
+            serial_number,
+            py_hash,
+        )?
+    };
 
     let extensions = x509::common::encode_extensions(
         py,
@@ -192,7 +225,7 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         extensions::encode_extension,
     )?;
     let reqs = [Request {
-        req_cert: ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?,
+        req_cert,
         single_request_extensions: None,
     }];
     let ocsp_req = RawOCSPRequest {

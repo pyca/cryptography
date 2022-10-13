@@ -70,6 +70,27 @@ impl CertID<'_> {
             serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
         })
     }
+
+    pub(crate) fn new_from_hash<'p>(
+        py: pyo3::Python<'p>,
+        issuer_name_hash: &'p [u8],
+        issuer_key_hash: &'p [u8],
+        serial_number: asn1::BigInt<'p>,
+        hash_algorithm: &'p pyo3::PyAny,
+    ) -> PyAsn1Result<CertID<'p>> {
+        Ok(CertID {
+            hash_algorithm: x509::AlgorithmIdentifier {
+                oid: HASH_NAME_TO_OIDS[hash_algorithm
+                    .getattr(crate::intern!(py, "name"))?
+                    .extract::<&str>()?]
+                .clone(),
+                params: Some(*x509::sign::NULL_TLV),
+            },
+            issuer_name_hash,
+            issuer_key_hash,
+            serial_number,
+        })
+    }
 }
 
 pub(crate) fn hash_data<'p>(
