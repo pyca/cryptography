@@ -88,7 +88,7 @@ impl CertID<'_> {
             },
             issuer_name_hash,
             issuer_key_hash,
-            serial_number: serial_number,
+            serial_number,
         })
     }
 }

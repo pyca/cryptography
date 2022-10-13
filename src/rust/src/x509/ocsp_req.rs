@@ -220,7 +220,7 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         extensions::encode_extension,
     )?;
     let reqs = [Request {
-        req_cert: req_cert,
+        req_cert,
         single_request_extensions: None,
     }];
     let ocsp_req = RawOCSPRequest {

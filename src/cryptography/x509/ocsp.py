@@ -376,7 +376,7 @@ class OCSPRequestBuilder:
             ]
         ] = None,
         request_hash: typing.Optional[
-            typing.Tuple[bytes, bytes, hashes.HashAlgorithm]
+            typing.Tuple[bytes, bytes, int, hashes.HashAlgorithm]
         ] = None,
         extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
     ) -> None:
