@@ -191,11 +191,14 @@ fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Res
         &pyo3::PyAny,
     );
     let req_cert = if !builder_request.is_none() {
-        (py_cert, py_issuer, py_hash) = builder_request.extract::<(
+        let tuple = builder_request.extract::<(
             pyo3::PyRef<'_, x509::Certificate>,
             pyo3::PyRef<'_, x509::Certificate>,
             &pyo3::PyAny,
         )>()?;
+        py_cert = tuple.0;
+        py_issuer = tuple.1;
+        py_hash = tuple.2;
         ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?
     } else {
         let (py_issuer_name_hash, py_issuer_key_hash, py_serial, py_hash): (
