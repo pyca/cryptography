@@ -159,6 +159,40 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     v.call_method1("to_bytes", (n, "big"))?.extract()
 }
 
+pub(crate) fn encode_der_data<'p>(
+    py: pyo3::Python<'p>,
+    pem_tag: String,
+    data: Vec<u8>,
+    encoding: &'p pyo3::PyAny,
+) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    let encoding_class = py
+        .import("cryptography.hazmat.primitives.serialization")?
+        .getattr(crate::intern!(py, "Encoding"))?;
+
+    if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
+        Ok(pyo3::types::PyBytes::new(py, &data))
+    } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
+        Ok(pyo3::types::PyBytes::new(
+            py,
+            &pem::encode_config(
+                &pem::Pem {
+                    tag: pem_tag,
+                    contents: data,
+                },
+                pem::EncodeConfig {
+                    line_ending: pem::LineEnding::LF,
+                },
+            )
+            .into_bytes(),
+        ))
+    } else {
+        Err(
+            pyo3::exceptions::PyTypeError::new_err("encoding must be Encoding.DER or Encoding.PEM")
+                .into(),
+        )
+    }
+}
+
 #[pyo3::prelude::pyfunction]
 fn encode_dss_signature(
     py: pyo3::Python<'_>,

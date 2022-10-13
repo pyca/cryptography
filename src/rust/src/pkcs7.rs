@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::PyAsn1Result;
+use crate::asn1::{encode_der_data, PyAsn1Result};
 use crate::x509;
 
 use once_cell::sync::Lazy;
@@ -79,32 +79,7 @@ fn serialize_certificates<'p>(
     };
     let content_info_bytes = asn1::write_single(&content_info)?;
 
-    let encoding_class = py
-        .import("cryptography.hazmat.primitives.serialization")?
-        .getattr(crate::intern!(py, "Encoding"))?;
-
-    if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
-        Ok(pyo3::types::PyBytes::new(py, &content_info_bytes))
-    } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
-        Ok(pyo3::types::PyBytes::new(
-            py,
-            &pem::encode_config(
-                &pem::Pem {
-                    tag: "PKCS7".to_string(),
-                    contents: content_info_bytes,
-                },
-                pem::EncodeConfig {
-                    line_ending: pem::LineEnding::LF,
-                },
-            )
-            .into_bytes(),
-        ))
-    } else {
-        Err(
-            pyo3::exceptions::PyTypeError::new_err("encoding must be Encoding.DER or Encoding.PEM")
-                .into(),
-        )
-    }
+    encode_der_data(py, "PKCS7".to_string(), content_info_bytes, encoding)
 }
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
