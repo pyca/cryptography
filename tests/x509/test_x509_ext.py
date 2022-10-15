@@ -3968,6 +3968,10 @@ class TestDistributionPoint:
                 "data", "notname", None, None  # type:ignore[arg-type]
             )
 
+    def test_no_full_name_relative_name_or_crl_issuer(self):
+        with pytest.raises(ValueError):
+            x509.DistributionPoint(None, None, None, None)
+
     def test_crl_issuer_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
