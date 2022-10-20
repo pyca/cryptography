@@ -185,6 +185,7 @@ For example, this is a PEM file for a RSA Public Key: ::
 
 What happened to the backend argument?
 --------------------------------------
+
 ``cryptography`` stopped requiring the use of ``backend`` arguments in
 version 3.1 and deprecated their use in version 36.0. If you are on an older
 version that requires these arguments please view the appropriate documentation
@@ -194,6 +195,24 @@ Note that for forward compatibility ``backend`` is still silently accepted by
 functions that previously required it, but it is ignored and no longer
 documented.
 
+Will you upload wheels for my non-x86 non-ARM64 CPU architecture?
+-----------------------------------------------------------------
+
+Maybe! But there's some pre-requisites. For us to build wheels and upload them
+to PyPI, we consider it necessary to run our tests for that architecture as a
+part of our CI (i.e. for every commit). If we don't run the tests, it's hard
+to have confidence that everything works -- particularly with cryptography,
+which frequently employs per-architecture assembly code.
+
+For us to add something to CI we need a provider which offers builds on that
+architecture, which integrate into our workflows, has sufficient capacity, and
+performs well enough not to regress the contributor experience. We don't think
+this is an insurmountable bar, but it's also not one that can be cleared
+lightly.
+
+If you are interested in helping support a new CPU architecture, we encourage
+you to reach out, discuss, and contribute that support. We will attempt to be
+supportive, but we cannot commit to doing the work ourselves.
 
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
