@@ -509,7 +509,7 @@ jobs:
           
           d = pkg_resources.get_distribution("cryptography")
           with urllib.request.urlopen("https://pypi.org/pypi/cryptography/json") as r:
-            latest_version = json.load(r)["info"]["version"]
+              latest_version = json.load(r)["info"]["version"]
           new_path = d.egg_info.replace(d.version, latest_version)
           shutil.move(d.egg_info, new_path)
         shell: python
