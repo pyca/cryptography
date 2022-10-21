@@ -496,6 +496,12 @@ jobs:
       - run: pip install .
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      # cryptography main has a version of "(X+1).0.0.dev1" where X is the
+      # most recently released major version. A package used by a downstream
+      # may depend on cryptography <=X. If you use entrypoints stuff, this can
+      # lead to runtime errors due to version incompatibilities. Delete the
+      # dist-info directory to try to silence those.
+      - run: rm -rf $(python3 -c "print(pkg_resources.get_distribution('cryptography').egg_info)")
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
