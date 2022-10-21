@@ -501,7 +501,7 @@ jobs:
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
       # lead to runtime errors due to version incompatibilities. Delete the
       # dist-info directory to try to silence those.
-      - run: rm -rf $(python3 -c "print(pkg_resources.get_distribution('cryptography').egg_info)")
+      - run: rm -rf $(python3 -c "import pkg_resources; print(pkg_resources.get_distribution('cryptography').egg_info)")
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   docs-linkcheck:
