@@ -32,7 +32,6 @@ def serialize_certificates(
 
 
 _ALLOWED_PKCS7_HASH_TYPES = typing.Union[
-    hashes.SHA1,
     hashes.SHA224,
     hashes.SHA256,
     hashes.SHA384,

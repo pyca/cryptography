@@ -23,8 +23,8 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`
   should be used instead.
 * **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
-  :class:`~cryptography.x509.CertificateBuilder` and
-  other X.509 builders has been removed.
+  :class:`~cryptography.x509.CertificateBuilder`, other X.509 builders, and
+  PKCS7 has been removed.
 * Added support for
   :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
 * Added support for disabling RSA key validation checks when loading RSA
