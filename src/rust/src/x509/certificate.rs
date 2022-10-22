@@ -936,6 +936,10 @@ pub fn parse_cert_ext<'p>(
 
 pub(crate) fn time_from_py(py: pyo3::Python<'_>, val: &pyo3::PyAny) -> PyAsn1Result<x509::Time> {
     let dt = x509::py_to_chrono(py, val)?;
+    time_from_chrono(dt)
+}
+
+pub(crate) fn time_from_chrono(dt: chrono::DateTime<chrono::Utc>) -> PyAsn1Result<x509::Time> {
     if dt.year() >= 2050 {
         Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
     } else {
