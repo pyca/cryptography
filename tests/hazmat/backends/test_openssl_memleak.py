@@ -27,6 +27,8 @@ def main(argv):
     from cryptography.hazmat.bindings._openssl import ffi, lib
 
     heap = {}
+    start_heap = {}
+    start_heap_realloc_delta = [0]  # 1-item list so callbacks can mutate it
 
     BACKTRACE_ENABLED = False
     if BACKTRACE_ENABLED:
@@ -70,6 +72,20 @@ def main(argv):
             del heap[ptr]
         new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
         heap[new_ptr] = (size, path, line, backtrace())
+
+        # It is possible that something during the test will cause a
+        # realloc of memory allocated during the startup phase. (This
+        # was observed in conda-forge Windows builds of this package with
+        # provider operation_bits pointers in crypto/provider_core.c.) If
+        # we don't pay attention to that, the realloc'ed pointer will show
+        # up as a leak; but we also don't want to allow this kind of realloc
+        # to consume large amounts of additional memory. So we track the
+        # realloc and the change in memory consumption.
+        startup_info = start_heap.pop(ptr, None)
+        if startup_info is not None:
+            start_heap[new_ptr] = heap[new_ptr]
+            start_heap_realloc_delta[0] += size - startup_info[0]
+
         return new_ptr
 
     @ffi.callback("void(void *, const char *, int)")
@@ -87,7 +103,7 @@ def main(argv):
 
     hashlib.sha256()
 
-    start_heap = set(heap)
+    start_heap.update(heap)
 
     try:
         func(*argv[1:])
@@ -113,10 +129,12 @@ def main(argv):
         )
         assert result == 1
 
-    remaining = set(heap) - start_heap
+    remaining = set(heap) - set(start_heap)
 
-    if remaining:
-        sys.stdout.write(json.dumps(dict(
+    # The constant here is the number of additional bytes of memory
+    # consumption that are allowed in reallocs of start_heap memory.
+    if remaining or start_heap_realloc_delta[0] > 1024:
+        info = dict(
             (int(ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
                 "path": ffi.string(heap[ptr][1]).decode(),
@@ -124,7 +142,9 @@ def main(argv):
                 "backtrace": symbolize_backtrace(heap[ptr][3]),
             })
             for ptr in remaining
-        )))
+        )
+        info["start_heap_realloc_delta"] = start_heap_realloc_delta[0]
+        sys.stdout.write(json.dumps(info))
         sys.stdout.flush()
         sys.exit(255)
 
