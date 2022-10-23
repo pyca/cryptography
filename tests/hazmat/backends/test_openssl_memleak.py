@@ -269,52 +269,6 @@ class TestAssertNoMemoryLeaks:
 @pytest.mark.skip_fips(reason="FIPS self-test sets allow_customize = 0")
 @skip_if_memtesting_not_supported()
 class TestOpenSSLMemoryLeaks:
-    @pytest.mark.parametrize(
-        "path", ["x509/PKITS_data/certs/ValidcRLIssuerTest28EE.crt"]
-    )
-    def test_der_x509_certificate_extensions(self, path):
-        assert_no_memory_leaks(
-            textwrap.dedent(
-                """
-        def func(path):
-            from cryptography import x509
-            from cryptography.hazmat.backends.openssl import backend
-
-            import cryptography_vectors
-
-            with cryptography_vectors.open_vector_file(path, "rb") as f:
-                cert = x509.load_der_x509_certificate(
-                    f.read(), backend
-                )
-
-            cert.extensions
-        """
-            ),
-            [path],
-        )
-
-    @pytest.mark.parametrize("path", ["x509/cryptography.io.pem"])
-    def test_pem_x509_certificate_extensions(self, path):
-        assert_no_memory_leaks(
-            textwrap.dedent(
-                """
-        def func(path):
-            from cryptography import x509
-            from cryptography.hazmat.backends.openssl import backend
-
-            import cryptography_vectors
-
-            with cryptography_vectors.open_vector_file(path, "rb") as f:
-                cert = x509.load_pem_x509_certificate(
-                    f.read(), backend
-                )
-
-            cert.extensions
-        """
-            ),
-            [path],
-        )
-
     def test_x509_csr_extensions(self):
         assert_no_memory_leaks(
             textwrap.dedent(
