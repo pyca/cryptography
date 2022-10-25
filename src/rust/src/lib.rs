@@ -6,7 +6,7 @@
 // Temporarily allow `clippy::borrow_deref_ref` until we can upgrade to the
 // latest pyo3: https://github.com/PyO3/pyo3/pull/2503
 //
-// `clippy::uninlined_format_args` is required until our MSRV is >=1.58.0 
+// `clippy::uninlined_format_args` is required until our MSRV is >=1.58.0
 //
 // `unknown_lints` is required until GHA upgrades their rustc.
 #![allow(unknown_lints, clippy::borrow_deref_ref, clippy::uninlined_format_args)]
