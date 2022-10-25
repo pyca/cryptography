@@ -5,7 +5,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/twisted/twisted
         cd twisted
         git rev-parse HEAD
-        pip install ".[all_non_platform]"
+        pip install ".[all-non-platform]"
         ;;
     run)
         cd twisted
