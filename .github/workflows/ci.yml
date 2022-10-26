@@ -23,25 +23,24 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.10", TOXENV: "flake"}
-          - {VERSION: "3.10", TOXENV: "rust"}
-          - {VERSION: "3.10", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
+          - {VERSION: "3.11", TOXENV: "flake"}
+          - {VERSION: "3.11", TOXENV: "rust"}
+          - {VERSION: "3.11", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
           - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
-          - {VERSION: "3.10", TOXENV: "py310-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.10", TOXENV: "py310", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.5"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.5.3"}}
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "libressl", VERSION: "3.6.0"}}
-          - {VERSION: "3.11-dev", TOXENV: "py311"}
-          - {VERSION: "3.10", TOXENV: "py310-randomorder"}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
+          - {VERSION: "3.11", TOXENV: "py311-ssh", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1q", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "3.0.5", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.11", TOXENV: "py311", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.0.5"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.4.3"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.5.3"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.6.0"}}
+          - {VERSION: "3.11", TOXENV: "py311-randomorder"}
           # Latest commit on the master branch, as of Oct 26, 2022.
-          - {VERSION: "3.10", TOXENV: "py310", OPENSSL: {TYPE: "boringssl", VERSION: "1ec335da79eaa8341308acd9dc804078b8593c84"}}
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "1ec335da79eaa8341308acd9dc804078b8593c84"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
@@ -188,7 +187,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.9", TOXENV: "py39"}
+          - {VERSION: "3.11", TOXENV: "py311"}
         RUST:
           # Cover MSRV (and likely next MSRV). In-dev versions are below in
           # the linux-rust-coverage section. Once our MSRV is 1.60 we can
@@ -246,7 +245,7 @@ jobs:
     strategy:
       matrix:
         PYTHON:
-          - {VERSION: "3.10", TOXENV: "py310"}
+          - {VERSION: "3.11", TOXENV: "py311"}
         RUST:
           - beta
           - nightly
@@ -398,7 +397,7 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36-nocoverage", CL_FLAGS: ""}
-          - {VERSION: "3.10", TOXENV: "py310", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.11", TOXENV: "py311", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
         JOB_NUMBER: [0, 1, 2]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
@@ -527,7 +526,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.9
+          python-version: 3.11
       - run: python -m pip install -U tox
       - run: tox -r --  --color=yes
         env:
