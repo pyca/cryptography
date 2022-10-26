@@ -56,9 +56,9 @@ class TestCachedProperty:
 
 def test_enum():
     class TestEnum(utils.Enum):
-        value = "something"
+        something = "something"
 
     assert issubclass(TestEnum, enum.Enum)
-    assert isinstance(TestEnum.value, enum.Enum)
-    assert repr(TestEnum.value) == "<TestEnum.value: 'something'>"
-    assert str(TestEnum.value) == "TestEnum.value"
+    assert isinstance(TestEnum.something, enum.Enum)
+    assert repr(TestEnum.something) == "<TestEnum.something: 'something'>"
+    assert str(TestEnum.something) == "TestEnum.something"
