@@ -324,8 +324,6 @@ Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 
 const char *SSL_get_servername(const SSL *, const int);
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
-int SSL_library_init(void);
-void SSL_load_error_strings(void);
 
 SSL_SESSION *SSL_get_session(const SSL *);
 const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
@@ -370,30 +368,6 @@ unsigned long SSL_CTX_get_session_cache_mode(SSL_CTX *);
 unsigned long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
 unsigned long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
 unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
-
-/*- These aren't macros these functions are all const X on openssl > 1.0.x -*/
-
-/*  methods */
-
-const SSL_METHOD *TLSv1_1_method(void);
-const SSL_METHOD *TLSv1_1_server_method(void);
-const SSL_METHOD *TLSv1_1_client_method(void);
-
-const SSL_METHOD *TLSv1_2_method(void);
-const SSL_METHOD *TLSv1_2_server_method(void);
-const SSL_METHOD *TLSv1_2_client_method(void);
-
-const SSL_METHOD *SSLv3_method(void);
-const SSL_METHOD *SSLv3_server_method(void);
-const SSL_METHOD *SSLv3_client_method(void);
-
-const SSL_METHOD *TLSv1_method(void);
-const SSL_METHOD *TLSv1_server_method(void);
-const SSL_METHOD *TLSv1_client_method(void);
-
-const SSL_METHOD *DTLSv1_method(void);
-const SSL_METHOD *DTLSv1_server_method(void);
-const SSL_METHOD *DTLSv1_client_method(void);
 
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
