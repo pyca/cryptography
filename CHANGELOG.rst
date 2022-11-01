@@ -1,10 +1,22 @@
 Changelog
 =========
 
+.. _v38-0-3:
+
+38.0.3 - 2022-11-01
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.7,
+  which resolves *CVE-2022-3602* and *CVE-2022-3786*.
+
 .. _v38-0-2:
 
 38.0.2 - 2022-10-11
 ~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+    This release was subsequently yanked from PyPI due to a regression in OpenSSL.
 
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.6.
 
