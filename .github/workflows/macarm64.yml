@@ -49,11 +49,13 @@ jobs:
           venv/bin/python -m pip install tox requests
         env:
           BIN_PATH: ${{ matrix.PYTHON.BIN_PATH }}
-      - name: Download OpenSSL
-        run: |
-          venv/bin/python .github/workflows/download_openssl.py macos openssl-macos-universal2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./.github/actions/download-openssl
+        with:
+          platform: macos
+          target: openssl-macos-universal2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Tests
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
