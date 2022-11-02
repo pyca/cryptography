@@ -3,7 +3,6 @@
 # for complete details.
 
 import getpass
-import glob
 import io
 import os
 import subprocess
@@ -64,7 +63,7 @@ def download_artifacts_github_actions(session, token, run_url):
         )
         with zipfile.ZipFile(io.BytesIO(response.content)) as z:
             for name in z.namelist():
-                if not name.endswith(".whl"):
+                if not name.endswith(".whl") and not name.endswith(".tar.gz"):
                     continue
                 p = z.open(name)
                 out_path = os.path.join(
@@ -78,7 +77,7 @@ def download_artifacts_github_actions(session, token, run_url):
     return paths
 
 
-def fetch_github_actions_wheels(token, version):
+def fetch_github_actions_artifacts(token, version):
     session = requests.Session()
 
     response = session.get(
@@ -114,25 +113,13 @@ def release(version):
     run("git", "tag", "-s", version, "-m", "{0} release".format(version))
     run("git", "push", "--tags")
 
-    # Generate and upload vector packages
-    run("python", "setup.py", "sdist", "bdist_wheel", cwd="vectors/")
-    packages = glob.glob(
-        "vectors/dist/cryptography_vectors-{0}*".format(version)
-    )
-    run("twine", "upload", "-s", *packages)
-
-    # Generate sdist for upload
-    run("python", "setup.py", "sdist")
-    sdist = glob.glob("dist/cryptography-{0}*".format(version))
-
     # Wait for Actions to complete and download the wheels
-    github_actions_wheel_paths = fetch_github_actions_wheels(
+    github_actions_artifact_paths = fetch_github_actions_artifacts(
         github_token, version
     )
 
     # Upload wheels and sdist
-    run("twine", "upload", *github_actions_wheel_paths)
-    run("twine", "upload", "-s", *sdist)
+    run("twine", "upload", *github_actions_artifact_paths)
 
 
 if __name__ == "__main__":
