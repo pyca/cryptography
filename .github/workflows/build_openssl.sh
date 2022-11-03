@@ -11,9 +11,15 @@ shlib_sed() {
 }
 
 if [[ "${TYPE}" == "openssl" ]]; then
-  curl -O "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
-  tar zxf "openssl-${VERSION}.tar.gz"
-  pushd "openssl-${VERSION}"
+  if [[ "${VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
+    git clone https://github.com/openssl/openssl
+    pushd openssl
+    git checkout "${VERSION}"
+  else
+    curl -O "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
+    tar zxf "openssl-${VERSION}.tar.gz"
+    pushd "openssl-${VERSION}"
+  fi
   # CONFIG_FLAGS is a global coming from a previous step
   ./config ${CONFIG_FLAGS} -fPIC --prefix="${OSSL_PATH}"
   shlib_sed
