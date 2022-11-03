@@ -20,7 +20,34 @@ on:
 
 
 jobs:
+  sdist:
+    runs-on: ubuntu-latest
+    name: sdists
+    steps:
+      - uses: actions/checkout@v3.1.0
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+
+      - run: python -m venv .venv
+      - name: Install Python dependencies
+        run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
+      - name: Make sdist (cryptography)
+        run: .venv/bin/python setup.py sdist
+      - name: Make sdist and wheel (vectors)
+        run: cd vectors/ && ../.venv/bin/python setup.py sdist bdist_wheel
+      - uses: actions/upload-artifact@v3.1.1
+        with:
+          name: "cryptography-sdist"
+          path: dist/cryptography*
+      - uses: actions/upload-artifact@v3.1.1
+        with:
+          name: "vectors-sdist-wheel"
+          path: vectors/dist/cryptography*
+
   manylinux:
+    needs: [sdist]
     runs-on: ubuntu-latest
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
@@ -46,16 +73,14 @@ jobs:
             MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/download-artifact@v3.0.1
         with:
-          # The tag to build or the tag received by the tag event
-          ref: ${{ github.event.inputs.version || github.ref }}
+          name: cryptography-sdist
+
       - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
       - name: Install Python dependencies
         run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
-      - name: Make sdist
-        run: .venv/bin/python setup.py sdist
-      - run: tar zxvf dist/cryptography*.tar.gz && mkdir tmpwheelhouse
+      - run: tar zxvf cryptography*.tar.gz && rm cryptography*.tar.gz && mkdir tmpwheelhouse
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
@@ -88,6 +113,7 @@ jobs:
           path: cryptography-wheelhouse/
 
   macos:
+    needs: [sdist]
     runs-on: macos-12
     strategy:
       fail-fast: false
@@ -127,11 +153,16 @@ jobs:
             ARCHFLAGS: '-arch x86_64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
+      # Needed for download_openssl.py
       - uses: actions/checkout@v3.1.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
+      - uses: actions/download-artifact@v3.0.1
+        with:
+          name: cryptography-sdist
+
       - name: Setup python
         run: |
           curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
@@ -158,8 +189,7 @@ jobs:
 
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
       - run: venv/bin/pip install -U pip wheel cffi setuptools-rust
-      - run: venv/bin/python setup.py sdist
-      - run: tar zxvf dist/cryptography*.tar.gz && mkdir wheelhouse
+      - run: tar zxvf cryptography*.tar.gz && mkdir wheelhouse
       - name: Build the wheel
         run: |
           cd cryptography*
@@ -188,6 +218,7 @@ jobs:
           path: cryptography-wheelhouse/
 
   windows:
+    needs: [sdist]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -207,11 +238,16 @@ jobs:
             PYTHON: {VERSION: "pypy-3.9"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
+      # Needed for download_openssl.py
       - uses: actions/checkout@v3.1.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
+      - uses: actions/download-artifact@v3.0.1
+        with:
+          name: cryptography-sdist
+
       - name: Setup python
         uses: actions/setup-python@v4.3.0
         with:
@@ -234,8 +270,7 @@ jobs:
 
       - run: python -m pip install -U pip wheel
       - run: python -m pip install cffi setuptools-rust
-      - run: python setup.py sdist
-      - run: tar zxvf dist/cryptography*.tar.gz && mkdir wheelhouse
+      - run: tar zxvf cryptography*.tar.gz && mkdir wheelhouse
         shell: bash
       - run: cd cryptography* && python setup.py bdist_wheel --py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} && mv dist/cryptography*.whl ../wheelhouse
       - run: pip install -f wheelhouse --no-index cryptography
