@@ -26,7 +26,7 @@ jobs:
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the master branch.*/Latest commit on the master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
+          sed -E -i "s/Latest commit on the BoringSSL master branch.*/Latest commit on the BoringSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
           sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha.outputs.BORING_SHA }}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha.outputs.BORING_SHA
