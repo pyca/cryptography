@@ -133,7 +133,7 @@ def main(argv):
 
     # The constant here is the number of additional bytes of memory
     # consumption that are allowed in reallocs of start_heap memory.
-    if remaining or start_heap_realloc_delta[0] > 1024:
+    if remaining or start_heap_realloc_delta[0] > 3072:
         info = dict(
             (int(ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
