@@ -1,4 +1,4 @@
-name: Bump BoringSSL version
+name: Bump BoringSSL and/or OpenSSL
 permissions:
   contents: read
 
@@ -14,37 +14,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
-      - id: check-sha
+      - id: check-sha-boring
         run: |
           SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/master | cut -f1)
-          if ! grep -q "$SHA" .github/workflows/ci.yml; then
-            echo "BORING_SHA=${SHA}" >> $GITHUB_OUTPUT
-          fi
           LAST_COMMIT=$(grep boringssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-z0-9]{40}')
-          echo "LAST_COMMIT=${LAST_COMMIT}" >> $GITHUB_OUTPUT
+          if ! grep -q "$SHA" .github/workflows/ci.yml; then
+            echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
+            echo "COMMIT_MSG=\"## BoringSSL\n[Commit: ${SHA}](https://boringssl.googlesource.com/boringssl/+/${COMMIT_SHA})\n\n[Diff](https://boringssl.googlesource.com/boringssl/+/${LAST_COMMIT}..${SHA}) between the last commit hash merged to this repository and the new commit.\"" >> $GITHUB_OUTPUT
+          fi
+          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/master | cut -f1)
+          LAST_COMMIT=$(grep openssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-z0-9]{40}')
+          if ! grep -q "$SHA" .github/workflows/ci.yml; then
+            echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
+            echo "COMMIT_MSG=\"\n## OpenSSL\n[Commit: ${SHA}](https://github.com/openssl/openssl/commit/${COMMIT_SHA})\n\n[Diff](https://github.com/openssl/openssl/compare/${LAST_COMMIT}..${SHA}) between the last commit hash merged to this repository and the new commit.\"" >> $GITHUB_OUTPUT
+          fi
+      - id: check-sha-openssl
+        run: |
       - name: Update boring
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
           sed -E -i "s/Latest commit on the BoringSSL master branch.*/Latest commit on the BoringSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha.outputs.BORING_SHA }}\"/" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha-boring.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
           git status
-        if: steps.check-sha.outputs.BORING_SHA
+        if: steps.check-sha-boring.outputs.COMMIT_SHA
+      - name: Update OpenSSL
+        run: |
+          set -xe
+          CURRENT_DATE=$(date "+%b %d, %Y")
+          sed -E -i "s/Latest commit on the OpenSSL master branch.*/Latest commit on the OpenSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
+          git status
+        if: steps.check-sha-openssl.outputs.COMMIT_SHA
       - uses: tibdex/github-app-token@f717b5ecd4534d3c4df4ce9b5c1c2214f0f7cd06
         id: generate-token
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
-        if: steps.check-sha.outputs.BORING_SHA
+        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@b4d51739f96fca8047ad065eccef63442d8e99f7
         with:
-          commit-message: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
-          title: "Bump BoringSSL version to ${{ steps.check-sha.outputs.BORING_SHA }}"
+          commit-message: "Bump BoringSSL and/or OpenSSL in CI"
+          title: "Bump BoringSSL and/or OpenSSSL in CI"
           author: "BoringSSL Bot <pyca-boringbot@users.noreply.github.com>"
-          body: |
-            [Commit: ${{ steps.check-sha.outputs.BORING_SHA }}](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.BORING_SHA }})
-
-            [Diff](https://boringssl.googlesource.com/boringssl/+/${{ steps.check-sha.outputs.LAST_COMMIT }}..${{ steps.check-sha.outputs.BORING_SHA }}) between the last commit hash merged to this repository and the new commit.
+          body: ${{ steps.check-sha-boring.outputs.COMMIT_MSG }} + ${{ steps.check-sha-openssl.outputs.COMMIT_MSG }}
           token: ${{ steps.generate-token.outputs.token }}
-        if: steps.check-sha.outputs.BORING_SHA
+        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
