@@ -42,6 +42,7 @@ jobs:
           commit-message: "Bump OpenSSL master version to ${{ steps.check-sha.outputs.OPENSSL_SHA }}"
           title: "Bump OpenSSL master version to ${{ steps.check-sha.outputs.OPENSSL_SHA }}"
           author: "OpenSSL Bot <pyca-opensslbot@users.noreply.github.com>"
+          branch: "create-pull-request/openssl"
           body: |
             [Commit: ${{ steps.check-sha.outputs.OPENSSL_SHA }}](https://github.com/openssl/openssl/commit/${{ steps.check-sha.outputs.OPENSSL_SHA }})
 
