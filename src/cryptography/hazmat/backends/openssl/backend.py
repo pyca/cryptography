@@ -221,7 +221,7 @@ class Backend:
                 self._ffi.NULL
             )
         else:
-            mode = getattr(self._lib, "FIPS_mode", lambda: 0)()
+            mode = self._lib.FIPS_mode()
 
         if mode == 0:
             # OpenSSL without FIPS pushes an error on the error stack
@@ -1793,7 +1793,7 @@ class Backend:
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
-        res = self._lib.Cryptography_DH_check(dh_cdata, codes)
+        res = self._lib.DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
         # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
@@ -1882,7 +1882,7 @@ class Backend:
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
-        res = self._lib.Cryptography_DH_check(dh_cdata, codes)
+        res = self._lib.DH_check(dh_cdata, codes)
         self.openssl_assert(res == 1)
 
         return codes[0] == 0

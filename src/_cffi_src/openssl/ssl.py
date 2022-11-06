@@ -523,26 +523,14 @@ static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
 int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
 Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
 #else
 static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350
-static const long Cryptography_HAS_KEYLOG = 0;
-void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
-                                    void (*) (const SSL *, const char *)
-                                    ) = NULL;
-void (*(*SSL_CTX_get_keylog_callback)(SSL_CTX *))(
-                                                  const SSL *,
-                                                  const char *
-                                                  ) = NULL;
-#else
 static const long Cryptography_HAS_KEYLOG = 1;
-#endif
-
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 
 #ifdef OPENSSL_NO_SSL3_METHOD
