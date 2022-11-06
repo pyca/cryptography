@@ -10,8 +10,8 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.0 has been removed.
   Users on older version of OpenSSL will need to upgrade.
-* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.4. The new
-  minimum LibreSSL version is 3.4.0. Going forward our policy is to support
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.5. The new
+  minimum LibreSSL version is 3.5.0. Going forward our policy is to support
   versions of LibreSSL that are available in versions of OpenBSD that are
   still receiving security support.
 * **BACKWARDS INCOMPATIBLE:** Removed the ``encode_point`` and

@@ -164,13 +164,6 @@ def cryptography_has_tlsv13_functions() -> typing.List[str]:
     ]
 
 
-def cryptography_has_keylog() -> typing.List[str]:
-    return [
-        "SSL_CTX_set_keylog_callback",
-        "SSL_CTX_get_keylog_callback",
-    ]
-
-
 def cryptography_has_raw_key() -> typing.List[str]:
     return [
         "EVP_PKEY_new_raw_private_key",
@@ -330,7 +323,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
-    "Cryptography_HAS_KEYLOG": cryptography_has_keylog,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
         cryptography_has_evp_digestfinal_xof

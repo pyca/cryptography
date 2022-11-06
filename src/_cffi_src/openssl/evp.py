@@ -215,17 +215,6 @@ static const long Cryptography_HAS_RAW_KEY = 1;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
 #endif
 
-/* These defines are needed for CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 */
-#if !defined(EVP_CTRL_AEAD_SET_IVLEN)
-# define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
-#endif
-#if !defined(EVP_CTRL_AEAD_GET_TAG)
-# define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
-#endif
-#if !defined(EVP_CTRL_AEAD_SET_TAG)
-# define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
-#endif
-
 /* This is tied to X25519 support so we reuse the Cryptography_HAS_X25519
    conditional to remove it. OpenSSL 1.1.0 didn't have this define, but
    1.1.1 will when it is released. We can remove this in the distant

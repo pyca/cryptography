@@ -17,7 +17,7 @@ int FIPS_mode(void);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_350 || CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
 static const long Cryptography_HAS_FIPS = 0;
 int (*FIPS_mode_set)(int) = NULL;
 int (*FIPS_mode)(void) = NULL;
