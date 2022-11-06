@@ -620,8 +620,6 @@ Interfaces
             into. This buffer should be ``len(data) + n - 1`` bytes where ``n``
             is the block size (in bytes) of the cipher and mode combination.
         :return int: Number of bytes written.
-        :raises NotImplementedError: This is raised if the version of ``cffi``
-            used is too old (this can happen on older PyPy releases).
         :raises ValueError: This is raised if the supplied buffer is too small.
 
         .. doctest::
