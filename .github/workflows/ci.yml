@@ -39,10 +39,10 @@ jobs:
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.5.3"}}
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.6.1"}}
           - {VERSION: "3.11", TOXENV: "py311-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Nov 03, 2022.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "10458977f6a803859808365fad071731369f655a"}}
-          # Latest commit on the OpenSSL master branch, as of Nov 03, 2022.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "ce0a7cadadb973216399e70d3a69f352b0843deb"}}
+          # Latest commit on the BoringSSL master branch, as of Nov 06, 2022.
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "da663b7ca86d70f7da979f9a48d2238ca5762bdd"}}
+          # Latest commit on the OpenSSL master branch, as of Nov 06, 2022.
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "f5a10d5cc19215ab22be55b4a2ee1e41bd38fb14"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
