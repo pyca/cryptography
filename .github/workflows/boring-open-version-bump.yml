@@ -51,7 +51,7 @@ jobs:
           sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha-openssl.outputs.COMMIT_SHA
-      - uses: tibdex/github-app-token@f717b5ecd4534d3c4df4ce9b5c1c2214f0f7cd06
+      - uses: tibdex/github-app-token@021a2405c7f990db57f5eae5397423dcc554159c
         id: generate-token
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
