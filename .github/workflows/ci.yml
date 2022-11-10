@@ -26,7 +26,6 @@ jobs:
           - {VERSION: "3.11", TOXENV: "flake"}
           - {VERSION: "3.11", TOXENV: "rust"}
           - {VERSION: "3.11", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.0.7"}}
-          - {VERSION: "pypy-3.7", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1s"}}
