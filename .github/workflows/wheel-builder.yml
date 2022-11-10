@@ -55,7 +55,6 @@ jobs:
       matrix:
         PYTHON:
           - { VERSION: "cp36-cp36m", ABI_VERSION: 'cp36' }
-          - { VERSION: "pp37-pypy37_pp73" }
           - { VERSION: "pp38-pypy38_pp73" }
           - { VERSION: "pp39-pypy39_pp73" }
         MANYLINUX:
@@ -65,8 +64,6 @@ jobs:
           - { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
         exclude:
           # There are no readily available musllinux PyPy distributions
-          - PYTHON: { VERSION: "pp37-pypy37_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64" }
           - PYTHON: { VERSION: "pp38-pypy38_pp73" }
             MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
