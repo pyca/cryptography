@@ -683,16 +683,15 @@ pub(crate) fn py_to_chrono(
     val: &pyo3::PyAny,
 ) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
     Ok(chrono::Utc
-        .ymd(
+        .with_ymd_and_hms(
             val.getattr(crate::intern!(py, "year"))?.extract()?,
             val.getattr(crate::intern!(py, "month"))?.extract()?,
             val.getattr(crate::intern!(py, "day"))?.extract()?,
-        )
-        .and_hms(
             val.getattr(crate::intern!(py, "hour"))?.extract()?,
             val.getattr(crate::intern!(py, "minute"))?.extract()?,
             val.getattr(crate::intern!(py, "second"))?.extract()?,
-        ))
+        )
+        .unwrap())
 }
 
 #[derive(Hash, PartialEq, Clone)]
