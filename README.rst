@@ -14,7 +14,7 @@ pyca/cryptography
 
 
 ``cryptography`` is a package which provides cryptographic recipes and
-primitives to Python developers.  Our goal is for it to be your "cryptographic
+primitives to Python developers. Our goal is for it to be your "cryptographic
 standard library". It supports Python 3.6+ and PyPy3 7.2+.
 
 ``cryptography`` includes both high level recipes and low level interfaces to
