@@ -25,6 +25,8 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
   :class:`~cryptography.x509.CertificateBuilder`, other X.509 builders, and
   PKCS7 has been removed.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.10 and 10.11, macOS
+  users must upgrade to 10.12 or newer.
 * Added support for
   :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
 * Added support for disabling RSA key validation checks when loading RSA
