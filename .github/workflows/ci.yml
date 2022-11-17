@@ -136,7 +136,7 @@ jobs:
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
-          - {IMAGE: "fedora", TOXENV: "py310"}
+          - {IMAGE: "fedora", TOXENV: "py311"}
           - {IMAGE: "alpine", TOXENV: "py310"}
           - {IMAGE: "centos-stream9", TOXENV: "py39"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
