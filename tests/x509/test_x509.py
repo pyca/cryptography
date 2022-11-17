@@ -1934,6 +1934,7 @@ class TestRSACertificateRequest:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
+        assert cert.signature_hash_algorithm.__class__ == hashalg
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
@@ -2824,6 +2825,7 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
+        assert cert.signature_hash_algorithm.__class__ == hashalg
         assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_after == not_valid_after
         basic_constraints = cert.extensions.get_extension_for_oid(
