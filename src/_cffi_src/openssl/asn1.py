@@ -39,19 +39,8 @@ static const int MBSTRING_UTF8;
 """
 
 FUNCTIONS = """
-void ASN1_OBJECT_free(ASN1_OBJECT *);
-
 /*  ASN1 STRING */
 const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *);
-int ASN1_STRING_set(ASN1_STRING *, const void *, int);
-
-/*  ASN1 OCTET STRING */
-ASN1_OCTET_STRING *ASN1_OCTET_STRING_new(void);
-void ASN1_OCTET_STRING_free(ASN1_OCTET_STRING *);
-int ASN1_OCTET_STRING_set(ASN1_OCTET_STRING *, const unsigned char *, int);
-
-/* ASN1 IA5STRING */
-ASN1_IA5STRING *ASN1_IA5STRING_new(void);
 
 /*  ASN1 INTEGER */
 void ASN1_INTEGER_free(ASN1_INTEGER *);
@@ -59,7 +48,6 @@ int ASN1_INTEGER_set(ASN1_INTEGER *, long);
 
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
-void ASN1_TIME_free(ASN1_TIME *);
 int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
 /*  ASN1 GENERALIZEDTIME */
@@ -78,7 +66,6 @@ ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(const ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
 
 int ASN1_STRING_length(ASN1_STRING *);
-int ASN1_STRING_set_default_mask_asc(char *);
 
 BIGNUM *ASN1_INTEGER_to_BN(ASN1_INTEGER *, BIGNUM *);
 ASN1_INTEGER *BN_to_ASN1_INTEGER(BIGNUM *, ASN1_INTEGER *);
