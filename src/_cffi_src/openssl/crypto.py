@@ -11,11 +11,6 @@ TYPES = """
 static const long Cryptography_HAS_MEM_FUNCTIONS;
 static const long Cryptography_HAS_OPENSSL_CLEANUP;
 
-static const int SSLEAY_VERSION;
-static const int SSLEAY_CFLAGS;
-static const int SSLEAY_PLATFORM;
-static const int SSLEAY_DIR;
-static const int SSLEAY_BUILT_ON;
 static const int OPENSSL_VERSION;
 static const int OPENSSL_CFLAGS;
 static const int OPENSSL_BUILT_ON;
@@ -26,10 +21,6 @@ static const int OPENSSL_DIR;
 FUNCTIONS = """
 void OPENSSL_cleanup(void);
 
-/* SSLeay was removed in 1.1.0 */
-unsigned long SSLeay(void);
-const char *SSLeay_version(int);
-/* these functions were added to replace the SSLeay functions in 1.1.0 */
 unsigned long OpenSSL_version_num(void);
 const char *OpenSSL_version(int);
 
@@ -50,30 +41,6 @@ void Cryptography_free_wrapper(void *, const char *, int);
 """
 
 CUSTOMIZATIONS = """
-/* In 1.1.0 SSLeay has finally been retired. We bidirectionally define the
-   values so you can use either one. This is so we can use the new function
-   names no matter what OpenSSL we're running on, but users on older pyOpenSSL
-   releases won't see issues if they're running OpenSSL 1.1.0 */
-#if !defined(SSLEAY_VERSION)
-# define SSLeay                  OpenSSL_version_num
-# define SSLeay_version          OpenSSL_version
-# define SSLEAY_VERSION_NUMBER   OPENSSL_VERSION_NUMBER
-# define SSLEAY_VERSION          OPENSSL_VERSION
-# define SSLEAY_CFLAGS           OPENSSL_CFLAGS
-# define SSLEAY_BUILT_ON         OPENSSL_BUILT_ON
-# define SSLEAY_PLATFORM         OPENSSL_PLATFORM
-# define SSLEAY_DIR              OPENSSL_DIR
-#endif
-#if !defined(OPENSSL_VERSION)
-# define OpenSSL_version_num     SSLeay
-# define OpenSSL_version         SSLeay_version
-# define OPENSSL_VERSION         SSLEAY_VERSION
-# define OPENSSL_CFLAGS          SSLEAY_CFLAGS
-# define OPENSSL_BUILT_ON        SSLEAY_BUILT_ON
-# define OPENSSL_PLATFORM        SSLEAY_PLATFORM
-# define OPENSSL_DIR             SSLEAY_DIR
-#endif
-
 #if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_360
 static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
 void (*OPENSSL_cleanup)(void) = NULL;
