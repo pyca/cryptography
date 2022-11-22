@@ -199,9 +199,10 @@ int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_RAW_KEY = 0;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 0;
 int (*EVP_DigestFinalXOF)(EVP_MD_CTX *, unsigned char *, size_t) = NULL;
+#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
+static const long Cryptography_HAS_RAW_KEY = 0;
 EVP_PKEY *(*EVP_PKEY_new_raw_private_key)(int, ENGINE *, const unsigned char *,
                                        size_t) = NULL;
 EVP_PKEY *(*EVP_PKEY_new_raw_public_key)(int, ENGINE *, const unsigned char *,
@@ -210,6 +211,9 @@ int (*EVP_PKEY_get_raw_private_key)(const EVP_PKEY *, unsigned char *,
                                     size_t *) = NULL;
 int (*EVP_PKEY_get_raw_public_key)(const EVP_PKEY *, unsigned char *,
                                    size_t *) = NULL;
+#else
+static const long Cryptography_HAS_RAW_KEY = 1;
+#endif
 #else
 static const long Cryptography_HAS_RAW_KEY = 1;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
