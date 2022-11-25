@@ -150,6 +150,9 @@ fn sign_and_serialize<'p>(
         chrono::Utc::now().with_nanosecond(0).unwrap(),
     )?)?;
     let smime_cap_bytes = asn1::write_single(&asn1::SequenceOfWriter::new([
+        // Subset of values OpenSSL provides:
+        // https://github.com/openssl/openssl/blob/667a8501f0b6e5705fd611d5bb3ca24848b07154/crypto/pkcs7/pk7_smime.c#L150
+        // removing all the ones that are bad cryptography
         AES_256_CBC_OID,
         AES_192_CBC_OID,
         AES_128_CBC_OID,
