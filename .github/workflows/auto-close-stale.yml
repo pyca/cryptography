@@ -1,0 +1,23 @@
+name: Auto-close stale issues
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  issues: "write"
+  pull-requests: "write"
+
+jobs:
+  auto-close:
+    if: github.repository_owner == 'pyca'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v6.0.1
+        with:
+          only-labels: waiting-on-reporter
+          days-before-stale: 5
+          days-before-close: 7
+          stale-issue-message: "This issue has been waiting for a reporter response for 5 days. It will be auto-closed if no activity occurs in the next week."
+          close-issue-message: "This issue has not received a reporter response and has been auto-closed. If the issue is still relevant please leave a comment and we can reopen it."
+          close-reason: completed
