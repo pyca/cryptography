@@ -58,7 +58,7 @@ class TestVerifyInterface:
     def test_signature_mismatch(self):
         class SimpleInterface(metaclass=abc.ABCMeta):
             @abc.abstractmethod
-            def method(self, other: object) -> int:
+            def method(self, other: object):
                 """Method with signature"""
 
         class ClassWithoutSignature:
@@ -66,7 +66,7 @@ class TestVerifyInterface:
                 """Method without signature"""
 
         class ClassWithSignature:
-            def method(self, other: object) -> int:
+            def method(self, other: object):
                 """Method with signature"""
 
         verify_interface(SimpleInterface, ClassWithoutSignature)
