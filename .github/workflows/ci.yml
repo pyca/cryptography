@@ -21,7 +21,7 @@ env:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -140,7 +140,7 @@ jobs:
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
-          - {IMAGE: "fedora", TOXENV: "py310"}
+          - {IMAGE: "fedora", TOXENV: "py311"}
           - {IMAGE: "alpine", TOXENV: "py310"}
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
@@ -502,7 +502,7 @@ jobs:
           import pkg_resources
           import shutil
           import urllib.request
-          
+
           d = pkg_resources.get_distribution("cryptography")
           with urllib.request.urlopen("https://pypi.org/pypi/cryptography/json") as r:
               latest_version = json.load(r)["info"]["version"]
