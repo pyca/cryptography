@@ -479,7 +479,9 @@ class TestECDSAVectors:
         # BoringSSL rejects infinity points before it ever gets to us, so it
         # uses a more generic error message.
         match = (
-            "infinity" if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL else None
+            r"infinity|invalid form"
+            if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            else None
         )
         with pytest.raises(ValueError, match=match):
             serialization.load_pem_public_key(
