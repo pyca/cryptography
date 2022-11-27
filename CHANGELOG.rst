@@ -43,6 +43,15 @@ Changelog
 * Added support for creating OCSP requests with precomputed hashes using
   :meth:`~cryptography.x509.ocsp.OCSPRequestBuilder.add_certificate_by_hash`.
 
+.. _v38-0-4:
+
+38.0.4 - 2022-11-27
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 3.6.0.
+* Fixed error when using ``py2app`` to build an application with a
+  ``cryptography`` dependency.
+
 .. _v38-0-3:
 
 38.0.3 - 2022-11-01
