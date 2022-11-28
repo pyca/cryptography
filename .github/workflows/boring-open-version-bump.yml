@@ -58,7 +58,7 @@ jobs:
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
         if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@331d02c7e2104af23ad5974d4d5cbc58a3e6dc77
+        uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04
         with:
           commit-message: "Bump BoringSSL and/or OpenSSL in CI"
           title: "Bump BoringSSL and/or OpenSSL in CI"
