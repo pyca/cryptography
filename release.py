@@ -82,8 +82,8 @@ def fetch_github_actions_artifacts(token, version):
 
     response = session.get(
         (
-            "https://api.github.com/repos/pyca/cryptography/actions/workflows/"
-            "wheel-builder.yml/runs?event=push"
+            f"https://api.github.com/repos/pyca/cryptography/actions"
+            f"/workflows/wheel-builder.yml/runs?event=push&branch={version}"
         ),
         headers={
             "Content-Type": "application/json",
