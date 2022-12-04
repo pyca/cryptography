@@ -24,7 +24,7 @@ class CMAC:
         algorithm: ciphers.BlockCipherAlgorithm,
         backend: typing.Any = None,
         ctx: typing.Optional["_CMACContext"] = None,
-    ):
+    ) -> None:
         if not isinstance(algorithm, ciphers.BlockCipherAlgorithm):
             raise TypeError("Expected instance of BlockCipherAlgorithm.")
         self._algorithm = algorithm
