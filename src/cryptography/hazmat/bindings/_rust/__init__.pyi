@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import types
 import typing
 
 def check_pkcs7_padding(data: bytes) -> bool: ...
@@ -25,4 +26,9 @@ class FixedPool(typing.Generic[T]):
 
 class PoolAcquisition(typing.Generic[T]):
     def __enter__(self) -> T: ...
-    def __exit__(self, exc_type, exc_value, exc_tb) -> None: ...
+    def __exit__(
+        self,
+        exc_type: typing.Optional[typing.Type[BaseException]],
+        exc_value: typing.Optional[BaseException],
+        exc_tb: typing.Optional[types.TracebackType],
+    ) -> None: ...

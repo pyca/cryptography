@@ -178,7 +178,7 @@ class PKCS7SignatureBuilder:
         return rust_pkcs7.sign_and_serialize(self, encoding, options)
 
 
-def _smime_encode(data, signature, micalg):
+def _smime_encode(data: bytes, signature: bytes, micalg: str) -> bytes:
     # This function works pretty hard to replicate what OpenSSL does
     # precisely. For good and for ill.
 

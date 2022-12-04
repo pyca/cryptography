@@ -72,7 +72,7 @@ class Hash(HashContext):
         algorithm: HashAlgorithm,
         backend: typing.Any = None,
         ctx: typing.Optional["HashContext"] = None,
-    ):
+    ) -> None:
         if not isinstance(algorithm, HashAlgorithm):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
         self._algorithm = algorithm

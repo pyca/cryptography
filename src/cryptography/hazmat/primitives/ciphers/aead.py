@@ -363,7 +363,7 @@ class AESSIV(object):
     def _check_params(
         self,
         data: bytes,
-        associated_data: typing.List,
+        associated_data: typing.List[bytes],
     ) -> None:
         utils._check_bytes("data", data)
         if len(data) == 0:
