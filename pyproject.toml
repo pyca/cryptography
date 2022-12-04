@@ -27,6 +27,8 @@ check_untyped_defs = true
 no_implicit_reexport = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+warn_unused_configs = true
+strict_equality = true
 
 [[tool.mypy.overrides]]
 module = [
