@@ -521,6 +521,10 @@ def load_pem_x509_certificate(
     return rust_x509.load_pem_x509_certificate(data)
 
 
+def load_pem_x509_certificates(data: bytes) -> typing.List[Certificate]:
+    return rust_x509.load_pem_x509_certificates(data)
+
+
 # Backend argument preserved for API compatibility, but ignored.
 def load_der_x509_certificate(
     data: bytes, backend: typing.Any = None

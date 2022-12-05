@@ -168,6 +168,20 @@ Loading Certificates
         >>> cert.serial_number
         2
 
+.. function:: load_pem_x509_certificates(data)
+
+    .. versionadded:: 39.0
+
+    Deserialize one or more certificates from PEM encoded data.
+
+    This is like :func:`~cryptography.x509.load_pem_x509_certificate`, but
+    allows for loading multiple certificates (as adjacent PEMs) at once.
+
+    :returns: list of :class:`~cryptography.x509.Certificate`
+
+    :raises ValueError: If there isn't at least one certificate, or if any
+        certificate is malformed.
+
 .. function:: load_der_x509_certificate(data)
 
     .. versionadded:: 0.7
