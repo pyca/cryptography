@@ -91,6 +91,7 @@ personalization
 RHEL
 parsers
 Parsers
+PEM
 pickleable
 plaintext
 Poly
