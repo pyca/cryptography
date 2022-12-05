@@ -177,7 +177,7 @@ Loading Certificates
     This is like :func:`~cryptography.x509.load_pem_x509_certificate`, but
     allows for loading multiple certificates (as adjacent PEMs) at once.
 
-    :returns: list of :class:`~cryptography.x509.Certificate`
+    :returns: ``list`` of :class:`~cryptography.x509.Certificate`
 
     :raises ValueError: If there isn't at least one certificate, or if any
         certificate is malformed.
