@@ -5789,8 +5789,8 @@ def test_load_pem_x509_certificates():
         mode="rb",
     )
     assert len(certs) == 2
-    for cert in certs:
-        assert isinstance(cert, x509.Certificate)
+    assert certs[0].serial_number == 16160
+    assert certs[1].serial_number == 146039
 
     certs = load_vectors_from_file(
         filename=os.path.join(
@@ -5800,5 +5800,5 @@ def test_load_pem_x509_certificates():
         mode="rb",
     )
     assert len(certs) == 2
-    for cert in certs:
-        assert isinstance(cert, x509.Certificate)
+    assert certs[0].serial_number == 16160
+    assert certs[1].serial_number == 146039
