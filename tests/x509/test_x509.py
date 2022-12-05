@@ -5791,7 +5791,9 @@ def test_load_pem_x509_certificates():
     assert len(certs) == 2
 
     certs = load_vectors_from_file(
-        filename=os.path.join("x509", "cryptography.io.chain_with_garbage.pem"),
+        filename=os.path.join(
+            "x509", "cryptography.io.chain_with_garbage.pem"
+        ),
         loader=lambda pemfile: x509.load_pem_x509_certificates(pemfile.read()),
         mode="rb",
     )
