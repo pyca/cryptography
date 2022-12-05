@@ -22,6 +22,7 @@ from cryptography.x509.base import (
     load_der_x509_crl,
     load_der_x509_csr,
     load_pem_x509_certificate,
+    load_pem_x509_certificates,
     load_pem_x509_crl,
     load_pem_x509_csr,
     random_serial_number,
@@ -169,6 +170,7 @@ OID_OCSP = AuthorityInformationAccessOID.OCSP
 __all__ = [
     "certificate_transparency",
     "load_pem_x509_certificate",
+    "load_pem_x509_certificates",
     "load_der_x509_certificate",
     "load_pem_x509_csr",
     "load_der_x509_csr",

@@ -351,6 +351,21 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
 }
 
 #[pyo3::prelude::pyfunction]
+fn load_pem_x509_certificates(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Vec<Certificate>> {
+    let certs = pem::parse_many(data)?
+        .iter()
+        .filter(|p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE")
+        .map(|p| load_der_x509_certificate(py, &p.contents))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if certs.is_empty() {
+        return Err(PyAsn1Error::from(pem::PemError::MalformedFraming));
+    }
+
+    Ok(certs)
+}
+
+#[pyo3::prelude::pyfunction]
 fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
     let raw = OwnedRawCertificate::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
@@ -1022,6 +1037,7 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
+    module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificates))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_certificate))?;
 
     module.add_class::<Certificate>()?;

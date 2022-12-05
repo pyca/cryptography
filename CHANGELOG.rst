@@ -42,6 +42,8 @@ Changelog
   when repeatedly calling ``encrypt`` or ``decrypt`` with the same key.
 * Added support for creating OCSP requests with precomputed hashes using
   :meth:`~cryptography.x509.ocsp.OCSPRequestBuilder.add_certificate_by_hash`.
+* Added support for loading multiple PEM-encoded X.509 certificates from
+  a single input via :func:`~cryptography.x509.load_pem_x509_certificates`.
 
 .. _v38-0-4:
 

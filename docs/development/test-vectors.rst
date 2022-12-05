@@ -220,6 +220,8 @@ X.509
   legacy PEM header format.
 * ``cryptography.io.chain.pem`` - The same as ``cryptography.io.pem``,
   but ``rapidssl_sha256_ca_g3.pem`` is concatenated to the end.
+* ``cryptography.io.chain_with_garbage.pem`` - The same as
+  ``cryptography.io.chain.pem``, but with other sections and text around it.
 * ``cryptography.io.with_garbage.pem`` - The same as ``cryptography.io.pem``,
   but with other sections and text around it.
 * ``rapidssl_sha256_ca_g3.pem`` - The intermediate CA that issued the

@@ -5777,3 +5777,28 @@ class TestRequestAttributes:
             backend,
         )
         assert len(request.attributes) == 0
+
+
+def test_load_pem_x509_certificates():
+    with pytest.raises(ValueError):
+        x509.load_pem_x509_certificates(b"")
+
+    certs = load_vectors_from_file(
+        filename=os.path.join("x509", "cryptography.io.chain.pem"),
+        loader=lambda pemfile: x509.load_pem_x509_certificates(pemfile.read()),
+        mode="rb",
+    )
+    assert len(certs) == 2
+    assert certs[0].serial_number == 16160
+    assert certs[1].serial_number == 146039
+
+    certs = load_vectors_from_file(
+        filename=os.path.join(
+            "x509", "cryptography.io.chain_with_garbage.pem"
+        ),
+        loader=lambda pemfile: x509.load_pem_x509_certificates(pemfile.read()),
+        mode="rb",
+    )
+    assert len(certs) == 2
+    assert certs[0].serial_number == 16160
+    assert certs[1].serial_number == 146039
