@@ -578,8 +578,8 @@ struct RevokedInfo {
 }
 
 #[pyo3::prelude::pyfunction]
-fn create_ocsp_response<'p>(
-    py: pyo3::Python<'p>,
+fn create_ocsp_response(
+    py: pyo3::Python<'_>,
     status: &pyo3::PyAny,
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
