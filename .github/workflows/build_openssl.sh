@@ -8,6 +8,11 @@ shlib_sed() {
   sed -i "s/^SHLIB_MAJOR=.*/SHLIB_MAJOR=100/" Makefile
   sed -i "s/^SHLIB_MINOR=.*/SHLIB_MINOR=0.0/" Makefile
   sed -i "s/^SHLIB_VERSION_NUMBER=.*/SHLIB_VERSION_NUMBER=100.0.0/" Makefile
+  # Things for 3.x
+  if [[ -f libssl.ld ]]; then
+    sed -i "s/^OPENSSL_3/OPENSSL_100/" libssl.ld
+    sed -i "s/^OPENSSL_3/OPENSSL_100/" libcrypto.ld
+  fi
 }
 
 if [[ "${TYPE}" == "openssl" ]]; then
