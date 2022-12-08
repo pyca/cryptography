@@ -73,7 +73,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install "tox<4" requests coverage[toml]
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -232,7 +232,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage[toml]
+      - run: python -m pip install "tox<4" coverage[toml]
       - name: Tests
         run: |
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
@@ -288,7 +288,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage[toml]
+      - run: python -m pip install "tox<4" coverage[toml]
       - name: Tests
         run: |
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
@@ -361,7 +361,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
 
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install "tox<4" requests coverage[toml]
 
       - uses: actions/checkout@v3.1.0
         timeout-minutes: 3
@@ -426,7 +426,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install "tox<4" requests coverage[toml]
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
@@ -528,7 +528,7 @@ jobs:
         uses: actions/setup-python@v4.3.0
         with:
           python-version: 3.11
-      - run: python -m pip install -U tox
+      - run: python -m pip install -U "tox<4"
       - run: tox -r --  --color=yes
         env:
           TOXENV: docs-linkcheck
