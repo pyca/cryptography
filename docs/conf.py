@@ -203,6 +203,8 @@ linkcheck_ignore = [
     r"https://e-trust.gosuslugi.ru",
     # Incomplete cert chain
     r"https://www.oscca.gov.cn",
+    # Cloudflare returns 403s for all non-browser requests
+    r"https://speakerdeck.com",
 ]
 
 autosectionlabel_prefix_document = True
