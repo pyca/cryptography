@@ -45,7 +45,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -67,7 +67,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -142,7 +142,7 @@ jobs:
     name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -159,7 +159,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -202,7 +202,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -226,7 +226,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@e645b0cf01249a964ec099494d38d2da0f0b349f
         with:
           toolchain: ${{ matrix.RUST }}
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -253,7 +253,7 @@ jobs:
     name: "Rust Coverage"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -282,7 +282,7 @@ jobs:
       - run: cargo install cargo-binutils
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -339,7 +339,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -363,7 +363,7 @@ jobs:
 
       - run: python -m pip install tox requests coverage[toml]
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -403,7 +403,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -436,7 +436,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -471,7 +471,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -521,7 +521,7 @@ jobs:
     name: "linkcheck"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         with:
           persist-credentials: false
       - name: Setup python
@@ -539,7 +539,7 @@ jobs:
     needs: [linux, linux-distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.2.0
         timeout-minutes: 3
         with:
           persist-credentials: false
