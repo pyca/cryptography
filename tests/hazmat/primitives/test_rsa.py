@@ -1713,8 +1713,9 @@ class TestRSADecryption:
             private_key.decrypt(b"0" * 256, DummyAsymmetricPadding())
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
+        only_if=lambda backend: (
+            backend.rsa_padding_supported(padding.PKCS1v15())
+            and not backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
