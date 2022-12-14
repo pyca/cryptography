@@ -16,6 +16,8 @@ static const int RSA_PKCS1_OAEP_PADDING;
 static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
 static const int RSA_PSS_SALTLEN_AUTO;
+
+static const int Cryptography_HAS_IMPLICIT_RSA_REJECTION;
 """
 
 FUNCTIONS = """
@@ -48,5 +50,11 @@ CUSTOMIZATIONS = """
 // automatic salt length computation as in OpenSSL and LibreSSL
 #if !defined(RSA_PSS_SALTLEN_AUTO)
 #define RSA_PSS_SALTLEN_AUTO -2
+#endif
+
+#if defined(EVP_PKEY_CTRL_RSA_IMPLICIT_REJECTION)
+static const int Cryptography_HAS_IMPLICIT_RSA_REJECTION = 1;
+#else
+static const int Cryptography_HAS_IMPLICIT_RSA_REJECTION = 0;
 #endif
 """
