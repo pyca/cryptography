@@ -3403,6 +3403,14 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.29.28"``.
 
+    .. attribute:: POLICY_MAPPINGS
+
+        Corresponds to the dotted string ``"2.5.29.33"``.
+
+    .. attribute:: SUBJECT_DIRECTORY_ATTRIBUTES
+
+        Corresponds to the dotted string ``"2.5.29.9"``.
+
 
 .. class:: CRLEntryExtensionOID
 
