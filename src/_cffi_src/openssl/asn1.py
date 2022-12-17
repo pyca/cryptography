@@ -48,6 +48,7 @@ int ASN1_INTEGER_set(ASN1_INTEGER *, long);
 
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
+void ASN1_TIME_free(ASN1_TIME *);
 int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
 /*  ASN1 GENERALIZEDTIME */
