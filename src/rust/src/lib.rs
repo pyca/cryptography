@@ -10,6 +10,7 @@
 #![allow(unknown_lints, clippy::borrow_deref_ref)]
 
 mod asn1;
+mod backend;
 mod buf;
 mod error;
 mod intern;
@@ -192,6 +193,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     openssl_mod.add_function(pyo3::wrap_pyfunction!(raise_openssl_error, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(capture_error_stack, m)?)?;
     openssl_mod.add_class::<OpenSSLError>()?;
+    crate::backend::add_to_module(openssl_mod)?;
     m.add_submodule(openssl_mod)?;
 
     Ok(())

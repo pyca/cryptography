@@ -96,9 +96,23 @@ class TestX25519Exchange:
 
     def test_public_bytes_bad_args(self, backend):
         key = X25519PrivateKey.generate().public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.public_bytes(
                 None, serialization.PublicFormat.Raw  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.DER, serialization.PublicFormat.Raw
+            )
+        with pytest.raises(TypeError):
+            key.public_bytes(
+                serialization.Encoding.DER,
+                None,  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.SMIME,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
     # These vectors are also from RFC 7748
@@ -199,6 +213,37 @@ class TestX25519Exchange:
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.Raw,
+                serialization.NoEncryption(),
+            )
+
+        with pytest.raises(TypeError):
+            key.private_bytes(None, None, None)  # type: ignore[arg-type]
+
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                None,  # type: ignore[arg-type]
+                None,  # type: ignore[arg-type]
+            )
+
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                object(),  # type: ignore[arg-type]
+            )
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.BestAvailableEncryption(b"a" * 1024),
+            )
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.SMIME,
+                serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
 

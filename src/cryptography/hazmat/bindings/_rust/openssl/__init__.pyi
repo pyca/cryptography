@@ -4,6 +4,10 @@
 
 import typing
 
+from cryptography.hazmat.bindings._rust.openssl import x25519
+
+__all__ = ["openssl_version", "raise_openssl_error", "x25519"]
+
 def openssl_version() -> int: ...
 def raise_openssl_error() -> typing.NoReturn: ...
 def capture_error_stack() -> typing.List[OpenSSLError]: ...
