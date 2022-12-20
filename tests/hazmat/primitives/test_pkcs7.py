@@ -132,8 +132,9 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
         )
     else:
         msg_bio = backend._bytes_to_bio(msg)
+        out_bio = backend._create_mem_bio_gc()
         res = backend._lib.PKCS7_verify(
-            p7, backend._ffi.NULL, store, msg_bio.bio, backend._ffi.NULL, flags
+            p7, backend._ffi.NULL, store, msg_bio.bio, out_bio, flags
         )
     backend.openssl_assert(res == 1)
     # OpenSSL 3.0 leaves a random bio error on the stack:
