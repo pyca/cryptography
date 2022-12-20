@@ -64,7 +64,6 @@ def cryptography_has_mem_functions() -> typing.List[str]:
 
 def cryptography_has_x509_store_ctx_get_issuer() -> typing.List[str]:
     return [
-        "X509_STORE_get_get_issuer",
         "X509_STORE_set_get_issuer",
     ]
 

@@ -211,7 +211,6 @@ Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
 
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
-X509_STORE_CTX_get_issuer_fn X509_STORE_get_get_issuer(X509_STORE *);
 void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
@@ -219,7 +218,6 @@ CUSTOMIZATIONS = """
 #if CRYPTOGRAPHY_IS_LIBRESSL
 static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
 typedef void *X509_STORE_CTX_get_issuer_fn;
-X509_STORE_CTX_get_issuer_fn (*X509_STORE_get_get_issuer)(X509_STORE *) = NULL;
 void (*X509_STORE_set_get_issuer)(X509_STORE *,
                                   X509_STORE_CTX_get_issuer_fn) = NULL;
 #else
