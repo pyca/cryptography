@@ -13,7 +13,7 @@ jobs:
     if: github.repository_owner == 'pyca'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v6.0.1
+      - uses: actions/stale@v7.0.0
         with:
           only-labels: waiting-on-reporter
           days-before-stale: 5
