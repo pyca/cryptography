@@ -7,7 +7,6 @@ from ecdsa import SECP256k1, SigningKey
 from ecdsa.util import sigdecode_der, sigencode_der
 
 from cryptography_vectors import open_vector_file
-
 from tests.utils import load_fips_ecdsa_signing_vectors, load_vectors_from_file
 
 HASHLIB_HASH_TYPES = {

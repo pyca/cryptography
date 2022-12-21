@@ -20,7 +20,7 @@ Code
 
 When in doubt, refer to :pep:`8` for Python code. You can check if your code
 meets our automated requirements by formatting it with ``black`` and running
-``flake8`` against it. If you've installed the development requirements this
+``ruff`` against it. If you've installed the development requirements this
 will automatically use our configuration. You can also run the ``tox`` job with
 ``tox -e flake``.
 

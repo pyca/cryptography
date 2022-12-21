@@ -9,8 +9,10 @@ import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHMAC
-from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
+from cryptography.hazmat.primitives.kdf.concatkdf import (
+    ConcatKDFHash,
+    ConcatKDFHMAC,
+)
 
 
 class TestConcatKDFHash:

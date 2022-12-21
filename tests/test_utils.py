@@ -9,14 +9,12 @@ import os
 import textwrap
 
 import pretend
-
 import pytest
 
 import cryptography
 import cryptography.utils
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
-
 import cryptography_vectors
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 
 from . import deprecated_module
 from .utils import (

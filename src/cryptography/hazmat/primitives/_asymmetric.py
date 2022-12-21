@@ -4,7 +4,6 @@
 
 import abc
 
-
 # This exists to break an import cycle. It is normally accessible from the
 # asymmetric padding module.
 

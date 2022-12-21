@@ -6,9 +6,7 @@ import abc
 import typing
 
 from cryptography import utils
-from cryptography.exceptions import (
-    AlreadyFinalized,
-)
+from cryptography.exceptions import AlreadyFinalized
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):

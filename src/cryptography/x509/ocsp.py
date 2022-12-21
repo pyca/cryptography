@@ -7,8 +7,7 @@ import abc
 import datetime
 import typing
 
-from cryptography import utils
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import ocsp
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.types import (

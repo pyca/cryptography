@@ -9,8 +9,8 @@ import pytest
 
 from cryptography.hazmat.primitives import hashes, hmac
 
-from .utils import generate_hmac_test
 from ...utils import load_hash_vectors
+from .utils import generate_hmac_test
 
 
 @pytest.mark.supported(

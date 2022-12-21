@@ -11,8 +11,8 @@ import pytest
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
 
-from .utils import _load_all_params
 from ...utils import load_nist_vectors
+from .utils import _load_all_params
 
 
 @pytest.mark.supported(

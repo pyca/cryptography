@@ -10,15 +10,12 @@ import os
 import time
 
 import iso8601
-
 import pretend
-
 import pytest
 
+import cryptography_vectors
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
-
-import cryptography_vectors
 
 
 def json_parametrize(keys, filename):

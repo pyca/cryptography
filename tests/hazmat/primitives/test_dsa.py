@@ -17,14 +17,14 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_dss_signature,
 )
 
-from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
-from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyHashAlgorithm, DummyKeySerializationEncryption
 from ...utils import (
     load_fips_dsa_key_pair_vectors,
     load_fips_dsa_sig_vectors,
     load_vectors_from_file,
 )
+from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
+from .utils import skip_fips_traditional_openssl
 
 _ALGORITHMS_DICT: typing.Dict[str, hashes.HashAlgorithm] = {
     "SHA1": hashes.SHA1(),

@@ -21,7 +21,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
-from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ...doubles import (
     DummyAsymmetricPadding,
     DummyBlockCipherAlgorithm,
@@ -34,6 +33,7 @@ from ...utils import (
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
+from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 
 
 def skip_if_libre_ssl(openssl_version):

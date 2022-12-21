@@ -16,10 +16,10 @@ from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
+    _dh_params_dup,
     _DHParameters,
     _DHPrivateKey,
     _DHPublicKey,
-    _dh_params_dup,
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters,
@@ -57,9 +57,7 @@ from cryptography.hazmat.backends.openssl.x448 import (
     _X448PrivateKey,
     _X448PublicKey,
 )
-from cryptography.hazmat.bindings._rust import (
-    x509 as rust_x509,
-)
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
@@ -76,8 +74,8 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
     OAEP,
-    PKCS1v15,
     PSS,
+    PKCS1v15,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
     CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
@@ -93,9 +91,9 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES128,
     AES256,
     ARC4,
+    SM4,
     Camellia,
     ChaCha20,
-    SM4,
     TripleDES,
     _BlowfishInternal,
     _CAST5Internal,
@@ -109,20 +107,19 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CTR,
     ECB,
     GCM,
-    Mode,
     OFB,
     XTS,
+    Mode,
 )
 from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
+    _ALLOWED_PKCS12_TYPES,
+    _PKCS12_CAS_TYPES,
     PBES,
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
-    _ALLOWED_PKCS12_TYPES,
-    _PKCS12_CAS_TYPES,
 )
-
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 

@@ -8,7 +8,6 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPublicNumbers,
 )
 
-
 RSA_KEY_512 = RSAPrivateNumbers(
     p=int(
         "d57846898d5c0de249c08467586cb458fa9bc417cdf297f73cfc52281b787cd9", 16

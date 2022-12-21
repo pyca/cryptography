@@ -5,13 +5,8 @@
 import sys
 import warnings
 
-from cryptography.__about__ import (
-    __author__,
-    __copyright__,
-    __version__,
-)
+from cryptography.__about__ import __author__, __copyright__, __version__
 from cryptography.utils import CryptographyDeprecationWarning
-
 
 __all__ = [
     "__version__",

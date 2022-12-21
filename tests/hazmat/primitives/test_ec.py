@@ -20,8 +20,6 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
     encode_dss_signature,
 )
 
-from .fixtures_ec import EC_KEY_SECP384R1
-from .utils import skip_fips_traditional_openssl
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_fips_ecdsa_key_pair_vectors,
@@ -31,6 +29,8 @@ from ...utils import (
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
+from .fixtures_ec import EC_KEY_SECP384R1
+from .utils import skip_fips_traditional_openssl
 
 _HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
     "SHA-1": hashes.SHA1,

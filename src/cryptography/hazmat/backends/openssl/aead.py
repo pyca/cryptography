@@ -6,7 +6,6 @@ import typing
 
 from cryptography.exceptions import InvalidTag
 
-
 if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
     from cryptography.hazmat.primitives.ciphers.aead import (

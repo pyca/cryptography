@@ -11,7 +11,6 @@ from email.utils import parseaddr
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
-
 _IPADDRESS_TYPES = typing.Union[
     ipaddress.IPv4Address,
     ipaddress.IPv6Address,

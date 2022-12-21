@@ -27,13 +27,12 @@ from cryptography.hazmat.primitives.asymmetric.types import (
 )
 from cryptography.x509.extensions import (
     Extension,
-    ExtensionType,
     Extensions,
+    ExtensionType,
     _make_sequence_methods,
 )
 from cryptography.x509.name import Name, _ASN1Type
 from cryptography.x509.oid import ObjectIdentifier
-
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 

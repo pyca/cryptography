@@ -8,7 +8,6 @@ import typing
 
 from cryptography.hazmat.primitives import _serialization
 
-
 _MIN_MODULUS_SIZE = 512
 
 

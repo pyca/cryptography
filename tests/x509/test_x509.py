@@ -12,7 +12,6 @@ import os
 import typing
 
 import pytest
-
 import pytz
 
 from cryptography import utils, x509

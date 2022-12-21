@@ -5,8 +5,8 @@
 
 import os
 
-from .utils import generate_kbkdf_counter_mode_test
 from ...utils import load_nist_kbkdf_vectors
+from .utils import generate_kbkdf_counter_mode_test
 
 
 class TestCounterKDFCounterMode:

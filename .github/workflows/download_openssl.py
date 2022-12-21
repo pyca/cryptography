@@ -9,7 +9,6 @@ import time
 import zipfile
 
 import requests
-
 from urllib3.util.retry import Retry
 
 

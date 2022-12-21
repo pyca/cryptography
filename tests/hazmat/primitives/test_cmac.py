@@ -7,10 +7,7 @@ import binascii
 
 import pytest
 
-from cryptography.exceptions import (
-    AlreadyFinalized,
-    InvalidSignature,
-)
+from cryptography.exceptions import AlreadyFinalized, InvalidSignature
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
@@ -18,11 +15,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 )
 from cryptography.hazmat.primitives.cmac import CMAC
 
-from ...utils import (
-    load_nist_vectors,
-    load_vectors_from_file,
-)
-
+from ...utils import load_nist_vectors, load_vectors_from_file
 
 vectors_aes128 = load_vectors_from_file(
     "CMAC/nist-800-38b-aes128.txt", load_nist_vectors

@@ -13,7 +13,6 @@ import pytest
 
 from cryptography.hazmat.bindings.openssl.binding import Binding
 
-
 MEMORY_LEAK_SCRIPT = """
 import sys
 

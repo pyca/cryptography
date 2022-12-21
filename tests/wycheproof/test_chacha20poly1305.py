@@ -10,8 +10,8 @@ import pytest
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-from .utils import wycheproof_tests
 from ..hazmat.primitives.test_aead import _aead_supported
+from .utils import wycheproof_tests
 
 
 @pytest.mark.skipif(

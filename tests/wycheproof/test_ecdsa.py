@@ -13,7 +13,6 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 from .utils import wycheproof_tests
 
-
 _DIGESTS = {
     "SHA-1": hashes.SHA1(),
     "SHA-224": hashes.SHA224(),
