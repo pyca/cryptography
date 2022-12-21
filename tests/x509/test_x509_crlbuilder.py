@@ -6,7 +6,6 @@
 import datetime
 
 import pytest
-
 import pytz
 
 from cryptography import x509
@@ -18,11 +17,11 @@ from cryptography.x509.oid import (
     SignatureAlgorithmOID,
 )
 
-from .test_x509 import DummyExtension
 from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from .test_x509 import DummyExtension
 
 
 class TestCertificateRevocationListBuilder:

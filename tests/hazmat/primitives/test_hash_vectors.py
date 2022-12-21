@@ -10,8 +10,8 @@ import pytest
 
 from cryptography.hazmat.primitives import hashes
 
-from .utils import _load_all_params, generate_hash_test
 from ...utils import load_hash_vectors, load_nist_vectors
+from .utils import _load_all_params, generate_hash_test
 
 
 @pytest.mark.supported(

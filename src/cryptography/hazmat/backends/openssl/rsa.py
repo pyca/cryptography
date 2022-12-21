@@ -14,15 +14,13 @@ from cryptography.hazmat.backends.openssl.utils import (
     _calculate_digest_and_algorithm,
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import (
-    utils as asym_utils,
-)
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.padding import (
-    AsymmetricPadding,
     MGF1,
     OAEP,
-    PKCS1v15,
     PSS,
+    AsymmetricPadding,
+    PKCS1v15,
     _Auto,
     _DigestLength,
     _MaxLength,
@@ -34,7 +32,6 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPublicKey,
     RSAPublicNumbers,
 )
-
 
 if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend

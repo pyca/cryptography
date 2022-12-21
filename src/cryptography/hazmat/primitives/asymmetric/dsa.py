@@ -7,9 +7,7 @@ import abc
 import typing
 
 from cryptography.hazmat.primitives import _serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import (
-    utils as asym_utils,
-)
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 
 
 class DSAParameters(metaclass=abc.ABCMeta):

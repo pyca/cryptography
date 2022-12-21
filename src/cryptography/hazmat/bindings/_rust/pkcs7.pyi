@@ -1,8 +1,8 @@
 import typing
 
+from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs7
-from cryptography import x509
 
 def serialize_certificates(
     certs: typing.List[x509.Certificate],

@@ -11,9 +11,8 @@ from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from .utils import wycheproof_tests
 from ..hazmat.primitives.test_ec import _skip_exchange_algorithm_unsupported
-
+from .utils import wycheproof_tests
 
 _CURVES = {
     "secp224r1": ec.SECP224R1(),

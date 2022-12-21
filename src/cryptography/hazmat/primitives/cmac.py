@@ -6,9 +6,7 @@
 import typing
 
 from cryptography import utils
-from cryptography.exceptions import (
-    AlreadyFinalized,
-)
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import ciphers
 
 if typing.TYPE_CHECKING:

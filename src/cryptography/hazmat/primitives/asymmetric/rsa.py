@@ -9,9 +9,7 @@ from math import gcd
 
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import (
-    utils as asym_utils,
-)
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 
 
 class RSAPrivateKey(metaclass=abc.ABCMeta):

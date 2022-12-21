@@ -26,9 +26,9 @@ from cryptography.hazmat.primitives.ciphers import (
 from cryptography.hazmat.primitives.ciphers.modes import GCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.hazmat.primitives.kdf.kbkdf import (
-    CounterLocation,
     KBKDFCMAC,
     KBKDFHMAC,
+    CounterLocation,
     Mode,
 )
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC

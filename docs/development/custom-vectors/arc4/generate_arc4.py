@@ -7,7 +7,6 @@ import binascii
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms
 
-
 _RFC6229_KEY_MATERIALS = [
     (
         True,

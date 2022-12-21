@@ -13,10 +13,8 @@ from contextlib import contextmanager
 
 import pytest
 
-from cryptography.exceptions import UnsupportedAlgorithm
-
 import cryptography_vectors
-
+from cryptography.exceptions import UnsupportedAlgorithm
 
 HashVector = collections.namedtuple("HashVector", ["message", "digest"])
 KeyedHashVector = collections.namedtuple(

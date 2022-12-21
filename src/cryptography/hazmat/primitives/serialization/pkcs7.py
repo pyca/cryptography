@@ -8,8 +8,7 @@ import email.message
 import io
 import typing
 
-from cryptography import utils
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa

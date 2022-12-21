@@ -15,7 +15,6 @@ from cryptography.hazmat.primitives.asymmetric import (
     x448,
 )
 
-
 # Every asymmetric key type
 PUBLIC_KEY_TYPES = typing.Union[
     dh.DHPublicKey,

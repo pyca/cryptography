@@ -13,9 +13,9 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
-from .fixtures_dh import FFDH3072_P
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
+from .fixtures_dh import FFDH3072_P
 
 # RFC 3526
 P_1536 = int(

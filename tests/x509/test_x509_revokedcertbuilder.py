@@ -6,7 +6,6 @@
 import datetime
 
 import pytest
-
 import pytz
 
 from cryptography import x509

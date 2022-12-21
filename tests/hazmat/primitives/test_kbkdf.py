@@ -11,9 +11,9 @@ from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.kdf.kbkdf import (
-    CounterLocation,
     KBKDFCMAC,
     KBKDFHMAC,
+    CounterLocation,
     Mode,
 )
 

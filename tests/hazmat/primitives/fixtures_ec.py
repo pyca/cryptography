@@ -5,7 +5,6 @@
 
 from cryptography.hazmat.primitives.asymmetric import ec
 
-
 EC_KEY_SECT571R1 = ec.EllipticCurvePrivateNumbers(
     private_value=int(
         "213997069697108634621868251335076179190383272087548888968788698953"

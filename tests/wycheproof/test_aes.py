@@ -12,8 +12,8 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
 
-from .utils import wycheproof_tests
 from ..hazmat.primitives.test_aead import _aead_supported
+from .utils import wycheproof_tests
 
 
 @wycheproof_tests("aes_cbc_pkcs5_test.json")

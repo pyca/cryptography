@@ -14,7 +14,6 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
 
-
 if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.ciphers import (
         _CipherContext as _BackendCipherContext,

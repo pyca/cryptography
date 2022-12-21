@@ -9,7 +9,6 @@ from cryptography.hazmat.primitives.asymmetric.dsa import (
     DSAPublicNumbers,
 )
 
-
 DSA_KEY_1024 = DSAPrivateNumbers(
     public_numbers=DSAPublicNumbers(
         parameter_numbers=DSAParameterNumbers(

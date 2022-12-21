@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 from .utils import wycheproof_tests
 
-
 _HASH_ALGORITHMS = {
     "HKDF-SHA-1": hashes.SHA1(),
     "HKDF-SHA-256": hashes.SHA256(),

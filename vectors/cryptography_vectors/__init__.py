@@ -7,7 +7,6 @@ import typing
 
 from cryptography_vectors.__about__ import __version__
 
-
 __all__ = [
     "__version__",
 ]

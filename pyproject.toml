@@ -63,3 +63,18 @@ exclude_lines = [
     "@typing.overload",
     "if typing.TYPE_CHECKING",
 ]
+
+[tool.ruff]
+exclude = [
+    '.tox',
+    '*.egg',
+    '.git',
+    '_build',
+    '.hypothesis',
+]
+ignore = ['N818']
+select = ['E', 'F', 'I', 'N', 'W']
+line-length = 79
+
+[tool.ruff.isort]
+known-first-party = ["cryptography", "cryptography_vectors", "tests"]

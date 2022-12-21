@@ -7,8 +7,8 @@ import pytest
 
 from cryptography.hazmat.primitives import hashes
 
-from .utils import generate_pbkdf2_test
 from ...utils import load_nist_vectors
+from .utils import generate_pbkdf2_test
 
 
 @pytest.mark.supported(

@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import wycheproof_tests
 
-
 _HMAC_ALGORITHMS = {
     "HMACSHA1": hashes.SHA1(),
     "HMACSHA224": hashes.SHA224(),

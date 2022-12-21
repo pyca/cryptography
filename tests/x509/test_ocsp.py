@@ -15,9 +15,9 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed25519, ed448, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.x509 import ocsp
 
-from .test_x509 import DummyExtension, _load_cert
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..utils import load_vectors_from_file, raises_unsupported_algorithm
+from .test_x509 import DummyExtension, _load_cert
 
 
 def _load_data(filename, loader):
