@@ -296,7 +296,16 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
 void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 
-void SSL_CTX_set_msg_callback(SSL_CTX *, void (*)(int, int, int, const void *, size_t, SSL *, void *));
+void SSL_CTX_set_msg_callback(SSL_CTX *,
+                              void (*)(
+                                int,
+                                int,
+                                int,
+                                const void *,
+                                size_t,
+                                SSL *,
+                                void *
+                              ));
 void SSL_CTX_set_msg_callback_arg(SSL_CTX *, void *);
 
 void SSL_CTX_set_keylog_callback(SSL_CTX *,
