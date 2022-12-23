@@ -32,7 +32,7 @@ Changelog
   ``cryptography`` from source (i.e., not from a ``wheel``), and specify their
   own version of OpenSSL. For those users, the ``CFLAGS``, ``LDFLAGS``,
   ``INCLUDE``, ``LIB``, and ``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS`` environment
-  variables will not longer be respected. Instead, users will need to
+  variables will no longer be respected. Instead, users will need to
   configure their builds `as documented here`_.
 * Added support for
   :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
