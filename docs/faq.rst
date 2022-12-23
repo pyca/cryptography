@@ -216,7 +216,6 @@ supportive, but we cannot commit to doing the work ourselves.
 
 .. _`NaCl`: https://nacl.cr.yp.to/
 .. _`PyNaCl`: https://pynacl.readthedocs.io
-.. _`WSGIApplicationGroup`: https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIApplicationGroup.html
 .. _`issue`: https://github.com/pyca/cryptography/issues
 .. _`memory safety`: https://alexgaynor.net/2019/aug/12/introduction-to-memory-unsafety-for-vps-of-engineering/
 .. _`building .zip archives for Lambda`: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html

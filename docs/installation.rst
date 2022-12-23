@@ -111,7 +111,7 @@ Alpine
 
 .. code-block:: console
 
-    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo
+    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo pkgconfig
 
 If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
@@ -128,7 +128,7 @@ Debian/Ubuntu
 .. code-block:: console
 
     $ sudo apt-get install build-essential libssl-dev libffi-dev \
-        python3-dev cargo
+        python3-dev cargo pkg-config
 
 Fedora/RHEL/CentOS
 ~~~~~~~~~~~~~~~~~~
@@ -143,7 +143,7 @@ Fedora/RHEL/CentOS
 .. code-block:: console
 
     $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
-        openssl-devel cargo
+        openssl-devel cargo pkg-config
 
 
 Building
