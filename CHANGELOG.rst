@@ -27,6 +27,13 @@ Changelog
   PKCS7 has been removed.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.10 and 10.11, macOS
   users must upgrade to 10.12 or newer.
+* **ANNOUNCEMENT:** The next version of ``cryptography`` (40.0) will change
+  the way we link OpenSSL. This will only impact users who build
+  ``cryptography`` from source (i.e., not from a ``wheel``), and specify their
+  own version of OpenSSL. For those users, the ``CFLAGS``, ``LDFLAGS``,
+  ``INCLUDE``, ``LIB``, and ``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS`` environment
+  variables will not longer be respected. Instead, users will need to
+  configure their builds `as documented here`_.
 * Added support for
   :ref:`disabling the legacy provider in OpenSSL 3.0.x<legacy-provider>`.
 * Added support for disabling RSA key validation checks when loading RSA
@@ -2094,5 +2101,6 @@ Changelog
 
 * Initial release.
 
+.. _`as documented here`: https://docs.rs/openssl/latest/openssl/#automatic
 .. _`main`: https://github.com/pyca/cryptography/
 .. _`cffi`: https://cffi.readthedocs.io/
