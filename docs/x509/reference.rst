@@ -150,6 +150,7 @@ Loading Certificates
 ~~~~~~~~~~~~~~~~~~~~
 
 .. function:: load_pem_x509_certificate(data)
+    :canonical: cryptography.x509.base.load_pem_x509_certificate
 
     .. versionadded:: 0.7
 
@@ -169,6 +170,7 @@ Loading Certificates
         2
 
 .. function:: load_pem_x509_certificates(data)
+    :canonical: cryptography.x509.base.load_pem_x509_certificates
 
     .. versionadded:: 39.0
 
@@ -185,6 +187,7 @@ Loading Certificates
         certificate is malformed.
 
 .. function:: load_der_x509_certificate(data)
+    :canonical: cryptography.x509.base.load_der_x509_certificate
 
     .. versionadded:: 0.7
 
@@ -200,6 +203,7 @@ Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: load_pem_x509_crl(data)
+    :canonical: cryptography.x509.base.load_pem_x509_crl
 
     .. versionadded:: 1.1
 
@@ -221,6 +225,7 @@ Loading Certificate Revocation Lists
         True
 
 .. function:: load_der_x509_crl(data)
+    :canonical: cryptography.x509.base.load_der_x509_crl
 
     .. versionadded:: 1.1
 
@@ -236,6 +241,7 @@ Loading Certificate Signing Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. function:: load_pem_x509_csr(data)
+    :canonical: cryptography.x509.base.load_pem_x509_csr
 
     .. versionadded:: 0.9
 
@@ -258,6 +264,7 @@ Loading Certificate Signing Requests
         True
 
 .. function:: load_der_x509_csr(data)
+    :canonical: cryptography.x509.base.load_der_x509_csr
 
     .. versionadded:: 0.9
 
@@ -273,6 +280,7 @@ X.509 Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: Certificate
+    :canonical: cryptography.x509.base.Certificate
 
     .. versionadded:: 0.7
 
@@ -517,6 +525,7 @@ X.509 CRL (Certificate Revocation List) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CertificateRevocationList
+    :canonical: cryptography.x509.base.CertificateRevocationList
 
     .. versionadded:: 1.0
 
@@ -679,6 +688,7 @@ X.509 Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CertificateBuilder
+    :canonical: cryptography.x509.base.CertificateBuilder
 
     .. versionadded:: 1.0
 
@@ -823,6 +833,7 @@ X.509 CSR (Certificate Signing Request) Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CertificateSigningRequest
+    :canonical: cryptography.x509.base.CertificateSigningRequest
 
     .. versionadded:: 0.9
 
@@ -943,6 +954,7 @@ X.509 Certificate Revocation List Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CertificateRevocationListBuilder
+    :canonical: cryptography.x509.base.CertificateRevocationListBuilder
 
     .. versionadded:: 1.2
 
@@ -1051,6 +1063,7 @@ X.509 Revoked Certificate Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: RevokedCertificate
+    :canonical: cryptography.x509.base.RevokedCertificate
 
     .. versionadded:: 1.0
 
@@ -1093,6 +1106,7 @@ X.509 Revoked Certificate Builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: RevokedCertificateBuilder
+    :canonical: cryptography.x509.base.RevokedCertificateBuilder
 
     This class is used to create :class:`~cryptography.x509.RevokedCertificate`
     objects that can be used with the
@@ -1145,6 +1159,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: CertificateSigningRequestBuilder
+    :canonical: cryptography.x509.base.CertificateSigningRequestBuilder
 
     .. versionadded:: 1.0
 
@@ -1228,6 +1243,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
 
 .. class:: Name
+    :canonical: cryptography.x509.name.Name
 
     .. versionadded:: 0.8
 
@@ -1342,6 +1358,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
 
 .. class:: Version
+    :canonical: cryptography.x509.base.Version
 
     .. versionadded:: 0.7
 
@@ -1356,6 +1373,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         For version 3 X.509 certificates.
 
 .. class:: NameAttribute
+    :canonical: cryptography.x509.name.NameAttribute
 
     .. versionadded:: 0.8
 
@@ -1401,6 +1419,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
 
 .. class:: RelativeDistinguishedName(attributes)
+    :canonical: cryptography.x509.name.RelativeDistinguishedName
 
     .. versionadded:: 1.6
 
@@ -1433,6 +1452,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
 
 .. class:: ObjectIdentifier
+    :canonical: ObjectIdentifier
 
     .. versionadded:: 0.8
 
@@ -1452,6 +1472,7 @@ General Name Classes
 ~~~~~~~~~~~~~~~~~~~~
 
 .. class:: GeneralName
+    :canonical: cryptography.x509.general_name.GeneralName
 
     .. versionadded:: 0.9
 
@@ -1459,6 +1480,7 @@ General Name Classes
     against.
 
 .. class:: RFC822Name(value)
+    :canonical: cryptography.x509.general_name.RFC822Name
 
     .. versionadded:: 0.9
 
@@ -1480,6 +1502,7 @@ General Name Classes
         :type: str
 
 .. class:: DNSName(value)
+    :canonical: cryptography.x509.general_name.DNSName
 
     .. versionadded:: 0.9
 
@@ -1503,6 +1526,7 @@ General Name Classes
         :type: str
 
 .. class:: DirectoryName(value)
+    :canonical: cryptography.x509.general_name.DirectoryName
 
     .. versionadded:: 0.9
 
@@ -1513,6 +1537,7 @@ General Name Classes
         :type: :class:`Name`
 
 .. class:: UniformResourceIdentifier(value)
+    :canonical: cryptography.x509.general_name.UniformResourceIdentifier
 
     .. versionadded:: 0.9
 
@@ -1535,6 +1560,7 @@ General Name Classes
         :type: str
 
 .. class:: IPAddress(value)
+    :canonical: cryptography.x509.general_name.IPAddress
 
     .. versionadded:: 0.9
 
@@ -1547,6 +1573,7 @@ General Name Classes
             or :class:`~ipaddress.IPv6Network`.
 
 .. class:: RegisteredID(value)
+    :canonical: cryptography.x509.general_name.RegisteredID
 
     .. versionadded:: 0.9
 
@@ -1557,6 +1584,7 @@ General Name Classes
         :type: :class:`ObjectIdentifier`
 
 .. class:: OtherName(type_id, value)
+    :canonical: cryptography.x509.general_name.OtherName
 
     .. versionadded:: 1.0
 
@@ -1574,6 +1602,7 @@ X.509 Extensions
 ~~~~~~~~~~~~~~~~
 
 .. class:: Extensions
+    :canonical: cryptography.x509.extensions.Extensions
 
     .. versionadded:: 0.9
 
@@ -1613,6 +1642,7 @@ X.509 Extensions
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
 .. class:: Extension
+    :canonical: cryptography.x509.extensions.Extension
 
     .. versionadded:: 0.9
 
@@ -1636,6 +1666,7 @@ X.509 Extensions
         Returns an instance of the extension type corresponding to the OID.
 
 .. class:: ExtensionType
+    :canonical: cryptography.x509.extensions.ExtensionType
 
     .. versionadded:: 1.0
 
@@ -1657,6 +1688,7 @@ X.509 Extensions
             A bytes string representing the extension's DER encoded value.
 
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
+    :canonical: cryptography.x509.extensions.KeyUsage
 
     .. versionadded:: 0.9
 
@@ -1756,6 +1788,7 @@ X.509 Extensions
 
 
 .. class:: BasicConstraints(ca, path_length)
+    :canonical: cryptography.x509.extensions.BasicConstraints
 
     .. versionadded:: 0.9
 
@@ -1791,6 +1824,7 @@ X.509 Extensions
         is not allowed to create subordinates with ``ca`` set to true.
 
 .. class:: ExtendedKeyUsage(usages)
+    :canonical: cryptography.x509.extensions.ExtendedKeyusage
 
     .. versionadded:: 0.9
 
@@ -1813,6 +1847,7 @@ X.509 Extensions
 
 
 .. class:: OCSPNoCheck()
+    :canonical: cryptography.x509.extensions.OCSPNoCheck
 
     .. versionadded:: 1.0
 
@@ -1835,6 +1870,7 @@ X.509 Extensions
 
 
 .. class:: TLSFeature(features)
+    :canonical: cryptography.x509.extensions.TLSFeature
 
     .. versionadded:: 2.1
 
@@ -1853,6 +1889,7 @@ X.509 Extensions
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.TLS_FEATURE`.
 
 .. class:: TLSFeatureType
+    :canonical: cryptography.x509.extensions.TLSFeatureType
 
     .. versionadded:: 2.1
 
@@ -1873,6 +1910,7 @@ X.509 Extensions
 
 
 .. class:: NameConstraints(permitted_subtrees, excluded_subtrees)
+    :canonical: cryptography.x509.extensions.NameConstraints
 
     .. versionadded:: 1.0
 
@@ -1907,6 +1945,7 @@ X.509 Extensions
         ``excluded_subtrees`` will be non-None.
 
 .. class:: AuthorityKeyIdentifier(key_identifier, authority_cert_issuer, authority_cert_serial_number)
+    :canonical: cryptography.x509.extensions.AuthorityKeyIdentifier
 
     .. versionadded:: 0.9
 
@@ -2012,6 +2051,7 @@ X.509 Extensions
             <AuthorityKeyIdentifier(key_identifier=b'X\x01\x84$\x1b\xbc+R\x94J=\xa5\x10r\x14Q\xf5\xaf:\xc9', authority_cert_issuer=None, authority_cert_serial_number=None)>
 
 .. class:: SubjectKeyIdentifier(digest)
+    :canonical: cryptography.x509.extensions.SubjectKeyIdentifier
 
     .. versionadded:: 0.9
 
@@ -2066,6 +2106,7 @@ X.509 Extensions
             <SubjectKeyIdentifier(digest=b'\x8c"\x98\xe2\xb5\xbf]\xe8*2\xf8\xd2\'?\x00\xd2\xc7#\xe4c')>
 
 .. class:: SubjectAlternativeName(general_names)
+    :canonical: cryptography.x509.extensions.SubjectAlternativeName
 
     .. versionadded:: 0.9
 
@@ -2106,6 +2147,7 @@ X.509 Extensions
 
 
 .. class:: IssuerAlternativeName(general_names)
+    :canonical: cryptography.x509.extensions.IssuerAlternativeName
 
     .. versionadded:: 1.0
 
@@ -2134,6 +2176,7 @@ X.509 Extensions
 
 
 .. class:: PrecertificateSignedCertificateTimestamps(scts)
+    :canonical: cryptography.x509.extensions.PrecertificateSignedCertificateTimestamps
 
     .. versionadded:: 2.0
 
@@ -2160,6 +2203,7 @@ X.509 Extensions
 
 
 .. class:: PrecertPoison()
+    :canonical: cryptography.x509.extensions.PrecertPoison
 
     .. versionadded:: 2.4
 
@@ -2177,6 +2221,7 @@ X.509 Extensions
 
 
 .. class:: SignedCertificateTimestamps(scts)
+    :canonical: cryptography.x509.extensions.SignedCertificateTimestamps
 
     .. versionadded:: 3.0
 
@@ -2204,6 +2249,7 @@ X.509 Extensions
 
 
 .. class:: DeltaCRLIndicator(crl_number)
+    :canonical: cryptography.x509.extensions.DeltaCRLIndicator
 
     .. versionadded:: 2.1
 
@@ -2228,6 +2274,7 @@ X.509 Extensions
 
 
 .. class:: AuthorityInformationAccess(descriptions)
+    :canonical: cryptography.x509.extensions.AuthorityInformationAccess
 
     .. versionadded:: 0.9
 
@@ -2251,6 +2298,7 @@ X.509 Extensions
 
 
 .. class:: SubjectInformationAccess(descriptions)
+    :canonical: cryptography.x509.extensions.SubjectInformationAccess
 
     .. versionadded:: 3.0
 
@@ -2274,6 +2322,7 @@ X.509 Extensions
 
 
 .. class:: AccessDescription(access_method, access_location)
+    :canonical: cryptography.x509.extensions.AccessDescription
 
     .. versionadded:: 0.9
 
@@ -2307,6 +2356,7 @@ X.509 Extensions
         Where to access the information defined by the access method.
 
 .. class:: FreshestCRL(distribution_points)
+    :canonical: cryptography.x509.extensions.FreshestCRL
 
     .. versionadded:: 2.1
 
@@ -2325,6 +2375,7 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.FRESHEST_CRL`.
 
 .. class:: CRLDistributionPoints(distribution_points)
+    :canonical: cryptography.x509.extensions.CRLDistributionPoints
 
     .. versionadded:: 0.9
 
@@ -2345,6 +2396,7 @@ X.509 Extensions
         :attr:`~cryptography.x509.oid.ExtensionOID.CRL_DISTRIBUTION_POINTS`.
 
 .. class:: DistributionPoint(full_name, relative_name, reasons, crl_issuer)
+    :canonical: cryptography.x509.extensions.DistributionPoint
 
     .. versionadded:: 0.9
 
@@ -2380,6 +2432,7 @@ X.509 Extensions
         revocation checks.
 
 .. class:: ReasonFlags
+    :canonical: cryptography.x509.extensions.ReasonFlags
 
     .. versionadded:: 0.9
 
@@ -2432,6 +2485,7 @@ X.509 Extensions
         in a :class:`DistributionPoint`.
 
 .. class:: InhibitAnyPolicy(skip_certs)
+    :canonical: cryptography.x509.extensions.InhibitAnyPolicy
 
     .. versionadded:: 1.0
 
@@ -2461,6 +2515,7 @@ X.509 Extensions
         :type: int
 
 .. class:: PolicyConstraints
+    :canonical: cryptography.x509.extensions.PolicyConstraints
 
     .. versionadded:: 1.3
 
@@ -2499,6 +2554,7 @@ X.509 Extensions
         certificate, but not in additional certificates in the chain.
 
 .. class:: CRLNumber(crl_number)
+    :canonical: cryptography.x509.extensions.CRLNumber
 
     .. versionadded:: 1.2
 
@@ -2521,6 +2577,7 @@ X.509 Extensions
 .. class:: IssuingDistributionPoint(full_name, relative_name,\
            only_contains_user_certs, only_contains_ca_certs, only_some_reasons,\
            indirect_crl, only_contains_attribute_certs)
+    :canonical: cryptography.x509.extensions.IssuingDistributionPoint
 
     .. versionadded:: 2.5
 
@@ -2590,6 +2647,7 @@ X.509 Extensions
         non-None.
 
 .. class:: UnrecognizedExtension
+    :canonical: cryptography.x509.extensions.UnrecognizedExtension
 
     .. versionadded:: 1.2
 
@@ -2611,6 +2669,7 @@ X.509 Extensions
         Returns the DER encoded bytes payload of the extension.
 
 .. class:: CertificatePolicies(policies)
+    :canonical: cryptography.x509.extensions.CertificatePolicies
 
     .. versionadded:: 0.9
 
@@ -2646,6 +2705,7 @@ Certificate Policies Classes
 These classes may be present within a :class:`CertificatePolicies` instance.
 
 .. class:: PolicyInformation(policy_identifier, policy_qualifiers)
+    :canonical: cryptography.x509.extensions.PolicyInformation
 
     .. versionadded:: 0.9
 
@@ -2665,6 +2725,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         display to the relying party when the certificate is used.
 
 .. class:: UserNotice(notice_reference, explicit_text)
+    :canonical: cryptography.x509.extensions.UserNotice
 
     .. versionadded:: 0.9
 
@@ -2687,6 +2748,7 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         :type: str
 
 .. class:: NoticeReference(organization, notice_numbers)
+    :canonical: cryptography.x509.extensions.NoticeReference
 
     Notice reference can name an organization and provide information about
     notices related to the certificate. For example, it might identify the
@@ -2715,6 +2777,7 @@ CRL Entry Extensions
 These extensions are only valid within a :class:`RevokedCertificate` object.
 
 .. class:: CertificateIssuer(general_names)
+    :canonical: cryptography.x509.extensions.CertificateIssuer
 
     .. versionadded:: 1.2
 
@@ -2743,6 +2806,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
             The type of the returned values depends on the :class:`GeneralName`.
 
 .. class:: CRLReason(reason)
+    :canonical: cryptography.x509.extensions.CRLReason
 
     .. versionadded:: 1.2
 
@@ -2764,6 +2828,7 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
         :type: An element from :class:`~cryptography.x509.ReasonFlags`
 
 .. class:: InvalidityDate(invalidity_date)
+    :canonical: cryptography.x509.extensions.InvalidityDate
 
     .. versionadded:: 1.2
 
@@ -2792,6 +2857,7 @@ OCSP Extensions
 ~~~~~~~~~~~~~~~
 
 .. class:: OCSPNonce(nonce)
+    :canonical: cryptography.x509.extensions.OCSPNonce
 
     .. versionadded:: 2.4
 
@@ -2817,6 +2883,7 @@ X.509 Request Attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: Attributes
+    :canonical: cryptography.x509.base.Attributes
 
     .. versionadded:: 36.0
 
@@ -2837,6 +2904,7 @@ X.509 Request Attributes
 
 
 .. class:: Attribute
+    :canonical: cryptography.x509.base.Attribute
 
     .. versionadded:: 36.0
 
@@ -2863,6 +2931,7 @@ instances. The following common OIDs are available as constants.
 .. currentmodule:: cryptography.x509.oid
 
 .. class:: NameOID
+    :canonical: cryptography.hazmat._oid.NameOID
 
     These OIDs are typically seen in X.509 names.
 
@@ -2990,6 +3059,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: SignatureAlgorithmOID
+    :canonical: cryptography.hazmat._oid.SignatureAlgorithmOID
 
     .. versionadded:: 1.0
 
@@ -3142,6 +3212,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: ExtendedKeyUsageOID
+    :canonical: cryptography.hazmat._oid.ExtendedKeyUsageOID
 
     .. versionadded:: 1.0
 
@@ -3226,6 +3297,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: AuthorityInformationAccessOID
+    :canonical: cryptography.hazmat._oid.AuthorityInformationAccessOID
 
     .. versionadded:: 1.0
 
@@ -3243,6 +3315,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: SubjectInformationAccessOID
+    :canonical: cryptography.hazmat._oid.SubjectInformationAccessOID
 
     .. versionadded:: 3.0
 
@@ -3254,6 +3327,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: CertificatePoliciesOID
+    :canonical: cryptography.hazmat._oid.CertificatePoliciesOID
 
     .. versionadded:: 1.0
 
@@ -3271,6 +3345,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: ExtensionOID
+    :canonical: cryptography.hazmat._oid.ExtensionOID
 
     .. versionadded:: 1.0
 
@@ -3413,6 +3488,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: CRLEntryExtensionOID
+    :canonical: cryptography.hazmat._oid.CRLEntryExtensionOID
 
     .. versionadded:: 1.2
 
@@ -3430,6 +3506,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: OCSPExtensionOID
+    :canonical: cryptography.hazmat._oid.OCSPExtensionOID
 
     .. versionadded:: 2.4
 
@@ -3439,6 +3516,7 @@ instances. The following common OIDs are available as constants.
 
 
 .. class:: AttributeOID
+    :canonical: cryptography.hazmat._oid.AttributeOID
 
     .. versionadded:: 3.0
 
@@ -3455,6 +3533,7 @@ Helper Functions
 .. currentmodule:: cryptography.x509
 
 .. function:: random_serial_number()
+    :canonical: cryptography.x509.base.random_serial_number
 
     .. versionadded:: 1.6
 
@@ -3466,6 +3545,7 @@ Exceptions
 .. currentmodule:: cryptography.x509
 
 .. class:: InvalidVersion
+    :canonical: cryptography.x509.base.InvalidVersion
 
     This is raised when an X.509 certificate has an invalid version number.
 
@@ -3476,6 +3556,7 @@ Exceptions
         Returns the raw version that was parsed from the certificate.
 
 .. class:: DuplicateExtension
+    :canonical: cryptography.x509.extensions.DuplicateExtension
 
     This is raised when more than one X.509 extension of the same type is
     found within a certificate.
@@ -3487,6 +3568,7 @@ Exceptions
         Returns the OID.
 
 .. class:: ExtensionNotFound
+    :canonical: cryptography.x509.extensions.ExtensionNotFound
 
     This is raised when calling :meth:`Extensions.get_extension_for_oid` with
     an extension OID that is not present in the certificate.
@@ -3498,6 +3580,7 @@ Exceptions
         Returns the OID.
 
 .. class:: AttributeNotFound
+    :canonical: cryptography.x509.base.AttributeNotFound
 
     This is raised when calling
     :meth:`Attributes.get_attribute_for_oid` with
@@ -3510,6 +3593,7 @@ Exceptions
         Returns the OID.
 
 .. class:: UnsupportedGeneralNameType
+    :canonical: cryptography.x509.general_name.UnsupportedGeneralNameType
 
     This is raised when a certificate contains an unsupported general name
     type in an extension.

@@ -644,6 +644,7 @@ file suffix.
         instances.
 
 .. class:: PBES
+    :canonical: cryptography.hazmat.primitives._serialization.PBES
 
     .. versionadded:: 38.0.0
 
@@ -866,6 +867,7 @@ Serialization Formats
 .. currentmodule:: cryptography.hazmat.primitives.serialization
 
 .. class:: PrivateFormat
+    :canonical: cryptography.hazmat.primitives._serialization.PrivateFormat
 
     .. versionadded:: 0.8
 
@@ -1052,6 +1054,7 @@ Serialization Encodings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: Encoding
+    :canonical: cryptography.hazmat.primitives._serialization.Encoding
 
     An enumeration for encoding types. Used with the ``private_bytes`` method
     available on
@@ -1112,6 +1115,7 @@ Serialization Encryption Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: KeySerializationEncryption
+    :canonical: cryptography.hazmat.primitives._serialization.KeySerializationEncryption
 
     Objects with this interface are usable as encryption types with methods
     like ``private_bytes`` available on
@@ -1125,6 +1129,7 @@ Serialization Encryption Types
     encryption and have this interface.
 
 .. class:: BestAvailableEncryption(password)
+    :canonical: cryptography.hazmat.primitives._serialization.BestAvailableEncryption
 
     Encrypt using the best available encryption for a given key.
     This is a curated encryption choice and the algorithm may change over
@@ -1134,6 +1139,7 @@ Serialization Encryption Types
     :param bytes password: The password to use for encryption.
 
 .. class:: NoEncryption
+    :canonical: cryptography.hazmat.primitives._serialization.NoEncryption
 
     Do not encrypt.
 
