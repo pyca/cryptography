@@ -35,6 +35,10 @@ from ...utils import (
     raises_unsupported_algorithm,
 )
 from .fixtures_rsa import (
+    RSA_KEY_512,
+    RSA_KEY_522,
+    RSA_KEY_599,
+    RSA_KEY_745,
     RSA_KEY_1024,
     RSA_KEY_1025,
     RSA_KEY_1026,
@@ -46,10 +50,6 @@ from .fixtures_rsa import (
     RSA_KEY_1536,
     RSA_KEY_2048,
     RSA_KEY_2048_ALT,
-    RSA_KEY_512,
-    RSA_KEY_522,
-    RSA_KEY_599,
-    RSA_KEY_745,
     RSA_KEY_CORRUPTED,
 )
 from .utils import (

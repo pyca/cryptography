@@ -30,14 +30,14 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey,
     _EllipticCurvePublicKey,
 )
-from cryptography.hazmat.backends.openssl.ed25519 import (
-    _Ed25519PrivateKey,
-    _Ed25519PublicKey,
-)
 from cryptography.hazmat.backends.openssl.ed448 import (
     _ED448_KEY_SIZE,
     _Ed448PrivateKey,
     _Ed448PublicKey,
+)
+from cryptography.hazmat.backends.openssl.ed25519 import (
+    _Ed25519PrivateKey,
+    _Ed25519PublicKey,
 )
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
@@ -49,13 +49,13 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
     _RSAPublicKey,
 )
-from cryptography.hazmat.backends.openssl.x25519 import (
-    _X25519PrivateKey,
-    _X25519PublicKey,
-)
 from cryptography.hazmat.backends.openssl.x448 import (
     _X448PrivateKey,
     _X448PublicKey,
+)
+from cryptography.hazmat.backends.openssl.x25519 import (
+    _X25519PrivateKey,
+    _X25519PublicKey,
 )
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.bindings.openssl import binding
@@ -65,11 +65,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     dh,
     dsa,
     ec,
-    ed25519,
     ed448,
+    ed25519,
     rsa,
-    x25519,
     x448,
+    x25519,
 )
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
