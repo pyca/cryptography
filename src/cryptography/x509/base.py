@@ -14,11 +14,11 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
-    ed25519,
     ed448,
+    ed25519,
     rsa,
-    x25519,
     x448,
+    x25519,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
     CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,

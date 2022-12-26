@@ -33,7 +33,7 @@ from ...utils import (
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
-from ..primitives.fixtures_rsa import RSA_KEY_2048, RSA_KEY_512
+from ..primitives.fixtures_rsa import RSA_KEY_512, RSA_KEY_2048
 
 
 def skip_if_libre_ssl(openssl_version):
