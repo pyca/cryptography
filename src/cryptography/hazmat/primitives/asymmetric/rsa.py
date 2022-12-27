@@ -19,7 +19,8 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         Decrypts the provided ciphertext.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the public modulus.
@@ -70,7 +71,8 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         Encrypts the given plaintext.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the public modulus.

@@ -35,13 +35,15 @@ class EllipticCurveOID:
 
 
 class EllipticCurve(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self) -> str:
         """
         The name of the curve. e.g. secp256r1.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.
@@ -49,7 +51,8 @@ class EllipticCurve(metaclass=abc.ABCMeta):
 
 
 class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def algorithm(
         self,
     ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
@@ -74,13 +77,15 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         The EllipticCurvePublicKey for this private key.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def curve(self) -> EllipticCurve:
         """
         The EllipticCurve that this key is on.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.
@@ -118,13 +123,15 @@ EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
 
 
 class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def curve(self) -> EllipticCurve:
         """
         The EllipticCurve that this key is on.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         Bit size of a secret scalar for the curve.

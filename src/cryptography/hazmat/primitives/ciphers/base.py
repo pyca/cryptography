@@ -60,7 +60,8 @@ class AEADDecryptionContext(AEADCipherContext, metaclass=abc.ABCMeta):
 
 
 class AEADEncryptionContext(AEADCipherContext, metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def tag(self) -> bytes:
         """
         Returns tag bytes. This is only available after encryption is
