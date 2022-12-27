@@ -149,7 +149,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 
         A keyword-only argument that defaults to ``False``. If ``True``
         RSA private keys will not be validated. This significantly speeds up
-        loading the keys, but is is :term:`unsafe` unless you are certain the
+        loading the keys, but is :term:`unsafe` unless you are certain the
         key is valid. User supplied keys should never be loaded with this
         parameter set to ``True``. If you do load an invalid key this way and
         attempt to use it OpenSSL may hang, crash, or otherwise misbehave.
@@ -267,7 +267,7 @@ the rest.
 
         A keyword-only argument that defaults to ``False``. If ``True``
         RSA private keys will not be validated. This significantly speeds up
-        loading the keys, but is is :term:`unsafe` unless you are certain the
+        loading the keys, but is :term:`unsafe` unless you are certain the
         key is valid. User supplied keys should never be loaded with this
         parameter set to ``True``. If you do load an invalid key this way and
         attempt to use it OpenSSL may hang, crash, or otherwise misbehave.

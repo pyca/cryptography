@@ -56,7 +56,7 @@ class HOTP:
             raise TypeError("Length parameter must be an integer type.")
 
         if length < 6 or length > 8:
-            raise ValueError("Length of HOTP has to be between 6 to 8.")
+            raise ValueError("Length of HOTP has to be between 6 and 8.")
 
         if not isinstance(algorithm, (SHA1, SHA256, SHA512)):
             raise TypeError("Algorithm must be SHA1, SHA256 or SHA512.")
