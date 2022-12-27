@@ -24,7 +24,8 @@ class UnsupportedGeneralNameType(Exception):
 
 
 class GeneralName(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def value(self) -> typing.Any:
         """
         Return the value of the object

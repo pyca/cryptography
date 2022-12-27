@@ -28,7 +28,8 @@ DSAParametersWithNumbers = DSAParameters
 
 
 class DSAPrivateKey(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the prime modulus.
@@ -78,7 +79,8 @@ DSAPrivateKeyWithSerialization = DSAPrivateKey
 
 
 class DSAPublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the prime modulus.

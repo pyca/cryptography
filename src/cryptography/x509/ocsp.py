@@ -127,25 +127,29 @@ class _SingleResponse:
 
 
 class OCSPRequest(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_key_hash(self) -> bytes:
         """
         The hash of the issuer public key
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_name_hash(self) -> bytes:
         """
         The hash of the issuer name
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def hash_algorithm(self) -> hashes.HashAlgorithm:
         """
         The hash algorithm used in the issuer name and key hashes
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def serial_number(self) -> int:
         """
         The serial number of the cert whose status is being checked
@@ -157,7 +161,8 @@ class OCSPRequest(metaclass=abc.ABCMeta):
         Serializes the request to DER
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def extensions(self) -> x509.Extensions:
         """
         The list of request extensions. Not single request extensions.
@@ -165,58 +170,67 @@ class OCSPRequest(metaclass=abc.ABCMeta):
 
 
 class OCSPSingleResponse(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def certificate_status(self) -> OCSPCertStatus:
         """
         The status of the certificate (an element from the OCSPCertStatus enum)
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def revocation_time(self) -> typing.Optional[datetime.datetime]:
         """
         The date of when the certificate was revoked or None if not
         revoked.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def revocation_reason(self) -> typing.Optional[x509.ReasonFlags]:
         """
         The reason the certificate was revoked or None if not specified or
         not revoked.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def this_update(self) -> datetime.datetime:
         """
         The most recent time at which the status being indicated is known by
         the responder to have been correct
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def next_update(self) -> typing.Optional[datetime.datetime]:
         """
         The time when newer information will be available
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_key_hash(self) -> bytes:
         """
         The hash of the issuer public key
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_name_hash(self) -> bytes:
         """
         The hash of the issuer name
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def hash_algorithm(self) -> hashes.HashAlgorithm:
         """
         The hash algorithm used in the issuer name and key hashes
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def serial_number(self) -> int:
         """
         The serial number of the cert whose status is being checked
@@ -224,27 +238,31 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
 
 class OCSPResponse(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def responses(self) -> typing.Iterator[OCSPSingleResponse]:
         """
         An iterator over the individual SINGLERESP structures in the
         response
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def response_status(self) -> OCSPResponseStatus:
         """
         The status of the response. This is a value from the OCSPResponseStatus
         enumeration
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def signature_algorithm_oid(self) -> x509.ObjectIdentifier:
         """
         The ObjectIdentifier of the signature algorithm
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def signature_hash_algorithm(
         self,
     ) -> typing.Optional[hashes.HashAlgorithm]:
@@ -252,19 +270,22 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         Returns a HashAlgorithm corresponding to the type of the digest signed
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def signature(self) -> bytes:
         """
         The signature bytes
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def tbs_response_bytes(self) -> bytes:
         """
         The tbsResponseData bytes
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def certificates(self) -> typing.List[x509.Certificate]:
         """
         A list of certificates used to help build a chain to verify the OCSP
@@ -272,88 +293,102 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         certificate.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def responder_key_hash(self) -> typing.Optional[bytes]:
         """
         The responder's key hash or None
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def responder_name(self) -> typing.Optional[x509.Name]:
         """
         The responder's Name or None
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def produced_at(self) -> datetime.datetime:
         """
         The time the response was produced
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def certificate_status(self) -> OCSPCertStatus:
         """
         The status of the certificate (an element from the OCSPCertStatus enum)
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def revocation_time(self) -> typing.Optional[datetime.datetime]:
         """
         The date of when the certificate was revoked or None if not
         revoked.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def revocation_reason(self) -> typing.Optional[x509.ReasonFlags]:
         """
         The reason the certificate was revoked or None if not specified or
         not revoked.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def this_update(self) -> datetime.datetime:
         """
         The most recent time at which the status being indicated is known by
         the responder to have been correct
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def next_update(self) -> typing.Optional[datetime.datetime]:
         """
         The time when newer information will be available
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_key_hash(self) -> bytes:
         """
         The hash of the issuer public key
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def issuer_name_hash(self) -> bytes:
         """
         The hash of the issuer name
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def hash_algorithm(self) -> hashes.HashAlgorithm:
         """
         The hash algorithm used in the issuer name and key hashes
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def serial_number(self) -> int:
         """
         The serial number of the cert whose status is being checked
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def extensions(self) -> x509.Extensions:
         """
         The list of response extensions. Not single response extensions.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def single_extensions(self) -> x509.Extensions:
         """
         The list of single response extensions. Not response extensions.
