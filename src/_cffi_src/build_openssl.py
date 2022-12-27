@@ -33,7 +33,7 @@ def _get_openssl_libraries(platform):
         # libssl must come before libcrypto
         # (https://marc.info/?l=openssl-users&m=135361825921871)
         # -lpthread required due to usage of pthread an potential
-        # existance of a static part containing e.g. pthread_atfork
+        # existence of a static part containing e.g. pthread_atfork
         # (https://github.com/pyca/cryptography/issues/5084)
         if sys.platform == "zos":
             return ["ssl", "crypto"]

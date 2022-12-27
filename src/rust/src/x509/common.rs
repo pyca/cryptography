@@ -44,7 +44,7 @@ pub(crate) struct AttributeTypeValue<'a> {
     pub(crate) value: RawTlv<'a>,
 }
 
-// Like `asn1::Tlv` but doesn't store `full_data` so it can be constucted from
+// Like `asn1::Tlv` but doesn't store `full_data` so it can be constructed from
 // an un-encoded tag and value.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub(crate) struct RawTlv<'a> {
