@@ -170,7 +170,8 @@ DHParametersWithSerialization = DHParameters
 
 
 class DHPublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the prime modulus.
@@ -203,7 +204,8 @@ DHPublicKeyWithSerialization = DHPublicKey
 
 
 class DHPrivateKey(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def key_size(self) -> int:
         """
         The bit length of the prime modulus.

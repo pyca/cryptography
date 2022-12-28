@@ -10,19 +10,22 @@ from cryptography.exceptions import AlreadyFinalized
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self) -> str:
         """
         A string naming this algorithm (e.g. "sha256", "md5").
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def digest_size(self) -> int:
         """
         The size of the resulting digest in bytes.
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def block_size(self) -> typing.Optional[int]:
         """
         The internal block size of the hash function, or None if the hash
@@ -31,7 +34,8 @@ class HashAlgorithm(metaclass=abc.ABCMeta):
 
 
 class HashContext(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def algorithm(self) -> HashAlgorithm:
         """
         A HashAlgorithm that will be used by this context.
