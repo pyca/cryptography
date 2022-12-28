@@ -9,7 +9,8 @@ import abc
 
 
 class AsymmetricPadding(metaclass=abc.ABCMeta):
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self) -> str:
         """
         A string naming this padding (e.g. "PSS", "PKCS1").
