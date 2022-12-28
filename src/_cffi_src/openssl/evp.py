@@ -31,6 +31,7 @@ static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
 static const int EVP_CTRL_AEAD_SET_TAG;
 
+static const int Cryptography_HAS_EVP_PKEY_set_alias_type;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
 static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
@@ -121,6 +122,7 @@ int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
 int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
 int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
 int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
+int EVP_PKEY_set_alias_type(EVP_PKEY *, int);
 int EVP_PKEY_set_type(EVP_PKEY *, int);
 
 int EVP_PKEY_id(const EVP_PKEY *);
@@ -179,6 +181,14 @@ EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
 void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *md) {
     EVP_MD_CTX_free(md);
 }
+
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_300_OR_GREATER || \
+        CRYPTOGRAPHY_IS_BORINGSSL
+static const int Cryptography_HAS_EVP_PKEY_set_alias_type = 0;
+int (*EVP_PKEY_set_alias_type)(EVP_PKEY *, int) = NULL;
+#else
+static const int Cryptography_HAS_EVP_PKEY_set_alias_type = 1;
+#endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_SCRYPT)
 static const long Cryptography_HAS_SCRYPT = 0;

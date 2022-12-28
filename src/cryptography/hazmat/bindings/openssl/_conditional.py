@@ -42,6 +42,12 @@ def cryptography_has_tls_st() -> typing.List[str]:
     ]
 
 
+def cryptography_has_evp_pkey_set_alias_type() -> typing.List[str]:
+    return [
+        "EVP_PKEY_set_alias_type",
+    ]
+
+
 def cryptography_has_scrypt() -> typing.List[str]:
     return [
         "EVP_PBE_scrypt",
@@ -303,6 +309,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
+    "Cryptography_HAS_EVP_PKEY_set_alias_type": (
+        cryptography_has_evp_pkey_set_alias_type
+    ),
     "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
