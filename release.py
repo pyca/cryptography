@@ -7,18 +7,21 @@ import io
 import os
 import subprocess
 import time
+import typing
 import zipfile
 
 import click
 import requests
 
 
-def run(*args, **kwargs):
+def run(*args: str) -> None:
     print("[running] {0}".format(list(args)))
-    subprocess.check_call(list(args), **kwargs)
+    subprocess.check_call(list(args))
 
 
-def wait_for_build_complete_github_actions(session, token, run_url):
+def wait_for_build_complete_github_actions(
+    session: requests.Session, token: str, run_url: str
+) -> None:
     while True:
         response = session.get(
             run_url,
@@ -33,7 +36,9 @@ def wait_for_build_complete_github_actions(session, token, run_url):
         time.sleep(3)
 
 
-def download_artifacts_github_actions(session, token, run_url):
+def download_artifacts_github_actions(
+    session: requests.Session, token: str, run_url: str
+) -> typing.List[str]:
     response = session.get(
         run_url,
         headers={
@@ -76,7 +81,9 @@ def download_artifacts_github_actions(session, token, run_url):
     return paths
 
 
-def fetch_github_actions_artifacts(token, version):
+def fetch_github_actions_artifacts(
+    token: str, version: str
+) -> typing.List[str]:
     session = requests.Session()
 
     response = session.get(
@@ -90,14 +97,14 @@ def fetch_github_actions_artifacts(token, version):
         },
     )
     response.raise_for_status()
-    run_url = response.json()["workflow_runs"][0]["url"]
+    run_url: str = response.json()["workflow_runs"][0]["url"]
     wait_for_build_complete_github_actions(session, token, run_url)
     return download_artifacts_github_actions(session, token, run_url)
 
 
 @click.command()
 @click.argument("version")
-def release(version):
+def release(version: str) -> None:
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
