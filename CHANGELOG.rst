@@ -10,6 +10,8 @@ Changelog
 
 * Support for Python 3.6 is deprecated and will be removed in the next
   release.
+* Added support for parsing SSH certificates with
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_certificate`.
 
 .. _v39-0-0:
 

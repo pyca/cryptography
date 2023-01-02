@@ -4,6 +4,8 @@
 
 
 import binascii
+import datetime
+import enum
 import os
 import re
 import typing
@@ -11,7 +13,15 @@ from base64 import encodebytes as _base64_encode
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives.asymmetric import dsa, ec, ed25519, rsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    ed25519,
+    padding,
+    rsa,
+)
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
@@ -46,6 +56,11 @@ _ECDSA_NISTP256 = b"ecdsa-sha2-nistp256"
 _ECDSA_NISTP384 = b"ecdsa-sha2-nistp384"
 _ECDSA_NISTP521 = b"ecdsa-sha2-nistp521"
 _CERT_SUFFIX = b"-cert-v01@openssh.com"
+
+# These are not key types, only algorithms, so they cannot appear
+# as a public key type
+_SSH_RSA_SHA256 = b"rsa-sha2-256"
+_SSH_RSA_SHA512 = b"rsa-sha2-512"
 
 _SSH_PUBKEY_RC = re.compile(rb"\A(\S+)[ \t]+(\S+)")
 _SK_MAGIC = b"openssh-key-v1\0"
@@ -702,6 +717,262 @@ _SSH_PUBLIC_KEY_TYPES = typing.Union[
     dsa.DSAPublicKey,
     ed25519.Ed25519PublicKey,
 ]
+
+_SSH_CERT_PUBLIC_KEY_TYPES = typing.Union[
+    ec.EllipticCurvePublicKey,
+    rsa.RSAPublicKey,
+    ed25519.Ed25519PublicKey,
+]
+
+
+class SSHCertificateType(enum.Enum):
+    USER = 1
+    HOST = 2
+
+
+class SSHCertificate:
+    def __init__(
+        self,
+        _nonce: memoryview,
+        _public_key: _SSH_PUBLIC_KEY_TYPES,
+        _serial: int,
+        _cctype: int,
+        _key_id: memoryview,
+        _valid_principals: memoryview,
+        _valid_after: int,
+        _valid_before: int,
+        _critical_options: memoryview,
+        _extensions: memoryview,
+        _sig_type: memoryview,
+        _sig_key: memoryview,
+        _inner_sig_type: memoryview,
+        _signature: memoryview,
+        _tbs_cert_body: memoryview,
+        _cert_key_type: bytes,
+        _cert_body: memoryview,
+    ):
+        self._nonce = _nonce
+        self._public_key = _public_key
+        self._serial = _serial
+        try:
+            self._type = SSHCertificateType(_cctype)
+        except ValueError:
+            raise ValueError("Invalid certificate type")
+        self._key_id = _key_id
+        self._valid_principals = _valid_principals
+        self._valid_after = datetime.datetime.utcfromtimestamp(_valid_after)
+        self._valid_before = datetime.datetime.utcfromtimestamp(_valid_before)
+        self._critical_options = _critical_options
+        self._extensions = _extensions
+        self._sig_type = _sig_type
+        self._sig_key = _sig_key
+        self._inner_sig_type = _inner_sig_type
+        self._signature = _signature
+        self._cert_key_type = _cert_key_type
+        self._cert_body = _cert_body
+        self._tbs_cert_body = _tbs_cert_body
+
+    @property
+    def nonce(self) -> bytes:
+        return bytes(self._nonce)
+
+    def public_key(self) -> _SSH_CERT_PUBLIC_KEY_TYPES:
+        # make mypy happy until we remove DSA support entirely and
+        # the underlying union won't have a disallowed type
+        assert not isinstance(self._public_key, dsa.DSAPublicKey)
+        return self._public_key
+
+    @property
+    def serial(self) -> int:
+        return self._serial
+
+    @property
+    def type(self) -> SSHCertificateType:
+        return self._type
+
+    @property
+    def key_id(self) -> bytes:
+        return bytes(self._key_id)
+
+    @utils.cached_property
+    def valid_principals(self) -> typing.List[bytes]:
+        rest = self._valid_principals
+        principals = []
+        while rest:
+            principal, rest = _get_sshstr(rest)
+            principals.append(bytes(principal))
+
+        return principals
+
+    @property
+    def valid_before(self) -> datetime.datetime:
+        return self._valid_before
+
+    @property
+    def valid_after(self) -> datetime.datetime:
+        return self._valid_after
+
+    @utils.cached_property
+    def critical_options(self) -> typing.Dict[bytes, bytes]:
+        return self._parse_exts_opts(self._critical_options)
+
+    @utils.cached_property
+    def extensions(self) -> typing.Dict[bytes, bytes]:
+        return self._parse_exts_opts(self._extensions)
+
+    def _parse_exts_opts(
+        self, exts_opts: memoryview
+    ) -> typing.Dict[bytes, bytes]:
+        result: typing.Dict[bytes, bytes] = {}
+        last_name = None
+        while exts_opts:
+            name, exts_opts = _get_sshstr(exts_opts)
+            bname: bytes = bytes(name)
+            if bname in result:
+                raise ValueError("Duplicate extension name")
+            # dicts in pypy & python 3.6+ are insertion ordered so hooray
+            if last_name is not None and bname < last_name:
+                raise ValueError("Extensions not lexically sorted")
+            value, exts_opts = _get_sshstr(exts_opts)
+            result[bname] = bytes(value)
+            last_name = bname
+        return result
+
+    def signature_key(self) -> _SSH_CERT_PUBLIC_KEY_TYPES:
+        sigformat = _lookup_kformat(self._sig_type)
+        signature_key, sigkey_rest = sigformat.load_public(self._sig_key)
+        _check_empty(sigkey_rest)
+        return signature_key
+
+    def public_bytes(self) -> bytes:
+        return (
+            bytes(self._cert_key_type)
+            + b" "
+            + binascii.b2a_base64(bytes(self._cert_body), newline=False)
+        )
+
+    def verify_cert_signature(self) -> None:
+        signature_key = self.signature_key()
+        if isinstance(signature_key, ed25519.Ed25519PublicKey):
+            signature_key.verify(
+                bytes(self._signature), bytes(self._tbs_cert_body)
+            )
+        elif isinstance(signature_key, ec.EllipticCurvePublicKey):
+            # The signature is encoded as a pair of big-endian integers
+            r, data = _get_mpint(self._signature)
+            s, data = _get_mpint(data)
+            _check_empty(data)
+            computed_sig = asym_utils.encode_dss_signature(r, s)
+            hash_alg = _get_ec_hash_alg(signature_key.curve)
+            signature_key.verify(
+                computed_sig, bytes(self._tbs_cert_body), ec.ECDSA(hash_alg)
+            )
+        else:
+            assert isinstance(signature_key, rsa.RSAPublicKey)
+            if self._inner_sig_type == _SSH_RSA:
+                hash_alg = hashes.SHA1()
+            elif self._inner_sig_type == _SSH_RSA_SHA256:
+                hash_alg = hashes.SHA256()
+            else:
+                assert self._inner_sig_type == _SSH_RSA_SHA512
+                hash_alg = hashes.SHA512()
+            signature_key.verify(
+                bytes(self._signature),
+                bytes(self._tbs_cert_body),
+                padding.PKCS1v15(),
+                hash_alg,
+            )
+
+
+def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
+    hash_alg: hashes.HashAlgorithm
+    if isinstance(curve, ec.SECP256R1):
+        hash_alg = hashes.SHA256()
+    elif isinstance(curve, ec.SECP384R1):
+        hash_alg = hashes.SHA384()
+    else:
+        assert isinstance(curve, ec.SECP521R1)
+        hash_alg = hashes.SHA512()
+    return hash_alg
+
+
+def load_ssh_certificate(data: bytes) -> SSHCertificate:
+    utils._check_byteslike("data", data)
+
+    m = _SSH_PUBKEY_RC.match(data)
+    if not m:
+        raise ValueError("Invalid line format")
+    key_type = orig_key_type = m.group(1)
+    key_body = m.group(2)
+    if _CERT_SUFFIX != key_type[-len(_CERT_SUFFIX) :]:
+        raise ValueError("Not an SSH certificate")
+    else:
+        key_type = key_type[: -len(_CERT_SUFFIX)]
+    if key_type == _SSH_DSA:
+        raise UnsupportedAlgorithm(
+            "DSA keys aren't supported in SSH certificates"
+        )
+    kformat = _lookup_kformat(key_type)
+
+    try:
+        rest = memoryview(binascii.a2b_base64(key_body))
+    except (TypeError, binascii.Error):
+        raise ValueError("Invalid format")
+
+    cert_body = rest
+    inner_key_type, rest = _get_sshstr(rest)
+    if inner_key_type != orig_key_type:
+        raise ValueError("Invalid key format")
+    nonce, rest = _get_sshstr(rest)
+    public_key, rest = kformat.load_public(rest)
+    serial, rest = _get_u64(rest)
+    cctype, rest = _get_u32(rest)
+    key_id, rest = _get_sshstr(rest)
+    principals, rest = _get_sshstr(rest)
+    valid_after, rest = _get_u64(rest)
+    valid_before, rest = _get_u64(rest)
+    crit_options, rest = _get_sshstr(rest)
+    extensions, rest = _get_sshstr(rest)
+    # Get the reserved field, which is unused.
+    _, rest = _get_sshstr(rest)
+    sig_key_raw, rest = _get_sshstr(rest)
+    sig_type, sig_key = _get_sshstr(sig_key_raw)
+    if sig_type == _SSH_DSA:
+        raise UnsupportedAlgorithm(
+            "DSA signatures aren't supported in SSH certificates"
+        )
+    # Get the entire cert body and subtract the signature
+    tbs_cert_body = cert_body[: -len(rest)]
+    signature_raw, rest = _get_sshstr(rest)
+    _check_empty(rest)
+    inner_sig_type, sig_rest = _get_sshstr(signature_raw)
+    # RSA certs can have multiple algorithm types
+    if (
+        sig_type == _SSH_RSA
+        and inner_sig_type not in [_SSH_RSA_SHA256, _SSH_RSA_SHA512, _SSH_RSA]
+    ) or (sig_type != _SSH_RSA and inner_sig_type != sig_type):
+        raise ValueError("Signature key type does not match")
+    signature, sig_rest = _get_sshstr(sig_rest)
+    _check_empty(sig_rest)
+    return SSHCertificate(
+        nonce,
+        public_key,
+        serial,
+        cctype,
+        key_id,
+        principals,
+        valid_after,
+        valid_before,
+        crit_options,
+        extensions,
+        sig_type,
+        sig_key,
+        inner_sig_type,
+        signature,
+        tbs_cert_body,
+        orig_key_type,
+        cert_body,
+    )
 
 
 def load_ssh_public_key(

@@ -60,6 +60,7 @@ Google
 hazmat
 Homebrew
 hostname
+hostnames
 incrementing
 indistinguishability
 initialisms
