@@ -87,18 +87,29 @@ def fetch_github_actions_artifacts(
 ) -> typing.List[str]:
     session = requests.Session()
 
-    response = session.get(
-        (
-            f"https://api.github.com/repos/pyca/cryptography/actions"
-            f"/workflows/wheel-builder.yml/runs?event=push&branch={version}"
-        ),
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
-        },
-    )
-    response.raise_for_status()
-    run_url: str = response.json()["workflow_runs"][0]["url"]
+    workflow_runs = []
+
+    # There is a race condition where no workflow run has triggered after
+    # pushing the tag, so loop until we get the run.
+    while True:
+        response = session.get(
+            (
+                f"https://api.github.com/repos/pyca/cryptography/actions"
+                f"/workflows/wheel-builder.yml/runs?event=push&"
+                f"branch={version}"
+            ),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "token {}".format(token),
+            },
+        )
+        response.raise_for_status()
+        workflow_runs = response.json()["workflow_runs"]
+        if len(workflow_runs) > 0:
+            break
+        time.sleep(3)
+
+    run_url: str = workflow_runs[0]["url"]
     wait_for_build_complete_github_actions(session, token, run_url)
     return download_artifacts_github_actions(session, token, run_url)
 
@@ -212,7 +223,7 @@ def release(version: str) -> None:
     ``version`` should be a string like '0.4' or '1.0'.
     """
     print(
-        f"Create a new GH PAT at: "
+        f"Create a new GH PAT with only actions permissions at: "
         f"https://github.com/settings/tokens/new?"
         f"description={version}&scopes=repo"
     )
@@ -224,8 +235,10 @@ def release(version: str) -> None:
     circle_token = getpass.getpass("CircleCI token: ")
 
     # Tag and push the tag (this will trigger the wheel builder in Actions)
-    run("git", "tag", "-s", version, "-m", "{0} release".format(version))
+    run("git", "tag", "-s", version, "-m", f"{version} release")
     run("git", "push", "--tags")
+
+    os.mkdir(os.path.join(os.path.dirname(__file__), "dist"))
 
     # Wait for Actions to complete and download the wheels
     github_actions_artifact_paths = fetch_github_actions_artifacts(
