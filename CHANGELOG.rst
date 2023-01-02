@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v40-0-0:
+
+40.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+
 .. _v39-0-0:
 
 39.0.0 - 2023-01-01
