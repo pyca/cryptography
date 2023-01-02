@@ -7,6 +7,7 @@ case "${1}" in
         git rev-parse HEAD
         tools/pip_install_editable.py ./acme[test]
         tools/pip_install_editable.py ./certbot[test]
+        pip install -U pyopenssl
         ;;
     run)
         cd certbot
