@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for Python 3.6 is deprecated and will be removed in the next
+  release.
 
 .. _v39-0-0:
 

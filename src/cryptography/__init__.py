@@ -18,8 +18,7 @@ if sys.version_info[:2] == (3, 6):
     warnings.warn(
         "Python 3.6 is no longer supported by the Python core team. "
         "Therefore, support for it is deprecated in cryptography. The next "
-        "release of cryptography (40.0) will be the last to support Python "
-        "3.6.",
+        "release of cryptography will remove support for Python 3.6.",
         CryptographyDeprecationWarning,
         stacklevel=2,
     )
