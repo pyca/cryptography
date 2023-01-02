@@ -238,7 +238,7 @@ def release(version: str) -> None:
     run("git", "tag", "-s", version, "-m", f"{version} release")
     run("git", "push", "--tags")
 
-    os.mkdir(os.path.join(os.path.dirname(__file__), "dist"))
+    os.makedirs(os.path.join(os.path.dirname(__file__), "dist"), exist_ok=True)
 
     # Wait for Actions to complete and download the wheels
     github_actions_artifact_paths = fetch_github_actions_artifacts(
