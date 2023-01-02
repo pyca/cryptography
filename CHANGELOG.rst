@@ -3,10 +3,8 @@ Changelog
 
 .. _v39-0-0:
 
-39.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+39.0.0 - 2023-01-01
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.0 has been removed.
   Users on older version of OpenSSL will need to upgrade.
