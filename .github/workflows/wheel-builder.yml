@@ -172,7 +172,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -c ci-constraints-requirements.txt -U requests
       - name: Download OpenSSL
         run: |
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-universal2
@@ -255,7 +255,7 @@ jobs:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - run: pip install requests
+      - run: pip install -c ci-constraints-requirements.txt requests
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}

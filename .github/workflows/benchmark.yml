@@ -35,11 +35,13 @@ jobs:
       - name: Create virtualenv (main)
         run: |
           python -m venv .venv-main
+          # TODO: add -c ./cryptography-main/ci-constraints-requirements.txt
+          # after https://github.com/pyca/cryptography/pull/7962 is merged
           .venv-main/bin/pip install -v "./cryptography-main[test]" ./cryptography-main/vectors/
       - name: Create virtualenv (PR)
         run: |
           python -m venv .venv-pr
-          .venv-pr/bin/pip install -v "./cryptography-pr[test]" ./cryptography-main/vectors/
+          .venv-pr/bin/pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt "./cryptography-pr[test]" ./cryptography-pr/vectors/
 
       - name: Run benchmarks (main)
         run: .venv-main/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-main.json

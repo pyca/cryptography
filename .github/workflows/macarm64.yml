@@ -46,7 +46,7 @@ jobs:
       - name: Setup venv and install deps
         run: |
           $BIN_PATH -m venv venv
-          venv/bin/python -m pip install tox requests
+          venv/bin/python -m pip install -c ci-constraints-requirements.txt tox requests
         env:
           BIN_PATH: ${{ matrix.PYTHON.BIN_PATH }}
       - name: Download OpenSSL

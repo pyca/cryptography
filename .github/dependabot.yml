@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
   - package-ecosystem: cargo
     directory: "/src/rust/"
     schedule:
@@ -11,3 +12,8 @@ updates:
     allow:
       # Also update indirect dependencies
       - dependency-type: all
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: daily
