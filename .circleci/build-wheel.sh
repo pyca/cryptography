@@ -25,7 +25,7 @@ fi
 
 LDFLAGS="-L/opt/pyca/cryptography/openssl/lib" \
        CFLAGS="-I/opt/pyca/cryptography/openssl/include -Wl,--exclude-libs,ALL" \
-       ../../.venv/bin/python setup.py bdist_wheel "$PY_LIMITED_API"
+       ../../.venv/bin/python setup.py bdist_wheel $PY_LIMITED_API
 
 auditwheel repair --plat "${PLATFORM}" -w wheelhouse/ dist/cryptography*.whl
 
