@@ -84,6 +84,27 @@ _ECDSA_KEY_TYPE = {
 }
 
 
+def _get_ssh_key_type(
+    key: typing.Union["_SSH_PRIVATE_KEY_TYPES", "_SSH_PUBLIC_KEY_TYPES"]
+) -> bytes:
+    if isinstance(key, ec.EllipticCurvePrivateKey):
+        key_type = _ecdsa_key_type(key.public_key())
+    elif isinstance(key, ec.EllipticCurvePublicKey):
+        key_type = _ecdsa_key_type(key)
+    elif isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):
+        key_type = _SSH_RSA
+    elif isinstance(key, (dsa.DSAPrivateKey, dsa.DSAPublicKey)):
+        key_type = _SSH_DSA
+    elif isinstance(
+        key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)
+    ):
+        key_type = _SSH_ED25519
+    else:
+        raise ValueError("Unsupported key type")
+
+    return key_type
+
+
 def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
     """Return SSH key_type and curve_name for private key."""
     curve = public_key.curve
@@ -613,16 +634,7 @@ def _serialize_ssh_private_key(
     """Serialize private key with OpenSSH custom encoding."""
     utils._check_bytes("password", password)
 
-    if isinstance(private_key, ec.EllipticCurvePrivateKey):
-        key_type = _ecdsa_key_type(private_key.public_key())
-    elif isinstance(private_key, rsa.RSAPrivateKey):
-        key_type = _SSH_RSA
-    elif isinstance(private_key, dsa.DSAPrivateKey):
-        key_type = _SSH_DSA
-    elif isinstance(private_key, ed25519.Ed25519PrivateKey):
-        key_type = _SSH_ED25519
-    else:
-        raise ValueError("Unsupported key type")
+    key_type = _get_ssh_key_type(private_key)
     kformat = _lookup_kformat(key_type)
 
     # setup parameters
@@ -738,16 +750,7 @@ def load_ssh_public_key(
 
 def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     """One-line public key format for OpenSSH"""
-    if isinstance(public_key, ec.EllipticCurvePublicKey):
-        key_type = _ecdsa_key_type(public_key)
-    elif isinstance(public_key, rsa.RSAPublicKey):
-        key_type = _SSH_RSA
-    elif isinstance(public_key, dsa.DSAPublicKey):
-        key_type = _SSH_DSA
-    elif isinstance(public_key, ed25519.Ed25519PublicKey):
-        key_type = _SSH_ED25519
-    else:
-        raise ValueError("Unsupported key type")
+    key_type = _get_ssh_key_type(public_key)
     kformat = _lookup_kformat(key_type)
 
     f_pub = _FragList()
