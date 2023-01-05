@@ -119,7 +119,7 @@ pygments==2.14.0
     #   readme-renderer
     #   rich
     #   sphinx
-pyproject-api==1.3.0
+pyproject-api==1.4.0
     # via tox
 pytest==7.2.0; python_version >= "3.7"
     # via
