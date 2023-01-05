@@ -843,6 +843,8 @@ Custom OpenSSH Certificate Test Vectors
   ``rsa-sha2-512``.
 * ``p256-p256-empty-principals.pub`` - A certificate with a P256 public
   key signed by a P256 CA with an empty valid principals list.
+* ``p256-p256-invalid-cert-type.pub`` - A certificate with a P256 public
+  key signed by a P256 CA with an invalid certificate type.
 
 Hashes
 ~~~~~~
