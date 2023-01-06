@@ -11,6 +11,8 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
+    ed25519,
+    rsa,
 )
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
@@ -27,6 +29,7 @@ from cryptography.hazmat.primitives.serialization import (
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from .test_ec import _skip_curve_unsupported
 
 
 class TestOpenSSHSerialization:
@@ -602,3 +605,407 @@ class TestOpenSSHSerialization:
                 key.private_bytes(
                     Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
                 )
+
+
+class TestRSASSHSerialization:
+    def test_load_ssh_public_key_unsupported(self, backend):
+        ssh_key = b"ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY="
+
+        with raises_unsupported_algorithm(None):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_bad_format(self, backend):
+        ssh_key = b"ssh-rsa not-a-real-key"
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_too_short(self, backend):
+        ssh_key = b"ssh-rsa"
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_truncated_int(self, backend):
+        ssh_key = b"ssh-rsa AAAAB3NzaC1yc2EAAAA="
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+        ssh_key = b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAACKr+IHXo"
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_comment_with_spaces(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            # Extra section appended
+            b"2MzHvnbv testkey@localhost extra"
+        )
+
+        load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_extra_data_after_modulo(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbvAQ== testkey@localhost"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-rsa inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-rsa AAAAB3NzAC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbvAQ== testkey@localhost"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_rsa(self, backend):
+        ssh_key = (
+            b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
+            b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
+            b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
+            b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
+            b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
+            b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
+            b"2MzHvnbv testkey@localhost"
+        )
+
+        key = load_ssh_public_key(ssh_key, backend)
+
+        assert key is not None
+        assert isinstance(key, rsa.RSAPublicKey)
+
+        numbers = key.public_numbers()
+
+        expected_e = 0x10001
+        expected_n = int(
+            "00C3BBF5D13F59322BA0A0B77EA0B6CF570241628AE24B5BA454D"
+            "23DCA295652B3523B67752653DFFD69587FAD9578DD6406F23691"
+            "EA491C3F8B2D391D0312D9653C303B651067ADF887A5241843CEF"
+            "8019680A088E092FEC305FB04EA070340BB9BD0F1635B2AD84142"
+            "61B4E2D010ABD8FC6D2FB768912F78EE6B05A60857532B75B75EF"
+            "C007601A4EF58BA947B7E75E38F3443CDD87E7C138A1DAD9D9FB3"
+            "19FF69DA43A9F6F6B0CD243F042CD1A5AFAEB286BD46AEB2D922B"
+            "D01385D6892167074A0907F94A2BF08A54ABB2FFFFC89920861D0"
+            "46F8706AB88DDADBD9E8204D48B87789081E074024C8996783B31"
+            "7076A98ABF0A2D8550EAF2097D8CCC7BE76EF",
+            16,
+        )
+
+        expected = rsa.RSAPublicNumbers(expected_e, expected_n)
+
+        assert numbers == expected
+
+
+class TestDSSSSHSerialization:
+    def test_load_ssh_public_key_dss_too_short(self, backend):
+        ssh_key = b"ssh-dss"
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_comment_with_spaces(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost extra"
+        )
+
+        load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9AAwMD== testkey@localhost"
+        )
+
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss_different_string(self, backend):
+        ssh_key = (
+            # "AAAAB3NzA" the final A is capitalized here to cause the string
+            # ssh-dss inside the base64 encoded blob to be incorrect. It should
+            # be a lower case 'a'.
+            b"ssh-dss AAAAB3NzAC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_dss(self, backend):
+        ssh_key = (
+            b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
+            b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
+            b"nHQHFmmMg2bI75JbnOwdzWnnPZJrVU4rS23dFFPqs5ug+EbhVVrcwzxahjcSjJ"
+            b"7WEQSkVQWnSPbbAAAAFQDXmpD3DIkGvLSBf1GdUF4PHKtUrQAAAIB/bJFwss+2"
+            b"fngmfG/Li5OyL7A9iVoGdkUaFaxEUROTp7wkm2z49fXFAir+/U31v50Tu98YLf"
+            b"WvKlxdHcdgQYV9Ww5LIrhWwwD4UKOwC6w5S3KHVbi3pWUi7vxJFXOWfeu1mC/J"
+            b"TWqMKR91j+rmOtdppWIZRyIVIqLcMdGO3m+2VgAAAIANFDz5KQH5NvoljpoRQi"
+            b"RgyPjxWXiE7vjLElKj4v8KrpanAywBzdhIW1y/tzpGuwRwj5ihi8iNTHgSsoTa"
+            b"j5AG5HPomJf5vJElxpu/2O9pHA52wcNObIQ7j+JA5uWusxNIbl+pF6sSiP8abr"
+            b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
+        )
+
+        key = load_ssh_public_key(ssh_key, backend)
+
+        assert key is not None
+        assert isinstance(key, dsa.DSAPublicKey)
+
+        numbers = key.public_numbers()
+
+        expected_y = int(
+            "d143cf92901f936fa258e9a11422460c8f8f1597884eef8cb1252a3e2ff0aae"
+            "96a7032c01cdd8485b5cbfb73a46bb04708f98a18bc88d4c7812b284da8f900"
+            "6e473e89897f9bc9125c69bbfd8ef691c0e76c1c34e6c843b8fe240e6e5aeb3"
+            "13486e5fa917ab1288ff1a6ebcf9dcdeed3c5fc88474e30476f53a5ec816ef6"
+            "9f4",
+            16,
+        )
+        expected_p = int(
+            "b9b052d7f07630148d4d838b17790ef4f43437238ebebd5032ea483fd7b7902"
+            "5ec3dc65ebd563ab586a633b4344f6acd10af31353bcf29111fa5e3b8d5c1e8"
+            "7befe3c65f9b8be69c740716698c8366c8ef925b9cec1dcd69e73d926b554e2"
+            "b4b6ddd1453eab39ba0f846e1555adcc33c5a8637128c9ed61104a45505a748"
+            "f6db",
+            16,
+        )
+        expected_q = 1230879958723280233885494314531920096931919647917
+        expected_g = int(
+            "7f6c9170b2cfb67e78267c6fcb8b93b22fb03d895a0676451a15ac44511393a"
+            "7bc249b6cf8f5f5c5022afefd4df5bf9d13bbdf182df5af2a5c5d1dc7604185"
+            "7d5b0e4b22b856c300f850a3b00bac394b728755b8b7a56522eefc491573967"
+            "debb5982fc94d6a8c291f758feae63ad769a5621947221522a2dc31d18ede6f"
+            "b656",
+            16,
+        )
+        expected = dsa.DSAPublicNumbers(
+            expected_y,
+            dsa.DSAParameterNumbers(expected_p, expected_q, expected_g),
+        )
+
+        assert numbers == expected
+
+
+class TestECDSASSHSerialization:
+    def test_load_ssh_public_key_ecdsa_nist_p256(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
+
+        expected_x = int(
+            "44196257377740326295529888716212621920056478823906609851236662550"
+            "785814128027",
+            10,
+        )
+        expected_y = int(
+            "12257763433170736656417248739355923610241609728032203358057767672"
+            "925775019611",
+            10,
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP256R1()
+        )
+
+    def test_load_ssh_public_key_byteslike(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        assert load_ssh_public_key(bytearray(ssh_key), backend)
+        assert load_ssh_public_key(memoryview(ssh_key), backend)
+        assert load_ssh_public_key(memoryview(bytearray(ssh_key)), backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p384(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP384R1())
+        ssh_key = (
+            b"ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAz"
+            b"ODQAAABhBMzucOm9wbwg4iMr5QL0ya0XNQGXpw4wM5f12E3tWhdcrzyGHyel71t1"
+            b"4bvF9JZ2/WIuSxUr33XDl8jYo+lMQ5N7Vanc7f7i3AR1YydatL3wQfZStQ1I3rBa"
+            b"qQtRSEU8Tg== root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
+
+        expected_x = int(
+            "31541830871345183397582554827482786756220448716666815789487537666"
+            "592636882822352575507883817901562613492450642523901",
+            10,
+        )
+        expected_y = int(
+            "15111413269431823234030344298767984698884955023183354737123929430"
+            "995703524272335782455051101616329050844273733614670",
+            10,
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP384R1()
+        )
+
+    def test_load_ssh_public_key_ecdsa_nist_p521(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP521R1())
+        ssh_key = (
+            b"ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1"
+            b"MjEAAACFBAGTrRhMSEgF6Ni+PXNz+5fjS4lw3ypUILVVQ0Av+0hQxOx+MyozELon"
+            b"I8NKbrbBjijEs1GuImsmkTmWsMXS1j2A7wB4Kseh7W9KA9IZJ1+TMrzWUEwvOOXi"
+            b"wT23pbaWWXG4NaM7vssWfZBnvz3S174TCXnJ+DSccvWBFnKP0KchzLKxbg== "
+            b"root@cloud-server-01"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ec.EllipticCurvePublicKey)
+
+        expected_x = int(
+            "54124123120178189598842622575230904027376313369742467279346415219"
+            "77809037378785192537810367028427387173980786968395921877911964629"
+            "142163122798974160187785455",
+            10,
+        )
+        expected_y = int(
+            "16111775122845033200938694062381820957441843014849125660011303579"
+            "15284560361402515564433711416776946492019498546572162801954089916"
+            "006665939539407104638103918",
+            10,
+        )
+
+        assert key.public_numbers() == ec.EllipticCurvePublicNumbers(
+            expected_x, expected_y, ec.SECP521R1()
+        )
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_trailing_data(self, backend):
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPltB= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_missing_data(self, backend):
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCF= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_compressed(self, backend):
+        # If we ever implement compressed points, note that this is not a valid
+        # one, it just has the compressed marker in the right place.
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAABBAWG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(NotImplementedError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self, backend):
+        ssh_key = (
+            # The curve name in here is changed to be "nistp255".
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTUAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
+            b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support",
+)
+class TestEd25519SSHSerialization:
+    def test_load_ssh_public_key(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vG user@chiron.local"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ed25519.Ed25519PublicKey)
+        assert key.public_bytes(Encoding.Raw, PublicFormat.Raw) == (
+            b"m\x9f\x82\x99\xa9`\xee\xb5\xa9\xe01\x19\xdd0\x81\x16\x8d\xfc"
+            b"N\x06G\xecV\xbc\x19\xaf\xc6<k\x07[\xc6"
+        )
+
+    def test_public_bytes_openssh(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vG"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ed25519.Ed25519PublicKey)
+        assert (
+            key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH) == ssh_key
+        )
+
+    def test_load_ssh_public_key_not_32_bytes(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI22fgpmpYO61qeAxGd0wgRaN/E4"
+            b"GR+xWvBmvxjxrB1vGaGVs user@chiron.local"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
+    def test_load_ssh_public_key_trailing_data(self, backend):
+        ssh_key = (
+            b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRa"
+            b"N/E4GR+xWvBmvxjxrB1vGdHJhaWxpbmdkYXRh user@chiron.local"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
