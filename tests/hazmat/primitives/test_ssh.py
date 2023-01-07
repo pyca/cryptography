@@ -1085,6 +1085,7 @@ class TestSSHCertificate:
     @pytest.mark.parametrize(
         "filename",
         [
+            "p256-p256-empty-principals.pub",
             "p256-p384.pub",
             "p256-p521.pub",
             "p256-rsa-sha1.pub",
