@@ -466,7 +466,7 @@ OpenSSH Certificate
 The format used by OpenSSH for certificates, as specified in
 `PROTOCOL.certkeys`_.
 
-.. function:: load_ssh_certificate(data)
+.. function:: load_ssh_public_identity(data)
 
     .. versionadded:: 40.0
 
@@ -476,20 +476,25 @@ The format used by OpenSSH for certificates, as specified in
         keys or signatures from DSA certificate authorities. DSA is a
         deprecated algorithm and should not be used.
 
-    Deserialize an OpenSSH certificate (specified in `PROTOCOL.certkeys`_)
-    to an instance of :class:`SSHCertificate`. If you only need the public key
-    you can parse it out of the certificate using :func:`load_ssh_public_key`.
+    Deserialize an OpenSSH encoded identity to an instance of
+    :class:`SSHCertificate` or the appropriate public key type.
+    Parsing a certificate does not verify anything. It is up to the caller to
+    perform any necessary verification.
 
-    :param data: The OpenSSH encoded key data.
+    :param data: The OpenSSH encoded data.
     :type data: bytes
 
-    :returns: :class:`SSHCertificate`
+    :returns: :class:`SSHCertificate` or one of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        , or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
 
-    :raises ValueError: If the OpenSSH data could not be properly decoded or
-        if the certificate is not in the proper format.
+    :raises ValueError: If the OpenSSH data could not be properly decoded.
 
-    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
-        certificate is of a type that is not supported.
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the data contains
+        a public key type that is not supported.
 
 
 .. class:: SSHCertificate

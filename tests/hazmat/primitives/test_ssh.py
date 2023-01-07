@@ -1020,7 +1020,7 @@ class TestSSHCertificate:
     )
     def test_loads_ssh_cert(self, backend):
         # secp256r1 public key, ed25519 signing key
-        cert = ssh.load_ssh_certificate(
+        cert = ssh.load_ssh_public_identity(
             b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYTItbm"
             b"lzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgtdU+dl9vD4xPi8afxERYo"
             b"s0c0d9/3m7XGY6fGeSkqn0AAAAIbmlzdHAyNTYAAABBBAsuVFNNj/mMyFm2xB99"
@@ -1035,6 +1035,7 @@ class TestSSHCertificate:
             b"IE6dIymjEqq0TP6ntu5t59hTmWlDO85GnMXAVGBjFbeikBMfAQc= reaperhulk"
             b"@despoina.local"
         )
+        assert isinstance(cert, ssh.SSHCertificate)
         cert.verify_cert_signature()
         signature_key = cert.signature_key()
         assert isinstance(signature_key, ed25519.Ed25519PublicKey)
@@ -1076,41 +1077,50 @@ class TestSSHCertificate:
             lambda f: f.read(),
             mode="rb",
         )
-        cert = ssh.load_ssh_certificate(data)
+        cert = ssh.load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
         cert.verify_cert_signature()
 
-    def test_invalid_signature(self):
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p384.pub",
+            "p256-p521.pub",
+            "p256-rsa-sha1.pub",
+            "p256-rsa-sha256.pub",
+            "p256-rsa-sha512.pub",
+        ],
+    )
+    def test_invalid_signature(self, filename):
         data = load_vectors_from_file(
-            os.path.join(
-                "asymmetric",
-                "OpenSSH",
-                "certs",
-                "p256-p256-empty-principals.pub",
-            ),
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
             lambda f: f.read(),
             mode="rb",
         )
         data = bytearray(data)
         # mutate the signature so it's invalid
-        data[-10] = 70
-        cert = ssh.load_ssh_certificate(data)
+        data[-10] = 71
+        cert = ssh.load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
         with pytest.raises(InvalidSignature):
             cert.verify_cert_signature()
 
     def test_not_bytes(self):
         with pytest.raises(TypeError):
-            ssh.load_ssh_certificate(
+            ssh.load_ssh_public_identity(
                 "these aren't bytes"  # type:ignore[arg-type]
             )
 
-    def test_not_an_ssh_cert(self, backend):
+    def test_load_ssh_public_key(self, backend):
+        # This test will be removed when we implement load_ssh_public_key
+        # in terms of load_ssh_public_identity. Needed for coverage now.
         pub_data = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key.pub"),
             lambda f: f.read(),
             mode="rb",
         )
-        with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(pub_data)
+        key = ssh.load_ssh_public_identity(pub_data)
+        assert isinstance(key, rsa.RSAPublicKey)
 
     @pytest.mark.parametrize("filename", ["dsa-p256.pub", "p256-dsa.pub"])
     def test_dsa_unsupported(self, filename):
@@ -1120,7 +1130,7 @@ class TestSSHCertificate:
             mode="rb",
         )
         with raises_unsupported_algorithm(None):
-            ssh.load_ssh_certificate(data)
+            ssh.load_ssh_public_identity(data)
 
     def test_mismatched_inner_signature_type_and_sig_type(self):
         data = load_vectors_from_file(
@@ -1134,7 +1144,7 @@ class TestSSHCertificate:
             mode="rb",
         )
         with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(data)
+            ssh.load_ssh_public_identity(data)
 
     def test_invalid_cert_type(self):
         data = load_vectors_from_file(
@@ -1148,7 +1158,7 @@ class TestSSHCertificate:
             mode="rb",
         )
         with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(data)
+            ssh.load_ssh_public_identity(data)
 
     @pytest.mark.parametrize(
         "filename",
@@ -1165,22 +1175,22 @@ class TestSSHCertificate:
             lambda f: f.read(),
             mode="rb",
         )
-        cert = ssh.load_ssh_certificate(data)
         with pytest.raises(ValueError):
-            cert.extensions
-            cert.critical_options
+            ssh.load_ssh_public_identity(data)
 
     def test_invalid_line_format(self, backend):
         with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(b"whaaaaaaaaaaat")
+            ssh.load_ssh_public_identity(b"whaaaaaaaaaaat")
 
     def test_invalid_b64(self, backend):
         with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(b"ssh-rsa-cert-v01@openssh.com invalid")
+            ssh.load_ssh_public_identity(
+                b"ssh-rsa-cert-v01@openssh.com invalid"
+            )
 
     def test_inner_outer_key_type_mismatch(self):
         with pytest.raises(ValueError):
-            ssh.load_ssh_certificate(
+            ssh.load_ssh_public_identity(
                 b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAK0VjZHNhLXNoYTI"
                 b"tbmlzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAg/9dq+iibMSMdJ0v"
                 b"l6D0SrsazwccWptLQs4sEgJBVnQMAAAAIbmlzdHAyNTYAAABBBAsuVFNNj/m"
@@ -1208,7 +1218,8 @@ class TestSSHCertificate:
             lambda f: f.read(),
             mode="rb",
         )
-        cert = ssh.load_ssh_certificate(data)
+        cert = ssh.load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
         assert cert.valid_principals == []
         assert cert.extensions == {}
         assert cert.critical_options == {}
@@ -1224,5 +1235,6 @@ class TestSSHCertificate:
             lambda f: f.read(),
             mode="rb",
         )
-        cert = ssh.load_ssh_certificate(data)
+        cert = ssh.load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
         assert data == cert.public_bytes()

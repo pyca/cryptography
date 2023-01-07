@@ -738,11 +738,11 @@ class SSHCertificate:
         _serial: int,
         _cctype: int,
         _key_id: memoryview,
-        _valid_principals: memoryview,
+        _valid_principals: typing.List[bytes],
         _valid_after: int,
         _valid_before: int,
-        _critical_options: memoryview,
-        _extensions: memoryview,
+        _critical_options: typing.Dict[bytes, bytes],
+        _extensions: typing.Dict[bytes, bytes],
         _sig_type: memoryview,
         _sig_key: memoryview,
         _inner_sig_type: memoryview,
@@ -794,15 +794,9 @@ class SSHCertificate:
     def key_id(self) -> bytes:
         return bytes(self._key_id)
 
-    @utils.cached_property
+    @property
     def valid_principals(self) -> typing.List[bytes]:
-        rest = self._valid_principals
-        principals = []
-        while rest:
-            principal, rest = _get_sshstr(rest)
-            principals.append(bytes(principal))
-
-        return principals
+        return self._valid_principals
 
     @property
     def valid_before(self) -> datetime.datetime:
@@ -812,31 +806,13 @@ class SSHCertificate:
     def valid_after(self) -> datetime.datetime:
         return self._valid_after
 
-    @utils.cached_property
+    @property
     def critical_options(self) -> typing.Dict[bytes, bytes]:
-        return self._parse_exts_opts(self._critical_options)
+        return self._critical_options
 
-    @utils.cached_property
+    @property
     def extensions(self) -> typing.Dict[bytes, bytes]:
-        return self._parse_exts_opts(self._extensions)
-
-    def _parse_exts_opts(
-        self, exts_opts: memoryview
-    ) -> typing.Dict[bytes, bytes]:
-        result: typing.Dict[bytes, bytes] = {}
-        last_name = None
-        while exts_opts:
-            name, exts_opts = _get_sshstr(exts_opts)
-            bname: bytes = bytes(name)
-            if bname in result:
-                raise ValueError("Duplicate extension name")
-            # dicts in pypy & python 3.6+ are insertion ordered so hooray
-            if last_name is not None and bname < last_name:
-                raise ValueError("Extensions not lexically sorted")
-            value, exts_opts = _get_sshstr(exts_opts)
-            result[bname] = bytes(value)
-            last_name = bname
-        return result
+        return self._extensions
 
     def signature_key(self) -> _SSH_CERT_PUBLIC_KEY_TYPES:
         sigformat = _lookup_kformat(self._sig_type)
@@ -896,7 +872,9 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
     return hash_alg
 
 
-def load_ssh_certificate(data: bytes) -> SSHCertificate:
+def load_ssh_public_identity(
+    data: bytes,
+) -> typing.Union[SSHCertificate, _SSH_PUBLIC_KEY_TYPES]:
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)
@@ -904,9 +882,9 @@ def load_ssh_certificate(data: bytes) -> SSHCertificate:
         raise ValueError("Invalid line format")
     key_type = orig_key_type = m.group(1)
     key_body = m.group(2)
-    if _CERT_SUFFIX != key_type[-len(_CERT_SUFFIX) :]:
-        raise ValueError("Not an SSH certificate")
-    else:
+    with_cert = False
+    if key_type.endswith(_CERT_SUFFIX):
+        with_cert = True
         key_type = key_type[: -len(_CERT_SUFFIX)]
     if key_type == _SSH_DSA:
         raise UnsupportedAlgorithm(
@@ -919,60 +897,89 @@ def load_ssh_certificate(data: bytes) -> SSHCertificate:
     except (TypeError, binascii.Error):
         raise ValueError("Invalid format")
 
-    cert_body = rest
+    if with_cert:
+        cert_body = rest
     inner_key_type, rest = _get_sshstr(rest)
     if inner_key_type != orig_key_type:
         raise ValueError("Invalid key format")
-    nonce, rest = _get_sshstr(rest)
+    if with_cert:
+        nonce, rest = _get_sshstr(rest)
     public_key, rest = kformat.load_public(rest)
-    serial, rest = _get_u64(rest)
-    cctype, rest = _get_u32(rest)
-    key_id, rest = _get_sshstr(rest)
-    principals, rest = _get_sshstr(rest)
-    valid_after, rest = _get_u64(rest)
-    valid_before, rest = _get_u64(rest)
-    crit_options, rest = _get_sshstr(rest)
-    extensions, rest = _get_sshstr(rest)
-    # Get the reserved field, which is unused.
-    _, rest = _get_sshstr(rest)
-    sig_key_raw, rest = _get_sshstr(rest)
-    sig_type, sig_key = _get_sshstr(sig_key_raw)
-    if sig_type == _SSH_DSA:
-        raise UnsupportedAlgorithm(
-            "DSA signatures aren't supported in SSH certificates"
+    if with_cert:
+        serial, rest = _get_u64(rest)
+        cctype, rest = _get_u32(rest)
+        key_id, rest = _get_sshstr(rest)
+        principals, rest = _get_sshstr(rest)
+        valid_principals = []
+        while principals:
+            principal, principals = _get_sshstr(principals)
+            valid_principals.append(bytes(principal))
+        valid_after, rest = _get_u64(rest)
+        valid_before, rest = _get_u64(rest)
+        crit_options, rest = _get_sshstr(rest)
+        critical_options = _parse_exts_opts(crit_options)
+        exts, rest = _get_sshstr(rest)
+        extensions = _parse_exts_opts(exts)
+        # Get the reserved field, which is unused.
+        _, rest = _get_sshstr(rest)
+        sig_key_raw, rest = _get_sshstr(rest)
+        sig_type, sig_key = _get_sshstr(sig_key_raw)
+        if sig_type == _SSH_DSA:
+            raise UnsupportedAlgorithm(
+                "DSA signatures aren't supported in SSH certificates"
+            )
+        # Get the entire cert body and subtract the signature
+        tbs_cert_body = cert_body[: -len(rest)]
+        signature_raw, rest = _get_sshstr(rest)
+        _check_empty(rest)
+        inner_sig_type, sig_rest = _get_sshstr(signature_raw)
+        # RSA certs can have multiple algorithm types
+        if (
+            sig_type == _SSH_RSA
+            and inner_sig_type
+            not in [_SSH_RSA_SHA256, _SSH_RSA_SHA512, _SSH_RSA]
+        ) or (sig_type != _SSH_RSA and inner_sig_type != sig_type):
+            raise ValueError("Signature key type does not match")
+        signature, sig_rest = _get_sshstr(sig_rest)
+        _check_empty(sig_rest)
+        return SSHCertificate(
+            nonce,
+            public_key,
+            serial,
+            cctype,
+            key_id,
+            valid_principals,
+            valid_after,
+            valid_before,
+            critical_options,
+            extensions,
+            sig_type,
+            sig_key,
+            inner_sig_type,
+            signature,
+            tbs_cert_body,
+            orig_key_type,
+            cert_body,
         )
-    # Get the entire cert body and subtract the signature
-    tbs_cert_body = cert_body[: -len(rest)]
-    signature_raw, rest = _get_sshstr(rest)
-    _check_empty(rest)
-    inner_sig_type, sig_rest = _get_sshstr(signature_raw)
-    # RSA certs can have multiple algorithm types
-    if (
-        sig_type == _SSH_RSA
-        and inner_sig_type not in [_SSH_RSA_SHA256, _SSH_RSA_SHA512, _SSH_RSA]
-    ) or (sig_type != _SSH_RSA and inner_sig_type != sig_type):
-        raise ValueError("Signature key type does not match")
-    signature, sig_rest = _get_sshstr(sig_rest)
-    _check_empty(sig_rest)
-    return SSHCertificate(
-        nonce,
-        public_key,
-        serial,
-        cctype,
-        key_id,
-        principals,
-        valid_after,
-        valid_before,
-        crit_options,
-        extensions,
-        sig_type,
-        sig_key,
-        inner_sig_type,
-        signature,
-        tbs_cert_body,
-        orig_key_type,
-        cert_body,
-    )
+    else:
+        _check_empty(rest)
+        return public_key
+
+
+def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
+    result: typing.Dict[bytes, bytes] = {}
+    last_name = None
+    while exts_opts:
+        name, exts_opts = _get_sshstr(exts_opts)
+        bname: bytes = bytes(name)
+        if bname in result:
+            raise ValueError("Duplicate name")
+        if last_name is not None and bname < last_name:
+            raise ValueError("Fields not lexically sorted")
+        value, exts_opts = _get_sshstr(exts_opts)
+        result[bname] = bytes(value)
+        last_name = bname
+    return result
 
 
 def load_ssh_public_key(
