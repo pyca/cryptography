@@ -338,7 +338,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.10", TOXENV: "py310", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.11", TOXENV: "py311", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS"
     timeout-minutes: 15
     steps:
@@ -382,7 +382,7 @@ jobs:
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
-            CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 -march=core2 $EXTRA_CFLAGS" \
+            CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
