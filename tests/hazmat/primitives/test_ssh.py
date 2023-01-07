@@ -1185,9 +1185,7 @@ class TestSSHCertificate:
 
     def test_invalid_b64(self, backend):
         with pytest.raises(ValueError):
-            load_ssh_public_identity(
-                b"ssh-rsa-cert-v01@openssh.com invalid"
-            )
+            load_ssh_public_identity(b"ssh-rsa-cert-v01@openssh.com invalid")
 
     def test_inner_outer_key_type_mismatch(self):
         with pytest.raises(ValueError):
