@@ -14,7 +14,7 @@ static NULL_DER: Lazy<Vec<u8>> = Lazy::new(|| {
 pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
     Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());
 
-enum KeyType {
+pub(crate) enum KeyType {
     Rsa,
     Dsa,
     Ec,

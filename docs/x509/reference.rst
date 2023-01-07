@@ -486,6 +486,26 @@ X.509 Certificate Object
        An :class:`~cryptography.exceptions.InvalidSignature` exception will be
        raised if the signature fails to verify.
 
+    .. method:: verify_signed_by(issuer)
+
+        .. versionadded:: 40.0
+
+        :param issuer: The issuer certificate to check against.
+        :type issuer: :class:`~cryptography.x509.Certificate`
+
+        .. warning::
+            This method **only** verifies that the certificate is signed by the
+            issuer certificate's private key. **No other validation is
+            performed**. Callers are responsible for performing any additional
+            validations required for their use case (e.g. checking the validity
+            period, whether the signer is allowed to issue certificates, etc).
+
+        Validates that the certificate is signed by the provided issuer.
+
+        :return: None
+        :raise cryptography.exceptions.InvalidSignature: If the
+            signature fails to verify.
+
 
     .. attribute:: tbs_precertificate_bytes
 
