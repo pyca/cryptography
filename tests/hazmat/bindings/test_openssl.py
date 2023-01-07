@@ -32,7 +32,7 @@ class TestOpenSSL:
         # SSL_OP_ALL is 0 on BoringSSL
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b.lib.SSL_OP_ALL > 0
-        ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
+        ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         current_options = b.lib.SSL_CTX_get_options(ctx)
@@ -47,7 +47,7 @@ class TestOpenSSL:
         # SSL_OP_ALL is 0 on BoringSSL
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b.lib.SSL_OP_ALL > 0
-        ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
+        ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
@@ -64,7 +64,7 @@ class TestOpenSSL:
         # SSL_OP_ALL is 0 on BoringSSL
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b.lib.SSL_OP_ALL > 0
-        ctx = b.lib.SSL_CTX_new(b.lib.SSLv23_method())
+        ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
