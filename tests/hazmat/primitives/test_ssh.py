@@ -8,6 +8,7 @@ import datetime
 import os
 
 import pytest
+import pytz
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import (
@@ -23,6 +24,9 @@ from cryptography.hazmat.primitives.serialization import (
     NoEncryption,
     PrivateFormat,
     PublicFormat,
+    SSHCertificate,
+    SSHCertificateBuilder,
+    SSHCertificateType,
     load_pem_private_key,
     load_ssh_private_key,
     load_ssh_public_identity,
@@ -32,6 +36,7 @@ from cryptography.hazmat.primitives.serialization import (
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
+from .fixtures_rsa import RSA_KEY_2048
 from .test_ec import _skip_curve_unsupported
 
 
@@ -1036,7 +1041,7 @@ class TestSSHCertificate:
             b"IE6dIymjEqq0TP6ntu5t59hTmWlDO85GnMXAVGBjFbeikBMfAQc= reaperhulk"
             b"@despoina.local"
         )
-        assert isinstance(cert, ssh.SSHCertificate)
+        assert isinstance(cert, SSHCertificate)
         cert.verify_cert_signature()
         signature_key = cert.signature_key()
         assert isinstance(signature_key, ed25519.Ed25519PublicKey)
@@ -1048,7 +1053,7 @@ class TestSSHCertificate:
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
         assert isinstance(public_key.curve, ec.SECP256R1)
         assert cert.serial == 0
-        assert cert.type is ssh.SSHCertificateType.USER
+        assert cert.type is SSHCertificateType.USER
         assert cert.key_id == b"test@cryptography.io"
         assert cert.valid_principals == [b"cryptouser", b"testuser"]
         assert cert.valid_before == datetime.datetime(2032, 12, 30, 10, 32, 32)
@@ -1079,7 +1084,7 @@ class TestSSHCertificate:
             mode="rb",
         )
         cert = load_ssh_public_identity(data)
-        assert isinstance(cert, ssh.SSHCertificate)
+        assert isinstance(cert, SSHCertificate)
         cert.verify_cert_signature()
 
     @pytest.mark.parametrize(
@@ -1103,7 +1108,7 @@ class TestSSHCertificate:
         # mutate the signature so it's invalid
         data[-10] = 71
         cert = load_ssh_public_identity(data)
-        assert isinstance(cert, ssh.SSHCertificate)
+        assert isinstance(cert, SSHCertificate)
         with pytest.raises(InvalidSignature):
             cert.verify_cert_signature()
 
@@ -1219,7 +1224,7 @@ class TestSSHCertificate:
             mode="rb",
         )
         cert = load_ssh_public_identity(data)
-        assert isinstance(cert, ssh.SSHCertificate)
+        assert isinstance(cert, SSHCertificate)
         assert cert.valid_principals == []
         assert cert.extensions == {}
         assert cert.critical_options == {}
@@ -1236,5 +1241,328 @@ class TestSSHCertificate:
             mode="rb",
         )
         cert = load_ssh_public_identity(data)
-        assert isinstance(cert, ssh.SSHCertificate)
+        assert isinstance(cert, SSHCertificate)
         assert data == cert.public_bytes()
+
+
+class TestSSHCertificateBuilder:
+    def test_signs_a_cert(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+        valid_before = datetime.datetime(2023, 7, 16, 18, 43)
+        tz = pytz.timezone("US/Eastern")
+        valid_before = tz.localize(valid_before)
+        utc_time_before = datetime.datetime(2023, 7, 16, 22, 43)
+        valid_after = datetime.datetime(2023, 1, 16, 22, 43)
+        key_id = b"test"
+        valid_principals = [b"eve", b"alice"]
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(public_key)
+            .type(SSHCertificateType.USER)
+            .valid_before(valid_before)
+            .valid_after(valid_after)
+            .key_id(key_id)
+            .valid_principals(valid_principals)
+            .add_critical_option(b"ordered", b"")
+            .add_critical_option(b"maybe", b"test2")
+            .add_extension(b"test", b"a value")
+            .add_extension(b"allowed", b"")
+        )
+        cert = builder.sign(private_key)
+        cert.verify_cert_signature()
+        cert_public_key = cert.public_key()
+        assert isinstance(cert_public_key, ec.EllipticCurvePublicKey)
+        assert cert_public_key.public_numbers() == public_key.public_numbers()
+        assert cert.serial == 0
+        assert cert.type is SSHCertificateType.USER
+        assert cert.key_id == key_id
+        assert cert.valid_principals == valid_principals
+        assert cert.valid_before == utc_time_before
+        assert cert.valid_after == valid_after
+        assert cert.critical_options == {b"ordered": b"", b"maybe": b"test2"}
+        assert list(cert.critical_options) == [b"maybe", b"ordered"]
+        assert cert.extensions == {b"test": b"a value", b"allowed": b""}
+        assert list(cert.extensions) == [b"allowed", b"test"]
+        signature_key = cert.signature_key()
+        assert isinstance(signature_key, ec.EllipticCurvePublicKey)
+        assert (
+            signature_key.public_numbers()
+            == private_key.public_key().public_numbers()
+        )
+
+    def test_public_key_errors(self):
+        public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.public_key("not a key")  # type: ignore[arg-type]
+        builder = builder.public_key(public_key)
+        with pytest.raises(ValueError):
+            builder.public_key(public_key)
+
+    def test_serial_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.serial("not a serial")  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            builder.serial(-1)
+        with pytest.raises(ValueError):
+            builder.serial(2**64)
+        builder = builder.serial(1)
+        with pytest.raises(ValueError):
+            builder.serial(1)
+
+    def test_type_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.type("not a type")  # type: ignore[arg-type]
+        builder = builder.type(SSHCertificateType.USER)
+        with pytest.raises(ValueError):
+            builder.type(SSHCertificateType.USER)
+
+    def test_key_id_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.key_id("not bytes")  # type: ignore[arg-type]
+        builder = builder.key_id(b"test")
+        with pytest.raises(ValueError):
+            builder.key_id(b"test")
+
+    def test_valid_principals_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.valid_principals("not a list")  # type: ignore[arg-type]
+        with pytest.raises(TypeError):
+            builder.valid_principals(
+                [b"test", "not bytes"]  # type: ignore[list-item]
+            )
+        builder = builder.valid_principals([b"test"])
+        with pytest.raises(ValueError):
+            builder.valid_principals([b"test"])
+
+    def test_valid_before_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.valid_before("not a datetime")  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            builder.valid_before(datetime.datetime(1960, 1, 1))
+        builder = builder.valid_before(datetime.datetime(2023, 1, 1))
+        with pytest.raises(ValueError):
+            builder.valid_before(datetime.datetime(2023, 1, 1))
+
+    def test_valid_after_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.valid_after("not a datetime")  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            builder.valid_after(datetime.datetime(1960, 1, 1))
+        builder = builder.valid_after(datetime.datetime(2023, 1, 1))
+        with pytest.raises(ValueError):
+            builder.valid_after(datetime.datetime(2023, 1, 1))
+
+    def test_add_critical_option_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.add_critical_option(
+                "not bytes", b"test"  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            builder.add_critical_option(
+                b"test", object()  # type: ignore[arg-type]
+            )
+        builder = builder.add_critical_option(b"test", b"test")
+        with pytest.raises(ValueError):
+            builder.add_critical_option(b"test", b"test")
+
+    def test_add_extension_errors(self):
+        builder = SSHCertificateBuilder()
+        with pytest.raises(TypeError):
+            builder.add_extension(
+                "not bytes", b"test"  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            builder.add_extension(b"test", object())  # type: ignore[arg-type]
+        builder = builder.add_extension(b"test", b"test")
+        with pytest.raises(ValueError):
+            builder.add_extension(b"test", b"test")
+
+    def test_sign_unsupported_key(self):
+        builder = (
+            SSHCertificateBuilder()
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(TypeError):
+            builder.sign("not a key")  # type: ignore[arg-type]
+
+    def test_sign_no_public_key(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_no_type(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_no_valid_principals(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_no_valid_after(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_no_valid_before(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_valid_after_after_valid_before(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 2))
+            .valid_before(datetime.datetime(2023, 1, 1))
+            .type(SSHCertificateType.USER)
+        )
+        with pytest.raises(ValueError):
+            builder.sign(private_key)
+
+    def test_sign_non_zero_serial(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .serial(123456789)
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        assert cert.serial == 123456789
+
+    def test_crit_opts_exts_lexically_sorted(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+            .add_critical_option(b"zebra@cryptography.io", b"")
+            .add_critical_option(b"apple@cryptography.io", b"")
+            .add_critical_option(b"banana@cryptography.io", b"")
+            .add_extension(b"zebra@cryptography.io", b"")
+            .add_extension(b"apple@cryptography.io", b"")
+            .add_extension(b"banana@cryptography.io", b"")
+        )
+        cert = builder.sign(private_key)
+        # This returns a dict, but dicts are order preserving in
+        # all our supported versions of Python so we can use
+        # items to confirm the order.
+        assert list(cert.extensions.items()) == [
+            (b"apple@cryptography.io", b""),
+            (b"banana@cryptography.io", b""),
+            (b"zebra@cryptography.io", b""),
+        ]
+        assert list(cert.critical_options.items()) == [
+            (b"apple@cryptography.io", b""),
+            (b"banana@cryptography.io", b""),
+            (b"zebra@cryptography.io", b""),
+        ]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support",
+    )
+    def test_sign_ed25519(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        assert isinstance(cert.signature_key(), ed25519.Ed25519PublicKey)
+        cert.verify_cert_signature()
+
+    @pytest.mark.parametrize(
+        "curve", [ec.SECP256R1(), ec.SECP384R1(), ec.SECP521R1()]
+    )
+    def test_sign_ec(self, curve):
+        private_key = ec.generate_private_key(curve)
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        sig_key = cert.signature_key()
+        assert isinstance(sig_key, ec.EllipticCurvePublicKey)
+        assert isinstance(sig_key.curve, type(curve))
+        cert.verify_cert_signature()
+
+    def test_sign_rsa(self):
+        private_key = RSA_KEY_2048.private_key()
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_principals([])
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        sig_key = cert.signature_key()
+        assert isinstance(sig_key, rsa.RSAPublicKey)
+        cert.verify_cert_signature()

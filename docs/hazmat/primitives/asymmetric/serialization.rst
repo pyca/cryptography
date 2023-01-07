@@ -632,6 +632,125 @@ The format used by OpenSSH for certificates, as specified in
         The cert is intended for identification of a host. Corresponds to the
         value ``2``.
 
+SSH Certificate Builder
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. class:: SSHCertificateBuilder
+
+    .. versionadded:: 40.0
+
+    .. note::
+
+        This builder does not support generating certificates with DSA public
+        keys or creating signatures with DSA certificate authorities. DSA is a
+        deprecated algorithm and should not be used.
+
+    .. doctest::
+
+        >>> import datetime
+        >>> from cryptography.hazmat.primitives.asymmetric import ec
+        >>> from cryptography.hazmat.primitives.serialization import (
+        ...     SSHCertificateType, SSHCertificateBuilder
+        ... )
+        >>> signing_key = ec.generate_private_key(ec.SECP256R1())
+        >>> private_key = ec.generate_private_key(ec.SECP256R1())
+        >>> public_key = private_key.public_key()
+        >>> valid_after = datetime.datetime(2023, 1, 1, 1)
+        >>> valid_before = datetime.datetime(2023, 7, 1, 1)
+        >>> key_id = b"a_key_id"
+        >>> valid_principals = [b"eve", b"alice"]
+        >>> builder = (
+        ...     SSHCertificateBuilder()
+        ...     .public_key(public_key)
+        ...     .type(SSHCertificateType.USER)
+        ...     .valid_before(valid_before)
+        ...     .valid_after(valid_after)
+        ...     .key_id(b"a_key_id")
+        ...     .valid_principals(valid_principals)
+        ...     .add_extension(b"no-touch-required", b"")
+        ... )
+        >>> builder.sign(private_key).public_bytes()
+        b'...'
+
+    .. method:: public_key(public_key)
+
+        :param public_key: The public key to be included in the certificate.
+            This value is required.
+        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+    .. method:: serial(serial)
+
+        :param int serial: The serial number to be included in the certificate.
+            This is not a required value and will be set to zero if not
+            provided. Value must be between 0 and 2:sup:`64` - 1, inclusive.
+
+    .. method:: type(type)
+
+        :param type: The type of the certificate. There are two options,
+            user or host.
+        :type type: :class:`SSHCertificateType`
+
+    .. method:: key_id(key_id)
+
+        :param key_id: The key ID to be included in the certificate. This is
+            not a required value.
+        :type key_id: bytes
+
+    .. method:: valid_principals(valid_principals)
+
+        :param valid_principals: A list of principals that the certificate is
+            valid for. This is not a required value, but if not provided the
+            certificate is valid for any principal.
+        :type valid_principals: list[bytes]
+
+    .. method:: valid_after(valid_after)
+
+        :param valid_after: The time (in UTC) that marks the activation
+            time for the certificate. Naïve datetime values are treated as
+            UTC, but timezone aware datetime values are also allowed.
+            This is a required value.
+        :type valid_after: :class:`datetime.datetime`
+
+    .. method:: valid_before(valid_before)
+
+        :param valid_before: The time (in UTC) that marks the expiration
+            time for the certificate. Naïve datetime values are treated as
+            UTC, but timezone aware datetime values are also allowed.
+            This is a required value.
+        :type valid_before: :class:`datetime.datetime`
+
+    .. method:: add_critical_option(name, value)
+
+        :param name: The name of the critical option to add. No duplicates
+            are allowed.
+        :type name: bytes
+        :param value: The value of the critical option to add. This is
+            commonly an empty byte string.
+        :type value: bytes
+
+    .. method:: add_extension(name, value)
+
+        :param name: The name of the extension to add. No duplicates are
+            allowed.
+        :type name: bytes
+        :param value: The value of the extension to add.
+        :type value: bytes
+
+    .. method:: sign(private_key)
+
+        :param private_key: The private key that will be used to sign the
+            certificate.
+        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+
+        :return: The signed certificate.
+        :rtype: :class:`SSHCertificate`
+
 PKCS12
 ~~~~~~
 
