@@ -459,6 +459,179 @@ An example ECDSA key in OpenSSH format::
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
 
+
+OpenSSH Certificate
+~~~~~~~~~~~~~~~~~~~
+
+The format used by OpenSSH for certificates, as specified in
+`PROTOCOL.certkeys`_.
+
+.. function:: load_ssh_public_identity(data)
+
+    .. versionadded:: 40.0
+
+    .. note::
+
+        This function does not support parsing certificates with DSA public
+        keys or signatures from DSA certificate authorities. DSA is a
+        deprecated algorithm and should not be used.
+
+    Deserialize an OpenSSH encoded identity to an instance of
+    :class:`SSHCertificate` or the appropriate public key type.
+    Parsing a certificate does not verify anything. It is up to the caller to
+    perform any necessary verification.
+
+    :param data: The OpenSSH encoded data.
+    :type data: bytes
+
+    :returns: :class:`SSHCertificate` or one of
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        , or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
+
+    :raises ValueError: If the OpenSSH data could not be properly decoded.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the data contains
+        a public key type that is not supported.
+
+
+.. class:: SSHCertificate
+
+    .. versionadded:: 40.0
+
+    .. attribute:: nonce
+
+        :type: bytes
+
+        The nonce field is a CA-provided random value of arbitrary length
+        (but typically 16 or 32 bytes) included to make attacks that depend on
+        inducing collisions in the signature hash infeasible.
+
+    .. method:: public_key()
+
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+        The public key contained in the certificate.
+
+    .. attribute:: serial
+
+        :type: int
+
+        Serial is an optional certificate serial number set by the CA to
+        provide an abbreviated way to refer to certificates from that CA.
+        If a CA does not wish to number its certificates, it must set this
+        field to zero.
+
+    .. attribute:: type
+
+        :type: :class:`SSHCertificateType`
+
+        Type specifies whether this certificate is for identification of a user
+        or a host.
+
+    .. attribute:: key_id
+
+        :type: bytes
+
+        This is a free-form text field that is filled in by the CA at the time
+        of signing; the intention is that the contents of this field are used to
+        identify the identity principal in log messages.
+
+    .. attribute:: valid_principals
+
+        :type: list[bytes]
+
+        "valid principals" is a list containing zero or more principals as
+        byte strings. These principals list the names for which this
+        certificate is valid; hostnames for host certificates and
+        usernames for user certificates. As a special case, an
+        empty list means the certificate is valid for any principal of
+        the specified type.
+
+    .. attribute:: valid_after
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the UTC time after which the certificate
+        is valid. **This time is inclusive.**
+
+    .. attribute:: valid_before
+
+        :type: :class:`datetime.datetime`
+
+        A naïve datetime representing the UTC time before which the certificate
+        is valid. **This time is not inclusive.**
+
+    .. attribute:: critical_options
+
+        :type: dict[bytes, bytes]
+
+        Critical options is a dict of zero or more options that are
+        critical for the certificate to be considered valid. If
+        any of these options are not supported by the implementation, the
+        certificate must be rejected.
+
+    .. attribute:: extensions
+
+        :type: dict[bytes, bytes]
+
+        Extensions is a dict of zero or more options that are
+        non-critical for the certificate to be considered valid. If any of
+        these options are not supported by the implementation, the
+        implementation may safely ignore them.
+
+    .. method:: signature_key()
+
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        or
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+        The public key used to sign the certificate.
+
+    .. method:: verify_cert_signature()
+
+        .. warning::
+
+            This method does not validate anything about whether the
+            signing key is trusted! Callers are responsible for validating
+            trust in the signer.
+
+        Validates that the signature on the certificate was created by
+        the private key associated with the certificate's signature key
+        and that the certificate has not been changed since signing.
+
+        :return: None
+        :raises: :class:`~cryptography.exceptions.InvalidSignature` if the
+            signature is invalid.
+
+    .. method:: public_bytes()
+
+        :return: The serialized certificate in OpenSSH format.
+        :rtype: bytes
+
+
+.. class:: SSHCertificateType
+
+    .. versionadded:: 40.0
+
+    An enumeration of the types of SSH certificates.
+
+    .. attribute:: USER
+
+        The cert is intended for identification of a user. Corresponds to the
+        value ``1``.
+
+    .. attribute:: HOST
+
+        The cert is intended for identification of a host. Corresponds to the
+        value ``2``.
+
 PKCS12
 ~~~~~~
 

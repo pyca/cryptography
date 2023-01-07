@@ -4,10 +4,12 @@
 
 
 import base64
+import datetime
 import os
 
 import pytest
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -23,6 +25,7 @@ from cryptography.hazmat.primitives.serialization import (
     PublicFormat,
     load_pem_private_key,
     load_ssh_private_key,
+    load_ssh_public_identity,
     load_ssh_public_key,
     ssh,
 )
@@ -1009,3 +1012,229 @@ class TestEd25519SSHSerialization:
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
+
+
+class TestSSHCertificate:
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support",
+    )
+    def test_loads_ssh_cert(self, backend):
+        # secp256r1 public key, ed25519 signing key
+        cert = load_ssh_public_identity(
+            b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYTItbm"
+            b"lzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgtdU+dl9vD4xPi8afxERYo"
+            b"s0c0d9/3m7XGY6fGeSkqn0AAAAIbmlzdHAyNTYAAABBBAsuVFNNj/mMyFm2xB99"
+            b"G4xiaUJE1lZNjcp+S2tXYW5KorcHpusSlSqOkUPZ2l0644dgiNPDKR/R+BtYENC"
+            b"8aq8AAAAAAAAAAAAAAAEAAAAUdGVzdEBjcnlwdG9ncmFwaHkuaW8AAAAaAAAACm"
+            b"NyeXB0b3VzZXIAAAAIdGVzdHVzZXIAAAAAY7KyZAAAAAB2frXAAAAAAAAAAIIAA"
+            b"AAVcGVybWl0LVgxMS1mb3J3YXJkaW5nAAAAAAAAABdwZXJtaXQtYWdlbnQtZm9y"
+            b"d2FyZGluZwAAAAAAAAAWcGVybWl0LXBvcnQtZm9yd2FyZGluZwAAAAAAAAAKcGV"
+            b"ybWl0LXB0eQAAAAAAAAAOcGVybWl0LXVzZXItcmMAAAAAAAAAAAAAADMAAAALc3"
+            b"NoLWVkMjU1MTkAAAAg3P0eyGf2crKGwSlnChbLzTVOFKwQELE1Ve+EZ6rXF18AA"
+            b"ABTAAAAC3NzaC1lZDI1NTE5AAAAQKoij8BsPj/XLb45+wHmRWKNqXeZYXyDIj8J"
+            b"IE6dIymjEqq0TP6ntu5t59hTmWlDO85GnMXAVGBjFbeikBMfAQc= reaperhulk"
+            b"@despoina.local"
+        )
+        assert isinstance(cert, ssh.SSHCertificate)
+        cert.verify_cert_signature()
+        signature_key = cert.signature_key()
+        assert isinstance(signature_key, ed25519.Ed25519PublicKey)
+        assert cert.nonce == (
+            b"\xb5\xd5>v_o\x0f\x8cO\x8b\xc6\x9f\xc4DX\xa2\xcd\x1c\xd1\xdf"
+            b"\x7f\xden\xd7\x19\x8e\x9f\x19\xe4\xa4\xaa}"
+        )
+        public_key = cert.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        assert isinstance(public_key.curve, ec.SECP256R1)
+        assert cert.serial == 0
+        assert cert.type is ssh.SSHCertificateType.USER
+        assert cert.key_id == b"test@cryptography.io"
+        assert cert.valid_principals == [b"cryptouser", b"testuser"]
+        assert cert.valid_before == datetime.datetime(2032, 12, 30, 10, 32, 32)
+        assert cert.valid_after == datetime.datetime(2023, 1, 2, 10, 31)
+        assert cert.critical_options == {}
+        assert cert.extensions == {
+            b"permit-X11-forwarding": b"",
+            b"permit-agent-forwarding": b"",
+            b"permit-port-forwarding": b"",
+            b"permit-pty": b"",
+            b"permit-user-rc": b"",
+        }
+
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p384.pub",
+            "p256-p521.pub",
+            "p256-rsa-sha1.pub",
+            "p256-rsa-sha256.pub",
+            "p256-rsa-sha512.pub",
+        ],
+    )
+    def test_verify_cert_signature(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        cert = load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
+        cert.verify_cert_signature()
+
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p256-empty-principals.pub",
+            "p256-p384.pub",
+            "p256-p521.pub",
+            "p256-rsa-sha1.pub",
+            "p256-rsa-sha256.pub",
+            "p256-rsa-sha512.pub",
+        ],
+    )
+    def test_invalid_signature(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        data = bytearray(data)
+        # mutate the signature so it's invalid
+        data[-10] = 71
+        cert = load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
+        with pytest.raises(InvalidSignature):
+            cert.verify_cert_signature()
+
+    def test_not_bytes(self):
+        with pytest.raises(TypeError):
+            load_ssh_public_identity(
+                "these aren't bytes"  # type:ignore[arg-type]
+            )
+
+    def test_load_ssh_public_key(self, backend):
+        # This test will be removed when we implement load_ssh_public_key
+        # in terms of load_ssh_public_identity. Needed for coverage now.
+        pub_data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key.pub"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_ssh_public_identity(pub_data)
+        assert isinstance(key, rsa.RSAPublicKey)
+
+    @pytest.mark.parametrize("filename", ["dsa-p256.pub", "p256-dsa.pub"])
+    def test_dsa_unsupported(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with raises_unsupported_algorithm(None):
+            load_ssh_public_identity(data)
+
+    def test_mismatched_inner_signature_type_and_sig_type(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "OpenSSH",
+                "certs",
+                "p256-p256-broken-signature-key-type.pub",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(data)
+
+    def test_invalid_cert_type(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "OpenSSH",
+                "certs",
+                "p256-p256-invalid-cert-type.pub",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(data)
+
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p256-duplicate-extension.pub",
+            "p256-p256-non-lexical-extensions.pub",
+            "p256-p256-duplicate-crit-opts.pub",
+            "p256-p256-non-lexical-crit-opts.pub",
+        ],
+    )
+    def test_invalid_encodings(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(data)
+
+    def test_invalid_line_format(self, backend):
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(b"whaaaaaaaaaaat")
+
+    def test_invalid_b64(self, backend):
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(b"ssh-rsa-cert-v01@openssh.com invalid")
+
+    def test_inner_outer_key_type_mismatch(self):
+        with pytest.raises(ValueError):
+            load_ssh_public_identity(
+                b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAK0VjZHNhLXNoYTI"
+                b"tbmlzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAg/9dq+iibMSMdJ0v"
+                b"l6D0SrsazwccWptLQs4sEgJBVnQMAAAAIbmlzdHAyNTYAAABBBAsuVFNNj/m"
+                b"MyFm2xB99G4xiaUJE1lZNjcp+S2tXYW5KorcHpusSlSqOkUPZ2l0644dgiNP"
+                b"DKR/R+BtYENC8aq8AAAAAAAAAAAAAAAEAAAAUdGVzdEBjcnlwdG9ncmFwaHk"
+                b"uaW8AAAAaAAAACmNyeXB0b3VzZXIAAAAIdGVzdHVzZXIAAAAAY7ZXNAAAAAB"
+                b"2glqqAAAAAAAAAIIAAAAVcGVybWl0LVgxMS1mb3J3YXJkaW5nAAAAAAAAABd"
+                b"wZXJtaXQtYWdlbnQtZm9yd2FyZGluZwAAAAAAAAAWcGVybWl0LXBvcnQtZm9"
+                b"yd2FyZGluZwAAAAAAAAAKcGVybWl0LXB0eQAAAAAAAAAOcGVybWl0LXVzZXI"
+                b"tcmMAAAAAAAAAAAAAAGgAAAATZWNkc2Etc2hhMi1uaXN0cDI1NgAAAAhuaXN"
+                b"0cDI1NgAAAEEEzwNcwptXrrgztCug8ZB82f5OsPWJiO4WP0kjdFz1vbBGQOU"
+                b"DcCaabh5EbgfMOf1mg58zw35QrqjTXDiBMjyPhwAAAGQAAAATZWNkc2Etc2h"
+                b"hMi1uaXN0cDI1NgAAAEkAAAAhAOaNCEtn0JkFfSygACVZMBUMd5/m7avwqxW"
+                b"+FxCje1GpAAAAIGf9opl4YoC5XcO92WMFEwUdE3jUQtBg3GRQlXBqFcoL"
+            )
+
+    def test_loads_a_cert_empty_principals(self, backend):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "OpenSSH",
+                "certs",
+                "p256-p256-empty-principals.pub",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        cert = load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
+        assert cert.valid_principals == []
+        assert cert.extensions == {}
+        assert cert.critical_options == {}
+
+    def test_public_bytes(self, backend):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "OpenSSH",
+                "certs",
+                "p256-p256-empty-principals.pub",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        cert = load_ssh_public_identity(data)
+        assert isinstance(cert, ssh.SSHCertificate)
+        assert data == cert.public_bytes()
