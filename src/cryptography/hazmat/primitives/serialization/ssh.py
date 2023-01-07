@@ -861,15 +861,13 @@ class SSHCertificate:
 
 
 def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
-    hash_alg: hashes.HashAlgorithm
     if isinstance(curve, ec.SECP256R1):
-        hash_alg = hashes.SHA256()
+        return hashes.SHA256()
     elif isinstance(curve, ec.SECP384R1):
-        hash_alg = hashes.SHA384()
+        return hashes.SHA384()
     else:
         assert isinstance(curve, ec.SECP521R1)
-        hash_alg = hashes.SHA512()
-    return hash_alg
+        return hashes.SHA512()
 
 
 def load_ssh_public_identity(
