@@ -555,16 +555,16 @@ The format used by OpenSSH for certificates, as specified in
 
     .. attribute:: valid_after
 
-        :type: :class:`datetime.datetime`
+        :type: int
 
-        A naïve datetime representing the UTC time after which the certificate
+        An integer representing the UTC timestamp after which the certificate
         is valid. **This time is inclusive.**
 
     .. attribute:: valid_before
 
-        :type: :class:`datetime.datetime`
+        :type: int
 
-        A naïve datetime representing the UTC time before which the certificate
+        An integer representing the UTC timestamp before which the certificate
         is valid. **This time is not inclusive.**
 
     .. attribute:: critical_options
@@ -655,8 +655,12 @@ SSH Certificate Builder
         >>> signing_key = ec.generate_private_key(ec.SECP256R1())
         >>> private_key = ec.generate_private_key(ec.SECP256R1())
         >>> public_key = private_key.public_key()
-        >>> valid_after = datetime.datetime(2023, 1, 1, 1)
-        >>> valid_before = datetime.datetime(2023, 7, 1, 1)
+        >>> valid_after = datetime.datetime(
+        ...     2023, 1, 1, 1, tzinfo=datetime.timezone.utc
+        ... ).timestamp()
+        >>> valid_before = datetime.datetime(
+        ...     2023, 7, 1, 1, tzinfo=datetime.timezone.utc
+        ... ).timestamp()
         >>> key_id = b"a_key_id"
         >>> valid_principals = [b"eve", b"alice"]
         >>> builder = (
@@ -713,19 +717,15 @@ SSH Certificate Builder
 
     .. method:: valid_after(valid_after)
 
-        :param valid_after: The time (in UTC) that marks the activation
-            time for the certificate. Naïve datetime values are treated as
-            UTC, but timezone aware datetime values are also allowed.
-            This is a required value.
-        :type valid_after: :class:`datetime.datetime`
+        :param valid_after: The timestamp (in UTC) that marks the activation
+            time for the certificate. This is a required value.
+        :type valid_after: int
 
     .. method:: valid_before(valid_before)
 
-        :param valid_before: The time (in UTC) that marks the expiration
-            time for the certificate. Naïve datetime values are treated as
-            UTC, but timezone aware datetime values are also allowed.
-            This is a required value.
-        :type valid_before: :class:`datetime.datetime`
+        :param valid_before: The timestamp (in UTC) that marks the expiration
+            time for the certificate. This is a required value.
+        :type valid_before: int
 
     .. method:: add_critical_option(name, value)
 
