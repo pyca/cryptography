@@ -9,6 +9,7 @@ import os
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -63,7 +64,11 @@ class TestOpenSSHSerialization:
             lambda f: f.read(),
             mode="rb",
         )
-        public_key = load_ssh_public_key(pub_data, backend)
+        if key_file.startswith("dsa"):
+            with pytest.warns(utils.DeprecatedIn40):
+                public_key = load_ssh_public_key(pub_data, backend)
+        else:
+            public_key = load_ssh_public_key(pub_data, backend)
         nocomment_data = b" ".join(pub_data.split()[:2])
         assert (
             public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
@@ -79,7 +84,11 @@ class TestOpenSSHSerialization:
                 lambda f: f.read(),
                 mode="rb",
             )
-            cert_key = load_ssh_public_key(cert_data, backend)
+            if cert_file.startswith("dsa"):
+                with pytest.warns(utils.DeprecatedIn40):
+                    cert_key = load_ssh_public_key(cert_data, backend)
+            else:
+                cert_key = load_ssh_public_key(cert_data, backend)
             assert (
                 cert_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
                 == nocomment_data
@@ -87,7 +96,11 @@ class TestOpenSSHSerialization:
 
             # try with more spaces
             cert_data = b" \t ".join(cert_data.split())
-            cert_key = load_ssh_public_key(cert_data, backend)
+            if cert_file.startswith("dsa"):
+                with pytest.warns(utils.DeprecatedIn40):
+                    cert_key = load_ssh_public_key(cert_data, backend)
+            else:
+                cert_key = load_ssh_public_key(cert_data, backend)
             assert (
                 cert_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
                 == nocomment_data
@@ -747,7 +760,8 @@ class TestDSSSSHSerialization:
             b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost extra"
         )
 
-        load_ssh_public_key(ssh_key, backend)
+        with pytest.warns(utils.DeprecatedIn40):
+            load_ssh_public_key(ssh_key, backend)
 
     def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
         ssh_key = (
@@ -799,7 +813,8 @@ class TestDSSSSHSerialization:
             b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
         )
 
-        key = load_ssh_public_key(ssh_key, backend)
+        with pytest.warns(utils.DeprecatedIn40):
+            key = load_ssh_public_key(ssh_key, backend)
 
         assert key is not None
         assert isinstance(key, dsa.DSAPublicKey)
