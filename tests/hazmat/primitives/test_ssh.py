@@ -8,7 +8,6 @@ import datetime
 import os
 
 import pytest
-import pytz
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import (
@@ -1056,8 +1055,8 @@ class TestSSHCertificate:
         assert cert.type is SSHCertificateType.USER
         assert cert.key_id == b"test@cryptography.io"
         assert cert.valid_principals == [b"cryptouser", b"testuser"]
-        assert cert.valid_before == datetime.datetime(2032, 12, 30, 10, 32, 32)
-        assert cert.valid_after == datetime.datetime(2023, 1, 2, 10, 31)
+        assert cert.valid_before == 1988015552
+        assert cert.valid_after == 1672655460
         assert cert.critical_options == {}
         assert cert.extensions == {
             b"permit-X11-forwarding": b"",
@@ -1249,11 +1248,12 @@ class TestSSHCertificateBuilder:
     def test_signs_a_cert(self):
         private_key = ec.generate_private_key(ec.SECP256R1())
         public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
-        valid_before = datetime.datetime(2023, 7, 16, 18, 43)
-        tz = pytz.timezone("US/Eastern")
-        valid_before = tz.localize(valid_before)
-        utc_time_before = datetime.datetime(2023, 7, 16, 22, 43)
-        valid_after = datetime.datetime(2023, 1, 16, 22, 43)
+        valid_after = datetime.datetime(
+            2023, 1, 1, 1, tzinfo=datetime.timezone.utc
+        ).timestamp()
+        valid_before = datetime.datetime(
+            2023, 6, 1, 1, tzinfo=datetime.timezone.utc
+        ).timestamp()
         key_id = b"test"
         valid_principals = [b"eve", b"alice"]
         builder = (
@@ -1278,8 +1278,8 @@ class TestSSHCertificateBuilder:
         assert cert.type is SSHCertificateType.USER
         assert cert.key_id == key_id
         assert cert.valid_principals == valid_principals
-        assert cert.valid_before == utc_time_before
-        assert cert.valid_after == valid_after
+        assert cert.valid_before == int(valid_before)
+        assert cert.valid_after == int(valid_after)
         assert cert.critical_options == {b"ordered": b"", b"maybe": b"test2"}
         assert list(cert.critical_options) == [b"maybe", b"ordered"]
         assert cert.extensions == {b"test": b"a value", b"allowed": b""}
@@ -1355,22 +1355,26 @@ class TestSSHCertificateBuilder:
     def test_valid_before_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.valid_before("not a datetime")  # type: ignore[arg-type]
+            builder.valid_before("not an int")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            builder.valid_before(datetime.datetime(1960, 1, 1))
-        builder = builder.valid_before(datetime.datetime(2023, 1, 1))
+            builder.valid_before(-1)
         with pytest.raises(ValueError):
-            builder.valid_before(datetime.datetime(2023, 1, 1))
+            builder.valid_after(2**64)
+        builder = builder.valid_before(12345)
+        with pytest.raises(ValueError):
+            builder.valid_before(123456)
 
     def test_valid_after_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.valid_after("not a datetime")  # type: ignore[arg-type]
+            builder.valid_after("not an int")  # type: ignore[arg-type]
         with pytest.raises(ValueError):
-            builder.valid_after(datetime.datetime(1960, 1, 1))
-        builder = builder.valid_after(datetime.datetime(2023, 1, 1))
+            builder.valid_after(-1)
         with pytest.raises(ValueError):
-            builder.valid_after(datetime.datetime(2023, 1, 1))
+            builder.valid_after(2**64)
+        builder = builder.valid_after(1234)
+        with pytest.raises(ValueError):
+            builder.valid_after(12345)
 
     def test_add_critical_option_errors(self):
         builder = SSHCertificateBuilder()
@@ -1402,8 +1406,8 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(TypeError):
@@ -1414,8 +1418,8 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(ValueError):
@@ -1427,8 +1431,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
         )
         with pytest.raises(ValueError):
             builder.sign(private_key)
@@ -1438,8 +1442,8 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(ValueError):
@@ -1451,7 +1455,7 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(ValueError):
@@ -1463,7 +1467,7 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_principals([b"bob"])
-            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_after(0)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(ValueError):
@@ -1475,8 +1479,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_principals([b"eve"])
-            .valid_after(datetime.datetime(2023, 1, 2))
-            .valid_before(datetime.datetime(2023, 1, 1))
+            .valid_after(20)
+            .valid_before(0)
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(ValueError):
@@ -1489,8 +1493,8 @@ class TestSSHCertificateBuilder:
             .public_key(private_key.public_key())
             .serial(123456789)
             .valid_principals([b"alice"])
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)
@@ -1502,8 +1506,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
             .add_critical_option(b"zebra@cryptography.io", b"")
             .add_critical_option(b"apple@cryptography.io", b"")
@@ -1537,8 +1541,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)
@@ -1554,8 +1558,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)
@@ -1570,8 +1574,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(0)
+            .valid_before(2**64 - 1)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)
@@ -1588,8 +1592,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(1672531200)
+            .valid_before(1672617600)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)
@@ -1640,8 +1644,8 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .valid_for_all_principals()
-            .valid_after(datetime.datetime(2023, 1, 1))
-            .valid_before(datetime.datetime(2023, 1, 2))
+            .valid_after(1672531200)
+            .valid_before(1672617600)
             .type(SSHCertificateType.USER)
         )
         cert = builder.sign(private_key)

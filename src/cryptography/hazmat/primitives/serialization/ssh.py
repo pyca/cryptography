@@ -4,7 +4,6 @@
 
 
 import binascii
-import datetime
 import enum
 import os
 import re
@@ -764,8 +763,8 @@ class SSHCertificate:
             raise ValueError("Invalid certificate type")
         self._key_id = _key_id
         self._valid_principals = _valid_principals
-        self._valid_after = datetime.datetime.utcfromtimestamp(_valid_after)
-        self._valid_before = datetime.datetime.utcfromtimestamp(_valid_before)
+        self._valid_after = _valid_after
+        self._valid_before = _valid_before
         self._critical_options = _critical_options
         self._extensions = _extensions
         self._sig_type = _sig_type
@@ -803,11 +802,11 @@ class SSHCertificate:
         return self._valid_principals
 
     @property
-    def valid_before(self) -> datetime.datetime:
+    def valid_before(self) -> int:
         return self._valid_before
 
     @property
-    def valid_after(self) -> datetime.datetime:
+    def valid_after(self) -> int:
         return self._valid_after
 
     @property
@@ -1041,17 +1040,6 @@ def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     return b"".join([key_type, b" ", pub])
 
 
-def _datetime_to_utc_timestamp(time: datetime.datetime) -> int:
-    if time.tzinfo is not None:
-        offset = time.utcoffset()
-        offset = offset if offset else datetime.timedelta()
-        new_time = time.replace(tzinfo=datetime.timezone.utc) - offset
-    else:
-        new_time = time.replace(tzinfo=datetime.timezone.utc)
-
-    return int(new_time.timestamp())
-
-
 _SSH_CERT_PRIVATE_KEY_TYPES = typing.Union[
     ec.EllipticCurvePrivateKey,
     rsa.RSAPrivateKey,
@@ -1068,8 +1056,8 @@ class SSHCertificateBuilder:
         _key_id: typing.Optional[bytes] = None,
         _valid_principals: typing.List[bytes] = [],
         _valid_for_all_principals: bool = False,
-        _valid_before: typing.Optional[datetime.datetime] = None,
-        _valid_after: typing.Optional[datetime.datetime] = None,
+        _valid_before: typing.Optional[int] = None,
+        _valid_after: typing.Optional[int] = None,
         _critical_options: typing.List[typing.Tuple[bytes, bytes]] = [],
         _extensions: typing.List[typing.Tuple[bytes, bytes]] = [],
     ):
@@ -1225,12 +1213,13 @@ class SSHCertificateBuilder:
         )
 
     def valid_before(
-        self, valid_before: datetime.datetime
+        self, valid_before: typing.Union[int, float]
     ) -> "SSHCertificateBuilder":
-        if not isinstance(valid_before, datetime.datetime):
-            raise TypeError("valid_before must be a datetime")
-        if _datetime_to_utc_timestamp(valid_before) < 0:
-            raise ValueError("valid_before must be after the Unix epoch")
+        if not isinstance(valid_before, (int, float)):
+            raise TypeError("valid_before must be an int or float")
+        valid_before = int(valid_before)
+        if valid_before < 0 or valid_before >= 2**64:
+            raise ValueError("valid_before must [0, 2**64)")
         if self._valid_before is not None:
             raise ValueError("valid_before already set")
 
@@ -1248,12 +1237,13 @@ class SSHCertificateBuilder:
         )
 
     def valid_after(
-        self, valid_after: datetime.datetime
+        self, valid_after: typing.Union[int, float]
     ) -> "SSHCertificateBuilder":
-        if not isinstance(valid_after, datetime.datetime):
-            raise TypeError("valid_after must be a datetime")
-        if _datetime_to_utc_timestamp(valid_after) < 0:
-            raise ValueError("valid_after must be after the Unix epoch")
+        if not isinstance(valid_after, (int, float)):
+            raise TypeError("valid_after must be an int or float")
+        valid_after = int(valid_after)
+        if valid_after < 0 or valid_after >= 2**64:
+            raise ValueError("valid_after must [0, 2**64)")
         if self._valid_after is not None:
             raise ValueError("valid_after already set")
 
@@ -1353,9 +1343,7 @@ class SSHCertificateBuilder:
         if self._valid_after is None:
             raise ValueError("valid_after must be set")
 
-        valid_after = _datetime_to_utc_timestamp(self._valid_after)
-        valid_before = _datetime_to_utc_timestamp(self._valid_before)
-        if valid_after > valid_before:
+        if self._valid_after > self._valid_before:
             raise ValueError("valid_after must be earlier than valid_before")
 
         # lexically sort our byte strings
@@ -1379,8 +1367,8 @@ class SSHCertificateBuilder:
         for p in self._valid_principals:
             fprincipals.put_sshstr(p)
         f.put_sshstr(fprincipals.tobytes())
-        f.put_u64(valid_after)
-        f.put_u64(valid_before)
+        f.put_u64(self._valid_after)
+        f.put_u64(self._valid_before)
         fcrit = _FragList()
         for name, value in self._critical_options:
             fcrit.put_sshstr(name)
