@@ -715,6 +715,7 @@ Key Interfaces
         :param signature_algorithm: An instance of
             :class:`EllipticCurveSignatureAlgorithm`.
 
+        :returns: None
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 

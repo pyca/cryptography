@@ -123,6 +123,7 @@ Key interfaces
 
         :param bytes data: The data to verify.
 
+        :returns: None
         :raises cryptography.exceptions.InvalidSignature: Raised when the
             signature cannot be verified.
 
