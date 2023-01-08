@@ -557,15 +557,15 @@ The format used by OpenSSH for certificates, as specified in
 
         :type: int
 
-        An integer representing the UTC timestamp after which the certificate
-        is valid. **This time is inclusive.**
+        An integer representing the Unix timestamp (in UTC) after which the
+        certificate is valid. **This time is inclusive.**
 
     .. attribute:: valid_before
 
         :type: int
 
-        An integer representing the UTC timestamp before which the certificate
-        is valid. **This time is not inclusive.**
+        An integer representing the Unix timestamp (in UTC) before which the
+        certificate is valid. **This time is not inclusive.**
 
     .. attribute:: critical_options
 
@@ -717,14 +717,14 @@ SSH Certificate Builder
 
     .. method:: valid_after(valid_after)
 
-        :param valid_after: The timestamp (in UTC) that marks the activation
-            time for the certificate. This is a required value.
+        :param valid_after: The Unix timestamp (in UTC) that marks the
+            activation time for the certificate. This is a required value.
         :type valid_after: int
 
     .. method:: valid_before(valid_before)
 
-        :param valid_before: The timestamp (in UTC) that marks the expiration
-            time for the certificate. This is a required value.
+        :param valid_before: The Unix timestamp (in UTC) that marks the
+            expiration time for the certificate. This is a required value.
         :type valid_before: int
 
     .. method:: add_critical_option(name, value)
