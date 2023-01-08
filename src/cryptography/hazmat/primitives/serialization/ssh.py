@@ -1066,7 +1066,8 @@ class SSHCertificateBuilder:
         _serial: typing.Optional[int] = None,
         _type: typing.Optional[SSHCertificateType] = None,
         _key_id: typing.Optional[bytes] = None,
-        _valid_principals: typing.Optional[typing.List[bytes]] = None,
+        _valid_principals: typing.List[bytes] = [],
+        _valid_for_all_principals: bool = False,
         _valid_before: typing.Optional[datetime.datetime] = None,
         _valid_after: typing.Optional[datetime.datetime] = None,
         _critical_options: typing.List[typing.Tuple[bytes, bytes]] = [],
@@ -1077,6 +1078,7 @@ class SSHCertificateBuilder:
         self._type = _type
         self._key_id = _key_id
         self._valid_principals = _valid_principals
+        self._valid_for_all_principals = _valid_for_all_principals
         self._valid_before = _valid_before
         self._valid_after = _valid_after
         self._critical_options = _critical_options
@@ -1103,6 +1105,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1123,6 +1126,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1141,6 +1145,7 @@ class SSHCertificateBuilder:
             _type=type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1159,6 +1164,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1168,9 +1174,19 @@ class SSHCertificateBuilder:
     def valid_principals(
         self, valid_principals: typing.List[bytes]
     ) -> "SSHCertificateBuilder":
-        if not all(isinstance(x, bytes) for x in valid_principals):
-            raise TypeError("principals must be a list of bytes")
-        if self._valid_principals is not None:
+        if self._valid_for_all_principals:
+            raise ValueError(
+                "Principals can't be set because the cert is valid "
+                "for all principals"
+            )
+        if (
+            not all(isinstance(x, bytes) for x in valid_principals)
+            or not valid_principals
+        ):
+            raise TypeError(
+                "principals must be a list of bytes and can't be empty"
+            )
+        if self._valid_principals:
             raise ValueError("valid_principals already set")
 
         return SSHCertificateBuilder(
@@ -1179,6 +1195,29 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
+            _valid_before=self._valid_before,
+            _valid_after=self._valid_after,
+            _critical_options=self._critical_options,
+            _extensions=self._extensions,
+        )
+
+    def valid_for_all_principals(self):
+        if self._valid_principals:
+            raise ValueError(
+                "valid_principals already set, can't set "
+                "valid_for_all_principals"
+            )
+        if self._valid_for_all_principals:
+            raise ValueError("valid_for_all_principals already set")
+
+        return SSHCertificateBuilder(
+            _public_key=self._public_key,
+            _serial=self._serial,
+            _type=self._type,
+            _key_id=self._key_id,
+            _valid_principals=self._valid_principals,
+            _valid_for_all_principals=True,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1201,6 +1240,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1223,6 +1263,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=valid_after,
             _critical_options=self._critical_options,
@@ -1244,6 +1285,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options + [(name, value)],
@@ -1265,6 +1307,7 @@ class SSHCertificateBuilder:
             _type=self._type,
             _key_id=self._key_id,
             _valid_principals=self._valid_principals,
+            _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
@@ -1296,10 +1339,13 @@ class SSHCertificateBuilder:
 
         # A zero length list is valid, but means the certificate
         # is valid for any principal of the specified type. We require
-        # the user to explicitly set this to an empty list if they want
+        # the user to explicitly set valid_for_all_principals to get
         # that behavior.
-        if self._valid_principals is None:
-            raise ValueError("valid_principals must be set")
+        if not self._valid_principals and not self._valid_for_all_principals:
+            raise ValueError(
+                "valid_principals must be set if valid_for_all_principals "
+                "is False"
+            )
 
         if self._valid_before is None:
             raise ValueError("valid_before must be set")

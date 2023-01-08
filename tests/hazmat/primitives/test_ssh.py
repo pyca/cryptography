@@ -1339,6 +1339,16 @@ class TestSSHCertificateBuilder:
         builder = builder.valid_principals([b"test"])
         with pytest.raises(ValueError):
             builder.valid_principals([b"test"])
+        with pytest.raises(ValueError):
+            builder.valid_for_all_principals()
+
+    def test_valid_for_all_principals_errors(self):
+        builder = SSHCertificateBuilder()
+        builder = builder.valid_for_all_principals()
+        with pytest.raises(ValueError):
+            builder.valid_for_all_principals()
+        with pytest.raises(ValueError):
+            builder.valid_principals([b"test"])
 
     def test_valid_before_errors(self):
         builder = SSHCertificateBuilder()
@@ -1389,7 +1399,7 @@ class TestSSHCertificateBuilder:
     def test_sign_unsupported_key(self):
         builder = (
             SSHCertificateBuilder()
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1401,7 +1411,7 @@ class TestSSHCertificateBuilder:
         private_key = ec.generate_private_key(ec.SECP256R1())
         builder = (
             SSHCertificateBuilder()
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1414,7 +1424,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
         )
@@ -1438,7 +1448,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
         )
@@ -1450,7 +1460,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_principals([b"bob"])
             .valid_after(datetime.datetime(2023, 1, 1))
             .type(SSHCertificateType.USER)
         )
@@ -1462,7 +1472,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_principals([b"eve"])
             .valid_after(datetime.datetime(2023, 1, 2))
             .valid_before(datetime.datetime(2023, 1, 1))
             .type(SSHCertificateType.USER)
@@ -1476,7 +1486,7 @@ class TestSSHCertificateBuilder:
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
             .serial(123456789)
-            .valid_principals([])
+            .valid_principals([b"alice"])
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1489,7 +1499,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1524,7 +1534,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1541,7 +1551,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1557,7 +1567,7 @@ class TestSSHCertificateBuilder:
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
-            .valid_principals([])
+            .valid_for_all_principals()
             .valid_after(datetime.datetime(2023, 1, 1))
             .valid_before(datetime.datetime(2023, 1, 2))
             .type(SSHCertificateType.USER)
@@ -1566,3 +1576,81 @@ class TestSSHCertificateBuilder:
         sig_key = cert.signature_key()
         assert isinstance(sig_key, rsa.RSAPublicKey)
         cert.verify_cert_signature()
+
+    def test_sign_and_byte_compare_rsa(self, monkeypatch):
+        # Monkey patch urandom to return a known value so we
+        # get a deterministic signature with RSA.
+        monkeypatch.setattr(os, "urandom", lambda _: b"\x00" * 32)
+        private_key = RSA_KEY_2048.private_key()
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_for_all_principals()
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        sig_key = cert.signature_key()
+        assert isinstance(sig_key, rsa.RSAPublicKey)
+        cert.verify_cert_signature()
+        assert cert.public_bytes() == (
+            b"ssh-rsa-cert-v01@openssh.com AAAAHHNzaC1yc2EtY2VydC12MDFAb3Blbn"
+            b"NzaC5jb20AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADA"
+            b"QABAAABAQDBevx+d0dMqlqoMDYVij/797UhaFG6IjDl1qv8wcbP71npI+oTMLxZ"
+            b"O3OAKrYIpuSjMGUjoxFrpao5ZhRRdOE7bEnpt4Bi5EnXLvsQ/UnpH6CLltBR54L"
+            b"p9avFtab3mEgnrbjnPaAPIrLv3Nt26rRu2tmO1lZidD/cbA4zal0M26p9wp5TY1"
+            b"4kyHpbLEIVloBjzetoqXK6u8Hjz/APuagONypNDCySDR6M7jM85HDcLoFFrbBb8"
+            b"pruHSTxQejMeEmJxYf8b7rNl58/IWPB1ymbNlvHL/4oSOlnrtHkjcxRWzpQ7U3g"
+            b"T9BThGyhCiI7EMyEHMgP3r7kTzEUwT6IavWDAAAAAAAAAAAAAAABAAAAAAAAAAA"
+            b"AAAAAY7DNAAAAAABjsh6AAAAAAAAAAAAAAAAAAAABFwAAAAdzc2gtcnNhAAAAAw"
+            b"EAAQAAAQEAwXr8fndHTKpaqDA2FYo/+/e1IWhRuiIw5dar/MHGz+9Z6SPqEzC8W"
+            b"TtzgCq2CKbkozBlI6MRa6WqOWYUUXThO2xJ6beAYuRJ1y77EP1J6R+gi5bQUeeC"
+            b"6fWrxbWm95hIJ6245z2gDyKy79zbduq0btrZjtZWYnQ/3GwOM2pdDNuqfcKeU2N"
+            b"eJMh6WyxCFZaAY83raKlyurvB48/wD7moDjcqTQwskg0ejO4zPORw3C6BRa2wW/"
+            b"Ka7h0k8UHozHhJicWH/G+6zZefPyFjwdcpmzZbxy/+KEjpZ67R5I3MUVs6UO1N4"
+            b"E/QU4RsoQoiOxDMhBzID96+5E8xFME+iGr1gwAAARQAAAAMcnNhLXNoYTItNTEy"
+            b"AAABAKCRnfhn6MZs3jRgIDICUpUyWrDCbpStEbdzhmoxF8w2m8klR7owRH/rxOf"
+            b"nWhKMGnXnoERS+az3Zh9ckiQPujkuEToORKpzu6CEWlzHSzyK1o2X548KkW76HJ"
+            b"gqzwMas94HY7UOJUgKSFUI0S3jAgqXAKSa1DxvJBu5/n57aUqPq+BmAtoI8uNBo"
+            b"x4F1pNEop38+oD7rUt8bZ8K0VcrubJZz806K8UNiK0mOahaEIkvZXBfzPGvSNRj"
+            b"0OjDl1dLUZaP8C1o5lVRomEm7pLcgE9i+ZDq5iz+mvQrSBStlpQ5hPGuUOrZ/oY"
+            b"ZLZ1G30R5tWj212MHoNZjxFxM8+f2OT4="
+        )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support",
+    )
+    def test_sign_and_byte_compare_ed25519(self, monkeypatch, backend):
+        # Monkey patch urandom to return a known value so we
+        # get a deterministic signature with Ed25519.
+        monkeypatch.setattr(os, "urandom", lambda _: b"\x00" * 32)
+        private_key = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.pem"),
+            lambda pemfile: load_pem_private_key(
+                pemfile.read(), None, backend
+            ),
+            mode="rb",
+        )
+        builder = (
+            SSHCertificateBuilder()
+            .public_key(private_key.public_key())
+            .valid_for_all_principals()
+            .valid_after(datetime.datetime(2023, 1, 1))
+            .valid_before(datetime.datetime(2023, 1, 2))
+            .type(SSHCertificateType.USER)
+        )
+        cert = builder.sign(private_key)
+        sig_key = cert.signature_key()
+        assert isinstance(sig_key, ed25519.Ed25519PublicKey)
+        cert.verify_cert_signature()
+        assert cert.public_bytes() == (
+            b"ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdj"
+            b"AxQG9wZW5zc2guY29tAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            b"AAAAAAAINdamAGCsQq31Uv+08lkBzoO4XLz2qYjJa8CGmj3B1EaAAAAAAAAAAAA"
+            b"AAABAAAAAAAAAAAAAAAAY7DNAAAAAABjsh6AAAAAAAAAAAAAAAAAAAAAMwAAAAt"
+            b"zc2gtZWQyNTUxOQAAACDXWpgBgrEKt9VL/tPJZAc6DuFy89qmIyWvAhpo9wdRGg"
+            b"AAAFMAAAALc3NoLWVkMjU1MTkAAABAAlF6Lxabxs+8fkOr7KjKYei9konIG13cQ"
+            b"gJ2tWf3yFcg3OuV5s/AkRmKdwHlQfTUrhRdOmDnGxeLEB0mvkVFCw=="
+        )

@@ -546,7 +546,7 @@ The format used by OpenSSH for certificates, as specified in
 
         :type: list[bytes]
 
-        "valid principals" is a list containing zero or more principals as
+        "valid principals" is a list containing one or more principals as
         byte strings. These principals list the names for which this
         certificate is valid; hostnames for host certificates and
         usernames for user certificates. As a special case, an
@@ -702,9 +702,14 @@ SSH Certificate Builder
     .. method:: valid_principals(valid_principals)
 
         :param valid_principals: A list of principals that the certificate is
-            valid for. This is not a required value, but if not provided the
-            certificate is valid for any principal.
+            valid for. This is a required value unless
+            :meth:`valid_for_all_principals` has been called.
         :type valid_principals: list[bytes]
+
+    .. method:: valid_for_all_principals()
+
+        Marks the certificate as valid for all principals. This cannot be
+        set if principals have been added via :meth:`valid_principals`.
 
     .. method:: valid_after(valid_after)
 
