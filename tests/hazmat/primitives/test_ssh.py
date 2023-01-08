@@ -1407,7 +1407,7 @@ class TestSSHCertificateBuilder:
             .type(SSHCertificateType.USER)
         )
         with pytest.raises(TypeError):
-            builder.sign("not a key")  # type: ignore[arg-type]
+            builder.sign("not a key")
 
     def test_sign_no_public_key(self):
         private_key = ec.generate_private_key(ec.SECP256R1())
@@ -1635,6 +1635,7 @@ class TestSSHCertificateBuilder:
             ),
             mode="rb",
         )
+        assert isinstance(private_key, ed25519.Ed25519PrivateKey)
         builder = (
             SSHCertificateBuilder()
             .public_key(private_key.public_key())
