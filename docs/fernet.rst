@@ -129,7 +129,7 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
         :param bytes or str token: The Fernet token. This is the result of
                                    calling :meth:`encrypt`.
-        :returns int: The UNIX timestamp of the token.
+        :returns int: The Unix timestamp of the token.
         :raises cryptography.fernet.InvalidToken: If the ``token``'s signature
                                                   is invalid this exception
                                                   is raised.
