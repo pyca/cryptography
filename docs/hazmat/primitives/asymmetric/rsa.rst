@@ -729,6 +729,7 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.asymmetric.utils.Prehashed`
             if the ``data`` you want to verify has already been hashed.
 
+        :returns: None
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
 
