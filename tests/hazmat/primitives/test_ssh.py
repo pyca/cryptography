@@ -64,16 +64,23 @@ class TestOpenSSHSerialization:
             lambda f: f.read(),
             mode="rb",
         )
+        nocomment_data = b" ".join(pub_data.split()[:2])
         if key_file.startswith("dsa"):
             with pytest.warns(utils.DeprecatedIn40):
                 public_key = load_ssh_public_key(pub_data, backend)
+            with pytest.warns(utils.DeprecatedIn40):
+                assert (
+                    public_key.public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
         else:
             public_key = load_ssh_public_key(pub_data, backend)
-        nocomment_data = b" ".join(pub_data.split()[:2])
-        assert (
-            public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
-            == nocomment_data
-        )
+            assert (
+                public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
+                == nocomment_data
+            )
 
         self.run_partial_pubkey(pub_data, backend)
 
@@ -87,24 +94,42 @@ class TestOpenSSHSerialization:
             if cert_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
                     cert_key = load_ssh_public_key(cert_data, backend)
+                with pytest.warns(utils.DeprecatedIn40):
+                    assert (
+                        cert_key.public_bytes(
+                            Encoding.OpenSSH, PublicFormat.OpenSSH
+                        )
+                        == nocomment_data
+                    )
             else:
                 cert_key = load_ssh_public_key(cert_data, backend)
-            assert (
-                cert_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
-                == nocomment_data
-            )
+                assert (
+                    cert_key.public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
 
             # try with more spaces
             cert_data = b" \t ".join(cert_data.split())
             if cert_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
                     cert_key = load_ssh_public_key(cert_data, backend)
+                with pytest.warns(utils.DeprecatedIn40):
+                    assert (
+                        cert_key.public_bytes(
+                            Encoding.OpenSSH, PublicFormat.OpenSSH
+                        )
+                        == nocomment_data
+                    )
             else:
                 cert_key = load_ssh_public_key(cert_data, backend)
-            assert (
-                cert_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
-                == nocomment_data
-            )
+                assert (
+                    cert_key.public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
 
             self.run_partial_pubkey(cert_data, backend)
 
@@ -153,63 +178,66 @@ class TestOpenSSHSerialization:
         password = None
         if "-psw" in key_file:
             password = b"password"
-        private_key = load_ssh_private_key(priv_data, password, backend)
-        assert (
-            private_key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
-            )
-            == nocomment_data
-        )
-
-        # bytearray
-        private_key = load_ssh_private_key(
-            bytearray(priv_data), password, backend
-        )
-        assert (
-            private_key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
-            )
-            == nocomment_data
-        )
-
-        # memoryview(bytes)
-        private_key = load_ssh_private_key(
-            memoryview(priv_data), password, backend
-        )
-        assert (
-            private_key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
-            )
-            == nocomment_data
-        )
-
-        # memoryview(bytearray)
-        private_key = load_ssh_private_key(
-            memoryview(bytearray(priv_data)), password, backend
-        )
-        assert (
-            private_key.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
-            )
-            == nocomment_data
-        )
+        for data in (
+            priv_data,
+            bytearray(priv_data),
+            memoryview(priv_data),
+            memoryview(bytearray(priv_data)),
+        ):
+            if key_file.startswith("dsa"):
+                with pytest.warns(utils.DeprecatedIn40):
+                    private_key = load_ssh_private_key(data, password, backend)
+                with pytest.warns(utils.DeprecatedIn40):
+                    assert (
+                        private_key.public_key().public_bytes(
+                            Encoding.OpenSSH, PublicFormat.OpenSSH
+                        )
+                        == nocomment_data
+                    )
+            else:
+                private_key = load_ssh_private_key(data, password, backend)
+                assert (
+                    private_key.public_key().public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
 
         # serialize with own code and reload
         encryption: KeySerializationEncryption = NoEncryption()
         if password:
             encryption = BestAvailableEncryption(password)
-        priv_data2 = private_key.private_bytes(
-            Encoding.PEM,
-            PrivateFormat.OpenSSH,
-            encryption,
-        )
-        private_key2 = load_ssh_private_key(priv_data2, password, backend)
-        assert (
-            private_key2.public_key().public_bytes(
-                Encoding.OpenSSH, PublicFormat.OpenSSH
+        if key_file.startswith("dsa"):
+            with pytest.warns(utils.DeprecatedIn40):
+                priv_data2 = private_key.private_bytes(
+                    Encoding.PEM,
+                    PrivateFormat.OpenSSH,
+                    encryption,
+                )
+            with pytest.warns(utils.DeprecatedIn40):
+                private_key2 = load_ssh_private_key(
+                    priv_data2, password, backend
+                )
+            with pytest.warns(utils.DeprecatedIn40):
+                assert (
+                    private_key2.public_key().public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
+        else:
+            priv_data2 = private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                encryption,
             )
-            == nocomment_data
-        )
+            private_key2 = load_ssh_private_key(priv_data2, password, backend)
+            assert (
+                private_key2.public_key().public_bytes(
+                    Encoding.OpenSSH, PublicFormat.OpenSSH
+                )
+                == nocomment_data
+            )
 
         # make sure multi-line base64 is used
         maxline = max(map(len, priv_data2.split(b"\n")))
@@ -616,15 +644,17 @@ class TestOpenSSHSerialization:
         )
         assert isinstance(key, dsa.DSAPrivateKey)
         if supported:
-            res = key.private_bytes(
-                Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
-            )
+            with pytest.warns(utils.DeprecatedIn40):
+                res = key.private_bytes(
+                    Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
+                )
             assert isinstance(res, bytes)
         else:
             with pytest.raises(ValueError):
-                key.private_bytes(
-                    Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
-                )
+                with pytest.warns(utils.DeprecatedIn40):
+                    key.private_bytes(
+                        Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
+                    )
 
 
 class TestRSASSHSerialization:

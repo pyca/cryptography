@@ -1616,6 +1616,13 @@ class Backend:
         # OpenSSH + PEM
         if format is serialization.PrivateFormat.OpenSSH:
             if encoding is serialization.Encoding.PEM:
+                if isinstance(key, dsa.DSAPrivateKey):
+                    warnings.warn(
+                        "SSH DSA key support is deprecated and will be "
+                        "removed in a future release",
+                        utils.DeprecatedIn40,
+                        stacklevel=3,
+                    )
                 return ssh._serialize_ssh_private_key(
                     key, password, encryption_algorithm
                 )
@@ -1697,6 +1704,13 @@ class Backend:
         # OpenSSH + OpenSSH
         if format is serialization.PublicFormat.OpenSSH:
             if encoding is serialization.Encoding.OpenSSH:
+                if isinstance(key, dsa.DSAPublicKey):
+                    warnings.warn(
+                        "SSH DSA key support is deprecated and will be "
+                        "removed in a future release",
+                        utils.DeprecatedIn40,
+                        stacklevel=3,
+                    )
                 return ssh.serialize_ssh_public_key(key)
 
             raise ValueError(

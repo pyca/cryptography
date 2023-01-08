@@ -642,6 +642,14 @@ def load_ssh_private_key(
     if edata != _PADDING[: len(edata)]:
         raise ValueError("Corrupt data: invalid padding")
 
+    if isinstance(private_key, dsa.DSAPrivateKey):
+        warnings.warn(
+            "SSH DSA keys are deprecated and will be removed in a future "
+            "release.",
+            utils.DeprecatedIn40,
+            stacklevel=2,
+        )
+
     return private_key
 
 
