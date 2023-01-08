@@ -14,6 +14,8 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
   continues to support only public keys.
+* Added support for generating SSH certificates with
+  :class:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder`.
 
 .. _v39-0-0:
 
