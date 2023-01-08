@@ -873,7 +873,7 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
         return hashes.SHA512()
 
 
-def load_ssh_public_identity(
+def _load_ssh_public_identity(
     data: bytes,
     _legacy_dsa_allowed=False,
 ) -> typing.Union[SSHCertificate, _SSH_PUBLIC_KEY_TYPES]:
@@ -968,6 +968,12 @@ def load_ssh_public_identity(
         return public_key
 
 
+def load_ssh_public_identity(
+    data: bytes,
+) -> typing.Union[SSHCertificate, _SSH_PUBLIC_KEY_TYPES]:
+    return _load_ssh_public_identity(data)
+
+
 def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
     result: typing.Dict[bytes, bytes] = {}
     last_name = None
@@ -987,7 +993,7 @@ def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
 def load_ssh_public_key(
     data: bytes, backend: typing.Any = None
 ) -> _SSH_PUBLIC_KEY_TYPES:
-    cert_or_key = load_ssh_public_identity(data, _legacy_dsa_allowed=True)
+    cert_or_key = _load_ssh_public_identity(data, _legacy_dsa_allowed=True)
     public_key: _SSH_PUBLIC_KEY_TYPES
     if isinstance(cert_or_key, SSHCertificate):
         public_key = cert_or_key.public_key()
