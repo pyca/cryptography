@@ -1336,6 +1336,8 @@ class TestSSHCertificateBuilder:
             builder.valid_principals(
                 [b"test", "not bytes"]  # type: ignore[list-item]
             )
+        with pytest.raises(TypeError):
+            builder.valid_principals([])
         builder = builder.valid_principals([b"test"])
         with pytest.raises(ValueError):
             builder.valid_principals([b"test"])
