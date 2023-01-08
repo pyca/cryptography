@@ -10,6 +10,8 @@ Changelog
 
 * Support for Python 3.6 is deprecated and will be removed in the next
   release.
+* Deprecated support for parsing DSA keys in
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
 * Added support for parsing SSH certificates in addition to public keys with
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
