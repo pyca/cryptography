@@ -178,12 +178,12 @@ class TestOpenSSHSerialization:
         password = None
         if "-psw" in key_file:
             password = b"password"
-        for data in (
+        for data in [
             priv_data,
             bytearray(priv_data),
             memoryview(priv_data),
             memoryview(bytearray(priv_data)),
-        ):
+        ]:
             if key_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
                     private_key = load_ssh_private_key(data, password, backend)

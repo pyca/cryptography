@@ -660,6 +660,13 @@ def _serialize_ssh_private_key(
 ) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
     utils._check_bytes("password", password)
+    if isinstance(private_key, dsa.DSAPrivateKey):
+        warnings.warn(
+            "SSH DSA key support is deprecated and will be "
+            "removed in a future release",
+            utils.DeprecatedIn40,
+            stacklevel=4,
+        )
 
     key_type = _get_ssh_key_type(private_key)
     kformat = _lookup_kformat(key_type)
@@ -1020,6 +1027,13 @@ def load_ssh_public_key(
 
 def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     """One-line public key format for OpenSSH"""
+    if isinstance(public_key, dsa.DSAPublicKey):
+        warnings.warn(
+            "SSH DSA key support is deprecated and will be "
+            "removed in a future release",
+            utils.DeprecatedIn40,
+            stacklevel=4,
+        )
     key_type = _get_ssh_key_type(public_key)
     kformat = _lookup_kformat(key_type)
 
