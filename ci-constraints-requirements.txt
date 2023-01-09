@@ -95,7 +95,7 @@ pathspec==0.10.3
     # via black
 pep517==0.13.0
     # via build
-pkginfo==1.9.4
+pkginfo==1.9.6
     # via twine
 platformdirs==2.6.2; python_version >= "3.7"
     # via
