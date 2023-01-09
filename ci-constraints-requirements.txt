@@ -64,7 +64,7 @@ importlib-metadata==6.0.0; python_version >= "3.7"
     # via
     #   keyring
     #   twine
-iniconfig==1.1.1
+iniconfig==2.0.0
     # via pytest
 iso8601==1.1.0
     # via cryptography (setup.cfg)
