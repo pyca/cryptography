@@ -54,7 +54,7 @@ filelock==3.9.0; python_version >= "3.7"
     # via
     #   tox
     #   virtualenv
-hypothesis==6.61.0; python_version >= "3.7"
+hypothesis==6.62.0; python_version >= "3.7"
     # via cryptography (setup.cfg)
 idna==3.4
     # via requests
