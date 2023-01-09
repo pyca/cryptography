@@ -1,5 +1,6 @@
 name: macOS arm64 CI
 on:
+  pull_request: {}
   push:
     branches:
       - main
@@ -18,17 +19,15 @@ concurrency:
 jobs:
   macos-arm64:
     if: github.repository_owner == 'pyca'
-    runs-on: [self-hosted, macos, ARM64]
+    runs-on: [self-hosted, macos, ARM64, tart]
     name: "macOS arm64"
     strategy:
       fail-fast: false
       matrix:
         PYTHON:
-          - {TOXENV: "py310", BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.10/bin/python3'}
+          - {TOXENV: "py311", BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'}
     timeout-minutes: 10
     steps:
-      - name: "Delete workspace" # self-hosted runners need this, sigh
-        run: gfind ! -name '.' ! -name '..' -delete
       - uses: actions/checkout@v3.3.0
         with:
           persist-credentials: false
