@@ -15,7 +15,7 @@ static NULL_DER: Lazy<Vec<u8>> = Lazy::new(|| {
 pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
     Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum KeyType {
     Rsa,
     Dsa,
@@ -370,4 +370,30 @@ fn identify_key_type_for_oid(oid: &asn1::ObjectIdentifier) -> pyo3::PyResult<Key
             "Unsupported signature algorithm",
         )),
     }
+}
+
+#[test]
+fn test_identify_unknown_key_type_for_oid() {
+    // The non-error cases are tested through the Python path but more is more
+    assert_eq!(
+        identify_key_type_for_oid(&oid::RSA_WITH_SHA256_OID).unwrap(),
+        KeyType::Rsa
+    );
+    assert_eq!(
+        identify_key_type_for_oid(&oid::ECDSA_WITH_SHA256_OID).unwrap(),
+        KeyType::Ec
+    );
+    assert_eq!(
+        identify_key_type_for_oid(&oid::ED25519_OID).unwrap(),
+        KeyType::Ed25519
+    );
+    assert_eq!(
+        identify_key_type_for_oid(&oid::ED448_OID).unwrap(),
+        KeyType::Ed448
+    );
+    assert_eq!(
+        identify_key_type_for_oid(&oid::DSA_WITH_SHA256_OID).unwrap(),
+        KeyType::Dsa
+    );
+    assert!(identify_key_type_for_oid(&oid::TLS_FEATURE_OID).is_err());
 }

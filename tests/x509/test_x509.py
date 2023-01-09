@@ -15,6 +15,7 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -1528,6 +1529,28 @@ class TestRSACertificate:
             x509.load_pem_x509_certificate,
         )
         with pytest.raises(ValueError):
+            cert.verify_issued_by(cert)
+
+    def test_verify_issued_by_algorithm_mismatch(self):
+        issuer_private_key = RSA_KEY_2048.private_key()
+        subject_private_key = RSA_KEY_2048_ALT.private_key()
+        _, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        # We need a CA with the same issuer DN but diff signature algorithm
+        secondary_issuer_key = ec.generate_private_key(ec.SECP256R1())
+        ca2, _ = _generate_ca_and_leaf(
+            secondary_issuer_key, subject_private_key
+        )
+        with pytest.raises(ValueError):
+            cert.verify_issued_by(ca2)
+
+    def test_verify_issued_by_unsupported_algorithm(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss_cert.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
             cert.verify_issued_by(cert)
 
 

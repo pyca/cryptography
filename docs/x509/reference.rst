@@ -508,6 +508,8 @@ X.509 Certificate Object
         :return: None
         :raise ValueError: If the issuer name on the certificate does
             not match the subject name of the issuer.
+        :raise cryptography.exceptions.UnsupportedAlgorithm: If the
+            signature algorithm is unsupported.
         :raise cryptography.exceptions.InvalidSignature: If the
             signature fails to verify.
 
