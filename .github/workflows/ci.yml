@@ -133,7 +133,7 @@ jobs:
           - {IMAGE: "buster", TOXENV: "py37"}
           - {IMAGE: "bullseye", TOXENV: "py39"}
           - {IMAGE: "bookworm", TOXENV: "py310"}
-          - {IMAGE: "sid", TOXENV: "py310"}
+          - {IMAGE: "sid", TOXENV: "py311"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
