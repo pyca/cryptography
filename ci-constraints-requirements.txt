@@ -84,7 +84,7 @@ mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-packaging==22.0; python_version >= "3.7"
+packaging==23.0; python_version >= "3.7"
     # via
     #   build
     #   pyproject-api
