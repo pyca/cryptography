@@ -24,7 +24,7 @@ Changelog
   continues to support only public keys.
 * Added support for generating SSH certificates with
   :class:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder`.
-* Added :meth:`~cryptography.x509.Certificate.verify_signed_by` to
+* Added :meth:`~cryptography.x509.Certificate.verify_issued_by` to
   :class:`~cryptography.x509.Certificate`.
 
 .. _v39-0-0:
