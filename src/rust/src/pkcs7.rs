@@ -32,7 +32,6 @@ static EMPTY_STRING_TLV: Lazy<asn1::Tlv<'static>> =
 
 static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
     let mut h = HashMap::new();
-    h.insert(&x509::oid::SHA1_OID, "sha1");
     h.insert(&x509::oid::SHA224_OID, "sha-224");
     h.insert(&x509::oid::SHA256_OID, "sha-256");
     h.insert(&x509::oid::SHA384_OID, "sha-384");
