@@ -88,7 +88,6 @@ class PKCS7SignatureBuilder:
         if not isinstance(
             hash_algorithm,
             (
-                hashes.SHA1,
                 hashes.SHA224,
                 hashes.SHA256,
                 hashes.SHA384,
@@ -96,7 +95,7 @@ class PKCS7SignatureBuilder:
             ),
         ):
             raise TypeError(
-                "hash_algorithm must be one of hashes.SHA1, SHA224, "
+                "hash_algorithm must be one of hashes.SHA224, "
                 "SHA256, SHA384, or SHA512"
             )
         if not isinstance(certificate, x509.Certificate):
