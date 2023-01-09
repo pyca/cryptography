@@ -35,7 +35,7 @@ colorama==0.4.6; python_version >= "3.7"
     # via tox
 commonmark==0.9.1
     # via rich
-coverage==7.0.3; python_version >= "3.7"
+coverage==7.0.4; python_version >= "3.7"
     # via pytest-cov
 distlib==0.3.6
     # via virtualenv
