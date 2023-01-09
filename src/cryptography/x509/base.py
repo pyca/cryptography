@@ -266,9 +266,10 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify_signed_by(self, issuer: "Certificate") -> None:
+    def verify_issued_by(self, issuer: "Certificate") -> None:
         """
-        This method **only** verifies that the certificate is signed by the
+        This method verifies that certificate issuer name matches the
+        issuer subject name and that the certificate is signed by the
         issuer's private key. No other validation is performed.
         """
 

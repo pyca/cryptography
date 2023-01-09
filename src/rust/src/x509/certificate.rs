@@ -320,96 +320,28 @@ impl Certificate {
         )
     }
 
-    fn verify_signed_by<'p>(
+    fn verify_issued_by<'p>(
         &self,
         py: pyo3::Python<'p>,
         issuer: pyo3::PyRef<'_, Certificate>,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    ) -> PyAsn1Result<&'p pyo3::PyAny> {
         let public_key = issuer.public_key(py)?;
-        let key_type = identify_public_key_type(py, public_key)?;
-        let hash_alg = self.signature_hash_algorithm(py)?;
-        match key_type {
-            sign::KeyType::Ed25519 | sign::KeyType::Ed448 => public_key.call_method1(
-                "verify",
-                (self.signature(py), self.tbs_certificate_bytes(py)?),
-            ),
-            sign::KeyType::Ec => {
-                let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
-                let ecdsa = ec_mod
-                    .getattr(crate::intern!(py, "ECDSA"))?
-                    .call1((hash_alg,))?;
-                public_key.call_method1(
-                    "verify",
-                    (self.signature(py), self.tbs_certificate_bytes(py)?, ecdsa),
-                )
-            }
-            sign::KeyType::Rsa => {
-                let padding_mod = py.import("cryptography.hazmat.primitives.asymmetric.padding")?;
-                let pkcs1v15 = padding_mod
-                    .getattr(crate::intern!(py, "PKCS1v15"))?
-                    .call0()?;
-                public_key.call_method1(
-                    "verify",
-                    (
-                        self.signature(py),
-                        self.tbs_certificate_bytes(py)?,
-                        pkcs1v15,
-                        hash_alg,
-                    ),
-                )
-            }
-            sign::KeyType::Dsa => public_key.call_method1(
-                "verify",
-                (
-                    self.signature(py),
-                    self.tbs_certificate_bytes(py)?,
-                    hash_alg,
-                ),
-            ),
-        }?;
-        Ok(py.None().into_ref(py))
-    }
-}
-
-fn identify_public_key_type(
-    py: pyo3::Python<'_>,
-    public_key: &pyo3::PyAny,
-) -> pyo3::PyResult<sign::KeyType> {
-    let rsa_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.rsa")?
-        .getattr(crate::intern!(py, "RSAPublicKey"))?
-        .extract()?;
-    let dsa_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.dsa")?
-        .getattr(crate::intern!(py, "DSAPublicKey"))?
-        .extract()?;
-    let ec_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.ec")?
-        .getattr(crate::intern!(py, "EllipticCurvePublicKey"))?
-        .extract()?;
-    let ed25519_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.ed25519")?
-        .getattr(crate::intern!(py, "Ed25519PublicKey"))?
-        .extract()?;
-    let ed448_key_type: &pyo3::types::PyType = py
-        .import("cryptography.hazmat.primitives.asymmetric.ed448")?
-        .getattr(crate::intern!(py, "Ed448PublicKey"))?
-        .extract()?;
-
-    if rsa_key_type.is_instance(public_key)? {
-        Ok(sign::KeyType::Rsa)
-    } else if dsa_key_type.is_instance(public_key)? {
-        Ok(sign::KeyType::Dsa)
-    } else if ec_key_type.is_instance(public_key)? {
-        Ok(sign::KeyType::Ec)
-    } else if ed25519_key_type.is_instance(public_key)? {
-        Ok(sign::KeyType::Ed25519)
-    } else if ed448_key_type.is_instance(public_key)? {
-        Ok(sign::KeyType::Ed448)
-    } else {
-        Err(pyo3::exceptions::PyTypeError::new_err(
-            "Key must be an rsa, dsa, ec, ed25519, or ed448 public key.",
-        ))
+        if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Issuer certificate subject does not match certificate issuer",
+            )));
+        };
+        let signature_oid = &self.raw.borrow_value().signature_alg.oid;
+        let tbs_bytes = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
+        let signature_hash = self.signature_hash_algorithm(py)?;
+        sign::verify_cert_issuer(
+            py,
+            public_key,
+            signature_oid,
+            signature_hash,
+            &self.raw.borrow_value().signature.as_bytes(),
+            &tbs_bytes,
+        )
     }
 }
 

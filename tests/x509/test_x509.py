@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed25519,
     padding,
     rsa,
+    types,
     x448,
     x25519,
 )
@@ -81,7 +82,10 @@ def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
     return cert
 
 
-def _generate_ca_and_leaf(issuer_private_key, subject_private_key):
+def _generate_ca_and_leaf(
+    issuer_private_key: types.PRIVATE_KEY_TYPES,
+    subject_private_key: types.PRIVATE_KEY_TYPES,
+):
     if isinstance(
         issuer_private_key,
         (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey),
@@ -1510,21 +1514,21 @@ class TestRSACertificate:
             [x509.TLSFeatureType.status_request]
         )
 
-    def test_verify_signed_by_rsa(self):
+    def test_verify_issued_by_rsa(self):
         issuer_private_key = RSA_KEY_2048.private_key()
         subject_private_key = RSA_KEY_2048_ALT.private_key()
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_signed_by(ca)
+        cert.verify_issued_by(ca)
 
-    def test_verify_signed_by_bad_issuer(self):
+    def test_verify_issued_by_subject_issuer_mismatch(self):
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
         )
-        with pytest.raises(TypeError):
-            cert.verify_signed_by(object())  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            cert.verify_issued_by(cert)
 
 
 class TestRSACertificateRequest:
@@ -4615,13 +4619,13 @@ class TestDSACertificate:
             cert.signature_hash_algorithm,
         )
 
-    def test_verify_signed_by_dsa(self):
+    def test_verify_issued_by_dsa(self):
         issuer_private_key = DSA_KEY_3072.private_key()
         subject_private_key = DSA_KEY_2048.private_key()
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_signed_by(ca)
+        cert.verify_issued_by(ca)
 
 
 @pytest.mark.supported(
@@ -4849,13 +4853,13 @@ class TestECDSACertificate:
         with pytest.raises(ValueError, match="explicit parameters"):
             cert.public_key()
 
-    def test_verify_signed_by_ec(self):
+    def test_verify_issued_by_ec(self):
         issuer_private_key = ec.generate_private_key(ec.SECP256R1())
         subject_private_key = ec.generate_private_key(ec.SECP256R1())
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_signed_by(ca)
+        cert.verify_issued_by(ca)
 
 
 class TestECDSACertificateRequest:
@@ -5480,13 +5484,13 @@ class TestEd25519Certificate:
         )
         assert copy.deepcopy(cert) is cert
 
-    def test_verify_signed_by_ed25519(self, backend):
+    def test_verify_issued_by_ed25519(self, backend):
         issuer_private_key = ed25519.Ed25519PrivateKey.generate()
         subject_private_key = ed25519.Ed25519PrivateKey.generate()
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_signed_by(ca)
+        cert.verify_issued_by(ca)
 
 
 @pytest.mark.supported(
@@ -5509,13 +5513,13 @@ class TestEd448Certificate:
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
 
-    def test_verify_signed_by_ed448(self, backend):
+    def test_verify_issued_by_ed448(self, backend):
         issuer_private_key = ed448.Ed448PrivateKey.generate()
         subject_private_key = ed448.Ed448PrivateKey.generate()
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_signed_by(ca)
+        cert.verify_issued_by(ca)
 
 
 @pytest.mark.supported(

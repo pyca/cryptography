@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::asn1::{PyAsn1Error, PyAsn1Result};
 use crate::x509;
 use crate::x509::oid;
 
@@ -14,7 +15,8 @@ static NULL_DER: Lazy<Vec<u8>> = Lazy::new(|| {
 pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
     Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());
 
-pub(crate) enum KeyType {
+#[derive(PartialEq)]
+enum KeyType {
     Rsa,
     Dsa,
     Ec,
@@ -255,4 +257,117 @@ pub(crate) fn sign_data<'p>(
         KeyType::Dsa => private_key.call_method1("sign", (data, hash_algorithm))?,
     };
     signature.extract()
+}
+
+pub(crate) fn verify_cert_issuer<'p>(
+    py: pyo3::Python<'p>,
+    issuer_public_key: &'p pyo3::PyAny,
+    signature_oid: &asn1::ObjectIdentifier,
+    signature_hash: &'p pyo3::PyAny,
+    signature: &[u8],
+    data: &[u8],
+) -> PyAsn1Result<&'p pyo3::PyAny> {
+    let key_type = identify_public_key_type(py, issuer_public_key)?;
+    let sig_key_type = identify_key_type_for_oid(signature_oid)?;
+    if key_type != sig_key_type {
+        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            "Signature algorithm does not match issuer key type",
+        )));
+    }
+
+    match key_type {
+        KeyType::Ed25519 | KeyType::Ed448 => {
+            issuer_public_key.call_method1("verify", (signature, data))?
+        }
+        KeyType::Ec => {
+            let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
+            let ecdsa = ec_mod
+                .getattr(crate::intern!(py, "ECDSA"))?
+                .call1((signature_hash,))?;
+            issuer_public_key.call_method1("verify", (signature, data, ecdsa))?
+        }
+        KeyType::Rsa => {
+            let padding_mod = py.import("cryptography.hazmat.primitives.asymmetric.padding")?;
+            let pkcs1v15 = padding_mod
+                .getattr(crate::intern!(py, "PKCS1v15"))?
+                .call0()?;
+            issuer_public_key.call_method1("verify", (signature, data, pkcs1v15, signature_hash))?
+        }
+        KeyType::Dsa => {
+            issuer_public_key.call_method1("verify", (signature, data, signature_hash))?
+        }
+    };
+    Ok(py.None().into_ref(py))
+}
+
+fn identify_public_key_type(
+    py: pyo3::Python<'_>,
+    public_key: &pyo3::PyAny,
+) -> pyo3::PyResult<KeyType> {
+    let rsa_key_type: &pyo3::types::PyType = py
+        .import("cryptography.hazmat.primitives.asymmetric.rsa")?
+        .getattr(crate::intern!(py, "RSAPublicKey"))?
+        .extract()?;
+    let dsa_key_type: &pyo3::types::PyType = py
+        .import("cryptography.hazmat.primitives.asymmetric.dsa")?
+        .getattr(crate::intern!(py, "DSAPublicKey"))?
+        .extract()?;
+    let ec_key_type: &pyo3::types::PyType = py
+        .import("cryptography.hazmat.primitives.asymmetric.ec")?
+        .getattr(crate::intern!(py, "EllipticCurvePublicKey"))?
+        .extract()?;
+    let ed25519_key_type: &pyo3::types::PyType = py
+        .import("cryptography.hazmat.primitives.asymmetric.ed25519")?
+        .getattr(crate::intern!(py, "Ed25519PublicKey"))?
+        .extract()?;
+    let ed448_key_type: &pyo3::types::PyType = py
+        .import("cryptography.hazmat.primitives.asymmetric.ed448")?
+        .getattr(crate::intern!(py, "Ed448PublicKey"))?
+        .extract()?;
+
+    if rsa_key_type.is_instance(public_key)? {
+        Ok(KeyType::Rsa)
+    } else if dsa_key_type.is_instance(public_key)? {
+        Ok(KeyType::Dsa)
+    } else if ec_key_type.is_instance(public_key)? {
+        Ok(KeyType::Ec)
+    } else if ed25519_key_type.is_instance(public_key)? {
+        Ok(KeyType::Ed25519)
+    } else if ed448_key_type.is_instance(public_key)? {
+        Ok(KeyType::Ed448)
+    } else {
+        Err(pyo3::exceptions::PyTypeError::new_err(
+            "Key must be an rsa, dsa, ec, ed25519, or ed448 public key.",
+        ))
+    }
+}
+
+fn identify_key_type_for_oid(oid: &asn1::ObjectIdentifier) -> pyo3::PyResult<KeyType> {
+    match oid {
+        &oid::RSA_WITH_SHA224_OID
+        | &oid::RSA_WITH_SHA256_OID
+        | &oid::RSA_WITH_SHA384_OID
+        | &oid::RSA_WITH_SHA512_OID
+        | &oid::RSA_WITH_SHA3_224_OID
+        | &oid::RSA_WITH_SHA3_256_OID
+        | &oid::RSA_WITH_SHA3_384_OID
+        | &oid::RSA_WITH_SHA3_512_OID => Ok(KeyType::Rsa),
+        &oid::ECDSA_WITH_SHA224_OID
+        | &oid::ECDSA_WITH_SHA256_OID
+        | &oid::ECDSA_WITH_SHA384_OID
+        | &oid::ECDSA_WITH_SHA512_OID
+        | &oid::ECDSA_WITH_SHA3_224_OID
+        | &oid::ECDSA_WITH_SHA3_256_OID
+        | &oid::ECDSA_WITH_SHA3_384_OID
+        | &oid::ECDSA_WITH_SHA3_512_OID => Ok(KeyType::Ec),
+        &oid::ED25519_OID => Ok(KeyType::Ed25519),
+        &oid::ED448_OID => Ok(KeyType::Ed448),
+        &oid::DSA_WITH_SHA224_OID
+        | &oid::DSA_WITH_SHA256_OID
+        | &oid::DSA_WITH_SHA384_OID
+        | &oid::DSA_WITH_SHA512_OID => Ok(KeyType::Dsa),
+        _ => Err(pyo3::exceptions::PyValueError::new_err(
+            "Unsupported signature algorithm",
+        )),
+    }
 }
