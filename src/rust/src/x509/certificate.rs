@@ -339,7 +339,7 @@ impl Certificate {
             public_key,
             signature_oid,
             signature_hash,
-            &self.raw.borrow_value().signature.as_bytes(),
+            self.raw.borrow_value().signature.as_bytes(),
             &tbs_bytes,
         )
     }
