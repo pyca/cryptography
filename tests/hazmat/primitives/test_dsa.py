@@ -9,6 +9,7 @@ import typing
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
@@ -920,9 +921,11 @@ class TestDSAPEMPublicKeySerialization:
         )
         key = serialization.load_pem_public_key(key_bytes, backend)
 
-        ssh_bytes = key.public_bytes(
-            serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
-        )
+        with pytest.warns(utils.DeprecatedIn40):
+            ssh_bytes = key.public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.OpenSSH,
+            )
         assert ssh_bytes == (
             b"ssh-dss AAAAB3NzaC1kc3MAAACBAKoJMMwUWCUiHK/6KKwolBlqJ4M95ewhJweR"
             b"aJQgd3Si57I4sNNvGySZosJYUIPrAUMpJEGNhn+qIS3RBx1NzrJ4J5StOTzAik1K"

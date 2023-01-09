@@ -392,6 +392,11 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
     .. versionadded:: 0.7
 
+    .. note::
+
+        SSH DSA key support is deprecated and will be removed in a future
+        release.
+
     Deserialize a public key from OpenSSH (:rfc:`4253` and
     `PROTOCOL.certkeys`_) encoded data to an
     instance of the public key type.
@@ -434,6 +439,11 @@ An example ECDSA key in OpenSSH format::
 .. function:: load_ssh_private_key(data, password)
 
     .. versionadded:: 3.0
+
+    .. note::
+
+        SSH DSA key support is deprecated and will be removed in a future
+        release.
 
     Deserialize a private key from OpenSSH encoded data to an
     instance of the private key type.
