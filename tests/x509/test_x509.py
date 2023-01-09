@@ -1545,7 +1545,15 @@ class TestRSACertificate:
         with pytest.raises(ValueError):
             cert.verify_issued_by(ca2)
 
-    def test_verify_issued_by_unsupported_algorithm(self):
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+        ),
+        skip_message="Does not support RSA PSS loading",
+    )
+    def test_verify_issued_by_unsupported_algorithm(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "rsa_pss_cert.pem"),
             x509.load_pem_x509_certificate,
