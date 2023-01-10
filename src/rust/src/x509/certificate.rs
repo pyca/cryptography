@@ -320,25 +320,28 @@ impl Certificate {
         )
     }
 
-    fn verify_issued_by<'p>(
+    fn verify_directly_issued_by<'p>(
         &self,
         py: pyo3::Python<'p>,
         issuer: pyo3::PyRef<'_, Certificate>,
     ) -> PyAsn1Result<&'p pyo3::PyAny> {
-        let public_key = issuer.public_key(py)?;
-        if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
+        let signature_oid = &self.raw.borrow_value().signature_alg.oid;
+        if &self.raw.borrow_value().tbs_cert.signature_alg.oid != signature_oid {
             return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Issuer certificate subject does not match certificate issuer",
+                "Inner and outer signature algorithms do not match. This is an invalid certificate."
             )));
         };
-        let signature_oid = &self.raw.borrow_value().signature_alg.oid;
+        if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Issuer certificate subject does not match certificate issuer.",
+            )));
+        };
+        let public_key = issuer.public_key(py)?;
         let tbs_bytes = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
-        let signature_hash = self.signature_hash_algorithm(py)?;
-        sign::verify_cert_issuer(
+        sign::verify_signature_with_oid(
             py,
             public_key,
             signature_oid,
-            signature_hash,
             self.raw.borrow_value().signature.as_bytes(),
             &tbs_bytes,
         )

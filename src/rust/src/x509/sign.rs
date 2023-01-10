@@ -24,6 +24,7 @@ enum KeyType {
     Ed448,
 }
 
+#[derive(Debug, PartialEq)]
 enum HashType {
     None,
     Sha224,
@@ -259,16 +260,35 @@ pub(crate) fn sign_data<'p>(
     signature.extract()
 }
 
-pub(crate) fn verify_cert_issuer<'p>(
+fn py_hash_from_hash_type(hash_type: HashType) -> Option<&'static str> {
+    match hash_type {
+        HashType::None => None,
+        HashType::Sha224 => Some("SHA224"),
+        HashType::Sha256 => Some("SHA256"),
+        HashType::Sha384 => Some("SHA384"),
+        HashType::Sha512 => Some("SHA512"),
+        HashType::Sha3_224 => Some("SHA3_224"),
+        HashType::Sha3_256 => Some("SHA3_256"),
+        HashType::Sha3_384 => Some("SHA3_384"),
+        HashType::Sha3_512 => Some("SHA3_512"),
+    }
+}
+
+pub(crate) fn verify_signature_with_oid<'p>(
     py: pyo3::Python<'p>,
     issuer_public_key: &'p pyo3::PyAny,
     signature_oid: &asn1::ObjectIdentifier,
-    signature_hash: &'p pyo3::PyAny,
     signature: &[u8],
     data: &[u8],
 ) -> PyAsn1Result<&'p pyo3::PyAny> {
     let key_type = identify_public_key_type(py, issuer_public_key)?;
-    let sig_key_type = identify_key_type_for_oid(signature_oid)?;
+    let (sig_key_type, sig_hash_type) = identify_key_hash_type_for_oid(py, signature_oid)?;
+    let sig_hash_str = py_hash_from_hash_type(sig_hash_type);
+    let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
+    let signature_hash = match sig_hash_str {
+        Some(data) => hashes.getattr(data)?.call0()?,
+        None => py.None().into_ref(py),
+    };
     if key_type != sig_key_type {
         return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
             "Signature algorithm does not match issuer key type",
@@ -336,64 +356,168 @@ fn identify_public_key_type(
     } else if ed448_key_type.is_instance(public_key)? {
         Ok(KeyType::Ed448)
     } else {
-        Err(pyo3::exceptions::PyTypeError::new_err(
-            "Key must be an rsa, dsa, ec, ed25519, or ed448 public key.",
+        Err(pyo3::PyErr::from_instance(
+            py.import("cryptography.exceptions")?.call_method1(
+                "UnsupportedAlgorithm",
+                ("Key must be an rsa, dsa, ec, ed25519, or ed448 public key.",),
+            )?,
         ))
     }
 }
 
-fn identify_key_type_for_oid(oid: &asn1::ObjectIdentifier) -> pyo3::PyResult<KeyType> {
-    match oid {
-        &oid::RSA_WITH_SHA224_OID
-        | &oid::RSA_WITH_SHA256_OID
-        | &oid::RSA_WITH_SHA384_OID
-        | &oid::RSA_WITH_SHA512_OID
-        | &oid::RSA_WITH_SHA3_224_OID
-        | &oid::RSA_WITH_SHA3_256_OID
-        | &oid::RSA_WITH_SHA3_384_OID
-        | &oid::RSA_WITH_SHA3_512_OID => Ok(KeyType::Rsa),
-        &oid::ECDSA_WITH_SHA224_OID
-        | &oid::ECDSA_WITH_SHA256_OID
-        | &oid::ECDSA_WITH_SHA384_OID
-        | &oid::ECDSA_WITH_SHA512_OID
-        | &oid::ECDSA_WITH_SHA3_224_OID
-        | &oid::ECDSA_WITH_SHA3_256_OID
-        | &oid::ECDSA_WITH_SHA3_384_OID
-        | &oid::ECDSA_WITH_SHA3_512_OID => Ok(KeyType::Ec),
-        &oid::ED25519_OID => Ok(KeyType::Ed25519),
-        &oid::ED448_OID => Ok(KeyType::Ed448),
-        &oid::DSA_WITH_SHA224_OID
-        | &oid::DSA_WITH_SHA256_OID
-        | &oid::DSA_WITH_SHA384_OID
-        | &oid::DSA_WITH_SHA512_OID => Ok(KeyType::Dsa),
-        _ => Err(pyo3::exceptions::PyValueError::new_err(
-            "Unsupported signature algorithm",
+fn identify_key_hash_type_for_oid(
+    py: pyo3::Python<'_>,
+    oid: &asn1::ObjectIdentifier,
+) -> pyo3::PyResult<(KeyType, HashType)> {
+    match *oid {
+        oid::RSA_WITH_SHA224_OID => Ok((KeyType::Rsa, HashType::Sha224)),
+        oid::RSA_WITH_SHA256_OID => Ok((KeyType::Rsa, HashType::Sha256)),
+        oid::RSA_WITH_SHA384_OID => Ok((KeyType::Rsa, HashType::Sha384)),
+        oid::RSA_WITH_SHA512_OID => Ok((KeyType::Rsa, HashType::Sha512)),
+        oid::RSA_WITH_SHA3_224_OID => Ok((KeyType::Rsa, HashType::Sha3_224)),
+        oid::RSA_WITH_SHA3_256_OID => Ok((KeyType::Rsa, HashType::Sha3_256)),
+        oid::RSA_WITH_SHA3_384_OID => Ok((KeyType::Rsa, HashType::Sha3_384)),
+        oid::RSA_WITH_SHA3_512_OID => Ok((KeyType::Rsa, HashType::Sha3_512)),
+        oid::ECDSA_WITH_SHA224_OID => Ok((KeyType::Ec, HashType::Sha224)),
+        oid::ECDSA_WITH_SHA256_OID => Ok((KeyType::Ec, HashType::Sha256)),
+        oid::ECDSA_WITH_SHA384_OID => Ok((KeyType::Ec, HashType::Sha384)),
+        oid::ECDSA_WITH_SHA512_OID => Ok((KeyType::Ec, HashType::Sha512)),
+        oid::ECDSA_WITH_SHA3_224_OID => Ok((KeyType::Ec, HashType::Sha3_224)),
+        oid::ECDSA_WITH_SHA3_256_OID => Ok((KeyType::Ec, HashType::Sha3_256)),
+        oid::ECDSA_WITH_SHA3_384_OID => Ok((KeyType::Ec, HashType::Sha3_384)),
+        oid::ECDSA_WITH_SHA3_512_OID => Ok((KeyType::Ec, HashType::Sha3_512)),
+        oid::ED25519_OID => Ok((KeyType::Ed25519, HashType::None)),
+        oid::ED448_OID => Ok((KeyType::Ed448, HashType::None)),
+        oid::DSA_WITH_SHA224_OID => Ok((KeyType::Dsa, HashType::Sha224)),
+        oid::DSA_WITH_SHA256_OID => Ok((KeyType::Dsa, HashType::Sha256)),
+        oid::DSA_WITH_SHA384_OID => Ok((KeyType::Dsa, HashType::Sha384)),
+        oid::DSA_WITH_SHA512_OID => Ok((KeyType::Dsa, HashType::Sha512)),
+        _ => Err(pyo3::PyErr::from_instance(
+            py.import("cryptography.exceptions")?.call_method1(
+                "UnsupportedAlgorithm",
+                (format!("Signature algorithm OID: {} not recognized", oid),),
+            )?,
         )),
     }
 }
 
-#[test]
-fn test_identify_unknown_key_type_for_oid() {
-    // The non-error cases are tested through the Python path but more is more
-    assert_eq!(
-        identify_key_type_for_oid(&oid::RSA_WITH_SHA256_OID).unwrap(),
-        KeyType::Rsa
-    );
-    assert_eq!(
-        identify_key_type_for_oid(&oid::ECDSA_WITH_SHA256_OID).unwrap(),
-        KeyType::Ec
-    );
-    assert_eq!(
-        identify_key_type_for_oid(&oid::ED25519_OID).unwrap(),
-        KeyType::Ed25519
-    );
-    assert_eq!(
-        identify_key_type_for_oid(&oid::ED448_OID).unwrap(),
-        KeyType::Ed448
-    );
-    assert_eq!(
-        identify_key_type_for_oid(&oid::DSA_WITH_SHA256_OID).unwrap(),
-        KeyType::Dsa
-    );
-    assert!(identify_key_type_for_oid(&oid::TLS_FEATURE_OID).is_err());
+#[cfg(test)]
+mod tests {
+    use super::{identify_key_hash_type_for_oid, py_hash_from_hash_type, HashType, KeyType};
+    use crate::x509::oid;
+
+    #[test]
+    fn test_identify_key_hash_type_for_oid() {
+        pyo3::prepare_freethreaded_python();
+        pyo3::Python::with_gil(|py| {
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA224_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha224)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA256_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha256)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA384_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha384)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA512_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha512)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA3_224_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha3_224)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA3_256_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha3_256)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA3_384_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha3_384)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::RSA_WITH_SHA3_512_OID).unwrap(),
+                (KeyType::Rsa, HashType::Sha3_512)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA224_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha224)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA256_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha256)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA384_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha384)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA512_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha512)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA3_224_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha3_224)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA3_256_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha3_256)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA3_384_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha3_384)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ECDSA_WITH_SHA3_512_OID).unwrap(),
+                (KeyType::Ec, HashType::Sha3_512)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ED25519_OID).unwrap(),
+                (KeyType::Ed25519, HashType::None)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::ED448_OID).unwrap(),
+                (KeyType::Ed448, HashType::None)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::DSA_WITH_SHA224_OID).unwrap(),
+                (KeyType::Dsa, HashType::Sha224)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::DSA_WITH_SHA256_OID).unwrap(),
+                (KeyType::Dsa, HashType::Sha256)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::DSA_WITH_SHA384_OID).unwrap(),
+                (KeyType::Dsa, HashType::Sha384)
+            );
+            assert_eq!(
+                identify_key_hash_type_for_oid(py, &oid::DSA_WITH_SHA512_OID).unwrap(),
+                (KeyType::Dsa, HashType::Sha512)
+            );
+            assert!(identify_key_hash_type_for_oid(py, &oid::TLS_FEATURE_OID).is_err());
+        })
+    }
+
+    #[test]
+    fn test_py_hash_from_hash_type() {
+        for item in [
+            (HashType::Sha224, "sha224"),
+            (HashType::Sha256, "sha256"),
+            (HashType::Sha384, "sha384"),
+            (HashType::Sha512, "sha512"),
+            (HashType::Sha3_224, "sha3-224"),
+            (HashType::Sha3_256, "sha3-256"),
+            (HashType::Sha3_384, "sha3-384"),
+            (HashType::Sha3_512, "sha3-512"),
+        ] {
+            let hash = item.0;
+            let name = item.1;
+            let hash_str = py_hash_from_hash_type(hash).unwrap();
+            assert!(hash_str == name);
+        }
+    }
 }
