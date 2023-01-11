@@ -478,6 +478,9 @@ Custom X.509 Vectors
   with ``asymmetric/PKCS8/rsa_pss_2048.pem`` as its key.
 * ``long-form-name-attribute.pem`` - A certificate with ``subject`` and ``issuer``
   names containing attributes whose value's tag is encoded in long-form.
+* ``mismatch_inner_outer_sig_algorithm.der`` - A leaf certificate derived from
+  ``x509/cryptography.io.pem`` but modifying the ``tbs_cert.signature_algorithm``
+  OID to not match the outer signature algorithm OID.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
