@@ -324,9 +324,8 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
         issuer: pyo3::PyRef<'_, Certificate>,
-    ) -> PyAsn1Result<&'p pyo3::PyAny> {
-        let signature_oid = &self.raw.borrow_value().signature_alg.oid;
-        if &self.raw.borrow_value().tbs_cert.signature_alg.oid != signature_oid {
+    ) -> PyAsn1Result<()> {
+        if self.raw.borrow_value().tbs_cert.signature_alg != self.raw.borrow_value().signature_alg {
             return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
                 "Inner and outer signature algorithms do not match. This is an invalid certificate."
             )));
@@ -336,14 +335,12 @@ impl Certificate {
                 "Issuer certificate subject does not match certificate issuer.",
             )));
         };
-        let public_key = issuer.public_key(py)?;
-        let tbs_bytes = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
         sign::verify_signature_with_oid(
             py,
-            public_key,
-            signature_oid,
+            issuer.public_key(py)?,
+            &self.raw.borrow_value().signature_alg.oid,
             self.raw.borrow_value().signature.as_bytes(),
-            &tbs_bytes,
+            &asn1::write_single(&self.raw.borrow_value().tbs_cert)?,
         )
     }
 }

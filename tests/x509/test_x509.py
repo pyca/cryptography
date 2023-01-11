@@ -15,7 +15,6 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -1604,7 +1603,7 @@ class TestRSACertificate:
         )
         leaf = builder.sign(private_key, None)
 
-        with pytest.raises(UnsupportedAlgorithm):
+        with pytest.raises(TypeError):
             cert.verify_directly_issued_by(leaf)
 
 
