@@ -505,14 +505,14 @@ mod tests {
     #[test]
     fn test_py_hash_from_hash_type() {
         for item in [
-            (HashType::Sha224, "sha224"),
-            (HashType::Sha256, "sha256"),
-            (HashType::Sha384, "sha384"),
-            (HashType::Sha512, "sha512"),
-            (HashType::Sha3_224, "sha3-224"),
-            (HashType::Sha3_256, "sha3-256"),
-            (HashType::Sha3_384, "sha3-384"),
-            (HashType::Sha3_512, "sha3-512"),
+            (HashType::Sha224, "SHA224"),
+            (HashType::Sha256, "SHA256"),
+            (HashType::Sha384, "SHA384"),
+            (HashType::Sha512, "SHA512"),
+            (HashType::Sha3_224, "SHA3_224"),
+            (HashType::Sha3_256, "SHA3_256"),
+            (HashType::Sha3_384, "SHA3_384"),
+            (HashType::Sha3_512, "SHA3_512"),
         ] {
             let hash = item.0;
             let name = item.1;
