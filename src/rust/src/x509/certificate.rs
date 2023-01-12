@@ -7,7 +7,7 @@ use crate::asn1::{
     PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
-use crate::x509::{crl, extensions, oid, sct, Asn1ReadableOrWritable};
+use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
 use chrono::Datelike;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
@@ -317,6 +317,30 @@ impl Certificate {
                 }
                 _ => parse_cert_ext(py, oid.clone(), ext_data),
             },
+        )
+    }
+
+    fn verify_directly_issued_by<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        issuer: pyo3::PyRef<'_, Certificate>,
+    ) -> PyAsn1Result<()> {
+        if self.raw.borrow_value().tbs_cert.signature_alg != self.raw.borrow_value().signature_alg {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Inner and outer signature algorithms do not match. This is an invalid certificate."
+            )));
+        };
+        if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
+            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+                "Issuer certificate subject does not match certificate issuer.",
+            )));
+        };
+        sign::verify_signature_with_oid(
+            py,
+            issuer.public_key(py)?,
+            &self.raw.borrow_value().signature_alg.oid,
+            self.raw.borrow_value().signature.as_bytes(),
+            &asn1::write_single(&self.raw.borrow_value().tbs_cert)?,
         )
     }
 }

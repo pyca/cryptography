@@ -15,6 +15,7 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -25,6 +26,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed25519,
     padding,
     rsa,
+    types,
     x448,
     x25519,
 )
@@ -41,9 +43,13 @@ from cryptography.x509.oid import (
     SubjectInformationAccessOID,
 )
 
-from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
+from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048, DSA_KEY_3072
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
-from ..hazmat.primitives.fixtures_rsa import RSA_KEY_512, RSA_KEY_2048
+from ..hazmat.primitives.fixtures_rsa import (
+    RSA_KEY_512,
+    RSA_KEY_2048,
+    RSA_KEY_2048_ALT,
+)
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
 from ..utils import (
     load_nist_vectors,
@@ -75,6 +81,57 @@ def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
         mode="rb",
     )
     return cert
+
+
+def _generate_ca_and_leaf(
+    issuer_private_key: types.CERTIFICATE_PRIVATE_KEY_TYPES,
+    subject_private_key: types.CERTIFICATE_PRIVATE_KEY_TYPES,
+):
+    if isinstance(
+        issuer_private_key,
+        (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey),
+    ):
+        hash_alg = None
+    else:
+        hash_alg = hashes.SHA256()
+
+    builder = (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+        )
+        .issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+        )
+        .public_key(issuer_private_key.public_key())
+        .serial_number(1)
+        .not_valid_before(datetime.datetime(2020, 1, 1))
+        .not_valid_after(datetime.datetime(2030, 1, 1))
+    )
+    ca = builder.sign(issuer_private_key, hash_alg)
+    builder = (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "leaf")])
+        )
+        .issuer_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+        )
+        .public_key(subject_private_key.public_key())
+        .serial_number(100)
+        .not_valid_before(datetime.datetime(2020, 1, 1))
+        .not_valid_after(datetime.datetime(2025, 1, 1))
+    )
+    cert = builder.sign(issuer_private_key, hash_alg)
+    return ca, cert
+
+
+def _break_cert_sig(cert: x509.Certificate) -> x509.Certificate:
+    cert_bad_sig = bytearray(cert.public_bytes(serialization.Encoding.PEM))
+    # Break the sig by mutating 5 bytes. This has a 2**-40 chance of
+    # not breaking the sig. Spin that roulette wheel.
+    cert_bad_sig[-40:-35] = 90, 90, 90, 90, 90
+    return x509.load_pem_x509_certificate(bytes(cert_bad_sig))
 
 
 class TestCertificateRevocationList:
@@ -1472,6 +1529,108 @@ class TestRSACertificate:
         assert ext.value == x509.TLSFeature(
             [x509.TLSFeatureType.status_request]
         )
+
+    def test_verify_directly_issued_by_rsa(self):
+        issuer_private_key = RSA_KEY_2048.private_key()
+        subject_private_key = RSA_KEY_2048_ALT.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_rsa_bad_sig(self):
+        issuer_private_key = RSA_KEY_2048.private_key()
+        subject_private_key = RSA_KEY_2048_ALT.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_rsa_mismatched_inner_out_oid(self):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "mismatch_inner_outer_sig_algorithm.der"
+            ),
+            x509.load_der_x509_certificate,
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.verify_directly_issued_by(cert)
+
+        assert str(exc.value) == (
+            "Inner and outer signature algorithms do not match. This is an "
+            "invalid certificate."
+        )
+
+    def test_verify_directly_issued_by_subject_issuer_mismatch(self):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(ValueError) as exc:
+            cert.verify_directly_issued_by(cert)
+
+        assert str(exc.value) == (
+            "Issuer certificate subject does not match certificate issuer."
+        )
+
+    def test_verify_directly_issued_by_algorithm_mismatch(self):
+        issuer_private_key = RSA_KEY_2048.private_key()
+        subject_private_key = RSA_KEY_2048_ALT.private_key()
+        _, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        # We need a CA with the same issuer DN but diff signature algorithm
+        secondary_issuer_key = ec.generate_private_key(ec.SECP256R1())
+        ca2, _ = _generate_ca_and_leaf(
+            secondary_issuer_key, subject_private_key
+        )
+        with pytest.raises(ValueError):
+            cert.verify_directly_issued_by(ca2)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.ed25519_supported() and backend.x25519_supported()
+        ),
+        skip_message="Requires OpenSSL with Ed25519 and X25519 support",
+    )
+    def test_verify_directly_issued_by_unsupported_key_type(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        x25519_public = x25519.X25519PrivateKey.generate().public_key()
+        # Generate an ed25519 CA
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .public_key(private_key.public_key())
+            .serial_number(1)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2030, 1, 1))
+        )
+        cert = builder.sign(private_key, None)
+        # Make a cert with the right issuer name but the wrong public key
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .public_key(x25519_public)
+            .serial_number(1)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2030, 1, 1))
+        )
+        leaf = builder.sign(private_key, None)
+
+        with pytest.raises(TypeError):
+            cert.verify_directly_issued_by(leaf)
 
 
 class TestRSACertificateRequest:
@@ -4562,6 +4721,24 @@ class TestDSACertificate:
             cert.signature_hash_algorithm,
         )
 
+    def test_verify_directly_issued_by_dsa(self):
+        issuer_private_key = DSA_KEY_3072.private_key()
+        subject_private_key = DSA_KEY_2048.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_dsa_bad_sig(self):
+        issuer_private_key = DSA_KEY_3072.private_key()
+        subject_private_key = DSA_KEY_2048.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dsa_supported(),
@@ -4787,6 +4964,24 @@ class TestECDSACertificate:
         # we are getting the right error.
         with pytest.raises(ValueError, match="explicit parameters"):
             cert.public_key()
+
+    def test_verify_directly_issued_by_ec(self):
+        issuer_private_key = ec.generate_private_key(ec.SECP256R1())
+        subject_private_key = ec.generate_private_key(ec.SECP256R1())
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_ec_bad_sig(self):
+        issuer_private_key = ec.generate_private_key(ec.SECP256R1())
+        subject_private_key = ec.generate_private_key(ec.SECP256R1())
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
 
 
 class TestECDSACertificateRequest:
@@ -5411,6 +5606,24 @@ class TestEd25519Certificate:
         )
         assert copy.deepcopy(cert) is cert
 
+    def test_verify_directly_issued_by_ed25519(self, backend):
+        issuer_private_key = ed25519.Ed25519PrivateKey.generate()
+        subject_private_key = ed25519.Ed25519PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_ed25519_bad_sig(self, backend):
+        issuer_private_key = ed25519.Ed25519PrivateKey.generate()
+        subject_private_key = ed25519.Ed25519PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed448_supported(),
@@ -5431,6 +5644,24 @@ class TestEd448Certificate:
         assert cert.serial_number == 448
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
+
+    def test_verify_directly_issued_by_ed448(self, backend):
+        issuer_private_key = ed448.Ed448PrivateKey.generate()
+        subject_private_key = ed448.Ed448PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_ed448_bad_sig(self, backend):
+        issuer_private_key = ed448.Ed448PrivateKey.generate()
+        subject_private_key = ed448.Ed448PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
 
 
 @pytest.mark.supported(
