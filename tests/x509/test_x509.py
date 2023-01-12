@@ -128,7 +128,8 @@ def _generate_ca_and_leaf(
 
 def _break_cert_sig(cert: x509.Certificate) -> x509.Certificate:
     cert_bad_sig = bytearray(cert.public_bytes(serialization.Encoding.PEM))
-    # Break the sig by mutating 5 bytes. This has a 2**-40 chance of
+    # Break the sig by mutating 5 bytes. That's the base64 representation
+    # though so there's somewhere closer to 2**-32 probability of
     # not breaking the sig. Spin that roulette wheel.
     cert_bad_sig[-40:-35] = 90, 90, 90, 90, 90
     return x509.load_pem_x509_certificate(bytes(cert_bad_sig))
