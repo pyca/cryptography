@@ -288,9 +288,9 @@ pub(crate) fn verify_signature_with_oid<'p>(
             "Signature algorithm does not match issuer key type",
         )));
     }
-    let sig_hash_str = py_hash_name_from_hash_type(sig_hash_type);
+    let sig_hash_name = py_hash_name_from_hash_type(sig_hash_type);
     let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
-    let signature_hash = match sig_hash_str {
+    let signature_hash = match sig_hash_name {
         Some(data) => hashes.getattr(data)?.call0()?,
         None => py.None().into_ref(py),
     };

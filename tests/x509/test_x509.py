@@ -15,6 +15,7 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -123,6 +124,14 @@ def _generate_ca_and_leaf(
     )
     cert = builder.sign(issuer_private_key, hash_alg)
     return ca, cert
+
+
+def _break_cert_sig(cert: x509.Certificate) -> x509.Certificate:
+    cert_bad_sig = bytearray(cert.public_bytes(serialization.Encoding.PEM))
+    # Break the sig by mutating 5 bytes. This has a 2**-40 chance of
+    # not breaking the sig. Spin that roulette wheel.
+    cert_bad_sig[-40:-35] = 90, 90, 90, 90, 90
+    return x509.load_pem_x509_certificate(bytes(cert_bad_sig))
 
 
 class TestCertificateRevocationList:
@@ -1521,6 +1530,16 @@ class TestRSACertificate:
             issuer_private_key, subject_private_key
         )
         cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_rsa_bad_sig(self):
+        issuer_private_key = RSA_KEY_2048.private_key()
+        subject_private_key = RSA_KEY_2048_ALT.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
 
     def test_verify_directly_issued_by_rsa_mismatched_inner_out_oid(self):
         cert = _load_cert(
@@ -4703,6 +4722,16 @@ class TestDSACertificate:
         )
         cert.verify_directly_issued_by(ca)
 
+    def test_verify_directly_issued_by_dsa_bad_sig(self):
+        issuer_private_key = DSA_KEY_3072.private_key()
+        subject_private_key = DSA_KEY_2048.private_key()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dsa_supported(),
@@ -4936,6 +4965,16 @@ class TestECDSACertificate:
             issuer_private_key, subject_private_key
         )
         cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_ec_bad_sig(self):
+        issuer_private_key = ec.generate_private_key(ec.SECP256R1())
+        subject_private_key = ec.generate_private_key(ec.SECP256R1())
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
 
 
 class TestECDSACertificateRequest:
@@ -5568,6 +5607,16 @@ class TestEd25519Certificate:
         )
         cert.verify_directly_issued_by(ca)
 
+    def test_verify_directly_issued_by_ed25519_bad_sig(self, backend):
+        issuer_private_key = ed25519.Ed25519PrivateKey.generate()
+        subject_private_key = ed25519.Ed25519PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed448_supported(),
@@ -5596,6 +5645,16 @@ class TestEd448Certificate:
             issuer_private_key, subject_private_key
         )
         cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_ed448_bad_sig(self, backend):
+        issuer_private_key = ed448.Ed448PrivateKey.generate()
+        subject_private_key = ed448.Ed448PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
 
 
 @pytest.mark.supported(
