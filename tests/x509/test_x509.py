@@ -764,6 +764,13 @@ class TestRSACertificate:
         )
         assert isinstance(cert, x509.Certificate)
 
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.with_headers.pem"),
+            x509.load_pem_x509_certificate,
+            backend,
+        )
+        assert isinstance(cert, x509.Certificate)
+
     def test_load_multiple_sections(self, backend):
         # We match OpenSSL's behavior of loading the first cert
         # if there are multiple. Arguably this would ideally be an
