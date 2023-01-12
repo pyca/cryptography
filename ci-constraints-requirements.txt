@@ -211,7 +211,7 @@ types-urllib3==1.26.25.4
     # via types-requests
 typing-extensions==4.4.0; python_version >= "3.7"
     # via mypy
-urllib3==1.26.13
+urllib3==1.26.14
     # via
     #   requests
     #   twine
