@@ -1,9 +1,9 @@
 # This is named ambigiously, but it's a pip constraints file, named like a
 # requirements file so dependabot will update the pins.
 # It was originally generated with;
-#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=tox --resolver=backtracking --strip-extras setup.cfg
-# and then manually massaged to remove non-dev dependencies and add version
-# specifiers to packages whose versions vary by Python version
+#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=tox --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools setup.cfg
+# and then manually massaged to add version specifiers to packages whose
+# versions vary by Python version
 
 alabaster==0.7.13
     # via sphinx
@@ -93,8 +93,6 @@ packaging==23.0; python_version >= "3.7"
     #   tox
 pathspec==0.10.3
     # via black
-pep517==0.13.0
-    # via build
 pkginfo==1.9.6
     # via twine
 platformdirs==2.6.2; python_version >= "3.7"
@@ -121,6 +119,8 @@ pygments==2.14.0
     #   sphinx
 pyproject-api==1.4.0
     # via tox
+pyproject-hooks==1.0.0
+    # via build
 pytest==7.2.0; python_version >= "3.7"
     # via
     #   cryptography (setup.cfg)
@@ -195,8 +195,8 @@ tomli==2.0.1; python_version >= "3.7"
     #   check-manifest
     #   coverage
     #   mypy
-    #   pep517
     #   pyproject-api
+    #   pyproject-hooks
     #   pytest
     #   tox
 tox==4.2.8; python_version >= "3.7"
@@ -221,3 +221,8 @@ webencodings==0.5.1
     # via bleach
 zipp==3.11.0; python_version >= "3.7"
     # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# cffi
+# pycparser
+# setuptools
