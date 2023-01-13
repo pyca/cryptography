@@ -1417,9 +1417,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. attribute:: value
 
-        :type: str
+        :type: ``str`` or ``bytes``
 
-        The value of the attribute.
+        The value of the attribute. This will generally be a ``str``, the only
+        times it can be a ``bytes`` is when :attr:`oid` is
+        ``X500_UNIQUE_IDENTIFIER``.
 
     .. attribute:: rfc4514_attribute_name
 
