@@ -3003,7 +3003,7 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.5"``. This is distinct from
         the serial number of the certificate itself (which can be obtained with
-        :func:`~cryptography.x509.Certificate.serial_number`).
+        :attr:`~cryptography.x509.Certificate.serial_number`).
 
     .. attribute:: SURNAME
 
