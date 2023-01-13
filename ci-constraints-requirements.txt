@@ -148,7 +148,7 @@ pytz==2022.7
     #   cryptography (setup.cfg)
 readme-renderer==37.3
     # via twine
-requests==2.28.1; python_version >= "3.7"
+requests==2.28.2; python_version >= "3.7"
     # via
     #   requests-toolbelt
     #   sphinx
