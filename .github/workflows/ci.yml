@@ -332,14 +332,21 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.RUNNER.OS }}
     strategy:
       fail-fast: false
       matrix:
+        RUNNER:
+          - {OS: 'macos-12', ARCH: 'x86_64'}
+          - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
           - {VERSION: "3.11", TOXENV: "py311", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
-    name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+        exclude:
+          # We only test latest Python on arm64. The py36 won't work since there's no universal2 binary
+          - PYTHON: {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+            RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+    name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.3.0
@@ -357,12 +364,13 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+          architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
       - run: python -m pip install -c ci-constraints-requirements.txt tox requests coverage[toml]
 
