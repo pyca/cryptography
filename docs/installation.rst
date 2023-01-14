@@ -20,7 +20,7 @@ operating systems.
 * x86-64 CentOS 9 Stream
 * x86-64 Fedora (latest)
 * x86-64 macOS 12 Monterey
-* ARM64 macOS 12 Monterey
+* ARM64 macOS 13 Ventura
 * x86-64 Ubuntu 18.04, 20.04, 22.04, rolling
 * ARM64 Ubuntu 20.04
 * x86-64 Debian Buster (10.x), Bullseye (11.x), Bookworm (12.x)
