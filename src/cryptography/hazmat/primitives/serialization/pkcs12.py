@@ -20,6 +20,7 @@ __all__ = [
     "PBES",
     "PKCS12Certificate",
     "PKCS12KeyAndCertificates",
+    "PKCS12_KEY_TYPES_TUPLE",
     "load_key_and_certificates",
     "load_pkcs12",
     "serialize_key_and_certificates",
@@ -32,6 +33,16 @@ _ALLOWED_PKCS12_TYPES = typing.Union[
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
 ]
+
+PKCS12_KEY_TYPES_TUPLE: typing.Tuple[
+    typing.Type[_ALLOWED_PKCS12_TYPES], ...
+] = (
+    rsa.RSAPrivateKey,
+    dsa.DSAPrivateKey,
+    ec.EllipticCurvePrivateKey,
+    ed25519.Ed25519PrivateKey,
+    ed448.Ed448PrivateKey,
+)
 
 
 class PKCS12Certificate:
@@ -80,16 +91,7 @@ class PKCS12KeyAndCertificates:
         cert: typing.Optional[PKCS12Certificate],
         additional_certs: typing.List[PKCS12Certificate],
     ):
-        if key is not None and not isinstance(
-            key,
-            (
-                rsa.RSAPrivateKey,
-                dsa.DSAPrivateKey,
-                ec.EllipticCurvePrivateKey,
-                ed25519.Ed25519PrivateKey,
-                ed448.Ed448PrivateKey,
-            ),
-        ):
+        if key is not None and not isinstance(key, PKCS12_KEY_TYPES_TUPLE):
             raise TypeError(
                 "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
                 " private key, or None."
@@ -177,16 +179,7 @@ def serialize_key_and_certificates(
     cas: typing.Optional[typing.Iterable[_PKCS12_CAS_TYPES]],
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
-    if key is not None and not isinstance(
-        key,
-        (
-            rsa.RSAPrivateKey,
-            dsa.DSAPrivateKey,
-            ec.EllipticCurvePrivateKey,
-            ed25519.Ed25519PrivateKey,
-            ed448.Ed448PrivateKey,
-        ),
-    ):
+    if key is not None and not isinstance(key, PKCS12_KEY_TYPES_TUPLE):
         raise TypeError(
             "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
             " private key, or None."

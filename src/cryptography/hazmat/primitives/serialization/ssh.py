@@ -567,6 +567,15 @@ _SSH_PRIVATE_KEY_TYPES = typing.Union[
     ed25519.Ed25519PrivateKey,
 ]
 
+SSH_PRIVATE_KEY_TYPES_TUPLE: typing.Tuple[
+    typing.Type[_SSH_PRIVATE_KEY_TYPES], ...
+] = (
+    ec.EllipticCurvePrivateKey,
+    rsa.RSAPrivateKey,
+    dsa.DSAPrivateKey,
+    ed25519.Ed25519PrivateKey,
+)
+
 
 def load_ssh_private_key(
     data: bytes,
@@ -736,6 +745,15 @@ _SSH_PUBLIC_KEY_TYPES = typing.Union[
     dsa.DSAPublicKey,
     ed25519.Ed25519PublicKey,
 ]
+
+SSH_PUBLIC_KEY_TYPES_TUPLE: typing.Tuple[
+    typing.Type[_SSH_PUBLIC_KEY_TYPES], ...
+] = (
+    ec.EllipticCurvePublicKey,
+    rsa.RSAPublicKey,
+    dsa.DSAPublicKey,
+    ed25519.Ed25519PublicKey,
+)
 
 _SSH_CERT_PUBLIC_KEY_TYPES = typing.Union[
     ec.EllipticCurvePublicKey,

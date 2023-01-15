@@ -388,6 +388,20 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 ``ssh-rsa``. ECDSA keys have a slightly different format, they begin with
 ``ecdsa-sha2-{curve}``.
 
+.. currentmodule:: cryptography.hazmat.primitives.serialization.ssh
+
+.. data:: SSH_PUBLIC_KEY_TYPES_TUPLE
+
+    .. versionadded::  40.0
+
+    Tuple of public key types that can be serialized in OpenSSH format.
+    To check whether a public key is allowed, use::
+
+        if isinstance(public_key, SSH_PUBLIC_KEY_TYPES_TUPLE):
+
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization
+
 .. function:: load_ssh_public_key(data)
 
     .. versionadded:: 0.7
@@ -435,6 +449,21 @@ An example ECDSA key in OpenSSH format::
     MAAAAga/VGV2asRlL3kXXao0aochQ59nXHA2xEGeAoQd952r0AAAAJbWFya29AdmZmAQID
     BAUGBw==
     -----END OPENSSH PRIVATE KEY-----
+
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization.ssh
+
+.. data:: SSH_PRIVATE_KEY_TYPES_TUPLE
+
+    .. versionadded::  40.0
+
+    Tuple of private key types that can be serialized in OpenSSH format.
+    To check whether a private key is allowed, use::
+
+        if isinstance(private_key, SSH_PRIVATE_KEY_TYPES_TUPLE):
+
+
+.. currentmodule:: cryptography.hazmat.primitives.serialization
 
 .. function:: load_ssh_private_key(data, password)
 
@@ -778,6 +807,15 @@ file suffix.
     ``cryptography`` only supports a single private key and associated
     certificates when parsing PKCS12 files at this time.
 
+.. data:: PKCS12_KEY_TYPES_TUPLE
+
+    .. versionadded::  40.0
+
+    Tuple of private key types that can be serialized with PKCS12.
+    To check whether a private key is allowed, use::
+
+        if isinstance(private_key, PKCS12_KEY_TYPES_TUPLE):
+
 .. function:: load_key_and_certificates(data, password)
 
     .. versionadded:: 2.5
@@ -848,6 +886,8 @@ file suffix.
     :type name: bytes
 
     :param key: The private key to include in the structure.
+        To check whether a private key type is supported, see
+        :const:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12_KEY_TYPES_TUPLE`.
     :type key: An
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
         ,
@@ -1230,6 +1270,9 @@ Serialization Formats
             ...
             -----END OPENSSH PRIVATE KEY-----
 
+        To check whether a private key can be serialized for OpenSSH, see
+        :const:`~cryptography.hazmat.primitives.serialization.ssh.SSH_PRIVATE_KEY_TYPES_TUPLE`.
+
     .. attribute:: PKCS12
 
         .. versionadded:: 38.0.0
@@ -1321,6 +1364,9 @@ Serialization Formats
 
         The public key format used by OpenSSH (e.g. as found in
         ``~/.ssh/id_rsa.pub`` or ``~/.ssh/authorized_keys``).
+
+        To check whether a public key can be serialized for OpenSSH, see
+        :const:`~cryptography.hazmat.primitives.serialization.ssh.SSH_PUBLIC_KEY_TYPES_TUPLE`.
 
     .. attribute:: Raw
 
