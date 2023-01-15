@@ -26,6 +26,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder`.
 * Added :meth:`~cryptography.x509.Certificate.verify_directly_issued_by` to
   :class:`~cryptography.x509.Certificate`.
+* Added constants
+  :const:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12_KEY_TYPES_TUPLE`,
+  :const:`~cryptography.hazmat.primitives.serialization.ssh.SSH_PRIVATE_KEY_TYPES_TUPLE`,
+  :const:`~cryptography.hazmat.primitives.serialization.ssh.SSH_PUBLIC_KEY_TYPES_TUPLE`
+  to check whether a key type is supported by the serialization format.
+
 
 .. _v39-0-0:
 
