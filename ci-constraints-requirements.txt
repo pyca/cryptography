@@ -203,7 +203,7 @@ tox==4.2.8; python_version >= "3.7"
     # via cryptography (setup.cfg)
 twine==4.0.2
     # via cryptography (setup.cfg)
-types-pytz==2022.7.0.0
+types-pytz==2022.7.1.0
     # via cryptography (setup.cfg)
 types-requests==2.28.11.7
     # via cryptography (setup.cfg)
