@@ -66,6 +66,15 @@ def main(platform, target):
     )
 
     response = get_response(session, runs_url, token).json()
+    # We see this happen occasionally. Maybe this will help debug it + retry
+    # for resilience.
+    if not response["workflow_runs"]:
+        print(
+            f"`workflow_runs` is empty for some reason, retrying. response: "
+            f"{response}"
+        )
+        response = get_response(session, runs_url, token).json()
+
     artifacts_url = response["workflow_runs"][0]["artifacts_url"]
     response = get_response(session, artifacts_url, token).json()
     for artifact in response["artifacts"]:
