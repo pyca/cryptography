@@ -1461,17 +1461,17 @@ class Backend:
         finally:
             self._lib.BN_CTX_end(bn_ctx)
 
-    def _ec_key_determine_group_get_func(self, ctx):
+    def _ec_key_determine_group_get_func(self, ec_key):
         """
         Given an EC_KEY determine the group and what function is required to
         get point coordinates.
         """
-        self.openssl_assert(ctx != self._ffi.NULL)
+        self.openssl_assert(ec_key != self._ffi.NULL)
 
         nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
         self.openssl_assert(nid_two_field != self._lib.NID_undef)
 
-        group = self._lib.EC_KEY_get0_group(ctx)
+        group = self._lib.EC_KEY_get0_group(ec_key)
         self.openssl_assert(group != self._ffi.NULL)
 
         method = self._lib.EC_GROUP_method_of(group)
