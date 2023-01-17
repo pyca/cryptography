@@ -144,7 +144,7 @@ jobs:
 
           - {IMAGE: "ubuntu-focal:aarch64", TOXENV: "py38", RUNNER: [self-hosted, Linux, ARM64], ARCH: "arm64"}
           - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64], ARCH: "arm64"}
-    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} for ${{ matrix.IMAGE.ARCH}} "
+    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} for ${{ matrix.IMAGE.ARCH }}"
     timeout-minutes: 15
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
