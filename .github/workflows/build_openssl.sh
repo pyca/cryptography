@@ -68,7 +68,8 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git checkout "${VERSION}"
   mkdir build
   pushd build
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+  # Find the default rust target based on what rustc is built for
+  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DRUST_BINDINGS="$(rustc -V --verbose | grep 'host: ' | sed 's/host: //')"
   make -j"$(nproc)"
   mkdir -p "${OSSL_PATH}/lib/"
   mkdir -p "${OSSL_PATH}/include/"
