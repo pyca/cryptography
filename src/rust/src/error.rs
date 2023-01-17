@@ -62,10 +62,7 @@ impl From<CryptographyError> for pyo3::PyErr {
                 )
             }
             CryptographyError::Py(py_error) => py_error,
-            CryptographyError::OpenSSL(error_stack) => {
-                let gil = pyo3::Python::acquire_gil();
-                let py = gil.python();
-
+            CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
                 let internal_error = py
                     .import("cryptography.exceptions")
                     .expect("Failed to import cryptography module")
@@ -85,17 +82,17 @@ impl From<CryptographyError> for pyo3::PyErr {
                     internal_error
                         .call1((
                             "Unknown OpenSSL error. This error is commonly encountered
-                    when another library is not cleaning up the OpenSSL error
-                    stack. If you are using cryptography with another library
-                    that uses OpenSSL try disabling it before reporting a bug.
-                    Otherwise please file an issue at
-                    https://github.com/pyca/cryptography/issues with
-                    information on how to reproduce this.",
+                        when another library is not cleaning up the OpenSSL error
+                        stack. If you are using cryptography with another library
+                        that uses OpenSSL try disabling it before reporting a bug.
+                        Otherwise please file an issue at
+                        https://github.com/pyca/cryptography/issues with
+                        information on how to reproduce this.",
                             errors,
                         ))
                         .expect("Failed to create InternalError"),
                 )
-            }
+            }),
         }
     }
 }
