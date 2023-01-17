@@ -89,6 +89,11 @@ jobs:
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
         run: |
+          # -----BEGIN HORRIFYING EXPERIMENT-----
+          sed -i "s:3.12:3.17:" /etc/apk/repositories
+          apk del gcompat
+          apk add gcompat
+          # -----END HORRIFYING EXPERIMENT-----
           # This modifies /etc/os-release so the JS actions
           # from GH can't detect that it's on alpine:aarch64. It will
           # then use a glibc nodejs, which works fine when gcompat
