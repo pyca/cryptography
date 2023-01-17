@@ -42,8 +42,8 @@ jobs:
           - {VERSION: "3.12-dev", TOXENV: "py312"}
           # Latest commit on the BoringSSL master branch, as of Jan 14, 2023.
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "3251ca1f63ff8c9ea760c0046309e93596f6c12b"}}
-          # Latest commit on the OpenSSL master branch, as of Jan 15, 2023.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "30667f5c306dbc11ac0e6fddc7d26fd984d546ab"}}
+          # Latest commit on the OpenSSL master branch, as of Jan 17, 2023.
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "fe2a7341b50450dc6acd6f8a17d4420511a5aefe"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
