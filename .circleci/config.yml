@@ -17,22 +17,6 @@ commands:
       - run: docker run -e PLATFORM -e PYTHON -v $(pwd):/test <<parameters.image>>  /bin/bash -c 'cd /test;<<parameters.command>>'
 
 jobs:
-  linux-arm64:
-    machine:
-      image: ubuntu-2004:current
-    resource_class: arm.medium
-    parameters:
-      image:
-        type: string
-      toxenv:
-        type: string
-    steps:
-      - checkout
-      - docker-pull:
-          image: <<parameters.image>>
-      - docker-run:
-          image: <<parameters.image>>
-          command: /venv/bin/pip install -c ci-constraints-requirements.txt tox && /venv/bin/tox -e <<parameters.toxenv>>
   linux-arm64-wheel:
     machine:
       image: ubuntu-2004:current
@@ -60,24 +44,6 @@ jobs:
 workflows:
   ci:
     jobs:
-      - linux-arm64:
-          # Changing this name should only be done in conjunction with updating
-          # the required checks on GH
-          name: linux-arm64-ci
-          image: ghcr.io/pyca/cryptography-runner-ubuntu-focal:aarch64
-          toxenv: py38
-          # This makes sure it runs on all tags in addition to PRs/branches.
-          # By default CircleCI ignores tags.
-          filters:
-            tags:
-              only: /.*/
-      - linux-arm64:
-          name: linux-arm64-alpine-ci
-          image: ghcr.io/pyca/cryptography-runner-alpine:aarch64
-          toxenv: py310
-          filters:
-            tags:
-              only: /.*/
       - linux-arm64-wheel:
           name: manylinux2014_aarch64-wheel
           image: ghcr.io/pyca/cryptography-manylinux2014_aarch64:latest
