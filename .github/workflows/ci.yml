@@ -120,28 +120,30 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   linux-distros:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.IMAGE.RUNNER }}
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
       fail-fast: false
       matrix:
         IMAGE:
-          - {IMAGE: "rhel8", TOXENV: "py36"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py36", FIPS: true}
-          - {IMAGE: "rhel8", TOXENV: "py38"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py38", FIPS: true}
-          - {IMAGE: "buster", TOXENV: "py37"}
-          - {IMAGE: "bullseye", TOXENV: "py39"}
-          - {IMAGE: "bookworm", TOXENV: "py310"}
-          - {IMAGE: "sid", TOXENV: "py311"}
-          - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
-          - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
-          - {IMAGE: "fedora", TOXENV: "py311"}
-          - {IMAGE: "alpine", TOXENV: "py310"}
-          - {IMAGE: "centos-stream9", TOXENV: "py39"}
-    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+          - {IMAGE: "rhel8", TOXENV: "py36", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "rhel8-fips", TOXENV: "py36", RUNNER: "ubuntu-latest", ARCH: "x86_64", FIPS: true}
+          - {IMAGE: "rhel8", TOXENV: "py38", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "rhel8-fips", TOXENV: "py38", RUNNER: "ubuntu-latest", ARCH: "x86_64", FIPS: true}
+          - {IMAGE: "buster", TOXENV: "py37", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "bullseye", TOXENV: "py39", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "bookworm", TOXENV: "py310", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "sid", TOXENV: "py311", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "ubuntu-bionic", TOXENV: "py36", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "ubuntu-jammy", TOXENV: "py310", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py310", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "fedora", TOXENV: "py311", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "alpine", TOXENV: "py310", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "centos-stream9", TOXENV: "py39", RUNNER: "ubuntu-latest", ARCH: "x86_64"}
+          - {IMAGE: "ubuntu-focal:aarch64", TOXENV: "py38", RUNNER: [self-hosted, Linux, ARM64], ARCH: "arm64"}
+          - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64], ARCH: "arm64"}
+    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }} for ${{ matrix.IMAGE.ARCH}} "
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.3.0
@@ -159,7 +161,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ matrix.IMAGE.ARCH }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
