@@ -74,7 +74,7 @@ jinja2==3.1.2
     # via sphinx
 keyring==23.13.1
     # via twine
-markupsafe==2.1.1
+markupsafe==2.1.2
     # via jinja2
 more-itertools==9.0.0
     # via jaraco-classes
