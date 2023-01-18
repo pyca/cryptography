@@ -20,5 +20,3 @@ recursive-exclude vectors *
 recursive-exclude .github *
 
 exclude release.py .readthedocs.yml ci-constraints-requirements.txt tox.ini mypy.ini
-
-recursive-exclude .circleci *
