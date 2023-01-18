@@ -199,7 +199,7 @@ tomli==2.0.1; python_version >= "3.7"
     #   pyproject-hooks
     #   pytest
     #   tox
-tox==4.3.3; python_version >= "3.7"
+tox==4.3.4; python_version >= "3.7"
     # via cryptography (setup.cfg)
 twine==4.0.2
     # via cryptography (setup.cfg)
