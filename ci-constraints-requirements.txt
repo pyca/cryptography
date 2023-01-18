@@ -117,7 +117,7 @@ pygments==2.14.0
     #   readme-renderer
     #   rich
     #   sphinx
-pyproject-api==1.4.0
+pyproject-api==1.5.0
     # via tox
 pyproject-hooks==1.0.0
     # via build
