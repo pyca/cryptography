@@ -159,7 +159,7 @@ rfc3986==2.0.0
     # via twine
 rich==13.1.0
     # via twine
-ruff==0.0.224
+ruff==0.0.225
     # via cryptography (setup.cfg)
 six==1.16.0
     # via bleach
