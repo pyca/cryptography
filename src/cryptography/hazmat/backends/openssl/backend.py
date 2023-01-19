@@ -1307,7 +1307,7 @@ class Backend:
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm(
-                "Backend object does not support {}.".format(curve.name),
+                f"Backend object does not support {curve.name}.",
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
             )
 
@@ -1445,7 +1445,7 @@ class Backend:
         curve_nid = self._lib.OBJ_sn2nid(curve_name.encode())
         if curve_nid == self._lib.NID_undef:
             raise UnsupportedAlgorithm(
-                "{} is not a supported elliptic curve".format(curve.name),
+                f"{curve.name} is not a supported elliptic curve",
                 _Reasons.UNSUPPORTED_ELLIPTIC_CURVE,
             )
         return curve_nid
@@ -2507,7 +2507,7 @@ class GetCipherByName:
 
 
 def _get_xts_cipher(backend: Backend, cipher: AES, mode):
-    cipher_name = "aes-{}-xts".format(cipher.key_size // 2)
+    cipher_name = f"aes-{cipher.key_size // 2}-xts"
     return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
 
 

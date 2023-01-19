@@ -15,7 +15,7 @@ import requests
 
 
 def run(*args: str) -> None:
-    print("[running] {0}".format(list(args)))
+    print(f"[running] {list(args)}")
     subprocess.check_call(list(args))
 
 
@@ -27,7 +27,7 @@ def wait_for_build_complete_github_actions(
             run_url,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "token {}".format(token),
+                "Authorization": f"token {token}",
             },
         )
         response.raise_for_status()
@@ -43,7 +43,7 @@ def download_artifacts_github_actions(
         run_url,
         headers={
             "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
     )
     response.raise_for_status()
@@ -52,7 +52,7 @@ def download_artifacts_github_actions(
         response.json()["artifacts_url"],
         headers={
             "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
+            "Authorization": f"token {token}",
         },
     )
     response.raise_for_status()
@@ -62,7 +62,7 @@ def download_artifacts_github_actions(
             artifact["archive_download_url"],
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "token {}".format(token),
+                "Authorization": f"token {token}",
             },
         )
         with zipfile.ZipFile(io.BytesIO(response.content)) as z:
@@ -99,7 +99,7 @@ def fetch_github_actions_artifacts(
             ),
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "token {}".format(token),
+                "Authorization": f"token {token}",
             },
         )
         response.raise_for_status()

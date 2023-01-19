@@ -616,7 +616,7 @@ class TestAESOCB3:
     not _aead_supported(AESSIV),
     reason="Does not support AESSIV",
 )
-class TestAESSIV(object):
+class TestAESSIV:
     def test_data_too_large(self):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)

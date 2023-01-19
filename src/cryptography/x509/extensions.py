@@ -85,13 +85,13 @@ def _make_sequence_methods(field_name: str):
 
 class DuplicateExtension(Exception):
     def __init__(self, msg: str, oid: ObjectIdentifier) -> None:
-        super(DuplicateExtension, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
 class ExtensionNotFound(Exception):
     def __init__(self, msg: str, oid: ObjectIdentifier) -> None:
-        super(ExtensionNotFound, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
@@ -103,7 +103,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
         Serializes the extension type to DER.
         """
         raise NotImplementedError(
-            "public_bytes is not implemented for extension type {0!r}".format(
+            "public_bytes is not implemented for extension type {!r}".format(
                 self
             )
         )
@@ -122,7 +122,7 @@ class Extensions:
             if ext.oid == oid:
                 return ext
 
-        raise ExtensionNotFound("No {} extension was found".format(oid), oid)
+        raise ExtensionNotFound(f"No {oid} extension was found", oid)
 
     def get_extension_for_class(
         self, extclass: typing.Type[ExtensionTypeVar]
@@ -139,13 +139,13 @@ class Extensions:
                 return ext
 
         raise ExtensionNotFound(
-            "No {} extension was found".format(extclass), extclass.oid
+            f"No {extclass} extension was found", extclass.oid
         )
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_extensions")
 
     def __repr__(self) -> str:
-        return "<Extensions({})>".format(self._extensions)
+        return f"<Extensions({self._extensions})>"
 
 
 class CRLNumber(ExtensionType):
@@ -167,7 +167,7 @@ class CRLNumber(ExtensionType):
         return hash(self.crl_number)
 
     def __repr__(self) -> str:
-        return "<CRLNumber({})>".format(self.crl_number)
+        return f"<CRLNumber({self.crl_number})>"
 
     @property
     def crl_number(self) -> int:
@@ -306,7 +306,7 @@ class SubjectKeyIdentifier(ExtensionType):
         return self._digest
 
     def __repr__(self) -> str:
-        return "<SubjectKeyIdentifier(digest={0!r})>".format(self.digest)
+        return f"<SubjectKeyIdentifier(digest={self.digest!r})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SubjectKeyIdentifier):
@@ -339,7 +339,7 @@ class AuthorityInformationAccess(ExtensionType):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
 
     def __repr__(self) -> str:
-        return "<AuthorityInformationAccess({})>".format(self._descriptions)
+        return f"<AuthorityInformationAccess({self._descriptions})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AuthorityInformationAccess):
@@ -372,7 +372,7 @@ class SubjectInformationAccess(ExtensionType):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_descriptions")
 
     def __repr__(self) -> str:
-        return "<SubjectInformationAccess({})>".format(self._descriptions)
+        return f"<SubjectInformationAccess({self._descriptions})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SubjectInformationAccess):
@@ -496,7 +496,7 @@ class DeltaCRLIndicator(ExtensionType):
         return hash(self.crl_number)
 
     def __repr__(self) -> str:
-        return "<DeltaCRLIndicator(crl_number={0.crl_number})>".format(self)
+        return f"<DeltaCRLIndicator(crl_number={self.crl_number})>"
 
     def public_bytes(self) -> bytes:
         return rust_x509.encode_extension_value(self)
@@ -524,7 +524,7 @@ class CRLDistributionPoints(ExtensionType):
     )
 
     def __repr__(self) -> str:
-        return "<CRLDistributionPoints({})>".format(self._distribution_points)
+        return f"<CRLDistributionPoints({self._distribution_points})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CRLDistributionPoints):
@@ -561,7 +561,7 @@ class FreshestCRL(ExtensionType):
     )
 
     def __repr__(self) -> str:
-        return "<FreshestCRL({})>".format(self._distribution_points)
+        return f"<FreshestCRL({self._distribution_points})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, FreshestCRL):
@@ -816,7 +816,7 @@ class CertificatePolicies(ExtensionType):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_policies")
 
     def __repr__(self) -> str:
-        return "<CertificatePolicies({})>".format(self._policies)
+        return f"<CertificatePolicies({self._policies})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CertificatePolicies):
@@ -990,7 +990,7 @@ class ExtendedKeyUsage(ExtensionType):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_usages")
 
     def __repr__(self) -> str:
-        return "<ExtendedKeyUsage({})>".format(self._usages)
+        return f"<ExtendedKeyUsage({self._usages})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ExtendedKeyUsage):
@@ -1062,7 +1062,7 @@ class TLSFeature(ExtensionType):
     __len__, __iter__, __getitem__ = _make_sequence_methods("_features")
 
     def __repr__(self) -> str:
-        return "<TLSFeature(features={0._features})>".format(self)
+        return f"<TLSFeature(features={self._features})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TLSFeature):
@@ -1104,7 +1104,7 @@ class InhibitAnyPolicy(ExtensionType):
         self._skip_certs = skip_certs
 
     def __repr__(self) -> str:
-        return "<InhibitAnyPolicy(skip_certs={0.skip_certs})>".format(self)
+        return f"<InhibitAnyPolicy(skip_certs={self.skip_certs})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, InhibitAnyPolicy):
@@ -1487,7 +1487,7 @@ class GeneralNames:
         return list(objs)
 
     def __repr__(self) -> str:
-        return "<GeneralNames({})>".format(self._general_names)
+        return f"<GeneralNames({self._general_names})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, GeneralNames):
@@ -1565,7 +1565,7 @@ class SubjectAlternativeName(ExtensionType):
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
-        return "<SubjectAlternativeName({})>".format(self._general_names)
+        return f"<SubjectAlternativeName({self._general_names})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SubjectAlternativeName):
@@ -1646,7 +1646,7 @@ class IssuerAlternativeName(ExtensionType):
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
-        return "<IssuerAlternativeName({})>".format(self._general_names)
+        return f"<IssuerAlternativeName({self._general_names})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, IssuerAlternativeName):
@@ -1727,7 +1727,7 @@ class CertificateIssuer(ExtensionType):
         return self._general_names.get_values_for_type(type)
 
     def __repr__(self) -> str:
-        return "<CertificateIssuer({})>".format(self._general_names)
+        return f"<CertificateIssuer({self._general_names})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CertificateIssuer):
@@ -1752,7 +1752,7 @@ class CRLReason(ExtensionType):
         self._reason = reason
 
     def __repr__(self) -> str:
-        return "<CRLReason(reason={})>".format(self._reason)
+        return f"<CRLReason(reason={self._reason})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CRLReason):
@@ -1872,7 +1872,7 @@ class SignedCertificateTimestamps(ExtensionType):
     )
 
     def __repr__(self) -> str:
-        return "<SignedCertificateTimestamps({})>".format(list(self))
+        return f"<SignedCertificateTimestamps({list(self)})>"
 
     def __hash__(self) -> int:
         return hash(tuple(self._signed_certificate_timestamps))
@@ -1909,7 +1909,7 @@ class OCSPNonce(ExtensionType):
         return hash(self.nonce)
 
     def __repr__(self) -> str:
-        return "<OCSPNonce(nonce={0.nonce!r})>".format(self)
+        return f"<OCSPNonce(nonce={self.nonce!r})>"
 
     @property
     def nonce(self) -> bytes:

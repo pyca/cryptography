@@ -94,9 +94,7 @@ def _check_nonce_length(
             _Reasons.UNSUPPORTED_CIPHER,
         )
     if len(nonce) * 8 != algorithm.block_size:
-        raise ValueError(
-            "Invalid nonce size ({}) for {}.".format(len(nonce), name)
-        )
+        raise ValueError(f"Invalid nonce size ({len(nonce)}) for {name}.")
 
 
 def _check_iv_and_key_length(

@@ -31,7 +31,7 @@ class DHParameterNumbers:
 
         if p.bit_length() < _MIN_MODULUS_SIZE:
             raise ValueError(
-                "p (modulus) must be at least {}-bit".format(_MIN_MODULUS_SIZE)
+                f"p (modulus) must be at least {_MIN_MODULUS_SIZE}-bit"
             )
 
         self._p = p
