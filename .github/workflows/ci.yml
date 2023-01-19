@@ -142,7 +142,7 @@ jobs:
           - {IMAGE: "alpine", TOXENV: "py310", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9", TOXENV: "py39", RUNNER: "ubuntu-latest"}
 
-          - {IMAGE: "ubuntu-focal:aarch64", TOXENV: "py38", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "ubuntu-jammy:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
           - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     steps:
