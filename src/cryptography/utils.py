@@ -28,14 +28,14 @@ DeprecatedIn40 = CryptographyDeprecationWarning
 
 def _check_bytes(name: str, value: bytes) -> None:
     if not isinstance(value, bytes):
-        raise TypeError("{} must be bytes".format(name))
+        raise TypeError(f"{name} must be bytes")
 
 
 def _check_byteslike(name: str, value: bytes) -> None:
     try:
         memoryview(value)
     except TypeError:
-        raise TypeError("{} must be bytes-like".format(name))
+        raise TypeError(f"{name} must be bytes-like")
 
 
 def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
@@ -109,7 +109,7 @@ def deprecated(
 
 
 def cached_property(func: typing.Callable) -> property:
-    cached_name = "_cached_{}".format(func)
+    cached_name = f"_cached_{func}"
     sentinel = object()
 
     def inner(instance: object):

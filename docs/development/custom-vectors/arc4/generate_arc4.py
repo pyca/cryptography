@@ -76,13 +76,11 @@ def _build_vectors():
                 while current_offset < offset:
                     encryptor.update(plaintext)
                     current_offset += len(plaintext)
-                output.append("\nCOUNT = {}".format(count))
+                output.append(f"\nCOUNT = {count}")
                 count += 1
-                output.append("KEY = {}".format(key))
-                output.append("OFFSET = {}".format(offset))
-                output.append(
-                    "PLAINTEXT = {}".format(binascii.hexlify(plaintext))
-                )
+                output.append(f"KEY = {key}")
+                output.append(f"OFFSET = {offset}")
+                output.append(f"PLAINTEXT = {binascii.hexlify(plaintext)}")
                 output.append(
                     "CIPHERTEXT = {}".format(
                         binascii.hexlify(encryptor.update(plaintext))

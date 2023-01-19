@@ -69,9 +69,7 @@ def _check_fips_key_length(backend, private_key):
         backend._fips_enabled
         and private_key.key_size < backend._fips_rsa_min_key_size
     ):
-        pytest.skip(
-            "Key size not FIPS compliant: {}".format(private_key.key_size)
-        )
+        pytest.skip(f"Key size not FIPS compliant: {private_key.key_size}")
 
 
 def _check_rsa_private_numbers_if_serializable(key):
@@ -115,7 +113,7 @@ def _build_oaep_sha2_vectors():
             load_vectors_from_file(
                 os.path.join(
                     base_path,
-                    "oaep-{}-{}.txt".format(mgf1alg.name, oaepalg.name),
+                    f"oaep-{mgf1alg.name}-{oaepalg.name}.txt",
                 ),
                 load_pkcs1_vectors,
             )
@@ -134,9 +132,7 @@ def _skip_pss_hash_algorithm_unsupported(backend, hash_alg):
             mgf=padding.MGF1(hash_alg), salt_length=padding.PSS.MAX_LENGTH
         )
     ):
-        pytest.skip(
-            "Does not support {} in MGF1 using PSS.".format(hash_alg.name)
-        )
+        pytest.skip(f"Does not support {hash_alg.name} in MGF1 using PSS.")
 
 
 def test_skip_pss_hash_algorithm_unsupported(backend):
@@ -179,11 +175,9 @@ class TestRSA:
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
         if backend._fips_enabled:
             if key_size < backend._fips_rsa_min_key_size:
-                pytest.skip("Key size not FIPS compliant: {}".format(key_size))
+                pytest.skip(f"Key size not FIPS compliant: {key_size}")
             if public_exponent < backend._fips_rsa_min_public_exponent:
-                pytest.skip(
-                    "Exponent not FIPS compliant: {}".format(public_exponent)
-                )
+                pytest.skip(f"Exponent not FIPS compliant: {public_exponent}")
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 

@@ -186,9 +186,9 @@ class TestPKCS12Loading:
             (None, b"name2", None, "name-2-no-pwd.p12", None),
             (None, None, b"name3", "name-3-no-pwd.p12", None),
             (
-                "☺".encode("utf-8"),
-                "ä".encode("utf-8"),
-                "ç".encode("utf-8"),
+                "☺".encode(),
+                "ä".encode(),
+                "ç".encode(),
                 "name-unicode-no-pwd.p12",
                 None,
             ),
@@ -199,9 +199,9 @@ class TestPKCS12Loading:
             (None, b"name2", None, "name-2-pwd.p12", b"password"),
             (None, None, b"name3", "name-3-pwd.p12", b"password"),
             (
-                "☺".encode("utf-8"),
-                "ä".encode("utf-8"),
-                "ç".encode("utf-8"),
+                "☺".encode(),
+                "ä".encode(),
+                "ç".encode(),
                 "name-unicode-pwd.p12",
                 b"password",
             ),
@@ -240,8 +240,8 @@ class TestPKCS12Loading:
             (b"name2", None, "no-cert-name-2-no-pwd.p12", None),
             (None, b"name3", "no-cert-name-3-no-pwd.p12", None),
             (
-                "☹".encode("utf-8"),
-                "ï".encode("utf-8"),
+                "☹".encode(),
+                "ï".encode(),
                 "no-cert-name-unicode-no-pwd.p12",
                 None,
             ),
@@ -250,8 +250,8 @@ class TestPKCS12Loading:
             (b"name2", None, "no-cert-name-2-pwd.p12", b"password"),
             (None, b"name3", "no-cert-name-3-pwd.p12", b"password"),
             (
-                "☹".encode("utf-8"),
-                "ï".encode("utf-8"),
+                "☹".encode(),
+                "ï".encode(),
                 "no-cert-name-unicode-pwd.p12",
                 b"password",
             ),
@@ -794,12 +794,14 @@ class TestPKCS12Objects:
 
     def test_certificate_repr(self, backend):
         cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
-        assert repr(
-            PKCS12Certificate(cert, None)
-        ) == "<PKCS12Certificate({0}, friendly_name=None)>".format(repr(cert))
-        assert repr(
-            PKCS12Certificate(cert, b"a")
-        ) == "<PKCS12Certificate({0}, friendly_name=b'a')>".format(repr(cert))
+        assert (
+            repr(PKCS12Certificate(cert, None))
+            == f"<PKCS12Certificate({repr(cert)}, friendly_name=None)>"
+        )
+        assert (
+            repr(PKCS12Certificate(cert, b"a"))
+            == f"<PKCS12Certificate({repr(cert)}, friendly_name=b'a')>"
+        )
 
     def test_key_and_certificates_constructor(self, backend):
         with pytest.raises(TypeError):
@@ -944,9 +946,9 @@ class TestPKCS12Objects:
                     [PKCS12Certificate(cert2, b"name2")],
                 )
             )
-            == "<PKCS12KeyAndCertificates(key={0}, cert=<PKCS12Certificate("
-            "{1}, friendly_name=None)>, additional_certs=[<PKCS12Certificate"
-            "({2}, friendly_name=b'name2')>])>".format(
+            == "<PKCS12KeyAndCertificates(key={}, cert=<PKCS12Certificate("
+            "{}, friendly_name=None)>, additional_certs=[<PKCS12Certificate"
+            "({}, friendly_name=b'name2')>])>".format(
                 key,
                 cert,
                 cert2,

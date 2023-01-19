@@ -71,7 +71,7 @@ class NoEncryption(KeySerializationEncryption):
     pass
 
 
-class KeySerializationEncryptionBuilder(object):
+class KeySerializationEncryptionBuilder:
     def __init__(
         self,
         format: PrivateFormat,

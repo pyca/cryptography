@@ -71,8 +71,8 @@ exclude = [
     '_build',
     '.hypothesis',
 ]
-ignore = ['N818']
-select = ['E', 'F', 'I', 'N', 'W']
+ignore = ['N818', 'UP003', 'UP006', 'UP007']
+select = ['E', 'F', 'I', 'N', 'W', 'UP']
 line-length = 79
 
 [tool.ruff.isort]

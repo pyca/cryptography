@@ -66,7 +66,7 @@ def load_nist_vectors(vector_data):
             continue
 
         # Build our data using a simple Key = Value format
-        name, value = [c.strip() for c in line.split("=")]
+        name, value = (c.strip() for c in line.split("="))
 
         # Some tests (PBKDF2) contain \0, which should be interpreted as a
         # null character rather than literal.
@@ -107,7 +107,7 @@ def load_cryptrec_vectors(vector_data):
                 {"key": key, "plaintext": pt, "ciphertext": ct}
             )
         else:
-            raise ValueError("Invalid line in file '{}'".format(line))
+            raise ValueError(f"Invalid line in file '{line}'")
     return cryptrec_list
 
 
@@ -300,7 +300,7 @@ def load_rsa_nist_vectors(vector_data):
             continue
 
         # Build our data using a simple Key = Value format
-        name, value = [c.strip() for c in line.split("=")]
+        name, value = (c.strip() for c in line.split("="))
 
         if name == "n":
             n = int(value, 16)
@@ -396,7 +396,7 @@ def load_fips_dsa_sig_vectors(vector_data):
         if line.startswith("[mod"):
             continue
 
-        name, value = [c.strip() for c in line.split("=")]
+        name, value = (c.strip() for c in line.split("="))
 
         if name == "P":
             vectors.append(
@@ -771,7 +771,7 @@ def load_nist_kbkdf_vectors(vector_data):
 
         if line.startswith("[") and line.endswith("]"):
             tag_data = line[1:-1]
-            name, value = [c.strip() for c in tag_data.split("=")]
+            name, value = (c.strip() for c in tag_data.split("="))
             if value.endswith("_BITS"):
                 value = int(value.split("_")[0])
                 tag.update({name.lower(): value})
@@ -783,10 +783,10 @@ def load_nist_kbkdf_vectors(vector_data):
             test_data.update(tag)
             vectors.append(test_data)
         elif line.startswith(("L", "DataBeforeCtrLen", "DataAfterCtrLen")):
-            name, value = [c.strip() for c in line.split("=")]
+            name, value = (c.strip() for c in line.split("="))
             test_data[name.lower()] = int(value)
         else:
-            name, value = [c.strip() for c in line.split("=")]
+            name, value = (c.strip() for c in line.split("="))
             test_data[name.lower()] = value.encode("ascii")
 
     return vectors
@@ -828,7 +828,7 @@ def load_nist_ccm_vectors(vector_data):
         # Some of the CCM vectors have global values for this. They are always
         # at the top before the first section header (see: VADT, VNT, VPT)
         if line.startswith(("Alen", "Plen", "Nlen", "Tlen")):
-            name, value = [c.strip() for c in line.split("=")]
+            name, value = (c.strip() for c in line.split("="))
             global_data[name.lower()] = int(value)
             continue
 
@@ -839,11 +839,11 @@ def load_nist_ccm_vectors(vector_data):
             section = line[1:-1]
             items = [c.strip() for c in section.split(",")]
             for item in items:
-                name, value = [c.strip() for c in item.split("=")]
+                name, value = (c.strip() for c in item.split("="))
                 section_data[name.lower()] = int(value)
             continue
 
-        name, value = [c.strip() for c in line.split("=")]
+        name, value = (c.strip() for c in line.split("="))
 
         if name.lower() in ("key", "nonce") and new_section:
             section_data[name.lower()] = value.encode("ascii")

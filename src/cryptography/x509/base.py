@@ -39,7 +39,7 @@ _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
 class AttributeNotFound(Exception):
     def __init__(self, msg: str, oid: ObjectIdentifier) -> None:
-        super(AttributeNotFound, self).__init__(msg)
+        super().__init__(msg)
         self.oid = oid
 
 
@@ -99,7 +99,7 @@ class Attribute:
         return self._value
 
     def __repr__(self) -> str:
-        return "<Attribute(oid={}, value={!r})>".format(self.oid, self.value)
+        return f"<Attribute(oid={self.oid}, value={self.value!r})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Attribute):
@@ -125,14 +125,14 @@ class Attributes:
     __len__, __iter__, __getitem__ = _make_sequence_methods("_attributes")
 
     def __repr__(self) -> str:
-        return "<Attributes({})>".format(self._attributes)
+        return f"<Attributes({self._attributes})>"
 
     def get_attribute_for_oid(self, oid: ObjectIdentifier) -> Attribute:
         for attr in self:
             if attr.oid == oid:
                 return attr
 
-        raise AttributeNotFound("No {} attribute was found".format(oid), oid)
+        raise AttributeNotFound(f"No {oid} attribute was found", oid)
 
 
 class Version(utils.Enum):
@@ -142,7 +142,7 @@ class Version(utils.Enum):
 
 class InvalidVersion(Exception):
     def __init__(self, msg: str, parsed_version: int) -> None:
-        super(InvalidVersion, self).__init__(msg)
+        super().__init__(msg)
         self.parsed_version = parsed_version
 
 

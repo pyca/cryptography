@@ -274,7 +274,7 @@ def test_buffer_protocol_alternate_modes(mode, backend):
     data = bytearray(b"sixteen_byte_msg")
     key = algorithms.AES(bytearray(os.urandom(32)))
     if not backend.cipher_supported(key, mode):
-        pytest.skip("AES in {} mode not supported".format(mode.name))
+        pytest.skip(f"AES in {mode.name} mode not supported")
     cipher = base.Cipher(key, mode, backend)
     enc = cipher.encryptor()
     ct = enc.update(data) + enc.finalize()
@@ -298,7 +298,7 @@ def test_buffer_protocol_alternate_modes(mode, backend):
 def test_alternate_aes_classes(mode, alg_cls, backend):
     alg = alg_cls(b"0" * (alg_cls.key_size // 8))
     if not backend.cipher_supported(alg, mode):
-        pytest.skip("AES in {} mode not supported".format(mode.name))
+        pytest.skip(f"AES in {mode.name} mode not supported")
     data = bytearray(b"sixteen_byte_msg")
     cipher = base.Cipher(alg, mode, backend)
     enc = cipher.encryptor()

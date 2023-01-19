@@ -14,10 +14,12 @@ from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
-_OpenSSLErrorWithText = typing.NamedTuple(
-    "_OpenSSLErrorWithText",
-    [("code", int), ("lib", int), ("reason", int), ("reason_text", bytes)],
-)
+
+class _OpenSSLErrorWithText(typing.NamedTuple):
+    code: int
+    lib: int
+    reason: int
+    reason_text: bytes
 
 
 class _OpenSSLError:
@@ -94,7 +96,7 @@ def _openssl_assert(
             "OpenSSL try disabling it before reporting a bug. Otherwise "
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
-            "this. ({0!r})".format(errors_with_text),
+            "this. ({!r})".format(errors_with_text),
             errors_with_text,
         )
 

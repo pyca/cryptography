@@ -302,7 +302,7 @@ class AESOCB3:
             raise ValueError("Nonce must be between 12 and 15 bytes")
 
 
-class AESSIV(object):
+class AESSIV:
     _MAX_SIZE = 2**31 - 1
 
     def __init__(self, key: bytes):
