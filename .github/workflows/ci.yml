@@ -213,6 +213,7 @@ jobs:
           # Potential future MSRVs
           # 1.51 - const generics (for rust-asn1)
           # 1.56 - new versions of once_cell and bumpalo
+          # 1.60 - new version of cxx
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
