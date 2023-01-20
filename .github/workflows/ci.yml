@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+env:
+  REGISTRIES_CRATES_IO_PROTOCOL: sparse
+
 jobs:
   linux:
     runs-on: ubuntu-latest
