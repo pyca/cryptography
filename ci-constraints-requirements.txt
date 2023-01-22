@@ -1,7 +1,7 @@
 # This is named ambigiously, but it's a pip constraints file, named like a
 # requirements file so dependabot will update the pins.
 # It was originally generated with;
-#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=tox --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools setup.cfg
+#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=tox --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools pyproject.toml
 # and then manually massaged to add version specifiers to packages whose
 # versions vary by Python version
 
@@ -10,10 +10,11 @@ alabaster==0.7.13
 attrs==22.2.0
     # via
     #   pytest
+    #   pytest-subtests
 babel==2.12.1
     # via sphinx
 black==23.1.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 bleach==6.0.0
     # via readme-renderer
 build==0.10.0
@@ -27,7 +28,7 @@ chardet==5.1.0
 charset-normalizer==3.1.0
     # via requests
 check-manifest==0.49
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 click==8.1.3
     # via black
 colorama==0.4.6
@@ -42,8 +43,7 @@ docutils==0.18.1
     #   sphinx
     #   sphinx-rtd-theme
 exceptiongroup==1.1.1
-    # via
-    #   pytest
+    # via pytest
 execnet==1.9.0
     # via pytest-xdist
 filelock==3.10.3
@@ -75,7 +75,7 @@ mdurl==0.1.2
 more-itertools==9.1.0
     # via jaraco-classes
 mypy==1.1.1
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via
     #   black
@@ -102,12 +102,12 @@ pluggy==1.0.0
     #   pytest
     #   tox
 pretend==1.0.9
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 py-cpuinfo==9.0.0
     # via pytest-benchmark
 pyenchant==3.2.2
     # via
-    #   cryptography (setup.cfg)
+    #   cryptography (pyproject.toml)
     #   sphinxcontrib-spelling
 pygments==2.14.0
     # via
@@ -120,7 +120,7 @@ pyproject-hooks==1.0.0
     # via build
 pytest==7.2.2
     # via
-    #   cryptography (setup.cfg)
+    #   cryptography (pyproject.toml)
     #   pytest-benchmark
     #   pytest-cov
     #   pytest-randomly
@@ -128,20 +128,17 @@ pytest==7.2.2
     #   pytest-subtests
     #   pytest-xdist
 pytest-benchmark==4.0.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 pytest-cov==4.0.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 pytest-randomly==3.12.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 pytest-shard==0.1.2
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 pytest-subtests==0.10.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 pytest-xdist==3.2.1
-    # via cryptography (setup.cfg)
-pytz==2022.7.1
-    # via
-    #   babel
+    # via cryptography (pyproject.toml)
 readme-renderer==37.3
     # via twine
 requests==2.28.2
@@ -156,18 +153,19 @@ rfc3986==2.0.0
 rich==13.3.2
     # via twine
 ruff==0.0.259
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 six==1.16.0
     # via bleach
 snowballstemmer==2.2.0
     # via sphinx
 sphinx==6.1.3
     # via
-    #   cryptography (setup.cfg)
+    #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme
+    #   sphinxcontrib-jquery
     #   sphinxcontrib-spelling
 sphinx-rtd-theme==1.2.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==1.0.4
     # via sphinx
 sphinxcontrib-devhelp==1.0.2
@@ -183,7 +181,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
 sphinxcontrib-spelling==8.0.0
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 tomli==2.0.1
     # via
     #   black
@@ -196,9 +194,9 @@ tomli==2.0.1
     #   pytest
     #   tox
 tox==4.4.7
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 twine==4.0.2
-    # via cryptography (setup.cfg)
+    # via cryptography (pyproject.toml)
 typing-extensions==4.5.0
     # via mypy
 urllib3==1.26.15
