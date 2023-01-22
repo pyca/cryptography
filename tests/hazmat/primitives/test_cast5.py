@@ -26,7 +26,7 @@ class TestCAST5ModeECB:
         os.path.join("ciphers", "CAST5"),
         ["cast5-ecb.txt"],
         lambda key, **kwargs: algorithms._CAST5Internal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda **kwargs: modes.ECB(),
     )
@@ -44,7 +44,7 @@ class TestCAST5ModeCBC:
         os.path.join("ciphers", "CAST5"),
         ["cast5-cbc.txt"],
         lambda key, **kwargs: algorithms._CAST5Internal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
@@ -62,7 +62,7 @@ class TestCAST5ModeOFB:
         os.path.join("ciphers", "CAST5"),
         ["cast5-ofb.txt"],
         lambda key, **kwargs: algorithms._CAST5Internal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
@@ -80,7 +80,7 @@ class TestCAST5ModeCFB:
         os.path.join("ciphers", "CAST5"),
         ["cast5-cfb.txt"],
         lambda key, **kwargs: algorithms._CAST5Internal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )

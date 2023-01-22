@@ -24,7 +24,7 @@ class TestSM4ModeECB:
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-ecb.txt"],
-        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda **kwargs: modes.ECB(),
     )
 
@@ -40,7 +40,7 @@ class TestSM4ModeCBC:
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-cbc.txt"],
-        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
 
@@ -56,7 +56,7 @@ class TestSM4ModeOFB:
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-ofb.txt"],
-        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
 
@@ -72,7 +72,7 @@ class TestSM4ModeCFB:
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-cfb.txt"],
-        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
 
@@ -88,6 +88,6 @@ class TestSM4ModeCTR:
         load_nist_vectors,
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-ctr.txt"],
-        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify((key))),
+        lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
     )

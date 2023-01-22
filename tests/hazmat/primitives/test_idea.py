@@ -26,7 +26,7 @@ class TestIDEAModeECB:
         os.path.join("ciphers", "IDEA"),
         ["idea-ecb.txt"],
         lambda key, **kwargs: algorithms._IDEAInternal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda **kwargs: modes.ECB(),
     )
@@ -44,7 +44,7 @@ class TestIDEAModeCBC:
         os.path.join("ciphers", "IDEA"),
         ["idea-cbc.txt"],
         lambda key, **kwargs: algorithms._IDEAInternal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.CBC(binascii.unhexlify(iv)),
     )
@@ -62,7 +62,7 @@ class TestIDEAModeOFB:
         os.path.join("ciphers", "IDEA"),
         ["idea-ofb.txt"],
         lambda key, **kwargs: algorithms._IDEAInternal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
     )
@@ -80,7 +80,7 @@ class TestIDEAModeCFB:
         os.path.join("ciphers", "IDEA"),
         ["idea-cfb.txt"],
         lambda key, **kwargs: algorithms._IDEAInternal(
-            binascii.unhexlify((key))
+            binascii.unhexlify(key)
         ),
         lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
     )
