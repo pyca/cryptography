@@ -19,7 +19,7 @@ bleach==5.0.1
     # via readme-renderer
 build==0.10.0
     # via check-manifest
-cachetools==5.2.1
+cachetools==5.3.0
     # via tox
 certifi==2022.12.7
     # via requests
