@@ -103,10 +103,11 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         # hex encoded.
         pytest.skip("Non-96-bit IVs unsupported in FIPS mode.")
 
+    tag = binascii.unhexlify(params["tag"])
     mode = mode_factory(
         binascii.unhexlify(params["iv"]),
-        binascii.unhexlify(params["tag"]),
-        len(binascii.unhexlify(params["tag"])),
+        tag,
+        len(tag),
     )
     assert isinstance(mode, GCM)
     if params.get("pt") is not None:
@@ -134,14 +135,13 @@ def aead_test(backend, cipher_factory, mode_factory, params):
         encryptor.authenticate_additional_data(aad)
         actual_ciphertext = encryptor.update(plaintext)
         actual_ciphertext += encryptor.finalize()
-        tag_len = len(binascii.unhexlify(params["tag"]))
-        assert binascii.hexlify(encryptor.tag[:tag_len]) == params["tag"]
+        assert encryptor.tag[: len(tag)] == tag
         cipher = Cipher(
             cipher_factory(binascii.unhexlify(params["key"])),
             mode_factory(
                 binascii.unhexlify(params["iv"]),
-                binascii.unhexlify(params["tag"]),
-                min_tag_length=tag_len,
+                tag,
+                min_tag_length=len(tag),
             ),
             backend,
         )
