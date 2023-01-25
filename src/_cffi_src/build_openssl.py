@@ -86,6 +86,8 @@ ffi = build_ffi_for_binding(
         "dsa",
         "ec",
         "ecdsa",
+        # pem needs to go before engine to define pem_password_cb
+        "pem",
         "engine",
         "err",
         "evp",
@@ -95,7 +97,6 @@ ffi = build_ffi_for_binding(
         "objects",
         "opensslv",
         "osrandom_engine",
-        "pem",
         "pkcs12",
         "rand",
         "rsa",
