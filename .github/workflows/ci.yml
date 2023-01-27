@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
 
 jobs:
   linux:
