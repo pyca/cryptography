@@ -16,9 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
-env:
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-
 jobs:
   linux:
     runs-on: ubuntu-latest
@@ -270,6 +267,8 @@ jobs:
           - nightly
     name: "Rust Coverage"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
