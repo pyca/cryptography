@@ -320,9 +320,9 @@ impl Certificate {
         )
     }
 
-    fn verify_directly_issued_by<'p>(
+    fn verify_directly_issued_by(
         &self,
-        py: pyo3::Python<'p>,
+        py: pyo3::Python<'_>,
         issuer: pyo3::PyRef<'_, Certificate>,
     ) -> PyAsn1Result<()> {
         if self.raw.borrow_value().tbs_cert.signature_alg != self.raw.borrow_value().signature_alg {
