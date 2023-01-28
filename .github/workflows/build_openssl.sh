@@ -69,15 +69,11 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   mkdir build
   pushd build
   # Find the default rust target based on what rustc is built for
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DRUST_BINDINGS="$(rustc -V --verbose | grep 'host: ' | sed 's/host: //')"
+  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DRUST_BINDINGS="$(rustc -V --verbose | grep 'host: ' | sed 's/host: //')" -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   make -j"$(nproc)"
-  mkdir -p "${OSSL_PATH}/lib/"
-  mkdir -p "${OSSL_PATH}/include/"
-  mkdir -p "${OSSL_PATH}/bin/"
-  cp -r ../include/openssl "${OSSL_PATH}/include/"
-  cp ssl/libssl.a "${OSSL_PATH}/lib/"
-  cp crypto/libcrypto.a "${OSSL_PATH}/lib/"
-  cp tool/bssl "${OSSL_PATH}/bin/openssl"
+  make install
+  # BoringSSL doesn't have a bin/openssl and we use that to detect success
+  touch "${OSSL_PATH}/bin/openssl"
   popd
   popd
 fi
