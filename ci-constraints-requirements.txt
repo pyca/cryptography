@@ -159,7 +159,7 @@ requests-toolbelt==0.10.1
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.2.0
+rich==13.3.0
     # via twine
 ruff==0.0.236
     # via cryptography (setup.cfg)
