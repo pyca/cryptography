@@ -1,5 +1,0 @@
-click
-tox >= 2.4.1
-twine >= 1.8.0
--e .[test,docs,docstest,pep8test]
--e vectors
