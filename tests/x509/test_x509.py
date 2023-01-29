@@ -542,6 +542,13 @@ class TestCertificateRevocationList:
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert not crl.is_signature_valid(public_key)
 
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_inner_outer_mismatch.der"),
+            x509.load_der_x509_crl,
+            backend,
+        )
+        assert not crl.is_signature_valid(public_key)
+
     def test_verify_good(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "valid_signature_crl.pem"),
