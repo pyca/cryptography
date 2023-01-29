@@ -58,6 +58,7 @@ jobs:
           - { VERSION: "pp38-pypy38_pp73" }
           - { VERSION: "pp39-pypy39_pp73" }
         MANYLINUX:
+          - { NAME: "manylinux_2_24_x86_64", CONTAINER: "cryptography-manylinux_2_24:x86_64", RUNNER: "ubuntu-latest"}
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
           - { NAME: "manylinux_2_28_x86_64", CONTAINER: "cryptography-manylinux_2_28:x86_64", RUNNER: "ubuntu-latest"}
           - { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
