@@ -1102,14 +1102,6 @@ class Backend:
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
-    def _csr2ossl(self, csr: x509.CertificateSigningRequest) -> typing.Any:
-        data = csr.public_bytes(serialization.Encoding.DER)
-        mem_bio = self._bytes_to_bio(data)
-        x509_req = self._lib.d2i_X509_REQ_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(x509_req != self._ffi.NULL)
-        x509_req = self._ffi.gc(x509_req, self._lib.X509_REQ_free)
-        return x509_req
-
     def _crl2ossl(self, crl: x509.CertificateRevocationList) -> typing.Any:
         data = crl.public_bytes(serialization.Encoding.DER)
         mem_bio = self._bytes_to_bio(data)
@@ -1137,21 +1129,6 @@ class Backend:
             )
         x509_crl = self._crl2ossl(crl)
         res = self._lib.X509_CRL_verify(x509_crl, public_key._evp_pkey)
-
-        if res != 1:
-            self._consume_errors()
-            return False
-
-        return True
-
-    def _csr_is_signature_valid(
-        self, csr: x509.CertificateSigningRequest
-    ) -> bool:
-        x509_req = self._csr2ossl(csr)
-        pkey = self._lib.X509_REQ_get_pubkey(x509_req)
-        self.openssl_assert(pkey != self._ffi.NULL)
-        pkey = self._ffi.gc(pkey, self._lib.EVP_PKEY_free)
-        res = self._lib.X509_REQ_verify(x509_req, pkey)
 
         if res != 1:
             self._consume_errors()
