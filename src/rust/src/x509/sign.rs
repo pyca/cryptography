@@ -16,7 +16,7 @@ pub(crate) static NULL_TLV: Lazy<asn1::Tlv<'static>> =
     Lazy::new(|| asn1::parse_single(&NULL_DER).unwrap());
 
 #[derive(Debug, PartialEq)]
-enum KeyType {
+pub(crate) enum KeyType {
     Rsa,
     Dsa,
     Ec,
@@ -320,7 +320,7 @@ pub(crate) fn verify_signature_with_oid<'p>(
     Ok(())
 }
 
-fn identify_public_key_type(
+pub(crate) fn identify_public_key_type(
     py: pyo3::Python<'_>,
     public_key: &pyo3::PyAny,
 ) -> pyo3::PyResult<KeyType> {

@@ -7,7 +7,7 @@ use crate::asn1::{
     PyAsn1Error, PyAsn1Result,
 };
 use crate::x509;
-use crate::x509::{certificate, extensions, oid};
+use crate::x509::{certificate, extensions, oid, sign};
 use pyo3::ToPyObject;
 use std::convert::TryInto;
 use std::sync::Arc;
@@ -373,11 +373,25 @@ impl CertificateRevocationList {
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
         public_key: &'p pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let backend = py
-            .import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr(crate::intern!(py, "backend"))?;
-        backend.call_method1("_crl_is_signature_valid", (slf, public_key))
+    ) -> PyAsn1Result<bool> {
+        if slf.raw.borrow_value().tbs_cert_list.signature
+            != slf.raw.borrow_value().signature_algorithm
+        {
+            return Ok(false);
+        };
+
+        // Error on invalid public key -- below we treat any error as just
+        // being an invalid signature.
+        sign::identify_public_key_type(py, public_key)?;
+
+        Ok(sign::verify_signature_with_oid(
+            py,
+            public_key,
+            &slf.raw.borrow_value().signature_algorithm.oid,
+            slf.raw.borrow_value().signature_value.as_bytes(),
+            &asn1::write_single(&slf.raw.borrow_value().tbs_cert_list)?,
+        )
+        .is_ok())
     }
 }
 

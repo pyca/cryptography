@@ -78,7 +78,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
-    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
     PRIVATE_KEY_TYPES,
     PUBLIC_KEY_TYPES,
 )
@@ -1101,40 +1100,6 @@ class Backend:
         res = self._lib.i2d_X509_bio(bio, x509)
         self.openssl_assert(res == 1)
         return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
-
-    def _crl2ossl(self, crl: x509.CertificateRevocationList) -> typing.Any:
-        data = crl.public_bytes(serialization.Encoding.DER)
-        mem_bio = self._bytes_to_bio(data)
-        x509_crl = self._lib.d2i_X509_CRL_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(x509_crl != self._ffi.NULL)
-        x509_crl = self._ffi.gc(x509_crl, self._lib.X509_CRL_free)
-        return x509_crl
-
-    def _crl_is_signature_valid(
-        self,
-        crl: x509.CertificateRevocationList,
-        public_key: CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
-    ) -> bool:
-        if not isinstance(
-            public_key,
-            (
-                _DSAPublicKey,
-                _RSAPublicKey,
-                _EllipticCurvePublicKey,
-            ),
-        ):
-            raise TypeError(
-                "Expecting one of DSAPublicKey, RSAPublicKey,"
-                " or EllipticCurvePublicKey."
-            )
-        x509_crl = self._crl2ossl(crl)
-        res = self._lib.X509_CRL_verify(x509_crl, public_key._evp_pkey)
-
-        if res != 1:
-            self._consume_errors()
-            return False
-
-        return True
 
     def _check_keys_correspond(self, key1, key2):
         if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
