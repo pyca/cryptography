@@ -109,9 +109,15 @@ jobs:
           echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration -I${OSSL_PATH}/include" >> $GITHUB_ENV
           echo "LDFLAGS=${LDFLAGS} -L${OSSL_PATH}/lib -L${OSSL_PATH}/lib64 -Wl,-rpath=${OSSL_PATH}/lib -Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
+      - name: Build toxenv
+        run: |
+            tox -vvv --notest
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
         run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
+            tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CRYPTOGRAPHY_OPENSSL_NO_LEGACY: ${{ matrix.PYTHON.OPENSSL.NO_LEGACY }}
@@ -187,11 +193,16 @@ jobs:
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
       - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt tox coverage
-      - run: '/venv/bin/tox -vvv -- --wycheproof-root="wycheproof"'
+      - run: '/venv/bin/tox -vvv --notest'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+      - run: '/venv/bin/tox --skip-pkg-install --  --color=yes --wycheproof-root="wycheproof"'
+        env:
+          TOXENV: ${{ matrix.IMAGE.TOXENV }}
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
       - uses: ./.github/actions/upload-coverage
@@ -248,12 +259,15 @@ jobs:
           path: "wycheproof"
           ref: "master"
       - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
-      - name: Tests
-        run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+      - name: Create toxenv
+        run: tox -vvv --notest
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - name: Tests
+        run: tox --skip-pkg-install --  --color=yes  --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
       - uses: ./.github/actions/upload-coverage
 
   linux-rust-coverage:
@@ -306,9 +320,15 @@ jobs:
           path: "wycheproof"
           ref: "master"
       - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
+      - name: Create toxenv
+        run: tox -vvv --notest
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          RUSTFLAGS: "-Cinstrument-coverage"
+          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
       - name: Tests
-        run: |
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -400,16 +420,20 @@ jobs:
           python .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Tests
+      - name: Build toxenv
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
             CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
-            tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
+            tox -vvv --notest
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - name: Tests
+        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
 
       - uses: ./.github/actions/upload-coverage
 
@@ -468,7 +492,13 @@ jobs:
           path: "wycheproof"
           ref: "master"
 
-      - run: tox -vvv -r -- --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+      - name: Build toxenv
+        run: tox -vvv --notest
+        env:
+          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - name: Tests
+        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
