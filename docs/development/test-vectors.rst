@@ -605,6 +605,9 @@ Custom X.509 Certificate Revocation List Vectors
   signature on this CRL is invalid.
 * ``crl_bad_version.pem`` - Contains a CRL with an invalid version.
 * ``crl_almost_10k.pem`` - Contains a CRL with 9,999 entries.
+* ``crl_inner_outer_mismatch.der`` - A CRL created from
+  ``valid_signature_crl.pem`` but with a mismatched inner and
+  outer signature algorithm. The signature on this CRL is invalid.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
