@@ -4,7 +4,7 @@
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid, PyAsn1Error, PyAsn1Result};
 use crate::x509;
-use crate::x509::{certificate, oid};
+use crate::x509::{certificate, oid, sign};
 use asn1::SimpleAsn1Readable;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -266,14 +266,15 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn is_signature_valid<'p>(
-        slf: pyo3::PyRef<'_, Self>,
-        py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let backend = py
-            .import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr(crate::intern!(py, "backend"))?;
-        backend.call_method1("_csr_is_signature_valid", (slf,))
+    fn is_signature_valid(slf: pyo3::PyRef<'_, Self>, py: pyo3::Python<'_>) -> PyAsn1Result<bool> {
+        Ok(sign::verify_signature_with_oid(
+            py,
+            slf.public_key(py)?,
+            &slf.raw.borrow_value().signature_alg.oid,
+            slf.raw.borrow_value().signature.as_bytes(),
+            &asn1::write_single(&slf.raw.borrow_value().csr_info)?,
+        )
+        .is_ok())
     }
 }
 
