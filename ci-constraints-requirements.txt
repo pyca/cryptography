@@ -1,0 +1,230 @@
+# This is named ambigiously, but it's a pip constraints file, named like a
+# requirements file so dependabot will update the pins.
+# It was originally generated with;
+#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=tox --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools setup.cfg
+# and then manually massaged to add version specifiers to packages whose
+# versions vary by Python version
+
+alabaster==0.7.13
+    # via sphinx
+attrs==22.2.0
+    # via
+    #   hypothesis
+    #   pytest
+babel==2.11.0
+    # via sphinx
+black==22.12.0
+    # via cryptography (setup.cfg)
+bleach==6.0.0
+    # via readme-renderer
+build==0.10.0
+    # via check-manifest
+cachetools==5.3.0
+    # via tox
+certifi==2022.12.7
+    # via requests
+chardet==5.1.0
+    # via tox
+charset-normalizer==3.0.1; python_version >= "3.7"
+    # via requests
+check-manifest==0.49
+    # via cryptography (setup.cfg)
+click==8.1.3
+    # via black
+colorama==0.4.6; python_version >= "3.7"
+    # via tox
+coverage==7.1.0; python_version >= "3.7"
+    # via pytest-cov
+distlib==0.3.6
+    # via virtualenv
+docutils==0.17.1
+    # via
+    #   readme-renderer
+    #   sphinx
+    #   sphinx-rtd-theme
+exceptiongroup==1.1.0
+    # via
+    #   hypothesis
+    #   pytest
+execnet==1.9.0
+    # via pytest-xdist
+filelock==3.9.0; python_version >= "3.7"
+    # via
+    #   tox
+    #   virtualenv
+hypothesis==6.65.2; python_version >= "3.7"
+    # via cryptography (setup.cfg)
+idna==3.4
+    # via requests
+imagesize==1.4.1
+    # via sphinx
+importlib-metadata==6.0.0; python_version >= "3.7"
+    # via
+    #   keyring
+    #   twine
+iniconfig==2.0.0; python_version >= "3.7"
+    # via pytest
+iso8601==1.1.0
+    # via cryptography (setup.cfg)
+jaraco-classes==3.2.3
+    # via keyring
+jinja2==3.1.2
+    # via sphinx
+keyring==23.13.1
+    # via twine
+markdown-it-py==2.1.0
+    # via rich
+markupsafe==2.1.2
+    # via jinja2
+mdurl==0.1.2
+    # via markdown-it-py
+more-itertools==9.0.0
+    # via jaraco-classes
+mypy==0.991
+    # via cryptography (setup.cfg)
+mypy-extensions==0.4.3
+    # via
+    #   black
+    #   mypy
+packaging==23.0; python_version >= "3.7"
+    # via
+    #   build
+    #   pyproject-api
+    #   pytest
+    #   sphinx
+    #   tox
+pathspec==0.11.0
+    # via black
+pkginfo==1.9.6
+    # via twine
+platformdirs==2.6.2; python_version >= "3.7"
+    # via
+    #   black
+    #   tox
+    #   virtualenv
+pluggy==1.0.0; python_version >= "3.7"
+    # via
+    #   pytest
+    #   tox
+pretend==1.0.9
+    # via cryptography (setup.cfg)
+py-cpuinfo==9.0.0
+    # via pytest-benchmark
+pyenchant==3.2.2
+    # via
+    #   cryptography (setup.cfg)
+    #   sphinxcontrib-spelling
+pygments==2.14.0
+    # via
+    #   readme-renderer
+    #   rich
+    #   sphinx
+pyproject-api==1.5.0
+    # via tox
+pyproject-hooks==1.0.0
+    # via build
+pytest==7.2.1; python_version >= "3.7"
+    # via
+    #   cryptography (setup.cfg)
+    #   pytest-benchmark
+    #   pytest-cov
+    #   pytest-randomly
+    #   pytest-shard
+    #   pytest-subtests
+    #   pytest-xdist
+pytest-benchmark==4.0.0; python_version >= "3.7"
+    # via cryptography (setup.cfg)
+pytest-cov==4.0.0
+    # via cryptography (setup.cfg)
+pytest-randomly==3.12.0
+    # via cryptography (setup.cfg)
+pytest-shard==0.1.2
+    # via cryptography (setup.cfg)
+pytest-subtests==0.9.0; python_version >= "3.7"
+    # via cryptography (setup.cfg)
+pytest-xdist==3.1.0; python_version >= "3.7"
+    # via cryptography (setup.cfg)
+pytz==2022.7.1
+    # via
+    #   babel
+    #   cryptography (setup.cfg)
+readme-renderer==37.3
+    # via twine
+requests==2.28.2; python_version >= "3.7"
+    # via
+    #   requests-toolbelt
+    #   sphinx
+    #   twine
+requests-toolbelt==0.10.1
+    # via twine
+rfc3986==2.0.0
+    # via twine
+rich==13.3.0
+    # via twine
+ruff==0.0.236
+    # via cryptography (setup.cfg)
+six==1.16.0
+    # via bleach
+snowballstemmer==2.2.0
+    # via sphinx
+sortedcontainers==2.4.0
+    # via hypothesis
+sphinx==5.3.0
+    # via
+    #   cryptography (setup.cfg)
+    #   sphinx-rtd-theme
+    #   sphinxcontrib-spelling
+sphinx-rtd-theme==1.1.1
+    # via cryptography (setup.cfg)
+sphinxcontrib-applehelp==1.0.4
+    # via sphinx
+sphinxcontrib-devhelp==1.0.2
+    # via sphinx
+sphinxcontrib-htmlhelp==2.0.0
+    # via sphinx
+sphinxcontrib-jsmath==1.0.1
+    # via sphinx
+sphinxcontrib-qthelp==1.0.3
+    # via sphinx
+sphinxcontrib-serializinghtml==1.1.5
+    # via sphinx
+sphinxcontrib-spelling==7.7.0
+    # via cryptography (setup.cfg)
+tomli==2.0.1; python_version >= "3.7"
+    # via
+    #   black
+    #   build
+    #   check-manifest
+    #   coverage
+    #   mypy
+    #   pyproject-api
+    #   pyproject-hooks
+    #   pytest
+    #   tox
+tox==4.4.2; python_version >= "3.7"
+    # via cryptography (setup.cfg)
+twine==4.0.2
+    # via cryptography (setup.cfg)
+types-pytz==2022.7.1.0
+    # via cryptography (setup.cfg)
+types-requests==2.28.11.8
+    # via cryptography (setup.cfg)
+types-urllib3==1.26.25.4
+    # via types-requests
+typing-extensions==4.4.0; python_version >= "3.7"
+    # via mypy
+urllib3==1.26.14
+    # via
+    #   requests
+    #   twine
+virtualenv==20.17.1
+    # via tox
+webencodings==0.5.1
+    # via bleach
+zipp==3.12.0; python_version >= "3.7"
+    # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# cffi
+# pycparser
+# setuptools
