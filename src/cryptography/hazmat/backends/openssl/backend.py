@@ -1129,11 +1129,14 @@ class Backend:
                 _DSAPublicKey,
                 _RSAPublicKey,
                 _EllipticCurvePublicKey,
+                _Ed448PublicKey,
+                _Ed25519PublicKey,
             ),
         ):
             raise TypeError(
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
-                " or EllipticCurvePublicKey."
+                " EllipticCurvePublicKey, _Ed448PublicKey or"
+                " _Ed25519PublicKey."
             )
         x509_crl = self._crl2ossl(crl)
         res = self._lib.X509_CRL_verify(x509_crl, public_key._evp_pkey)
