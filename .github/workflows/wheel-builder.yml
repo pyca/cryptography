@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     name: sdists
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -37,18 +37,18 @@ jobs:
         run: .venv/bin/python setup.py sdist
       - name: Make sdist and wheel (vectors)
         run: cd vectors/ && ../.venv/bin/python setup.py sdist bdist_wheel
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         with:
           name: "cryptography-sdist"
           path: dist/cryptography*
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         with:
           name: "vectors-sdist-wheel"
           path: vectors/dist/cryptography*
 
   manylinux:
     needs: [sdist]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.MANYLINUX.RUNNER }}
     container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
     strategy:
       fail-fast: false
@@ -58,19 +58,45 @@ jobs:
           - { VERSION: "pp38-pypy38_pp73" }
           - { VERSION: "pp39-pypy39_pp73" }
         MANYLINUX:
-          - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64" }
-          - { NAME: "manylinux_2_24_x86_64", CONTAINER: "cryptography-manylinux_2_24:x86_64"}
-          - { NAME: "manylinux_2_28_x86_64", CONTAINER: "cryptography-manylinux_2_28:x86_64"}
-          - { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
+          - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
+          - { NAME: "manylinux_2_28_x86_64", CONTAINER: "cryptography-manylinux_2_28:x86_64", RUNNER: "ubuntu-latest"}
+          - { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
+
+          - { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64] }
+          - { NAME: "manylinux_2_28_aarch64", CONTAINER: "cryptography-manylinux_2_28:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
         exclude:
           # There are no readily available musllinux PyPy distributions
           - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
+            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64"}
+            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
+          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
+            MANYLINUX: { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - PYTHON: { VERSION: "pp39-pypy39_pp73" }
+            MANYLINUX: { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          # We also don't build pypy wheels for anything except the latest manylinux
+          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
+            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
+          - PYTHON: { VERSION: "pp39-pypy39_pp73" }
+            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
+          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
+            MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - PYTHON: { VERSION: "pp39-pypy39_pp73" }
+            MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - uses: actions/download-artifact@v3.0.1
+      - name: Ridiculous alpine workaround for actions support on arm64
+        run: |
+          # This modifies /etc/os-release so the JS actions
+          # from GH can't detect that it's on alpine:aarch64. It will
+          # then use a glibc nodejs, which works fine when gcompat
+          # is installed in the container (which it is)
+          sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
+        if: matrix.MANYLINUX.NAME == 'musllinux_1_1_aarch64'
+
+      - uses: actions/download-artifact@v3.0.2
         with:
           name: cryptography-sdist
 
@@ -104,7 +130,7 @@ jobs:
           .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}"
           path: cryptography-wheelhouse/
@@ -151,12 +177,12 @@ jobs:
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
       # Needed for download_openssl.py
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
-      - uses: actions/download-artifact@v3.0.1
+      - uses: actions/download-artifact@v3.0.2
         with:
           name: cryptography-sdist
 
@@ -168,17 +194,17 @@ jobs:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
         if: contains(matrix.PYTHON.VERSION, 'pypy') == false
       - name: Setup pypy
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -U requests
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -c ci-constraints-requirements.txt -U requests
       - name: Download OpenSSL
         run: |
             ${{ matrix.PYTHON.BIN_PATH }} .github/workflows/download_openssl.py macos openssl-macos-universal2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: dtolnay/rust-toolchain@e645b0cf01249a964ec099494d38d2da0f0b349f
+      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
         with:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
@@ -209,7 +235,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls cryptography-wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: cryptography-wheelhouse/
@@ -236,26 +262,26 @@ jobs:
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       # Needed for download_openssl.py
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
-      - uses: actions/download-artifact@v3.0.1
+      - uses: actions/download-artifact@v3.0.2
         with:
           name: cryptography-sdist
 
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: dtolnay/rust-toolchain@e645b0cf01249a964ec099494d38d2da0f0b349f
+      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
         with:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - run: pip install requests
+      - run: pip install -c ci-constraints-requirements.txt requests
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
@@ -277,7 +303,7 @@ jobs:
 
       - run: mkdir cryptography-wheelhouse
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION}}"
           path: cryptography-wheelhouse\

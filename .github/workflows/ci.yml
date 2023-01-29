@@ -40,23 +40,23 @@ jobs:
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.7.0"}}
           - {VERSION: "3.11", TOXENV: "py311-randomorder"}
           - {VERSION: "3.12-dev", TOXENV: "py312"}
-          # Latest commit on the BoringSSL master branch, as of Dec 23, 2022.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "31bad2514d21f6207f3925ba56754611c462a873"}}
-          # Latest commit on the OpenSSL master branch, as of Dec 29, 2022.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "43a9e682d80d0abe4ffd0c76d18c43cf059a2bcc"}}
+          # Latest commit on the BoringSSL master branch, as of Jan 28, 2023.
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "80a243e07ef77156af66efa7d22ac35aba44c1b3"}}
+          # Latest commit on the OpenSSL master branch, as of Jan 28, 2023.
+          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "6a9453572533e4a22e6f60fe8f6b7ef0823d9c1f"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -69,13 +69,13 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-5-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt tox requests coverage[toml]
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -89,14 +89,14 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load cache
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         id: ossl-cache
         timeout-minutes: 5
         with:
           path: ${{ github.workspace }}/osslcache
           # When altering the openssl build process you may need to increment the value on the end of this cache key
           # so that you can prevent it from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-4
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-6
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/workflows/build_openssl.sh
@@ -120,35 +120,46 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   linux-distros:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.IMAGE.RUNNER }}
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
       fail-fast: false
       matrix:
         IMAGE:
-          - {IMAGE: "rhel8", TOXENV: "py36"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py36", FIPS: true}
-          - {IMAGE: "rhel8", TOXENV: "py38"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py38", FIPS: true}
-          - {IMAGE: "buster", TOXENV: "py37"}
-          - {IMAGE: "bullseye", TOXENV: "py39"}
-          - {IMAGE: "bookworm", TOXENV: "py310"}
-          - {IMAGE: "sid", TOXENV: "py310"}
-          - {IMAGE: "ubuntu-bionic", TOXENV: "py36"}
-          - {IMAGE: "ubuntu-focal", TOXENV: "py38"}
-          - {IMAGE: "ubuntu-jammy", TOXENV: "py310"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py310"}
-          - {IMAGE: "fedora", TOXENV: "py311"}
-          - {IMAGE: "alpine", TOXENV: "py310"}
-          - {IMAGE: "centos-stream9", TOXENV: "py39"}
-    name: "${{ matrix.IMAGE.TOXENV }} on ${{ matrix.IMAGE.IMAGE }}"
+          - {IMAGE: "rhel8", TOXENV: "py36", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "rhel8-fips", TOXENV: "py36", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "rhel8", TOXENV: "py38", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "rhel8-fips", TOXENV: "py38", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "buster", TOXENV: "py37", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bullseye", TOXENV: "py39", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bookworm", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "sid", TOXENV: "py311", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-bionic", TOXENV: "py36", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-jammy", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "fedora", TOXENV: "py311", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "alpine", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9", TOXENV: "py39", RUNNER: "ubuntu-latest"}
+
+          - {IMAGE: "ubuntu-jammy:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - name: Ridiculous alpine workaround for actions support on arm64
+        run: |
+          # This modifies /etc/os-release so the JS actions
+          # from GH can't detect that it's on alpine:aarch64. It will
+          # then use a glibc nodejs, which works fine when gcompat
+          # is installed in the container (which it is)
+          sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
+        if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
+
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -159,9 +170,9 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -175,6 +186,7 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt tox coverage
       - run: '/venv/bin/tox -vvv -- --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
@@ -201,14 +213,15 @@ jobs:
           # Potential future MSRVs
           # 1.51 - const generics (for rust-asn1)
           # 1.56 - new versions of once_cell and bumpalo
+          # 1.60 - new version of cxx
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -222,19 +235,19 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@e645b0cf01249a964ec099494d38d2da0f0b349f
+      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
         with:
           toolchain: ${{ matrix.RUST }}
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
       - name: Tests
         run: |
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
@@ -254,12 +267,14 @@ jobs:
           - nightly
     name: "Rust Coverage"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         id: cargo-cache
         timeout-minutes: 5
         with:
@@ -274,23 +289,23 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ matrix.RUST }}-coverage
 
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@e645b0cf01249a964ec099494d38d2da0f0b349f
+      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
         with:
           toolchain: ${{ matrix.RUST }}
           components: llvm-tools-preview
       - run: cargo install cargo-binutils
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install tox coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
       - name: Tests
         run: |
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
@@ -331,21 +346,28 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.RUNNER.OS }}
     strategy:
       fail-fast: false
       matrix:
+        RUNNER:
+          - {OS: 'macos-12', ARCH: 'x86_64'}
+          - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.10", TOXENV: "py310", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
-    name: "${{ matrix.PYTHON.TOXENV }} on macOS"
+          - {VERSION: "3.11", TOXENV: "py311", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
+        exclude:
+          # We only test latest Python on arm64. The py36 won't work since there's no universal2 binary
+          - PYTHON: {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+            RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+    name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -356,16 +378,17 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+          architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt tox requests coverage[toml]
 
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -381,7 +404,7 @@ jobs:
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
             LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
-            CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 -march=core2 $EXTRA_CFLAGS" \
+            CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
             tox -vvv -r --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
@@ -405,17 +428,17 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -428,7 +451,7 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
-      - run: python -m pip install tox requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" requests coverage[toml]
       - name: Download OpenSSL
         run: |
             python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
@@ -438,7 +461,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           repository: "google/wycheproof"
@@ -469,15 +492,15 @@ jobs:
           - mitmproxy
           - scapy
         PYTHON:
-          - 3.9
+          - '3.11'
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: actions/cache@v3.2.2
+      - uses: actions/cache@v3.2.3
         timeout-minutes: 5
         with:
           path: |
@@ -491,7 +514,7 @@ jobs:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
@@ -523,14 +546,14 @@ jobs:
     name: "linkcheck"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         with:
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: 3.11
-      - run: python -m pip install -U tox
+      - run: python -m pip install -c ci-constraints-requirements.txt tox
       - run: tox -r --  --color=yes
         env:
           TOXENV: docs-linkcheck
@@ -541,7 +564,7 @@ jobs:
     needs: [linux, linux-distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -551,14 +574,14 @@ jobs:
           jobs: ${{ toJSON(needs) }}
       - name: Setup python
         if: ${{ always() }}
-        uses: actions/setup-python@v4.4.0
+        uses: actions/setup-python@v4.5.0
         with:
           python-version: '3.10'
-      - run: pip install coverage[toml]
+      - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}
-        uses: actions/download-artifact@v3.0.1
+        uses: actions/download-artifact@v3.0.2
         with:
           name: coverage-data
       - name: Combine coverage and fail if it's <100%.
@@ -600,14 +623,14 @@ jobs:
         run: python -m coverage html
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload HTML report.
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: _html-report
           path: htmlcov
           if-no-files-found: ignore
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload rust HTML report.
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: _html-rust-report
           path: rust-coverage
