@@ -57,7 +57,6 @@ from cryptography.hazmat.backends.openssl.x25519 import (
     _X25519PrivateKey,
     _X25519PublicKey,
 )
-from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
@@ -1095,11 +1094,11 @@ class Backend:
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return x509
 
-    def _ossl2cert(self, x509: typing.Any) -> x509.Certificate:
+    def _ossl2cert(self, x509_ptr: typing.Any) -> x509.Certificate:
         bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_bio(bio, x509)
+        res = self._lib.i2d_X509_bio(bio, x509_ptr)
         self.openssl_assert(res == 1)
-        return rust_x509.load_der_x509_certificate(self._read_mem_bio(bio))
+        return x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
     def _check_keys_correspond(self, key1, key2):
         if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
@@ -2299,13 +2298,15 @@ class Backend:
                 if isinstance(ca, PKCS12Certificate):
                     ca_alias = ca.friendly_name
                     ossl_ca = self._cert2ossl(ca.certificate)
-                    with self._zeroed_null_terminated_buf(
-                        ca_alias
-                    ) as ca_name_buf:
+                    if ca_alias is None:
                         res = self._lib.X509_alias_set1(
-                            ossl_ca, ca_name_buf, -1
+                            ossl_ca, self._ffi.NULL, -1
                         )
-                        self.openssl_assert(res == 1)
+                    else:
+                        res = self._lib.X509_alias_set1(
+                            ossl_ca, ca_alias, len(ca_alias)
+                        )
+                    self.openssl_assert(res == 1)
                 else:
                     ossl_ca = self._cert2ossl(ca)
                 ossl_cas.append(ossl_ca)
@@ -2414,9 +2415,6 @@ class Backend:
         for i in range(num):
             x509 = self._lib.sk_X509_value(sk_x509, i)
             self.openssl_assert(x509 != self._ffi.NULL)
-            res = self._lib.X509_up_ref(x509)
-            self.openssl_assert(res == 1)
-            x509 = self._ffi.gc(x509, self._lib.X509_free)
             cert = self._ossl2cert(x509)
             certs.append(cert)
 
