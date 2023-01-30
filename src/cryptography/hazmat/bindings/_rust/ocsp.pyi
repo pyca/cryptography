@@ -5,7 +5,7 @@
 import typing
 
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric.types import PRIVATE_KEY_TYPES
+from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 from cryptography.x509.ocsp import (
     OCSPRequest,
     OCSPRequestBuilder,
@@ -20,6 +20,6 @@ def create_ocsp_request(builder: OCSPRequestBuilder) -> OCSPRequest: ...
 def create_ocsp_response(
     status: OCSPResponseStatus,
     builder: typing.Optional[OCSPResponseBuilder],
-    private_key: typing.Optional[PRIVATE_KEY_TYPES],
+    private_key: typing.Optional[PrivateKeyTypes],
     hash_algorithm: typing.Optional[hashes.HashAlgorithm],
 ) -> OCSPResponse: ...

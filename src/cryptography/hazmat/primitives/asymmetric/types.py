@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 
 # Every asymmetric key type
-PUBLIC_KEY_TYPES = typing.Union[
+PublicKeyTypes = typing.Union[
     dh.DHPublicKey,
     dsa.DSAPublicKey,
     rsa.RSAPublicKey,
@@ -27,7 +27,7 @@ PUBLIC_KEY_TYPES = typing.Union[
     x448.X448PublicKey,
 ]
 # Every asymmetric key type
-PRIVATE_KEY_TYPES = typing.Union[
+PrivateKeyTypes = typing.Union[
     dh.DHPrivateKey,
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
@@ -39,7 +39,7 @@ PRIVATE_KEY_TYPES = typing.Union[
 ]
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate public key types
-CERTIFICATE_PRIVATE_KEY_TYPES = typing.Union[
+CertificatePrivateKeyTypes = typing.Union[
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
     rsa.RSAPrivateKey,
@@ -48,7 +48,7 @@ CERTIFICATE_PRIVATE_KEY_TYPES = typing.Union[
 ]
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate private key types
-CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES = typing.Union[
+CertificateIssuerPublicKeyTypes = typing.Union[
     dsa.DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
@@ -57,7 +57,7 @@ CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES = typing.Union[
 ]
 # This type removes DHPublicKey. x448/x25519 can be a public key
 # but cannot be used in signing so they are allowed here.
-CERTIFICATE_PUBLIC_KEY_TYPES = typing.Union[
+CertificatePublicKeyTypes = typing.Union[
     dsa.DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,

@@ -82,8 +82,8 @@ def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
 
 
 def _generate_ca_and_leaf(
-    issuer_private_key: types.CERTIFICATE_PRIVATE_KEY_TYPES,
-    subject_private_key: types.CERTIFICATE_PRIVATE_KEY_TYPES,
+    issuer_private_key: types.CertificatePrivateKeyTypes,
+    subject_private_key: types.CertificatePrivateKeyTypes,
 ):
     if isinstance(
         issuer_private_key,

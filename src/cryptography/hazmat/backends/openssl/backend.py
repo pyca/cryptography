@@ -77,8 +77,8 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PKCS1v15,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
-    PRIVATE_KEY_TYPES,
-    PUBLIC_KEY_TYPES,
+    PrivateKeyTypes,
+    PublicKeyTypes,
 )
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
@@ -112,11 +112,11 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
-    _ALLOWED_PKCS12_TYPES,
-    _PKCS12_CAS_TYPES,
     PBES,
+    PKCS12CATypes,
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
+    PKCS12PrivateKeyTypes,
 )
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -658,7 +658,7 @@ class Backend:
 
     def _evp_pkey_to_private_key(
         self, evp_pkey, unsafe_skip_rsa_key_validation: bool
-    ) -> PRIVATE_KEY_TYPES:
+    ) -> PrivateKeyTypes:
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata
         pointer.
@@ -726,7 +726,7 @@ class Backend:
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
-    def _evp_pkey_to_public_key(self, evp_pkey) -> PUBLIC_KEY_TYPES:
+    def _evp_pkey_to_public_key(self, evp_pkey) -> PublicKeyTypes:
         """
         Return the appropriate type of PublicKey given an evp_pkey cdata
         pointer.
@@ -957,7 +957,7 @@ class Backend:
         data: bytes,
         password: typing.Optional[bytes],
         unsafe_skip_rsa_key_validation: bool,
-    ) -> PRIVATE_KEY_TYPES:
+    ) -> PrivateKeyTypes:
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
             data,
@@ -965,7 +965,7 @@ class Backend:
             unsafe_skip_rsa_key_validation,
         )
 
-    def load_pem_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
+    def load_pem_public_key(self, data: bytes) -> PublicKeyTypes:
         mem_bio = self._bytes_to_bio(data)
         # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
         # the default password callback if you pass an encrypted private
@@ -1024,7 +1024,7 @@ class Backend:
         data: bytes,
         password: typing.Optional[bytes],
         unsafe_skip_rsa_key_validation: bool,
-    ) -> PRIVATE_KEY_TYPES:
+    ) -> PrivateKeyTypes:
         # OpenSSL has a function called d2i_AutoPrivateKey that in theory
         # handles this automatically, however it doesn't handle encrypted
         # private keys. Instead we try to load the key two different ways.
@@ -1059,7 +1059,7 @@ class Backend:
             self._consume_errors()
             return None
 
-    def load_der_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
+    def load_der_public_key(self, data: bytes) -> PublicKeyTypes:
         mem_bio = self._bytes_to_bio(data)
         evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
         if evp_pkey != self._ffi.NULL:
@@ -1120,7 +1120,7 @@ class Backend:
 
     def _load_key(
         self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
-    ) -> PRIVATE_KEY_TYPES:
+    ) -> PrivateKeyTypes:
         mem_bio = self._bytes_to_bio(data)
 
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
@@ -2091,7 +2091,7 @@ class Backend:
     def load_key_and_certificates_from_pkcs12(
         self, data: bytes, password: typing.Optional[bytes]
     ) -> typing.Tuple[
-        typing.Optional[PRIVATE_KEY_TYPES],
+        typing.Optional[PrivateKeyTypes],
         typing.Optional[x509.Certificate],
         typing.List[x509.Certificate],
     ]:
@@ -2180,9 +2180,9 @@ class Backend:
     def serialize_key_and_certificates_to_pkcs12(
         self,
         name: typing.Optional[bytes],
-        key: typing.Optional[_ALLOWED_PKCS12_TYPES],
+        key: typing.Optional[PKCS12PrivateKeyTypes],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[_PKCS12_CAS_TYPES]],
+        cas: typing.Optional[typing.List[PKCS12CATypes]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None

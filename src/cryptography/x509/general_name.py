@@ -11,7 +11,7 @@ from email.utils import parseaddr
 from cryptography.x509.name import Name
 from cryptography.x509.oid import ObjectIdentifier
 
-_IPADDRESS_TYPES = typing.Union[
+_IPAddressTypes = typing.Union[
     ipaddress.IPv4Address,
     ipaddress.IPv6Address,
     ipaddress.IPv4Network,
@@ -206,7 +206,7 @@ class RegisteredID(GeneralName):
 
 
 class IPAddress(GeneralName):
-    def __init__(self, value: _IPADDRESS_TYPES) -> None:
+    def __init__(self, value: _IPAddressTypes) -> None:
         if not isinstance(
             value,
             (
@@ -225,7 +225,7 @@ class IPAddress(GeneralName):
         self._value = value
 
     @property
-    def value(self) -> _IPADDRESS_TYPES:
+    def value(self) -> _IPAddressTypes:
         return self._value
 
     def _packed(self) -> bytes:

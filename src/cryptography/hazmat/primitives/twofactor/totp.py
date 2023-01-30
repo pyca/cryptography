@@ -7,8 +7,8 @@ import typing
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.hotp import (
-    _ALLOWED_HASH_TYPES,
     HOTP,
+    HOTPHashTypes,
     _generate_uri,
 )
 
@@ -18,7 +18,7 @@ class TOTP:
         self,
         key: bytes,
         length: int,
-        algorithm: _ALLOWED_HASH_TYPES,
+        algorithm: HOTPHashTypes,
         time_step: int,
         backend: typing.Any = None,
         enforce_key_length: bool = True,
