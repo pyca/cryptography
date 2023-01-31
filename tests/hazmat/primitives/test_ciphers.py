@@ -318,6 +318,14 @@ class TestCipherUpdateInto:
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
 
+    def test_update_into_immutable(self, backend):
+        key = b"\x00" * 16
+        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
+        encryptor = c.encryptor()
+        buf = b"\x00" * 32
+        with pytest.raises((TypeError, BufferError)):
+            encryptor.update_into(b"testing", buf)
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
