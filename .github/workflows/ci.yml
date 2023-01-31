@@ -288,6 +288,11 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
+        id: rust-toolchain
+        with:
+          toolchain: ${{ matrix.RUST }}
+          components: llvm-tools-preview
       - uses: actions/cache@v3.2.4
         id: cargo-cache
         timeout-minutes: 5
@@ -300,16 +305,12 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ matrix.RUST }}-coverage
+          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
-        with:
-          toolchain: ${{ matrix.RUST }}
-          components: llvm-tools-preview
       - run: cargo install cargo-binutils
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
