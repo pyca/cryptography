@@ -300,7 +300,6 @@ jobs:
           path: |
             ~/.cache/pip/
             ~/.cargo/bin/
-            ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
