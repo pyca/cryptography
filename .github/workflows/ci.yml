@@ -249,7 +249,7 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
+      - uses: dtolnay/rust-toolchain@c758e63728211bd4acda6501cfa2a16c5c751fc4
         with:
           toolchain: ${{ matrix.RUST }}
       - uses: actions/checkout@v3.3.0
@@ -288,7 +288,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@ce8f65846d7180d2ce63b1e74483d981800b9e22
+      - uses: dtolnay/rust-toolchain@c758e63728211bd4acda6501cfa2a16c5c751fc4
         id: rust-toolchain
         with:
           toolchain: ${{ matrix.RUST }}
