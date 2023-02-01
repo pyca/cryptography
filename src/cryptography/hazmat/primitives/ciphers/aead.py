@@ -369,6 +369,7 @@ class AESSIV:
         if len(data) == 0:
             raise ValueError("data must not be zero length")
         if not isinstance(associated_data, list) or not all(
-            isinstance(x, (bytes, bytearray, memoryview)) for x in associated_data
+            isinstance(x, (bytes, bytearray, memoryview))
+            for x in associated_data
         ):
             raise TypeError("associated_data must be a list of bytes or None")

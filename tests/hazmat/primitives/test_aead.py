@@ -466,12 +466,24 @@ class TestAESGCM:
         aesgcm2 = AESGCM(bytearray(key))
         ct2 = aesgcm2.encrypt(bytearray(nonce), bytearray(pt), bytearray(ad))
         assert ct2 == ct
-        computed_pt2 = aesgcm2.decrypt(bytearray(nonce), bytearray(ct2), bytearray(ad))
+        computed_pt2 = aesgcm2.decrypt(
+            bytearray(nonce),
+            bytearray(ct2),
+            bytearray(ad)
+        )
         assert computed_pt2 == pt
         aesgcm3 = AESGCM(memoryview(key))
-        ct3 = aesgcm3.encrypt(memoryview(nonce), memoryview(pt), memoryview(ad))
+        ct3 = aesgcm3.encrypt(
+            memoryview(nonce),
+            memoryview(pt),
+            memoryview(ad)
+        )
         assert ct3 == ct
-        computed_pt3 = aesgcm3.decrypt(memoryview(nonce), memoryview(ct2), memoryview(ad))
+        computed_pt3 = aesgcm3.decrypt(
+            memoryview(nonce),
+            memoryview(ct2),
+            memoryview(ad)
+        )
         assert computed_pt3 == pt
 
 

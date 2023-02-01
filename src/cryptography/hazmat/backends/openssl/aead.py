@@ -168,9 +168,9 @@ def _set_length(backend: "Backend", ctx, data_len: int) -> None:
 
 def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
     outlen = backend._ffi.new("int *")
-    associated_data_ptr = backend._ffi.from_buffer(associated_data)
+    a_data_ptr = backend._ffi.from_buffer(associated_data)
     res = backend._lib.EVP_CipherUpdate(
-        ctx, backend._ffi.NULL, outlen, associated_data_ptr, len(associated_data)
+        ctx, backend._ffi.NULL, outlen, a_data_ptr, len(associated_data)
     )
     backend.openssl_assert(res != 0)
 
@@ -289,8 +289,8 @@ def _decrypt(
     if isinstance(cipher, AESCCM):
         outlen = backend._ffi.new("int *")
         buf = backend._ffi.new("unsigned char[]", len(data))
-        data_ptr = backend._ffi.from_buffer(data)
-        res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data_ptr, len(data))
+        d_ptr = backend._ffi.from_buffer(data)
+        res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, d_ptr, len(data))
         if res != 1:
             backend._consume_errors()
             raise InvalidTag
