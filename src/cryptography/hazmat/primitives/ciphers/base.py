@@ -81,7 +81,6 @@ class Cipher(typing.Generic[Mode]):
         mode: Mode,
         backend: typing.Any = None,
     ) -> None:
-
         if not isinstance(algorithm, CipherAlgorithm):
             raise TypeError("Expected interface of CipherAlgorithm.")
 
