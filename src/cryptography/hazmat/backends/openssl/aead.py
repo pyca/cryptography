@@ -138,8 +138,9 @@ def _aead_setup(
 
 
 def _set_tag(backend, ctx, tag: bytes) -> None:
+    tag_ptr = backend._ffi.from_buffer(tag)
     res = backend._lib.EVP_CIPHER_CTX_ctrl(
-        ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag
+        ctx, backend._lib.EVP_CTRL_AEAD_SET_TAG, len(tag), tag_ptr
     )
     backend.openssl_assert(res != 0)
 
@@ -167,8 +168,9 @@ def _set_length(backend: "Backend", ctx, data_len: int) -> None:
 
 def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
     outlen = backend._ffi.new("int *")
+    associated_data_ptr = backend._ffi.from_buffer(associated_data)
     res = backend._lib.EVP_CipherUpdate(
-        ctx, backend._ffi.NULL, outlen, associated_data, len(associated_data)
+        ctx, backend._ffi.NULL, outlen, associated_data_ptr, len(associated_data)
     )
     backend.openssl_assert(res != 0)
 
@@ -176,7 +178,8 @@ def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
 def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
     outlen = backend._ffi.new("int *")
     buf = backend._ffi.new("unsigned char[]", len(data))
-    res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
+    data_ptr = backend._ffi.from_buffer(data)
+    res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data_ptr, len(data))
     if res == 0:
         # AES SIV can error here if the data is invalid on decrypt
         backend._consume_errors()
@@ -286,7 +289,8 @@ def _decrypt(
     if isinstance(cipher, AESCCM):
         outlen = backend._ffi.new("int *")
         buf = backend._ffi.new("unsigned char[]", len(data))
-        res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data, len(data))
+        data_ptr = backend._ffi.from_buffer(data)
+        res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data_ptr, len(data))
         if res != 1:
             backend._consume_errors()
             raise InvalidTag

@@ -56,10 +56,12 @@ also support providing integrity for associated data which is not encrypted.
 
         :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to encrypt.
-        :param bytes associated_data: Additional data that should be
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
             authenticated with the key, but does not need to be encrypted. Can
             be ``None``.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
@@ -73,9 +75,11 @@ also support providing integrity for associated data which is not encrypted.
         :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
             key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to decrypt (with tag appended).
-        :param bytes associated_data: Additional data to authenticate. Can be
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
@@ -130,9 +134,11 @@ also support providing integrity for associated data which is not encrypted.
             performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to encrypt.
-        :param bytes associated_data: Additional data that should be
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
@@ -147,9 +153,11 @@ also support providing integrity for associated data which is not encrypted.
             performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
             **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to decrypt (with tag appended).
-        :param bytes associated_data: Additional data to authenticate. Can be
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
@@ -204,9 +212,11 @@ also support providing integrity for associated data which is not encrypted.
 
         :param nonce: A 12-15 byte value. **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to encrypt.
-        :param bytes associated_data: Additional data that should be
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The ciphertext bytes with the 16 byte tag appended.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
@@ -219,9 +229,11 @@ also support providing integrity for associated data which is not encrypted.
 
         :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to decrypt (with tag appended).
-        :param bytes associated_data: Additional data to authenticate. Can be
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
@@ -288,8 +300,9 @@ also support providing integrity for associated data which is not encrypted.
         authenticating the ``associated_data``.  The output of this can be
         passed directly to the ``decrypt`` method.
 
-        :param bytes data: The data to encrypt.
-        :param list associated_data: An optional ``list`` of ``bytes``. This
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param list associated_data: An optional ``list`` of ``bytes-like objects``. This
             is additional data that should be authenticated with the key, but
             is not encrypted. Can be ``None``.  In SIV mode the final element
             of this list is treated as a ``nonce``.
@@ -304,7 +317,7 @@ also support providing integrity for associated data which is not encrypted.
         ``associated_data`` in decrypt or the integrity check will fail.
 
         :param bytes data: The data to decrypt (with tag **prepended**).
-        :param list associated_data: An optional ``list`` of ``bytes``. This
+        :param list associated_data: An optional ``list`` of ``bytes-like objects``. This
             is additional data that should be authenticated with the key, but
             is not encrypted. Can be ``None`` if none was used during
             encryption.
@@ -377,9 +390,11 @@ also support providing integrity for associated data which is not encrypted.
             ``len(data) < 2 ** (8 * (15 - len(nonce)))``
             **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to encrypt.
-        :param bytes associated_data: Additional data that should be
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
             authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The ciphertext bytes with the tag appended.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
@@ -394,9 +409,11 @@ also support providing integrity for associated data which is not encrypted.
             is the same value used when you originally called encrypt.
             **NEVER REUSE A NONCE** with a key.
         :type nonce: :term:`bytes-like`
-        :param bytes data: The data to decrypt (with tag appended).
-        :param bytes associated_data: Additional data to authenticate. Can be
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
             ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
