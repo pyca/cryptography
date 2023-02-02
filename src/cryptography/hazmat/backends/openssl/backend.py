@@ -1937,8 +1937,6 @@ class Backend:
         )
 
     def ed25519_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
         return self._lib.CRYPTOGRAPHY_HAS_WORKING_ED25519
 
     def ed25519_load_public_bytes(
@@ -1978,8 +1976,6 @@ class Backend:
         return _Ed25519PrivateKey(self, evp_pkey)
 
     def ed448_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
         return (
             not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
