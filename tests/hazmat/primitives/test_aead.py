@@ -464,10 +464,22 @@ class TestAESGCM:
         computed_pt = aesgcm.decrypt(nonce, ct, ad)
         assert computed_pt == pt
         aesgcm2 = AESGCM(bytearray(key))
-        ct2 = aesgcm2.encrypt(bytearray(nonce), pt, ad)
+        ct2 = aesgcm2.encrypt(bytearray(nonce), bytearray(pt), bytearray(ad))
         assert ct2 == ct
-        computed_pt2 = aesgcm2.decrypt(bytearray(nonce), ct2, ad)
+        b_nonce = bytearray(nonce)
+        b_ct2 = bytearray(ct2)
+        b_ad = bytearray(ad)
+        computed_pt2 = aesgcm2.decrypt(b_nonce, b_ct2, b_ad)
         assert computed_pt2 == pt
+        aesgcm3 = AESGCM(memoryview(key))
+        m_nonce = memoryview(nonce)
+        m_pt = memoryview(pt)
+        m_ad = memoryview(ad)
+        ct3 = aesgcm3.encrypt(m_nonce, m_pt, m_ad)
+        assert ct3 == ct
+        m_ct3 = memoryview(ct3)
+        computed_pt3 = aesgcm3.decrypt(m_nonce, m_ct3, m_ad)
+        assert computed_pt3 == pt
 
 
 @pytest.mark.skipif(
