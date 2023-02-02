@@ -369,8 +369,10 @@ class AESSIV:
         if len(data) == 0:
             raise ValueError("data must not be zero length")
 
+        msg = "associated_data must be a list of bytes-like objects or None"
         if associated_data is not None:
             raise_except = False
+
             if not isinstance(associated_data, list):
                 raise_except = True
             else:
@@ -381,4 +383,4 @@ class AESSIV:
                         raise_except = True
                         break
             if raise_except:
-                raise TypeError("associated_data must be a list of bytes-like objects or None")
+                raise TypeError(msg)
