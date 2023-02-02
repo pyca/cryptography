@@ -10,6 +10,11 @@ Changelog
 
 * Support for Python 3.6 is deprecated and will be removed in the next
   release.
+* Deprecated the current minimum supported Rust version (MSRV) of 1.48.0.
+  In the next release we will raise MSRV to 1.56.0. Users with the latest
+  ``pip`` will typically get a wheel and not need Rust installed, but check
+  :doc:`/installation` for documentation on installing a newer ``rustc`` if
+  required.
 * Deprecated support for DSA keys in
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
   and
