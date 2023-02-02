@@ -370,6 +370,8 @@ class AESSIV:
             raise ValueError("data must not be zero length")
 
         if not isinstance(associated_data, list):
-            raise TypeError("associated_data must be a list of bytes-like objects or None")
+            raise TypeError(
+                "associated_data must be a list of bytes-like objects or None"
+            )
         for x in associated_data:
             utils._check_byteslike("associated_data elements", x)
