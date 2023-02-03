@@ -138,7 +138,7 @@ jobs:
           - {IMAGE: "rhel8-fips", TOXENV: "py38", RUNNER: "ubuntu-latest", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bullseye", TOXENV: "py39", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "bookworm", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bookworm", TOXENV: "py311", RUNNER: "ubuntu-latest"}
           - {IMAGE: "sid", TOXENV: "py311", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest"}
