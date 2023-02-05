@@ -220,10 +220,10 @@ jobs:
           # remove this section entirely.
           - 1.48.0
           # 1.49.0 is the MSRV for parking_lot 0.12
-          - 1.49.0
-          # Potential future MSRVs
           # 1.51 - const generics (for rust-asn1)
           # 1.56 - new versions of once_cell and bumpalo
+          - 1.56.0
+          # Potential future MSRVs
           # 1.60 - new version of cxx
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
