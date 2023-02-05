@@ -4728,7 +4728,7 @@ class TestDSACertificate:
             cert.signature_hash_algorithm,
         )
 
-    def test_verify_directly_issued_by_dsa(self):
+    def test_verify_directly_issued_by_dsa(self, backend):
         issuer_private_key = DSA_KEY_3072.private_key()
         subject_private_key = DSA_KEY_2048.private_key()
         ca, cert = _generate_ca_and_leaf(
@@ -4736,7 +4736,7 @@ class TestDSACertificate:
         )
         cert.verify_directly_issued_by(ca)
 
-    def test_verify_directly_issued_by_dsa_bad_sig(self):
+    def test_verify_directly_issued_by_dsa_bad_sig(self, backend):
         issuer_private_key = DSA_KEY_3072.private_key()
         subject_private_key = DSA_KEY_2048.private_key()
         ca, cert = _generate_ca_and_leaf(

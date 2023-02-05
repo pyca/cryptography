@@ -103,7 +103,9 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     assert digest is not None
     if backend._fips_enabled:
-        if key.key_size < 2048 or isinstance(digest, hashes.SHA1):
+        if key.key_size < backend._fips_rsa_min_key_size or isinstance(
+            digest, hashes.SHA1
+        ):
             pytest.skip(
                 "Invalid params for FIPS. key: {} bits, digest: {}".format(
                     key.key_size, digest.name
@@ -130,11 +132,13 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     "rsa_pss_misc_test.json",
 )
 def test_rsa_pss_signature(backend, wycheproof):
+    digest = _DIGESTS[wycheproof.testgroup["sha"]]
+    if backend._fips_enabled and isinstance(digest, hashes.SHA1):
+        pytest.skip("Invalid params for FIPS. SHA1 is disallowed")
     key = serialization.load_der_public_key(
         binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
     )
     assert isinstance(key, rsa.RSAPublicKey)
-    digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
 
     if digest is None or mgf_digest is None:
@@ -189,6 +193,20 @@ def test_rsa_pss_signature(backend, wycheproof):
     "rsa_oaep_misc_test.json",
 )
 def test_rsa_oaep_encryption(backend, wycheproof):
+    digest = _DIGESTS[wycheproof.testgroup["sha"]]
+    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+    assert digest is not None
+    assert mgf_digest is not None
+    padding_algo = padding.OAEP(
+        mgf=padding.MGF1(algorithm=mgf_digest),
+        algorithm=digest,
+        label=binascii.unhexlify(wycheproof.testcase["label"]),
+    )
+    if not backend.rsa_encryption_supported(padding_algo):
+        pytest.skip(
+            f"Does not support OAEP using {mgf_digest.name} MGF1 "
+            f"or {digest.name} hash."
+        )
     key = serialization.load_pem_private_key(
         wycheproof.testgroup["privateKeyPem"].encode("ascii"),
         password=None,
@@ -196,16 +214,8 @@ def test_rsa_oaep_encryption(backend, wycheproof):
         unsafe_skip_rsa_key_validation=True,
     )
     assert isinstance(key, rsa.RSAPrivateKey)
-    digest = _DIGESTS[wycheproof.testgroup["sha"]]
-    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
-    assert digest is not None
-    assert mgf_digest is not None
-
-    padding_algo = padding.OAEP(
-        mgf=padding.MGF1(algorithm=mgf_digest),
-        algorithm=digest,
-        label=binascii.unhexlify(wycheproof.testcase["label"]),
-    )
+    if backend._fips_enabled and key.key_size < backend._fips_rsa_min_key_size:
+        pytest.skip("Invalid params for FIPS. <2048 bit keys are disallowed")
 
     if wycheproof.valid or wycheproof.acceptable:
         pt = key.decrypt(
@@ -219,6 +229,12 @@ def test_rsa_oaep_encryption(backend, wycheproof):
             )
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: backend.rsa_encryption_supported(
+        padding.PKCS1v15()
+    ),
+    skip_message="Does not support PKCS1v1.5 for encryption.",
+)
 @wycheproof_tests(
     "rsa_pkcs1_2048_test.json",
     "rsa_pkcs1_3072_test.json",
