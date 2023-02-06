@@ -2055,7 +2055,7 @@ class TestRSAEncryption:
     def test_rsa_encrypt_key_too_small(self, key_data, pad, backend):
         private_key = key_data.private_key(backend)
         if not backend.rsa_encryption_supported(pad):
-            pytest.skip("PKCS1f15 padding not allowed in FIPS")
+            pytest.skip("PKCS1v15 padding not allowed in FIPS")
         _check_fips_key_length(backend, private_key)
         public_key = private_key.public_key()
         # Slightly smaller than the key size but not enough for padding.

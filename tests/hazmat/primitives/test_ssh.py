@@ -1129,13 +1129,9 @@ class TestSSHCertificate:
         )
         cert = load_ssh_public_identity(data)
         # we have no public API for getting the hash alg of the sig
-        if (
-            backend._fips_enabled
-            and bytes(cert._inner_sig_type)  # type: ignore[union-attr]
-            == b"ssh-rsa"
-        ):
-            pytest.skip("FIPS does not support RSA SHA1")
         assert isinstance(cert, SSHCertificate)
+        if backend._fips_enabled and bytes(cert._inner_sig_type) == b"ssh-rsa":
+            pytest.skip("FIPS does not support RSA SHA1")
         cert.verify_cert_signature()
 
     @pytest.mark.parametrize(
@@ -1159,14 +1155,10 @@ class TestSSHCertificate:
         # mutate the signature so it's invalid
         data[-10] = 71
         cert = load_ssh_public_identity(data)
-        # we have no public API for getting the hash alg of the sig
-        if (
-            backend._fips_enabled
-            and bytes(cert._inner_sig_type)  # type: ignore[union-attr]
-            == b"ssh-rsa"
-        ):
-            pytest.skip("FIPS does not support RSA SHA1")
         assert isinstance(cert, SSHCertificate)
+        # we have no public API for getting the hash alg of the sig
+        if backend._fips_enabled and bytes(cert._inner_sig_type) == b"ssh-rsa":
+            pytest.skip("FIPS does not support RSA SHA1")
         with pytest.raises(InvalidSignature):
             cert.verify_cert_signature()
 
