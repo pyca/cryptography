@@ -380,8 +380,8 @@ class TestOpenSSLRSA:
         assert (
             backend.rsa_padding_supported(
                 padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
                     label=None,
                 ),
             )
@@ -397,6 +397,12 @@ class TestOpenSSLRSA:
             hashes.SHA512(),
         ]
         for mgf1alg, oaepalg in itertools.product(hashalgs, hashalgs):
+            if backend._fips_enabled and (
+                isinstance(mgf1alg, hashes.SHA1)
+                or isinstance(oaepalg, hashes.SHA1)
+            ):
+                continue
+
             assert (
                 backend.rsa_padding_supported(
                     padding.OAEP(

@@ -781,6 +781,9 @@ class Backend:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
+        if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
+            return False
+
         return isinstance(
             algorithm,
             (
@@ -810,6 +813,12 @@ class Backend:
             ) and self._oaep_hash_supported(padding._algorithm)
         else:
             return False
+
+    def rsa_encryption_supported(self, padding: AsymmetricPadding) -> bool:
+        if self._fips_enabled and isinstance(padding, PKCS1v15):
+            return False
+        else:
+            return self.rsa_padding_supported(padding)
 
     def generate_dsa_parameters(self, key_size: int) -> dsa.DSAParameters:
         if key_size not in (1024, 2048, 3072, 4096):
