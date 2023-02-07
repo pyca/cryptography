@@ -32,6 +32,15 @@ Changelog
 * Added :meth:`~cryptography.x509.Certificate.verify_directly_issued_by` to
   :class:`~cryptography.x509.Certificate`.
 
+.. _v39-0-1:
+
+39.0.1 - 2023-02-07
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE** - Fixed a bug where ``Cipher.update_into`` accepted Python
+  buffer protocol objects, but allowed immutable buffers. **CVE-2023-23931**
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.0.8.
+
 .. _v39-0-0:
 
 39.0.0 - 2023-01-01
