@@ -75,7 +75,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install -c ci-constraints-requirements.txt tox requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -193,7 +193,7 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
           echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt tox coverage
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage
       - run: '/venv/bin/tox -vvv --notest'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
@@ -259,7 +259,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Create toxenv
         run: tox -vvv --notest
         env:
@@ -320,7 +320,7 @@ jobs:
           repository: "google/wycheproof"
           path: "wycheproof"
           ref: "master"
-      - run: python -m pip install -c ci-constraints-requirements.txt tox coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Create toxenv
         run: tox -vvv --notest
         env:
@@ -407,7 +407,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
-      - run: python -m pip install -c ci-constraints-requirements.txt tox requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
