@@ -217,7 +217,7 @@ urllib3==1.26.14
     # via
     #   requests
     #   twine
-virtualenv==20.17.1
+virtualenv==20.18.0
     # via tox
 webencodings==0.5.1
     # via bleach
