@@ -5,7 +5,8 @@ case "${1}" in
         git clone --depth=1 https://github.com/secdev/scapy
         cd scapy
         git rev-parse HEAD
-        pip install tox
+        # Pin virtualenv until https://github.com/secdev/scapy/pull/3862 is merged
+        pip install tox 'virtualenv<20.18'
         ;;
     run)
         cd scapy
