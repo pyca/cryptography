@@ -71,7 +71,8 @@ exclude = [
     '_build',
     '.hypothesis',
 ]
-ignore = ['N818', 'UP003', 'UP006', 'UP007']
+# UP007 and UP037 require a higher minimum Python version
+ignore = ['N818', 'UP003', 'UP006', 'UP007', 'UP037']
 select = ['E', 'F', 'I', 'N', 'W', 'UP']
 line-length = 79
 
