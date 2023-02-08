@@ -47,6 +47,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "cryptography-docs",
+    "sphinx_rtd_theme",
 ]
 
 if spelling is not None:
@@ -123,7 +124,6 @@ pygments_style = "sphinx"
 
 if sphinx_rtd_theme:
     html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 else:
     html_theme = "default"
 
