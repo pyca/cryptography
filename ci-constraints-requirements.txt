@@ -174,7 +174,7 @@ sphinx==5.3.0
     #   cryptography (setup.cfg)
     #   sphinx-rtd-theme
     #   sphinxcontrib-spelling
-sphinx-rtd-theme==1.1.1
+sphinx-rtd-theme==1.2.0
     # via cryptography (setup.cfg)
 sphinxcontrib-applehelp==1.0.4
     # via sphinx
