@@ -37,7 +37,7 @@ coverage==7.1.0; python_version >= "3.7"
     # via pytest-cov
 distlib==0.3.6
     # via virtualenv
-docutils==0.17.1
+docutils==0.19
     # via
     #   readme-renderer
     #   sphinx
