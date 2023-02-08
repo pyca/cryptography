@@ -181,7 +181,7 @@ class TestOpenSSL:
 )
 @pytest.mark.skip_fips(reason="osrandom engine disabled for FIPS")
 class TestOpenSSLRandomEngine:
-    def setup(self):
+    def setup_method(self):
         # The default RAND engine is global and shared between
         # tests. We make sure that the default engine is osrandom
         # before we start each test and restore the global state to
@@ -190,7 +190,7 @@ class TestOpenSSLRandomEngine:
         name = backend._lib.ENGINE_get_name(current_default)
         assert name == backend._lib.Cryptography_osrandom_engine_name
 
-    def teardown(self):
+    def teardown_method(self):
         # we need to reset state to being default. backend is a shared global
         # for all these tests.
         backend.activate_osrandom_engine()
