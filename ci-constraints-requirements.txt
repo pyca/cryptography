@@ -207,7 +207,7 @@ twine==4.0.2
     # via cryptography (setup.cfg)
 types-pytz==2022.7.1.0
     # via cryptography (setup.cfg)
-types-requests==2.28.11.11
+types-requests==2.28.11.12
     # via cryptography (setup.cfg)
 types-urllib3==1.26.25.5
     # via types-requests
