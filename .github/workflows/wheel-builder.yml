@@ -84,7 +84,6 @@ jobs:
             MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
