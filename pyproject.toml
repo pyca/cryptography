@@ -64,13 +64,6 @@ exclude_lines = [
 ]
 
 [tool.ruff]
-exclude = [
-    '.tox',
-    '*.egg',
-    '.git',
-    '_build',
-    '.hypothesis',
-]
 # UP007 and UP037 require a higher minimum Python version
 ignore = ['N818', 'UP003', 'UP006', 'UP007', 'UP037']
 select = ['E', 'F', 'I', 'N', 'W', 'UP']
