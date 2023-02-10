@@ -48,16 +48,6 @@ class InterfaceNotImplemented(Exception):
     pass
 
 
-# DeprecatedIn39 -- Our only known consumer is aws-encryption-sdk, but we've
-# made this a no-op to avoid breaking old versions.
-def verify_interface(
-    iface: abc.ABCMeta, klass: object, *, check_annotations: bool = False
-):
-    # Exists exclusively for `aws-encryption-sdk` which relies on it existing,
-    # even though it was never a public API.
-    pass
-
-
 class _DeprecatedValue:
     def __init__(self, value: object, message: str, warning_class):
         self.value = value
