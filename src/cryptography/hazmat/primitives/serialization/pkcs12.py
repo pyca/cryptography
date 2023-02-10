@@ -71,6 +71,9 @@ class PKCS12Certificate:
         return "<PKCS12Certificate({}, friendly_name={!r})>".format(
             self.certificate, self.friendly_name
         )
+    
+    def dump_certificate(self, encoding) -> typing.Optional[bytes]:
+        return self.certificate.public_bytes(encoding)
 
 
 class PKCS12KeyAndCertificates:
@@ -138,7 +141,12 @@ class PKCS12KeyAndCertificates:
             "<PKCS12KeyAndCertificates(key={}, cert={}, additional_certs={})>"
         )
         return fmt.format(self.key, self.cert, self.additional_certs)
-
+    
+    def dump_certificate(self, encoding) -> typing.Optional[bytes]:
+        return self.cert.dump_certificate(encoding)
+    
+    def dump_privatekey(self, encoding, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serial    ization.NoEncryption()) -> typing.Optional[bytes]:
+        return self.key.private_bytes(encoding, format, encryption_algorithm)
 
 def load_key_and_certificates(
     data: bytes,
