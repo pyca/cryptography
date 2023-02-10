@@ -145,7 +145,7 @@ class PKCS12KeyAndCertificates:
     def dump_certificate(self, encoding) -> typing.Optional[bytes]:
         return self.cert.dump_certificate(encoding)
     
-    def dump_privatekey(self, encoding, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serial    ization.NoEncryption()) -> typing.Optional[bytes]:
+    def dump_privatekey(self, encoding, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()) -> typing.Optional[bytes]:
         return self.key.private_bytes(encoding, format, encryption_algorithm)
 
 def load_key_and_certificates(
