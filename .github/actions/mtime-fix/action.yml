@@ -1,0 +1,14 @@
+name: Fix mtime
+description: Fixes mtime so cargo will reuse caches more effectively
+
+runs:
+  using: "composite"
+
+  steps:
+    - run: |
+        ls -Rla src/rust/src
+        echo "Setting mtimes for rust dirs"
+        for f in $(git ls-files src/rust); do touch -t $(git log --pretty=format:%cd --date=format:%Y%m%d%H%M.%S -1 HEAD -- "$f") "$f"; done
+        echo "Done"
+        ls -Rla src/rust/src
+      shell: bash

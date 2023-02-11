@@ -51,6 +51,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v4.5.0
@@ -67,7 +70,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-5-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -166,6 +169,12 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: git config shenanigans
+        run: |
+          git config --global --add safe.directory $(pwd) # needed for the mtime fix since git doesn't think it owns the files due to being in containers
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - uses: actions/cache@v3.2.5
         timeout-minutes: 5
         with:
@@ -177,7 +186,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -233,6 +242,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - uses: actions/cache@v3.2.5
         timeout-minutes: 5
         with:
@@ -244,7 +256,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
+          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -289,6 +301,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - uses: dtolnay/rust-toolchain@c758e63728211bd4acda6501cfa2a16c5c751fc4
         id: rust-toolchain
         with:
@@ -305,7 +320,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
+          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -388,6 +403,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - uses: actions/cache@v3.2.5
         timeout-minutes: 5
         with:
@@ -399,7 +417,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -457,6 +475,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v4.5.0
@@ -474,7 +495,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
       - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" requests coverage[toml]
       - name: Download OpenSSL
@@ -531,6 +552,9 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - uses: actions/cache@v3.2.5
         timeout-minutes: 5
         with:
@@ -542,7 +566,7 @@ jobs:
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -580,6 +604,9 @@ jobs:
       - uses: actions/checkout@v3.3.0
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
