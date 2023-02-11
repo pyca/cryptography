@@ -24,7 +24,7 @@ def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
     return key
 
 
-class AES(CipherAlgorithm, BlockCipherAlgorithm):
+class AES(BlockCipherAlgorithm):
     name = "AES"
     block_size = 128
     # 512 added to support AES-256-XTS, which uses 512-bit keys
@@ -38,7 +38,7 @@ class AES(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class AES128(CipherAlgorithm, BlockCipherAlgorithm):
+class AES128(BlockCipherAlgorithm):
     name = "AES"
     block_size = 128
     key_sizes = frozenset([128])
@@ -48,7 +48,7 @@ class AES128(CipherAlgorithm, BlockCipherAlgorithm):
         self.key = _verify_key_size(self, key)
 
 
-class AES256(CipherAlgorithm, BlockCipherAlgorithm):
+class AES256(BlockCipherAlgorithm):
     name = "AES"
     block_size = 128
     key_sizes = frozenset([256])
@@ -58,7 +58,7 @@ class AES256(CipherAlgorithm, BlockCipherAlgorithm):
         self.key = _verify_key_size(self, key)
 
 
-class Camellia(CipherAlgorithm, BlockCipherAlgorithm):
+class Camellia(BlockCipherAlgorithm):
     name = "camellia"
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
@@ -71,7 +71,7 @@ class Camellia(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class TripleDES(CipherAlgorithm, BlockCipherAlgorithm):
+class TripleDES(BlockCipherAlgorithm):
     name = "3DES"
     block_size = 64
     key_sizes = frozenset([64, 128, 192])
@@ -88,7 +88,7 @@ class TripleDES(CipherAlgorithm, BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class Blowfish(CipherAlgorithm, BlockCipherAlgorithm):
+class Blowfish(BlockCipherAlgorithm):
     name = "Blowfish"
     block_size = 64
     key_sizes = frozenset(range(32, 449, 8))
@@ -111,7 +111,7 @@ utils.deprecated(
 )
 
 
-class CAST5(CipherAlgorithm, BlockCipherAlgorithm):
+class CAST5(BlockCipherAlgorithm):
     name = "CAST5"
     block_size = 64
     key_sizes = frozenset(range(40, 129, 8))
@@ -146,7 +146,7 @@ class ARC4(CipherAlgorithm):
         return len(self.key) * 8
 
 
-class IDEA(CipherAlgorithm, BlockCipherAlgorithm):
+class IDEA(BlockCipherAlgorithm):
     name = "IDEA"
     block_size = 64
     key_sizes = frozenset([128])
@@ -169,7 +169,7 @@ utils.deprecated(
 )
 
 
-class SEED(CipherAlgorithm, BlockCipherAlgorithm):
+class SEED(BlockCipherAlgorithm):
     name = "SEED"
     block_size = 128
     key_sizes = frozenset([128])
@@ -214,7 +214,7 @@ class ChaCha20(CipherAlgorithm):
         return len(self.key) * 8
 
 
-class SM4(CipherAlgorithm, BlockCipherAlgorithm):
+class SM4(BlockCipherAlgorithm):
     name = "SM4"
     block_size = 128
     key_sizes = frozenset([128])

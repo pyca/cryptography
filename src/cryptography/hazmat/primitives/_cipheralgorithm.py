@@ -32,7 +32,7 @@ class CipherAlgorithm(metaclass=abc.ABCMeta):
         """
 
 
-class BlockCipherAlgorithm(metaclass=abc.ABCMeta):
+class BlockCipherAlgorithm(CipherAlgorithm):
     key: bytes
 
     @property
