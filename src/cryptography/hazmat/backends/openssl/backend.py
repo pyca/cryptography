@@ -177,13 +177,16 @@ class Backend:
     _fips_dh_min_key_size = 2048
     _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._binding = binding.Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
         self._fips_enabled = self._is_fips_enabled()
 
-        self._cipher_registry = {}
+        self._cipher_registry: typing.Dict[
+            typing.Tuple[typing.Type[CipherAlgorithm], typing.Type[Mode]],
+            typing.Callable,
+        ] = {}
         self._register_default_ciphers()
         if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
             warnings.warn(
@@ -367,7 +370,7 @@ class Backend:
         evp_cipher = adapter(self, cipher, mode)
         return self._ffi.NULL != evp_cipher
 
-    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter):
+    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter) -> None:
         if (cipher_cls, mode_cls) in self._cipher_registry:
             raise ValueError(
                 "Duplicate registration for: {} {}.".format(
@@ -618,7 +621,7 @@ class Backend:
         self.openssl_assert(res == 1)
         return evp_pkey
 
-    def _bytes_to_bio(self, data: bytes):
+    def _bytes_to_bio(self, data: bytes) -> _MemoryBIO:
         """
         Return a _MemoryBIO namedtuple of (BIO, char*).
 
@@ -863,7 +866,9 @@ class Backend:
         parameters = self.generate_dsa_parameters(key_size)
         return self.generate_dsa_private_key(parameters)
 
-    def _dsa_cdata_set_values(self, dsa_cdata, p, q, g, pub_key, priv_key):
+    def _dsa_cdata_set_values(
+        self, dsa_cdata, p, q, g, pub_key, priv_key
+    ) -> None:
         res = self._lib.DSA_set0_pqg(dsa_cdata, p, q, g)
         self.openssl_assert(res == 1)
         res = self._lib.DSA_set0_key(dsa_cdata, pub_key, priv_key)
@@ -1109,13 +1114,13 @@ class Backend:
         self.openssl_assert(res == 1)
         return x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
-    def _check_keys_correspond(self, key1, key2):
+    def _check_keys_correspond(self, key1, key2) -> None:
         if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
             raise ValueError("Keys do not correspond")
 
     def _load_key(
         self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
-    ):
+    ) -> PRIVATE_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
 
         userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
@@ -1439,7 +1444,9 @@ class Backend:
 
         return get_func, group
 
-    def _ec_key_set_public_key_affine_coordinates(self, ctx, x: int, y: int):
+    def _ec_key_set_public_key_affine_coordinates(
+        self, ctx, x: int, y: int
+    ) -> None:
         """
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
@@ -1579,7 +1586,9 @@ class Backend:
         # like Raw.
         raise ValueError("format is invalid with this key")
 
-    def _private_key_bytes_via_bio(self, write_bio, evp_pkey, password):
+    def _private_key_bytes_via_bio(
+        self, write_bio, evp_pkey, password
+    ) -> bytes:
         if not password:
             evp_cipher = self._ffi.NULL
         else:
@@ -1596,7 +1605,7 @@ class Backend:
             self._ffi.NULL,
         )
 
-    def _bio_func_output(self, write_bio, *args):
+    def _bio_func_output(self, write_bio, *args) -> bytes:
         bio = self._create_mem_bio_gc()
         res = write_bio(bio, *args)
         self.openssl_assert(res == 1)
@@ -2370,7 +2379,7 @@ class Backend:
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
         return self._load_pkcs7_certificates(p7)
 
-    def _load_pkcs7_certificates(self, p7):
+    def _load_pkcs7_certificates(self, p7) -> typing.List[x509.Certificate]:
         nid = self._lib.OBJ_obj2nid(p7.type)
         self.openssl_assert(nid != self._lib.NID_undef)
         if nid != self._lib.NID_pkcs7_signed:
