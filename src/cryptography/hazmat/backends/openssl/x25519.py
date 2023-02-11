@@ -47,16 +47,14 @@ class _X25519PublicKey(X25519PublicKey):
         )
 
     def _raw_public_bytes(self) -> bytes:
-        ucharpp = self._backend._ffi.new("unsigned char **")
-        res = self._backend._lib.EVP_PKEY_get1_tls_encodedpoint(
-            self._evp_pkey, ucharpp
+        buf = self._backend._ffi.new("unsigned char []", _X25519_KEY_SIZE)
+        buflen = self._backend._ffi.new("size_t *", _X25519_KEY_SIZE)
+        res = self._backend._lib.EVP_PKEY_get_raw_public_key(
+            self._evp_pkey, buf, buflen
         )
-        self._backend.openssl_assert(res == 32)
-        self._backend.openssl_assert(ucharpp[0] != self._backend._ffi.NULL)
-        data = self._backend._ffi.gc(
-            ucharpp[0], self._backend._lib.OPENSSL_free
-        )
-        return self._backend._ffi.buffer(data, res)[:]
+        self._backend.openssl_assert(res == 1)
+        self._backend.openssl_assert(buflen[0] == _X25519_KEY_SIZE)
+        return self._backend._ffi.buffer(buf, _X25519_KEY_SIZE)[:]
 
 
 class _X25519PrivateKey(X25519PrivateKey):
@@ -112,21 +110,11 @@ class _X25519PrivateKey(X25519PrivateKey):
         )
 
     def _raw_private_bytes(self) -> bytes:
-        # If/when LibreSSL adds support for EVP_PKEY_get_raw_private_key we
-        # can switch to it (Cryptography_HAS_RAW_KEY)
-        # The trick we use here is serializing to a PKCS8 key and just
-        # using the last 32 bytes, which is the key itself.
-        bio = self._backend._create_mem_bio_gc()
-        res = self._backend._lib.i2d_PKCS8PrivateKey_bio(
-            bio,
-            self._evp_pkey,
-            self._backend._ffi.NULL,
-            self._backend._ffi.NULL,
-            0,
-            self._backend._ffi.NULL,
-            self._backend._ffi.NULL,
+        buf = self._backend._ffi.new("unsigned char []", _X25519_KEY_SIZE)
+        buflen = self._backend._ffi.new("size_t *", _X25519_KEY_SIZE)
+        res = self._backend._lib.EVP_PKEY_get_raw_private_key(
+            self._evp_pkey, buf, buflen
         )
         self._backend.openssl_assert(res == 1)
-        pkcs8 = self._backend._read_mem_bio(bio)
-        self._backend.openssl_assert(len(pkcs8) == 48)
-        return pkcs8[-_X25519_KEY_SIZE:]
+        self._backend.openssl_assert(buflen[0] == _X25519_KEY_SIZE)
+        return self._backend._ffi.buffer(buf, _X25519_KEY_SIZE)[:]

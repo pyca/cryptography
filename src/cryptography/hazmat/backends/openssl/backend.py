@@ -1838,54 +1838,29 @@ class Backend:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_load_public_bytes(self, data: bytes) -> x25519.X25519PublicKey:
-        # If/when LibreSSL adds support for EVP_PKEY_new_raw_public_key we
-        # can switch to it (Cryptography_HAS_RAW_KEY)
         if len(data) != 32:
             raise ValueError("An X25519 public key is 32 bytes long")
 
-        evp_pkey = self._create_evp_pkey_gc()
-        res = self._lib.EVP_PKEY_set_type(evp_pkey, self._lib.NID_X25519)
-        self.openssl_assert(res == 1)
-        res = self._lib.EVP_PKEY_set1_tls_encodedpoint(
-            evp_pkey, data, len(data)
+        data_ptr = self._ffi.from_buffer(data)
+        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
+            self._lib.NID_X25519, self._ffi.NULL, data_ptr, len(data)
         )
-        self.openssl_assert(res == 1)
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
         return _X25519PublicKey(self, evp_pkey)
 
     def x25519_load_private_bytes(
         self, data: bytes
     ) -> x25519.X25519PrivateKey:
-        # If/when LibreSSL adds support for EVP_PKEY_new_raw_private_key we
-        # can switch to it (Cryptography_HAS_RAW_KEY) drop the
-        # zeroed_bytearray garbage.
-        # OpenSSL only has facilities for loading PKCS8 formatted private
-        # keys using the algorithm identifiers specified in
-        # https://tools.ietf.org/html/draft-ietf-curdle-pkix-09.
-        # This is the standard PKCS8 prefix for a 32 byte X25519 key.
-        # The form is:
-        #    0:d=0  hl=2 l=  46 cons: SEQUENCE
-        #    2:d=1  hl=2 l=   1 prim: INTEGER           :00
-        #    5:d=1  hl=2 l=   5 cons: SEQUENCE
-        #    7:d=2  hl=2 l=   3 prim: OBJECT            :1.3.101.110
-        #    12:d=1  hl=2 l=  34 prim: OCTET STRING      (the key)
-        # Of course there's a bit more complexity. In reality OCTET STRING
-        # contains an OCTET STRING of length 32! So the last two bytes here
-        # are \x04\x20, which is an OCTET STRING of length 32.
         if len(data) != 32:
             raise ValueError("An X25519 private key is 32 bytes long")
 
-        pkcs8_prefix = b'0.\x02\x01\x000\x05\x06\x03+en\x04"\x04 '
-        with self._zeroed_bytearray(48) as ba:
-            ba[0:16] = pkcs8_prefix
-            ba[16:] = data
-            bio = self._bytes_to_bio(ba)
-            evp_pkey = self._lib.d2i_PrivateKey_bio(bio.bio, self._ffi.NULL)
-
+        data_ptr = self._ffi.from_buffer(data)
+        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
+            self._lib.NID_X25519, self._ffi.NULL, data_ptr, len(data)
+        )
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        self.openssl_assert(
-            self._lib.EVP_PKEY_id(evp_pkey) == self._lib.EVP_PKEY_X25519
-        )
         return _X25519PrivateKey(self, evp_pkey)
 
     def _evp_pkey_keygen_gc(self, nid):
@@ -1908,7 +1883,7 @@ class Backend:
     def x25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        return not self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
 
     def x448_load_public_bytes(self, data: bytes) -> x448.X448PublicKey:
         if len(data) != 56:
@@ -2073,19 +2048,6 @@ class Backend:
             return (
                 self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
             )
-
-    @contextlib.contextmanager
-    def _zeroed_bytearray(self, length: int) -> typing.Iterator[bytearray]:
-        """
-        This method creates a bytearray, which we copy data into (hopefully
-        also from a mutable buffer that can be dynamically erased!), and then
-        zero when we're done.
-        """
-        ba = bytearray(length)
-        try:
-            yield ba
-        finally:
-            self._zero_data(ba, length)
 
     def _zero_data(self, data, length: int) -> None:
         # We clear things this way because at the moment we're not
