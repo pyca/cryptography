@@ -34,7 +34,6 @@ static const int EVP_CTRL_AEAD_SET_TAG;
 static const int Cryptography_HAS_EVP_PKEY_set_alias_type;
 static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
-static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
 static const long Cryptography_HAS_RAW_KEY;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 static const long Cryptography_HAS_300_FIPS;
@@ -134,9 +133,6 @@ int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
                    const unsigned char *, size_t);
 int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
                      const unsigned char *, size_t);
-size_t EVP_PKEY_get1_tls_encodedpoint(EVP_PKEY *, unsigned char **);
-int EVP_PKEY_set1_tls_encodedpoint(EVP_PKEY *, const unsigned char *,
-                                   size_t);
 
 int EVP_PKEY_bits(const EVP_PKEY *);
 
@@ -197,15 +193,6 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
                       size_t) = NULL;
 #else
 static const long Cryptography_HAS_SCRYPT = 1;
-#endif
-
-#if !CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
-#else
-static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
-size_t (*EVP_PKEY_get1_tls_encodedpoint)(EVP_PKEY *, unsigned char **) = NULL;
-int (*EVP_PKEY_set1_tls_encodedpoint)(EVP_PKEY *, const unsigned char *,
-                                      size_t) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL

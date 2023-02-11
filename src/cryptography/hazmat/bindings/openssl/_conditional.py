@@ -101,13 +101,6 @@ def cryptography_has_evp_digestfinal_xof() -> typing.List[str]:
     ]
 
 
-def cryptography_has_evp_pkey_get_set_tls_encodedpoint() -> typing.List[str]:
-    return [
-        "EVP_PKEY_get1_tls_encodedpoint",
-        "EVP_PKEY_set1_tls_encodedpoint",
-    ]
-
-
 def cryptography_has_fips() -> typing.List[str]:
     return [
         "FIPS_mode_set",
@@ -321,9 +314,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
     "Cryptography_HAS_POLY1305": cryptography_has_poly1305,
-    "Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint": (
-        cryptography_has_evp_pkey_get_set_tls_encodedpoint
-    ),
     "Cryptography_HAS_FIPS": cryptography_has_fips,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
