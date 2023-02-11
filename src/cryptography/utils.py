@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import abc
 import enum
 import sys
 import types
@@ -45,16 +44,6 @@ def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
 
 
 class InterfaceNotImplemented(Exception):
-    pass
-
-
-# DeprecatedIn39 -- Our only known consumer is aws-encryption-sdk, but we've
-# made this a no-op to avoid breaking old versions.
-def verify_interface(
-    iface: abc.ABCMeta, klass: object, *, check_annotations: bool = False
-):
-    # Exists exclusively for `aws-encryption-sdk` which relies on it existing,
-    # even though it was never a public API.
     pass
 
 
