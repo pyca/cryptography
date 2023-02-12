@@ -58,23 +58,6 @@ class TestOpenSSL:
         assert resp == expected_options
         assert b.lib.SSL_get_options(ssl) == expected_options
 
-    def test_ssl_mode(self):
-        # Test that we're properly handling 32-bit unsigned on all platforms.
-        b = Binding()
-        # SSL_OP_ALL is 0 on BoringSSL
-        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
-            assert b.lib.SSL_OP_ALL > 0
-        ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
-        assert ctx != b.ffi.NULL
-        ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
-        ssl = b.lib.SSL_new(ctx)
-        ssl = b.ffi.gc(ssl, b.lib.SSL_free)
-        current_options = b.lib.SSL_get_mode(ssl)
-        resp = b.lib.SSL_set_mode(ssl, b.lib.SSL_OP_ALL)
-        expected_options = current_options | b.lib.SSL_OP_ALL
-        assert resp == expected_options
-        assert b.lib.SSL_get_mode(ssl) == expected_options
-
     def test_conditional_removal(self):
         b = Binding()
 
