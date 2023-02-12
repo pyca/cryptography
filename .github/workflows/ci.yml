@@ -87,7 +87,7 @@ jobs:
         env:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
-      - name: Load cache
+      - name: Load OpenSSL cache
         uses: actions/cache@v3.2.5
         id: ossl-cache
         timeout-minutes: 5
@@ -124,7 +124,7 @@ jobs:
 
       - uses: ./.github/actions/upload-coverage
 
-  linux-distros:
+  distros:
     runs-on: ${{ matrix.IMAGE.RUNNER }}
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
@@ -448,7 +448,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36-nocoverage", CL_FLAGS: ""}
           - {VERSION: "3.11", TOXENV: "py311", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
-        JOB_NUMBER: [0, 1, 2]
+        JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
@@ -497,7 +497,7 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -595,7 +595,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, linux-distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
+    needs: [linux, distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v3.3.0
