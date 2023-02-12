@@ -64,13 +64,12 @@ jobs:
         with:
           path: |
             ~/.cache/pip/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -180,13 +179,12 @@ jobs:
         with:
           path: |
             ~/.cache/pip/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -250,13 +248,12 @@ jobs:
         with:
           path: |
             ~/.cache/pip/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -315,12 +312,13 @@ jobs:
         with:
           path: |
             ~/.cache/pip/
-            ~/.cargo/bin/
+            ~/.cargo/bin/cargo-cov
+            ~/.cargo/bin/cargo-profdata
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -411,13 +409,12 @@ jobs:
         with:
           path: |
             ~/Library/Caches/pip/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.PYTHON.VERSION }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -489,13 +486,12 @@ jobs:
         with:
           path: |
             ~/AppData/Local/pip/Cache/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" requests coverage[toml]
       - name: Download OpenSSL
@@ -560,13 +556,12 @@ jobs:
         with:
           path: |
             ~/.cache/pip/
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             src/rust/target/
-          key: ${{ runner.os }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
