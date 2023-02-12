@@ -72,12 +72,9 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
       - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
       - name: Compute config hash and set config vars
         run: |
@@ -188,12 +185,9 @@ jobs:
             src/rust/target/
           key: ${{ runner.os }}-${{ matrix.IMAGE.IMAGE }}-${{ runner.arch }}-cargo-1-${{ hashFiles('**/Cargo.lock') }}
 
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
       # When run in a docker container the home directory doesn't have the same owner as the
       # apparent user so pip refuses to create a cache dir
       - name: create pip cache dir
@@ -265,12 +259,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@c758e63728211bd4acda6501cfa2a16c5c751fc4
         with:
           toolchain: ${{ matrix.RUST }}
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
       - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Create toxenv
         run: tox -vvv --notest
@@ -329,12 +320,9 @@ jobs:
       - run: cargo install cargo-binutils
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
       - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Create toxenv
         run: tox -vvv --notest
@@ -427,12 +415,9 @@ jobs:
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
 
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
 
       - name: Download OpenSSL
         run: |
@@ -507,12 +492,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-      - uses: actions/checkout@v3.3.0
-        timeout-minutes: 3
-        with:
-          repository: "google/wycheproof"
-          path: "wycheproof"
-          ref: "master"
+      - name: Clone wycheproof
+        timeout-minutes: 2
+        uses: ./.github/actions/wycheproof
 
       - name: Build toxenv
         run: tox -vvv --notest
