@@ -31,6 +31,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder`.
 * Added :meth:`~cryptography.x509.Certificate.verify_directly_issued_by` to
   :class:`~cryptography.x509.Certificate`.
+* Added a check to :class:`~cryptography.x509.NameConstraints` to ensure that
+  :class:`~cryptography.x509.DNSName` constraints do not contain any ``*``
+  wildcards.
+
 
 .. _v39-0-1:
 
