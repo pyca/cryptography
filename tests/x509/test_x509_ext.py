@@ -3652,6 +3652,28 @@ class TestNameConstraints:
         assert nc.permitted_subtrees == permitted
         assert nc.excluded_subtrees == excluded
 
+    def test_dnsname_wrong_value(self):
+        with pytest.raises(ValueError):
+            x509.NameConstraints(
+                permitted_subtrees=[x509.DNSName("*.example.com")],
+                excluded_subtrees=None,
+            )
+
+        with pytest.raises(ValueError):
+            x509.NameConstraints(
+                permitted_subtrees=None,
+                excluded_subtrees=[x509.DNSName("*.example.com")],
+            )
+
+    def test_dnsname_allowed_value(self):
+        permitted = [x509.DNSName("example.com")]
+        excluded = [x509.DNSName("www.example.com")]
+        nc = x509.NameConstraints(
+            permitted_subtrees=permitted, excluded_subtrees=excluded
+        )
+        assert nc.permitted_subtrees == permitted
+        assert nc.excluded_subtrees == excluded
+
     def test_invalid_permitted_subtrees(self):
         with pytest.raises(TypeError):
             x509.NameConstraints("badpermitted", None)  # type:ignore[arg-type]
