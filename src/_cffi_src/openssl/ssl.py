@@ -342,14 +342,10 @@ const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
 long SSL_SESSION_get_time(const SSL_SESSION *);
 long SSL_SESSION_get_timeout(const SSL_SESSION *);
 int SSL_SESSION_has_ticket(const SSL_SESSION *);
-long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
+unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
 
-unsigned long SSL_set_mode(SSL *, unsigned long);
-unsigned long SSL_clear_mode(SSL *, unsigned long);
-unsigned long SSL_get_mode(SSL *);
-
-unsigned long SSL_set_options(SSL *, unsigned long);
-unsigned long SSL_get_options(SSL *);
+uint64_t SSL_set_options(SSL *, uint64_t);
+uint64_t SSL_get_options(SSL *);
 
 int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
@@ -367,19 +363,27 @@ long SSL_CTX_get_max_proto_version(SSL_CTX *);
 long SSL_get_min_proto_version(SSL *);
 long SSL_get_max_proto_version(SSL *);
 
-/* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
-   and Windows defines long as 32-bit. */
-unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_get_options(SSL_CTX *);
+long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
+long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
+long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
+long SSL_CTX_get_session_cache_mode(SSL_CTX *);
+long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
+
+uint64_t SSL_CTX_set_options(SSL_CTX *, uint64_t);
+uint64_t SSL_CTX_clear_options(SSL_CTX *, uint64_t);
+uint64_t SSL_CTX_get_options(SSL_CTX *);
+/* Defined as unsigned long rather than long because SSL_OP_ALL is greater
+    than signed 32-bit. OpenSSL treats this as a bitfield, but
+    cffi is smart and refuses to allow integer overflow, so when
+    sizeof(long) is 32-bit (all Windows and most 32-bit OSes) then
+    cffi errors. Calling this unsigned long makes the compiler mad
+    but c'est la vie. */
 unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_clear_mode(SSL_CTX *, unsigned long);
 unsigned long SSL_CTX_get_mode(SSL_CTX *);
-unsigned long SSL_CTX_set_session_cache_mode(SSL_CTX *, unsigned long);
-unsigned long SSL_CTX_get_session_cache_mode(SSL_CTX *);
-unsigned long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
-unsigned long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
-unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
+unsigned long SSL_set_mode(SSL *, unsigned long);
+unsigned long SSL_clear_mode(SSL *, unsigned long);
+unsigned long SSL_get_mode(SSL *);
 
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
