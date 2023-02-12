@@ -1276,7 +1276,7 @@ class NameConstraints(ExtensionType):
                     "or None"
                 )
 
-            self._validate_ip_name(permitted_subtrees)
+            self._validate_tree(permitted_subtrees)
 
         if excluded_subtrees is not None:
             excluded_subtrees = list(excluded_subtrees)
@@ -1290,7 +1290,7 @@ class NameConstraints(ExtensionType):
                     "or None"
                 )
 
-            self._validate_ip_name(excluded_subtrees)
+            self._validate_tree(excluded_subtrees)
 
         if permitted_subtrees is None and excluded_subtrees is None:
             raise ValueError(
@@ -1310,6 +1310,10 @@ class NameConstraints(ExtensionType):
             and self.permitted_subtrees == other.permitted_subtrees
         )
 
+    def _validate_tree(self, tree: typing.Iterable[GeneralName]) -> None:
+        self._validate_ip_name(tree)
+        self._validate_dns_name(tree)
+
     def _validate_ip_name(self, tree: typing.Iterable[GeneralName]) -> None:
         if any(
             isinstance(name, IPAddress)
@@ -1321,6 +1325,15 @@ class NameConstraints(ExtensionType):
             raise TypeError(
                 "IPAddress name constraints must be an IPv4Network or"
                 " IPv6Network object"
+            )
+
+    def _validate_dns_name(self, tree: typing.Iterable[GeneralName]) -> None:
+        if any(
+            isinstance(name, DNSName) and "*" in name.value for name in tree
+        ):
+            raise ValueError(
+                "DNSName name constraints must not contain the '*' wildcard"
+                " character"
             )
 
     def __repr__(self) -> str:
