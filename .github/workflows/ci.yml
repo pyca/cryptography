@@ -452,7 +452,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.6", TOXENV: "py36-nocoverage", CL_FLAGS: ""}
           - {VERSION: "3.11", TOXENV: "py311", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
-        JOB_NUMBER: [0, 1, 2]
+        JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
@@ -502,7 +502,7 @@ jobs:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=3 --shard-id=${{ matrix.JOB_NUMBER }}
+        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
