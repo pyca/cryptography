@@ -31,7 +31,7 @@ typedef struct {
 } CRYPTOGRAPHY_PASSWORD_DATA;
 
 int Cryptography_pem_password_cb(char *buf, int size,
-                                  int rwflag, void *userdata) {
+                                 int rwflag, void *userdata) {
     /* The password cb is only invoked if OpenSSL decides the private
        key is encrypted. So this path only occurs if it needs a password */
     CRYPTOGRAPHY_PASSWORD_DATA *st = (CRYPTOGRAPHY_PASSWORD_DATA *)userdata;
@@ -41,7 +41,7 @@ int Cryptography_pem_password_cb(char *buf, int size,
         st->error = -1;
         return 0;
     } else if (st->length < size) {
-        memcpy(buf, st->password, st->length);
+        memcpy(buf, st->password, (size_t)st->length);
         return st->length;
     } else {
         st->error = -2;
