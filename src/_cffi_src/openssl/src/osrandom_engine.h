@@ -1,4 +1,4 @@
-#ifndef OPENSSL_NO_ENGINE
+#if CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE
 /* OpenSSL has ENGINE support so include all of this. */
 #ifdef _WIN32
   #include <Wincrypt.h>
