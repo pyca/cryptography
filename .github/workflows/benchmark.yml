@@ -31,11 +31,18 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.11"
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          key: benchmark-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('cryptography-main/**/Cargo.lock') }}
 
       - name: Create virtualenv (main)
         run: |
           python -m venv .venv-main
           .venv-main/bin/pip install -v -c ./cryptography-main/ci-constraints-requirements.txt "./cryptography-main[test]" ./cryptography-main/vectors/
+        env:
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Create virtualenv (PR)
         run: |
           python -m venv .venv-pr
