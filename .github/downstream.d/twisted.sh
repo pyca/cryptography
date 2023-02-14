@@ -9,7 +9,7 @@ case "${1}" in
         ;;
     run)
         cd twisted
-        python -m twisted.trial src/twisted
+        python -m twisted.trial -j4 src/twisted
         ;;
     *)
         exit 1
