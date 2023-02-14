@@ -277,10 +277,13 @@ jobs:
           toolchain: ${{ matrix.RUST }}
           components: llvm-tools-preview
       - name: Cache rust and pip
+        id: cargo-cache
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
           key: ${{ runner.os }}-cargo-3-${{ hashFiles('**/Cargo.lock') }}-rust-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
+          additional-paths: |
+            ~/.cargo/bin/
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
