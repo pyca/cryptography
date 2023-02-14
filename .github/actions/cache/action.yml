@@ -40,4 +40,4 @@ runs:
           ~/.cargo/git/db/
           src/rust/target/
           ${{ inputs.additional-paths }}
-        key: ${{ inputs.key }}
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-1
