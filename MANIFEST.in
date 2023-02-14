@@ -5,6 +5,7 @@ include LICENSE.APACHE
 include LICENSE.BSD
 include LICENSE.PSF
 include README.rst
+include tox.ini
 
 include pyproject.toml
 recursive-include src py.typed *.pyi
@@ -19,4 +20,4 @@ recursive-exclude vectors *
 
 recursive-exclude .github *
 
-exclude release.py .readthedocs.yml ci-constraints-requirements.txt tox.ini mypy.ini
+exclude release.py .readthedocs.yml ci-constraints-requirements.txt mypy.ini
