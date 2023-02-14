@@ -349,11 +349,11 @@ jobs:
           - {OS: 'macos-12', ARCH: 'x86_64'}
           - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+          - {VERSION: "3.6", TOXENV: "py36-nocoverage", EXTRA_CFLAGS: ""}
           - {VERSION: "3.11", TOXENV: "py311", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
         exclude:
           # We only test latest Python on arm64. The py36 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.6", TOXENV: "py36", EXTRA_CFLAGS: ""}
+          - PYTHON: {VERSION: "3.6", TOXENV: "py36-nocoverage", EXTRA_CFLAGS: ""}
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
