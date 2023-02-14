@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Cache rust and pip
-        uses: ./.github/actions/cache
+        uses: cryptography-main/.github/actions/cache
         timeout-minutes: 2
         with:
           key: benchmark-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('cryptography-main/**/Cargo.lock') }}
