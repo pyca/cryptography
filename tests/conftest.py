@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import sys
 
 import pytest
 
@@ -27,6 +28,11 @@ def pytest_report_header(config):
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
     parser.addoption("--enable-fips", default=False)
+    # REMOVE ME WHEN WE DROP PYTHON 3.6 SUPPORT
+    # This just adds a no-op flag so that we don't error on py36 where
+    # pytest-subtests is stuck on 0.8.0
+    if sys.version_info[:2] == (3, 6):
+        parser.addoption("--no-subtests-shortletter", action="store_true")
 
 
 def pytest_runtest_setup(item):
