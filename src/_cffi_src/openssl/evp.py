@@ -171,13 +171,6 @@ const long Cryptography_HAS_EVP_PKEY_DHX = 0;
 const long EVP_PKEY_DHX = -1;
 #endif
 
-EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
-    return EVP_MD_CTX_new();
-}
-void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *md) {
-    EVP_MD_CTX_free(md);
-}
-
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_300_OR_GREATER || \
         CRYPTOGRAPHY_IS_BORINGSSL
 static const int Cryptography_HAS_EVP_PKEY_set_alias_type = 0;
