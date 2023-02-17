@@ -6,8 +6,9 @@ inputs:
     required: false
     default: ''
   key:
-    description: 'cache key'
-    required: true
+    description: 'extra cache key components'
+    required: false
+    default: ''
 outputs:
   cache-hit:
     description: 'Was the cache hit?'
@@ -40,4 +41,4 @@ runs:
           ~/.cargo/git/db/
           src/rust/target/
           ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-1
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-1-${{ hashFiles('**/Cargo.lock') }}
