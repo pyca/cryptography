@@ -32,6 +32,16 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         The serialized bytes of the public key.
         """
 
+    def public_bytes_raw(self) -> bytes:
+        """
+        The raw bytes of the public key.
+        Equivalent to public_bytes(Raw, Raw).
+        """
+        return self.public_bytes(
+            _serialization.Encoding.Raw,
+            _serialization.PublicFormat.Raw
+        )
+
 
 class X25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
@@ -73,6 +83,17 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
         """
         The serialized bytes of the private key.
         """
+
+    def private_bytes_raw(self) -> bytes:
+        """
+        The raw bytes of the private key.
+        Equivalent to private_bytes(Raw, Raw, NoEncryption()).
+        """
+        return self.private_bytes(
+            _serialization.Encoding.Raw,
+            _serialization.PrivateFormat.Raw,
+            _serialization.NoEncryption()
+        )
 
     @abc.abstractmethod
     def exchange(self, peer_public_key: X25519PublicKey) -> bytes:
