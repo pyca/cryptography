@@ -63,7 +63,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
@@ -168,7 +168,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.IMAGE.IMAGE }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.IMAGE.IMAGE }}
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
@@ -227,7 +227,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ hashFiles('**/Cargo.lock') }}-${{ matrix.RUST }}
+          key: ${{ matrix.RUST }}
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
@@ -281,7 +281,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ hashFiles('**/Cargo.lock') }}-${{ steps.rust-toolchain.outputs.cachekey }}-coverage
+          key: ${{ steps.rust-toolchain.outputs.cachekey }}-coverage
           additional-paths: |
             ~/.cargo/bin/
       - name: Setup python
@@ -369,7 +369,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.PYTHON.VERSION }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -437,7 +437,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" requests coverage[toml]
       - name: Download OpenSSL
         run: |
@@ -496,8 +496,6 @@ jobs:
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
-        with:
-          key: ${{ hashFiles('**/Cargo.lock') }}
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
