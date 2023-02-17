@@ -103,6 +103,20 @@ Key interfaces
 
         :return bytes: Serialized key.
 
+    .. method:: private_bytes_raw()
+
+        .. versionadded:: TODO
+
+        Allows serialization of the key to raw bytes. This method is a
+        convenience shortcut for calling :meth:`private_bytes` with
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding,
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        format, and
+        :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+        :return bytes: Raw key.
+
 .. class:: Ed25519PublicKey
 
     .. versionadded:: 2.6
@@ -162,6 +176,19 @@ Key interfaces
             :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.SubjectPublicKeyInfo`.
 
         :returns bytes: The public key bytes.
+
+    .. method:: public_bytes_raw()
+
+        .. versionadded:: TODO
+
+        Allows serialization of the key to raw bytes. This method is a
+        convenience shortcut for calling :meth:`public_bytes` with
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding and
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        format.
+
+        :return bytes: Raw key.
 
     .. method:: verify(signature, data)
 
