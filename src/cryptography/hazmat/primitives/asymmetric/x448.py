@@ -60,7 +60,7 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_key(self) -> X448PublicKey:
         """
-        Returns the public key assosciated with this private key
+        Returns the public key associated with this private key
         """
 
     @abc.abstractmethod
