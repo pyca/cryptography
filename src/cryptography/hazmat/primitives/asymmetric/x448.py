@@ -60,7 +60,7 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_key(self) -> X448PublicKey:
         """
-        The serialized bytes of the public key.
+        Returns the public key associated with this private key
         """
 
     @abc.abstractmethod
