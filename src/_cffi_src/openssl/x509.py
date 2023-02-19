@@ -106,17 +106,13 @@ X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
 X509_CRL *X509_CRL_new(void);
-X509_CRL *X509_CRL_dup(X509_CRL *);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
-int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
-int X509_CRL_cmp(const X509_CRL *, const X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_set_version(X509_CRL *, long);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 int X509_CRL_sort(X509_CRL *);
-int X509_CRL_verify(X509_CRL *, EVP_PKEY *);
 int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 void X509_CRL_free(X509_CRL *);
 
