@@ -34,7 +34,6 @@ void EC_GROUP_free(EC_GROUP *);
 EC_GROUP *EC_GROUP_new_by_curve_name(int);
 
 const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
-const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *);
 int EC_GROUP_get_curve_name(const EC_GROUP *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
@@ -44,8 +43,6 @@ void EC_KEY_free(EC_KEY *);
 
 EC_KEY *EC_KEY_new_by_curve_name(int);
 const EC_GROUP *EC_KEY_get0_group(const EC_KEY *);
-int EC_GROUP_get_order(const EC_GROUP *, BIGNUM *, BN_CTX *);
-int EC_KEY_set_group(EC_KEY *, const EC_GROUP *);
 const BIGNUM *EC_KEY_get0_private_key(const EC_KEY *);
 int EC_KEY_set_private_key(EC_KEY *, const BIGNUM *);
 const EC_POINT *EC_KEY_get0_public_key(const EC_KEY *);
@@ -56,11 +53,6 @@ int EC_KEY_set_public_key_affine_coordinates(EC_KEY *, BIGNUM *, BIGNUM *);
 
 EC_POINT *EC_POINT_new(const EC_GROUP *);
 void EC_POINT_free(EC_POINT *);
-void EC_POINT_clear_free(EC_POINT *);
-EC_POINT *EC_POINT_dup(const EC_POINT *, const EC_GROUP *);
-
-int EC_POINT_set_affine_coordinates_GFp(const EC_GROUP *, EC_POINT *,
-    const BIGNUM *, const BIGNUM *, BN_CTX *);
 
 int EC_POINT_get_affine_coordinates_GFp(const EC_GROUP *,
     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
@@ -75,16 +67,7 @@ size_t EC_POINT_point2oct(const EC_GROUP *, const EC_POINT *,
 int EC_POINT_oct2point(const EC_GROUP *, EC_POINT *,
     const unsigned char *, size_t, BN_CTX *);
 
-int EC_POINT_add(const EC_GROUP *, EC_POINT *, const EC_POINT *,
-    const EC_POINT *, BN_CTX *);
-
-int EC_POINT_dbl(const EC_GROUP *, EC_POINT *, const EC_POINT *, BN_CTX *);
-int EC_POINT_invert(const EC_GROUP *, EC_POINT *, BN_CTX *);
 int EC_POINT_is_at_infinity(const EC_GROUP *, const EC_POINT *);
-int EC_POINT_is_on_curve(const EC_GROUP *, const EC_POINT *, BN_CTX *);
-
-int EC_POINT_cmp(
-    const EC_GROUP *, const EC_POINT *, const EC_POINT *, BN_CTX *);
 
 int EC_POINT_mul(const EC_GROUP *, EC_POINT *, const BIGNUM *,
     const EC_POINT *, const BIGNUM *, BN_CTX *);
