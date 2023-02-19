@@ -12,7 +12,6 @@ typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
-static const long Cryptography_HAS_SSL3_METHOD;
 static const long Cryptography_HAS_TLSv1_1;
 static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
@@ -543,15 +542,6 @@ static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 
 static const long Cryptography_HAS_KEYLOG = 1;
 static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
-
-#ifdef OPENSSL_NO_SSL3_METHOD
-static const long Cryptography_HAS_SSL3_METHOD = 0;
-SSL_METHOD* (*SSLv3_method)(void) = NULL;
-SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
-SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
-#else
-static const long Cryptography_HAS_SSL3_METHOD = 1;
-#endif
 
 static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
 static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;

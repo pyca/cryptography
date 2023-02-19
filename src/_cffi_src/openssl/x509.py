@@ -201,18 +201,12 @@ void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
-long X509_CRL_get_version(X509_CRL *);
-const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
-const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
 
-EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
-int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
-EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
