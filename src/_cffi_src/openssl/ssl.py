@@ -115,7 +115,6 @@ static const long SSL_CB_HANDSHAKE_START;
 static const long SSL_CB_HANDSHAKE_DONE;
 static const long SSL_MODE_RELEASE_BUFFERS;
 static const long SSL_MODE_ENABLE_PARTIAL_WRITE;
-static const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 static const long SSL_MODE_AUTO_RETRY;
 static const long SSL3_RANDOM_SIZE;
 static const long TLS_ST_BEFORE;
