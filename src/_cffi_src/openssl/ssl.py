@@ -19,9 +19,6 @@ static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_SSL_COOKIE;
 
-/* Internally invented symbol to tell us if SSL_OP_NO_COMPRESSION is
- * supported
- */
 static const long Cryptography_HAS_OP_NO_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long Cryptography_HAS_ALPN;
@@ -77,8 +74,6 @@ static const long SSL_OP_COOKIE_EXCHANGE;
 static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
-static const long SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-static const long SSL_OP_LEGACY_SERVER_CONNECT;
 static const long SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long SSL_VERIFY_PEER;
 static const long SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
@@ -332,7 +327,6 @@ int SSL_want_read(const SSL *);
 int SSL_want_write(const SSL *);
 
 long SSL_total_renegotiations(SSL *);
-long SSL_get_secure_renegotiation_support(SSL *);
 
 long SSL_CTX_set_min_proto_version(SSL_CTX *, int);
 long SSL_CTX_set_max_proto_version(SSL_CTX *, int);
