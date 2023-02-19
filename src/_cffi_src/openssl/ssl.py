@@ -434,19 +434,6 @@ size_t SSL_get_server_random(const SSL *, unsigned char *, size_t);
 int SSL_export_keying_material(SSL *, unsigned char *, size_t, const char *,
                                size_t, const unsigned char *, size_t, int);
 
-long SSL_CTX_sess_number(SSL_CTX *);
-long SSL_CTX_sess_connect(SSL_CTX *);
-long SSL_CTX_sess_connect_good(SSL_CTX *);
-long SSL_CTX_sess_connect_renegotiate(SSL_CTX *);
-long SSL_CTX_sess_accept(SSL_CTX *);
-long SSL_CTX_sess_accept_good(SSL_CTX *);
-long SSL_CTX_sess_accept_renegotiate(SSL_CTX *);
-long SSL_CTX_sess_hits(SSL_CTX *);
-long SSL_CTX_sess_cb_hits(SSL_CTX *);
-long SSL_CTX_sess_misses(SSL_CTX *);
-long SSL_CTX_sess_timeouts(SSL_CTX *);
-long SSL_CTX_sess_cache_full(SSL_CTX *);
-
 /* DTLS support */
 long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
