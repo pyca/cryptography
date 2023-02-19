@@ -313,6 +313,8 @@ Cryptography_STACK_OF_X509_NAME *SSL_load_client_CA_file(const char *);
 const char *SSL_get_servername(const SSL *, const int);
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
+SSL_SESSION *SSL_get_session(const SSL *);
+
 uint64_t SSL_set_options(SSL *, uint64_t);
 uint64_t SSL_get_options(SSL *);
 
