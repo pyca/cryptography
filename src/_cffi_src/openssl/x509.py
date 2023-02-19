@@ -47,7 +47,6 @@ FUNCTIONS = """
 X509 *X509_new(void);
 void X509_free(X509 *);
 X509 *X509_dup(X509 *);
-int X509_cmp(const X509 *, const X509 *);
 int X509_up_ref(X509 *);
 
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
