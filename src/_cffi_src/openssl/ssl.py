@@ -564,11 +564,6 @@ static const long TLS_ST_OK = 0;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
-long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
-long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
-#endif
-
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 #else
