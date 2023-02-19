@@ -120,7 +120,6 @@ int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
 int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
 int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
 int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
-int EVP_PKEY_set_type(EVP_PKEY *, int);
 
 int EVP_PKEY_id(const EVP_PKEY *);
 
