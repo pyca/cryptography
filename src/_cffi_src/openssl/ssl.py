@@ -10,33 +10,19 @@ INCLUDES = """
 TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
-static const long Cryptography_HAS_TLSv1_1;
-static const long Cryptography_HAS_TLSv1_2;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
-static const long Cryptography_HAS_SECURE_RENEGOTIATION;
-static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
 static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_PSK_TLSv1_3;
 static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
-static const long Cryptography_HAS_TLSEXT_HOSTNAME;
 static const long Cryptography_HAS_SSL_COOKIE;
-
-/* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
- * supported
- */
-static const long Cryptography_HAS_RELEASE_BUFFERS;
 
 /* Internally invented symbol to tell us if SSL_OP_NO_COMPRESSION is
  * supported
  */
-static const long Cryptography_HAS_OP_NO_COMPRESSION;
 static const long Cryptography_HAS_OP_NO_RENEGOTIATION;
-static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
-static const long Cryptography_HAS_SSL_SET_SSL_CTX;
-static const long Cryptography_HAS_SSL_OP_NO_TICKET;
 static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
@@ -518,11 +504,6 @@ int SSL_CTX_set_client_cert_engine(SSL_CTX *, ENGINE *);
 """
 
 CUSTOMIZATIONS = """
-// This symbol is being preserved because removing it will break users with
-// pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
-// users have upgraded. PersistentlyDeprecated2020
-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
-
 #ifdef OPENSSL_NO_ENGINE
 int (*SSL_CTX_set_client_cert_engine)(SSL_CTX *, ENGINE *) = NULL;
 #endif
@@ -535,15 +516,7 @@ static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
 #endif
 
 static const long Cryptography_HAS_KEYLOG = 1;
-static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
 
-static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
-static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
-static const long Cryptography_HAS_TLSv1_1 = 1;
-static const long Cryptography_HAS_TLSv1_2 = 1;
-static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
-static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
-static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
 static const long Cryptography_HAS_NEXTPROTONEG = 0;
 static const long Cryptography_HAS_ALPN = 1;
 
@@ -572,8 +545,6 @@ static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 0;
 static const long Cryptography_HAS_SET_CERT_CB = 1;
 static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 1;
 #endif
-
-static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
