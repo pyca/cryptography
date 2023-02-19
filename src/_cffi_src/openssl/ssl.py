@@ -5,8 +5,6 @@
 
 INCLUDES = """
 #include <openssl/ssl.h>
-
-typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
 """
 
 TYPES = """
@@ -154,7 +152,6 @@ static const long TLSEXT_NAMETYPE_host_name;
 static const long TLSEXT_STATUSTYPE_ocsp;
 
 typedef ... SSL_CIPHER;
-typedef ... Cryptography_STACK_OF_SSL_CIPHER;
 
 typedef struct {
     const char *name;
@@ -424,9 +421,6 @@ long SSL_session_reused(SSL *);
 int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int,
                           const unsigned char *, unsigned int);
-
-int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
-const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
 
 int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char *, unsigned);
 int SSL_set_alpn_protos(SSL *, const unsigned char *, unsigned);
