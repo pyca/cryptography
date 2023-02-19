@@ -449,8 +449,6 @@ long SSL_CTX_sess_cache_full(SSL_CTX *);
 /* DTLS support */
 long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
 long DTLSv1_handle_timeout(SSL *);
-long DTLS_set_link_mtu(SSL *, long);
-long DTLS_get_link_min_mtu(SSL *);
 long SSL_set_mtu(SSL *, long);
 int DTLSv1_listen(SSL *, BIO_ADDR *);
 size_t DTLS_get_data_mtu(SSL *);
@@ -562,11 +560,6 @@ static const long Cryptography_HAS_TLS_ST = 1;
 static const long Cryptography_HAS_TLS_ST = 0;
 static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
-#endif
-
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
-long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
-long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
