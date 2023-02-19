@@ -52,9 +52,6 @@ int sk_X509_NAME_num(Cryptography_STACK_OF_X509_NAME *);
 int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
 X509_NAME *sk_X509_NAME_value(Cryptography_STACK_OF_X509_NAME *, int);
 void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
-Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_new_null(void);
-int sk_X509_NAME_ENTRY_push(Cryptography_STACK_OF_X509_NAME_ENTRY *,
-                            X509_NAME_ENTRY *);
 """
 
 CUSTOMIZATIONS = """
