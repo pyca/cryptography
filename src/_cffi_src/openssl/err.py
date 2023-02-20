@@ -15,20 +15,15 @@ static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 static const int EVP_R_BAD_DECRYPT;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
-static const int PEM_R_UNSUPPORTED_ENCRYPTION;
 static const int EVP_R_XTS_DUPLICATED_KEYS;
 
 static const int ERR_LIB_EVP;
-static const int ERR_LIB_PEM;
 static const int ERR_LIB_PROV;
-static const int ERR_LIB_ASN1;
 static const int ERR_LIB_PKCS12;
 
 static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
 static const int SSL_TLSEXT_ERR_NOACK;
-
-static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
 
 static const int SSL_R_UNEXPECTED_EOF_WHILE_READING;
 

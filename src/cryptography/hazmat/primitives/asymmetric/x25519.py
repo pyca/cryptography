@@ -70,7 +70,7 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def public_key(self) -> X25519PublicKey:
         """
-        The serialized bytes of the public key.
+        Returns the public key assosciated with this private key
         """
 
     @abc.abstractmethod
