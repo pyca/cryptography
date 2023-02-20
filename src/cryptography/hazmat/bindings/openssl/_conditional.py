@@ -11,14 +11,6 @@ def cryptography_has_ec2m() -> typing.List[str]:
     ]
 
 
-def cryptography_has_ssl3_method() -> typing.List[str]:
-    return [
-        "SSLv3_method",
-        "SSLv3_client_method",
-        "SSLv3_server_method",
-    ]
-
-
 def cryptography_has_set_cert_cb() -> typing.List[str]:
     return [
         "SSL_CTX_set_cert_cb",
@@ -39,12 +31,6 @@ def cryptography_has_tls_st() -> typing.List[str]:
     return [
         "TLS_ST_BEFORE",
         "TLS_ST_OK",
-    ]
-
-
-def cryptography_has_evp_pkey_set_alias_type() -> typing.List[str]:
-    return [
-        "EVP_PKEY_set_alias_type",
     ]
 
 
@@ -298,13 +284,9 @@ def cryptography_has_get_extms_support() -> typing.List[str]:
 # lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
     "Cryptography_HAS_EC2M": cryptography_has_ec2m,
-    "Cryptography_HAS_SSL3_METHOD": cryptography_has_ssl3_method,
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_EVP_PKEY_set_alias_type": (
-        cryptography_has_evp_pkey_set_alias_type
-    ),
     "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,

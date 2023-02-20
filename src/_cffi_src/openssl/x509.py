@@ -47,7 +47,6 @@ FUNCTIONS = """
 X509 *X509_new(void);
 void X509_free(X509 *);
 X509 *X509_dup(X509 *);
-int X509_cmp(const X509 *, const X509 *);
 int X509_up_ref(X509 *);
 
 int X509_print_ex(BIO *, X509 *, unsigned long, unsigned long);
@@ -81,15 +80,12 @@ int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
 int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
-int X509_REQ_set_subject_name(X509_REQ *, X509_NAME *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-int X509_REQ_add1_attr_by_OBJ(X509_REQ *, const ASN1_OBJECT *,
-                              int, const unsigned char *, int);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -99,31 +95,25 @@ void X509_REVOKED_free(X509_REVOKED *);
 
 int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
 
-int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
 X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 
 int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
 
 X509_CRL *X509_CRL_new(void);
-X509_CRL *X509_CRL_dup(X509_CRL *);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
-int X509_CRL_add_ext(X509_CRL *, X509_EXTENSION *, int);
-int X509_CRL_cmp(const X509_CRL *, const X509_CRL *);
 int X509_CRL_print(BIO *, X509_CRL *);
 int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
 int X509_CRL_set_version(X509_CRL *, long);
 int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 int X509_CRL_sort(X509_CRL *);
-int X509_CRL_verify(X509_CRL *, EVP_PKEY *);
 int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 void X509_CRL_free(X509_CRL *);
 
 int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
 int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
 char *NETSCAPE_SPKI_b64_encode(NETSCAPE_SPKI *);
-NETSCAPE_SPKI *NETSCAPE_SPKI_b64_decode(const char *, int);
 EVP_PKEY *NETSCAPE_SPKI_get_pubkey(NETSCAPE_SPKI *);
 int NETSCAPE_SPKI_set_pubkey(NETSCAPE_SPKI *, EVP_PKEY *);
 NETSCAPE_SPKI *NETSCAPE_SPKI_new(void);
@@ -161,11 +151,6 @@ X509_EXTENSION *X509_get_ext(const X509 *, int);
 X509_NAME *X509_get_subject_name(const X509 *);
 X509_NAME *X509_get_issuer_name(const X509 *);
 
-X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
-                                             const ASN1_OBJECT *, int,
-                                             ASN1_OCTET_STRING *);
-
-
 int X509_EXTENSION_get_critical(const X509_EXTENSION *);
 
 int X509_REVOKED_get_ext_count(const X509_REVOKED *);
@@ -193,26 +178,18 @@ X509_EXTENSIONS *sk_X509_EXTENSION_new_null(void);
 int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
 X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
 int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
-int sk_X509_EXTENSION_insert(X509_EXTENSIONS *, X509_EXTENSION *, int);
-X509_EXTENSION *sk_X509_EXTENSION_delete(X509_EXTENSIONS *, int);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 
 int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
 X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
 
-long X509_CRL_get_version(X509_CRL *);
-const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
-const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
 X509_NAME *X509_CRL_get_issuer(X509_CRL *);
 Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
 
-EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
-int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
-EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
