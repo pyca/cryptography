@@ -125,6 +125,8 @@ void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
                               Cryptography_STACK_OF_X509_CRL *);
 
+void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
+
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
