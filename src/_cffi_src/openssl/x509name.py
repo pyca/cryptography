@@ -43,10 +43,6 @@ int X509_NAME_add_entry(X509_NAME *, X509_NAME_ENTRY *, int, int);
 int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, const unsigned char *,
                                int, int, int);
 
-X509_NAME_ENTRY *X509_NAME_ENTRY_create_by_OBJ(X509_NAME_ENTRY **,
-                                               const ASN1_OBJECT *, int,
-                                               const unsigned char *, int);
-
 Cryptography_STACK_OF_X509_NAME *sk_X509_NAME_new_null(void);
 int sk_X509_NAME_num(Cryptography_STACK_OF_X509_NAME *);
 int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
