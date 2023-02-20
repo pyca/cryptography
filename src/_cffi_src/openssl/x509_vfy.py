@@ -118,31 +118,12 @@ int X509_STORE_CTX_get1_issuer(X509 **, X509_STORE_CTX *, X509 *);
 /* X509_VERIFY_PARAM */
 X509_VERIFY_PARAM *X509_VERIFY_PARAM_new(void);
 int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *, unsigned long);
-int X509_VERIFY_PARAM_clear_flags(X509_VERIFY_PARAM *, unsigned long);
-unsigned long X509_VERIFY_PARAM_get_flags(X509_VERIFY_PARAM *);
-int X509_VERIFY_PARAM_set_purpose(X509_VERIFY_PARAM *, int);
-int X509_VERIFY_PARAM_set_trust(X509_VERIFY_PARAM *, int);
 void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *, time_t);
-int X509_VERIFY_PARAM_add0_policy(X509_VERIFY_PARAM *, ASN1_OBJECT *);
-int X509_VERIFY_PARAM_set1_policies(X509_VERIFY_PARAM *,
-                                    Cryptography_STACK_OF_ASN1_OBJECT *);
-void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *, int);
-int X509_VERIFY_PARAM_get_depth(const X509_VERIFY_PARAM *);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
 
 /* X509_STORE_CTX */
 void X509_STORE_CTX_set0_crls(X509_STORE_CTX *,
                               Cryptography_STACK_OF_X509_CRL *);
-
-/* X509_VERIFY_PARAM */
-int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const char *,
-                                size_t);
-void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
-int X509_VERIFY_PARAM_set1_email(X509_VERIFY_PARAM *, const char *,
-                                 size_t);
-int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
-                              size_t);
-int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
