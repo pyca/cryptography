@@ -723,7 +723,7 @@ KBKDF
 .. class:: KBKDFCMAC(algorithm, mode, length, rlen, llen, location,\
            label, context, fixed)
 
-    .. versionadded:: 35.0
+    .. versionadded:: 35.0.0
 
     KBKDF (Key Based Key Derivation Function) is defined by the
     `NIST SP 800-108`_ document, to be used to derive additional
@@ -879,7 +879,7 @@ KBKDF
 
     .. attribute:: MiddleFixed
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         The counter iteration variable will be concatenated in the middle
         of the fixed input data.

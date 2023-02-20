@@ -478,7 +478,7 @@ The format used by OpenSSH for certificates, as specified in
 
 .. function:: load_ssh_public_identity(data)
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     .. note::
 
@@ -509,7 +509,7 @@ The format used by OpenSSH for certificates, as specified in
 
 .. class:: SSHCertificate
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     .. attribute:: nonce
 
@@ -628,7 +628,7 @@ The format used by OpenSSH for certificates, as specified in
 
 .. class:: SSHCertificateType
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     An enumeration of the types of SSH certificates.
 
@@ -647,7 +647,7 @@ SSH Certificate Builder
 
 .. class:: SSHCertificateBuilder
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     .. note::
 
@@ -801,7 +801,7 @@ file suffix.
 
 .. function:: load_pkcs12(data, password)
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     Deserialize a PKCS12 blob, and return a
     :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates`
@@ -911,7 +911,7 @@ file suffix.
 
 .. class:: PKCS12Certificate
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     Represents additional data provided for a certificate in a PKCS12 file.
 
@@ -927,7 +927,7 @@ file suffix.
 
 .. class:: PKCS12KeyAndCertificates
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     A simplified representation of a PKCS12 file.
 
@@ -1019,7 +1019,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
 .. function:: serialize_certificates(certs, encoding)
 
-    .. versionadded:: 37.0
+    .. versionadded:: 37.0.0
 
     Serialize a list of certificates to a PKCS7 structure.
 
