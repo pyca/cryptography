@@ -108,12 +108,14 @@ class TestEd448Signing:
             )
             == sk
         )
+        assert private_key.private_bytes_raw() == sk
         assert (
             private_key.public_key().public_bytes(
                 serialization.Encoding.Raw, serialization.PublicFormat.Raw
             )
             == pk
         )
+        assert private_key.public_key().public_bytes_raw() == pk
         public_key = Ed448PublicKey.from_public_bytes(pk)
         assert (
             public_key.public_bytes(
@@ -121,6 +123,7 @@ class TestEd448Signing:
             )
             == pk
         )
+        assert public_key.public_bytes_raw() == pk
 
     @pytest.mark.parametrize(
         ("encoding", "fmt", "encryption", "passwd", "load_func"),
