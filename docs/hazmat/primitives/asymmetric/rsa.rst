@@ -304,7 +304,7 @@ Padding
 
     .. attribute:: DIGEST_LENGTH
 
-        .. versionadded:: 37.0
+        .. versionadded:: 37.0.0
 
         Pass this attribute to ``salt_length`` to set the salt length to the
         byte length of the digest passed when calling ``sign``. Note that this
@@ -312,7 +312,7 @@ Padding
 
     .. attribute:: AUTO
 
-        .. versionadded:: 37.0
+        .. versionadded:: 37.0.0
 
         Pass this attribute to ``salt_length`` to automatically determine the
         salt length when verifying. Raises ``ValueError`` if used when signing.

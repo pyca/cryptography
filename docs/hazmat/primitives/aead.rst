@@ -166,7 +166,7 @@ also support providing integrity for associated data which is not encrypted.
 
 .. class:: AESOCB3(key)
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     The OCB3 construction is defined in :rfc:`7253`. It is an AEAD mode
     that offers strong integrity guarantees and good performance.
@@ -242,7 +242,7 @@ also support providing integrity for associated data which is not encrypted.
 
 .. class:: AESSIV(key)
 
-    .. versionadded:: 37.0
+    .. versionadded:: 37.0.0
 
     The SIV (synthetic initialization vector) construction is defined in
     :rfc:`5297`. Depending on how it is used, SIV allows either

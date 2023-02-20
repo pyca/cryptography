@@ -52,7 +52,7 @@ issued.
 
     .. attribute:: signature_hash_algorithm
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         :type:
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -61,7 +61,7 @@ issued.
 
     .. attribute:: signature_algorithm
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         :type:
             :class:`~cryptography.x509.certificate_transparency.SignatureAlgorithm`
@@ -70,7 +70,7 @@ issued.
 
     .. attribute:: signature
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         :type: bytes
 
@@ -78,7 +78,7 @@ issued.
 
     .. attribute:: extension_bytes
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         :type: bytes
 
@@ -111,7 +111,7 @@ issued.
 
 .. class:: SignatureAlgorithm
 
-    .. versionadded:: 38.0
+    .. versionadded:: 38.0.0
 
     An enumeration for SignedCertificateTimestamp signature algorithms.
 

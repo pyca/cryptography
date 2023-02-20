@@ -172,7 +172,7 @@ Loading Certificates
 .. function:: load_pem_x509_certificates(data)
     :canonical: cryptography.x509.base.load_pem_x509_certificates
 
-    .. versionadded:: 39.0
+    .. versionadded:: 39.0.0
 
     Deserialize one or more certificates from PEM encoded data.
 
@@ -488,7 +488,7 @@ X.509 Certificate Object
 
     .. method:: verify_directly_issued_by(issuer)
 
-        .. versionadded:: 40.0
+        .. versionadded:: 40.0.0
 
         :param issuer: The issuer certificate to check against.
         :type issuer: :class:`~cryptography.x509.Certificate`
@@ -518,7 +518,7 @@ X.509 Certificate Object
 
     .. attribute:: tbs_precertificate_bytes
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         :type: bytes
 
@@ -936,7 +936,7 @@ X.509 CSR (Certificate Signing Request) Object
 
     .. attribute:: attributes
 
-        .. versionadded:: 36.0
+        .. versionadded:: 36.0.0
 
         :type: :class:`Attributes`
 
@@ -1312,7 +1312,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. classmethod:: from_rfc4514_string(data, attr_name_overrides=None)
 
-        .. versionadded: 37.0
+        .. versionadded: 37.0.0
 
         :param str data: An :rfc:`4514` string.
         :param attr_name_overrides: Specify custom OID to name mappings, which
@@ -1351,7 +1351,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
-        .. versionchanged:: 36.0
+        .. versionchanged:: 36.0.0
 
             Added ``attr_name_overrides`` parameter.
 
@@ -1425,7 +1425,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. attribute:: rfc4514_attribute_name
 
-        .. versionadded:: 35.0
+        .. versionadded:: 35.0.0
 
         :type: str
 
@@ -1435,7 +1435,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
-        .. versionchanged:: 36.0
+        .. versionchanged:: 36.0.0
 
             Added ``attr_name_overrides`` parameter.
 
@@ -1468,7 +1468,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. method:: rfc4514_string(attr_name_overrides=None)
 
         .. versionadded:: 2.5
-        .. versionchanged:: 36.0
+        .. versionchanged:: 36.0.0
 
             Added ``attr_name_overrides`` parameter.
 
@@ -1712,7 +1712,7 @@ X.509 Extensions
 
     .. method:: public_bytes()
 
-        .. versionadded:: 36.0
+        .. versionadded:: 36.0.0
 
         :return bytes:
 
@@ -2916,7 +2916,7 @@ X.509 Request Attributes
 .. class:: Attributes
     :canonical: cryptography.x509.base.Attributes
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     An Attributes instance is an ordered list of attributes.  The object
     is iterable to get every attribute. Each returned element is an
@@ -2924,7 +2924,7 @@ X.509 Request Attributes
 
     .. method:: get_attribute_for_oid(oid)
 
-        .. versionadded:: 36.0
+        .. versionadded:: 36.0.0
 
         :param oid: An :class:`ObjectIdentifier` instance.
 
@@ -2937,7 +2937,7 @@ X.509 Request Attributes
 .. class:: Attribute
     :canonical: cryptography.x509.base.Attribute
 
-    .. versionadded:: 36.0
+    .. versionadded:: 36.0.0
 
     An attribute associated with an X.509 request.
 
@@ -3215,14 +3215,14 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: DSA_WITH_SHA384
 
-        .. versionadded:: 36.0
+        .. versionadded:: 36.0.0
 
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.3"``. This is
         a SHA384 digest signed by a DSA key.
 
     .. attribute:: DSA_WITH_SHA512
 
-        .. versionadded:: 36.0
+        .. versionadded:: 36.0.0
 
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.4"``. This is
         a SHA512 digest signed by a DSA key.
@@ -3293,7 +3293,7 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: SMARTCARD_LOGON
 
-        .. versionadded:: 35.0
+        .. versionadded:: 35.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.311.20.2.2"``. This
         is used to denote that a certificate may be used for ``PKINIT`` access
@@ -3301,7 +3301,7 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: KERBEROS_PKINIT_KDC
 
-        .. versionadded:: 35.0
+        .. versionadded:: 35.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.5.2.3.5"``. This
         is used to denote that a certificate may be used as a Kerberos
@@ -3310,7 +3310,7 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: IPSEC_IKE
 
-        .. versionadded:: 37.0
+        .. versionadded:: 37.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.17"``. This
         is used to denote that a certificate may be assigned to an IPSEC SA,
@@ -3319,7 +3319,7 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: CERTIFICATE_TRANSPARENCY
 
-        .. versionadded:: 38.0
+        .. versionadded:: 38.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.4"``. This
         is used to denote that a certificate may be used as a pre-certificate
