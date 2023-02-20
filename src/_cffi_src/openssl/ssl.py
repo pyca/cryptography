@@ -213,9 +213,6 @@ void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
                                         unsigned int
                                     ));
 
-long SSL_CTX_get_read_ahead(SSL_CTX *);
-long SSL_CTX_set_read_ahead(SSL_CTX *, long);
-
 int SSL_CTX_use_psk_identity_hint(SSL_CTX *, const char *);
 void SSL_CTX_set_psk_server_callback(SSL_CTX *,
                                      unsigned int (*)(
