@@ -38,8 +38,7 @@ class Ed448PublicKey(metaclass=abc.ABCMeta):
         Equivalent to public_bytes(Raw, Raw).
         """
         return self.public_bytes(
-            _serialization.Encoding.Raw,
-            _serialization.PublicFormat.Raw
+            _serialization.Encoding.Raw, _serialization.PublicFormat.Raw
         )
 
     @abc.abstractmethod
@@ -104,5 +103,5 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
         return self.private_bytes(
             _serialization.Encoding.Raw,
             _serialization.PrivateFormat.Raw,
-            _serialization.NoEncryption()
+            _serialization.NoEncryption(),
         )
