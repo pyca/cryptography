@@ -337,10 +337,6 @@ const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
 const SSL_METHOD *DTLS_client_method(void);
 
-const SSL_METHOD *SSLv23_method(void);
-const SSL_METHOD *SSLv23_server_method(void);
-const SSL_METHOD *SSLv23_client_method(void);
-
 const SSL_METHOD *TLS_method(void);
 const SSL_METHOD *TLS_server_method(void);
 const SSL_METHOD *TLS_client_method(void);
