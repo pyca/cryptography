@@ -25,8 +25,6 @@ static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
 static const int SSL_TLSEXT_ERR_NOACK;
 
-static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
-
 static const int SSL_R_UNEXPECTED_EOF_WHILE_READING;
 
 static const int Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING;
