@@ -36,7 +36,6 @@ static const long SSL_ERROR_ZERO_RETURN;
 static const long SSL_ERROR_WANT_READ;
 static const long SSL_ERROR_WANT_WRITE;
 static const long SSL_ERROR_WANT_X509_LOOKUP;
-static const long SSL_ERROR_WANT_CONNECT;
 static const long SSL_ERROR_SYSCALL;
 static const long SSL_ERROR_SSL;
 static const long SSL_SENT_SHUTDOWN;
