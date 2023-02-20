@@ -11,7 +11,6 @@ TYPES = """
 typedef ... RSA;
 typedef ... BN_GENCB;
 static const int RSA_PKCS1_PADDING;
-static const int RSA_NO_PADDING;
 static const int RSA_PKCS1_OAEP_PADDING;
 static const int RSA_PKCS1_PSS_PADDING;
 static const int RSA_F4;
