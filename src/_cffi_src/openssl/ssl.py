@@ -305,11 +305,6 @@ const char *SSL_get_servername(const SSL *, const int);
 const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 SSL_SESSION *SSL_get_session(const SSL *);
-const unsigned char *SSL_SESSION_get_id(const SSL_SESSION *, unsigned int *);
-long SSL_SESSION_get_time(const SSL_SESSION *);
-long SSL_SESSION_get_timeout(const SSL_SESSION *);
-int SSL_SESSION_has_ticket(const SSL_SESSION *);
-unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
 
 uint64_t SSL_set_options(SSL *, uint64_t);
 uint64_t SSL_get_options(SSL *);
@@ -321,13 +316,6 @@ long SSL_total_renegotiations(SSL *);
 
 long SSL_CTX_set_min_proto_version(SSL_CTX *, int);
 long SSL_CTX_set_max_proto_version(SSL_CTX *, int);
-long SSL_set_min_proto_version(SSL *, int);
-long SSL_set_max_proto_version(SSL *, int);
-
-long SSL_CTX_get_min_proto_version(SSL_CTX *);
-long SSL_CTX_get_max_proto_version(SSL_CTX *);
-long SSL_get_min_proto_version(SSL *);
-long SSL_get_max_proto_version(SSL *);
 
 long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
 long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
