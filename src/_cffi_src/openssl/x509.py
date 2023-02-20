@@ -80,15 +80,12 @@ int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
 int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
-int X509_REQ_set_subject_name(X509_REQ *, X509_NAME *);
 int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
 int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
 X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-int X509_REQ_add1_attr_by_OBJ(X509_REQ *, const ASN1_OBJECT *,
-                              int, const unsigned char *, int);
 
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
@@ -98,7 +95,6 @@ void X509_REVOKED_free(X509_REVOKED *);
 
 int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
 
-int X509_REVOKED_add_ext(X509_REVOKED *, X509_EXTENSION*, int);
 int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
 X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
 
@@ -154,11 +150,6 @@ int X509_get_ext_count(const X509 *);
 X509_EXTENSION *X509_get_ext(const X509 *, int);
 X509_NAME *X509_get_subject_name(const X509 *);
 X509_NAME *X509_get_issuer_name(const X509 *);
-
-X509_EXTENSION *X509_EXTENSION_create_by_OBJ(X509_EXTENSION **,
-                                             const ASN1_OBJECT *, int,
-                                             ASN1_OCTET_STRING *);
-
 
 int X509_EXTENSION_get_critical(const X509_EXTENSION *);
 
