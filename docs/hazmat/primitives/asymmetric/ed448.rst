@@ -83,7 +83,7 @@ Key interfaces
 
     .. method:: private_bytes_raw()
 
-        .. versionadded:: TODO
+        .. versionadded:: 40
 
         Allows serialization of the key to raw bytes. This method is a
         convenience shortcut for calling :meth:`private_bytes` with
@@ -133,7 +133,7 @@ Key interfaces
 
     .. method:: public_bytes_raw()
 
-        .. versionadded:: TODO
+        .. versionadded:: 40
 
         Allows serialization of the key to raw bytes. This method is a
         convenience shortcut for calling :meth:`public_bytes` with
