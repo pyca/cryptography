@@ -56,9 +56,6 @@ static const long X509_V_FLAG_PARTIAL_CHAIN;
 static const long X509_V_FLAG_NO_ALT_CHAINS;
 static const long X509_V_FLAG_NO_CHECK_TIME;
 
-static const long X509_LU_X509;
-static const long X509_LU_CRL;
-
 static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
 static const long X509_CHECK_FLAG_NO_WILDCARDS;
 static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
@@ -148,10 +145,8 @@ int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
 int X509_VERIFY_PARAM_set1_ip_asc(X509_VERIFY_PARAM *, const char *);
 
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
-X509_OBJECT *sk_X509_OBJECT_value(Cryptography_STACK_OF_X509_OBJECT *, int);
 X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
-X509 *X509_OBJECT_get0_X509(X509_OBJECT *);
 
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
 void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
