@@ -46,8 +46,6 @@ static const long SSL_OP_NO_TLSv1;
 static const long SSL_OP_NO_TLSv1_1;
 static const long SSL_OP_NO_TLSv1_2;
 static const long SSL_OP_NO_TLSv1_3;
-static const long SSL_OP_NO_DTLSv1;
-static const long SSL_OP_NO_DTLSv1_2;
 static const long SSL_OP_NO_RENEGOTIATION;
 static const long SSL_OP_NO_COMPRESSION;
 static const long SSL_OP_SINGLE_DH_USE;
@@ -367,8 +365,6 @@ long SSL_CTX_set_tlsext_status_arg(SSL_CTX *, void *);
 int SSL_CTX_set_tlsext_use_srtp(SSL_CTX *, const char *);
 int SSL_set_tlsext_use_srtp(SSL *, const char *);
 SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
-
-long SSL_session_reused(SSL *);
 
 int SSL_select_next_proto(unsigned char **, unsigned char *,
                           const unsigned char *, unsigned int,
