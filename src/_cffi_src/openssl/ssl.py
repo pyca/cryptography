@@ -296,15 +296,6 @@ void SSL_SESSION_free(SSL_SESSION *);
 /* Information about actually used cipher */
 const char *SSL_CIPHER_get_name(const SSL_CIPHER *);
 int SSL_CIPHER_get_bits(const SSL_CIPHER *, int *);
-/* the modern signature of this is uint32_t, but older openssl declared it
-   as unsigned long. To make our compiler flags happy we'll declare it as a
-   64-bit wide value, which should always be safe */
-uint64_t SSL_CIPHER_get_id(const SSL_CIPHER *);
-int SSL_CIPHER_is_aead(const SSL_CIPHER *);
-int SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *);
-int SSL_CIPHER_get_digest_nid(const SSL_CIPHER *);
-int SSL_CIPHER_get_kx_nid(const SSL_CIPHER *);
-int SSL_CIPHER_get_auth_nid(const SSL_CIPHER *);
 
 size_t SSL_get_finished(const SSL *, void *, size_t);
 size_t SSL_get_peer_finished(const SSL *, void *, size_t);
