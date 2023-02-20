@@ -224,7 +224,7 @@ virtualenv==20.19.0; python_version >= "3.7"
     # via tox
 webencodings==0.5.1
     # via bleach
-zipp==3.13.0; python_version >= "3.7"
+zipp==3.14.0; python_version >= "3.7"
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
