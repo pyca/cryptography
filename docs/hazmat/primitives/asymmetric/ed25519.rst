@@ -111,7 +111,7 @@ Key interfaces
         convenience shortcut for calling :meth:`private_bytes` with
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
         encoding,
-        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
         format, and
         :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
 
