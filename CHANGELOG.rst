@@ -34,6 +34,10 @@ Changelog
 * Added a check to :class:`~cryptography.x509.NameConstraints` to ensure that
   :class:`~cryptography.x509.DNSName` constraints do not contain any ``*``
   wildcards.
+* Removed many unused CFFI OpenSSL bindings. This will not impact you unless
+  you are using ``cryptography`` to directly invoke OpenSSL's C API. Note that
+  these have never been considered a stable, supported, public API by
+  ``cryptography``, this note is included as a courtesy.
 
 
 .. _v39-0-1:
