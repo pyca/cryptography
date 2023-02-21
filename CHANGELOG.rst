@@ -37,7 +37,7 @@ Changelog
 * Removed many unused CFFI OpenSSL bindings. This will not impact you unless
   you are using ``cryptography`` to directly invoke OpenSSL's C API. Note that
   these have never been considered a stable, supported, public API by
-  ``cryptography``, this note is included purely as a curtesy.
+  ``cryptography``, this note is included as a courtesy.
 
 
 .. _v39-0-1:
