@@ -1187,8 +1187,7 @@ class SSHCertificateBuilder:
 
         if len(valid_principals) >= _SSHKEY_CERT_MAX_PRINCIPALS:
             raise ValueError(
-                    "Reached or exceeded the maximum number of "
-                    "valid_principals"
+                "Reached or exceeded the maximum number of valid_principals"
             )
 
         return SSHCertificateBuilder(
