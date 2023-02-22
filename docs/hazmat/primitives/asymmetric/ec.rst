@@ -187,22 +187,6 @@ Elliptic Curve Signature Algorithms
         :raises ValueError: Raised if the point is invalid for the curve.
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
 
-    .. method:: encode_point()
-
-        .. warning::
-
-            This method is deprecated as of version 2.5. Callers should migrate
-            to using
-            :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.public_bytes`.
-
-        .. versionadded:: 1.1
-
-        Encodes an elliptic curve point to a byte string as described in
-        `SEC 1 v2.0`_ section 2.3.3. This method only supports uncompressed
-        points.
-
-        :return bytes: The encoded point.
-
     .. classmethod:: from_encoded_point(curve, data)
 
         .. versionadded:: 1.1
