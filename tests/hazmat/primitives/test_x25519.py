@@ -138,12 +138,14 @@ class TestX25519Exchange:
             )
             == private_bytes
         )
+        assert private_key.private_bytes_raw() == private_bytes
         assert (
             private_key.public_key().public_bytes(
                 serialization.Encoding.Raw, serialization.PublicFormat.Raw
             )
             == public_bytes
         )
+        assert private_key.public_key().public_bytes_raw() == public_bytes
         public_key = X25519PublicKey.from_public_bytes(public_bytes)
         assert (
             public_key.public_bytes(
@@ -151,6 +153,7 @@ class TestX25519Exchange:
             )
             == public_bytes
         )
+        assert public_key.public_bytes_raw() == public_bytes
 
     def test_generate(self, backend):
         key = X25519PrivateKey.generate()

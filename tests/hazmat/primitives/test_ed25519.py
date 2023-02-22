@@ -92,6 +92,20 @@ class TestEd25519Signing:
                 )
                 public_key.verify(signature, message)
 
+    def test_pub_priv_bytes_raw(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "Ed25519", "sign.input"),
+            load_ed25519_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                sk = binascii.unhexlify(vector["secret_key"])
+                pk = binascii.unhexlify(vector["public_key"])
+                private_key = Ed25519PrivateKey.from_private_bytes(sk)
+                assert private_key.private_bytes_raw() == sk
+                public_key = Ed25519PublicKey.from_public_bytes(pk)
+                assert public_key.public_bytes_raw() == pk
+
     def test_invalid_signature(self, backend):
         key = Ed25519PrivateKey.generate()
         signature = key.sign(b"test data")
