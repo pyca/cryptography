@@ -663,8 +663,7 @@ SSH Certificate Builder
         ...     SSHCertificateType, SSHCertificateBuilder
         ... )
         >>> signing_key = ec.generate_private_key(ec.SECP256R1())
-        >>> private_key = ec.generate_private_key(ec.SECP256R1())
-        >>> public_key = private_key.public_key()
+        >>> public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
         >>> valid_after = datetime.datetime(
         ...     2023, 1, 1, 1, tzinfo=datetime.timezone.utc
         ... ).timestamp()
@@ -683,7 +682,7 @@ SSH Certificate Builder
         ...     .valid_principals(valid_principals)
         ...     .add_extension(b"no-touch-required", b"")
         ... )
-        >>> builder.sign(private_key).public_bytes()
+        >>> builder.sign(signing_key).public_bytes()
         b'...'
 
     .. method:: public_key(public_key)
