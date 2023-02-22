@@ -1052,6 +1052,9 @@ _SSH_CERT_PRIVATE_KEY_TYPES = typing.Union[
 ]
 
 
+_SSHKEY_CERT_MAX_PRINCIPALS = 256
+
+
 class SSHCertificateBuilder:
     def __init__(
         self,
@@ -1181,6 +1184,9 @@ class SSHCertificateBuilder:
             )
         if self._valid_principals:
             raise ValueError("valid_principals already set")
+
+        if len(valid_principals) >= _SSHKEY_CERT_MAX_PRINCIPALS:
+            raise ValueError("Reached or exceeded the maximum number of valid_principals")
 
         return SSHCertificateBuilder(
             _public_key=self._public_key,
