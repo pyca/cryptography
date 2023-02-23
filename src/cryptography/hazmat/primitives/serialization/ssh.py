@@ -1052,6 +1052,8 @@ _SSH_CERT_PRIVATE_KEY_TYPES = typing.Union[
 ]
 
 
+# This is an undocumented limit enforced in the openssh codebase for sshd and
+# ssh-keygen, but it is undefined in the ssh certificates spec.
 _SSHKEY_CERT_MAX_PRINCIPALS = 256
 
 
@@ -1185,7 +1187,7 @@ class SSHCertificateBuilder:
         if self._valid_principals:
             raise ValueError("valid_principals already set")
 
-        if len(valid_principals) >= _SSHKEY_CERT_MAX_PRINCIPALS:
+        if len(valid_principals) > _SSHKEY_CERT_MAX_PRINCIPALS:
             raise ValueError(
                 "Reached or exceeded the maximum number of valid_principals"
             )
