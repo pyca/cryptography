@@ -1389,6 +1389,10 @@ class TestSSHCertificateBuilder:
             )
         with pytest.raises(TypeError):
             builder.valid_principals([])
+        with pytest.raises(ValueError):
+            builder.valid_principals(
+                [b"test"] * (ssh._SSHKEY_CERT_MAX_PRINCIPALS + 1)
+            )
         builder = builder.valid_principals([b"test"])
         with pytest.raises(ValueError):
             builder.valid_principals([b"test"])
