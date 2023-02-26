@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import email.parser
 import os
 import typing
 
@@ -289,6 +290,7 @@ class TestPKCS7Builder:
 
         sig = builder.sign(serialization.Encoding.SMIME, options)
         sig_binary = builder.sign(serialization.Encoding.DER, options)
+        assert b"text/plain" not in sig
         # We don't have a generic ASN.1 parser available to us so we instead
         # will assert on specific byte sequences being present based on the
         # parameters chosen above.
@@ -298,8 +300,17 @@ class TestPKCS7Builder:
         # as a separate section before the PKCS7 data. So we should expect to
         # have data in sig but not in sig_binary
         assert data in sig
+        # Parse the message to get the signed data, which is the
+        # first payload in the message
+        message = email.parser.BytesParser().parsebytes(sig)
+        signed_data = message.get_payload()[0].get_payload().encode()
         _pkcs7_verify(
-            serialization.Encoding.SMIME, sig, data, [cert], options, backend
+            serialization.Encoding.SMIME,
+            sig,
+            signed_data,
+            [cert],
+            options,
+            backend,
         )
         assert data not in sig_binary
         _pkcs7_verify(
@@ -492,10 +503,14 @@ class TestPKCS7Builder:
         # The text option adds text/plain headers to the S/MIME message
         # These headers are only relevant in SMIME mode, not binary, which is
         # just the PKCS7 structure itself.
-        assert b"text/plain" in sig_pem
-        # When passing the Text option the header is prepended so the actual
-        # signed data is this.
-        signed_data = b"Content-Type: text/plain\r\n\r\nhello world"
+        assert sig_pem.count(b"text/plain") == 1
+        assert b"Content-Type: text/plain\r\n\r\nhello world\r\n" in sig_pem
+        # Parse the message to get the signed data, which is the
+        # first payload in the message
+        message = email.parser.BytesParser().parsebytes(sig_pem)
+        signed_data = message.get_payload()[0].as_bytes(
+            policy=message.policy.clone(linesep="\r\n")
+        )
         _pkcs7_verify(
             serialization.Encoding.SMIME,
             sig_pem,

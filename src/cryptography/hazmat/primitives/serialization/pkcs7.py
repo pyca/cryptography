@@ -5,6 +5,7 @@
 import email.base64mime
 import email.generator
 import email.message
+import email.policy
 import io
 import typing
 
@@ -177,7 +178,9 @@ class PKCS7SignatureBuilder:
         return rust_pkcs7.sign_and_serialize(self, encoding, options)
 
 
-def _smime_encode(data: bytes, signature: bytes, micalg: str) -> bytes:
+def _smime_encode(
+    data: bytes, signature: bytes, micalg: str, text_mode: bool
+) -> bytes:
     # This function works pretty hard to replicate what OpenSSL does
     # precisely. For good and for ill.
 
@@ -192,9 +195,10 @@ def _smime_encode(data: bytes, signature: bytes, micalg: str) -> bytes:
 
     m.preamble = "This is an S/MIME signed message\n"
 
-    msg_part = email.message.MIMEPart()
+    msg_part = OpenSSLMimePart()
     msg_part.set_payload(data)
-    msg_part.add_header("Content-Type", "text/plain")
+    if text_mode:
+        msg_part.add_header("Content-Type", "text/plain")
     m.attach(msg_part)
 
     sig_part = email.message.MIMEPart()
@@ -213,7 +217,18 @@ def _smime_encode(data: bytes, signature: bytes, micalg: str) -> bytes:
 
     fp = io.BytesIO()
     g = email.generator.BytesGenerator(
-        fp, maxheaderlen=0, mangle_from_=False, policy=m.policy
+        fp,
+        maxheaderlen=0,
+        mangle_from_=False,
+        policy=m.policy.clone(linesep="\r\n"),
     )
     g.flatten(m)
     return fp.getvalue()
+
+
+class OpenSSLMimePart(email.message.MIMEPart):
+    # A MIMEPart subclass that replicates OpenSSL's behavior of not including
+    # a newline if there are no headers.
+    def _write_headers(self, generator) -> None:
+        if list(self.raw_items()):
+            generator._write_headers(self)
