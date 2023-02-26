@@ -135,14 +135,13 @@ fn sign_and_serialize<'p>(
         .getattr(crate::intern!(py, "PKCS7Options"))?;
 
     let raw_data = builder.getattr(crate::intern!(py, "_data"))?.extract()?;
-    let data = if options.contains(pkcs7_options.getattr(crate::intern!(py, "Binary"))?)? {
-        Cow::Borrowed(raw_data)
-    } else {
-        smime_canonicalize(
-            raw_data,
-            options.contains(pkcs7_options.getattr(crate::intern!(py, "Text"))?)?,
-        )
-    };
+    let text_mode = options.contains(pkcs7_options.getattr(crate::intern!(py, "Text"))?)?;
+    let (data_with_header, data_without_header) =
+        if options.contains(pkcs7_options.getattr(crate::intern!(py, "Binary"))?)? {
+            (Cow::Borrowed(raw_data), Cow::Borrowed(raw_data))
+        } else {
+            smime_canonicalize(raw_data, text_mode)
+        };
 
     let content_type_bytes = asn1::write_single(&PKCS7_DATA_OID)?;
     let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_chrono(
@@ -179,7 +178,7 @@ fn sign_and_serialize<'p>(
         {
             (
                 None,
-                x509::sign::sign_data(py, py_private_key, py_hash_alg, &data)?,
+                x509::sign::sign_data(py, py_private_key, py_hash_alg, &data_with_header)?,
             )
         } else {
             let mut authenticated_attrs = vec![];
@@ -197,7 +196,8 @@ fn sign_and_serialize<'p>(
                 ])),
             });
 
-            let digest = asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data)?)?;
+            let digest =
+                asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;
             // Gross hack: copy to PyBytes to extend the lifetime to 'p
             let digest_bytes = pyo3::types::PyBytes::new(py, &digest);
             authenticated_attrs.push(x509::csr::Attribute {
@@ -263,7 +263,7 @@ fn sign_and_serialize<'p>(
         if options.contains(pkcs7_options.getattr(crate::intern!(py, "DetachedSignature"))?)? {
             None
         } else {
-            data_tlv_bytes = asn1::write_single(&data.deref())?;
+            data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
             Some(asn1::parse_single(&data_tlv_bytes).unwrap())
         };
 
@@ -289,7 +289,7 @@ fn sign_and_serialize<'p>(
         content_type: PKCS7_SIGNED_DATA_OID,
         content: Some(asn1::parse_single(&signed_data_bytes).unwrap()),
     };
-    let content_info_bytes = asn1::write_single(&content_info)?;
+    let ci_bytes = asn1::write_single(&content_info)?;
 
     let encoding_class = py
         .import("cryptography.hazmat.primitives.serialization")?
@@ -301,43 +301,49 @@ fn sign_and_serialize<'p>(
             .map(|d| OIDS_TO_MIC_NAME[&d.oid])
             .collect::<Vec<_>>()
             .join(",");
-        Ok(py
+        let smime_encode = py
             .import("cryptography.hazmat.primitives.serialization.pkcs7")?
-            .getattr(crate::intern!(py, "_smime_encode"))?
-            .call1((
-                pyo3::types::PyBytes::new(py, &data),
-                pyo3::types::PyBytes::new(py, &content_info_bytes),
-                mic_algs,
-            ))?
+            .getattr(crate::intern!(py, "_smime_encode"))?;
+        Ok(smime_encode
+            .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
     } else {
         // Handles the DER, PEM, and error cases
-        encode_der_data(py, "PKCS7".to_string(), content_info_bytes, encoding)
+        encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
     }
 }
 
-fn smime_canonicalize(data: &[u8], text_mode: bool) -> Cow<'_, [u8]> {
-    let mut new_data = vec![];
+fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [u8]>) {
+    let mut new_data_with_header = vec![];
+    let mut new_data_without_header = vec![];
     if text_mode {
-        new_data.extend_from_slice(b"Content-Type: text/plain\r\n\r\n");
+        new_data_with_header.extend_from_slice(b"Content-Type: text/plain\r\n\r\n");
     }
 
     let mut last_idx = 0;
     for (i, c) in data.iter().copied().enumerate() {
         if c == b'\n' && (i == 0 || data[i - 1] != b'\r') {
-            new_data.extend_from_slice(&data[last_idx..i]);
-            new_data.push(b'\r');
-            new_data.push(b'\n');
+            new_data_with_header.extend_from_slice(&data[last_idx..i]);
+            new_data_with_header.push(b'\r');
+            new_data_with_header.push(b'\n');
+
+            new_data_without_header.extend_from_slice(&data[last_idx..i]);
+            new_data_without_header.push(b'\r');
+            new_data_without_header.push(b'\n');
             last_idx = i + 1;
         }
     }
     // If there's stuff in new_data, that means we need to copy the rest of
     // data over.
-    if !new_data.is_empty() {
-        new_data.extend_from_slice(&data[last_idx..]);
-        Cow::Owned(new_data)
+    if !new_data_with_header.is_empty() {
+        new_data_with_header.extend_from_slice(&data[last_idx..]);
+        new_data_without_header.extend_from_slice(&data[last_idx..]);
+        (
+            Cow::Owned(new_data_with_header),
+            Cow::Owned(new_data_without_header),
+        )
     } else {
-        Cow::Borrowed(data)
+        (Cow::Borrowed(data), Cow::Borrowed(data))
     }
 }
 
@@ -358,27 +364,60 @@ mod tests {
 
     #[test]
     fn test_smime_canonicalize() {
-        for (input, text_mode, expected, expected_is_borrowed) in [
+        for (
+            input,
+            text_mode,
+            expected_with_header,
+            expected_without_header,
+            expected_is_borrowed,
+        ) in [
             // Values with text_mode=false
-            (b"" as &[u8], false, b"" as &[u8], true),
-            (b"\n", false, b"\r\n", false),
-            (b"abc", false, b"abc", true),
-            (b"abc\r\ndef\n", false, b"abc\r\ndef\r\n", false),
-            (b"abc\r\n", false, b"abc\r\n", true),
-            (b"abc\ndef\n", false, b"abc\r\ndef\r\n", false),
+            (b"" as &[u8], false, b"" as &[u8], b"" as &[u8], true),
+            (b"\n", false, b"\r\n", b"\r\n", false),
+            (b"abc", false, b"abc", b"abc", true),
+            (
+                b"abc\r\ndef\n",
+                false,
+                b"abc\r\ndef\r\n",
+                b"abc\r\ndef\r\n",
+                false,
+            ),
+            (b"abc\r\n", false, b"abc\r\n", b"abc\r\n", true),
+            (
+                b"abc\ndef\n",
+                false,
+                b"abc\r\ndef\r\n",
+                b"abc\r\ndef\r\n",
+                false,
+            ),
             // Values with text_mode=true
-            (b"", true, b"Content-Type: text/plain\r\n\r\n", false),
-            (b"abc", true, b"Content-Type: text/plain\r\n\r\nabc", false),
+            (b"", true, b"Content-Type: text/plain\r\n\r\n", b"", false),
+            (
+                b"abc",
+                true,
+                b"Content-Type: text/plain\r\n\r\nabc",
+                b"abc",
+                false,
+            ),
             (
                 b"abc\n",
                 true,
                 b"Content-Type: text/plain\r\n\r\nabc\r\n",
+                b"abc\r\n",
                 false,
             ),
         ] {
-            let result = smime_canonicalize(input, text_mode);
-            assert_eq!(result.deref(), expected);
-            assert_eq!(matches!(result, Cow::Borrowed(_)), expected_is_borrowed);
+            let (result_with_header, result_without_header) = smime_canonicalize(input, text_mode);
+            assert_eq!(result_with_header.deref(), expected_with_header);
+            assert_eq!(result_without_header.deref(), expected_without_header);
+            assert_eq!(
+                matches!(result_with_header, Cow::Borrowed(_)),
+                expected_is_borrowed
+            );
+            assert_eq!(
+                matches!(result_without_header, Cow::Borrowed(_)),
+                expected_is_borrowed
+            );
         }
     }
 }
