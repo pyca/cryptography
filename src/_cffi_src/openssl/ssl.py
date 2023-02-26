@@ -325,7 +325,6 @@ long SSL_CTX_clear_mode(SSL_CTX *, long);
 long SSL_CTX_get_mode(SSL_CTX *);
 long SSL_set_mode(SSL *, long);
 long SSL_clear_mode(SSL *, long);
-long SSL_get_mode(SSL *);
 
 const SSL_METHOD *DTLS_method(void);
 const SSL_METHOD *DTLS_server_method(void);
@@ -363,10 +362,6 @@ int SSL_CTX_set_tlsext_use_srtp(SSL_CTX *, const char *);
 int SSL_set_tlsext_use_srtp(SSL *, const char *);
 SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
 
-int SSL_select_next_proto(unsigned char **, unsigned char *,
-                          const unsigned char *, unsigned int,
-                          const unsigned char *, unsigned int);
-
 int SSL_CTX_set_alpn_protos(SSL_CTX *, const unsigned char *, unsigned);
 int SSL_set_alpn_protos(SSL *, const unsigned char *, unsigned);
 void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
@@ -378,8 +373,6 @@ void SSL_CTX_set_alpn_select_cb(SSL_CTX *,
                                          void *),
                                 void *);
 void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
-
-long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
 
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
