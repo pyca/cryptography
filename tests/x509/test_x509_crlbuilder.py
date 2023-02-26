@@ -9,6 +9,7 @@ import pytest
 import pytz
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519
 from cryptography.x509.oid import (
@@ -732,8 +733,10 @@ class TestCertificateRevocationListBuilder:
             .next_update(next_time)
         )
 
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
+        with pytest.raises(UnsupportedAlgorithm):
+            builder.sign(
+                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+            )
 
     def test_ec_key_sign_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -755,8 +758,10 @@ class TestCertificateRevocationListBuilder:
             .next_update(next_time)
         )
 
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
+        with pytest.raises(UnsupportedAlgorithm):
+            builder.sign(
+                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+            )
 
     def test_sign_with_revoked_certificates(self, backend):
         private_key = RSA_KEY_2048.private_key(backend)

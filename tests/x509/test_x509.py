@@ -14,7 +14,7 @@ import pytest
 import pytz
 
 from cryptography import utils, x509
-from cryptography.exceptions import InvalidSignature
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -2853,7 +2853,7 @@ class TestCertificateBuilder:
             .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
             .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedAlgorithm):
             builder.sign(private_key, hash_algorithm, backend)
 
     @pytest.mark.supported(
@@ -2876,8 +2876,10 @@ class TestCertificateBuilder:
             .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
             .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
         )
-        with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.MD5(), backend)
+        with pytest.raises(UnsupportedAlgorithm):
+            builder.sign(
+                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),

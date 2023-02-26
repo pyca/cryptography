@@ -10,6 +10,7 @@ import os
 import pytest
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, rsa
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
@@ -917,7 +918,7 @@ class TestOCSPResponseBuilder:
             None,
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedAlgorithm):
             builder.sign(private_key, hashes.BLAKE2b(digest_size=64))
 
     def test_sign_none_hash_not_eddsa(self):
