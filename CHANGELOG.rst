@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v39-0-2:
+
+39.0.2 - 2023-03-02
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug where the content type header was not properly encoded for
+  SMIME signatures when using the ``Text`` option.
+
 .. _v39-0-1:
 
 39.0.1 - 2023-02-07
