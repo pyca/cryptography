@@ -7,7 +7,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug where the content type header was not properly encoded for
-  SMIME signatures when using the ``Text`` option.
+  PKCS7 signatures when using the ``Text`` option and ``SMIME`` encoding.
 
 .. _v39-0-1:
 
