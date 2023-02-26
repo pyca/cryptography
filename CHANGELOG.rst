@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v39-0-2:
+
+39.0.2 - 2023-03-02
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug where the content type header was not properly encoded for
+  PKCS7 signatures when using the ``Text`` option and ``SMIME`` encoding.
+
 .. _v39-0-1:
 
 39.0.1 - 2023-02-07
