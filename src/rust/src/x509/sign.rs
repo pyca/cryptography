@@ -106,10 +106,15 @@ fn identify_hash_type(
         "sha3-256" => Ok(HashType::Sha3_256),
         "sha3-384" => Ok(HashType::Sha3_384),
         "sha3-512" => Ok(HashType::Sha3_512),
-        name => Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "Hash algorithm {:?} not supported for signatures",
-            name
-        ))),
+        name => Err(pyo3::PyErr::from_instance(
+            py.import("cryptography.exceptions")?.call_method1(
+                "UnsupportedAlgorithm",
+                (format!(
+                    "Hash algorithm {:?} not supported for signatures",
+                    name
+                ),),
+            )?,
+        )),
     }
 }
 
@@ -221,10 +226,12 @@ pub(crate) fn compute_signature_algorithm<'p>(
         (KeyType::Dsa, HashType::Sha3_224)
         | (KeyType::Dsa, HashType::Sha3_256)
         | (KeyType::Dsa, HashType::Sha3_384)
-        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::exceptions::PyValueError::new_err(
-            "SHA3 hashes are not supported with DSA keys",
+        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::PyErr::from_instance(
+            py.import("cryptography.exceptions")?.call_method1(
+                "UnsupportedAlgorithm",
+                ("SHA3 hashes are not supported with DSA keys",),
+            )?,
         )),
-
         (_, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
         )),

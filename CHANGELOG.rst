@@ -38,6 +38,8 @@ Changelog
   you are using ``cryptography`` to directly invoke OpenSSL's C API. Note that
   these have never been considered a stable, supported, public API by
   ``cryptography``, this note is included as a courtesy.
+* The X.509 builder classes now raise ``UnsupportedAlgorithm`` instead of
+  ``ValueError`` if an unsupported hash algorithm is passed.
 
 
 .. _v39-0-1:

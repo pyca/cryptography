@@ -36,6 +36,19 @@ from cryptography.x509.oid import ObjectIdentifier
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
+# This must be kept in sync with sign.rs's list of allowable types in
+# identify_hash_type
+_AllowedHashTypes = typing.Union[
+    hashes.SHA224,
+    hashes.SHA256,
+    hashes.SHA384,
+    hashes.SHA512,
+    hashes.SHA3_224,
+    hashes.SHA3_256,
+    hashes.SHA3_384,
+    hashes.SHA3_512,
+]
+
 
 class AttributeNotFound(Exception):
     def __init__(self, msg: str, oid: ObjectIdentifier) -> None:
@@ -679,7 +692,7 @@ class CertificateSigningRequestBuilder:
     def sign(
         self,
         private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> CertificateSigningRequest:
         """
@@ -900,7 +913,7 @@ class CertificateBuilder:
     def sign(
         self,
         private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> Certificate:
         """
@@ -1047,7 +1060,7 @@ class CertificateRevocationListBuilder:
     def sign(
         self,
         private_key: CERTIFICATE_PRIVATE_KEY_TYPES,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> CertificateRevocationList:
         if self._issuer_name is None:
