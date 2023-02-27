@@ -6,7 +6,7 @@ runs:
 
   steps:
     - run: |
-        GIT_WORKS=$(git rev-parse --is-inside-work-tree 2>/dev/null)
+        GIT_WORKS=$(git rev-parse --is-inside-work-tree 2>/dev/null || true)
         if [ "$GIT_WORKS" != "true" ]; then
           echo "The git available is probably too old so checkout didn't create a real git clone, skipping mtime fix"
           exit 0
