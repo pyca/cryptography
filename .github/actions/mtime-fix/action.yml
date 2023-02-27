@@ -6,6 +6,11 @@ runs:
 
   steps:
     - run: |
+        GIT_WORKS=$(git rev-parse --is-inside-work-tree 2>/dev/null)
+        if [ "$GIT_WORKS" != "true" ]; then
+          echo "The git available is probably too old so checkout didn't create a real git clone, skipping mtime fix"
+          exit 0
+        fi
         ls -Rla src/rust/src
         echo "Verifying commits are monotonic because if they're not caching gets wrecked"
         COMMIT_ORDER=$(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -5)
