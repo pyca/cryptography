@@ -7,6 +7,13 @@ runs:
   steps:
     - run: |
         ls -Rla src/rust/src
+        echo "Verifying commits are monotonic because if they're not caching gets wrecked"
+        COMMIT_ORDER=$(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -5)
+        SORTED_COMMIT_ORDER=$(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -5 | sort -rn)
+        if [ "$COMMIT_ORDER" != "$SORTED_COMMIT_ORDER" ]; then
+          echo "Commits are not monotonic, git may have changed how date formatting works"
+          exit 1
+        fi
         echo "Setting mtimes for rust dirs"
         for f in $(git ls-files src/rust); do touch -t $(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -1 HEAD -- "$f") "$f"; done
         echo "Done"
