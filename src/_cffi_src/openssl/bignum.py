@@ -42,8 +42,6 @@ BIGNUM *BN_dup(const BIGNUM *);
 
 int BN_set_word(BIGNUM *, BN_ULONG);
 
-const BIGNUM *BN_value_one(void);
-
 char *BN_bn2hex(const BIGNUM *);
 int BN_hex2bn(BIGNUM **, const char *);
 
@@ -52,20 +50,8 @@ BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
 
 int BN_num_bits(const BIGNUM *);
 
-int BN_cmp(const BIGNUM *, const BIGNUM *);
 int BN_is_negative(const BIGNUM *);
 int BN_is_odd(const BIGNUM *);
-int BN_add(BIGNUM *, const BIGNUM *, const BIGNUM *);
-int BN_sub(BIGNUM *, const BIGNUM *, const BIGNUM *);
-int BN_nnmod(BIGNUM *, const BIGNUM *, const BIGNUM *, BN_CTX *);
-int BN_mod_add(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
-               BN_CTX *);
-int BN_mod_sub(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
-               BN_CTX *);
-int BN_mod_mul(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
-               BN_CTX *);
-int BN_mod_exp(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
-               BN_CTX *);
 int BN_mod_exp_mont(BIGNUM *, const BIGNUM *, const BIGNUM *, const BIGNUM *,
                     BN_CTX *, BN_MONT_CTX *);
 int BN_mod_exp_mont_consttime(BIGNUM *, const BIGNUM *, const BIGNUM *,
