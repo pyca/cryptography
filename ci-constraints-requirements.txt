@@ -78,7 +78,7 @@ markupsafe==2.1.2
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-more-itertools==9.0.0
+more-itertools==9.1.0
     # via jaraco-classes
 mypy==1.0.1
     # via cryptography (setup.cfg)
