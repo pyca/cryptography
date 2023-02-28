@@ -37,8 +37,13 @@ runs:
           ${{ steps.pip-cache.outputs.dir }}
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
-          ~/.cargo/registry/src/
-          ~/.cargo/git/db/
           src/rust/target/
           ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-1-${{ hashFiles('**/Cargo.lock') }}
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-2-${{ hashFiles('**/Cargo.lock') }}
+    - name: Size of cache items
+      run: |
+        du -sh ~/.cargo/registry/index/
+        du -sh ~/.cargo/registry/cache/
+        du -sh src/rust/target/
+      shell: bash
+      if: ${{ steps.cache.outputs.cache-hit }}
