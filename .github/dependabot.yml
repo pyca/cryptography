@@ -6,6 +6,22 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 1024
 
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/cache/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1024
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/upload-coverage/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1024
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/wycheproof/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1024
+
   - package-ecosystem: cargo
     directory: "/src/rust/"
     schedule:
