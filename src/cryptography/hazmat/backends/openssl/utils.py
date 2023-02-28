@@ -18,7 +18,10 @@ def _evp_pkey_derive(backend: "Backend", evp_pkey, peer_public_key) -> bytes:
     res = backend._lib.EVP_PKEY_derive_init(ctx)
     backend.openssl_assert(res == 1)
     res = backend._lib.EVP_PKEY_derive_set_peer(ctx, peer_public_key._evp_pkey)
-    backend.openssl_assert(res == 1)
+    if res != 1:
+        errors_with_text = backend._consume_errors_with_text()
+        raise ValueError("Error computing shared key.", errors_with_text)
+
     keylen = backend._ffi.new("size_t *")
     res = backend._lib.EVP_PKEY_derive(ctx, backend._ffi.NULL, keylen)
     backend.openssl_assert(res == 1)
