@@ -31,6 +31,7 @@ _CURVES = {
     "brainpoolP320t1": None,
     "brainpoolP384t1": None,
     "brainpoolP512t1": None,
+    "FRP256v1": None,
 }
 
 
