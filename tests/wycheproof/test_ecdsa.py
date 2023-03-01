@@ -53,6 +53,11 @@ _DIGESTS = {
     "ecdsa_secp384r1_sha3_512_test.json",
     "ecdsa_secp521r1_sha512_test.json",
     "ecdsa_secp521r1_sha3_512_test.json",
+    "ecdsa_secp160k1_sha256_test.json",
+    "ecdsa_secp160r1_sha256_test.json",
+    "ecdsa_secp160r2_sha256_test.json",
+    "ecdsa_secp192k1_sha256_test.json",
+    "ecdsa_secp192r1_sha256_test.json",
 )
 def test_ecdsa_signature(backend, wycheproof):
     try:
