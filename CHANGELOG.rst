@@ -41,6 +41,15 @@ Changelog
 * The X.509 builder classes now raise ``UnsupportedAlgorithm`` instead of
   ``ValueError`` if an unsupported hash algorithm is passed.
 
+.. _v39-0-2:
+
+
+39.0.2 - 2023-03-02
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug where the content type header was not properly encoded for
+  PKCS7 signatures when using the ``Text`` option and ``SMIME`` encoding.
+
 
 .. _v39-0-1:
 
