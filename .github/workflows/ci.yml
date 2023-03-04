@@ -83,12 +83,12 @@ jobs:
       - name: Load OpenSSL cache
         uses: actions/cache@v3.2.6
         id: ossl-cache
-        timeout-minutes: 5
+        timeout-minutes: 2
         with:
           path: ${{ github.workspace }}/osslcache
           # When altering the openssl build process you may need to increment the value on the end of this cache key
           # so that you can prevent it from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-6
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-8
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/workflows/build_openssl.sh
