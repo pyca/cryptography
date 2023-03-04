@@ -1,6 +1,9 @@
 name: Benchmark
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
 
 permissions:
   contents: read
