@@ -42,7 +42,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
   # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
   make install_sw install_ssldirs
   # delete binaries we don't need
-  rm -rf "{OSSL_PATH}/bin"
+  rm -rf "${OSSL_PATH}/bin"
   # For OpenSSL 3.0.0 set up the FIPS config. This does not activate it by
   # default, but allows programmatic activation at runtime
   if [[ "${VERSION}" =~ ^3. && "${CONFIG_FLAGS}" =~ enable-fips ]]; then
@@ -64,9 +64,9 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   shlib_sed
   make -j"$(nproc)" install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
-  rm -rf "{OSSL_PATH}/bin"
-  rm -rf "{OSSL_PATH}/share"
-  rm -rf "{OSSL_PATH}/lib/libtls*"
+  rm -rf "${OSSL_PATH}/bin"
+  rm -rf "${OSSL_PATH}/share"
+  rm -rf "${OSSL_PATH}/lib/libtls*"
   popd
 elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
@@ -79,7 +79,7 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   make -j"$(nproc)"
   make install
   # delete binaries we don't need
-  rm -rf "{OSSL_PATH}/bin"
+  rm -rf "${OSSL_PATH}/bin"
   popd
   popd
 fi
