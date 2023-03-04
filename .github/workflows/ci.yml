@@ -253,6 +253,7 @@ jobs:
   linux-rust-coverage:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - {VERSION: "3.11", TOXENV: "py311"}
