@@ -124,7 +124,7 @@ pyproject-api==1.5.0
     # via tox
 pyproject-hooks==1.0.0
     # via build
-pytest==7.2.1; python_version >= "3.7"
+pytest==7.2.2; python_version >= "3.7"
     # via
     #   cryptography (setup.cfg)
     #   pytest-benchmark
