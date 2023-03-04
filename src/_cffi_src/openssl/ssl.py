@@ -189,16 +189,12 @@ int SSL_CTX_get_verify_depth(const SSL_CTX *);
 int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
 int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
 void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
-void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
 int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
 int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
 int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
 int SSL_CTX_check_private_key(const SSL_CTX *);
-void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
-                                      int (*)(X509_STORE_CTX *, void *),
-                                      void *);
 
 void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
                                     int (*)(
@@ -256,14 +252,12 @@ int SSL_SESSION_set_protocol_version(SSL_SESSION *, int);
 int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
                                    unsigned int);
 
-void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
-void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
 
 void SSL_CTX_set_msg_callback(SSL_CTX *,
                               void (*)(
@@ -317,12 +311,10 @@ long SSL_CTX_get_session_cache_mode(SSL_CTX *);
 long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
 
 uint64_t SSL_CTX_set_options(SSL_CTX *, uint64_t);
-uint64_t SSL_CTX_clear_options(SSL_CTX *, uint64_t);
 uint64_t SSL_CTX_get_options(SSL_CTX *);
 
 long SSL_CTX_set_mode(SSL_CTX *, long);
 long SSL_CTX_clear_mode(SSL_CTX *, long);
-long SSL_CTX_get_mode(SSL_CTX *);
 long SSL_set_mode(SSL *, long);
 long SSL_clear_mode(SSL *, long);
 
@@ -342,15 +334,12 @@ const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
 
-void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
 void *SSL_get_ex_data(const SSL *, int);
 
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
     int (*)(SSL *, int *, void *));
-void SSL_CTX_set_tlsext_servername_arg(
-    SSL_CTX *, void *);
 
 long SSL_set_tlsext_status_ocsp_resp(SSL *, unsigned char *, int);
 long SSL_get_tlsext_status_ocsp_resp(SSL *, const unsigned char **);
