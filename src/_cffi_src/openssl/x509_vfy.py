@@ -37,7 +37,6 @@ typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **, X509_STORE_CTX *, X509 *);
 static const int X509_V_OK;
 
 /* Verification parameters */
-static const long X509_V_FLAG_USE_CHECK_TIME;
 static const long X509_V_FLAG_CRL_CHECK;
 static const long X509_V_FLAG_CRL_CHECK_ALL;
 static const long X509_V_FLAG_IGNORE_CRITICAL;
@@ -45,16 +44,10 @@ static const long X509_V_FLAG_X509_STRICT;
 static const long X509_V_FLAG_ALLOW_PROXY_CERTS;
 static const long X509_V_FLAG_POLICY_CHECK;
 static const long X509_V_FLAG_EXPLICIT_POLICY;
-static const long X509_V_FLAG_INHIBIT_ANY;
 static const long X509_V_FLAG_INHIBIT_MAP;
 static const long X509_V_FLAG_NOTIFY_POLICY;
-static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT;
-static const long X509_V_FLAG_USE_DELTAS;
 static const long X509_V_FLAG_CHECK_SS_SIGNATURE;
-static const long X509_V_FLAG_TRUSTED_FIRST;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
-static const long X509_V_FLAG_NO_ALT_CHAINS;
-static const long X509_V_FLAG_NO_CHECK_TIME;
 
 static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
 static const long X509_CHECK_FLAG_NO_WILDCARDS;
