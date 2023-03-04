@@ -72,8 +72,6 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DRUST_BINDINGS="$(rustc -V --verbose | grep 'host: ' | sed 's/host: //')" -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   make -j"$(nproc)"
   make install
-  # BoringSSL doesn't have a bin/openssl and we use that to detect success
-  touch "${OSSL_PATH}/bin/openssl"
   popd
   popd
 fi
