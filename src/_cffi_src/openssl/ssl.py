@@ -366,8 +366,6 @@ void SSL_get0_alpn_selected(const SSL *, const unsigned char **, unsigned *);
 void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
 void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
 
-int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
-                                unsigned int);
 size_t SSL_SESSION_get_master_key(const SSL_SESSION *, unsigned char *,
                                   size_t);
 size_t SSL_get_client_random(const SSL *, unsigned char *, size_t);
