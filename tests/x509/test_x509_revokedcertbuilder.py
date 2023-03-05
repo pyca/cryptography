@@ -6,7 +6,6 @@
 import datetime
 
 import pytest
-import pytz
 
 from cryptography import x509
 
@@ -58,9 +57,8 @@ class TestRevokedCertificateBuilder:
             builder.serial_number(4)
 
     def test_aware_revocation_date(self, backend):
-        time = datetime.datetime(2012, 1, 16, 22, 43)
-        tz = pytz.timezone("US/Pacific")
-        time = tz.localize(time)
+        tz = datetime.timezone(datetime.timedelta(hours=-8))
+        time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
         serial_number = 333
         builder = (

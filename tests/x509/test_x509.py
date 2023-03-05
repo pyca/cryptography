@@ -11,7 +11,6 @@ import os
 import typing
 
 import pytest
-import pytz
 
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
@@ -2616,9 +2615,8 @@ class TestCertificateBuilder:
             builder.serial_number(20)
 
     def test_aware_not_valid_after(self, backend):
-        time = datetime.datetime(2012, 1, 16, 22, 43)
-        tz = pytz.timezone("US/Pacific")
-        time = tz.localize(time)
+        tz = datetime.timezone(datetime.timedelta(hours=-8))
+        time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
         private_key = RSA_KEY_2048.private_key(backend)
         cert_builder = x509.CertificateBuilder().not_valid_after(time)
@@ -2688,9 +2686,8 @@ class TestCertificateBuilder:
             builder.not_valid_after(datetime.datetime.now())
 
     def test_aware_not_valid_before(self, backend):
-        time = datetime.datetime(2012, 1, 16, 22, 43)
-        tz = pytz.timezone("US/Pacific")
-        time = tz.localize(time)
+        tz = datetime.timezone(datetime.timedelta(hours=-8))
+        time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
         private_key = RSA_KEY_2048.private_key(backend)
         cert_builder = x509.CertificateBuilder().not_valid_before(time)
