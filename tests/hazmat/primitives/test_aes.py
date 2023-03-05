@@ -61,9 +61,7 @@ class TestAESModeXTS:
             enc.update(b"0" * 15)
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
-        ),
+        only_if=lambda backend: (not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL),
         skip_message="duplicate key encryption error added in OpenSSL 1.1.1d",
     )
     def test_xts_no_duplicate_keys_encryption(self, backend):

@@ -21,11 +21,6 @@ class TestOpenSSL:
         assert binding.lib
         assert binding.ffi
 
-    def test_add_engine_more_than_once(self):
-        b = Binding()
-        b._register_osrandom_engine()
-        assert b.lib.ERR_get_error() == 0
-
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
@@ -84,18 +79,6 @@ class TestOpenSSL:
         assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b"data not multiple of block length" in error.reason_text
-
-    def test_check_startup_errors_are_allowed(self):
-        b = Binding()
-        b.lib.ERR_put_error(
-            b.lib.ERR_LIB_EVP,
-            b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
-            b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
-            b"",
-            -1,
-        )
-        b._register_osrandom_engine()
-        assert rust_openssl.capture_error_stack() == []
 
     def test_version_mismatch(self):
         with pytest.raises(ImportError):

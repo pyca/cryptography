@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1d has been
+  removed.  Users on older version of OpenSSL will need to upgrade.
+
 .. _v40-0-0:
 
 40.0.0 - 2023-03-24
