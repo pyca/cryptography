@@ -15,6 +15,8 @@ Changelog
   ``pip`` will typically get a wheel and not need Rust installed, but check
   :doc:`/installation` for documentation on installing a newer ``rustc`` if
   required.
+* Deprecated support for OpenSSL less than 1.1.1d. The next release of
+  ``cryptography`` will drop support for older versions.
 * Deprecated support for DSA keys in
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
   and

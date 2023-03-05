@@ -10,6 +10,7 @@ import typing
 import warnings
 
 import cryptography
+from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._openssl import ffi, lib
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -244,3 +245,20 @@ if (
         UserWarning,
         stacklevel=2,
     )
+
+
+def _verify_openssl_version(lib):
+    if (
+        not lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
+        and not lib.CRYPTOGRAPHY_IS_LIBRESSL
+        and not lib.CRYPTOGRAPHY_IS_BORINGSSL
+    ):
+        warnings.warn(
+            "Support for OpenSSL less than version 1.1.1d is deprecated and "
+            "the next release of cryptography will drop support. Please "
+            "upgrade your OpenSSL to version 1.1.1d or newer.",
+            utils.DeprecatedIn40,
+        )
+
+
+_verify_openssl_version(Binding.lib)
