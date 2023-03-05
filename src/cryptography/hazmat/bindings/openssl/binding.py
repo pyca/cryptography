@@ -249,7 +249,7 @@ if (
 
 def _verify_openssl_version(lib):
     if (
-        lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D
+        not lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
         and not lib.CRYPTOGRAPHY_IS_LIBRESSL
         and not lib.CRYPTOGRAPHY_IS_BORINGSSL
     ):
