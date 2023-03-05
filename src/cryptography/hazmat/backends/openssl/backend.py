@@ -113,10 +113,10 @@ from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
-    PKCS12CATypes,
     PKCS12Certificate,
     PKCS12KeyAndCertificates,
     PKCS12PrivateKeyTypes,
+    _PKCS12CATypes,
 )
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -2182,7 +2182,7 @@ class Backend:
         name: typing.Optional[bytes],
         key: typing.Optional[PKCS12PrivateKeyTypes],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[PKCS12CATypes]],
+        cas: typing.Optional[typing.List[_PKCS12CATypes]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None

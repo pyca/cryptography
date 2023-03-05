@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 
 __all__ = [
     "PBES",
+    "PKCS12PrivateKeyTypes",
     "PKCS12Certificate",
     "PKCS12KeyAndCertificates",
     "load_key_and_certificates",
@@ -164,7 +165,7 @@ def load_pkcs12(
     return ossl.load_pkcs12(data, password)
 
 
-PKCS12CATypes = typing.Union[
+_PKCS12CATypes = typing.Union[
     x509.Certificate,
     PKCS12Certificate,
 ]
@@ -174,7 +175,7 @@ def serialize_key_and_certificates(
     name: typing.Optional[bytes],
     key: typing.Optional[PKCS12PrivateKeyTypes],
     cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[typing.Iterable[PKCS12CATypes]],
+    cas: typing.Optional[typing.Iterable[_PKCS12CATypes]],
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
     if key is not None and not isinstance(

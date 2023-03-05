@@ -42,6 +42,31 @@ Changelog
   ``cryptography``, this note is included as a courtesy.
 * The X.509 builder classes now raise ``UnsupportedAlgorithm`` instead of
   ``ValueError`` if an unsupported hash algorithm is passed.
+* Added public union type aliases for type hinting:
+
+  * Asymmetric types:
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.PublicKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.PrivateKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePrivateKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`.
+  * SSH keys:
+    :const:`~cryptography.hazmat.primitives.serialization.SSHPublicKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.serialization.SSHPrivateKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.serialization.SSHCertPublicKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.serialization.SSHCertPrivateKeyTypes`.
+  * PKCS12:
+    :const:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12PrivateKeyTypes`
+  * PKCS7:
+    :const:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7HashTypes`,
+    :const:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7PrivateKeyTypes`.
+  * Two-factor:
+    :const:`~cryptography.hazmat.primitives.twofactor.hotp.HOTPHashTypes`
+
+* Deprecated previously undocumented but not private type aliases in the
+  `cryptography.hazmat.primitives.asymmetric.types` module in favor of new ones
+  above.
+
 
 .. _v39-0-2:
 

@@ -388,6 +388,19 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 ``ssh-rsa``. ECDSA keys have a slightly different format, they begin with
 ``ecdsa-sha2-{curve}``.
 
+
+.. data:: SSHPublicKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of public key types accepted for SSH:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    , or
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
+
+
 .. function:: load_ssh_public_key(data)
 
     .. versionadded:: 0.7
@@ -404,13 +417,8 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :param data: The OpenSSH encoded key data.
     :type data: :term:`bytes-like`
 
-    :returns: One of
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-        , or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
-        depending on the contents of ``data``.
+    :returns: One of :data:`SSHPublicKeyTypes` depending on the contents of
+        ``data``.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded or
         if the key is not in the proper format.
@@ -436,6 +444,18 @@ An example ECDSA key in OpenSSH format::
     BAUGBw==
     -----END OPENSSH PRIVATE KEY-----
 
+.. data:: SSHPrivateKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of private key types accepted for SSH:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    or
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`.
+
+
 .. function:: load_ssh_private_key(data, password)
 
     .. versionadded:: 3.0
@@ -454,13 +474,8 @@ An example ECDSA key in OpenSSH format::
     :param bytes password: Password bytes to use to decrypt
         password-protected key. Or ``None`` if not needed.
 
-    :returns: One of
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-        or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
-        depending on the contents of ``data``.
+    :returns: One of :data:`SSHPrivateKeyTypes` depending on the contents of
+        ``data``.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded,
         if the key is not in the proper format or the incorrect password
@@ -475,6 +490,28 @@ OpenSSH Certificate
 
 The format used by OpenSSH for certificates, as specified in
 `PROTOCOL.certkeys`_.
+
+.. data:: SSHCertPublicKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of public key types supported for SSH
+    certificates:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    or
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+.. data:: SSHCertPrivateKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of private key types supported for SSH
+    certificates:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    or
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
 
 .. function:: load_ssh_public_identity(data)
 
@@ -494,12 +531,7 @@ The format used by OpenSSH for certificates, as specified in
     :param data: The OpenSSH encoded data.
     :type data: bytes
 
-    :returns: :class:`SSHCertificate` or one of
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-        , or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
+    :returns: :class:`SSHCertificate` or one of :data:`SSHCertPublicKeyTypes`.
 
     :raises ValueError: If the OpenSSH data could not be properly decoded.
 
@@ -521,12 +553,8 @@ The format used by OpenSSH for certificates, as specified in
 
     .. method:: public_key()
 
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-        or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
-
-        The public key contained in the certificate.
+        The public key contained in the certificate, one of
+        :data:`SSHCertPublicKeyTypes`.
 
     .. attribute:: serial
 
@@ -597,12 +625,8 @@ The format used by OpenSSH for certificates, as specified in
 
     .. method:: signature_key()
 
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-        or
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
-
-        The public key used to sign the certificate.
+        The public key used to sign the certificate, one of
+        :data:`SSHCertPublicKeyTypes`.
 
     .. method:: verify_cert_signature()
 
@@ -689,10 +713,7 @@ SSH Certificate Builder
 
         :param public_key: The public key to be included in the certificate.
             This value is required.
-        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-            or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+        :type public_key: :data:`SSHCertPublicKeyTypes`
 
     .. method:: serial(serial)
 
@@ -755,10 +776,7 @@ SSH Certificate Builder
 
         :param private_key: The private key that will be used to sign the
             certificate.
-        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-            or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+        :type private_key: :data:`SSHCertPrivateKeyTypes`
 
         :return: The signed certificate.
         :rtype: :class:`SSHCertificate`
@@ -776,6 +794,23 @@ file suffix.
 
     ``cryptography`` only supports a single private key and associated
     certificates when parsing PKCS12 files at this time.
+
+
+.. data:: PKCS12PrivateKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of private key types supported for PKCS12
+    serialization:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+    or
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
 .. function:: load_key_and_certificates(data, password)
 
@@ -847,17 +882,7 @@ file suffix.
     :type name: bytes
 
     :param key: The private key to include in the structure.
-    :type key: An
-        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
-        ,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-        ,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
-        ,
-        :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
-        , or
-        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`
-        object.
+    :type key: :data:`PKCS12PrivateKeyTypes`
 
     :param cert: The certificate associated with the private key.
     :type cert: :class:`~cryptography.x509.Certificate` or ``None``
@@ -933,7 +958,8 @@ file suffix.
     .. attribute:: key
 
         An optional private key belonging to
-        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.cert`.
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12KeyAndCertificates.cert`
+        (see :data:`PKCS12PrivateKeyTypes`).
 
     .. attribute:: cert
 
@@ -979,6 +1005,25 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     ``cryptography`` only supports parsing certificates from PKCS7 files at
     this time.
+
+.. data:: PKCS7HashTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of hash types supported for PKCS7 serialization:
+    :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+    :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
+    :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
+    :class:`~cryptography.hazmat.primitives.hashes.SHA384`, or
+    :class:`~cryptography.hazmat.primitives.hashes.SHA512`.
+
+.. data:: PKCS7PrivateKeyTypes
+
+    .. versionadded:: 40.0
+
+    Type alias: A union of private key types supported for PKCS7 serialization:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` or
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
 
 .. function:: load_pem_pkcs7_certificates(data)
 
@@ -1089,16 +1134,13 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :param private_key: The
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-            associated with the certificate provided.
+            associated with the certificate provided
+            (matches :data:`PKCS7PrivateKeyTypes`).
 
         :param hash_algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
-            will be used to generate the signature. This must be an instance of
-            :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
-            :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
-            :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
-            :class:`~cryptography.hazmat.primitives.hashes.SHA384`, or
-            :class:`~cryptography.hazmat.primitives.hashes.SHA512`.
+            will be used to generate the signature. This must be one of the
+            types in :data:`PKCS7HashTypes`.
 
     .. method:: add_certificate(certificate)
 
