@@ -4,6 +4,7 @@
 
 import typing
 
+from cryptography import utils
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
     dsa,
@@ -26,6 +27,14 @@ PublicKeyTypes = typing.Union[
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]
+PUBLIC_KEY_TYPES = PublicKeyTypes
+utils.deprecated(
+    PUBLIC_KEY_TYPES,
+    __name__,
+    "Use PublicKeyTypes instead",
+    utils.DeprecatedIn40,
+    name="PUBLIC_KEY_TYPES",
+)
 # Every asymmetric key type
 PrivateKeyTypes = typing.Union[
     dh.DHPrivateKey,
@@ -37,6 +46,14 @@ PrivateKeyTypes = typing.Union[
     x25519.X25519PrivateKey,
     x448.X448PrivateKey,
 ]
+PRIVATE_KEY_TYPES = PrivateKeyTypes
+utils.deprecated(
+    PRIVATE_KEY_TYPES,
+    __name__,
+    "Use PrivateKeyTypes instead",
+    utils.DeprecatedIn40,
+    name="PRIVATE_KEY_TYPES",
+)
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate public key types
 CertificatePrivateKeyTypes = typing.Union[
@@ -46,6 +63,14 @@ CertificatePrivateKeyTypes = typing.Union[
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
 ]
+CERTIFICATE_PRIVATE_KEY_TYPES = CertificatePrivateKeyTypes
+utils.deprecated(
+    CERTIFICATE_PRIVATE_KEY_TYPES,
+    __name__,
+    "Use CertificatePrivateKeyTypes instead",
+    utils.DeprecatedIn40,
+    name="CERTIFICATE_PRIVATE_KEY_TYPES",
+)
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate private key types
 CertificateIssuerPublicKeyTypes = typing.Union[
@@ -55,6 +80,14 @@ CertificateIssuerPublicKeyTypes = typing.Union[
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
 ]
+CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES = CertificateIssuerPublicKeyTypes
+utils.deprecated(
+    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
+    __name__,
+    "Use CertificateIssuerPublicKeyTypes instead",
+    utils.DeprecatedIn40,
+    name="CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES",
+)
 # This type removes DHPublicKey. x448/x25519 can be a public key
 # but cannot be used in signing so they are allowed here.
 CertificatePublicKeyTypes = typing.Union[
@@ -66,3 +99,11 @@ CertificatePublicKeyTypes = typing.Union[
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]
+CERTIFICATE_PUBLIC_KEY_TYPES = CertificatePublicKeyTypes
+utils.deprecated(
+    CERTIFICATE_PUBLIC_KEY_TYPES,
+    __name__,
+    "Use CertificatePublicKeyTypes instead",
+    utils.DeprecatedIn40,
+    name="CERTIFICATE_PUBLIC_KEY_TYPES",
+)
