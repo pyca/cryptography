@@ -578,7 +578,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data
