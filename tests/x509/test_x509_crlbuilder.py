@@ -6,7 +6,6 @@
 import datetime
 
 import pytest
-import pytz
 
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -41,9 +40,8 @@ class TestCertificateRevocationListBuilder:
             )
 
     def test_aware_last_update(self, backend):
-        last_time = datetime.datetime(2012, 1, 16, 22, 43)
-        tz = pytz.timezone("US/Pacific")
-        last_time = tz.localize(last_time)
+        tz = datetime.timezone(datetime.timedelta(hours=-8))
+        last_time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_last = datetime.datetime(2012, 1, 17, 6, 43)
         next_time = datetime.datetime(2022, 1, 17, 6, 43)
         private_key = RSA_KEY_2048.private_key(backend)
@@ -83,9 +81,8 @@ class TestCertificateRevocationListBuilder:
             builder.last_update(datetime.datetime(2002, 1, 1, 12, 1))
 
     def test_aware_next_update(self, backend):
-        next_time = datetime.datetime(2022, 1, 16, 22, 43)
-        tz = pytz.timezone("US/Pacific")
-        next_time = tz.localize(next_time)
+        tz = datetime.timezone(datetime.timedelta(hours=-8))
+        next_time = datetime.datetime(2022, 1, 16, 22, 43, tzinfo=tz)
         utc_next = datetime.datetime(2022, 1, 17, 6, 43)
         last_time = datetime.datetime(2012, 1, 17, 6, 43)
         private_key = RSA_KEY_2048.private_key(backend)
