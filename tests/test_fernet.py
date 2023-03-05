@@ -4,12 +4,11 @@
 
 
 import base64
-import calendar
+import datetime
 import json
 import os
 import time
 
-import iso8601
 import pretend
 import pytest
 
@@ -46,7 +45,7 @@ class TestFernet:
         f = Fernet(secret.encode("ascii"), backend=backend)
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
-            calendar.timegm(iso8601.parse_date(now).utctimetuple()),
+            int(datetime.datetime.fromisoformat(now).timestamp()),
             bytes(iv),
         )
         assert actual_token == token.encode("ascii")
@@ -60,7 +59,7 @@ class TestFernet:
     ):
         # secret & token are both str
         f = Fernet(secret.encode("ascii"), backend=backend)
-        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        current_time = int(datetime.datetime.fromisoformat(now).timestamp())
         payload = f.decrypt_at_time(
             token,  # str
             ttl=ttl_sec,
@@ -86,7 +85,7 @@ class TestFernet:
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
     def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
         f = Fernet(secret.encode("ascii"), backend=backend)
-        current_time = calendar.timegm(iso8601.parse_date(now).utctimetuple())
+        current_time = int(datetime.datetime.fromisoformat(now).timestamp())
         with pytest.raises(InvalidToken):
             f.decrypt_at_time(
                 token.encode("ascii"),

@@ -60,8 +60,6 @@ importlib-metadata==6.1.0
     #   twine
 iniconfig==2.0.0
     # via pytest
-iso8601==1.1.0
-    # via cryptography (setup.cfg)
 jaraco-classes==3.2.3
     # via keyring
 jinja2==3.1.2
