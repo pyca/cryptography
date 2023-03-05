@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 79
-target-version = ["py36"]
+target-version = ["py37"]
 
 [tool.pytest.ini_options]
 addopts = "-r s --capture=no --strict-markers --benchmark-disable --no-subtests-shortletter"
@@ -67,8 +67,7 @@ exclude_lines = [
 [tool.ruff]
 # UP006: Minimum Python 3.9
 # UP007, UP038: Minimum Python 3.10
-# UP022: Minimum Python 3.7
-ignore = ['N818', 'UP006', 'UP007', 'UP038', 'UP022']
+ignore = ['N818', 'UP006', 'UP007', 'UP038']
 select = ['E', 'F', 'I', 'N', 'W', 'UP']
 line-length = 79
 

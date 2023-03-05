@@ -63,8 +63,8 @@ fn main() {
 
     // Enable abi3 mode if we're not using PyPy.
     if python_impl != "PyPy" {
-        // cp36
-        build.define("Py_LIMITED_API", "0x030600f0");
+        // cp37 (Python 3.7 to help our grep when we some day drop 3.7 support)
+        build.define("Py_LIMITED_API", "0x030700f0");
     }
 
     if cfg!(windows) {

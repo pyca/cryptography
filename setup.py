@@ -101,8 +101,7 @@ except:  # noqa: E722
             # If for any reason `rustc --version` fails, silently ignore it
             rustc_output = subprocess.run(
                 ["rustc", "--version"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 timeout=0.5,
                 encoding="utf8",
                 check=True,

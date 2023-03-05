@@ -4,6 +4,7 @@
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl.binding import (

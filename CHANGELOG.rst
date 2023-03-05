@@ -10,6 +10,7 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1d has been
   removed.  Users on older version of OpenSSL will need to upgrade.
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.6 has been removed.
 
 .. _v40-0-0:
 
