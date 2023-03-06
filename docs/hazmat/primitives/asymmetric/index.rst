@@ -47,7 +47,7 @@ union type aliases can be used instead to reference a multitude of key types.
 
 .. data:: PublicKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of all public key types supported:
     :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
@@ -61,7 +61,7 @@ union type aliases can be used instead to reference a multitude of key types.
 
 .. data:: PrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of all private key types supported:
     :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
@@ -75,7 +75,7 @@ union type aliases can be used instead to reference a multitude of key types.
 
 .. data:: CertificatePublicKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of all public key types supported for X.509
     certificates:
@@ -89,7 +89,7 @@ union type aliases can be used instead to reference a multitude of key types.
 
 .. data:: CertificatePrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of all private key types supported for signing X.509
     certificates.
@@ -107,7 +107,7 @@ union type aliases can be used instead to reference a multitude of key types.
 
 .. data:: CertificateIssuerPublicKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of all public key types that can sign other X.509
     certificates as an issuer. x448/x25519 can be a public key, but cannot be

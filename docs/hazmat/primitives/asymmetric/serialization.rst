@@ -391,7 +391,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
 
 .. data:: SSHPublicKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of public key types accepted for SSH:
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
@@ -446,7 +446,7 @@ An example ECDSA key in OpenSSH format::
 
 .. data:: SSHPrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of private key types accepted for SSH:
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
@@ -493,7 +493,7 @@ The format used by OpenSSH for certificates, as specified in
 
 .. data:: SSHCertPublicKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of public key types supported for SSH
     certificates:
@@ -504,7 +504,7 @@ The format used by OpenSSH for certificates, as specified in
 
 .. data:: SSHCertPrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of private key types supported for SSH
     certificates:
@@ -798,7 +798,7 @@ file suffix.
 
 .. data:: PKCS12PrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of private key types supported for PKCS12
     serialization:
@@ -1008,7 +1008,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
 .. data:: PKCS7HashTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of hash types supported for PKCS7 serialization:
     :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
@@ -1019,7 +1019,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
 .. data:: PKCS7PrivateKeyTypes
 
-    .. versionadded:: 40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of private key types supported for PKCS7 serialization:
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` or
