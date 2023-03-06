@@ -75,13 +75,12 @@ class FakeGeneralName(x509.GeneralName):
 T = typing.TypeVar("T")
 
 
-def _load_cert(filename, loader: typing.Callable[..., T], backend=None) -> T:
-    cert = load_vectors_from_file(
+def _load_cert(filename, loader: typing.Callable[..., T]) -> T:
+    return load_vectors_from_file(
         filename=filename,
-        loader=lambda pemfile: loader(pemfile.read(), backend),
+        loader=lambda pemfile: loader(pemfile.read()),
         mode="rb",
     )
-    return cert
 
 
 def _generate_ca_and_leaf(
@@ -141,7 +140,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         assert isinstance(crl, x509.CertificateRevocationList)
@@ -157,7 +155,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
 
         assert isinstance(crl, x509.CertificateRevocationList)
@@ -169,7 +166,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_almost_10k.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
         assert len(crl) == 9999
 
@@ -179,7 +175,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_empty_no_sequence.der"),
             x509.load_der_x509_crl,
-            backend,
         )
         assert len(crl) == 0
 
@@ -194,8 +189,7 @@ class TestCertificateRevocationList:
 
         pem_bytes = _load_cert(
             os.path.join("x509", "custom", "valid_signature_cert.pem"),
-            lambda data, backend: data,
-            backend,
+            lambda data: data,
         )
         with pytest.raises(ValueError):
             x509.load_pem_x509_crl(pem_bytes, backend)
@@ -209,7 +203,6 @@ class TestCertificateRevocationList:
             _load_cert(
                 os.path.join("x509", "custom", "crl_invalid_time.der"),
                 x509.load_der_x509_crl,
-                backend,
             )
 
     def test_unknown_signature_algorithm(self, backend):
@@ -218,7 +211,6 @@ class TestCertificateRevocationList:
                 "x509", "custom", "crl_md2_unknown_crit_entry_ext.pem"
             ),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with raises_unsupported_algorithm(None):
@@ -229,14 +221,12 @@ class TestCertificateRevocationList:
             _load_cert(
                 os.path.join("x509", "custom", "crl_bad_version.pem"),
                 x509.load_pem_x509_crl,
-                backend,
             )
 
     def test_issuer(self, backend):
         crl = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
 
         assert isinstance(crl.issuer, x509.Name)
@@ -255,19 +245,16 @@ class TestCertificateRevocationList:
         crl1 = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
 
         crl2 = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
 
         crl3 = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         assert crl1 == crl2
@@ -278,7 +265,6 @@ class TestCertificateRevocationList:
         crl1 = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
         with pytest.raises(TypeError):
             crl1 < crl1  # type: ignore[operator]
@@ -287,7 +273,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         assert isinstance(crl.next_update, datetime.datetime)
@@ -300,7 +285,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_no_next_update.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
         assert crl.next_update is None
 
@@ -308,7 +292,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_unrecognized_extension.der"),
             x509.load_der_x509_crl,
-            backend,
         )
         unrecognized = x509.UnrecognizedExtension(
             x509.ObjectIdentifier("1.2.3.4.5"),
@@ -321,7 +304,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         for r in crl:
@@ -340,7 +322,6 @@ class TestCertificateRevocationList:
                 "x509", "PKITS_data", "crls", "LongSerialNumberCACRL.crl"
             ),
             x509.load_der_x509_crl,
-            backend,
         )
         serial_number = 725064303890588110203033396814564464046290047507
         revoked = crl.get_revoked_certificate_by_serial_number(serial_number)
@@ -357,7 +338,6 @@ class TestCertificateRevocationList:
         revoked = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )[11]
         assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
         assert revoked.serial_number == 11
@@ -366,7 +346,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_ian_aia_aki.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         crl_number = crl.extensions.get_extension_for_oid(
@@ -404,7 +383,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_delta_crl_indicator.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         dci = crl.extensions.get_extension_for_oid(
@@ -417,7 +395,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         assert crl.signature == binascii.unhexlify(
@@ -436,13 +413,11 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
             x509.load_der_x509_crl,
-            backend,
         )
 
         ca_cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         public_key = ca_cert.public_key()
@@ -459,7 +434,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_empty.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         # Encode it to PEM and load it back.
@@ -467,7 +441,6 @@ class TestCertificateRevocationList:
             crl.public_bytes(
                 encoding=serialization.Encoding.PEM,
             ),
-            backend,
         )
 
         assert len(crl) == 0
@@ -478,7 +451,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         # Encode it to DER and load it back.
@@ -486,7 +458,6 @@ class TestCertificateRevocationList:
             crl.public_bytes(
                 encoding=serialization.Encoding.DER,
             ),
-            backend,
         )
 
         assert len(crl) == 12
@@ -522,7 +493,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_empty.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(TypeError):
@@ -532,12 +502,10 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "invalid_signature_crl.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
         crt = _load_cert(
             os.path.join("x509", "custom", "invalid_signature_cert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         public_key = crt.public_key()
@@ -547,7 +515,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_inner_outer_mismatch.der"),
             x509.load_der_x509_crl,
-            backend,
         )
         assert not crl.is_signature_valid(public_key)
 
@@ -555,12 +522,10 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "valid_signature_crl.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
         crt = _load_cert(
             os.path.join("x509", "custom", "valid_signature_cert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         public_key = crt.public_key()
@@ -571,7 +536,6 @@ class TestCertificateRevocationList:
         crl = _load_cert(
             os.path.join("x509", "custom", "valid_signature_crl.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(TypeError):
@@ -588,7 +552,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         for i, rev in enumerate(crl):
@@ -604,7 +567,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         exp_issuer = [
@@ -667,7 +629,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_empty.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
         assert len(crl) == 0
 
@@ -675,7 +636,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_dup_entry_ext.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(x509.DuplicateExtension):
@@ -687,7 +647,6 @@ class TestRevokedCertificate:
                 "x509", "custom", "crl_md2_unknown_crit_entry_ext.pem"
             ),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         ext = crl[0].extensions.get_extension_for_oid(
@@ -700,7 +659,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_unsupported_reason.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(ValueError):
@@ -712,7 +670,6 @@ class TestRevokedCertificate:
                 "x509", "custom", "crl_inval_cert_issuer_entry_ext.pem"
             ),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(ValueError):
@@ -722,7 +679,6 @@ class TestRevokedCertificate:
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
-            backend,
         )
 
         with pytest.raises(IndexError):
@@ -786,13 +742,11 @@ class TestRSAPSSCertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "rsa_pss_cert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
         expected_pub_key = _load_cert(
             os.path.join("asymmetric", "PKCS8", "rsa_pss_2048_pub.der"),
             serialization.load_der_public_key,
-            backend,
         )
         assert isinstance(expected_pub_key, rsa.RSAPublicKey)
         pub_key = cert.public_key()
@@ -805,7 +759,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 11559813051657483483
@@ -820,7 +773,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.old_header.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
 
@@ -828,14 +780,12 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.with_garbage.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
 
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.with_headers.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
 
@@ -846,12 +796,10 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.chain.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert2 = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert == cert2
 
@@ -862,7 +810,6 @@ class TestRSACertificate:
             cert = _load_cert(
                 os.path.join("x509", "custom", "negative_serial.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
 
         with pytest.warns(utils.DeprecatedIn36):
@@ -872,7 +819,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "bad_country.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.warns(UserWarning):
             assert (
@@ -894,7 +840,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "alternate-rsa-sha1-oid.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         assert (
@@ -906,7 +851,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "accvraiz1.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.CertificatePolicies)
         et = ext.value[0].policy_qualifiers[0].explicit_text
@@ -920,7 +864,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 2
@@ -932,7 +875,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.signature == binascii.unhexlify(
             b"8e0f72fcbebe4755abcaf76c8ce0bae17cde4db16291638e1b1ce04a93cdb4c"
@@ -959,7 +901,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"308202d8a003020102020900a06cb4b955f7f4db300d06092a864886f70d010"
@@ -1001,7 +942,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         with pytest.raises(
@@ -1014,7 +954,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         # This cert doesn't have an SCT list extension, so it will throw a
@@ -1029,7 +968,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography-scts.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         expected_tbs_precertificate_bytes = load_vectors_from_file(
@@ -1051,7 +989,6 @@ class TestRSACertificate:
                 "Validpre2000UTCnotBeforeDateTest3EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         issuer = cert.issuer
         assert isinstance(issuer, x509.Name)
@@ -1070,7 +1007,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "all_supported_names.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         issuer = cert.issuer
 
@@ -1117,7 +1053,6 @@ class TestRSACertificate:
                 "Validpre2000UTCnotBeforeDateTest3EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
@@ -1142,7 +1077,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "utf8_common_name.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME) == [
             x509.NameAttribute(NameOID.COMMON_NAME, "We heart UTF8!\u2122")
@@ -1155,7 +1089,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid_utf8_common_name.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError, match="subject"):
             cert.subject
@@ -1166,7 +1099,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "utf8-dnsname.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         san = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -1188,7 +1120,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "all_supported_names.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         subject = cert.subject
         assert isinstance(subject, x509.Name)
@@ -1233,7 +1164,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
@@ -1254,7 +1184,6 @@ class TestRSACertificate:
                 "Validpre2000UTCnotBeforeDateTest3EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         assert cert.not_valid_before == datetime.datetime(1950, 1, 1, 12, 1)
@@ -1268,7 +1197,6 @@ class TestRSACertificate:
                 "Invalidpre2000UTCEEnotAfterDateTest7EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         assert cert.not_valid_after == datetime.datetime(1999, 1, 1, 12, 1)
@@ -1277,7 +1205,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.not_valid_before == datetime.datetime(
             2014, 11, 26, 21, 41, 20
@@ -1295,7 +1222,6 @@ class TestRSACertificate:
                 "ValidGeneralizedTimenotBeforeDateTest4EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         assert cert.not_valid_before == datetime.datetime(2002, 1, 1, 12, 1)
         assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
@@ -1310,7 +1236,6 @@ class TestRSACertificate:
                 "ValidGeneralizedTimenotAfterDateTest8EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
         assert cert.not_valid_after == datetime.datetime(2050, 1, 1, 12, 1)
@@ -1321,7 +1246,6 @@ class TestRSACertificate:
             _load_cert(
                 os.path.join("x509", "custom", "invalid_version.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
 
         assert exc.value.parsed_version == 7
@@ -1330,12 +1254,10 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert2 = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert == cert2
 
@@ -1343,7 +1265,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert2 = _load_cert(
             os.path.join(
@@ -1353,7 +1274,6 @@ class TestRSACertificate:
                 "ValidGeneralizedTimenotAfterDateTest8EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         assert cert != cert2
         assert cert != object()
@@ -1362,12 +1282,10 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert2 = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(TypeError, match="cannot be ordered"):
             cert > cert2  # type: ignore[operator]
@@ -1376,12 +1294,10 @@ class TestRSACertificate:
         cert1 = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert2 = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert3 = _load_cert(
             os.path.join(
@@ -1391,7 +1307,6 @@ class TestRSACertificate:
                 "ValidGeneralizedTimenotAfterDateTest8EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         assert hash(cert1) == hash(cert2)
@@ -1401,7 +1316,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.version is x509.Version.v1
 
@@ -1425,7 +1339,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "verisign_md2_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with raises_unsupported_algorithm(None):
             cert.signature_hash_algorithm
@@ -1435,7 +1348,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         # Encode it to PEM and load it back.
@@ -1461,7 +1373,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         # Encode it to DER and load it back.
@@ -1469,7 +1380,6 @@ class TestRSACertificate:
             cert.public_bytes(
                 encoding=serialization.Encoding.DER,
             ),
-            backend,
         )
 
         # We should recover what we had to start with.
@@ -1486,7 +1396,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         with pytest.raises(TypeError):
@@ -1513,7 +1422,7 @@ class TestRSACertificate:
         cert_bytes = load_vectors_from_file(
             cert_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        cert = loader_func(cert_bytes, backend)
+        cert = loader_func(cert_bytes)
         serialized = cert.public_bytes(encoding)
         assert serialized == cert_bytes
 
@@ -1521,7 +1430,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert repr(cert) == (
             "<Certificate(subject=<Name(OU=GT48742965,OU=See www.rapidssl.com"
@@ -1533,7 +1441,6 @@ class TestRSACertificate:
         cert = _load_cert(
             os.path.join("x509", "tls-feature-ocsp-staple.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.TLSFeature)
         assert ext.critical is False
@@ -1671,7 +1578,7 @@ class TestRSACertificateRequest:
         ],
     )
     def test_load_rsa_certificate_request(self, path, loader_func, backend):
-        request = _load_cert(path, loader_func, backend)
+        request = _load_cert(path, loader_func)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         assert (
             request.signature_algorithm_oid
@@ -1696,13 +1603,12 @@ class TestRSACertificateRequest:
         cert = _load_cert(
             os.path.join("x509", "requests", "ec_sha256_old_header.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert isinstance(cert, x509.CertificateSigningRequest)
 
     def test_invalid_pem(self, backend):
         with pytest.raises(ValueError, match="Unable to load"):
-            x509.load_pem_x509_csr(b"notacsr", backend)
+            x509.load_pem_x509_csr(b"notacsr")
 
         crl = load_vectors_from_file(
             filename=os.path.join("x509", "custom", "crl_empty.pem"),
@@ -1710,20 +1616,19 @@ class TestRSACertificateRequest:
             mode="rb",
         )
         with pytest.raises(ValueError, match="Valid PEM but no"):
-            x509.load_pem_x509_csr(crl, backend)
+            x509.load_pem_x509_csr(crl)
 
     @pytest.mark.parametrize(
         "loader_func", [x509.load_pem_x509_csr, x509.load_der_x509_csr]
     )
     def test_invalid_certificate_request(self, loader_func, backend):
         with pytest.raises(ValueError):
-            loader_func(b"notacsr", backend)
+            loader_func(b"notacsr")
 
     def test_unsupported_signature_hash_algorithm_request(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_md4.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with raises_unsupported_algorithm(None):
             request.signature_hash_algorithm
@@ -1733,14 +1638,12 @@ class TestRSACertificateRequest:
             _load_cert(
                 os.path.join("x509", "requests", "bad-version.pem"),
                 x509.load_pem_x509_csr,
-                backend,
             )
 
     def test_duplicate_extension(self, backend):
         request = _load_cert(
             os.path.join("x509", "requests", "two_basic_constraints.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.raises(x509.DuplicateExtension) as exc:
             request.extensions
@@ -1753,7 +1656,6 @@ class TestRSACertificateRequest:
                 "x509", "requests", "unsupported_extension_critical.pem"
             ),
             x509.load_pem_x509_csr,
-            backend,
         )
         ext = request.extensions.get_extension_for_oid(
             x509.ObjectIdentifier("1.2.3.4")
@@ -1765,7 +1667,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "unsupported_extension.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         extensions = request.extensions
         assert len(extensions) == 1
@@ -1778,7 +1679,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "challenge-unstructured.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert len(request.extensions) == 0
 
@@ -1786,7 +1686,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "basic_constraints.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         extensions = request.extensions
         assert isinstance(extensions, x509.Extensions)
@@ -1802,7 +1701,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "san_rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         ext = request.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -1816,7 +1714,6 @@ class TestRSACertificateRequest:
         csr = _load_cert(
             os.path.join("x509", "requests", "freeipa-bad-critical.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.raises(ValueError):
             csr.extensions
@@ -1826,7 +1723,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         # Encode it to PEM and load it back.
@@ -1834,7 +1730,6 @@ class TestRSACertificateRequest:
             request.public_bytes(
                 encoding=serialization.Encoding.PEM,
             ),
-            backend,
         )
 
         # We should recover what we had to start with.
@@ -1856,7 +1751,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         # Encode it to DER and load it back.
@@ -1864,7 +1758,6 @@ class TestRSACertificateRequest:
             request.public_bytes(
                 encoding=serialization.Encoding.DER,
             ),
-            backend,
         )
 
         # We should recover what we had to start with.
@@ -1885,7 +1778,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.signature == binascii.unhexlify(
             b"8364c86ffbbfe0bfc9a21f831256658ca8989741b80576d36f08a934603a43b1"
@@ -1908,7 +1800,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.tbs_certrequest_bytes == binascii.unhexlify(
             b"308201840201003057310b3009060355040613025553310e300c060355040813"
@@ -1939,7 +1830,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         with pytest.raises(TypeError):
@@ -1949,7 +1839,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "invalid_signature.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert not request.is_signature_valid
 
@@ -1957,7 +1846,6 @@ class TestRSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.is_signature_valid
 
@@ -1982,7 +1870,7 @@ class TestRSACertificateRequest:
         request_bytes = load_vectors_from_file(
             request_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        request = loader_func(request_bytes, backend)
+        request = loader_func(request_bytes)
         serialized = request.public_bytes(encoding)
         assert serialized == request_bytes
 
@@ -1990,12 +1878,10 @@ class TestRSACertificateRequest:
         request1 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         request2 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         assert request1 == request2
@@ -2004,12 +1890,10 @@ class TestRSACertificateRequest:
         request1 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         request2 = _load_cert(
             os.path.join("x509", "requests", "san_rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         assert request1 != request2
@@ -2019,12 +1903,10 @@ class TestRSACertificateRequest:
         csr = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         csr2 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.raises(TypeError, match="cannot be ordered"):
             csr > csr2  # type: ignore[operator]
@@ -2033,17 +1915,14 @@ class TestRSACertificateRequest:
         request1 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         request2 = _load_cert(
             os.path.join("x509", "requests", "rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         request3 = _load_cert(
             os.path.join("x509", "requests", "san_rsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
 
         assert hash(request1) == hash(request2)
@@ -4703,7 +4582,6 @@ class TestDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         public_key = cert.public_key()
@@ -4753,7 +4631,6 @@ class TestDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.signature == binascii.unhexlify(
             b"302c021425c4a84a936ab311ee017d3cbd9a3c650bb3ae4a02145d30c64b4326"
@@ -4767,7 +4644,6 @@ class TestDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"3082051aa003020102020900a37352e0b2142f86300906072a8648ce3804033"
@@ -4864,7 +4740,7 @@ class TestDSACertificateRequest:
         ],
     )
     def test_load_dsa_request(self, path, loader_func, backend):
-        request = _load_cert(path, loader_func, backend)
+        request = _load_cert(path, loader_func)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
         public_key = request.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
@@ -4882,7 +4758,6 @@ class TestDSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "dsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.signature == binascii.unhexlify(
             b"302c021461d58dc028d0110818a7d817d74235727c4acfdf0214097b52e198e"
@@ -4893,7 +4768,6 @@ class TestDSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "dsa_sha1.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.tbs_certrequest_bytes == binascii.unhexlify(
             b"3082021802010030573118301606035504030c0f63727970746f677261706879"
@@ -4944,7 +4818,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA384)
         public_key = cert.public_key()
@@ -4966,7 +4839,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "scottishpower-bitstring-dn.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.subject == x509.Name(
             [
@@ -4989,7 +4861,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "long-form-name-attribute.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError, match="Long-form"):
             cert.subject
@@ -5000,7 +4871,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.signature == binascii.unhexlify(
             b"3065023100adbcf26c3f124ad12d39c30a099773f488368c8827bbe6888d5085"
@@ -5025,7 +4895,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert cert.tbs_certificate_bytes == binascii.unhexlify(
             b"308201c5a0030201020210055556bcf25ea43535c3a40fd5ab4572300a06082"
@@ -5058,7 +4927,6 @@ class TestECDSACertificate:
         cert = _load_cert(
             os.path.join("x509", "custom", "ec_no_named_curve.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         # This test can trigger three different value errors depending
         # on OpenSSL/BoringSSL and versions. Match on the text to ensure
@@ -5101,7 +4969,7 @@ class TestECDSACertificateRequest:
     )
     def test_load_ecdsa_certificate_request(self, path, loader_func, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
-        request = _load_cert(path, loader_func, backend)
+        request = _load_cert(path, loader_func)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
         public_key = request.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
@@ -5120,7 +4988,6 @@ class TestECDSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "ec_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.signature == binascii.unhexlify(
             b"306502302c1a9f7de8c1787332d2307a886b476a59f172b9b0e250262f3238b1"
@@ -5134,7 +5001,6 @@ class TestECDSACertificateRequest:
         request = _load_cert(
             os.path.join("x509", "requests", "ec_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert request.tbs_certrequest_bytes == binascii.unhexlify(
             b"3081d602010030573118301606035504030c0f63727970746f6772617068792"
@@ -5162,7 +5028,6 @@ class TestOtherCertificate:
                 "x509", "custom", "unsupported_subject_public_key_info.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         with pytest.raises(ValueError):
@@ -5173,7 +5038,6 @@ class TestOtherCertificate:
             _load_cert(
                 os.path.join("x509", "badasn1time.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
 
 
@@ -5688,7 +5552,6 @@ class TestEd25519Certificate:
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         # self-signed, so this will work
         public_key = cert.public_key()
@@ -5703,7 +5566,6 @@ class TestEd25519Certificate:
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert copy.deepcopy(cert) is cert
 
@@ -5735,7 +5597,6 @@ class TestEd448Certificate:
         cert = _load_cert(
             os.path.join("x509", "ed448", "root-ed448.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         # self-signed, so this will work
         public_key = cert.public_key()
@@ -5988,7 +5849,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "challenge.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.warns(utils.DeprecatedIn36):
             assert (
@@ -6009,7 +5869,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "challenge-unstructured.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.warns(utils.DeprecatedIn36):
             assert (
@@ -6045,7 +5904,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "challenge-invalid.der"),
             x509.load_der_x509_csr,
-            backend,
         )
 
         # Unsupported in the legacy path
@@ -6066,7 +5924,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "long-form-attribute.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.raises(ValueError, match="Long-form"):
             request.attributes
@@ -6078,7 +5935,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "challenge-multi-valued.der"),
             x509.load_der_x509_csr,
-            backend,
         )
         with pytest.raises(ValueError, match="Only single-valued"):
             with pytest.warns(utils.DeprecatedIn36):
@@ -6093,7 +5949,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         with pytest.raises(x509.AttributeNotFound) as exc:
             with pytest.warns(utils.DeprecatedIn36):
@@ -6112,7 +5967,6 @@ class TestRequestAttributes:
         request = _load_cert(
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
-            backend,
         )
         assert len(request.attributes) == 0
 

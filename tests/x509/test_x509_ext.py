@@ -680,7 +680,6 @@ class TestCertificatePolicies:
         cert = _load_cert(
             os.path.join("x509", "bigoid.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.CertificatePolicies)
 
@@ -711,7 +710,6 @@ class TestCertificatePoliciesExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cp_cps_uri.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cp = cert.extensions.get_extension_for_oid(
@@ -733,7 +731,6 @@ class TestCertificatePoliciesExtension:
                 "x509", "custom", "cp_user_notice_with_notice_reference.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cp = cert.extensions.get_extension_for_oid(
@@ -762,7 +759,6 @@ class TestCertificatePoliciesExtension:
                 "x509", "custom", "cp_user_notice_with_explicit_text.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cp = cert.extensions.get_extension_for_oid(
@@ -784,7 +780,6 @@ class TestCertificatePoliciesExtension:
                 "x509", "custom", "cp_user_notice_no_explicit_text.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cp = cert.extensions.get_extension_for_oid(
@@ -1487,7 +1482,6 @@ class TestExtensions:
         cert = _load_cert(
             os.path.join("x509", "verisign_md2_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions
         assert len(ext) == 0
@@ -1503,7 +1497,6 @@ class TestExtensions:
                 "x509", "custom", "basic_constraints_not_critical.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1513,7 +1506,6 @@ class TestExtensions:
         cert = _load_cert(
             os.path.join("x509", "custom", "two_basic_constraints.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(x509.DuplicateExtension) as exc:
             cert.extensions
@@ -1526,7 +1518,6 @@ class TestExtensions:
                 "x509", "custom", "unsupported_extension_critical.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             x509.ObjectIdentifier("1.2.3.4")
@@ -1538,7 +1529,6 @@ class TestExtensions:
         cert = _load_cert(
             os.path.join("x509", "custom", "unsupported_extension_2.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         extensions = cert.extensions
         assert len(extensions) == 2
@@ -1562,7 +1552,6 @@ class TestExtensions:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         exts = cert.extensions
         with pytest.raises(x509.ExtensionNotFound) as exc:
@@ -1578,7 +1567,6 @@ class TestExtensions:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         exts = cert.extensions
         assert exts[-1] == exts[7]
@@ -1590,7 +1578,6 @@ class TestExtensions:
                 "x509", "custom", "basic_constraints_not_critical.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1601,7 +1588,6 @@ class TestExtensions:
                 "x509", "custom", "basic_constraints_not_critical.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert repr(cert.extensions) == (
             "<Extensions([<Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name"
@@ -1617,7 +1603,6 @@ class TestBasicConstraintsExtension:
                 "x509", "PKITS_data", "certs", "pathLenConstraint6CACert.crt"
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1629,7 +1614,6 @@ class TestBasicConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "bc_path_length_zero.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1641,7 +1625,6 @@ class TestBasicConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1653,7 +1636,6 @@ class TestBasicConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1670,7 +1652,6 @@ class TestBasicConstraintsExtension:
                 "ValidCertificatePathTest1EE.crt",
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(x509.ExtensionNotFound):
             cert.extensions.get_extension_for_oid(
@@ -1683,7 +1664,6 @@ class TestBasicConstraintsExtension:
                 "x509", "custom", "basic_constraints_not_critical.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
         assert ext is not None
@@ -1696,7 +1676,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectKeyIdentifier
@@ -1712,7 +1691,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "bc_path_length_zero.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(x509.ExtensionNotFound):
             cert.extensions.get_extension_for_oid(
@@ -1723,7 +1701,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
             x509.load_der_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
@@ -1739,7 +1716,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         ext = cert.extensions.get_extension_for_oid(
@@ -1794,7 +1770,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         ext = cert.extensions.get_extension_for_oid(
@@ -1811,7 +1786,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "ed25519", "root-ed25519.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         ext = cert.extensions.get_extension_for_oid(
@@ -1828,7 +1802,6 @@ class TestSubjectKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "ed448", "root-ed448.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         ext = cert.extensions.get_extension_for_oid(
@@ -1843,7 +1816,6 @@ class TestKeyUsageExtension:
         cert = _load_cert(
             os.path.join("x509", "verisign_md2_root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions
         with pytest.raises(x509.ExtensionNotFound) as exc:
@@ -1855,7 +1827,6 @@ class TestKeyUsageExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "all_key_usages.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.KeyUsage)
         assert ext is not None
@@ -1877,7 +1848,6 @@ class TestKeyUsageExtension:
                 "x509", "PKITS_data", "certs", "pathLenConstraint6CACert.crt"
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.KeyUsage)
         assert ext is not None
@@ -2333,7 +2303,6 @@ class TestRSAIssuerAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "ian_uri.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.IssuerAlternativeName
@@ -2450,7 +2419,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2467,7 +2435,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "wildcard_san.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2485,7 +2452,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_empty_hostname.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         san = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_ALTERNATIVE_NAME
@@ -2499,7 +2465,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_wildcard_idna.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2512,7 +2477,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "san_x400address.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(x509.UnsupportedGeneralNameType):
             cert.extensions
@@ -2521,7 +2485,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_registered_id.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2537,7 +2500,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_uri_with_port.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2553,7 +2515,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_ipaddr.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2573,7 +2534,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_dirname.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2600,7 +2560,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_rfc822_idna.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2617,7 +2576,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_idna2003_dnsname.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         san = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2631,7 +2589,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_idna_names.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2648,7 +2605,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_email_dns_ip_dirname_uri.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2685,7 +2641,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_rfc822_names.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         san = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
@@ -2703,7 +2658,6 @@ class TestRSASubjectAlternativeNameExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "san_other_name.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         ext = cert.extensions.get_extension_for_class(
@@ -2748,7 +2702,6 @@ class TestExtendedKeyUsageExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "extended_key_usage.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
         assert ext is not None
@@ -2894,7 +2847,6 @@ class TestPolicyConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "department-of-state-root.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.POLICY_CONSTRAINTS,
@@ -2910,7 +2862,6 @@ class TestPolicyConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "policy_constraints_explicit.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.POLICY_CONSTRAINTS
@@ -3339,7 +3290,6 @@ class TestSubjectInformationAccessExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "sia.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_INFORMATION_ACCESS
@@ -3368,7 +3318,6 @@ class TestAuthorityInformationAccessExtension:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -3395,7 +3344,6 @@ class TestAuthorityInformationAccessExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "aia_ocsp_ca_issuers.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -3435,7 +3383,6 @@ class TestAuthorityInformationAccessExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "aia_ocsp.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -3456,7 +3403,6 @@ class TestAuthorityInformationAccessExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "aia_ca_issuers.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_INFORMATION_ACCESS
@@ -3517,7 +3463,6 @@ class TestAuthorityKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.AuthorityKeyIdentifier
@@ -3535,7 +3480,6 @@ class TestAuthorityKeyIdentifierExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "authority_key_identifier.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.AuthorityKeyIdentifier
@@ -3566,7 +3510,6 @@ class TestAuthorityKeyIdentifierExtension:
                 "x509", "custom", "authority_key_identifier_no_keyid.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_class(
             x509.AuthorityKeyIdentifier
@@ -3593,12 +3536,10 @@ class TestAuthorityKeyIdentifierExtension:
         issuer_cert = _load_cert(
             os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -3612,12 +3553,10 @@ class TestAuthorityKeyIdentifierExtension:
         issuer_cert = _load_cert(
             os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -3799,7 +3738,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_permitted_excluded_2.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3819,7 +3757,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_permitted_2.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3833,7 +3770,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_permitted.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3850,7 +3786,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_excluded.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3867,7 +3802,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_permitted_excluded.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3887,7 +3821,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_single_ip_netmask.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         nc = cert.extensions.get_extension_for_oid(
             ExtensionOID.NAME_CONSTRAINTS
@@ -3904,7 +3837,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_ip_invalid_length.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions.get_extension_for_oid(
@@ -3915,7 +3847,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_invalid_ip_netmask.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions.get_extension_for_oid(
@@ -3926,7 +3857,6 @@ class TestNameConstraintsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "nc_invalid_ip4_netmask.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions.get_extension_for_oid(
@@ -4735,7 +4665,6 @@ class TestCRLDistributionPointsExtension:
                 "x509", "PKITS_data", "certs", "ValidcRLIssuerTest28EE.crt"
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4799,7 +4728,6 @@ class TestCRLDistributionPointsExtension:
                 "x509", "PKITS_data", "certs", "ValidcRLIssuerTest29EE.crt"
             ),
             x509.load_der_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4848,7 +4776,6 @@ class TestCRLDistributionPointsExtension:
                 "x509", "custom", "cdp_fullname_reasons_crl_issuer.pem"
             ),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4895,7 +4822,6 @@ class TestCRLDistributionPointsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cdp_all_reasons.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4932,7 +4858,6 @@ class TestCRLDistributionPointsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cdp_reason_aa_compromise.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4958,7 +4883,6 @@ class TestCRLDistributionPointsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cdp_crl_issuer.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -4990,7 +4914,6 @@ class TestCRLDistributionPointsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cdp_empty_hostname.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         cdps = cert.extensions.get_extension_for_oid(
@@ -5038,7 +4961,6 @@ class TestFreshestCRLExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "freshestcrl.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
 
         fcrl = cert.extensions.get_extension_for_class(x509.FreshestCRL).value
@@ -5129,7 +5051,6 @@ class TestOCSPNoCheckExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "ocsp_nocheck.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         ext = cert.extensions.get_extension_for_oid(ExtensionOID.OCSP_NO_CHECK)
         assert isinstance(ext.value, x509.OCSPNoCheck)
@@ -5205,7 +5126,6 @@ class TestInhibitAnyPolicyExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "inhibit_any_policy_5.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         iap = cert.extensions.get_extension_for_class(
             x509.InhibitAnyPolicy
@@ -5369,7 +5289,6 @@ class TestIssuingDistributionPointExtension:
         crl = _load_cert(
             os.path.join("x509", "custom", filename),
             x509.load_pem_x509_crl,
-            backend,
         )
         idp = crl.extensions.get_extension_for_class(
             x509.IssuingDistributionPoint
@@ -5746,7 +5665,6 @@ class TestPrecertPoisonExtension:
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.precert.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         poison = cert.extensions.get_extension_for_oid(
             ExtensionOID.PRECERT_POISON
@@ -5805,7 +5723,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5816,7 +5733,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5830,7 +5746,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5841,7 +5756,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5856,7 +5770,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5867,7 +5780,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5878,7 +5790,6 @@ class TestSignedCertificateTimestamps:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5946,7 +5857,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5957,7 +5867,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5971,7 +5880,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5982,7 +5890,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -5997,7 +5904,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6008,7 +5914,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6023,7 +5928,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6034,7 +5938,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6045,7 +5948,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6059,7 +5961,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         scts = cert.extensions.get_extension_for_class(
             x509.PrecertificateSignedCertificateTimestamps
@@ -6097,7 +5998,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         scts = cert.extensions.get_extension_for_class(
             x509.PrecertificateSignedCertificateTimestamps
@@ -6120,7 +6020,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid-sct-version.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions
@@ -6129,7 +6028,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "badssl-sct-none-hash.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(
             ValueError, match="Invalid/unsupported hash algorithm for SCT: 0"
@@ -6140,7 +6038,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "badssl-sct-anonymous-sig.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(
             ValueError,
@@ -6152,7 +6049,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "invalid-sct-length.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions
@@ -6162,7 +6058,6 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             _load_cert(
                 os.path.join("x509", "cryptography-scts.pem"),
                 x509.load_pem_x509_certificate,
-                backend,
             )
             .extensions.get_extension_for_class(
                 x509.PrecertificateSignedCertificateTimestamps
@@ -6192,7 +6087,6 @@ class TestInvalidExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cp_invalid.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions
@@ -6201,7 +6095,6 @@ class TestInvalidExtension:
         cert = _load_cert(
             os.path.join("x509", "custom", "cp_invalid2.der"),
             x509.load_der_x509_certificate,
-            backend,
         )
         with pytest.raises(ValueError):
             cert.extensions
