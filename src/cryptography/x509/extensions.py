@@ -293,7 +293,7 @@ class SubjectKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_public_key(
-        cls, public_key: CertificatePublicKeyTypes
+        cls, public_key: CertificateIssuerPublicKeyTypes
     ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 

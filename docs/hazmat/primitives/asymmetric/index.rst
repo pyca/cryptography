@@ -87,7 +87,7 @@ union type aliases can be used instead to reference a multitude of key types.
     :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
 
-.. data:: CertificatePrivateKeyTypes
+.. data:: CertificateIssuerPrivateKeyTypes
 
     .. versionadded:: 40.0.0
 

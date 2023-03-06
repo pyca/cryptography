@@ -826,7 +826,7 @@ X.509 Certificate Builder
 
         :param private_key: The key that will be used to sign the certificate,
             one of
-            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePrivateKeyTypes`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
@@ -856,7 +856,6 @@ X.509 CSR (Certificate Signing Request) Object
 
         :returns: One of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
-            # FIXME is this correct?
 
         .. doctest::
 
@@ -1050,7 +1049,7 @@ X.509 Certificate Revocation List Builder
 
         :param private_key: The private key that will be used to sign the
             certificate, one of
-            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePrivateKeyTypes`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
@@ -1227,7 +1226,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
             that will be used to sign the request.  When the request is
             signed by a certificate authority, the private key's associated
             public key will be stored in the resulting certificate. One of
-            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePrivateKeyTypes`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -2092,8 +2091,7 @@ X.509 Extensions
         recommendation in :rfc:`5280` section 4.2.1.2.
 
         :param public_key: One of
-            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
-            # FIXME is this correct?
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`.
 
         .. doctest::
 

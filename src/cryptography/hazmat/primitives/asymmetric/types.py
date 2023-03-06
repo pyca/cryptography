@@ -56,18 +56,18 @@ utils.deprecated(
 )
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate public key types
-CertificatePrivateKeyTypes = typing.Union[
+CertificateIssuerPrivateKeyTypes = typing.Union[
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
 ]
-CERTIFICATE_PRIVATE_KEY_TYPES = CertificatePrivateKeyTypes
+CERTIFICATE_PRIVATE_KEY_TYPES = CertificateIssuerPrivateKeyTypes
 utils.deprecated(
     CERTIFICATE_PRIVATE_KEY_TYPES,
     __name__,
-    "Use CertificatePrivateKeyTypes instead",
+    "Use CertificateIssuerPrivateKeyTypes instead",
     utils.DeprecatedIn40,
     name="CERTIFICATE_PRIVATE_KEY_TYPES",
 )

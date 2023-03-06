@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
     CertificateIssuerPublicKeyTypes,
-    CertificatePrivateKeyTypes,
+    CertificateIssuerPrivateKeyTypes,
     CertificatePublicKeyTypes,
 )
 from cryptography.x509.extensions import (
@@ -691,7 +691,7 @@ class CertificateSigningRequestBuilder:
 
     def sign(
         self,
-        private_key: CertificatePrivateKeyTypes,
+        private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> CertificateSigningRequest:
@@ -912,7 +912,7 @@ class CertificateBuilder:
 
     def sign(
         self,
-        private_key: CertificatePrivateKeyTypes,
+        private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> Certificate:
@@ -1059,7 +1059,7 @@ class CertificateRevocationListBuilder:
 
     def sign(
         self,
-        private_key: CertificatePrivateKeyTypes,
+        private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> CertificateRevocationList:

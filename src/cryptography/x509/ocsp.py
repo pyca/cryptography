@@ -11,7 +11,7 @@ from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import ocsp
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.types import (
-    CertificatePrivateKeyTypes,
+    CertificateIssuerPrivateKeyTypes
 )
 from cryptography.x509.base import (
     _EARLIEST_UTC_TIME,
@@ -587,7 +587,7 @@ class OCSPResponseBuilder:
 
     def sign(
         self,
-        private_key: CertificatePrivateKeyTypes,
+        private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: typing.Optional[hashes.HashAlgorithm],
     ) -> OCSPResponse:
         if self._response is None:
