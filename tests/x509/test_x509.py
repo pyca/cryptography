@@ -54,9 +54,9 @@ from ..utils import (
     raises_unsupported_algorithm,
 )
 
-# Make ruff happy since we're import fixtures that pytest patches in as
+# Make ruff happy since we're importing fixtures that pytest patches in as
 # func args
-__all__ = [rsa_key_512, rsa_key_2048]
+__all__ = ["rsa_key_512", "rsa_key_2048"]
 
 
 class DummyExtension(x509.ExtensionType):

@@ -41,9 +41,9 @@ from ..hazmat.primitives.test_rsa import rsa_key_2048
 from ..utils import load_vectors_from_file
 from .test_x509 import _load_cert
 
-# Make ruff happy since we're import fixtures that pytest patches in as
+# Make ruff happy since we're importing fixtures that pytest patches in as
 # func args
-__all__ = [rsa_key_2048]
+__all__ = ["rsa_key_2048"]
 
 
 def _make_certbuilder(private_key):

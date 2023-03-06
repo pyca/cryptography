@@ -23,9 +23,9 @@ from ..hazmat.primitives.test_ec import _skip_curve_unsupported
 from ..hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from .test_x509 import DummyExtension
 
-# Make ruff happy since we're import fixtures that pytest patches in as
+# Make ruff happy since we're importing fixtures that pytest patches in as
 # func args
-__all__ = [rsa_key_512, rsa_key_2048]
+__all__ = ["rsa_key_512", "rsa_key_2048"]
 
 
 class TestCertificateRevocationListBuilder:
