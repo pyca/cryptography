@@ -458,7 +458,11 @@ class TestRSA:
         skip_message="Does not support PKCS1v1.5.",
     )
     def test_lazy_blinding(self, backend):
-        # We don't want to reuse the rsa_key_2048 fixture here
+        # We don't want to reuse the rsa_key_2048 fixture here because lazy
+        # blinding mutates the object to add the blinding factor on
+        # the first call to decrypt/sign. Since we reuse rsa_key_2048 in
+        # many tests we can't properly test blinding, which will (likely)
+        # already be set on the fixture.
         private_key = RSA_KEY_2048.private_key(
             unsafe_skip_rsa_key_validation=True
         )
