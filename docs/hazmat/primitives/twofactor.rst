@@ -20,7 +20,7 @@ codes (HMAC).
 
 .. data:: HOTPHashTypes
 
-    .. versionadded::  40.0
+    .. versionadded:: 40.0.0
 
     Type alias: A union of supported hash algorithm types:
     :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
