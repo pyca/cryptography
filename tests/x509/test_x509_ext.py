@@ -36,10 +36,14 @@ from cryptography.x509.oid import (
     SubjectInformationAccessOID,
 )
 
-from ..hazmat.primitives.fixtures_rsa import RSA_KEY_2048
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.test_rsa import rsa_key_2048
 from ..utils import load_vectors_from_file
 from .test_x509 import _load_cert
+
+# Make ruff happy since we're import fixtures that pytest patches in as
+# func args
+__all__ = [rsa_key_2048]
 
 
 def _make_certbuilder(private_key):
@@ -800,9 +804,11 @@ class TestCertificatePoliciesExtension:
             ]
         )
 
-    def test_non_ascii_qualifier(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_non_ascii_qualifier(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -2715,13 +2721,13 @@ class TestRSASubjectAlternativeNameExtension:
         othernames = ext.value.get_values_for_type(x509.OtherName)
         assert othernames == [expected]
 
-    def test_certbuilder(self, backend):
+    def test_certbuilder(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         sans = [
             "*.example.org",
             "*.xn--4ca7aey.example.com",
             "foobar.example.net",
         ]
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
             SubjectAlternativeName(list(map(DNSName, sans))), True
@@ -3927,13 +3933,13 @@ class TestNameConstraintsExtension:
                 ExtensionOID.NAME_CONSTRAINTS
             )
 
-    def test_certbuilder(self, backend):
+    def test_certbuilder(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         permitted = [
             ".example.org",
             ".xn--4ca7aey.example.com",
             "foobar.example.net",
         ]
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         builder = _make_certbuilder(private_key)
         builder = builder.add_extension(
             NameConstraints(
@@ -5685,8 +5691,8 @@ class TestIssuingDistributionPointExtension:
             ),
         ],
     )
-    def test_generate(self, idp, backend):
-        key = RSA_KEY_2048.private_key(backend)
+    def test_generate(self, rsa_key_2048: rsa.RSAPrivateKey, idp, backend):
+        key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
@@ -5751,8 +5757,8 @@ class TestPrecertPoisonExtension:
         ).value
         assert isinstance(poison, x509.PrecertPoison)
 
-    def test_generate(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_generate(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        private_key = rsa_key_2048
         cert = (
             _make_certbuilder(private_key)
             .add_extension(x509.PrecertPoison(), critical=True)
@@ -6087,7 +6093,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         )
         assert sct.extension_bytes == b""
 
-    def test_generate(self, backend):
+    def test_generate(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),
             x509.load_pem_x509_certificate,
@@ -6099,7 +6105,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         assert len(scts) == 1
         [sct] = scts
 
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         builder = _make_certbuilder(private_key).add_extension(
             x509.PrecertificateSignedCertificateTimestamps([sct]),
             critical=False,
