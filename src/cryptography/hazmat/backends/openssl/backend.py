@@ -1327,7 +1327,8 @@ class Backend:
     ) -> ec.EllipticCurvePrivateKey:
         ec_cdata = self._ec_key_new_by_curve(curve)
 
-        get_func, group = self._ec_key_determine_group_get_func(ec_cdata)
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
 
         point = self._lib.EC_POINT_new(group)
         self.openssl_assert(point != self._ffi.NULL)
@@ -1345,7 +1346,9 @@ class Backend:
             bn_x = self._lib.BN_CTX_get(bn_ctx)
             bn_y = self._lib.BN_CTX_get(bn_ctx)
 
-            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            res = self._lib.EC_POINT_get_affine_coordinates(
+                group, point, bn_x, bn_y, bn_ctx
+            )
             if res != 1:
                 self._consume_errors()
                 raise ValueError("Unable to derive key from private_value")
@@ -1415,34 +1418,6 @@ class Backend:
             yield bn_ctx
         finally:
             self._lib.BN_CTX_end(bn_ctx)
-
-    def _ec_key_determine_group_get_func(self, ec_key):
-        """
-        Given an EC_KEY determine the group and what function is required to
-        get point coordinates.
-        """
-        self.openssl_assert(ec_key != self._ffi.NULL)
-
-        nid_two_field = self._lib.OBJ_sn2nid(b"characteristic-two-field")
-        self.openssl_assert(nid_two_field != self._lib.NID_undef)
-
-        group = self._lib.EC_KEY_get0_group(ec_key)
-        self.openssl_assert(group != self._ffi.NULL)
-
-        method = self._lib.EC_GROUP_method_of(group)
-        self.openssl_assert(method != self._ffi.NULL)
-
-        nid = self._lib.EC_METHOD_get_field_type(method)
-        self.openssl_assert(nid != self._lib.NID_undef)
-
-        if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
-            get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
-        else:
-            get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
-
-        assert get_func
-
-        return get_func, group
 
     def _ec_key_set_public_key_affine_coordinates(
         self, ctx, x: int, y: int

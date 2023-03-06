@@ -9,14 +9,11 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_EC2M;
-
 static const int OPENSSL_EC_NAMED_CURVE;
 
 typedef ... EC_KEY;
 typedef ... EC_GROUP;
 typedef ... EC_POINT;
-typedef ... EC_METHOD;
 typedef struct {
     int nid;
     const char *comment;
@@ -33,7 +30,6 @@ void EC_GROUP_free(EC_GROUP *);
 
 EC_GROUP *EC_GROUP_new_by_curve_name(int);
 
-const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
 int EC_GROUP_get_curve_name(const EC_GROUP *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
@@ -54,11 +50,8 @@ int EC_KEY_set_public_key_affine_coordinates(EC_KEY *, BIGNUM *, BIGNUM *);
 EC_POINT *EC_POINT_new(const EC_GROUP *);
 void EC_POINT_free(EC_POINT *);
 
-int EC_POINT_get_affine_coordinates_GFp(const EC_GROUP *,
-    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
-
-int EC_POINT_get_affine_coordinates_GF2m(const EC_GROUP *,
-    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
+int EC_POINT_get_affine_coordinates(const EC_GROUP *, const EC_POINT *,
+                                    BIGNUM *, BIGNUM *, BN_CTX *);
 
 size_t EC_POINT_point2oct(const EC_GROUP *, const EC_POINT *,
     point_conversion_form_t,
@@ -72,21 +65,10 @@ int EC_POINT_is_at_infinity(const EC_GROUP *, const EC_POINT *);
 int EC_POINT_mul(const EC_GROUP *, EC_POINT *, const BIGNUM *,
     const EC_POINT *, const BIGNUM *, BN_CTX *);
 
-int EC_METHOD_get_field_type(const EC_METHOD *);
-
 const char *EC_curve_nid2nist(int);
 
 int EC_GROUP_get_asn1_flag(const EC_GROUP *);
 """
 
 CUSTOMIZATIONS = """
-#if defined(OPENSSL_NO_EC2M)
-static const long Cryptography_HAS_EC2M = 0;
-
-int (*EC_POINT_get_affine_coordinates_GF2m)(const EC_GROUP *,
-    const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
-
-#else
-static const long Cryptography_HAS_EC2M = 1;
-#endif
 """
