@@ -5,12 +5,6 @@
 import typing
 
 
-def cryptography_has_ec2m() -> typing.List[str]:
-    return [
-        "EC_POINT_get_affine_coordinates_GF2m",
-    ]
-
-
 def cryptography_has_set_cert_cb() -> typing.List[str]:
     return [
         "SSL_CTX_set_cert_cb",
@@ -283,7 +277,6 @@ def cryptography_has_get_extms_support() -> typing.List[str]:
 # when cffi supports #if in cdef. We use functions instead of just a dict of
 # lists so we can use coverage to measure which are used.
 CONDITIONAL_NAMES = {
-    "Cryptography_HAS_EC2M": cryptography_has_ec2m,
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,

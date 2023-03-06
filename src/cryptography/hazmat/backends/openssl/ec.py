@@ -234,9 +234,9 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         return self.curve.key_size
 
     def public_numbers(self) -> ec.EllipticCurvePublicNumbers:
-        get_func, group = self._backend._ec_key_determine_group_get_func(
-            self._ec_key
-        )
+        group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
+        self._backend.openssl_assert(group != self._backend._ffi.NULL)
+
         point = self._backend._lib.EC_KEY_get0_public_key(self._ec_key)
         self._backend.openssl_assert(point != self._backend._ffi.NULL)
 
@@ -244,7 +244,9 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
             bn_x = self._backend._lib.BN_CTX_get(bn_ctx)
             bn_y = self._backend._lib.BN_CTX_get(bn_ctx)
 
-            res = get_func(group, point, bn_x, bn_y, bn_ctx)
+            res = self._backend._lib.EC_POINT_get_affine_coordinates(
+                group, point, bn_x, bn_y, bn_ctx
+            )
             self._backend.openssl_assert(res == 1)
 
             x = self._backend._bn_to_int(bn_x)
