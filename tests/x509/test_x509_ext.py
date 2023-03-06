@@ -16,7 +16,13 @@ from cryptography import x509
 from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    ed448,
+    ed25519,
+    rsa,
+)
 from cryptography.x509 import (
     DNSName,
     NameConstraints,
@@ -1722,7 +1728,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            typing.cast(rsa.RSAPublicKey, cert.public_key())
+        )
         assert ext.value == ski
 
     @pytest.mark.supported(
@@ -1739,7 +1747,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            typing.cast(dsa.DSAPublicKey, cert.public_key())
+        )
         assert ext.value == ski
 
     def test_invalid_bit_string_padding_from_public_key(self, backend):
@@ -1794,7 +1804,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            typing.cast(ec.EllipticCurvePublicKey, cert.public_key())
+        )
         assert ext.value == ski
 
     @pytest.mark.supported(
@@ -1811,7 +1823,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+                typing.cast(ed25519.Ed25519PublicKey, cert.public_key())
+        )
         assert ext.value == ski
 
     @pytest.mark.supported(
@@ -1828,7 +1842,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        ski = x509.SubjectKeyIdentifier.from_public_key(
+            typing.cast(ed448.Ed448PublicKey, cert.public_key())
+        )
         assert ext.value == ski
 
 
