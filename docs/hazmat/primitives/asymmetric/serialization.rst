@@ -905,7 +905,7 @@ file suffix.
         >>> cert = x509.load_pem_x509_certificate(ca_cert)
         >>> key = load_pem_private_key(ca_key, None)
         >>> p12 = pkcs12.serialize_key_and_certificates(
-        ...     b"friendlyname", key, None, None, encryption
+        ...     b"friendlyname", key, cert, None, encryption
         ... )
 
 .. class:: PKCS12Certificate
