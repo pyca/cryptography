@@ -48,8 +48,8 @@ Changelog
     :const:`~cryptography.hazmat.primitives.asymmetric.types.PublicKeyTypes`,
     :const:`~cryptography.hazmat.primitives.asymmetric.types.PrivateKeyTypes`,
     :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`,
-    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`,
-    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`.
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`,
+    :const:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
   * SSH keys:
     :const:`~cryptography.hazmat.primitives.serialization.SSHPublicKeyTypes`,
     :const:`~cryptography.hazmat.primitives.serialization.SSHPrivateKeyTypes`,

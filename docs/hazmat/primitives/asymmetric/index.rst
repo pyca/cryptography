@@ -87,24 +87,6 @@ union type aliases can be used instead to reference a multitude of key types.
     :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
 
-.. data:: CertificateIssuerPrivateKeyTypes
-
-    .. versionadded:: 40.0.0
-
-    Type alias: A union of all private key types supported for signing X.509
-    certificates.
-
-    Note: This mirrors the private types of
-    :data:`CertificateIssuerPublicKeyTypes`. x448/x25519 can be a public key,
-    but cannot be used in signing, so they are not allowed in these contexts.
-
-    Allowed:
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`.
-
 .. data:: CertificateIssuerPublicKeyTypes
 
     .. versionadded:: 40.0.0
@@ -119,3 +101,18 @@ union type aliases can be used instead to reference a multitude of key types.
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+
+.. data:: CertificateIssuerPrivateKeyTypes
+
+    .. versionadded:: 40.0.0
+
+    Type alias: A union of all private key types that can sign other X.509
+    certificates as an issuer. x448/x25519 can be a public key, but cannot be
+    used in signing, so they are not allowed in these contexts.
+
+    Allowed:
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`.
