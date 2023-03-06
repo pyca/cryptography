@@ -1824,7 +1824,7 @@ class TestSubjectKeyIdentifierExtension:
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
         ski = x509.SubjectKeyIdentifier.from_public_key(
-                typing.cast(ed25519.Ed25519PublicKey, cert.public_key())
+            typing.cast(ed25519.Ed25519PublicKey, cert.public_key())
         )
         assert ext.value == ski
 
