@@ -44,16 +44,19 @@ from cryptography.x509.oid import (
 from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048, DSA_KEY_3072
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import (
-    RSA_KEY_512,
-    RSA_KEY_2048,
     RSA_KEY_2048_ALT,
 )
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from ..utils import (
     load_nist_vectors,
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
+
+# Make ruff happy since we're importing fixtures that pytest patches in as
+# func args
+__all__ = ["rsa_key_512", "rsa_key_2048"]
 
 
 class DummyExtension(x509.ExtensionType):
@@ -732,8 +735,10 @@ class TestRevokedCertificate:
         assert crl[2:4][0].serial_number == crl[2].serial_number
         assert crl[2:4][1].serial_number == crl[3].serial_number
 
-    def test_get_revoked_certificate_doesnt_reorder(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_get_revoked_certificate_doesnt_reorder(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
@@ -1536,17 +1541,25 @@ class TestRSACertificate:
             [x509.TLSFeatureType.status_request]
         )
 
-    def test_verify_directly_issued_by_rsa(self):
-        issuer_private_key = RSA_KEY_2048.private_key()
-        subject_private_key = RSA_KEY_2048_ALT.private_key()
+    def test_verify_directly_issued_by_rsa(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = RSA_KEY_2048_ALT.private_key(
+            unsafe_skip_rsa_key_validation=True
+        )
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
         cert.verify_directly_issued_by(ca)
 
-    def test_verify_directly_issued_by_rsa_bad_sig(self):
-        issuer_private_key = RSA_KEY_2048.private_key()
-        subject_private_key = RSA_KEY_2048_ALT.private_key()
+    def test_verify_directly_issued_by_rsa_bad_sig(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = RSA_KEY_2048_ALT.private_key(
+            unsafe_skip_rsa_key_validation=True
+        )
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
@@ -1581,9 +1594,13 @@ class TestRSACertificate:
             "Issuer certificate subject does not match certificate issuer."
         )
 
-    def test_verify_directly_issued_by_algorithm_mismatch(self):
-        issuer_private_key = RSA_KEY_2048.private_key()
-        subject_private_key = RSA_KEY_2048_ALT.private_key()
+    def test_verify_directly_issued_by_algorithm_mismatch(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = RSA_KEY_2048_ALT.private_key(
+            unsafe_skip_rsa_key_validation=True
+        )
         _, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
@@ -2045,12 +2062,14 @@ class TestRSACertificateRequest:
             (hashes.SHA3_512, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_512),
         ],
     )
-    def test_build_cert(self, hashalg, hashalg_oid, backend):
+    def test_build_cert(
+        self, rsa_key_2048: rsa.RSAPrivateKey, hashalg, hashalg_oid, backend
+    ):
         if not backend.signature_hash_supported(hashalg()):
             pytest.skip(f"{hashalg} signature not supported")
 
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -2124,9 +2143,11 @@ class TestRSACertificateRequest:
             x509.DNSName("cryptography.io"),
         ]
 
-    def test_build_cert_private_type_encoding(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_cert_private_type_encoding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
         name = x509.Name(
@@ -2173,9 +2194,11 @@ class TestRSACertificateRequest:
                 == _ASN1Type.UTF8String
             )
 
-    def test_build_cert_printable_string_country_name(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_cert_printable_string_country_name(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -2228,8 +2251,10 @@ class TestRSACertificateRequest:
 
 
 class TestCertificateBuilder:
-    def test_checks_for_unsupported_extensions(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_checks_for_unsupported_extensions(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .subject_name(
@@ -2248,8 +2273,10 @@ class TestCertificateBuilder:
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_encode_nonstandard_aia(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_encode_nonstandard_aia(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         aia = x509.AuthorityInformationAccess(
             [
@@ -2277,8 +2304,10 @@ class TestCertificateBuilder:
 
         builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_encode_nonstandard_sia(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_encode_nonstandard_sia(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         sia = x509.SubjectInformationAccess(
             [
@@ -2310,8 +2339,10 @@ class TestCertificateBuilder:
         )
         assert ext.value == sia
 
-    def test_subject_dn_asn1_types(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_subject_dn_asn1_types(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         name = x509.Name(
             [
@@ -2367,8 +2398,14 @@ class TestCertificateBuilder:
             [datetime.datetime(1970, 2, 1), datetime.datetime(9999, 12, 31)],
         ],
     )
-    def test_extreme_times(self, not_valid_before, not_valid_after, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_extreme_times(
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        not_valid_before,
+        not_valid_after,
+        backend,
+    ):
+        private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .subject_name(
@@ -2393,8 +2430,8 @@ class TestCertificateBuilder:
         # GENERALIZED TIME
         assert parsed.not_after_tag == 0x18
 
-    def test_no_subject_name(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_subject_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
@@ -2408,8 +2445,8 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256(), backend)
 
-    def test_no_issuer_name(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_issuer_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
@@ -2423,8 +2460,8 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256(), backend)
 
-    def test_no_public_key(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_public_key(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
@@ -2440,8 +2477,10 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256(), backend)
 
-    def test_no_not_valid_before(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_not_valid_before(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
@@ -2457,8 +2496,10 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256(), backend)
 
-    def test_no_not_valid_after(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_not_valid_after(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
@@ -2474,8 +2515,8 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256(), backend)
 
-    def test_no_serial_number(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_serial_number(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .issuer_name(
@@ -2539,15 +2580,19 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.not_valid_after(datetime.datetime(2001, 1, 1, 12, 1))
 
-    def test_public_key_must_be_public_key(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_public_key_must_be_public_key(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
             builder.public_key(private_key)  # type: ignore[arg-type]
 
-    def test_public_key_may_only_be_set_once(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_public_key_may_only_be_set_once(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         public_key = private_key.public_key()
         builder = x509.CertificateBuilder().public_key(public_key)
 
@@ -2568,8 +2613,10 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             x509.CertificateBuilder().serial_number(0)
 
-    def test_minimal_serial_number(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_minimal_serial_number(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number(1)
@@ -2586,8 +2633,10 @@ class TestCertificateBuilder:
         cert = builder.sign(subject_private_key, hashes.SHA256(), backend)
         assert cert.serial_number == 1
 
-    def test_biggest_serial_number(self, backend):
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_biggest_serial_number(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        subject_private_key = rsa_key_2048
         builder = (
             x509.CertificateBuilder()
             .serial_number((1 << 159) - 1)
@@ -2614,11 +2663,13 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.serial_number(20)
 
-    def test_aware_not_valid_after(self, backend):
+    def test_aware_not_valid_after(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         tz = datetime.timezone(datetime.timedelta(hours=-8))
         time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         cert_builder = x509.CertificateBuilder().not_valid_after(time)
         cert_builder = (
             cert_builder.subject_name(
@@ -2635,9 +2686,9 @@ class TestCertificateBuilder:
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         assert cert.not_valid_after == utc_time
 
-    def test_earliest_time(self, backend):
+    def test_earliest_time(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         time = datetime.datetime(1950, 1, 1)
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         cert_builder = (
             x509.CertificateBuilder()
             .subject_name(
@@ -2685,11 +2736,13 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.not_valid_after(datetime.datetime.now())
 
-    def test_aware_not_valid_before(self, backend):
+    def test_aware_not_valid_before(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         tz = datetime.timezone(datetime.timedelta(hours=-8))
         time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_time = datetime.datetime(2012, 1, 17, 6, 43)
-        private_key = RSA_KEY_2048.private_key(backend)
+        private_key = rsa_key_2048
         cert_builder = x509.CertificateBuilder().not_valid_before(time)
         cert_builder = (
             cert_builder.subject_name(
@@ -2752,8 +2805,10 @@ class TestCertificateBuilder:
             )
 
     @pytest.mark.parametrize("algorithm", [object(), None])
-    def test_sign_with_unsupported_hash(self, algorithm, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_sign_with_unsupported_hash(
+        self, rsa_key_2048: rsa.RSAPrivateKey, algorithm, backend
+    ):
+        private_key = rsa_key_2048
         builder = x509.CertificateBuilder()
         builder = (
             builder.subject_name(
@@ -3015,8 +3070,10 @@ class TestCertificateBuilder:
             x509.DNSName("cryptography.io"),
         ]
 
-    def test_build_cert_with_bmpstring_universalstring_name(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_cert_with_bmpstring_universalstring_name(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         issuer = x509.Name(
             [
                 x509.NameAttribute(
@@ -3113,8 +3170,10 @@ class TestCertificateBuilder:
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 support",
     )
-    def test_build_cert_with_public_ed25519_rsa_sig(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_cert_with_public_ed25519_rsa_sig(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
         subject_private_key = ed25519.Ed25519PrivateKey.generate()
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
@@ -3211,8 +3270,10 @@ class TestCertificateBuilder:
         only_if=lambda backend: backend.ed448_supported(),
         skip_message="Requires OpenSSL with Ed448 support",
     )
-    def test_build_cert_with_public_ed448_rsa_sig(self, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_cert_with_public_ed448_rsa_sig(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
         subject_private_key = ed448.Ed448PrivateKey.generate()
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
@@ -3260,9 +3321,13 @@ class TestCertificateBuilder:
         ],
     )
     def test_build_cert_with_public_x25519_x448_rsa_sig(
-        self, priv_key_cls, pub_key_cls, backend
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        priv_key_cls,
+        pub_key_cls,
+        backend,
     ):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
+        issuer_private_key = rsa_key_2048
         subject_private_key = priv_key_cls.generate()
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
@@ -3296,9 +3361,11 @@ class TestCertificateBuilder:
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), pub_key_cls)
 
-    def test_build_cert_with_rsa_key_too_small(self, backend):
-        issuer_private_key = RSA_KEY_512.private_key(backend)
-        subject_private_key = RSA_KEY_512.private_key(backend)
+    def test_build_cert_with_rsa_key_too_small(
+        self, rsa_key_512: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_512
+        subject_private_key = rsa_key_512
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -3765,9 +3832,11 @@ class TestCertificateBuilder:
             x509.SubjectKeyIdentifier,
         ],
     )
-    def test_extensions(self, add_ext, backend):
-        issuer_private_key = RSA_KEY_2048.private_key(backend)
-        subject_private_key = RSA_KEY_2048.private_key(backend)
+    def test_extensions(
+        self, rsa_key_2048: rsa.RSAPrivateKey, add_ext, backend
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -3811,8 +3880,10 @@ class TestCertificateBuilder:
         assert ext.critical is False
         assert ext.value == add_ext
 
-    def test_build_ca_request_with_path_length_none(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_ca_request_with_path_length_none(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         request = (
             x509.CertificateSigningRequestBuilder()
@@ -3847,8 +3918,10 @@ class TestCertificateBuilder:
             )
         ],
     )
-    def test_unrecognized_extension(self, backend, unrecognized):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_unrecognized_extension(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend, unrecognized
+    ):
+        private_key = rsa_key_2048
 
         cert = (
             x509.CertificateBuilder()
@@ -3872,8 +3945,10 @@ class TestCertificateBuilder:
 
 
 class TestCertificateSigningRequestBuilder:
-    def test_sign_invalid_hash_algorithm(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_sign_invalid_hash_algorithm(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([])
@@ -3909,15 +3984,17 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_no_subject_name(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_no_subject_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        private_key = rsa_key_2048
 
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_build_ca_request_with_rsa(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_ca_request_with_rsa(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         request = (
             x509.CertificateSigningRequestBuilder()
@@ -3947,8 +4024,10 @@ class TestCertificateSigningRequestBuilder:
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
 
-    def test_build_ca_request_with_unicode(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_ca_request_with_unicode(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         request = (
             x509.CertificateSigningRequestBuilder()
@@ -3976,8 +4055,10 @@ class TestCertificateSigningRequestBuilder:
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA\U0001f37a"),
         ]
 
-    def test_subject_dn_asn1_types(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_subject_dn_asn1_types(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         request = (
             x509.CertificateSigningRequestBuilder()
@@ -4034,8 +4115,10 @@ class TestCertificateSigningRequestBuilder:
                 == asn1_type
             )
 
-    def test_build_ca_request_with_multivalue_rdns(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_ca_request_with_multivalue_rdns(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         subject = x509.Name(
             [
                 x509.RelativeDistinguishedName(
@@ -4063,8 +4146,10 @@ class TestCertificateSigningRequestBuilder:
         assert isinstance(loaded_request.subject, x509.Name)
         assert loaded_request.subject == subject
 
-    def test_build_nonca_request_with_rsa(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_build_nonca_request_with_rsa(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         request = (
             x509.CertificateSigningRequestBuilder()
@@ -4269,8 +4354,10 @@ class TestCertificateSigningRequestBuilder:
                 False,
             )
 
-    def test_add_unsupported_extension(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_add_unsupported_extension(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         builder = x509.CertificateSigningRequestBuilder()
         builder = (
             builder.subject_name(
@@ -4285,8 +4372,10 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(NotImplementedError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_add_two_extensions(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_add_two_extensions(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
         builder = x509.CertificateSigningRequestBuilder()
         request = (
             builder.subject_name(
@@ -4521,8 +4610,10 @@ class TestCertificateSigningRequestBuilder:
             ),
         ],
     )
-    def test_extensions(self, add_ext, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_extensions(
+        self, rsa_key_2048: rsa.RSAPrivateKey, add_ext, backend
+    ):
+        private_key = rsa_key_2048
 
         csr = (
             x509.CertificateSigningRequestBuilder()
@@ -4541,8 +4632,10 @@ class TestCertificateSigningRequestBuilder:
         assert not ext.critical
         assert ext.value == add_ext
 
-    def test_invalid_asn1_othername(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_invalid_asn1_othername(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         builder = (
             x509.CertificateSigningRequestBuilder()
@@ -4565,8 +4658,10 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_subject_alt_name_unsupported_general_name(self, backend):
-        private_key = RSA_KEY_2048.private_key(backend)
+    def test_subject_alt_name_unsupported_general_name(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
 
         builder = (
             x509.CertificateSigningRequestBuilder()
@@ -4582,8 +4677,8 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
-    def test_rsa_key_too_small(self, backend):
-        private_key = RSA_KEY_512.private_key(backend)
+    def test_rsa_key_too_small(self, rsa_key_512: rsa.RSAPrivateKey, backend):
+        private_key = rsa_key_512
         builder = x509.CertificateSigningRequestBuilder()
         builder = builder.subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
@@ -5687,9 +5782,9 @@ class TestSignatureRejection:
         param = params.parameters(backend)
         return param.generate_private_key()
 
-    def test_crt_signing_check(self, backend):
+    def test_crt_signing_check(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         issuer_private_key = self.load_key(backend)
-        public_key = RSA_KEY_2048.private_key(backend).public_key()
+        public_key = rsa_key_2048.public_key()
         not_valid_before = datetime.datetime(2020, 1, 1, 1, 1)
         not_valid_after = datetime.datetime(2050, 12, 31, 8, 30)
         builder = (
