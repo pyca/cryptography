@@ -21,8 +21,8 @@ from cryptography.hazmat.primitives.asymmetric import (
     x25519,
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
-    CertificateIssuerPublicKeyTypes,
     CertificateIssuerPrivateKeyTypes,
+    CertificateIssuerPublicKeyTypes,
     CertificatePublicKeyTypes,
 )
 from cryptography.x509.extensions import (
