@@ -28,17 +28,13 @@ def _load_data(filename, loader):
 
 
 def _cert_and_issuer():
-    from cryptography.hazmat.backends.openssl.backend import backend
-
     cert = _load_cert(
         os.path.join("x509", "cryptography.io.pem"),
         x509.load_pem_x509_certificate,
-        backend,
     )
     issuer = _load_cert(
         os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
         x509.load_pem_x509_certificate,
-        backend,
     )
     return cert, issuer
 
@@ -1046,12 +1042,9 @@ class TestOCSPResponse:
             os.path.join("x509", "ocsp", "resp-sha256.der"),
             ocsp.load_der_ocsp_response,
         )
-        from cryptography.hazmat.backends.openssl.backend import backend
-
         issuer = _load_cert(
             os.path.join("x509", "letsencryptx3.pem"),
             x509.load_pem_x509_certificate,
-            backend,
         )
         assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
         assert (
