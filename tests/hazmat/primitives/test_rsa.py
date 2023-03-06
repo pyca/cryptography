@@ -60,12 +60,12 @@ from .utils import (
 
 
 @pytest.fixture(scope="session")
-def rsa_key_512():
+def rsa_key_512() -> rsa.RSAPrivateKey:
     return RSA_KEY_512.private_key(unsafe_skip_rsa_key_validation=True)
 
 
 @pytest.fixture(scope="session")
-def rsa_key_2048():
+def rsa_key_2048() -> rsa.RSAPrivateKey:
     return RSA_KEY_2048.private_key(unsafe_skip_rsa_key_validation=True)
 
 
@@ -683,7 +683,7 @@ class TestRSASignature:
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_signing_digest_too_large_for_key_size(
-        self, rsa_key_512, backend
+        self, rsa_key_512: rsa.RSAPrivateKey, backend
     ):
         private_key = rsa_key_512
         with pytest.raises(ValueError):
@@ -705,7 +705,9 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_pss_signing_salt_length_too_long(self, rsa_key_2048, backend):
+    def test_pss_signing_salt_length_too_long(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with pytest.raises(ValueError):
             private_key.sign(
@@ -716,12 +718,16 @@ class TestRSASignature:
                 hashes.SHA256(),
             )
 
-    def test_unsupported_padding(self, rsa_key_2048, backend):
+    def test_unsupported_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.sign(b"msg", DummyAsymmetricPadding(), hashes.SHA1())
 
-    def test_padding_incorrect_type(self, rsa_key_2048, backend):
+    def test_padding_incorrect_type(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with pytest.raises(TypeError):
             private_key.sign(
@@ -736,7 +742,9 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_unsupported_pss_mgf(self, rsa_key_512, backend):
+    def test_unsupported_pss_mgf(
+        self, rsa_key_512: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_512
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.sign(
@@ -757,7 +765,9 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_pss_sign_unsupported_auto(self, rsa_key_2048, backend):
+    def test_pss_sign_unsupported_auto(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with pytest.raises(ValueError):
             private_key.sign(
@@ -798,7 +808,7 @@ class TestRSASignature:
         )
         private_key.sign(b"no failure", padding.PKCS1v15(), hashes.SHA512())
 
-    def test_sign(self, rsa_key_2048, backend):
+    def test_sign(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
         message = b"one little message"
         pkcs = padding.PKCS1v15()
@@ -813,7 +823,7 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_prehashed_sign(self, rsa_key_2048, backend):
+    def test_prehashed_sign(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
         message = b"one little message"
         h = hashes.Hash(hashes.SHA256(), backend)
@@ -834,7 +844,9 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_prehashed_digest_length(self, rsa_key_2048, backend):
+    def test_prehashed_digest_length(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         message = b"one little message"
         h = hashes.Hash(hashes.SHA256(), backend)
@@ -861,7 +873,7 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_unsupported_hash(self, rsa_key_512, backend):
+    def test_unsupported_hash(self, rsa_key_512: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_512
         message = b"one little message"
         pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
@@ -874,7 +886,9 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_prehashed_digest_mismatch(self, rsa_key_512, backend):
+    def test_prehashed_digest_mismatch(
+        self, rsa_key_512: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_512
         message = b"one little message"
         h = hashes.Hash(hashes.SHA512(), backend)
@@ -886,7 +900,7 @@ class TestRSASignature:
             private_key.sign(digest, pss, prehashed_alg)
 
     def test_prehashed_unsupported_in_signature_recover(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
@@ -963,7 +977,7 @@ class TestRSAVerification:
         skip_message="Does not support PKCS1v1.5.",
     )
     def test_invalid_pkcs1v15_signature_wrong_data(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
@@ -979,7 +993,7 @@ class TestRSAVerification:
             )
 
     def test_invalid_pkcs1v15_signature_recover_wrong_hash_alg(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
@@ -1033,7 +1047,9 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_invalid_pkcs1v15_signature_wrong_key(self, rsa_key_2048, backend):
+    def test_invalid_pkcs1v15_signature_wrong_key(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         private_key2 = RSA_KEY_2048_ALT.private_key(
             backend, unsafe_skip_rsa_key_validation=True
@@ -1090,7 +1106,9 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_pss_verify_auto_salt_length(self, rsa_key_2048, backend):
+    def test_pss_verify_auto_salt_length(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         signature = private_key.sign(
             b"some data",
@@ -1243,7 +1261,9 @@ class TestRSAVerification:
         ),
         skip_message="Does not support SHA1 signature.",
     )
-    def test_invalid_pss_signature_recover(self, rsa_key_2048, backend):
+    def test_invalid_pss_signature_recover(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
         pss_padding = padding.PSS(
@@ -1264,7 +1284,9 @@ class TestRSAVerification:
                 signature, pss_padding, hashes.SHA256()
             )
 
-    def test_unsupported_padding(self, rsa_key_2048, backend):
+    def test_unsupported_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
@@ -1272,7 +1294,9 @@ class TestRSAVerification:
                 b"sig", b"msg", DummyAsymmetricPadding(), hashes.SHA256()
             )
 
-    def test_padding_incorrect_type(self, rsa_key_2048, backend):
+    def test_padding_incorrect_type(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
         with pytest.raises(TypeError):
@@ -1289,7 +1313,9 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_unsupported_pss_mgf(self, rsa_key_2048, backend):
+    def test_unsupported_pss_mgf(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
@@ -1317,7 +1343,7 @@ class TestRSAVerification:
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_verify_digest_too_large_for_key_size(
-        self, rsa_key_512, backend
+        self, rsa_key_512: rsa.RSAPrivateKey, backend
     ):
         private_key = rsa_key_512
         signature = binascii.unhexlify(
@@ -1379,7 +1405,7 @@ class TestRSAVerification:
                 hashes.SHA1(),
             )
 
-    def test_verify(self, rsa_key_2048, backend):
+    def test_verify(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
         message = b"one little message"
         pkcs = padding.PKCS1v15()
@@ -1388,7 +1414,7 @@ class TestRSAVerification:
         public_key = private_key.public_key()
         public_key.verify(signature, message, pkcs, algorithm)
 
-    def test_prehashed_verify(self, rsa_key_2048, backend):
+    def test_prehashed_verify(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
         message = b"one little message"
         h = hashes.Hash(hashes.SHA256(), backend)
@@ -1400,7 +1426,9 @@ class TestRSAVerification:
         public_key = private_key.public_key()
         public_key.verify(signature, digest, pkcs, prehashed_alg)
 
-    def test_prehashed_digest_mismatch(self, rsa_key_2048, backend):
+    def test_prehashed_digest_mismatch(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         public_key = rsa_key_2048.public_key()
         message = b"one little message"
         h = hashes.Hash(hashes.SHA256(), backend)
@@ -1740,7 +1768,9 @@ class TestRSADecryption:
                 message = skey.decrypt(ciphertext, padding.PKCS1v15())
                 assert message == binascii.unhexlify(example["message"])
 
-    def test_unsupported_padding(self, rsa_key_2048, backend):
+    def test_unsupported_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             private_key.decrypt(b"0" * 256, DummyAsymmetricPadding())
@@ -1752,7 +1782,9 @@ class TestRSADecryption:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_invalid_decrypt(self, rsa_key_2048, backend):
+    def test_decrypt_invalid_decrypt(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with pytest.raises(ValueError):
             private_key.decrypt(b"\x00" * 256, padding.PKCS1v15())
@@ -1763,7 +1795,9 @@ class TestRSADecryption:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_ciphertext_too_large(self, rsa_key_2048, backend):
+    def test_decrypt_ciphertext_too_large(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with pytest.raises(ValueError):
             private_key.decrypt(b"\x00" * 257, padding.PKCS1v15())
@@ -1774,7 +1808,9 @@ class TestRSADecryption:
         ),
         skip_message="Does not support PKCS1v1.5.",
     )
-    def test_decrypt_ciphertext_too_small(self, rsa_key_2048, backend):
+    def test_decrypt_ciphertext_too_small(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         ct = binascii.unhexlify(
             b"50b4c14136bd198c2f3c3ed243fce036e168d56517984a263cd66492b80804f1"
@@ -1865,7 +1901,9 @@ class TestRSADecryption:
         ),
         skip_message="Does not support OAEP.",
     )
-    def test_invalid_oaep_decryption(self, rsa_key_2048, backend):
+    def test_invalid_oaep_decryption(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         # More recent versions of OpenSSL may raise different errors.
         # This test triggers a failure and confirms that we properly handle
         # it.
@@ -1934,7 +1972,9 @@ class TestRSADecryption:
                 ),
             )
 
-    def test_unsupported_oaep_mgf(self, rsa_key_2048, backend):
+    def test_unsupported_oaep_mgf(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.decrypt(
@@ -2013,7 +2053,7 @@ class TestRSAEncryption:
         ),
     )
     def test_rsa_encrypt_oaep_sha2(
-        self, rsa_key_2048, mgf1hash, oaephash, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, mgf1hash, oaephash, backend
     ):
         pad = padding.OAEP(
             mgf=padding.MGF1(algorithm=mgf1hash),
@@ -2112,11 +2152,13 @@ class TestRSAEncryption:
         only_if=lambda backend: backend._fips_enabled,
         skip_message="Requires FIPS",
     )
-    def test_rsa_fips_small_key(self, rsa_key_512, backend):
+    def test_rsa_fips_small_key(self, rsa_key_512: rsa.RSAPrivateKey, backend):
         with pytest.raises(ValueError):
             rsa_key_512.sign(b"somedata", padding.PKCS1v15(), hashes.SHA512())
 
-    def test_unsupported_padding(self, rsa_key_2048, backend):
+    def test_unsupported_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
 
@@ -2127,7 +2169,9 @@ class TestRSAEncryption:
                 b"somedata", padding=object()  # type: ignore[arg-type]
             )
 
-    def test_unsupported_oaep_mgf(self, rsa_key_2048, backend):
+    def test_unsupported_oaep_mgf(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         private_key = rsa_key_2048
         public_key = private_key.public_key()
 
@@ -2386,7 +2430,7 @@ class TestRSAPrivateKeySerialization:
         ),
     )
     def test_private_bytes_encrypted_pem(
-        self, rsa_key_2048, backend, fmt, password
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend, fmt, password
     ):
         skip_fips_traditional_openssl(backend, fmt)
         key = rsa_key_2048
@@ -2413,7 +2457,7 @@ class TestRSAPrivateKeySerialization:
         ],
     )
     def test_private_bytes_rejects_invalid(
-        self, rsa_key_2048, encoding, fmt, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, encoding, fmt, backend
     ):
         key = rsa_key_2048
         with pytest.raises(ValueError):
@@ -2429,7 +2473,7 @@ class TestRSAPrivateKeySerialization:
         ],
     )
     def test_private_bytes_encrypted_der(
-        self, rsa_key_2048, backend, fmt, password
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend, fmt, password
     ):
         key = rsa_key_2048
         serialized = key.private_bytes(
@@ -2471,7 +2515,12 @@ class TestRSAPrivateKeySerialization:
         ],
     )
     def test_private_bytes_unencrypted(
-        self, rsa_key_2048, backend, encoding, fmt, loader_func
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        backend,
+        encoding,
+        fmt,
+        loader_func,
     ):
         key = rsa_key_2048
         serialized = key.private_bytes(
@@ -2523,7 +2572,7 @@ class TestRSAPrivateKeySerialization:
         assert serialized == key_bytes
 
     def test_private_bytes_traditional_der_encrypted_invalid(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         key = rsa_key_2048
         with pytest.raises(ValueError):
@@ -2533,7 +2582,9 @@ class TestRSAPrivateKeySerialization:
                 serialization.BestAvailableEncryption(b"password"),
             )
 
-    def test_private_bytes_invalid_encoding(self, rsa_key_2048, backend):
+    def test_private_bytes_invalid_encoding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         key = rsa_key_2048
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -2542,7 +2593,9 @@ class TestRSAPrivateKeySerialization:
                 serialization.NoEncryption(),
             )
 
-    def test_private_bytes_invalid_format(self, rsa_key_2048, backend):
+    def test_private_bytes_invalid_format(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         key = rsa_key_2048
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -2552,7 +2605,7 @@ class TestRSAPrivateKeySerialization:
             )
 
     def test_private_bytes_invalid_encryption_algorithm(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         key = rsa_key_2048
         with pytest.raises(TypeError):
@@ -2563,7 +2616,7 @@ class TestRSAPrivateKeySerialization:
             )
 
     def test_private_bytes_unsupported_encryption_type(
-        self, rsa_key_2048, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
         key = rsa_key_2048
         with pytest.raises(ValueError):
@@ -2655,7 +2708,9 @@ class TestRSAPEMPublicKeySerialization:
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
-    def test_public_bytes_invalid_encoding(self, rsa_key_2048, backend):
+    def test_public_bytes_invalid_encoding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         key = rsa_key_2048.public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
@@ -2663,7 +2718,9 @@ class TestRSAPEMPublicKeySerialization:
                 serialization.PublicFormat.PKCS1,
             )
 
-    def test_public_bytes_invalid_format(self, rsa_key_2048, backend):
+    def test_public_bytes_invalid_format(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         key = rsa_key_2048.public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
@@ -2697,7 +2754,7 @@ class TestRSAPEMPublicKeySerialization:
         ),
     )
     def test_public_bytes_rejects_invalid(
-        self, rsa_key_2048, encoding, fmt, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, encoding, fmt, backend
     ):
         key = rsa_key_2048.public_key()
         with pytest.raises(ValueError):
