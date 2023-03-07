@@ -64,8 +64,8 @@ Changelog
     :const:`~cryptography.hazmat.primitives.twofactor.hotp.HOTPHashTypes`
 
 * Deprecated previously undocumented but not private type aliases in the
-  `cryptography.hazmat.primitives.asymmetric.types` module in favor of new ones
-  above.
+  ``cryptography.hazmat.primitives.asymmetric.types`` module in favor of new
+  ones above.
 
 
 .. _v39-0-2:
