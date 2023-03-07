@@ -25,6 +25,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
+* Deprecated and renamed the keyword argument for disabling RSA key validation
+  checks that was added in 39.0.0. The previous name will raise a warning
+  until it is removed in two releases.
 * Added support for parsing SSH certificates in addition to public keys with
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`

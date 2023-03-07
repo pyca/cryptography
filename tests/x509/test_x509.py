@@ -1453,7 +1453,7 @@ class TestRSACertificate:
     ):
         issuer_private_key = rsa_key_2048
         subject_private_key = RSA_KEY_2048_ALT.private_key(
-            unsafe_skip_rsa_key_validation=True
+            unsafe_skip_key_validation=True
         )
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
@@ -1465,7 +1465,7 @@ class TestRSACertificate:
     ):
         issuer_private_key = rsa_key_2048
         subject_private_key = RSA_KEY_2048_ALT.private_key(
-            unsafe_skip_rsa_key_validation=True
+            unsafe_skip_key_validation=True
         )
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
@@ -1506,7 +1506,7 @@ class TestRSACertificate:
     ):
         issuer_private_key = rsa_key_2048
         subject_private_key = RSA_KEY_2048_ALT.private_key(
-            unsafe_skip_rsa_key_validation=True
+            unsafe_skip_key_validation=True
         )
         _, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key

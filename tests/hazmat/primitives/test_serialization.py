@@ -10,6 +10,7 @@ import textwrap
 
 import pytest
 
+from cryptography import utils
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -109,6 +110,34 @@ class TestBufferProtocolSerialization:
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
+
+    def test_deprecated_unsafe_kwargs(self):
+        der = load_vectors_from_file(
+            os.path.join("asymmetric", "DER_Serialization", "testrsa.der"),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        pem = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "unenc-rsa-pkcs8.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.warns(utils.DeprecatedIn40):
+            load_der_private_key(
+                der, None, unsafe_skip_rsa_key_validation=True
+            )
+        with pytest.warns(utils.DeprecatedIn40):
+            load_der_private_key(
+                der, None, unsafe_skip_rsa_key_validation=False
+            )
+        with pytest.warns(utils.DeprecatedIn40):
+            load_pem_private_key(
+                pem, None, unsafe_skip_rsa_key_validation=True
+            )
+        with pytest.warns(utils.DeprecatedIn40):
+            load_pem_private_key(
+                pem, None, unsafe_skip_rsa_key_validation=False
+            )
 
 
 class TestDERSerialization:

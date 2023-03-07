@@ -369,7 +369,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         rsa_cdata,
         evp_pkey,
         *,
-        unsafe_skip_rsa_key_validation: bool,
+        unsafe_skip_key_validation: bool,
     ):
         res: int
         # RSA_check_key is slower in OpenSSL 3.0.0 due to improved
@@ -377,7 +377,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         # since users don't load new keys constantly, but for TESTING we've
         # added an init arg that allows skipping the checks. You should not
         # use this in production code unless you understand the consequences.
-        if not unsafe_skip_rsa_key_validation:
+        if not unsafe_skip_key_validation:
             res = backend._lib.RSA_check_key(rsa_cdata)
             if res != 1:
                 errors = backend._consume_errors_with_text()
