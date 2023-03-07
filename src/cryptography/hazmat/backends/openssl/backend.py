@@ -706,7 +706,12 @@ class Backend:
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+            return _EllipticCurvePrivateKey(
+                self,
+                ec_cdata,
+                evp_pkey,
+                unsafe_skip_key_validation=unsafe_skip_key_validation,
+            )
         elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
@@ -726,7 +731,9 @@ class Backend:
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
-    def _evp_pkey_to_public_key(self, evp_pkey) -> PUBLIC_KEY_TYPES:
+    def _evp_pkey_to_public_key(
+        self, evp_pkey, unsafe_skip_key_validation: bool
+    ) -> PUBLIC_KEY_TYPES:
         """
         Return the appropriate type of PublicKey given an evp_pkey cdata
         pointer.
@@ -751,7 +758,10 @@ class Backend:
             bio = self._create_mem_bio_gc()
             res = self._lib.i2d_RSAPublicKey_bio(bio, rsa_cdata)
             self.openssl_assert(res == 1)
-            return self.load_der_public_key(self._read_mem_bio(bio))
+            return self.load_der_public_key(
+                self._read_mem_bio(bio),
+                unsafe_skip_key_validation=unsafe_skip_key_validation,
+            )
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
             self.openssl_assert(dsa_cdata != self._ffi.NULL)
@@ -763,7 +773,12 @@ class Backend:
                 errors = self._consume_errors_with_text()
                 raise ValueError("Unable to load EC key", errors)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
-            return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+            return _EllipticCurvePublicKey(
+                self,
+                ec_cdata,
+                evp_pkey,
+                unsafe_skip_key_validation=unsafe_skip_key_validation,
+            )
         elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
@@ -965,7 +980,9 @@ class Backend:
             unsafe_skip_key_validation,
         )
 
-    def load_pem_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
+    def load_pem_public_key(
+        self, data: bytes, unsafe_skip_key_validation: bool
+    ) -> PUBLIC_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
         # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
         # the default password callback if you pass an encrypted private
@@ -984,7 +1001,9 @@ class Backend:
         )
         if evp_pkey != self._ffi.NULL:
             evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-            return self._evp_pkey_to_public_key(evp_pkey)
+            return self._evp_pkey_to_public_key(
+                evp_pkey, unsafe_skip_key_validation=unsafe_skip_key_validation
+            )
         else:
             # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
             # need to check to see if it is a pure PKCS1 RSA public key (not
@@ -1059,12 +1078,16 @@ class Backend:
             self._consume_errors()
             return None
 
-    def load_der_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
+    def load_der_public_key(
+        self, data: bytes, unsafe_skip_key_validation: bool
+    ) -> PUBLIC_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
         evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
         if evp_pkey != self._ffi.NULL:
             evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-            return self._evp_pkey_to_public_key(evp_pkey)
+            return self._evp_pkey_to_public_key(
+                evp_pkey, unsafe_skip_key_validation=unsafe_skip_key_validation
+            )
         else:
             # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
             # need to check to see if it is a pure PKCS1 RSA public key (not
@@ -1259,7 +1282,10 @@ class Backend:
 
             evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-            return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+            # We can skip key validation since we just generated the key
+            return _EllipticCurvePrivateKey(
+                self, ec_cdata, evp_pkey, unsafe_skip_key_validation=True
+            )
         else:
             raise UnsupportedAlgorithm(
                 f"Backend object does not support {curve.name}.",
@@ -1267,7 +1293,9 @@ class Backend:
             )
 
     def load_elliptic_curve_private_numbers(
-        self, numbers: ec.EllipticCurvePrivateNumbers
+        self,
+        numbers: ec.EllipticCurvePrivateNumbers,
+        unsafe_skip_key_validation: bool,
     ) -> ec.EllipticCurvePrivateKey:
         public = numbers.public_numbers
 
@@ -1287,10 +1315,17 @@ class Backend:
 
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-        return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+        return _EllipticCurvePrivateKey(
+            self,
+            ec_cdata,
+            evp_pkey,
+            unsafe_skip_key_validation=unsafe_skip_key_validation,
+        )
 
     def load_elliptic_curve_public_numbers(
-        self, numbers: ec.EllipticCurvePublicNumbers
+        self,
+        numbers: ec.EllipticCurvePublicNumbers,
+        unsafe_skip_key_validation: bool,
     ) -> ec.EllipticCurvePublicKey:
         ec_cdata = self._ec_key_new_by_curve(numbers.curve)
         self._ec_key_set_public_key_affine_coordinates(
@@ -1298,10 +1333,18 @@ class Backend:
         )
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-        return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+        return _EllipticCurvePublicKey(
+            self,
+            ec_cdata,
+            evp_pkey,
+            unsafe_skip_key_validation=unsafe_skip_key_validation,
+        )
 
     def load_elliptic_curve_public_bytes(
-        self, curve: ec.EllipticCurve, point_bytes: bytes
+        self,
+        curve: ec.EllipticCurve,
+        point_bytes: bytes,
+        unsafe_skip_key_validation: bool,
     ) -> ec.EllipticCurvePublicKey:
         ec_cdata = self._ec_key_new_by_curve(curve)
         group = self._lib.EC_KEY_get0_group(ec_cdata)
@@ -1320,7 +1363,12 @@ class Backend:
         res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
         self.openssl_assert(res == 1)
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
-        return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
+        return _EllipticCurvePublicKey(
+            self,
+            ec_cdata,
+            evp_pkey,
+            unsafe_skip_key_validation=unsafe_skip_key_validation,
+        )
 
     def derive_elliptic_curve_private_key(
         self, private_value: int, curve: ec.EllipticCurve
@@ -1362,7 +1410,9 @@ class Backend:
 
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
-        return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
+        return _EllipticCurvePrivateKey(
+            self, ec_cdata, evp_pkey, unsafe_skip_key_validation=True
+        )
 
     def _ec_key_new_by_curve(self, curve: ec.EllipticCurve):
         curve_nid = self._elliptic_curve_to_nid(curve)
@@ -1420,7 +1470,7 @@ class Backend:
             self._lib.BN_CTX_end(bn_ctx)
 
     def _ec_key_set_public_key_affine_coordinates(
-        self, ctx, x: int, y: int
+        self, ec_cdata, x: int, y: int
     ) -> None:
         """
         Sets the public key point in the EC_KEY context to the affine x and y
@@ -1434,10 +1484,20 @@ class Backend:
 
         x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
         y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
-        res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_set_affine_coordinates(
+                group, point, x, y, bn_ctx
+            )
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
 
     def _private_key_bytes(
         self,

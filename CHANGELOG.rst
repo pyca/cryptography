@@ -26,8 +26,19 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 * Deprecated and renamed the keyword argument for disabling RSA key validation
-  checks that was added in 39.0.0. The previous name will raise a warning
-  until it is removed in two releases.
+  checks that was added in 39.0.0. The new argument also applies to EC keys
+  (see below). The previous name will raise a warning until it is removed in
+  two releases.
+* Added support for disabling EC key validation checks when loading EC
+  keys via
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`,
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers.private_key`,
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.public_key`.
+  This speeds up key loading but is :term:`unsafe` if you are loading potentially
+  attacker supplied keys.
 * Added support for parsing SSH certificates in addition to public keys with
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`

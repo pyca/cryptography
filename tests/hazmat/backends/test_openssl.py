@@ -487,7 +487,9 @@ class TestOpenSSLSerializationWithOpenSSL:
                 key, unsafe_skip_key_validation=False
             )
         with raises_unsupported_algorithm(None):
-            backend._evp_pkey_to_public_key(key)
+            backend._evp_pkey_to_public_key(
+                key, unsafe_skip_key_validation=False
+            )
 
     def test_very_long_pem_serialization_password(self):
         password = b"x" * 1024

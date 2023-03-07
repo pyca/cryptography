@@ -140,10 +140,24 @@ Elliptic Curve Signature Algorithms
 
         The private value.
 
-    .. method:: private_key()
+    .. method:: private_key(*, unsafe_skip_key_validation=False)
 
         Convert a collection of numbers into a private key suitable for doing
         actual cryptographic operations.
+
+        :param unsafe_skip_key_validation:
+
+            .. versionadded:: 40.0.0
+
+            A keyword-only argument that defaults to ``False``. If ``True``
+            keys will not be validated. This significantly speeds up
+            loading the keys, but is :term:`unsafe` unless you are certain
+            the key is valid. User supplied keys should never be loaded with
+            this parameter set to ``True``. If you do load an invalid key this
+            way and attempt to use it OpenSSL may hang, crash, or otherwise
+            misbehave.
+
+        :type unsafe_skip_key_validation: bool
 
         :returns: A new instance of :class:`EllipticCurvePrivateKey`.
 
@@ -179,10 +193,24 @@ Elliptic Curve Signature Algorithms
 
         The affine y component of the public point used for verifying.
 
-    .. method:: public_key()
+    .. method:: public_key(*, unsafe_skip_key_validation=False)
 
         Convert a collection of numbers into a public key suitable for doing
         actual cryptographic operations.
+
+        :param unsafe_skip_key_validation:
+
+            .. versionadded:: 40.0.0
+
+            A keyword-only argument that defaults to ``False``. If ``True``
+            keys will not be validated. This significantly speeds up
+            loading the keys, but is :term:`unsafe` unless you are certain
+            the key is valid. User supplied keys should never be loaded with
+            this parameter set to ``True``. If you do load an invalid key this
+            way and attempt to use it OpenSSL may hang, crash, or otherwise
+            misbehave.
+
+        :type unsafe_skip_key_validation: bool
 
         :raises ValueError: Raised if the point is invalid for the curve.
         :returns: A new instance of :class:`EllipticCurvePublicKey`.
@@ -712,7 +740,7 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
-    .. classmethod:: from_encoded_point(curve, data)
+    .. classmethod:: from_encoded_point(curve, data, *, unsafe_skip_key_validation=False)
 
         .. versionadded:: 2.5
 
@@ -725,6 +753,20 @@ Key Interfaces
             instance.
 
         :param bytes data: The serialized point byte string.
+
+        :param unsafe_skip_key_validation:
+
+            .. versionadded:: 40.0.0
+
+            A keyword-only argument that defaults to ``False``. If ``True``
+            keys will not be validated. This significantly speeds up
+            loading the keys, but is :term:`unsafe` unless you are certain
+            the key is valid. User supplied keys should never be loaded with
+            this parameter set to ``True``. If you do load an invalid key this
+            way and attempt to use it OpenSSL may hang, crash, or otherwise
+            misbehave.
+
+        :type unsafe_skip_key_validation: bool
 
         :returns: An :class:`EllipticCurvePublicKey` instance.
 

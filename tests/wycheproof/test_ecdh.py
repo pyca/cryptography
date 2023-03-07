@@ -73,8 +73,10 @@ def test_ecdh(backend, wycheproof):
     )
 
     try:
+        # TODO: why is this safe?
         public_key = serialization.load_der_public_key(
-            binascii.unhexlify(wycheproof.testcase["public"]), backend
+            binascii.unhexlify(wycheproof.testcase["public"]),
+            unsafe_skip_key_validation=True,
         )
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
     except ValueError:
@@ -122,7 +124,9 @@ def test_ecdh_ecpoint(backend, wycheproof):
 
     assert wycheproof.valid or wycheproof.acceptable
     public_key = ec.EllipticCurvePublicKey.from_encoded_point(
-        curve, binascii.unhexlify(wycheproof.testcase["public"])
+        curve,
+        binascii.unhexlify(wycheproof.testcase["public"]),
+        unsafe_skip_key_validation=True,
     )
     computed_shared = private_key.exchange(ec.ECDH(), public_key)
     expected_shared = binascii.unhexlify(wycheproof.testcase["shared"])

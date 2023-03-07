@@ -166,7 +166,10 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_encoded_point(
-        cls, curve: EllipticCurve, data: bytes
+        cls,
+        curve: EllipticCurve,
+        data: bytes,
+        unsafe_skip_key_validation: bool = False,
     ) -> "EllipticCurvePublicKey":
         utils._check_bytes("data", data)
 
@@ -181,7 +184,9 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
 
         from cryptography.hazmat.backends.openssl.backend import backend
 
-        return backend.load_elliptic_curve_public_bytes(curve, data)
+        return backend.load_elliptic_curve_public_bytes(
+            curve, data, unsafe_skip_key_validation
+        )
 
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
@@ -360,12 +365,19 @@ class EllipticCurvePublicNumbers:
         self._x = x
         self._curve = curve
 
-    def public_key(self, backend: typing.Any = None) -> EllipticCurvePublicKey:
+    def public_key(
+        self,
+        backend: typing.Any = None,
+        *,
+        unsafe_skip_key_validation: bool = False,
+    ) -> EllipticCurvePublicKey:
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
         )
 
-        return ossl.load_elliptic_curve_public_numbers(self)
+        return ossl.load_elliptic_curve_public_numbers(
+            self, unsafe_skip_key_validation
+        )
 
     @property
     def curve(self) -> EllipticCurve:
@@ -417,13 +429,18 @@ class EllipticCurvePrivateNumbers:
         self._public_numbers = public_numbers
 
     def private_key(
-        self, backend: typing.Any = None
+        self,
+        backend: typing.Any = None,
+        *,
+        unsafe_skip_key_validation: bool = False,
     ) -> EllipticCurvePrivateKey:
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
         )
 
-        return ossl.load_elliptic_curve_private_numbers(self)
+        return ossl.load_elliptic_curve_private_numbers(
+            self, unsafe_skip_key_validation
+        )
 
     @property
     def private_value(self) -> int:

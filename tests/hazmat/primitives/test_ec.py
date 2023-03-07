@@ -231,7 +231,7 @@ class TestECWithNumbers:
                     ec.EllipticCurvePublicNumbers(
                         vector["x"], vector["y"], curve_type()
                     ),
-                ).private_key(backend)
+                ).private_key(unsafe_skip_key_validation=True)
                 assert key
 
                 priv_num = key.private_numbers()
@@ -263,7 +263,7 @@ class TestECDSAVectors:
                     ec.EllipticCurvePublicNumbers(
                         vector["x"], vector["y"], curve_type()
                     ),
-                ).private_key(backend)
+                ).private_key(unsafe_skip_key_validation=True)
                 assert key
 
                 pkey = key.public_key()
@@ -464,7 +464,7 @@ class TestECDSAVectors:
 
                 key = ec.EllipticCurvePublicNumbers(
                     vector["x"], vector["y"], curve_type()
-                ).public_key(backend)
+                ).public_key(unsafe_skip_key_validation=True)
 
                 signature = encode_dss_signature(vector["r"], vector["s"])
 
@@ -484,7 +484,7 @@ class TestECDSAVectors:
 
                 key = ec.EllipticCurvePublicNumbers(
                     vector["x"], vector["y"], curve_type()
-                ).public_key(backend)
+                ).public_key(unsafe_skip_key_validation=True)
 
                 signature = encode_dss_signature(vector["r"], vector["s"])
 
@@ -625,7 +625,9 @@ class TestECSerialization:
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: pemfile.read().encode(),
         )
-        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        key = serialization.load_pem_private_key(
+            key_bytes, None, unsafe_skip_key_validation=True
+        )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.PEM,
@@ -633,7 +635,7 @@ class TestECSerialization:
             serialization.BestAvailableEncryption(password),
         )
         loaded_key = serialization.load_pem_private_key(
-            serialized, password, backend
+            serialized, password, unsafe_skip_key_validation=True
         )
         assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
@@ -670,7 +672,9 @@ class TestECSerialization:
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: pemfile.read().encode(),
         )
-        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        key = serialization.load_pem_private_key(
+            key_bytes, None, unsafe_skip_key_validation=True
+        )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             serialization.Encoding.DER,
@@ -678,7 +682,7 @@ class TestECSerialization:
             serialization.BestAvailableEncryption(password),
         )
         loaded_key = serialization.load_der_private_key(
-            serialized, password, backend
+            serialized, password, unsafe_skip_key_validation=True
         )
         assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
@@ -718,12 +722,16 @@ class TestECSerialization:
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: pemfile.read().encode(),
         )
-        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        key = serialization.load_pem_private_key(
+            key_bytes, None, unsafe_skip_key_validation=True
+        )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         serialized = key.private_bytes(
             encoding, fmt, serialization.NoEncryption()
         )
-        loaded_key = loader_func(serialized, None, backend)
+        loaded_key = loader_func(
+            serialized, None, unsafe_skip_key_validation=True
+        )
         assert isinstance(loaded_key, ec.EllipticCurvePrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
@@ -758,7 +766,7 @@ class TestECSerialization:
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = loader_func(key_bytes, None, backend)
+        key = loader_func(key_bytes, None, unsafe_skip_key_validation=True)
         serialized = key.private_bytes(
             encoding,
             serialization.PrivateFormat.TraditionalOpenSSL,
@@ -771,7 +779,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(ValueError):
@@ -786,7 +794,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(TypeError):
@@ -801,7 +809,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(TypeError):
@@ -816,7 +824,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(TypeError):
@@ -831,7 +839,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(ValueError):
@@ -846,7 +854,7 @@ class TestECSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         public = key.public_key()
@@ -854,7 +862,9 @@ class TestECSerialization:
             serialization.Encoding.PEM,
             serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        parsed_public = serialization.load_pem_public_key(pem, backend)
+        parsed_public = serialization.load_pem_public_key(
+            pem, backend, unsafe_skip_key_validation=True
+        )
         assert parsed_public
 
 
@@ -885,7 +895,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = loader_func(key_bytes, backend)
+        key = loader_func(key_bytes, unsafe_skip_key_validation=True)
         serialized = key.public_bytes(
             encoding,
             serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -903,7 +913,9 @@ class TestEllipticCurvePEMPublicKeySerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        key = serialization.load_pem_public_key(key_bytes, backend)
+        key = serialization.load_pem_public_key(
+            key_bytes, unsafe_skip_key_validation=True
+        )
 
         ssh_bytes = key.public_bytes(
             serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
@@ -928,7 +940,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), backend
+                pemfile.read().encode(), unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(TypeError):
@@ -975,7 +987,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), backend
+                pemfile.read().encode(), unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(TypeError):
@@ -991,7 +1003,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), backend
+                pemfile.read().encode(), unsafe_skip_key_validation=True
             ),
         )
         with pytest.raises(ValueError):
@@ -1012,7 +1024,9 @@ class TestEllipticCurvePEMPublicKeySerialization:
         ]
         _skip_curve_unsupported(backend, curve)
         point = binascii.unhexlify(vector["point"])
-        pn = ec.EllipticCurvePublicKey.from_encoded_point(curve, point)
+        pn = ec.EllipticCurvePublicKey.from_encoded_point(
+            curve, point, unsafe_skip_key_validation=True
+        )
         public_num = pn.public_numbers()
         assert public_num.x == int(vector["x"], 16)
         assert public_num.y == int(vector["y"], 16)
@@ -1025,7 +1039,9 @@ class TestEllipticCurvePEMPublicKeySerialization:
         )
         with pytest.raises(ValueError):
             ec.EllipticCurvePublicKey.from_encoded_point(
-                ec.SECP256R1(), uncompressed_point
+                ec.SECP256R1(),
+                uncompressed_point,
+                unsafe_skip_key_validation=True,
             )
 
     def test_from_encoded_point_uncompressed(self):
@@ -1035,7 +1051,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
             "6d"
         )
         pn = ec.EllipticCurvePublicKey.from_encoded_point(
-            ec.SECP256R1(), uncompressed_point
+            ec.SECP256R1(), uncompressed_point, unsafe_skip_key_validation=True
         )
         assert pn.public_numbers().x == int(
             "7399336a9edf2197c2f8eb3d39aed9c34a66e45d918a07dc7684c42c9b37ac68",
@@ -1097,6 +1113,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 serialization.Encoding.X962,
                 serialization.PublicFormat.UncompressedPoint,
             ),
+            unsafe_skip_key_validation=True,
         )
         assert (
             key.public_bytes(
@@ -1146,7 +1163,9 @@ class TestECDH:
                         private_numbers.private_key(backend)
                     continue
                 else:
-                    private_key = private_numbers.private_key(backend)
+                    private_key = private_numbers.private_key(
+                        unsafe_skip_key_validation=True
+                    )
 
                 peer_numbers = vector["CAVS"]
                 public_numbers = ec.EllipticCurvePublicNumbers(
@@ -1161,7 +1180,9 @@ class TestECDH:
                         public_numbers.public_key(backend)
                     continue
                 else:
-                    peer_pubkey = public_numbers.public_key(backend)
+                    peer_pubkey = public_numbers.public_key(
+                        unsafe_skip_key_validation=True
+                    )
 
                 z = private_key.exchange(ec.ECDH(), peer_pubkey)
                 zz = int(hexlify(z).decode("ascii"), 16)
@@ -1189,13 +1210,13 @@ class TestECDH:
             ec.EllipticCurvePublicNumbers(
                 int(vector["x_qa"], 16), int(vector["y_qa"], 16), curve
             ),
-        ).private_key(backend)
+        ).private_key(unsafe_skip_key_validation=True)
         peer = ec.EllipticCurvePrivateNumbers(
             int(vector["db"], 16),
             ec.EllipticCurvePublicNumbers(
                 int(vector["x_qb"], 16), int(vector["y_qb"], 16), curve
             ),
-        ).private_key(backend)
+        ).private_key(unsafe_skip_key_validation=True)
         shared_secret = key.exchange(ec.ECDH(), peer.public_key())
         assert shared_secret == binascii.unhexlify(vector["x_z"])
         shared_secret_2 = peer.exchange(ec.ECDH(), key.public_key())
@@ -1207,7 +1228,7 @@ class TestECDH:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
@@ -1224,11 +1245,13 @@ class TestECDH:
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), None, backend
+                pemfile.read().encode(), None, unsafe_skip_key_validation=True
             ),
         )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
-        public_key = EC_KEY_SECP384R1.public_numbers.public_key(backend)
+        public_key = EC_KEY_SECP384R1.public_numbers.public_key(
+            unsafe_skip_key_validation=True
+        )
 
         with pytest.raises(ValueError):
             key.exchange(ec.ECDH(), public_key)
