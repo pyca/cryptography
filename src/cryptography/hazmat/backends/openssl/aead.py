@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
         ChaCha20Poly1305,
     )
 
-    _AEAD_TYPES = typing.Union[
+    _AEADTypes = typing.Union[
         AESCCM, AESGCM, AESOCB3, AESSIV, ChaCha20Poly1305
     ]
 
@@ -24,7 +24,7 @@ _ENCRYPT = 1
 _DECRYPT = 0
 
 
-def _aead_cipher_name(cipher: "_AEAD_TYPES") -> bytes:
+def _aead_cipher_name(cipher: "_AEADTypes") -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
@@ -64,7 +64,7 @@ def _evp_cipher(cipher_name: bytes, backend: "Backend"):
 
 def _aead_create_ctx(
     backend: "Backend",
-    cipher: "_AEAD_TYPES",
+    cipher: "_AEADTypes",
     key: bytes,
 ):
     ctx = backend._lib.EVP_CIPHER_CTX_new()
@@ -189,7 +189,7 @@ def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
 
 def _encrypt(
     backend: "Backend",
-    cipher: "_AEAD_TYPES",
+    cipher: "_AEADTypes",
     nonce: bytes,
     data: bytes,
     associated_data: typing.List[bytes],
@@ -247,7 +247,7 @@ def _encrypt(
 
 def _decrypt(
     backend: "Backend",
-    cipher: "_AEAD_TYPES",
+    cipher: "_AEADTypes",
     nonce: bytes,
     data: bytes,
     associated_data: typing.List[bytes],

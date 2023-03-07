@@ -16,14 +16,13 @@ from cryptography.hazmat.primitives import constant_time, serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.asymmetric.types import (
-    CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES,
-    CERTIFICATE_PUBLIC_KEY_TYPES,
+    CertificateIssuerPublicKeyTypes,
+    CertificatePublicKeyTypes,
 )
 from cryptography.x509.certificate_transparency import (
     SignedCertificateTimestamp,
 )
 from cryptography.x509.general_name import (
-    _IPADDRESS_TYPES,
     DirectoryName,
     DNSName,
     GeneralName,
@@ -32,6 +31,7 @@ from cryptography.x509.general_name import (
     RegisteredID,
     RFC822Name,
     UniformResourceIdentifier,
+    _IPAddressTypes,
 )
 from cryptography.x509.name import Name, RelativeDistinguishedName
 from cryptography.x509.oid import (
@@ -47,7 +47,7 @@ ExtensionTypeVar = typing.TypeVar(
 
 
 def _key_identifier_from_public_key(
-    public_key: CERTIFICATE_PUBLIC_KEY_TYPES,
+    public_key: CertificatePublicKeyTypes,
 ) -> bytes:
     if isinstance(public_key, RSAPublicKey):
         data = public_key.public_bytes(
@@ -213,14 +213,14 @@ class AuthorityKeyIdentifier(ExtensionType):
         self._authority_cert_issuer = authority_cert_issuer
         self._authority_cert_serial_number = authority_cert_serial_number
 
-    # This takes a subset of CERTIFICATE_PUBLIC_KEY_TYPES because an issuer
+    # This takes a subset of CertificatePublicKeyTypes because an issuer
     # cannot have an X25519/X448 key. This introduces some unfortunate
     # asymmetry that requires typing users to explicitly
     # narrow their type, but we should make this accurate and not just
     # convenient.
     @classmethod
     def from_issuer_public_key(
-        cls, public_key: CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES
+        cls, public_key: CertificateIssuerPublicKeyTypes
     ) -> "AuthorityKeyIdentifier":
         digest = _key_identifier_from_public_key(public_key)
         return cls(
@@ -293,7 +293,7 @@ class SubjectKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_public_key(
-        cls, public_key: CERTIFICATE_PUBLIC_KEY_TYPES
+        cls, public_key: CertificatePublicKeyTypes
     ) -> "SubjectKeyIdentifier":
         return cls(_key_identifier_from_public_key(public_key))
 
@@ -1464,7 +1464,7 @@ class GeneralNames:
     @typing.overload
     def get_values_for_type(
         self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPADDRESS_TYPES]:
+    ) -> typing.List[_IPAddressTypes]:
         ...
 
     @typing.overload
@@ -1485,7 +1485,7 @@ class GeneralNames:
             typing.Type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPADDRESS_TYPES],
+        typing.List[_IPAddressTypes],
         typing.List[str],
         typing.List[OtherName],
         typing.List[Name],
@@ -1548,7 +1548,7 @@ class SubjectAlternativeName(ExtensionType):
     @typing.overload
     def get_values_for_type(
         self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPADDRESS_TYPES]:
+    ) -> typing.List[_IPAddressTypes]:
         ...
 
     @typing.overload
@@ -1569,7 +1569,7 @@ class SubjectAlternativeName(ExtensionType):
             typing.Type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPADDRESS_TYPES],
+        typing.List[_IPAddressTypes],
         typing.List[str],
         typing.List[OtherName],
         typing.List[Name],
@@ -1629,7 +1629,7 @@ class IssuerAlternativeName(ExtensionType):
     @typing.overload
     def get_values_for_type(
         self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPADDRESS_TYPES]:
+    ) -> typing.List[_IPAddressTypes]:
         ...
 
     @typing.overload
@@ -1650,7 +1650,7 @@ class IssuerAlternativeName(ExtensionType):
             typing.Type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPADDRESS_TYPES],
+        typing.List[_IPAddressTypes],
         typing.List[str],
         typing.List[OtherName],
         typing.List[Name],
@@ -1710,7 +1710,7 @@ class CertificateIssuer(ExtensionType):
     @typing.overload
     def get_values_for_type(
         self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPADDRESS_TYPES]:
+    ) -> typing.List[_IPAddressTypes]:
         ...
 
     @typing.overload
@@ -1731,7 +1731,7 @@ class CertificateIssuer(ExtensionType):
             typing.Type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPADDRESS_TYPES],
+        typing.List[_IPAddressTypes],
         typing.List[str],
         typing.List[OtherName],
         typing.List[Name],

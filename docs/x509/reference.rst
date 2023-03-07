@@ -331,13 +331,7 @@ X.509 Certificate Object
         The public key associated with the certificate.
 
         :returns: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
         .. doctest::
 
@@ -779,13 +773,7 @@ X.509 Certificate Builder
         Sets the subject's public key.
 
         :param public_key: The subject's public key. This can be one of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
     .. method:: serial_number(serial_number)
 
@@ -836,13 +824,9 @@ X.509 Certificate Builder
 
         Sign the certificate using the CA's private key.
 
-        :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
-            that will be used to sign the certificate.
+        :param private_key: The key that will be used to sign the certificate,
+            one of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
@@ -871,11 +855,7 @@ X.509 CSR (Certificate Signing Request) Object
         The public key associated with the request.
 
         :returns: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
         .. doctest::
 
@@ -1067,13 +1047,9 @@ X.509 Certificate Revocation List Builder
 
         Sign this CRL using the CA's private key.
 
-        :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
-            that will be used to sign the certificate.
+        :param private_key: The private key that will be used to sign the
+            certificate, one of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
@@ -1246,15 +1222,11 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. method:: sign(private_key, algorithm)
 
-        :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+        :param private_key: The private key
             that will be used to sign the request.  When the request is
             signed by a certificate authority, the private key's associated
-            public key will be stored in the resulting certificate.
+            public key will be stored in the resulting certificate. One of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
@@ -2038,11 +2010,7 @@ X.509 Extensions
         section 4.2.1.2.
 
         :param public_key: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`.
 
         .. doctest::
 
@@ -2123,11 +2091,7 @@ X.509 Extensions
         recommendation in :rfc:`5280` section 4.2.1.2.
 
         :param public_key: One of
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
         .. doctest::
 

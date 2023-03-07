@@ -100,7 +100,7 @@ _ECDSA_KEY_TYPE = {
 
 
 def _get_ssh_key_type(
-    key: typing.Union["_SSH_PRIVATE_KEY_TYPES", "_SSH_PUBLIC_KEY_TYPES"]
+    key: typing.Union["SSHPrivateKeyTypes", "SSHPublicKeyTypes"]
 ) -> bytes:
     if isinstance(key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(key.public_key())
@@ -560,7 +560,7 @@ def _lookup_kformat(key_type: bytes):
     raise UnsupportedAlgorithm(f"Unsupported key type: {key_type!r}")
 
 
-_SSH_PRIVATE_KEY_TYPES = typing.Union[
+SSHPrivateKeyTypes = typing.Union[
     ec.EllipticCurvePrivateKey,
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
@@ -572,7 +572,7 @@ def load_ssh_private_key(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Any = None,
-) -> _SSH_PRIVATE_KEY_TYPES:
+) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
     if password is not None:
@@ -654,7 +654,7 @@ def load_ssh_private_key(
 
 
 def _serialize_ssh_private_key(
-    private_key: _SSH_PRIVATE_KEY_TYPES,
+    private_key: SSHPrivateKeyTypes,
     password: bytes,
     encryption_algorithm: KeySerializationEncryption,
 ) -> bytes:
@@ -730,14 +730,14 @@ def _serialize_ssh_private_key(
     return _ssh_pem_encode(buf[:mlen])
 
 
-_SSH_PUBLIC_KEY_TYPES = typing.Union[
+SSHPublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     rsa.RSAPublicKey,
     dsa.DSAPublicKey,
     ed25519.Ed25519PublicKey,
 ]
 
-_SSH_CERT_PUBLIC_KEY_TYPES = typing.Union[
+SSHCertPublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     rsa.RSAPublicKey,
     ed25519.Ed25519PublicKey,
@@ -753,7 +753,7 @@ class SSHCertificate:
     def __init__(
         self,
         _nonce: memoryview,
-        _public_key: _SSH_PUBLIC_KEY_TYPES,
+        _public_key: SSHPublicKeyTypes,
         _serial: int,
         _cctype: int,
         _key_id: memoryview,
@@ -795,10 +795,10 @@ class SSHCertificate:
     def nonce(self) -> bytes:
         return bytes(self._nonce)
 
-    def public_key(self) -> _SSH_CERT_PUBLIC_KEY_TYPES:
+    def public_key(self) -> SSHCertPublicKeyTypes:
         # make mypy happy until we remove DSA support entirely and
         # the underlying union won't have a disallowed type
-        return typing.cast(_SSH_CERT_PUBLIC_KEY_TYPES, self._public_key)
+        return typing.cast(SSHCertPublicKeyTypes, self._public_key)
 
     @property
     def serial(self) -> int:
@@ -832,7 +832,7 @@ class SSHCertificate:
     def extensions(self) -> typing.Dict[bytes, bytes]:
         return self._extensions
 
-    def signature_key(self) -> _SSH_CERT_PUBLIC_KEY_TYPES:
+    def signature_key(self) -> SSHCertPublicKeyTypes:
         sigformat = _lookup_kformat(self._sig_type)
         signature_key, sigkey_rest = sigformat.load_public(self._sig_key)
         _check_empty(sigkey_rest)
@@ -891,7 +891,7 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
 def _load_ssh_public_identity(
     data: bytes,
     _legacy_dsa_allowed=False,
-) -> typing.Union[SSHCertificate, _SSH_PUBLIC_KEY_TYPES]:
+) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)
@@ -985,7 +985,7 @@ def _load_ssh_public_identity(
 
 def load_ssh_public_identity(
     data: bytes,
-) -> typing.Union[SSHCertificate, _SSH_PUBLIC_KEY_TYPES]:
+) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
     return _load_ssh_public_identity(data)
 
 
@@ -1007,9 +1007,9 @@ def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
 
 def load_ssh_public_key(
     data: bytes, backend: typing.Any = None
-) -> _SSH_PUBLIC_KEY_TYPES:
+) -> SSHPublicKeyTypes:
     cert_or_key = _load_ssh_public_identity(data, _legacy_dsa_allowed=True)
-    public_key: _SSH_PUBLIC_KEY_TYPES
+    public_key: SSHPublicKeyTypes
     if isinstance(cert_or_key, SSHCertificate):
         public_key = cert_or_key.public_key()
     else:
@@ -1025,7 +1025,7 @@ def load_ssh_public_key(
     return public_key
 
 
-def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
+def serialize_ssh_public_key(public_key: SSHPublicKeyTypes) -> bytes:
     """One-line public key format for OpenSSH"""
     if isinstance(public_key, dsa.DSAPublicKey):
         warnings.warn(
@@ -1045,7 +1045,7 @@ def serialize_ssh_public_key(public_key: _SSH_PUBLIC_KEY_TYPES) -> bytes:
     return b"".join([key_type, b" ", pub])
 
 
-_SSH_CERT_PRIVATE_KEY_TYPES = typing.Union[
+SSHCertPrivateKeyTypes = typing.Union[
     ec.EllipticCurvePrivateKey,
     rsa.RSAPrivateKey,
     ed25519.Ed25519PrivateKey,
@@ -1060,7 +1060,7 @@ _SSHKEY_CERT_MAX_PRINCIPALS = 256
 class SSHCertificateBuilder:
     def __init__(
         self,
-        _public_key: typing.Optional[_SSH_CERT_PUBLIC_KEY_TYPES] = None,
+        _public_key: typing.Optional[SSHCertPublicKeyTypes] = None,
         _serial: typing.Optional[int] = None,
         _type: typing.Optional[SSHCertificateType] = None,
         _key_id: typing.Optional[bytes] = None,
@@ -1083,7 +1083,7 @@ class SSHCertificateBuilder:
         self._extensions = _extensions
 
     def public_key(
-        self, public_key: _SSH_CERT_PUBLIC_KEY_TYPES
+        self, public_key: SSHCertPublicKeyTypes
     ) -> "SSHCertificateBuilder":
         if not isinstance(
             public_key,
@@ -1319,7 +1319,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions + [(name, value)],
         )
 
-    def sign(self, private_key: _SSH_CERT_PRIVATE_KEY_TYPES) -> SSHCertificate:
+    def sign(self, private_key: SSHCertPrivateKeyTypes) -> SSHCertificate:
         if not isinstance(
             private_key,
             (

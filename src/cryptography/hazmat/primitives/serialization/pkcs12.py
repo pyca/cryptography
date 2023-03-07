@@ -14,10 +14,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed25519,
     rsa,
 )
-from cryptography.hazmat.primitives.asymmetric.types import PRIVATE_KEY_TYPES
+from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 
 __all__ = [
     "PBES",
+    "PKCS12PrivateKeyTypes",
     "PKCS12Certificate",
     "PKCS12KeyAndCertificates",
     "load_key_and_certificates",
@@ -25,7 +26,7 @@ __all__ = [
     "serialize_key_and_certificates",
 ]
 
-_ALLOWED_PKCS12_TYPES = typing.Union[
+PKCS12PrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
@@ -76,7 +77,7 @@ class PKCS12Certificate:
 class PKCS12KeyAndCertificates:
     def __init__(
         self,
-        key: typing.Optional[PRIVATE_KEY_TYPES],
+        key: typing.Optional[PrivateKeyTypes],
         cert: typing.Optional[PKCS12Certificate],
         additional_certs: typing.List[PKCS12Certificate],
     ):
@@ -109,7 +110,7 @@ class PKCS12KeyAndCertificates:
         self._additional_certs = additional_certs
 
     @property
-    def key(self) -> typing.Optional[PRIVATE_KEY_TYPES]:
+    def key(self) -> typing.Optional[PrivateKeyTypes]:
         return self._key
 
     @property
@@ -145,7 +146,7 @@ def load_key_and_certificates(
     password: typing.Optional[bytes],
     backend: typing.Any = None,
 ) -> typing.Tuple[
-    typing.Optional[PRIVATE_KEY_TYPES],
+    typing.Optional[PrivateKeyTypes],
     typing.Optional[x509.Certificate],
     typing.List[x509.Certificate],
 ]:
@@ -164,7 +165,7 @@ def load_pkcs12(
     return ossl.load_pkcs12(data, password)
 
 
-_PKCS12_CAS_TYPES = typing.Union[
+_PKCS12CATypes = typing.Union[
     x509.Certificate,
     PKCS12Certificate,
 ]
@@ -172,9 +173,9 @@ _PKCS12_CAS_TYPES = typing.Union[
 
 def serialize_key_and_certificates(
     name: typing.Optional[bytes],
-    key: typing.Optional[_ALLOWED_PKCS12_TYPES],
+    key: typing.Optional[PKCS12PrivateKeyTypes],
     cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[typing.Iterable[_PKCS12_CAS_TYPES]],
+    cas: typing.Optional[typing.Iterable[_PKCS12CATypes]],
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
     if key is not None and not isinstance(

@@ -35,14 +35,14 @@ def serialize_certificates(
     return rust_pkcs7.serialize_certificates(certs, encoding)
 
 
-_ALLOWED_PKCS7_HASH_TYPES = typing.Union[
+PKCS7HashTypes = typing.Union[
     hashes.SHA224,
     hashes.SHA256,
     hashes.SHA384,
     hashes.SHA512,
 ]
 
-_ALLOWED_PRIVATE_KEY_TYPES = typing.Union[
+PKCS7PrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
 ]
 
@@ -63,8 +63,8 @@ class PKCS7SignatureBuilder:
         signers: typing.List[
             typing.Tuple[
                 x509.Certificate,
-                _ALLOWED_PRIVATE_KEY_TYPES,
-                _ALLOWED_PKCS7_HASH_TYPES,
+                PKCS7PrivateKeyTypes,
+                PKCS7HashTypes,
             ]
         ] = [],
         additional_certs: typing.List[x509.Certificate] = [],
@@ -83,8 +83,8 @@ class PKCS7SignatureBuilder:
     def add_signer(
         self,
         certificate: x509.Certificate,
-        private_key: _ALLOWED_PRIVATE_KEY_TYPES,
-        hash_algorithm: _ALLOWED_PKCS7_HASH_TYPES,
+        private_key: PKCS7PrivateKeyTypes,
+        hash_algorithm: PKCS7HashTypes,
     ) -> "PKCS7SignatureBuilder":
         if not isinstance(
             hash_algorithm,

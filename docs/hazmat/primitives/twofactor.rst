@@ -18,6 +18,15 @@ codes (HMAC).
 
 .. currentmodule:: cryptography.hazmat.primitives.twofactor.hotp
 
+.. data:: HOTPHashTypes
+
+    .. versionadded:: 40.0.0
+
+    Type alias: A union of supported hash algorithm types:
+    :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+    :class:`~cryptography.hazmat.primitives.hashes.SHA256` or
+    :class:`~cryptography.hazmat.primitives.hashes.SHA512`.
+
 .. class:: HOTP(key, length, algorithm, *, enforce_key_length=True)
 
     .. versionadded:: 0.3
@@ -47,7 +56,7 @@ codes (HMAC).
     :param int length: Length of generated one time password as ``int``.
     :param cryptography.hazmat.primitives.hashes.HashAlgorithm algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes`
-        instance.
+        instance (must match :data:`HOTPHashTypes`).
     :param enforce_key_length: A boolean flag defaulting to True that toggles
         whether a minimum key length of 128 :term:`bits` is enforced. This
         exists to work around the fact that as documented in `Issue #2915`_,
