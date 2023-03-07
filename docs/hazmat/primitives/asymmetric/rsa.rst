@@ -473,11 +473,15 @@ is unavailable.
         A `Chinese remainder theorem`_ coefficient used to speed up RSA
         operations. Calculated as: q\ :sup:`-1` mod p
 
-    .. method:: private_key(*, unsafe_skip_rsa_key_validation=False)
+    .. method:: private_key(*, unsafe_skip_key_validation=False)
 
-        :param unsafe_skip_rsa_key_validation:
+        :param unsafe_skip_key_validation:
 
             .. versionadded:: 39.0.0
+
+            .. versionchanged:: 40.0.0
+                Renamed from ``unsafe_skip_rsa_key_validation``. The old name
+                is deprecated and will be removed in a future release.
 
             A keyword-only argument that defaults to ``False``. If ``True``
             RSA private keys will not be validated. This significantly speeds up
@@ -487,7 +491,7 @@ is unavailable.
             way and attempt to use it OpenSSL may hang, crash, or otherwise
             misbehave.
 
-        :type unsafe_skip_rsa_key_validation: bool
+        :type unsafe_skip_key_validation: bool
 
         :returns: An instance of
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.

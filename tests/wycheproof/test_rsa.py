@@ -97,7 +97,7 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
         wycheproof.testgroup["privateKeyPem"].encode(),
         password=None,
         backend=backend,
-        unsafe_skip_rsa_key_validation=True,
+        unsafe_skip_key_validation=True,
     )
     assert isinstance(key, rsa.RSAPrivateKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
@@ -211,7 +211,7 @@ def test_rsa_oaep_encryption(backend, wycheproof):
         wycheproof.testgroup["privateKeyPem"].encode("ascii"),
         password=None,
         backend=backend,
-        unsafe_skip_rsa_key_validation=True,
+        unsafe_skip_key_validation=True,
     )
     assert isinstance(key, rsa.RSAPrivateKey)
     if backend._fips_enabled and key.key_size < backend._fips_rsa_min_key_size:
@@ -245,7 +245,7 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
         wycheproof.testgroup["privateKeyPem"].encode("ascii"),
         password=None,
         backend=backend,
-        unsafe_skip_rsa_key_validation=True,
+        unsafe_skip_key_validation=True,
     )
     assert isinstance(key, rsa.RSAPrivateKey)
 

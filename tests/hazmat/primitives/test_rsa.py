@@ -9,6 +9,7 @@ import os
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import (
     InvalidSignature,
     UnsupportedAlgorithm,
@@ -61,12 +62,12 @@ from .utils import (
 
 @pytest.fixture(scope="session")
 def rsa_key_512() -> rsa.RSAPrivateKey:
-    return RSA_KEY_512.private_key(unsafe_skip_rsa_key_validation=True)
+    return RSA_KEY_512.private_key(unsafe_skip_key_validation=True)
 
 
 @pytest.fixture(scope="session")
 def rsa_key_2048() -> rsa.RSAPrivateKey:
-    return RSA_KEY_2048.private_key(unsafe_skip_rsa_key_validation=True)
+    return RSA_KEY_2048.private_key(unsafe_skip_key_validation=True)
 
 
 class DummyMGF(padding.MGF):
@@ -222,6 +223,12 @@ class TestRSA:
                 public_exponent=65537, key_size=256, backend=backend
             )
 
+    def test_deprecated_unsafe_rsa_kwarg(self):
+        with pytest.warns(utils.DeprecatedIn40):
+            RSA_KEY_1024.private_key(unsafe_skip_rsa_key_validation=True)
+        with pytest.warns(utils.DeprecatedIn40):
+            RSA_KEY_1024.private_key(unsafe_skip_rsa_key_validation=False)
+
     @pytest.mark.parametrize(
         "pkcs1_example",
         load_vectors_from_file(
@@ -284,7 +291,7 @@ class TestRSA:
         key = load_vectors_from_file(
             filename=path,
             loader=lambda p: serialization.load_pem_private_key(
-                p.read(), password=None, unsafe_skip_rsa_key_validation=True
+                p.read(), password=None, unsafe_skip_key_validation=True
             ),
             mode="rb",
         )
@@ -365,7 +372,7 @@ class TestRSA:
             binascii.unhexlify(vector["key"]),
             None,
             backend,
-            unsafe_skip_rsa_key_validation=True,
+            unsafe_skip_key_validation=True,
         )
         assert isinstance(private_key, rsa.RSAPrivateKey)
         assert vector["oaepdigest"] == b"SHA512"
@@ -463,9 +470,7 @@ class TestRSA:
         # the first call to decrypt/sign. Since we reuse rsa_key_2048 in
         # many tests we can't properly test blinding, which will (likely)
         # already be set on the fixture.
-        private_key = RSA_KEY_2048.private_key(
-            unsafe_skip_rsa_key_validation=True
-        )
+        private_key = RSA_KEY_2048.private_key(unsafe_skip_key_validation=True)
         public_key = private_key.public_key()
         msg = b"encrypt me!"
         ct = public_key.encrypt(
@@ -523,7 +528,7 @@ class TestRSASignature:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                ).private_key(backend, unsafe_skip_key_validation=True)
                 signature = private_key.sign(
                     binascii.unhexlify(example["message"]),
                     padding.PKCS1v15(),
@@ -566,7 +571,7 @@ class TestRSASignature:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                ).private_key(backend, unsafe_skip_key_validation=True)
                 public_key = rsa.RSAPublicNumbers(
                     e=public["public_exponent"], n=public["modulus"]
                 ).public_key(backend)
@@ -661,7 +666,7 @@ class TestRSASignature:
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_minimum_key_size_for_digest(self, backend):
         private_key = RSA_KEY_522.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
         private_key.sign(
             b"no failure",
@@ -792,7 +797,7 @@ class TestRSASignature:
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pkcs1_digest_too_large_for_key_size(self, backend):
         private_key = RSA_KEY_599.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
         with pytest.raises(ValueError):
             private_key.sign(
@@ -808,7 +813,7 @@ class TestRSASignature:
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pkcs1_minimum_key_size(self, backend):
         private_key = RSA_KEY_745.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
         private_key.sign(b"no failure", padding.PKCS1v15(), hashes.SHA512())
 
@@ -1056,7 +1061,7 @@ class TestRSAVerification:
     ):
         private_key = rsa_key_2048
         private_key2 = RSA_KEY_2048_ALT.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
         public_key = private_key2.public_key()
         msg = b"sign me"
@@ -1246,7 +1251,7 @@ class TestRSAVerification:
         )
         # 1024 bit key
         public_key = RSA_KEY_1024.private_key(
-            unsafe_skip_rsa_key_validation=True
+            unsafe_skip_key_validation=True
         ).public_key()
         with pytest.raises(InvalidSignature):
             public_key.verify(
@@ -1766,7 +1771,7 @@ class TestRSADecryption:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                ).private_key(backend, unsafe_skip_key_validation=True)
                 ciphertext = binascii.unhexlify(example["encryption"])
                 assert len(ciphertext) == (skey.key_size + 7) // 8
                 message = skey.decrypt(ciphertext, padding.PKCS1v15())
@@ -1853,7 +1858,7 @@ class TestRSADecryption:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                ).private_key(backend, unsafe_skip_key_validation=True)
                 message = skey.decrypt(
                     binascii.unhexlify(example["encryption"]),
                     padding.OAEP(
@@ -1888,7 +1893,7 @@ class TestRSADecryption:
                     public_numbers=rsa.RSAPublicNumbers(
                         e=private["public_exponent"], n=private["modulus"]
                     ),
-                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                ).private_key(backend, unsafe_skip_key_validation=True)
                 message = skey.decrypt(
                     binascii.unhexlify(example["encryption"]),
                     pad,
@@ -1923,7 +1928,7 @@ class TestRSADecryption:
         )
 
         private_key_alt = RSA_KEY_2048_ALT.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
 
         with pytest.raises(ValueError):
@@ -1948,7 +1953,7 @@ class TestRSADecryption:
     )
     def test_invalid_oaep_decryption_data_to_large_for_modulus(self, backend):
         key = RSA_KEY_2048_ALT.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
 
         ciphertext = (
@@ -2027,7 +2032,7 @@ class TestRSAEncryption:
         ),
     )
     def test_rsa_encrypt_oaep(self, key_data, pad, backend):
-        private_key = key_data.private_key(unsafe_skip_rsa_key_validation=True)
+        private_key = key_data.private_key(unsafe_skip_key_validation=True)
         _check_fips_key_length(backend, private_key)
         pt = b"encrypt me!"
         public_key = private_key.public_key()
@@ -2103,7 +2108,7 @@ class TestRSAEncryption:
         ),
     )
     def test_rsa_encrypt_pkcs1v15(self, key_data, pad, backend):
-        private_key = key_data.private_key(unsafe_skip_rsa_key_validation=True)
+        private_key = key_data.private_key(unsafe_skip_key_validation=True)
         _check_fips_key_length(backend, private_key)
         pt = b"encrypt me!"
         public_key = private_key.public_key()
@@ -2139,7 +2144,7 @@ class TestRSAEncryption:
         ),
     )
     def test_rsa_encrypt_key_too_small(self, key_data, pad, backend):
-        private_key = key_data.private_key(unsafe_skip_rsa_key_validation=True)
+        private_key = key_data.private_key(unsafe_skip_key_validation=True)
         if not backend.rsa_encryption_supported(pad):
             pytest.skip("PKCS1v15 padding not allowed in FIPS")
         _check_fips_key_length(backend, private_key)
@@ -2218,7 +2223,7 @@ class TestRSANumbers:
 
     def test_rsa_private_numbers_create_key(self, backend):
         private_key = RSA_KEY_1024.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
+            backend, unsafe_skip_key_validation=True
         )
         assert private_key
 
@@ -2444,7 +2449,7 @@ class TestRSAPrivateKeySerialization:
             serialization.BestAvailableEncryption(password),
         )
         loaded_key = serialization.load_pem_private_key(
-            serialized, password, backend, unsafe_skip_rsa_key_validation=True
+            serialized, password, backend, unsafe_skip_key_validation=True
         )
         assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
@@ -2486,7 +2491,7 @@ class TestRSAPrivateKeySerialization:
             serialization.BestAvailableEncryption(password),
         )
         loaded_key = serialization.load_der_private_key(
-            serialized, password, backend, unsafe_skip_rsa_key_validation=True
+            serialized, password, backend, unsafe_skip_key_validation=True
         )
         assert isinstance(loaded_key, rsa.RSAPrivateKey)
         loaded_priv_num = loaded_key.private_numbers()
@@ -2531,7 +2536,7 @@ class TestRSAPrivateKeySerialization:
             encoding, fmt, serialization.NoEncryption()
         )
         loaded_key = loader_func(
-            serialized, None, backend, unsafe_skip_rsa_key_validation=True
+            serialized, None, backend, unsafe_skip_key_validation=True
         )
         loaded_priv_num = loaded_key.private_numbers()
         priv_num = key.private_numbers()
@@ -2566,7 +2571,7 @@ class TestRSAPrivateKeySerialization:
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         key = loader_func(
-            key_bytes, None, backend, unsafe_skip_rsa_key_validation=True
+            key_bytes, None, backend, unsafe_skip_key_validation=True
         )
         serialized = key.private_bytes(
             encoding,

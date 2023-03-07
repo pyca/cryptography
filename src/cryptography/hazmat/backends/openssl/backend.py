@@ -541,7 +541,7 @@ class Backend:
 
         # We can skip RSA key validation here since we just generated the key
         return _RSAPrivateKey(
-            self, rsa_cdata, evp_pkey, unsafe_skip_rsa_key_validation=True
+            self, rsa_cdata, evp_pkey, unsafe_skip_key_validation=True
         )
 
     def generate_rsa_parameters_supported(
@@ -556,7 +556,7 @@ class Backend:
     def load_rsa_private_numbers(
         self,
         numbers: rsa.RSAPrivateNumbers,
-        unsafe_skip_rsa_key_validation: bool,
+        unsafe_skip_key_validation: bool,
     ) -> rsa.RSAPrivateKey:
         rsa._check_private_key_components(
             numbers.p,
@@ -591,7 +591,7 @@ class Backend:
             self,
             rsa_cdata,
             evp_pkey,
-            unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
+            unsafe_skip_key_validation=unsafe_skip_key_validation,
         )
 
     def load_rsa_public_numbers(
@@ -657,7 +657,7 @@ class Backend:
         return bio_data
 
     def _evp_pkey_to_private_key(
-        self, evp_pkey, unsafe_skip_rsa_key_validation: bool
+        self, evp_pkey, unsafe_skip_key_validation: bool
     ) -> PRIVATE_KEY_TYPES:
         """
         Return the appropriate type of PrivateKey given an evp_pkey cdata
@@ -674,7 +674,7 @@ class Backend:
                 self,
                 rsa_cdata,
                 evp_pkey,
-                unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
+                unsafe_skip_key_validation=unsafe_skip_key_validation,
             )
         elif (
             key_type == self._lib.EVP_PKEY_RSA_PSS
@@ -695,7 +695,7 @@ class Backend:
             return self.load_der_private_key(
                 self._read_mem_bio(bio),
                 password=None,
-                unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
+                unsafe_skip_key_validation=unsafe_skip_key_validation,
             )
         elif key_type == self._lib.EVP_PKEY_DSA:
             dsa_cdata = self._lib.EVP_PKEY_get1_DSA(evp_pkey)
@@ -956,13 +956,13 @@ class Backend:
         self,
         data: bytes,
         password: typing.Optional[bytes],
-        unsafe_skip_rsa_key_validation: bool,
+        unsafe_skip_key_validation: bool,
     ) -> PRIVATE_KEY_TYPES:
         return self._load_key(
             self._lib.PEM_read_bio_PrivateKey,
             data,
             password,
-            unsafe_skip_rsa_key_validation,
+            unsafe_skip_key_validation,
         )
 
     def load_pem_public_key(self, data: bytes) -> PUBLIC_KEY_TYPES:
@@ -1023,7 +1023,7 @@ class Backend:
         self,
         data: bytes,
         password: typing.Optional[bytes],
-        unsafe_skip_rsa_key_validation: bool,
+        unsafe_skip_key_validation: bool,
     ) -> PRIVATE_KEY_TYPES:
         # OpenSSL has a function called d2i_AutoPrivateKey that in theory
         # handles this automatically, however it doesn't handle encrypted
@@ -1033,7 +1033,7 @@ class Backend:
         key = self._evp_pkey_from_der_traditional_key(bio_data, password)
         if key:
             return self._evp_pkey_to_private_key(
-                key, unsafe_skip_rsa_key_validation
+                key, unsafe_skip_key_validation
             )
         else:
             # Finally we try to load it with the method that handles encrypted
@@ -1042,7 +1042,7 @@ class Backend:
                 self._lib.d2i_PKCS8PrivateKey_bio,
                 data,
                 password,
-                unsafe_skip_rsa_key_validation,
+                unsafe_skip_key_validation,
             )
 
     def _evp_pkey_from_der_traditional_key(self, bio_data, password):
@@ -1119,7 +1119,7 @@ class Backend:
             raise ValueError("Keys do not correspond")
 
     def _load_key(
-        self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
+        self, openssl_read_func, data, password, unsafe_skip_key_validation
     ) -> PRIVATE_KEY_TYPES:
         mem_bio = self._bytes_to_bio(data)
 
@@ -1167,7 +1167,7 @@ class Backend:
         ) or password is None
 
         return self._evp_pkey_to_private_key(
-            evp_pkey, unsafe_skip_rsa_key_validation
+            evp_pkey, unsafe_skip_key_validation
         )
 
     def _handle_key_loading_error(self) -> typing.NoReturn:
@@ -2110,7 +2110,7 @@ class Backend:
             # We don't support turning off RSA key validation when loading
             # PKCS12 keys
             key = self._evp_pkey_to_private_key(
-                evp_pkey, unsafe_skip_rsa_key_validation=False
+                evp_pkey, unsafe_skip_key_validation=False
             )
 
         if x509_ptr[0] != self._ffi.NULL:
