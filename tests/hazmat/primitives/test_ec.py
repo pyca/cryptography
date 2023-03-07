@@ -862,9 +862,7 @@ class TestECSerialization:
             serialization.Encoding.PEM,
             serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        parsed_public = serialization.load_pem_public_key(
-            pem, backend, unsafe_skip_key_validation=True
-        )
+        parsed_public = serialization.load_pem_public_key(pem, backend)
         assert parsed_public
 
 
@@ -895,7 +893,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        key = loader_func(key_bytes, unsafe_skip_key_validation=True)
+        key = loader_func(key_bytes, backend)
         serialized = key.public_bytes(
             encoding,
             serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -913,9 +911,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        key = serialization.load_pem_public_key(
-            key_bytes, unsafe_skip_key_validation=True
-        )
+        key = serialization.load_pem_public_key(key_bytes, backend)
 
         ssh_bytes = key.public_bytes(
             serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
@@ -940,7 +936,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), unsafe_skip_key_validation=True
+                pemfile.read().encode(), backend
             ),
         )
         with pytest.raises(TypeError):
@@ -987,7 +983,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), unsafe_skip_key_validation=True
+                pemfile.read().encode(), backend
             ),
         )
         with pytest.raises(TypeError):
@@ -1003,7 +999,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
                 "asymmetric", "PEM_Serialization", "ec_public_key.pem"
             ),
             lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read().encode(), unsafe_skip_key_validation=True
+                pemfile.read().encode(), backend
             ),
         )
         with pytest.raises(ValueError):
@@ -1249,9 +1245,7 @@ class TestECDH:
             ),
         )
         assert isinstance(key, ec.EllipticCurvePrivateKey)
-        public_key = EC_KEY_SECP384R1.public_numbers.public_key(
-            unsafe_skip_key_validation=True
-        )
+        public_key = EC_KEY_SECP384R1.public_numbers.public_key(backend)
 
         with pytest.raises(ValueError):
             key.exchange(ec.ECDH(), public_key)

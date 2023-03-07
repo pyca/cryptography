@@ -72,7 +72,7 @@ def _mark_asn1_named_ec_curve(backend: "Backend", ec_cdata):
     )
 
 
-def _check_key(backend: "Backend", ec_cdata) -> None:
+def _check_key_infinity(backend: "Backend", ec_cdata) -> None:
     point = backend._lib.EC_KEY_get0_public_key(ec_cdata)
     backend.openssl_assert(point != backend._ffi.NULL)
     group = backend._lib.EC_KEY_get0_group(ec_cdata)
@@ -81,6 +81,9 @@ def _check_key(backend: "Backend", ec_cdata) -> None:
         raise ValueError(
             "Cannot load an EC public key where the point is at infinity"
         )
+
+
+def _ec_check_key(backend: "Backend", ec_cdata) -> None:
     res = backend._lib.EC_KEY_check_key(ec_cdata)
     if res != 1:
         backend._consume_errors()
@@ -143,8 +146,8 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
         if not unsafe_skip_key_validation:
-            #import pdb;pdb.set_trace()
-            _check_key(backend, ec_key_cdata)
+            _check_key_infinity(backend, ec_key_cdata)
+            _ec_check_key(backend, ec_key_cdata)
 
     @property
     def curve(self) -> ec.EllipticCurve:
@@ -191,12 +194,7 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
 
         # We should skip validation here since it was either done on load or
         # explicitly skipped. Either way we don't do it.
-        return _EllipticCurvePublicKey(
-            self._backend,
-            public_ec_key,
-            evp_pkey,
-            unsafe_skip_key_validation=True,
-        )
+        return _EllipticCurvePublicKey(self._backend, public_ec_key, evp_pkey)
 
     def private_numbers(self) -> ec.EllipticCurvePrivateNumbers:
         bn = self._backend._lib.EC_KEY_get0_private_key(self._ec_key)
@@ -235,14 +233,7 @@ class _EllipticCurvePrivateKey(ec.EllipticCurvePrivateKey):
 
 
 class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
-    def __init__(
-        self,
-        backend: "Backend",
-        ec_key_cdata,
-        evp_pkey,
-        *,
-        unsafe_skip_key_validation: bool,
-    ):
+    def __init__(self, backend: "Backend", ec_key_cdata, evp_pkey):
         self._backend = backend
         self._ec_key = ec_key_cdata
         self._evp_pkey = evp_pkey
@@ -250,9 +241,7 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
         sn = _ec_key_curve_sn(backend, ec_key_cdata)
         self._curve = _sn_to_elliptic_curve(backend, sn)
         _mark_asn1_named_ec_curve(backend, ec_key_cdata)
-        if not unsafe_skip_key_validation:
-            #import pdb;pdb.set_trace()
-            _check_key(backend, ec_key_cdata)
+        _check_key_infinity(backend, ec_key_cdata)
 
     @property
     def curve(self) -> ec.EllipticCurve:

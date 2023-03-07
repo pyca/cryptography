@@ -218,7 +218,7 @@ class TestDERSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda derfile: load_der_private_key(
-                derfile.read(), password, backend
+                derfile.read(), password, unsafe_skip_key_validation=True
             ),
             mode="rb",
         )
@@ -504,7 +504,9 @@ class TestPEMSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
+                pemfile.read().encode(),
+                password,
+                unsafe_skip_key_validation=True,
             ),
         )
 

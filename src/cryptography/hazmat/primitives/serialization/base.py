@@ -41,16 +41,11 @@ def load_pem_private_key(
 
 
 def load_pem_public_key(
-    data: bytes,
-    backend: typing.Any = None,
-    *,
-    unsafe_skip_key_validation: bool = False,
+    data: bytes, backend: typing.Any = None
 ) -> PUBLIC_KEY_TYPES:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
-    return ossl.load_pem_public_key(
-        data, unsafe_skip_key_validation=unsafe_skip_key_validation
-    )
+    return ossl.load_pem_public_key(data)
 
 
 def load_pem_parameters(
@@ -86,16 +81,11 @@ def load_der_private_key(
 
 
 def load_der_public_key(
-    data: bytes,
-    backend: typing.Any = None,
-    *,
-    unsafe_skip_key_validation: bool = False,
+    data: bytes, backend: typing.Any = None
 ) -> PUBLIC_KEY_TYPES:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
-    return ossl.load_der_public_key(
-        data, unsafe_skip_key_validation=unsafe_skip_key_validation
-    )
+    return ossl.load_der_public_key(data)
 
 
 def load_der_parameters(

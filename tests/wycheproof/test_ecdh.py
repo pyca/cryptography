@@ -76,7 +76,6 @@ def test_ecdh(backend, wycheproof):
         # TODO: why is this safe?
         public_key = serialization.load_der_public_key(
             binascii.unhexlify(wycheproof.testcase["public"]),
-            unsafe_skip_key_validation=True,
         )
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
     except ValueError:

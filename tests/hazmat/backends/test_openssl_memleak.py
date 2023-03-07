@@ -292,7 +292,7 @@ class TestOpenSSLMemoryLeaks:
                         '575406618073069185107088229463828921069465902299522926'
                     )
                 )
-            ).private_key(backend)
+            ).private_key(unsafe_skip_key_validation=True)
         """
             )
         )
