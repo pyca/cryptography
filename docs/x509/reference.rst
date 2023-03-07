@@ -2091,7 +2091,7 @@ X.509 Extensions
         recommendation in :rfc:`5280` section 4.2.1.2.
 
         :param public_key: One of
-            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPublicKeyTypes`.
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
         .. doctest::
 
