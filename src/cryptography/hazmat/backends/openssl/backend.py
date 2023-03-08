@@ -1284,6 +1284,35 @@ class Backend:
         self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, public.x, public.y
         )
+        # derive the expected public point and compare it to the one we just
+        # set based on the values we were given. If they don't match this
+        # isn't a valid key pair.
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
+        set_point = backend._lib.EC_KEY_get0_public_key(ec_cdata)
+        self.openssl_assert(set_point != self._ffi.NULL)
+        with self._tmp_bn_ctx() as bn_ctx:
+            computed_point = self._lib.EC_POINT_new(group)
+            self.openssl_assert(computed_point != self._ffi.NULL)
+            computed_point = self._ffi.gc(
+                computed_point, self._lib.EC_POINT_free
+            )
+            res = self._lib.EC_POINT_mul(
+                group,
+                computed_point,
+                private_value,
+                self._ffi.NULL,
+                self._ffi.NULL,
+                bn_ctx,
+            )
+            self.openssl_assert(res == 1)
+            if (
+                self._lib.EC_POINT_cmp(
+                    group, set_point, computed_point, bn_ctx
+                )
+                != 0
+            ):
+                raise ValueError("Invalid EC key.")
 
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
@@ -1420,7 +1449,7 @@ class Backend:
             self._lib.BN_CTX_end(bn_ctx)
 
     def _ec_key_set_public_key_affine_coordinates(
-        self, ctx, x: int, y: int
+        self, ec_cdata, x: int, y: int
     ) -> None:
         """
         Sets the public key point in the EC_KEY context to the affine x and y
@@ -1434,10 +1463,20 @@ class Backend:
 
         x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
         y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
-        res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
+        group = self._lib.EC_KEY_get0_group(ec_cdata)
+        self.openssl_assert(group != self._ffi.NULL)
+        point = self._lib.EC_POINT_new(group)
+        self.openssl_assert(point != self._ffi.NULL)
+        point = self._ffi.gc(point, self._lib.EC_POINT_free)
+        with self._tmp_bn_ctx() as bn_ctx:
+            res = self._lib.EC_POINT_set_affine_coordinates(
+                group, point, x, y, bn_ctx
+            )
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
+        res = self._lib.EC_KEY_set_public_key(ec_cdata, point)
+        self.openssl_assert(res == 1)
 
     def _private_key_bytes(
         self,
