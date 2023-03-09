@@ -18,16 +18,13 @@ you can obtain them with:
     >>> import os
     >>> iv = os.urandom(16)
 
-This will use ``/dev/urandom`` on UNIX platforms, and ``BCryptGenRandom()`` on
-Windows.
 
-If you need your random number as an integer (for example, for
-:meth:`~cryptography.x509.CertificateBuilder.serial_number`), you can use
+If you need your random number as an big integer, you can use
 ``int.from_bytes`` to convert the result of ``os.urandom``:
 
 .. code-block:: pycon
 
-    >>> serial = int.from_bytes(os.urandom(20), byteorder="big")
+    >>> serial = int.from_bytes(os.urandom(16), byteorder="big")
 
 In addition, the `Python standard library`_ includes the ``secrets`` module,
 which can be used for generating cryptographically secure random numbers, with
