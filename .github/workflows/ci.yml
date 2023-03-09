@@ -112,6 +112,7 @@ jobs:
             tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          COLUMNS: 80
           CRYPTOGRAPHY_OPENSSL_NO_LEGACY: ${{ matrix.PYTHON.OPENSSL.NO_LEGACY }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
@@ -191,6 +192,7 @@ jobs:
       - run: '/venv/bin/tox --skip-pkg-install --  --color=yes --wycheproof-root="wycheproof"'
         env:
           TOXENV: ${{ matrix.IMAGE.TOXENV }}
+          COLUMNS: 80
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
       - uses: ./.github/actions/upload-coverage
@@ -248,6 +250,7 @@ jobs:
         run: tox --skip-pkg-install --  --color=yes  --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          COLUMNS: 80
       - uses: ./.github/actions/upload-coverage
 
   linux-rust-coverage:
@@ -325,6 +328,7 @@ jobs:
         run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
@@ -421,6 +425,7 @@ jobs:
         run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          COLUMNS: 80
 
       - uses: ./.github/actions/upload-coverage
 
@@ -480,6 +485,7 @@ jobs:
         run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
