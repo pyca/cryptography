@@ -30,7 +30,7 @@ runs:
           echo "dir=$(python -m pip cache dir)" >> $GITHUB_OUTPUT
         fi
       shell: bash
-    - uses: actions/cache@v3.2.6
+    - uses: actions/cache@v3.3.0
       id: cache
       with:
         path: |
