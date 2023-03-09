@@ -18,7 +18,7 @@ you can obtain them with:
     >>> import os
     >>> iv = os.urandom(16)
 
-This will use ``/dev/urandom`` on UNIX platforms, and ``CryptGenRandom`` on
+This will use ``/dev/urandom`` on UNIX platforms, and ``BCryptGenRandom()`` on
 Windows.
 
 If you need your random number as an integer (for example, for
