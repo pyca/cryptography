@@ -145,6 +145,8 @@ jobs:
           - {IMAGE: "ubuntu-jammy:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
           - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
         run: |
