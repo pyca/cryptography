@@ -67,7 +67,7 @@ jobs:
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -400,22 +400,26 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' requests coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
 
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - name: Download OpenSSL
-        run: |
-          python .github/workflows/download_openssl.py macos openssl-macos-universal2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
+        with:
+          repo: pyca/infra
+          workflow: build-macos-openssl.yml
+          branch: main
+          workflow_conclusion: success
+          name: openssl-macos-universal2
+          path: "../openssl-macos-universal2/"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build toxenv
         run: |
           CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
-            LDFLAGS="${HOME}/openssl-macos-universal2/lib/libcrypto.a ${HOME}/openssl-macos-universal2/lib/libssl.a" \
-            CFLAGS="-I${HOME}/openssl-macos-universal2/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
+            LDFLAGS="$(readlink -f ../openssl-macos-universal2/lib/libcrypto.a) $(readlink -f ../openssl-macos-universal2/lib/libssl.a)" \
+            CFLAGS="-I$(readlink -f ../openssl-macos-universal2/include) -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
             tox -vvv --notest
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
@@ -462,16 +466,24 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" requests coverage[toml]
-      - name: Download OpenSSL
+      - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" coverage[toml]
+
+      - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
+        with:
+          repo: pyca/infra
+          workflow: build-windows-openssl.yml
+          branch: main
+          workflow_conclusion: success
+          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
+          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure
         run: |
-            python .github/workflows/download_openssl.py windows openssl-${{ matrix.WINDOWS.WINDOWS }}
             echo "INCLUDE=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/include;$INCLUDE" >> $GITHUB_ENV
             echo "LIB=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/lib;$LIB" >> $GITHUB_ENV
             echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
+
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
