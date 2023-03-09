@@ -1,0 +1,67 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: The run of wheel-builder to use for finding artifacts.
+        required: true
+      environment:
+        description: Which PyPI environment to upload to
+        required: true
+        type: choice
+        options: ["pypi", "testpypi"]
+  # Disabled until this has been validated with `workflow_dispatch` + Test PyPI.
+  # workflow_run:
+  #   workflows: ["wheel-builder.yml"]
+  #   types: [completed]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # We're not actually verifying that the triggering push event was for a
+    # tag, because github doesn't expose enough information to do so.
+    # wheel-builder.yml currently only has push events for tags.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    permissions:
+      id-token: "write"
+    steps:
+      - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
+        with:
+          path: dist/
+          run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.event.id }}
+      - run: pip install -c ci-constraints-requirements.txt twine requests
+
+      - run: |
+          echo "OIDC_AUDIENCE=pypi" >> GITHUB_ENV
+          echo "PYPI_DOMAIN=pypi.org" >> GITHUB_ENV
+          echo "TWINE_REPO=pypi" >> GITHUB_ENV
+        if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi')
+      - run: |
+          echo "OIDC_AUDIENCE=testpypi" >> GITHUB_ENV
+          echo "PYPI_DOMAIN=test.pypi.org" >> GITHUB_ENV
+          echo "TWINE_REPO=testpypi" >> GITHUB_ENV
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
+
+      - run: |
+          import os
+
+          import requests
+
+          response = requests.get(
+              os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"],
+              params={"audience": os.environ["OIDC_AUDIENCE"]},
+              headers={"Authorization": f"bearer {os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']}"}
+          )
+          response.raise_for_status()
+          token = response.json()["value"]
+
+          response = requests.post(f"https://{os.environ['PYPI_DOMAIN']}/_/oidc/github/mint-token", json={"token": token})
+          response.raise_for_status()
+          pypi_token = response.json()["token"]
+
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write("TWINE_PASSWORD={pypi_token}\n")
+        shell: python
+
+      - run: "twine upload --repository $TWINE_REPO dist/*"
