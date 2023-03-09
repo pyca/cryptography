@@ -4125,11 +4125,8 @@ class TestCertificateSigningRequestBuilder:
         assert list(subject) == [
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
-        basic_constraints = typing.cast(
-            x509.Extension[x509.BasicConstraints],
-            request.extensions.get_extension_for_oid(
-                ExtensionOID.BASIC_CONSTRAINTS
-            ),
+        basic_constraints = request.extensions.get_extension_for_class(
+            x509.BasicConstraints
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
@@ -4166,11 +4163,8 @@ class TestCertificateSigningRequestBuilder:
         assert list(subject) == [
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
         ]
-        basic_constraints = typing.cast(
-            x509.Extension[x509.BasicConstraints],
-            request.extensions.get_extension_for_oid(
-                ExtensionOID.BASIC_CONSTRAINTS
-            ),
+        basic_constraints = request.extensions.get_extension_for_class(
+            x509.BasicConstraints
         )
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
