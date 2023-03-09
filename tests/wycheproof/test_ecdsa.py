@@ -61,8 +61,11 @@ _DIGESTS = {
 )
 def test_ecdsa_signature(backend, wycheproof):
     try:
-        key = serialization.load_der_public_key(
-            binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
+        key = wycheproof.cache_group_value(
+            "cache_key",
+            lambda group: serialization.load_der_public_key(
+                binascii.unhexlify(group["keyDer"]), backend
+            ),
         )
         assert isinstance(key, ec.EllipticCurvePublicKey)
     except (UnsupportedAlgorithm, ValueError):

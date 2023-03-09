@@ -899,19 +899,26 @@ class WycheproofTest:
         )
 
     @property
-    def valid(self):
+    def valid(self) -> bool:
         return self.testcase["result"] == "valid"
 
     @property
-    def acceptable(self):
+    def acceptable(self) -> bool:
         return self.testcase["result"] == "acceptable"
 
     @property
-    def invalid(self):
+    def invalid(self) -> bool:
         return self.testcase["result"] == "invalid"
 
-    def has_flag(self, flag):
+    def has_flag(self, flag: str) -> bool:
         return flag in self.testcase["flags"]
+
+    def cache_group_value(self, cache_key: str, func):
+        cache_val = self.testgroup.get(cache_key)
+        if cache_val is not None:
+            return cache_val
+        self.testgroup[cache_key] = cache_val = func(self.testgroup)
+        return cache_val
 
 
 def load_wycheproof_tests(wycheproof, test_file):
