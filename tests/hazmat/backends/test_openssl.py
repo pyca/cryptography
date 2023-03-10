@@ -28,12 +28,16 @@ from ...doubles import (
     DummyHashAlgorithm,
     DummyMode,
 )
+from ...hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from ...utils import (
     load_nist_vectors,
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
-from ..primitives.fixtures_rsa import RSA_KEY_512, RSA_KEY_2048
+
+# Make ruff happy since we're importing fixtures that pytest patches in as
+# func args
+__all__ = ["rsa_key_512", "rsa_key_2048"]
 
 
 def skip_if_libre_ssl(openssl_version):
@@ -433,10 +437,9 @@ class TestOpenSSLRSA:
             is False
         )
 
-    def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self):
-        private_key = RSA_KEY_512.private_key(backend)
+    def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self, rsa_key_512):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            private_key.decrypt(
+            rsa_key_512.decrypt(
                 b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
@@ -516,11 +519,10 @@ class TestOpenSSLEllipticCurve:
 
 
 class TestRSAPEMSerialization:
-    def test_password_length_limit(self):
+    def test_password_length_limit(self, rsa_key_2048):
         password = b"x" * 1024
-        key = RSA_KEY_2048.private_key(backend)
         with pytest.raises(ValueError):
-            key.private_bytes(
+            rsa_key_2048.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password),

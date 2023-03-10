@@ -150,7 +150,7 @@ def _load_cert_key():
     key = load_vectors_from_file(
         os.path.join("x509", "custom", "ca", "ca_key.pem"),
         lambda pemfile: serialization.load_pem_private_key(
-            pemfile.read(), None
+            pemfile.read(), None, unsafe_skip_rsa_key_validation=True
         ),
         mode="rb",
     )
@@ -599,7 +599,7 @@ class TestPKCS7Builder:
         rsa_key = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "rsa_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read(), None
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
             ),
             mode="rb",
         )
@@ -636,7 +636,7 @@ class TestPKCS7Builder:
         rsa_key = load_vectors_from_file(
             os.path.join("x509", "custom", "ca", "rsa_key.pem"),
             lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read(), None
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
             ),
             mode="rb",
         )
