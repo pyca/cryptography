@@ -36,9 +36,13 @@ from cryptography.hazmat.primitives.serialization import (
 from cryptography.hazmat.primitives.serialization.pkcs12 import PBES
 
 from ...utils import load_vectors_from_file
-from .fixtures_rsa import RSA_KEY_2048
 from .test_ec import _skip_curve_unsupported
+from .test_rsa import rsa_key_2048
 from .utils import _check_dsa_private_numbers, _check_rsa_private_numbers
+
+# Make ruff happy since we're importing fixtures that pytest patches in as
+# func args
+__all__ = ["rsa_key_2048"]
 
 
 def _skip_fips_format(key_path, password, backend):
@@ -77,7 +81,9 @@ class TestBufferProtocolSerialization:
             lambda derfile: derfile.read(),
             mode="rb",
         )
-        key = load_der_private_key(bytearray(data), password, backend)
+        key = load_der_private_key(
+            bytearray(data), password, unsafe_skip_rsa_key_validation=True
+        )
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
@@ -105,7 +111,9 @@ class TestBufferProtocolSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        key = load_pem_private_key(bytearray(data), password, backend)
+        key = load_pem_private_key(
+            bytearray(data), password, unsafe_skip_rsa_key_validation=True
+        )
         assert key
         assert isinstance(key, rsa.RSAPrivateKey)
         _check_rsa_private_numbers(key.private_numbers())
@@ -126,7 +134,7 @@ class TestDERSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
             lambda derfile: load_der_private_key(
-                derfile.read(), password, backend
+                derfile.read(), password, unsafe_skip_rsa_key_validation=True
             ),
             mode="rb",
         )
@@ -426,7 +434,9 @@ class TestPEMSerialization:
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_file),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
+                pemfile.read().encode(),
+                password,
+                unsafe_skip_rsa_key_validation=True,
             ),
         )
 
@@ -506,13 +516,15 @@ class TestPEMSerialization:
         numbers = key.public_numbers()
         assert numbers.e == 65537
 
-    def test_load_priv_key_with_public_key_api_fails(self, backend):
+    def test_load_priv_key_with_public_key_api_fails(
+        self, rsa_key_2048, backend
+    ):
         # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
         # the default password callback if you pass an encrypted private
         # key. This is very, very, very bad as the default callback can
         # trigger an interactive console prompt, which will hang the
         # Python process. This test makes sure we don't do that.
-        priv_key_serialized = RSA_KEY_2048.private_key().private_bytes(
+        priv_key_serialized = rsa_key_2048.private_bytes(
             Encoding.PEM,
             PrivateFormat.PKCS8,
             BestAvailableEncryption(b"password"),
@@ -567,7 +579,9 @@ class TestPEMSerialization:
                 "asymmetric", "Traditional_OpenSSL_Serialization", "key1.pem"
             ),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"123456", backend
+                pemfile.read().encode(),
+                b"123456",
+                unsafe_skip_rsa_key_validation=True,
             ),
         )
         assert isinstance(pkey, rsa.RSAPrivateKey)
@@ -631,7 +645,7 @@ class TestPEMSerialization:
         key = load_vectors_from_file(
             key_file,
             lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
             ),
             mode="rb",
         )
@@ -866,7 +880,9 @@ class TestPEMSerialization:
         pkey = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
             lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), b"foobar", backend
+                pemfile.read().encode(),
+                b"foobar",
+                unsafe_skip_rsa_key_validation=True,
             ),
         )
         assert isinstance(pkey, rsa.RSAPrivateKey)
