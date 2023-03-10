@@ -18,6 +18,8 @@ on:
       - pyproject.toml
       - src/cryptography/__about__.py
 
+env:
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
 
 jobs:
   sdist:
