@@ -271,6 +271,10 @@ def cryptography_has_get_extms_support() -> typing.List[str]:
     return ["SSL_get_extms_support"]
 
 
+def cryptography_has_evp_pkey_set_peer_ex() -> typing.List[str]:
+    return ["EVP_PKEY_derive_set_peer_ex"]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -322,4 +326,7 @@ CONDITIONAL_NAMES = {
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
     "Cryptography_HAS_GET_EXTMS_SUPPORT": cryptography_has_get_extms_support,
+    "Cryptography_HAS_EVP_PKEY_SET_PEER_EX": (
+        cryptography_has_evp_pkey_set_peer_ex
+    ),
 }

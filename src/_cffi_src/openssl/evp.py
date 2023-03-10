@@ -38,6 +38,7 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
 static const long Cryptography_HAS_300_FIPS;
 static const long Cryptography_HAS_300_EVP_CIPHER;
 static const long Cryptography_HAS_EVP_PKEY_DH;
+static const long Cryptography_HAS_EVP_PKEY_SET_PEER_EX;
 """
 
 FUNCTIONS = """
@@ -119,6 +120,7 @@ int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
 int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
 int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
 int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
+int EVP_PKEY_derive_set_peer_ex(EVP_PKEY_CTX *, EVP_PKEY *, int);
 int EVP_PKEY_derive(EVP_PKEY_CTX *, unsigned char *, size_t *);
 
 int EVP_PKEY_id(const EVP_PKEY *);
@@ -196,6 +198,13 @@ static const long Cryptography_HAS_RAW_KEY = 1;
 #else
 static const long Cryptography_HAS_RAW_KEY = 1;
 static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+static const long Cryptography_HAS_EVP_PKEY_SET_PEER_EX = 1;
+#else
+static const long Cryptography_HAS_EVP_PKEY_SET_PEER_EX = 0;
+int (*EVP_PKEY_derive_set_peer_ex)(EVP_PKEY_CTX *, EVP_PKEY *, int) = NULL;
 #endif
 
 /* This is tied to X25519 support so we reuse the Cryptography_HAS_X25519
