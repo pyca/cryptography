@@ -2681,7 +2681,7 @@ X.509 Extensions
 
         def contains_domain_validated(policies):
             return any(
-                policy.oid.dotted_string == "2.23.140.1.2.1"
+                policy.policy_identifier.dotted_string == "2.23.140.1.2.1"
                 for policy in policies
             )
 
