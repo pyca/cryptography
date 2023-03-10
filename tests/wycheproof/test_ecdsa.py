@@ -61,10 +61,10 @@ _DIGESTS = {
 )
 def test_ecdsa_signature(backend, wycheproof):
     try:
-        key = wycheproof.cache_group_value(
+        key = wycheproof.cache_value_to_group(
             "cache_key",
-            lambda group: serialization.load_der_public_key(
-                binascii.unhexlify(group["keyDer"]), backend
+            lambda: serialization.load_der_public_key(
+                binascii.unhexlify(wycheproof.testgroup["keyDer"])
             ),
         )
         assert isinstance(key, ec.EllipticCurvePublicKey)

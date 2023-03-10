@@ -63,10 +63,10 @@ def should_verify(backend, wycheproof):
     "rsa_signature_4096_sha512_256_test.json",
 )
 def test_rsa_pkcs1v15_signature(backend, wycheproof):
-    key = wycheproof.cache_group_value(
+    key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda group: serialization.load_der_public_key(
-            binascii.unhexlify(group["keyDer"]), backend
+        lambda: serialization.load_der_public_key(
+            binascii.unhexlify(wycheproof.testgroup["keyDer"]),
         ),
     )
     assert isinstance(key, rsa.RSAPublicKey)
@@ -96,10 +96,10 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
 
 @wycheproof_tests("rsa_sig_gen_misc_test.json")
 def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
-    key = wycheproof.cache_group_value(
+    key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda group: serialization.load_pem_private_key(
-            group["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_pem_private_key(
+            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
@@ -142,10 +142,10 @@ def test_rsa_pss_signature(backend, wycheproof):
     if backend._fips_enabled and isinstance(digest, hashes.SHA1):
         pytest.skip("Invalid params for FIPS. SHA1 is disallowed")
 
-    key = wycheproof.cache_group_value(
+    key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda group: serialization.load_der_public_key(
-            binascii.unhexlify(group["keyDer"]), backend
+        lambda: serialization.load_der_public_key(
+            binascii.unhexlify(wycheproof.testgroup["keyDer"]),
         ),
     )
     assert isinstance(key, rsa.RSAPublicKey)
@@ -218,10 +218,10 @@ def test_rsa_oaep_encryption(backend, wycheproof):
             f"or {digest.name} hash."
         )
 
-    key = wycheproof.cache_group_value(
+    key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda group: serialization.load_pem_private_key(
-            group["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_pem_private_key(
+            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
@@ -254,10 +254,10 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     "rsa_pkcs1_4096_test.json",
 )
 def test_rsa_pkcs1_encryption(backend, wycheproof):
-    key = wycheproof.cache_group_value(
+    key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda group: serialization.load_pem_private_key(
-            group["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_pem_private_key(
+            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
