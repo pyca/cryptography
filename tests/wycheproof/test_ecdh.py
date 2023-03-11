@@ -86,13 +86,7 @@ def test_ecdh(backend, wycheproof):
     except UnsupportedAlgorithm:
         return
 
-    if wycheproof.valid or (
-        wycheproof.acceptable
-        and not (
-            wycheproof.has_flag("LowOrderPublic")
-            and backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-        )
-    ):
+    if wycheproof.valid or wycheproof.acceptable:
         computed_shared = private_key.exchange(ec.ECDH(), public_key)
         expected_shared = binascii.unhexlify(wycheproof.testcase["shared"])
         assert computed_shared == expected_shared
