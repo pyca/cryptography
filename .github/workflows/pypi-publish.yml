@@ -30,7 +30,7 @@ jobs:
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.event.id }}
-      - run: pip install -c ci-constraints-requirements.txt twine requests
+      - run: pip install twine requests
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> GITHUB_ENV
