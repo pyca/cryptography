@@ -63,6 +63,7 @@ jobs:
           pypi_token = response.json()["token"]
 
           with open(os.environ["GITHUB_ENV"], "a") as f:
+              print(f"::add-mask::{pypi_token}")
               f.write(f"TWINE_PASSWORD={pypi_token}\n")
         shell: python
 
