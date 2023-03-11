@@ -46,6 +46,8 @@ jobs:
           - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "931369429564b5a9bb09711de8e885fef546a0ac"}}
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -219,6 +221,8 @@ jobs:
           # 1.60 - new version of cxx
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -382,6 +386,8 @@ jobs:
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
@@ -449,6 +455,8 @@ jobs:
         JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.3.0
         timeout-minutes: 3
