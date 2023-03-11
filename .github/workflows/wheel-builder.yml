@@ -6,6 +6,8 @@ on:
     inputs:
       version:
         description: The version to build
+  # Do not add any non-tag push events without updating pypi-publish.yml. If
+  # you do, it'll upload wheels to PyPI.
   push:
     tags:
       - '*.*'
