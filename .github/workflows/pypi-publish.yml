@@ -33,14 +33,14 @@ jobs:
       - run: pip install twine requests
 
       - run: |
-          echo "OIDC_AUDIENCE=pypi" >> GITHUB_ENV
-          echo "PYPI_DOMAIN=pypi.org" >> GITHUB_ENV
-          echo "TWINE_REPO=pypi" >> GITHUB_ENV
+          echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
+          echo "PYPI_DOMAIN=pypi.org" >> $GITHUB_ENV
+          echo "TWINE_REPO=pypi" >> $GITHUB_ENV
         if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi')
       - run: |
-          echo "OIDC_AUDIENCE=testpypi" >> GITHUB_ENV
-          echo "PYPI_DOMAIN=test.pypi.org" >> GITHUB_ENV
-          echo "TWINE_REPO=testpypi" >> GITHUB_ENV
+          echo "OIDC_AUDIENCE=testpypi" >> $GITHUB_ENV
+          echo "PYPI_DOMAIN=test.pypi.org" >> $GITHUB_ENV
+          echo "TWINE_REPO=testpypi" >> $GITHUB_ENV
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
 
       - run: |
