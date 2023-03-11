@@ -35,13 +35,13 @@ jobs:
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
           echo "PYPI_DOMAIN=pypi.org" >> $GITHUB_ENV
-          echo "TWINE_REPO=pypi" >> $GITHUB_ENV
+          echo "TWINE_REPOSITORY=pypi" >> $GITHUB_ENV
           echo "TWINE_USERNAME=__token__" >> $GITHUB_ENV
         if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi')
       - run: |
           echo "OIDC_AUDIENCE=testpypi" >> $GITHUB_ENV
           echo "PYPI_DOMAIN=test.pypi.org" >> $GITHUB_ENV
-          echo "TWINE_REPO=testpypi" >> $GITHUB_ENV
+          echo "TWINE_REPOSITORY=testpypi" >> $GITHUB_ENV
           echo "TWINE_USERNAME=__token__" >> $GITHUB_ENV
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
 
@@ -67,4 +67,4 @@ jobs:
               f.write(f"TWINE_PASSWORD={pypi_token}\n")
         shell: python
 
-      - run: twine upload --skip-existing --repository $TWINE_REPO $(find dist/ -type f -name 'cryptography*')
+      - run: twine upload --skip-existing $(find dist/ -type f -name 'cryptography*')
