@@ -66,4 +66,4 @@ jobs:
               f.write("TWINE_PASSWORD={pypi_token}\n")
         shell: python
 
-      - run: find dist/ -type f -name 'cryptography*' -exec twine upload --repository $TWINE_REPO {} \;
+      - run: find dist/ -type f -name 'cryptography*' | xargs twine upload --repository $TWINE_REPO
