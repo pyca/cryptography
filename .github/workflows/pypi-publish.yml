@@ -11,10 +11,9 @@ on:
         required: true
         type: choice
         options: ["testpypi", "pypi"]
-  # Disabled until this has been validated with `workflow_dispatch` + Test PyPI.
-  # workflow_run:
-  #   workflows: ["wheel-builder.yml"]
-  #   types: [completed]
+  workflow_run:
+    workflows: ["wheel-builder.yml"]
+    types: [completed]
 
 jobs:
   publish:
