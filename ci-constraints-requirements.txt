@@ -42,7 +42,7 @@ docutils==0.18.1
     #   readme-renderer
     #   sphinx
     #   sphinx-rtd-theme
-exceptiongroup==1.1.0
+exceptiongroup==1.1.1
     # via
     #   hypothesis
     #   pytest
