@@ -12,7 +12,7 @@ on:
         type: choice
         options: ["testpypi", "pypi"]
   workflow_run:
-    workflows: ["wheel-builder.yml"]
+    workflows: ["Wheel Builder"]
     types: [completed]
 
 jobs:
