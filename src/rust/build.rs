@@ -1,6 +1,6 @@
 use std::env;
 use std::io::Write;
-use std::path::{Path, MAIN_SEPARATOR};
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 fn main() {
