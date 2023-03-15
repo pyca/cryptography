@@ -4,13 +4,18 @@
 
 
 import os
+import pathlib
 import platform
 import sys
 from distutils import dist
 from distutils.ccompiler import get_default_compiler
 from distutils.command.config import config
 
-from _cffi_src.utils import build_ffi_for_binding, compiler_type
+# Add the src directory to the path so we can import _cffi_src.utils
+src_dir = str(pathlib.Path(__file__).parent.parent)
+sys.path.insert(0, src_dir)
+
+from _cffi_src.utils import build_ffi_for_binding, compiler_type  # noqa: E402
 
 
 def _get_openssl_libraries(platform):
