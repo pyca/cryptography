@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use chrono::Timelike;
@@ -11,7 +11,10 @@ use std::sync::Arc;
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 
 #[pyo3::prelude::pyfunction]
-fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResponse, PyAsn1Error> {
+fn load_der_ocsp_response(
+    _py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<OCSPResponse, CryptographyError> {
     let raw = OwnedRawOCSPResponse::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
 
     let response = raw.borrow_value();
@@ -19,15 +22,19 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
         SUCCESSFUL_RESPONSE => match response.response_bytes {
             Some(ref bytes) => {
                 if bytes.response_type != BASIC_RESPONSE_OID {
-                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "Successful OCSP response does not contain a BasicResponse",
-                    )));
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Successful OCSP response does not contain a BasicResponse",
+                        ),
+                    ));
                 }
             }
             None => {
-                return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                    "Successful OCSP response does not contain a BasicResponse",
-                )))
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Successful OCSP response does not contain a BasicResponse",
+                    ),
+                ))
             }
         },
         MALFORMED_REQUEST_RESPOSNE
@@ -36,9 +43,9 @@ fn load_der_ocsp_response(_py: pyo3::Python<'_>, data: &[u8]) -> Result<OCSPResp
         | SIG_REQUIRED_RESPONSE
         | UNAUTHORIZED_RESPONSE => {}
         _ => {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "OCSP response has an unknown status code",
-            )))
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("OCSP response has an unknown status code"),
+            ))
         }
     };
     Ok(OCSPResponse {
@@ -86,7 +93,7 @@ const UNAUTHORIZED_RESPONSE: u32 = 6;
 #[pyo3::prelude::pymethods]
 impl OCSPResponse {
     #[getter]
-    fn responses(&self) -> Result<OCSPResponseIterator, PyAsn1Error> {
+    fn responses(&self) -> Result<OCSPResponseIterator, CryptographyError> {
         self.requires_successful_response()?;
         Ok(OCSPResponseIterator {
             contents: OwnedOCSPResponseIteratorData::try_new(Arc::clone(&self.raw), |v| {
@@ -163,7 +170,7 @@ impl OCSPResponse {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let sig_oids_to_hash = py
             .import("cryptography.hazmat._oid")?
             .getattr(crate::intern!(py, "_SIG_OIDS_TO_HASH"))?;
@@ -175,7 +182,7 @@ impl OCSPResponse {
                     "Signature algorithm OID: {} not recognized",
                     self.requires_successful_response()?.signature_algorithm.oid
                 );
-                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_instance(
                     py.import("cryptography.exceptions")?
                         .call_method1("UnsupportedAlgorithm", (exc_messsage,))?,
                 )))
@@ -193,14 +200,14 @@ impl OCSPResponse {
     fn tbs_response_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let resp = self.requires_successful_response()?;
         let result = asn1::write_single(&resp.tbs_response_data)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
-    fn certificates<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn certificates<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let resp = self.requires_successful_response()?;
         let py_certs = pyo3::types::PyList::empty(py);
         let certs = match &resp.certs {
@@ -242,21 +249,24 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn issuer_key_hash(&self) -> Result<&[u8], PyAsn1Error> {
+    fn issuer_key_hash(&self) -> Result<&[u8], CryptographyError> {
         let resp = self.requires_successful_response()?;
         let single_resp = resp.single_response()?;
         Ok(single_resp.cert_id.issuer_key_hash)
     }
 
     #[getter]
-    fn issuer_name_hash(&self) -> Result<&[u8], PyAsn1Error> {
+    fn issuer_name_hash(&self) -> Result<&[u8], CryptographyError> {
         let resp = self.requires_successful_response()?;
         let single_resp = resp.single_response()?;
         Ok(single_resp.cert_id.issuer_name_hash)
     }
 
     #[getter]
-    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let resp = self.requires_successful_response()?;
         let single_resp = resp.single_response()?;
         single_resp.py_hash_algorithm(py)
@@ -276,7 +286,7 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn revocation_reason<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
+    fn revocation_reason<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
         let single_resp = resp.single_response()?;
         single_resp.py_revocation_reason(py)
@@ -367,7 +377,7 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
@@ -443,12 +453,12 @@ struct BasicOCSPResponse<'a> {
 }
 
 impl BasicOCSPResponse<'_> {
-    fn single_response(&self) -> Result<SingleResponse<'_>, PyAsn1Error> {
+    fn single_response(&self) -> Result<SingleResponse<'_>, CryptographyError> {
         let responses = self.tbs_response_data.responses.unwrap_read();
         let num_responses = responses.len();
 
         if num_responses != 1 {
-            return Err(PyAsn1Error::from(
+            return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "OCSP response contains {} SINGLERESP structures.  Use .response_iter to iterate through them",
                     num_responses
@@ -511,13 +521,16 @@ impl SingleResponse<'_> {
             .getattr(attr)
     }
 
-    fn py_hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn py_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
         match ocsp::OIDS_TO_HASH.get(&self.cert_id.hash_algorithm.oid) {
             Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
-                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_instance(
                     exceptions
                         .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
                         .call1((format!(
@@ -540,7 +553,10 @@ impl SingleResponse<'_> {
         }
     }
 
-    fn py_revocation_reason<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
+    fn py_revocation_reason<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
         match &self.cert_status {
             CertStatus::Revoked(revoked_info) => match revoked_info.revocation_reason {
                 Some(ref v) => crl::parse_crl_reason_flags(py, v),
@@ -584,7 +600,7 @@ fn create_ocsp_response(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
-) -> PyAsn1Result<OCSPResponse> {
+) -> CryptographyResult<OCSPResponse> {
     let response_status = status
         .getattr(crate::intern!(py, "value"))?
         .extract::<u32>()?;
@@ -842,7 +858,10 @@ impl OCSPSingleResponse {
     }
 
     #[getter]
-    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         self.single_response().py_hash_algorithm(py)
     }
 
@@ -857,7 +876,7 @@ impl OCSPSingleResponse {
     }
 
     #[getter]
-    fn revocation_reason<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
+    fn revocation_reason<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
         self.single_response().py_revocation_reason(py)
     }
 

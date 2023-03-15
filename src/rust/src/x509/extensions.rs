@@ -2,14 +2,16 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{
+    py_oid_to_oid, py_uint_to_big_endian_bytes, CryptographyError, CryptographyResult,
+};
 use crate::x509;
 use crate::x509::{certificate, crl, oid, sct};
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
     subtrees: &'a pyo3::PyAny,
-) -> Result<Option<certificate::SequenceOfSubtrees<'a>>, PyAsn1Error> {
+) -> Result<Option<certificate::SequenceOfSubtrees<'a>>, CryptographyError> {
     if subtrees.is_none() {
         Ok(None)
     } else {
@@ -120,7 +122,7 @@ pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
     ext: &pyo3::PyAny,
-) -> PyAsn1Result<Option<Vec<u8>>> {
+) -> CryptographyResult<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
             let bc = ext.extract::<certificate::BasicConstraints>()?;

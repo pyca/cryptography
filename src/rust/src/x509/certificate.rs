@@ -4,7 +4,7 @@
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
-    PyAsn1Error, PyAsn1Result,
+    CryptographyError, CryptographyResult,
 };
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
@@ -121,7 +121,7 @@ impl Certificate {
         slf
     }
 
-    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> PyAsn1Result<&'p pyo3::PyAny> {
+    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
@@ -137,7 +137,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
         algorithm: pyo3::PyObject,
-    ) -> PyAsn1Result<&'p pyo3::PyAny> {
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
         let hasher = py
             .import("cryptography.hazmat.primitives.hashes")?
             .getattr(crate::intern!(py, "Hash"))?
@@ -153,21 +153,24 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
         encoding: &'p pyo3::PyAny,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let result = asn1::write_single(self.raw.borrow_value())?;
 
         encode_der_data(py, "CERTIFICATE".to_string(), result, encoding)
     }
 
     #[getter]
-    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn serial_number<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let bytes = self.raw.borrow_value().tbs_cert.serial.as_bytes();
         warn_if_negative_serial(py, bytes)?;
         Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
 
     #[getter]
-    fn version<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn version<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let version = &self.raw.borrow_value().tbs_cert.version;
         cert_version(py, *version)
     }
@@ -192,7 +195,7 @@ impl Certificate {
     fn tbs_certificate_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let result = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
@@ -201,7 +204,7 @@ impl Certificate {
     fn tbs_precertificate_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let val = self.raw.borrow_value();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
@@ -213,9 +216,11 @@ impl Certificate {
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
                     .collect();
                 if filtered_extensions.len() == ext_count {
-                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "Could not find pre-certificate SCT list extension",
-                    )));
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Could not find pre-certificate SCT list extension",
+                        ),
+                    ));
                 }
                 let filtered_extensions: x509::Extensions<'_> = Asn1ReadableOrWritable::new_write(
                     asn1::SequenceOfWriter::new(filtered_extensions),
@@ -224,9 +229,11 @@ impl Certificate {
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            None => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Could not find any extensions in TBS certificate",
-            ))),
+            None => Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Could not find any extensions in TBS certificate",
+                ),
+            )),
         }
     }
 
@@ -263,14 +270,14 @@ impl Certificate {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let sig_oids_to_hash = py
             .import("cryptography.hazmat._oid")?
             .getattr(crate::intern!(py, "_SIG_OIDS_TO_HASH"))?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
-            Err(_) => Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            Err(_) => Err(CryptographyError::from(pyo3::PyErr::from_instance(
                 py.import("cryptography.exceptions")?.call_method1(
                     "UnsupportedAlgorithm",
                     (format!(
@@ -324,16 +331,18 @@ impl Certificate {
         &self,
         py: pyo3::Python<'_>,
         issuer: pyo3::PyRef<'_, Certificate>,
-    ) -> PyAsn1Result<()> {
+    ) -> CryptographyResult<()> {
         if self.raw.borrow_value().tbs_cert.signature_alg != self.raw.borrow_value().signature_alg {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                 "Inner and outer signature algorithms do not match. This is an invalid certificate."
             )));
         };
         if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Issuer certificate subject does not match certificate issuer.",
-            )));
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Issuer certificate subject does not match certificate issuer.",
+                ),
+            ));
         };
         sign::verify_signature_with_oid(
             py,
@@ -345,7 +354,7 @@ impl Certificate {
     }
 }
 
-fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn1Error> {
+fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     match version {
         0 => Ok(x509_module
@@ -354,7 +363,7 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn
         2 => Ok(x509_module
             .getattr(crate::intern!(py, "Version"))?
             .get_item("v3")?),
-        _ => Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+        _ => Err(CryptographyError::from(pyo3::PyErr::from_instance(
             x509_module
                 .getattr(crate::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid X509 version", version), version))?,
@@ -363,7 +372,7 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, PyAsn
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
+fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<Certificate> {
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
     let parsed = x509::find_in_pem(
@@ -375,7 +384,10 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_pem_x509_certificates(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Vec<Certificate>> {
+fn load_pem_x509_certificates(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> CryptographyResult<Vec<Certificate>> {
     let certs = pem::parse_many(data)?
         .iter()
         .filter(|p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE")
@@ -383,14 +395,14 @@ fn load_pem_x509_certificates(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result
         .collect::<Result<Vec<_>, _>>()?;
 
     if certs.is_empty() {
-        return Err(PyAsn1Error::from(pem::PemError::MalformedFraming));
+        return Err(CryptographyError::from(pem::PemError::MalformedFraming));
     }
 
     Ok(certs)
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<Certificate> {
+fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<Certificate> {
     let raw = OwnedRawCertificate::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
@@ -493,7 +505,7 @@ fn parse_display_text(
 fn parse_user_notice(
     py: pyo3::Python<'_>,
     un: UserNotice<'_>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let et = match un.explicit_text {
         Some(data) => parse_display_text(py, data)?,
@@ -520,7 +532,7 @@ fn parse_user_notice(
 fn parse_policy_qualifiers<'a>(
     py: pyo3::Python<'_>,
     policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let py_pq = pyo3::types::PyList::empty(py);
     for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
@@ -528,16 +540,20 @@ fn parse_policy_qualifiers<'a>(
                 if pqi.policy_qualifier_id == oid::CP_CPS_URI_OID {
                     pyo3::types::PyString::new(py, data.as_str()).to_object(py)
                 } else {
-                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "CpsUri ASN.1 structure found but OID did not match",
-                    )));
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "CpsUri ASN.1 structure found but OID did not match",
+                        ),
+                    ));
                 }
             }
             Qualifier::UserNotice(un) => {
                 if pqi.policy_qualifier_id != oid::CP_USER_NOTICE_OID {
-                    return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                        "UserNotice ASN.1 structure found but OID did not match",
-                    )));
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "UserNotice ASN.1 structure found but OID did not match",
+                        ),
+                    ));
                 }
                 parse_user_notice(py, un)?
             }
@@ -547,7 +563,7 @@ fn parse_policy_qualifiers<'a>(
     Ok(py_pq.to_object(py))
 }
 
-fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, CryptographyError> {
     let cp = asn1::parse_single::<asn1::SequenceOf<'_, PolicyInformation<'_>>>(ext_data)?;
     let x509_module = py.import("cryptography.x509")?;
     let certificate_policies = pyo3::types::PyList::empty(py);
@@ -598,7 +614,7 @@ pub(crate) struct GeneralSubtree<'a> {
 fn parse_general_subtrees(
     py: pyo3::Python<'_>,
     subtrees: SequenceOfSubtrees<'_>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let gns = pyo3::types::PyList::empty(py);
     for gs in subtrees.unwrap_read().clone() {
         gns.append(x509::parse_general_name(py, gs.base)?)?;
@@ -646,7 +662,7 @@ pub(crate) struct AuthorityKeyIdentifier<'a> {
 pub(crate) fn parse_distribution_point_name(
     py: pyo3::Python<'_>,
     dp: DistributionPointName<'_>,
-) -> Result<(pyo3::PyObject, pyo3::PyObject), PyAsn1Error> {
+) -> Result<(pyo3::PyObject, pyo3::PyObject), CryptographyError> {
     Ok(match dp {
         DistributionPointName::FullName(data) => (
             x509::parse_general_names(py, data.unwrap_read())?,
@@ -661,7 +677,7 @@ pub(crate) fn parse_distribution_point_name(
 fn parse_distribution_point(
     py: pyo3::Python<'_>,
     dp: DistributionPoint<'_>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let (full_name, relative_name) = match dp.distribution_point {
         Some(data) => parse_distribution_point_name(py, data)?,
         None => (py.None(), py.None()),
@@ -682,7 +698,7 @@ fn parse_distribution_point(
 pub(crate) fn parse_distribution_points(
     py: pyo3::Python<'_>,
     data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let dps = asn1::parse_single::<asn1::SequenceOf<'_, DistributionPoint<'_>>>(data)?;
     let py_dps = pyo3::types::PyList::empty(py);
     for dp in dps {
@@ -695,7 +711,7 @@ pub(crate) fn parse_distribution_points(
 pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
     reasons: Option<&asn1::BitString<'_>>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let reason_bit_mapping = py
         .import("cryptography.x509.extensions")?
         .getattr(crate::intern!(py, "_REASON_BIT_MAPPING"))?;
@@ -753,7 +769,7 @@ pub(crate) struct PolicyConstraints {
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext_data: &[u8],
-) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let aki = asn1::parse_single::<AuthorityKeyIdentifier<'_>>(ext_data)?;
     let serial = match aki.authority_cert_serial_number {
@@ -772,7 +788,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
 pub(crate) fn parse_access_descriptions(
     py: pyo3::Python<'_>,
     ext_data: &[u8],
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let ads = pyo3::types::PyList::empty(py);
     let parsed = asn1::parse_single::<x509::common::SequenceOfAccessDescriptions<'_>>(ext_data)?;
@@ -792,7 +808,7 @@ pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
     oid: asn1::ObjectIdentifier,
     ext_data: &[u8],
-) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
+) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
     match oid {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
@@ -973,12 +989,17 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
-pub(crate) fn time_from_py(py: pyo3::Python<'_>, val: &pyo3::PyAny) -> PyAsn1Result<x509::Time> {
+pub(crate) fn time_from_py(
+    py: pyo3::Python<'_>,
+    val: &pyo3::PyAny,
+) -> CryptographyResult<x509::Time> {
     let dt = x509::py_to_chrono(py, val)?;
     time_from_chrono(dt)
 }
 
-pub(crate) fn time_from_chrono(dt: chrono::DateTime<chrono::Utc>) -> PyAsn1Result<x509::Time> {
+pub(crate) fn time_from_chrono(
+    dt: chrono::DateTime<chrono::Utc>,
+) -> CryptographyResult<x509::Time> {
     if dt.year() >= 2050 {
         Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
     } else {
@@ -992,7 +1013,7 @@ fn create_x509_certificate(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
-) -> PyAsn1Result<Certificate> {
+) -> CryptographyResult<Certificate> {
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
     let der_encoding = serialization_mod

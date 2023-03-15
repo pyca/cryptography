@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{encode_der_data, PyAsn1Result};
+use crate::asn1::{encode_der_data, CryptographyResult};
 use crate::x509;
 
 use chrono::Timelike;
@@ -87,7 +87,7 @@ fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::Certificate>>,
     encoding: &'p pyo3::PyAny,
-) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     if py_certs.is_empty() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "certs must be a list of certs with length >= 1",
@@ -129,7 +129,7 @@ fn sign_and_serialize<'p>(
     builder: &'p pyo3::PyAny,
     encoding: &'p pyo3::PyAny,
     options: &'p pyo3::types::PyList,
-) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let pkcs7_options = py
         .import("cryptography.hazmat.primitives.serialization.pkcs7")?
         .getattr(crate::intern!(py, "PKCS7Options"))?;

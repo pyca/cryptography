@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::PyAsn1Result;
+use crate::asn1::CryptographyResult;
 use crate::x509;
 use crate::x509::oid;
 use once_cell::sync::Lazy;
@@ -42,7 +42,7 @@ impl CertID<'_> {
         cert: &'p x509::Certificate,
         issuer: &'p x509::Certificate,
         hash_algorithm: &'p pyo3::PyAny,
-    ) -> PyAsn1Result<CertID<'p>> {
+    ) -> CryptographyResult<CertID<'p>> {
         let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
         let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
         let issuer_key_hash = hash_data(
@@ -77,7 +77,7 @@ impl CertID<'_> {
         issuer_key_hash: &'p [u8],
         serial_number: asn1::BigInt<'p>,
         hash_algorithm: &'p pyo3::PyAny,
-    ) -> PyAsn1Result<CertID<'p>> {
+    ) -> CryptographyResult<CertID<'p>> {
         Ok(CertID {
             hash_algorithm: x509::AlgorithmIdentifier {
                 oid: HASH_NAME_TO_OIDS[hash_algorithm
