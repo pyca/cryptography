@@ -1,6 +1,6 @@
 use std::env;
 use std::io::Write;
-use std::path::{Path, MAIN_SEPARATOR};
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 fn main() {
@@ -23,21 +23,7 @@ fn main() {
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-changed=../_cffi_src/");
-    let python_path = match env::var("PYTHONPATH") {
-        Ok(mut val) => {
-            if cfg!(target_os = "windows") {
-                val.push(';');
-            } else {
-                val.push(':');
-            }
-            val.push_str("..");
-            val.push(MAIN_SEPARATOR);
-            val
-        }
-        Err(_) => format!("..{}", MAIN_SEPARATOR),
-    };
     let output = Command::new(&python)
-        .env("PYTHONPATH", python_path)
         .env("OUT_DIR", &out_dir)
         .arg("../_cffi_src/build_openssl.py")
         .output()
