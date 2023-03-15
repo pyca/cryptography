@@ -7,68 +7,67 @@ use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
-pub enum PyAsn1Error {
+pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),
     Asn1Write(asn1::WriteError),
     Py(pyo3::PyErr),
 }
 
-impl From<asn1::ParseError> for PyAsn1Error {
-    fn from(e: asn1::ParseError) -> PyAsn1Error {
-        PyAsn1Error::Asn1Parse(e)
+impl From<asn1::ParseError> for CryptographyError {
+    fn from(e: asn1::ParseError) -> CryptographyError {
+        CryptographyError::Asn1Parse(e)
     }
 }
 
-impl From<asn1::WriteError> for PyAsn1Error {
-    fn from(e: asn1::WriteError) -> PyAsn1Error {
-        PyAsn1Error::Asn1Write(e)
+impl From<asn1::WriteError> for CryptographyError {
+    fn from(e: asn1::WriteError) -> CryptographyError {
+        CryptographyError::Asn1Write(e)
     }
 }
 
-impl From<pyo3::PyErr> for PyAsn1Error {
-    fn from(e: pyo3::PyErr) -> PyAsn1Error {
-        PyAsn1Error::Py(e)
+impl From<pyo3::PyErr> for CryptographyError {
+    fn from(e: pyo3::PyErr) -> CryptographyError {
+        CryptographyError::Py(e)
     }
 }
 
-impl From<pyo3::PyDowncastError<'_>> for PyAsn1Error {
-    fn from(e: pyo3::PyDowncastError<'_>) -> PyAsn1Error {
-        PyAsn1Error::Py(e.into())
+impl From<pyo3::PyDowncastError<'_>> for CryptographyError {
+    fn from(e: pyo3::PyDowncastError<'_>) -> CryptographyError {
+        CryptographyError::Py(e.into())
     }
 }
 
-impl From<pem::PemError> for PyAsn1Error {
-    fn from(e: pem::PemError) -> PyAsn1Error {
-        PyAsn1Error::Py(pyo3::exceptions::PyValueError::new_err(format!(
+impl From<pem::PemError> for CryptographyError {
+    fn from(e: pem::PemError) -> CryptographyError {
+        CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(format!(
             "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. {:?}",
             e
         )))
     }
 }
 
-impl From<PyAsn1Error> for pyo3::PyErr {
-    fn from(e: PyAsn1Error) -> pyo3::PyErr {
+impl From<CryptographyError> for pyo3::PyErr {
+    fn from(e: CryptographyError) -> pyo3::PyErr {
         match e {
-            PyAsn1Error::Asn1Parse(asn1_error) => pyo3::exceptions::PyValueError::new_err(format!(
-                "error parsing asn1 value: {:?}",
-                asn1_error
-            )),
-            PyAsn1Error::Asn1Write(asn1::WriteError::AllocationError) => {
+            CryptographyError::Asn1Parse(asn1_error) => pyo3::exceptions::PyValueError::new_err(
+                format!("error parsing asn1 value: {:?}", asn1_error),
+            ),
+            CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
                 pyo3::exceptions::PyMemoryError::new_err(
                     "failed to allocate memory while performing ASN.1 serialization",
                 )
             }
-            PyAsn1Error::Py(py_error) => py_error,
+            CryptographyError::Py(py_error) => py_error,
         }
     }
 }
 
-impl PyAsn1Error {
+impl CryptographyError {
     pub(crate) fn add_location(self, loc: asn1::ParseLocation) -> Self {
         match self {
-            PyAsn1Error::Py(e) => PyAsn1Error::Py(e),
-            PyAsn1Error::Asn1Parse(e) => PyAsn1Error::Asn1Parse(e.add_location(loc)),
-            PyAsn1Error::Asn1Write(e) => PyAsn1Error::Asn1Write(e),
+            CryptographyError::Py(e) => CryptographyError::Py(e),
+            CryptographyError::Asn1Parse(e) => CryptographyError::Asn1Parse(e.add_location(loc)),
+            CryptographyError::Asn1Write(e) => CryptographyError::Asn1Write(e),
         }
     }
 }
@@ -76,7 +75,7 @@ impl PyAsn1Error {
 // The primary purpose of this alias is for brevity to keep function signatures
 // to a single-line as a work around for coverage issues. See
 // https://github.com/pyca/cryptography/pull/6173
-pub(crate) type PyAsn1Result<T = pyo3::PyObject> = Result<T, PyAsn1Error>;
+pub(crate) type CryptographyResult<T = pyo3::PyObject> = Result<T, CryptographyError>;
 
 pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier> {
     Ok(py_oid
@@ -106,7 +105,10 @@ struct Spki<'a> {
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_spki_for_data(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn parse_spki_for_data(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<pyo3::PyObject, CryptographyError> {
     let spki = asn1::parse_single::<Spki<'_>>(data)?;
     if spki.data.padding_bits() != 0 {
         return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
@@ -131,7 +133,10 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn decode_dss_signature(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn decode_dss_signature(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<pyo3::PyObject, CryptographyError> {
     let sig = asn1::parse_single::<DssSignature<'_>>(data)?;
 
     Ok((
@@ -164,7 +169,7 @@ pub(crate) fn encode_der_data<'p>(
     pem_tag: String,
     data: Vec<u8>,
     encoding: &'p pyo3::PyAny,
-) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let encoding_class = py
         .import("cryptography.hazmat.primitives.serialization")?
         .getattr(crate::intern!(py, "Encoding"))?;
@@ -198,7 +203,7 @@ fn encode_dss_signature(
     py: pyo3::Python<'_>,
     r: &pyo3::types::PyLong,
     s: &pyo3::types::PyLong,
-) -> PyAsn1Result<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::PyObject> {
     let sig = DssSignature {
         r: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap(),
         s: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, s)?).unwrap(),
@@ -264,7 +269,7 @@ fn parse_name_value_tags(rdns: &mut Name<'_>) -> Vec<u8> {
 }
 
 #[pyo3::prelude::pyfunction]
-fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, PyAsn1Error> {
+fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyError> {
     let mut asn1_cert = asn1::parse_single::<Asn1Certificate<'_>>(data)?;
 
     Ok(TestCertificate {
@@ -295,31 +300,33 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
 #[cfg(test)]
 mod tests {
-    use super::PyAsn1Error;
+    use super::CryptographyError;
 
     #[test]
-    fn test_pyasn1error_from() {
+    fn test_cryptographyerror_from() {
         pyo3::prepare_freethreaded_python();
         pyo3::Python::with_gil(|py| {
-            let e: PyAsn1Error = asn1::WriteError::AllocationError.into();
+            let e: CryptographyError = asn1::WriteError::AllocationError.into();
             assert!(matches!(
                 e,
-                PyAsn1Error::Asn1Write(asn1::WriteError::AllocationError)
+                CryptographyError::Asn1Write(asn1::WriteError::AllocationError)
             ));
             let py_e: pyo3::PyErr = e.into();
             assert!(py_e.is_instance::<pyo3::exceptions::PyMemoryError>(py));
 
-            let e: PyAsn1Error = pyo3::PyDowncastError::new(py.None().as_ref(py), "abc").into();
-            assert!(matches!(e, PyAsn1Error::Py(_)));
+            let e: CryptographyError =
+                pyo3::PyDowncastError::new(py.None().as_ref(py), "abc").into();
+            assert!(matches!(e, CryptographyError::Py(_)));
         })
     }
 
     #[test]
-    fn test_pyasn1error_add_location() {
+    fn test_cryptographyerror_add_location() {
         let py_err = pyo3::PyErr::new::<pyo3::exceptions::PyValueError, _>("Error!");
-        PyAsn1Error::Py(py_err).add_location(asn1::ParseLocation::Field("meh"));
+        CryptographyError::Py(py_err).add_location(asn1::ParseLocation::Field("meh"));
 
         let asn1_write_err = asn1::WriteError::AllocationError;
-        PyAsn1Error::Asn1Write(asn1_write_err).add_location(asn1::ParseLocation::Field("meh"));
+        CryptographyError::Asn1Write(asn1_write_err)
+            .add_location(asn1::ParseLocation::Field("meh"));
     }
 }

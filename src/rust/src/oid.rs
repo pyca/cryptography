@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::PyAsn1Result;
+use crate::asn1::CryptographyResult;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -14,7 +14,7 @@ pub(crate) struct ObjectIdentifier {
 #[pyo3::pymethods]
 impl ObjectIdentifier {
     #[new]
-    fn new(value: &str) -> PyAsn1Result<Self> {
+    fn new(value: &str) -> CryptographyResult<Self> {
         let oid = asn1::ObjectIdentifier::from_string(value)
             .ok_or_else(|| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
         Ok(ObjectIdentifier { oid })

@@ -4,7 +4,7 @@
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
-    PyAsn1Error, PyAsn1Result,
+    CryptographyError, CryptographyResult,
 };
 use crate::x509;
 use crate::x509::{certificate, extensions, oid, sign};
@@ -16,7 +16,7 @@ use std::sync::Arc;
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
-) -> Result<CertificateRevocationList, PyAsn1Error> {
+) -> Result<CertificateRevocationList, CryptographyError> {
     let raw = OwnedRawCertificateRevocationList::try_new(
         Arc::from(data),
         |data| asn1::parse_single(data),
@@ -26,7 +26,7 @@ fn load_der_x509_crl(
     let version = raw.borrow_value().tbs_cert_list.version.unwrap_or(1);
     if version != 1 {
         let x509_module = py.import("cryptography.x509")?;
-        return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+        return Err(CryptographyError::from(pyo3::PyErr::from_instance(
             x509_module
                 .getattr(crate::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid CRL version", version), version))?,
@@ -43,7 +43,7 @@ fn load_der_x509_crl(
 fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
-) -> Result<CertificateRevocationList, PyAsn1Error> {
+) -> Result<CertificateRevocationList, CryptographyError> {
     let block = x509::find_in_pem(
         data,
         |p| p.tag == "X509 CRL",
@@ -72,7 +72,7 @@ struct CertificateRevocationList {
 }
 
 impl CertificateRevocationList {
-    fn public_bytes_der(&self) -> PyAsn1Result<Vec<u8>> {
+    fn public_bytes_der(&self) -> CryptographyResult<Vec<u8>> {
         Ok(asn1::write_single(self.raw.borrow_value())?)
     }
 
@@ -208,7 +208,7 @@ impl CertificateRevocationList {
     fn tbs_certlist_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let b = asn1::write_single(&self.raw.borrow_value().tbs_cert_list)?;
         Ok(pyo3::types::PyBytes::new(py, &b))
     }
@@ -217,7 +217,7 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
         encoding: &'p pyo3::PyAny,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let result = asn1::write_single(self.raw.borrow_value())?;
 
         encode_der_data(py, "X509 CRL".to_string(), result, encoding)
@@ -373,7 +373,7 @@ impl CertificateRevocationList {
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
         public_key: &'p pyo3::PyAny,
-    ) -> PyAsn1Result<bool> {
+    ) -> CryptographyResult<bool> {
         if slf.raw.borrow_value().tbs_cert_list.signature
             != slf.raw.borrow_value().signature_algorithm
         {
@@ -588,7 +588,7 @@ pub(crate) type CRLReason = asn1::Enumerated;
 pub(crate) fn parse_crl_reason_flags<'p>(
     py: pyo3::Python<'p>,
     reason: &CRLReason,
-) -> PyAsn1Result<&'p pyo3::PyAny> {
+) -> CryptographyResult<&'p pyo3::PyAny> {
     let x509_module = py.import("cryptography.x509")?;
     let flag_name = match reason.value() {
         0 => "unspecified",
@@ -602,9 +602,12 @@ pub(crate) fn parse_crl_reason_flags<'p>(
         9 => "privilege_withdrawn",
         10 => "aa_compromise",
         value => {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                format!("Unsupported reason code: {}", value),
-            )))
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Unsupported reason code: {}",
+                    value
+                )),
+            ))
         }
     };
     Ok(x509_module
@@ -616,7 +619,7 @@ pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
     oid: asn1::ObjectIdentifier,
     data: &[u8],
-) -> PyAsn1Result<Option<&'p pyo3::PyAny>> {
+) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import("cryptography.x509")?;
     match oid {
         oid::CRL_REASON_OID => {
@@ -655,7 +658,7 @@ fn create_x509_crl(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
-) -> PyAsn1Result<CertificateRevocationList> {
+) -> CryptographyResult<CertificateRevocationList> {
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
 
     let mut revoked_certs = vec![];

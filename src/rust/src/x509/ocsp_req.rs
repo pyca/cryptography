@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::asn1::{
-    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, PyAsn1Error, PyAsn1Result,
+    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, CryptographyError, CryptographyResult,
 };
 use crate::x509;
 use crate::x509::{extensions, ocsp, oid};
@@ -18,7 +18,7 @@ struct OwnedRawOCSPRequest {
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<OCSPRequest> {
+fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<OCSPRequest> {
     let raw = OwnedRawOCSPRequest::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
 
     if raw
@@ -29,7 +29,7 @@ fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> PyAsn1Result<OCS
         .len()
         != 1
     {
-        return Err(PyAsn1Error::from(
+        return Err(CryptographyError::from(
             pyo3::exceptions::PyNotImplementedError::new_err(
                 "OCSP request contains more than one request",
             ),
@@ -76,7 +76,10 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn hash_algorithm<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let cert_id = self.cert_id();
 
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
@@ -84,7 +87,7 @@ impl OCSPRequest {
             Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
-                Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_instance(
                     exceptions
                         .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
                         .call1((format!(
@@ -97,7 +100,10 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+    fn serial_number<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let bytes = self.cert_id().serial_number.as_bytes();
         Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
@@ -131,7 +137,7 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
-    ) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
@@ -181,7 +187,10 @@ struct Request<'a> {
 }
 
 #[pyo3::prelude::pyfunction]
-fn create_ocsp_request(py: pyo3::Python<'_>, builder: &pyo3::PyAny) -> PyAsn1Result<OCSPRequest> {
+fn create_ocsp_request(
+    py: pyo3::Python<'_>,
+    builder: &pyo3::PyAny,
+) -> CryptographyResult<OCSPRequest> {
     let builder_request = builder.getattr(crate::intern!(py, "_request"))?;
 
     // Declare outside the if-block so the lifetimes are right.

@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::PyAsn1Error;
+use crate::asn1::CryptographyError;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
@@ -22,22 +22,22 @@ impl<'a> TLSReader<'a> {
         self.data.is_empty()
     }
 
-    fn read_byte(&mut self) -> Result<u8, PyAsn1Error> {
+    fn read_byte(&mut self) -> Result<u8, CryptographyError> {
         Ok(self.read_exact(1)?[0])
     }
 
-    fn read_exact(&mut self, length: usize) -> Result<&'a [u8], PyAsn1Error> {
+    fn read_exact(&mut self, length: usize) -> Result<&'a [u8], CryptographyError> {
         if length > self.data.len() {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Invalid SCT length",
-            )));
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid SCT length"),
+            ));
         }
         let (result, data) = self.data.split_at(length);
         self.data = data;
         Ok(result)
     }
 
-    fn read_length_prefixed(&mut self) -> Result<TLSReader<'a>, PyAsn1Error> {
+    fn read_length_prefixed(&mut self) -> Result<TLSReader<'a>, CryptographyError> {
         let length = u16::from_be_bytes(self.read_exact(2)?.try_into().unwrap());
         Ok(TLSReader::new(self.read_exact(length.into())?))
     }
@@ -236,7 +236,7 @@ pub(crate) fn parse_scts(
     py: pyo3::Python<'_>,
     data: &[u8],
     entry_type: LogEntryType,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let mut reader = TLSReader::new(data).read_length_prefixed()?;
 
     let py_scts = pyo3::types::PyList::empty(py);
@@ -245,9 +245,9 @@ pub(crate) fn parse_scts(
         let raw_sct_data = sct_data.data.to_vec();
         let version = sct_data.read_byte()?;
         if version != 0 {
-            return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-                "Invalid SCT version",
-            )));
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid SCT version"),
+            ));
         }
         let log_id = sct_data.read_exact(32)?.try_into().unwrap();
         let timestamp = u64::from_be_bytes(sct_data.read_exact(8)?.try_into().unwrap());

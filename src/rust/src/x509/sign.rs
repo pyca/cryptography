@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{PyAsn1Error, PyAsn1Result};
+use crate::asn1::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::oid;
 
@@ -287,13 +287,15 @@ pub(crate) fn verify_signature_with_oid<'p>(
     signature_oid: &asn1::ObjectIdentifier,
     signature: &[u8],
     data: &[u8],
-) -> PyAsn1Result<()> {
+) -> CryptographyResult<()> {
     let key_type = identify_public_key_type(py, issuer_public_key)?;
     let (sig_key_type, sig_hash_type) = identify_key_hash_type_for_oid(signature_oid)?;
     if key_type != sig_key_type {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Signature algorithm does not match issuer key type",
-        )));
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Signature algorithm does not match issuer key type",
+            ),
+        ));
     }
     let sig_hash_name = py_hash_name_from_hash_type(sig_hash_type);
     let hashes = py.import("cryptography.hazmat.primitives.hashes")?;

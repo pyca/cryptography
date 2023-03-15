@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid, PyAsn1Error, PyAsn1Result};
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid, CryptographyError, CryptographyResult};
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
@@ -17,15 +17,14 @@ pub(crate) fn find_in_pem(
     data: &[u8],
     filter_fn: fn(&pem::Pem) -> bool,
     no_match_err: &'static str,
-) -> Result<pem::Pem, PyAsn1Error> {
+) -> Result<pem::Pem, CryptographyError> {
     let all_sections = pem::parse_many(data)?;
     if all_sections.is_empty() {
-        return Err(PyAsn1Error::from(pem::PemError::MalformedFraming));
+        return Err(CryptographyError::from(pem::PemError::MalformedFraming));
     }
-    all_sections
-        .into_iter()
-        .find(filter_fn)
-        .ok_or_else(|| PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(no_match_err)))
+    all_sections.into_iter().find(filter_fn).ok_or_else(|| {
+        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(no_match_err))
+    })
 }
 
 pub(crate) type Name<'a> = Asn1ReadableOrWritable<
@@ -103,7 +102,7 @@ pub(crate) fn encode_name<'p>(
 pub(crate) fn encode_name_entry<'p>(
     py: pyo3::Python<'p>,
     py_name_entry: &'p pyo3::PyAny,
-) -> PyAsn1Result<AttributeTypeValue<'p>> {
+) -> CryptographyResult<AttributeTypeValue<'p>> {
     let asn1_type = py
         .import("cryptography.x509.name")?
         .getattr(crate::intern!(py, "_ASN1Type"))?;
@@ -141,7 +140,7 @@ pub(crate) fn encode_name_entry<'p>(
 fn encode_name_bytes<'p>(
     py: pyo3::Python<'p>,
     py_name: &'p pyo3::PyAny,
-) -> PyAsn1Result<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let name = encode_name(py, py_name)?;
     let result = asn1::write_single(&name)?;
     Ok(pyo3::types::PyBytes::new(py, &result))
@@ -217,7 +216,7 @@ pub(crate) type SequenceOfGeneralName<'a> = Asn1ReadableOrWritable<
 pub(crate) fn encode_general_names<'a>(
     py: pyo3::Python<'a>,
     py_gns: &'a pyo3::PyAny,
-) -> Result<Vec<GeneralName<'a>>, PyAsn1Error> {
+) -> Result<Vec<GeneralName<'a>>, CryptographyError> {
     let mut gns = vec![];
     for el in py_gns.iter()? {
         let gn = encode_general_name(py, el?)?;
@@ -229,7 +228,7 @@ pub(crate) fn encode_general_names<'a>(
 pub(crate) fn encode_general_name<'a>(
     py: pyo3::Python<'a>,
     gn: &'a pyo3::PyAny,
-) -> Result<GeneralName<'a>, PyAsn1Error> {
+) -> Result<GeneralName<'a>, CryptographyError> {
     let gn_module = py.import("cryptography.x509.general_name")?;
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr(crate::intern!(py, "value"))?;
@@ -266,9 +265,9 @@ pub(crate) fn encode_general_name<'a>(
         let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
-        Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Unsupported GeneralName type",
-        )))
+        Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Unsupported GeneralName type"),
+        ))
     }
 }
 
@@ -287,7 +286,7 @@ pub(crate) type SequenceOfAccessDescriptions<'a> = Asn1ReadableOrWritable<
 pub(crate) fn encode_access_descriptions<'a>(
     py: pyo3::Python<'a>,
     py_ads: &'a pyo3::PyAny,
-) -> Result<SequenceOfAccessDescriptions<'a>, PyAsn1Error> {
+) -> Result<SequenceOfAccessDescriptions<'a>, CryptographyError> {
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
@@ -342,7 +341,7 @@ pub(crate) struct Extension<'a> {
 pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
     name: &Name<'_>,
-) -> Result<&'p pyo3::PyAny, PyAsn1Error> {
+) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.unwrap_read().clone() {
@@ -355,7 +354,7 @@ pub(crate) fn parse_name<'p>(
 fn parse_name_attribute(
     py: pyo3::Python<'_>,
     attribute: AttributeTypeValue<'_>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
     let tag_enum = py
@@ -366,7 +365,7 @@ fn parse_name_attribute(
         .tag()
         .as_u8()
         .ok_or_else(|| {
-            PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+            CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                 "Long-form tags are not supported in NameAttribute values",
             ))
         })?
@@ -400,7 +399,7 @@ fn parse_name_attribute(
 pub(crate) fn parse_rdn<'a>(
     py: pyo3::Python<'_>,
     rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let py_attrs = pyo3::types::PySet::empty(py)?;
     for attribute in rdn.clone() {
@@ -415,7 +414,7 @@ pub(crate) fn parse_rdn<'a>(
 pub(crate) fn parse_general_name(
     py: pyo3::Python<'_>,
     gn: GeneralName<'_>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import("cryptography.x509")?;
     let py_gn = match gn {
         GeneralName::OtherName(data) => {
@@ -462,7 +461,7 @@ pub(crate) fn parse_general_name(
                 .to_object(py)
         }
         _ => {
-            return Err(PyAsn1Error::from(pyo3::PyErr::from_instance(
+            return Err(CryptographyError::from(pyo3::PyErr::from_instance(
                 x509_module.call_method1(
                     "UnsupportedGeneralNameType",
                     ("x400Address/EDIPartyName are not supported types",),
@@ -476,7 +475,7 @@ pub(crate) fn parse_general_name(
 pub(crate) fn parse_general_names<'a>(
     py: pyo3::Python<'_>,
     gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
-) -> Result<pyo3::PyObject, PyAsn1Error> {
+) -> Result<pyo3::PyObject, CryptographyError> {
     let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {
         let py_gn = parse_general_name(py, gn)?;
@@ -485,7 +484,10 @@ pub(crate) fn parse_general_names<'a>(
     Ok(gns.to_object(py))
 }
 
-fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject, PyAsn1Error> {
+fn create_ip_network(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> Result<pyo3::PyObject, CryptographyError> {
     let ip_module = py.import("ipaddress")?;
     let x509_module = py.import("cryptography.x509")?;
     let prefix = match data.len() {
@@ -497,7 +499,7 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
             let num = u128::from_be_bytes(data[16..].try_into().unwrap());
             ipv6_netmask(num)
         }
-        _ => Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
+        _ => Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
             format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
         ))),
     };
@@ -517,31 +519,31 @@ fn create_ip_network(py: pyo3::Python<'_>, data: &[u8]) -> Result<pyo3::PyObject
         .to_object(py))
 }
 
-fn ipv4_netmask(num: u32) -> Result<u32, PyAsn1Error> {
+fn ipv4_netmask(num: u32) -> Result<u32, CryptographyError> {
     // we invert and check leading zeros because leading_ones wasn't stabilized
     // until 1.46.0. When we raise our MSRV we should change this
     if (!num).leading_zeros() + num.trailing_zeros() != 32 {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid netmask",
-        )));
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid netmask"),
+        ));
     }
     Ok((!num).leading_zeros())
 }
 
-fn ipv6_netmask(num: u128) -> Result<u32, PyAsn1Error> {
+fn ipv6_netmask(num: u128) -> Result<u32, CryptographyError> {
     // we invert and check leading zeros because leading_ones wasn't stabilized
     // until 1.46.0. When we raise our MSRV we should change this
     if (!num).leading_zeros() + num.trailing_zeros() != 128 {
-        return Err(PyAsn1Error::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid netmask",
-        )));
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid netmask"),
+        ));
     }
     Ok((!num).leading_zeros())
 }
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
-    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, PyAsn1Error>,
+    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
@@ -589,7 +591,11 @@ pub(crate) fn parse_and_cache_extensions<
 
 pub(crate) fn encode_extensions<
     'p,
-    F: Fn(pyo3::Python<'_>, &asn1::ObjectIdentifier, &pyo3::PyAny) -> PyAsn1Result<Option<Vec<u8>>>,
+    F: Fn(
+        pyo3::Python<'_>,
+        &asn1::ObjectIdentifier,
+        &pyo3::PyAny,
+    ) -> CryptographyResult<Option<Vec<u8>>>,
 >(
     py: pyo3::Python<'p>,
     py_exts: &'p pyo3::PyAny,
