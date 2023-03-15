@@ -94,7 +94,7 @@ packaging==23.0; python_version >= "3.7"
     #   pytest
     #   sphinx
     #   tox
-pathspec==0.11.0
+pathspec==0.11.1
     # via black
 pkginfo==1.9.6
     # via twine
