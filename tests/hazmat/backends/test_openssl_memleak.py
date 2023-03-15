@@ -23,7 +23,7 @@ def main(argv):
 
     import cffi
 
-    from cryptography.hazmat.bindings._openssl import ffi, lib
+    from cryptography.hazmat.bindings._rust import _openssl
 
     heap = {}
     start_heap = {}
@@ -50,7 +50,9 @@ def main(argv):
                 backtrace_ffi.string(symbols[i]).decode()
                 for i in range(length)
             ]
-            lib.Cryptography_free_wrapper(symbols, backtrace_ffi.NULL, 0)
+            _openssl.lib.Cryptography_free_wrapper(
+                symbols, backtrace_ffi.NULL, 0
+            )
             return stack
     else:
         def backtrace():
@@ -59,17 +61,19 @@ def main(argv):
         def symbolize_backtrace(trace):
             return None
 
-    @ffi.callback("void *(size_t, const char *, int)")
+    @_openssl.ffi.callback("void *(size_t, const char *, int)")
     def malloc(size, path, line):
-        ptr = lib.Cryptography_malloc_wrapper(size, path, line)
+        ptr = _openssl.lib.Cryptography_malloc_wrapper(size, path, line)
         heap[ptr] = (size, path, line, backtrace())
         return ptr
 
-    @ffi.callback("void *(void *, size_t, const char *, int)")
+    @_openssl.ffi.callback("void *(void *, size_t, const char *, int)")
     def realloc(ptr, size, path, line):
-        if ptr != ffi.NULL:
+        if ptr != _openssl.ffi.NULL:
             del heap[ptr]
-        new_ptr = lib.Cryptography_realloc_wrapper(ptr, size, path, line)
+        new_ptr = _openssl.lib.Cryptography_realloc_wrapper(
+            ptr, size, path, line
+        )
         heap[new_ptr] = (size, path, line, backtrace())
 
         # It is possible that something during the test will cause a
@@ -87,13 +91,15 @@ def main(argv):
 
         return new_ptr
 
-    @ffi.callback("void(void *, const char *, int)")
+    @_openssl.ffi.callback("void(void *, const char *, int)")
     def free(ptr, path, line):
-        if ptr != ffi.NULL:
+        if ptr != _openssl.ffi.NULL:
             del heap[ptr]
-            lib.Cryptography_free_wrapper(ptr, path, line)
+            _openssl.lib.Cryptography_free_wrapper(ptr, path, line)
 
-    result = lib.Cryptography_CRYPTO_set_mem_functions(malloc, realloc, free)
+    result = _openssl.lib.Cryptography_CRYPTO_set_mem_functions(
+        malloc, realloc, free
+    )
     assert result == 1
 
     # Trigger a bunch of initialization stuff.
@@ -111,20 +117,24 @@ def main(argv):
         gc.collect()
         gc.collect()
 
-        if lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-            lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
-            lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
+        if _openssl.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            _openssl.lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
+            _openssl.lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
 
-        if lib.Cryptography_HAS_OPENSSL_CLEANUP:
-            lib.OPENSSL_cleanup()
+        if _openssl.lib.Cryptography_HAS_OPENSSL_CLEANUP:
+            _openssl.lib.OPENSSL_cleanup()
 
         # Swap back to the original functions so that if OpenSSL tries to free
         # something from its atexit handle it won't be going through a Python
         # function, which will be deallocated when this function returns
-        result = lib.Cryptography_CRYPTO_set_mem_functions(
-            ffi.addressof(lib, "Cryptography_malloc_wrapper"),
-            ffi.addressof(lib, "Cryptography_realloc_wrapper"),
-            ffi.addressof(lib, "Cryptography_free_wrapper"),
+        result = _openssl.lib.Cryptography_CRYPTO_set_mem_functions(
+            _openssl.ffi.addressof(
+                _openssl.lib, "Cryptography_malloc_wrapper"
+            ),
+            _openssl.ffi.addressof(
+                _openssl.lib, "Cryptography_realloc_wrapper"
+            ),
+            _openssl.ffi.addressof(_openssl.lib, "Cryptography_free_wrapper"),
         )
         assert result == 1
 
@@ -134,9 +144,9 @@ def main(argv):
     # consumption that are allowed in reallocs of start_heap memory.
     if remaining or start_heap_realloc_delta[0] > 3072:
         info = dict(
-            (int(ffi.cast("size_t", ptr)), {
+            (int(_openssl.ffi.cast("size_t", ptr)), {
                 "size": heap[ptr][0],
-                "path": ffi.string(heap[ptr][1]).decode(),
+                "path": _openssl.ffi.string(heap[ptr][1]).decode(),
                 "line": heap[ptr][2],
                 "backtrace": symbolize_backtrace(heap[ptr][3]),
             })

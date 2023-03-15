@@ -12,7 +12,7 @@ import warnings
 import cryptography
 from cryptography import utils
 from cryptography.exceptions import InternalError
-from cryptography.hazmat.bindings._openssl import ffi, lib
+from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
@@ -65,9 +65,9 @@ def _errors_with_text(
 ) -> typing.List[_OpenSSLErrorWithText]:
     errors_with_text = []
     for err in errors:
-        buf = ffi.new("char[]", 256)
-        lib.ERR_error_string_n(err.code, buf, len(buf))
-        err_text_reason: bytes = ffi.string(buf)
+        buf = _openssl.ffi.new("char[]", 256)
+        _openssl.lib.ERR_error_string_n(err.code, buf, len(buf))
+        err_text_reason: bytes = _openssl.ffi.string(buf)
 
         errors_with_text.append(
             _OpenSSLErrorWithText(
@@ -137,7 +137,7 @@ class Binding:
     """
 
     lib: typing.ClassVar = None
-    ffi = ffi
+    ffi = _openssl.ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
     _legacy_provider: typing.Any = ffi.NULL
@@ -179,7 +179,9 @@ class Binding:
     def _ensure_ffi_initialized(cls) -> None:
         with cls._init_lock:
             if not cls._lib_loaded:
-                cls.lib = build_conditional_library(lib, CONDITIONAL_NAMES)
+                cls.lib = build_conditional_library(
+                    _openssl.lib, CONDITIONAL_NAMES
+                )
                 cls._lib_loaded = True
                 cls._register_osrandom_engine()
                 # As of OpenSSL 3.0.0 we must register a legacy cipher provider
@@ -217,7 +219,9 @@ def _verify_package_version(version: str) -> None:
     # up later this code checks that the currently imported package and the
     # shared object that were loaded have the same version and raise an
     # ImportError if they do not
-    so_package_version = ffi.string(lib.CRYPTOGRAPHY_PACKAGE_VERSION)
+    so_package_version = _openssl.ffi.string(
+        _openssl.lib.CRYPTOGRAPHY_PACKAGE_VERSION
+    )
     if version.encode("ascii") != so_package_version:
         raise ImportError(
             "The version of cryptography does not match the loaded "
@@ -228,6 +232,11 @@ def _verify_package_version(version: str) -> None:
                 version, so_package_version
             )
         )
+
+    _openssl_assert(
+        _openssl.lib,
+        _openssl.lib.OpenSSL_version_num() == openssl.openssl_version(),
+    )
 
 
 _verify_package_version(cryptography.__version__)
