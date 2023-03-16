@@ -22,12 +22,28 @@ class _OpenSSLErrorWithText(typing.NamedTuple):
     reason: int
     reason_text: bytes
 
+    @classmethod
+    def from_err(cls, err: "_OpenSSLError") -> "_OpenSSLErrorWithText":
+        buf = _openssl.ffi.new("char[]", 256)
+        _openssl.lib.ERR_error_string_n(err.code, buf, len(buf))
+        err_text_reason: bytes = _openssl.ffi.string(buf)
+
+        return _OpenSSLErrorWithText(
+            err.code, err.lib, err.reason, err_text_reason
+        )
+
 
 class _OpenSSLError:
     def __init__(self, code: int, lib: int, reason: int):
         self._code = code
         self._lib = lib
         self._reason = reason
+
+    @classmethod
+    def from_code(cls, code: int) -> "_OpenSSLError":
+        err_lib: int = _openssl.lib.ERR_GET_LIB(code)
+        err_reason: int = _openssl.lib.ERR_GET_REASON(code)
+        return cls(code, err_lib, err_reason)
 
     def _lib_reason_match(self, lib: int, reason: int) -> bool:
         return lib == self.lib and reason == self.reason
@@ -45,17 +61,14 @@ class _OpenSSLError:
         return self._reason
 
 
-def _consume_errors(lib) -> typing.List[_OpenSSLError]:
+def _consume_errors() -> typing.List[_OpenSSLError]:
     errors = []
     while True:
-        code: int = lib.ERR_get_error()
+        code: int = _openssl.lib.ERR_get_error()
         if code == 0:
             break
 
-        err_lib: int = lib.ERR_GET_LIB(code)
-        err_reason: int = lib.ERR_GET_REASON(code)
-
-        errors.append(_OpenSSLError(code, err_lib, err_reason))
+        errors.append(_OpenSSLError.from_code(code))
 
     return errors
 
@@ -65,21 +78,13 @@ def _errors_with_text(
 ) -> typing.List[_OpenSSLErrorWithText]:
     errors_with_text = []
     for err in errors:
-        buf = _openssl.ffi.new("char[]", 256)
-        _openssl.lib.ERR_error_string_n(err.code, buf, len(buf))
-        err_text_reason: bytes = _openssl.ffi.string(buf)
-
-        errors_with_text.append(
-            _OpenSSLErrorWithText(
-                err.code, err.lib, err.reason, err_text_reason
-            )
-        )
+        errors_with_text.append(_OpenSSLErrorWithText.from_err(err))
 
     return errors_with_text
 
 
-def _consume_errors_with_text(lib):
-    return _errors_with_text(_consume_errors(lib))
+def _consume_errors_with_text():
+    return _errors_with_text(_consume_errors())
 
 
 def _openssl_assert(
@@ -87,7 +92,7 @@ def _openssl_assert(
 ) -> None:
     if not ok:
         if errors is None:
-            errors = _consume_errors(lib)
+            errors = _consume_errors()
         errors_with_text = _errors_with_text(errors)
 
         raise InternalError(

@@ -5,6 +5,7 @@
 import pytest
 
 from cryptography.exceptions import InternalError
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
     _consume_errors,
@@ -95,7 +96,7 @@ class TestOpenSSL:
             -1,
         )
         b._register_osrandom_engine()
-        assert _consume_errors(b.lib) == []
+        assert _consume_errors() == []
 
     def test_version_mismatch(self):
         with pytest.raises(ImportError):
@@ -106,3 +107,26 @@ class TestOpenSSL:
             _legacy_provider_error(False)
 
         _legacy_provider_error(True)
+
+    def test_rust_internal_error(self):
+        with pytest.raises(InternalError) as exc_info:
+            rust_openssl.raise_openssl_error()
+
+        assert len(exc_info.value.err_code) == 0
+
+        b = Binding()
+        b.lib.ERR_put_error(
+            b.lib.ERR_LIB_EVP,
+            b.lib.EVP_F_EVP_ENCRYPTFINAL_EX,
+            b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH,
+            b"",
+            -1,
+        )
+        with pytest.raises(InternalError) as exc_info:
+            rust_openssl.raise_openssl_error()
+
+        error = exc_info.value.err_code[0]
+        assert error.lib == b.lib.ERR_LIB_EVP
+        assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
+        if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            assert b"data not multiple of block length" in error.reason_text

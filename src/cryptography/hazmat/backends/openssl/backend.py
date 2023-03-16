@@ -485,12 +485,12 @@ class Backend:
         return self._ffi.buffer(buf)[:]
 
     def _consume_errors(self) -> typing.List[binding._OpenSSLError]:
-        return binding._consume_errors(self._lib)
+        return binding._consume_errors()
 
     def _consume_errors_with_text(
         self,
     ) -> typing.List[binding._OpenSSLErrorWithText]:
-        return binding._consume_errors_with_text(self._lib)
+        return binding._consume_errors_with_text()
 
     def _bn_to_int(self, bn) -> int:
         assert bn != self._ffi.NULL

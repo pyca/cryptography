@@ -2,9 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{
-    big_byte_slice_to_py_int, py_uint_to_big_endian_bytes, CryptographyError, CryptographyResult,
-};
+use crate::asn1::{big_byte_slice_to_py_int, py_uint_to_big_endian_bytes};
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{extensions, ocsp, oid};
 use std::sync::Arc;
