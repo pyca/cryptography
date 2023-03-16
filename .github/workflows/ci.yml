@@ -49,7 +49,7 @@ jobs:
     env:
       CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -160,7 +160,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -223,7 +223,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -273,7 +273,7 @@ jobs:
     env:
       CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -386,7 +386,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -453,7 +453,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -529,7 +529,7 @@ jobs:
     env:
       CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -574,7 +574,7 @@ jobs:
     env:
       CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -610,7 +610,7 @@ jobs:
     needs: [linux, distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
         with:
           persist-credentials: false
