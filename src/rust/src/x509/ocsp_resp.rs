@@ -2,7 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, CryptographyError, CryptographyResult};
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use chrono::Timelike;

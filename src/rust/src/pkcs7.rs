@@ -2,7 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{encode_der_data, CryptographyResult};
+use crate::asn1::encode_der_data;
+use crate::error::CryptographyResult;
 use crate::x509;
 
 use chrono::Timelike;

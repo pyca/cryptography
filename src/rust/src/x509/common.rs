@@ -2,7 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid, CryptographyError, CryptographyResult};
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;

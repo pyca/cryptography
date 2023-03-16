@@ -10,6 +10,7 @@
 #![allow(unknown_lints, clippy::borrow_deref_ref)]
 
 mod asn1;
+mod error;
 mod intern;
 pub(crate) mod oid;
 mod pkcs7;
@@ -95,6 +96,11 @@ fn openssl_version() -> i64 {
     openssl::version::number()
 }
 
+#[pyo3::prelude::pyfunction]
+fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
+    Err(openssl::error::ErrorStack::get().into())
+}
+
 #[pyo3::prelude::pymodule]
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
@@ -133,6 +139,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction!(raise_openssl_error, m)?)?;
     m.add_submodule(openssl_mod)?;
 
     Ok(())

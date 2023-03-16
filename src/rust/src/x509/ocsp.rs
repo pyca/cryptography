@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::CryptographyResult;
+use crate::error::CryptographyResult;
 use crate::x509;
 use crate::x509::oid;
 use once_cell::sync::Lazy;

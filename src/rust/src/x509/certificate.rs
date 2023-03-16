@@ -4,8 +4,8 @@
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
-    CryptographyError, CryptographyResult,
 };
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
 use chrono::Datelike;
