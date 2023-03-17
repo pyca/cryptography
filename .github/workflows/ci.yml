@@ -452,6 +452,8 @@ jobs:
         JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
+    env:
+      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
     steps:
       - uses: actions/checkout@v3.4.0
         timeout-minutes: 3
