@@ -206,7 +206,7 @@ def assert_no_memory_leaks(s, argv=[]):
 def skip_if_memtesting_not_supported():
     return pytest.mark.skipif(
         not Binding().lib.Cryptography_HAS_MEM_FUNCTIONS
-        and platform.python_implementation() != "PyPy",
+        or platform.python_implementation() == "PyPy",
         reason="Requires OpenSSL memory functions (>=1.1.0) and not PyPy",
     )
 
