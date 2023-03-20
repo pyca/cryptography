@@ -14,7 +14,7 @@ asn1 = { version = "0.13.0", default-features = false }
 pem = "1.1"
 chrono = { version = "0.4.24", default-features = false, features = ["alloc", "clock"] }
 ouroboros = "0.15"
-openssl = "0.10.46"
+openssl = "0.10.47"
 openssl-sys = "0.9.72"
 
 [build-dependencies]
