@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::OpenSSLError;
+
 pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),
     Asn1Write(asn1::WriteError),
@@ -70,30 +72,14 @@ impl From<CryptographyError> for pyo3::PyErr {
                     .getattr(crate::intern!(py, "InternalError"))
                     .expect("Failed to get InternalError attribute");
 
-                let binding_mod = py
-                    .import("cryptography.hazmat.bindings.openssl.binding")
-                    .expect("Failed to import cryptography module");
-
-                let openssl_error = binding_mod
-                    .getattr(crate::intern!(py, "_OpenSSLError"))
-                    .expect("Failed to get _OpenSSL attribute");
-                let openssl_error_with_text = binding_mod
-                    .getattr(crate::intern!(py, "_OpenSSLErrorWithText"))
-                    .expect("Failed to get _OpenSSLErrorWithText attribute");
-
                 let errors = pyo3::types::PyList::empty(py);
                 for e in error_stack.errors() {
-                    let err = openssl_error
-                        .call_method1("from_code", (e.code(),))
-                        .expect("Failed to call from_code");
-
                     errors
                         .append(
-                            openssl_error_with_text
-                                .call_method1("from_err", (err,))
-                                .expect("Failed to call from_err"),
+                            pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })
+                                .expect("Failed to create OpenSSLError"),
                         )
-                        .expect("List append failed");
+                        .expect("Failed to append to list");
                 }
                 pyo3::PyErr::from_instance(
                     internal_error

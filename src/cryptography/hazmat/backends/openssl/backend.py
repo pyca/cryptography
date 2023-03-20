@@ -57,6 +57,7 @@ from cryptography.hazmat.backends.openssl.x25519 import (
     _X25519PrivateKey,
     _X25519PublicKey,
 )
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
@@ -209,7 +210,7 @@ class Backend:
     def openssl_assert(
         self,
         ok: bool,
-        errors: typing.Optional[typing.List[binding._OpenSSLError]] = None,
+        errors: typing.Optional[typing.List[rust_openssl.OpenSSLError]] = None,
     ) -> None:
         return binding._openssl_assert(self._lib, ok, errors=errors)
 
@@ -484,13 +485,8 @@ class Backend:
         self.openssl_assert(res == 1)
         return self._ffi.buffer(buf)[:]
 
-    def _consume_errors(self) -> typing.List[binding._OpenSSLError]:
-        return binding._consume_errors()
-
-    def _consume_errors_with_text(
-        self,
-    ) -> typing.List[binding._OpenSSLErrorWithText]:
-        return binding._consume_errors_with_text()
+    def _consume_errors(self) -> typing.List[rust_openssl.OpenSSLError]:
+        return rust_openssl.capture_error_stack()
 
     def _bn_to_int(self, bn) -> int:
         assert bn != self._ffi.NULL
@@ -760,7 +756,7 @@ class Backend:
         elif key_type == self._lib.EVP_PKEY_EC:
             ec_cdata = self._lib.EVP_PKEY_get1_EC_KEY(evp_pkey)
             if ec_cdata == self._ffi.NULL:
-                errors = self._consume_errors_with_text()
+                errors = self._consume_errors()
                 raise ValueError("Unable to load EC key", errors)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
@@ -1208,13 +1204,12 @@ class Backend:
             raise ValueError("Unsupported public key algorithm.")
 
         else:
-            errors_with_text = binding._errors_with_text(errors)
             raise ValueError(
                 "Could not deserialize key data. The data may be in an "
                 "incorrect format, it may be encrypted with an unsupported "
                 "algorithm, or it may be an unsupported key type (e.g. EC "
                 "curves with explicit parameters).",
-                errors_with_text,
+                errors,
             )
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
@@ -1708,7 +1703,7 @@ class Backend:
             dh_param_cdata, key_size, generator, self._ffi.NULL
         )
         if res != 1:
-            errors = self._consume_errors_with_text()
+            errors = self._consume_errors()
             raise ValueError("Unable to generate DH parameters", errors)
 
         return _DHParameters(self, dh_param_cdata)
@@ -2051,7 +2046,7 @@ class Backend:
             length,
         )
         if res != 1:
-            errors = self._consume_errors_with_text()
+            errors = self._consume_errors()
             # memory required formula explained here:
             # https://blog.filippo.io/the-scrypt-parameters/
             min_memory = 128 * n * r // (1024**2)

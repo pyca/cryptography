@@ -285,7 +285,7 @@ def _rsa_sig_sign(
     buf = backend._ffi.new("unsigned char[]", buflen[0])
     res = backend._lib.EVP_PKEY_sign(pkey_ctx, buf, buflen, data, len(data))
     if res != 1:
-        errors = backend._consume_errors_with_text()
+        errors = backend._consume_errors()
         raise ValueError(
             "Digest or salt length too long for key size. Use a larger key "
             "or shorter salt length if you are specifying a PSS salt",
@@ -380,7 +380,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         if not unsafe_skip_rsa_key_validation:
             res = backend._lib.RSA_check_key(rsa_cdata)
             if res != 1:
-                errors = backend._consume_errors_with_text()
+                errors = backend._consume_errors()
                 raise ValueError("Invalid private key", errors)
             # 2 is prime and passes an RSA key check, so we also check
             # if p and q are odd just to be safe.
@@ -392,7 +392,7 @@ class _RSAPrivateKey(RSAPrivateKey):
             p_odd = backend._lib.BN_is_odd(p[0])
             q_odd = backend._lib.BN_is_odd(q[0])
             if p_odd != 1 or q_odd != 1:
-                errors = backend._consume_errors_with_text()
+                errors = backend._consume_errors()
                 raise ValueError("Invalid private key", errors)
 
         self._backend = backend

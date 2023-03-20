@@ -101,6 +101,55 @@ fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
     Err(openssl::error::ErrorStack::get().into())
 }
 
+#[pyo3::prelude::pyclass]
+struct OpenSSLError {
+    e: openssl::error::Error,
+}
+
+#[pyo3::pymethods]
+impl OpenSSLError {
+    #[getter]
+    fn lib(&self) -> i32 {
+        self.e.library_code()
+    }
+
+    #[getter]
+    fn reason(&self) -> i32 {
+        self.e.reason_code()
+    }
+
+    #[getter]
+    fn reason_text(&self) -> &[u8] {
+        self.e.reason().unwrap_or("").as_bytes()
+    }
+
+    fn _lib_reason_match(&self, lib: i32, reason: i32) -> bool {
+        self.e.library_code() == lib && self.e.reason_code() == reason
+    }
+}
+
+#[pyo3::prelude::pyproto]
+impl pyo3::PyObjectProtocol for OpenSSLError {
+    fn __repr__(&self) -> pyo3::PyResult<String> {
+        Ok(format!(
+            "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",
+            self.e.code(),
+            self.e.library_code(),
+            self.e.reason_code(),
+            self.e.reason().unwrap_or("")
+        ))
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn capture_error_stack(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::types::PyList> {
+    let errs = pyo3::types::PyList::empty(py);
+    for e in openssl::error::ErrorStack::get().errors() {
+        errs.append(pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })?)?;
+    }
+    Ok(errs)
+}
+
 #[pyo3::prelude::pymodule]
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
@@ -140,6 +189,8 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(raise_openssl_error, m)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction!(capture_error_stack, m)?)?;
+    openssl_mod.add_class::<OpenSSLError>()?;
     m.add_submodule(openssl_mod)?;
 
     Ok(())

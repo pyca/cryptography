@@ -16,84 +16,14 @@ from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
-class _OpenSSLErrorWithText(typing.NamedTuple):
-    code: int
-    lib: int
-    reason: int
-    reason_text: bytes
-
-    @classmethod
-    def from_err(cls, err: "_OpenSSLError") -> "_OpenSSLErrorWithText":
-        buf = _openssl.ffi.new("char[]", 256)
-        _openssl.lib.ERR_error_string_n(err.code, buf, len(buf))
-        err_text_reason: bytes = _openssl.ffi.string(buf)
-
-        return _OpenSSLErrorWithText(
-            err.code, err.lib, err.reason, err_text_reason
-        )
-
-
-class _OpenSSLError:
-    def __init__(self, code: int, lib: int, reason: int):
-        self._code = code
-        self._lib = lib
-        self._reason = reason
-
-    @classmethod
-    def from_code(cls, code: int) -> "_OpenSSLError":
-        err_lib: int = _openssl.lib.ERR_GET_LIB(code)
-        err_reason: int = _openssl.lib.ERR_GET_REASON(code)
-        return cls(code, err_lib, err_reason)
-
-    def _lib_reason_match(self, lib: int, reason: int) -> bool:
-        return lib == self.lib and reason == self.reason
-
-    @property
-    def code(self) -> int:
-        return self._code
-
-    @property
-    def lib(self) -> int:
-        return self._lib
-
-    @property
-    def reason(self) -> int:
-        return self._reason
-
-
-def _consume_errors() -> typing.List[_OpenSSLError]:
-    errors = []
-    while True:
-        code: int = _openssl.lib.ERR_get_error()
-        if code == 0:
-            break
-
-        errors.append(_OpenSSLError.from_code(code))
-
-    return errors
-
-
-def _errors_with_text(
-    errors: typing.List[_OpenSSLError],
-) -> typing.List[_OpenSSLErrorWithText]:
-    errors_with_text = []
-    for err in errors:
-        errors_with_text.append(_OpenSSLErrorWithText.from_err(err))
-
-    return errors_with_text
-
-
-def _consume_errors_with_text():
-    return _errors_with_text(_consume_errors())
-
-
 def _openssl_assert(
-    lib, ok: bool, errors: typing.Optional[typing.List[_OpenSSLError]] = None
+    lib,
+    ok: bool,
+    errors: typing.Optional[typing.List[openssl.OpenSSLError]] = None,
 ) -> None:
     if not ok:
         if errors is None:
-            errors = _consume_errors()
-        errors_with_text = _errors_with_text(errors)
+            errors = openssl.capture_error_stack()
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "
@@ -102,8 +32,8 @@ def _openssl_assert(
             "OpenSSL try disabling it before reporting a bug. Otherwise "
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
-            "this. ({!r})".format(errors_with_text),
-            errors_with_text,
+            "this. ({!r})".format(errors),
+            errors,
         )
 
 

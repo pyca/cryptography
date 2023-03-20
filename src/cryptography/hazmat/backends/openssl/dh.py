@@ -188,10 +188,10 @@ class _DHPrivateKey(dh.DHPrivateKey):
 
     def _exchange_assert(self, ok: bool) -> None:
         if not ok:
-            errors_with_text = self._backend._consume_errors_with_text()
+            errors = self._backend._consume_errors()
             raise ValueError(
                 "Error computing shared key.",
-                errors_with_text,
+                errors,
             )
 
     def public_key(self) -> dh.DHPublicKey:
