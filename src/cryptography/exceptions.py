@@ -8,9 +8,7 @@ import typing
 from cryptography import utils
 
 if typing.TYPE_CHECKING:
-    from cryptography.hazmat.bindings.openssl.binding import (
-        _OpenSSLErrorWithText,
-    )
+    from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 
 class _Reasons(utils.Enum):
@@ -58,7 +56,7 @@ class InvalidSignature(Exception):
 
 class InternalError(Exception):
     def __init__(
-        self, msg: str, err_code: typing.List["_OpenSSLErrorWithText"]
+        self, msg: str, err_code: typing.List["rust_openssl.OpenSSLError"]
     ) -> None:
         super().__init__(msg)
         self.err_code = err_code

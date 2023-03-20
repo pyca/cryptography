@@ -46,9 +46,9 @@ def backend(request):
     check_backend_support(openssl_backend, request)
 
     # Ensure the error stack is clear before the test
-    errors = openssl_backend._consume_errors_with_text()
+    errors = openssl_backend._consume_errors()
     assert not errors
     yield openssl_backend
     # Ensure the error stack is clear after the test
-    errors = openssl_backend._consume_errors_with_text()
+    errors = openssl_backend._consume_errors()
     assert not errors

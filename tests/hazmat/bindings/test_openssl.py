@@ -8,7 +8,6 @@ from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
-    _consume_errors,
     _legacy_provider_error,
     _openssl_assert,
     _verify_package_version,
@@ -96,7 +95,7 @@ class TestOpenSSL:
             -1,
         )
         b._register_osrandom_engine()
-        assert _consume_errors() == []
+        assert rust_openssl.capture_error_stack() == []
 
     def test_version_mismatch(self):
         with pytest.raises(ImportError):

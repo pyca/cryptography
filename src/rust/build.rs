@@ -57,7 +57,8 @@ fn main() {
         .include(python_include)
         .include(openssl_include)
         .flag_if_supported("-Wconversion")
-        .flag_if_supported("-Wno-error=sign-conversion");
+        .flag_if_supported("-Wno-error=sign-conversion")
+        .flag_if_supported("-Wno-unused-parameter");
 
     // Enable abi3 mode if we're not using PyPy.
     if python_impl != "PyPy" {
