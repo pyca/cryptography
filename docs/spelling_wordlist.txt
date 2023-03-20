@@ -61,6 +61,7 @@ hazmat
 Homebrew
 hostname
 hostnames
+implementor
 incrementing
 indistinguishability
 initialisms

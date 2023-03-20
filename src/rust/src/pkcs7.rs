@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::encode_der_data;
+use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::x509;
 
@@ -135,13 +136,16 @@ fn sign_and_serialize<'p>(
         .import("cryptography.hazmat.primitives.serialization.pkcs7")?
         .getattr(crate::intern!(py, "PKCS7Options"))?;
 
-    let raw_data = builder.getattr(crate::intern!(py, "_data"))?.extract()?;
+    let raw_data: CffiBuf<'p> = builder.getattr(crate::intern!(py, "_data"))?.extract()?;
     let text_mode = options.contains(pkcs7_options.getattr(crate::intern!(py, "Text"))?)?;
     let (data_with_header, data_without_header) =
         if options.contains(pkcs7_options.getattr(crate::intern!(py, "Binary"))?)? {
-            (Cow::Borrowed(raw_data), Cow::Borrowed(raw_data))
+            (
+                Cow::Borrowed(raw_data.as_bytes()),
+                Cow::Borrowed(raw_data.as_bytes()),
+            )
         } else {
-            smime_canonicalize(raw_data, text_mode)
+            smime_canonicalize(raw_data.as_bytes(), text_mode)
         };
 
     let content_type_bytes = asn1::write_single(&PKCS7_DATA_OID)?;

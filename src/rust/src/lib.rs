@@ -10,6 +10,7 @@
 #![allow(unknown_lints, clippy::borrow_deref_ref)]
 
 mod asn1;
+mod buf;
 mod error;
 mod intern;
 pub(crate) mod oid;
