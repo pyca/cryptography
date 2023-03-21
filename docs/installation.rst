@@ -30,14 +30,16 @@ operating systems.
 * 32-bit and 64-bit Python on 64-bit Windows Server 2022
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
-OpenSSL releases:
+OpenSSL releases in addition to distribution provided releases from the
+above supported platforms:
 
 * ``OpenSSL 1.1.1-latest``
 * ``OpenSSL 3.0-latest``
+* ``OpenSSL 3.1-latest``
 
-In addition we test against versions of LibreSSL that are available in
-versions of OpenBSD that are receiving security support at the time of a given
-``cryptography`` release, and the latest commit in BoringSSL.
+We also test against the latest commit of BoringSSL as well as versions of
+LibreSSL that are receiving security support at the time of a given
+``cryptography`` release.
 
 
 Building cryptography on Windows
