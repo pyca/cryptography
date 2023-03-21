@@ -334,6 +334,31 @@ class TestPKCS7Builder:
 
         sig = builder.sign(serialization.Encoding.SMIME, options)
         assert bytes(data) in sig
+        _pkcs7_verify(
+            serialization.Encoding.SMIME,
+            sig,
+            data,
+            [cert],
+            options,
+            backend,
+        )
+
+        data = bytearray(b"")
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.SMIME, options)
+        _pkcs7_verify(
+            serialization.Encoding.SMIME,
+            sig,
+            data,
+            [cert],
+            options,
+            backend,
+        )
 
     def test_sign_pem(self, backend):
         data = b"hello world"

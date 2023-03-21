@@ -78,7 +78,7 @@ class PKCS7SignatureBuilder:
         if self._data is not None:
             raise ValueError("data may only be set once")
 
-        return PKCS7SignatureBuilder(bytes(data), self._signers)
+        return PKCS7SignatureBuilder(data, self._signers)
 
     def add_signer(
         self,
