@@ -31,7 +31,6 @@ static const int Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING;
 """
 
 FUNCTIONS = """
-void ERR_error_string_n(unsigned long, char *, size_t);
 const char *ERR_lib_error_string(unsigned long);
 const char *ERR_func_error_string(unsigned long);
 const char *ERR_reason_error_string(unsigned long);
@@ -40,9 +39,7 @@ unsigned long ERR_peek_error(void);
 void ERR_clear_error(void);
 void ERR_put_error(int, int, int, const char *, int);
 
-int ERR_GET_LIB(unsigned long);
 int ERR_GET_REASON(unsigned long);
-
 """
 
 CUSTOMIZATIONS = """
