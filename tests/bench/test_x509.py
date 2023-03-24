@@ -22,6 +22,16 @@ def test_aki_public_bytes(benchmark):
     benchmark(aki.public_bytes)
 
 
+def test_load_der_certificate(benchmark):
+    cert_bytes = load_vectors_from_file(
+        os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+        loader=lambda pemfile: pemfile.read(),
+        mode="rb",
+    )
+
+    benchmark(x509.load_der_x509_certificate, cert_bytes)
+
+
 def test_load_pem_certificate(benchmark):
     cert_bytes = load_vectors_from_file(
         os.path.join("x509", "cryptography.io.pem"),
