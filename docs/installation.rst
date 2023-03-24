@@ -137,7 +137,7 @@ Fedora/RHEL/CentOS
 .. warning::
 
     For RHEL and CentOS you must be on version 8.3 or newer for the command
-    below to install a sufficiently new Rust. If your Rust is less than 1.48.0
+    below to install a sufficiently new Rust. If your Rust is less than 1.56.0
     please see the :ref:`Rust installation instructions <installation:Rust>`
     for information about installing a newer Rust.
 
@@ -315,7 +315,7 @@ Rust
     a Rust toolchain.
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.48.0. **This is newer than the Rust some
+minimum supported Rust version is 1.56.0. **This is newer than the Rust some
 package managers ship**, so users may need to install with the
 instructions below.
 
