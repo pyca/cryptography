@@ -13,7 +13,7 @@ single most common cause of installation problems.
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 3.6+ and PyPy3 7.3.10+ on these
+Currently we test ``cryptography`` on Python 3.7+ and PyPy3 7.3.10+ on these
 operating systems.
 
 * x86-64 RHEL 8.x
@@ -21,7 +21,7 @@ operating systems.
 * x86-64 Fedora (latest)
 * x86-64 macOS 12 Monterey
 * ARM64 macOS 13 Ventura
-* x86-64 Ubuntu 18.04, 20.04, 22.04, rolling
+* x86-64 Ubuntu 20.04, 22.04, rolling
 * ARM64 Ubuntu 22.04
 * x86-64 Debian Buster (10.x), Bullseye (11.x), Bookworm (12.x)
   and Sid (unstable)
@@ -56,7 +56,7 @@ just run
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
 Be sure to download the proper version for your architecture and Python
-(VC2015 is required for 3.6 and above). Wherever you place your copy of OpenSSL
+(VC2015 is required for 3.7 and above). Wherever you place your copy of OpenSSL
 you'll need to set the ``OPENSSL_DIR`` environment variable to include the
 proper location. For example:
 

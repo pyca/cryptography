@@ -128,8 +128,6 @@ jobs:
       fail-fast: false
       matrix:
         IMAGE:
-          - {IMAGE: "rhel8", TOXENV: "py36", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py36", RUNNER: "ubuntu-latest", FIPS: true}
           - {IMAGE: "rhel8", TOXENV: "py38", RUNNER: "ubuntu-latest"}
           - {IMAGE: "rhel8-fips", TOXENV: "py38", RUNNER: "ubuntu-latest", FIPS: true}
           - {IMAGE: "buster", TOXENV: "py37", RUNNER: "ubuntu-latest"}
@@ -371,11 +369,11 @@ jobs:
           - {OS: 'macos-12', ARCH: 'x86_64'}
           - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36-nocoverage"}
+          - {VERSION: "3.7", TOXENV: "py37-nocoverage"}
           - {VERSION: "3.11", TOXENV: "py311"}
         exclude:
-          # We only test latest Python on arm64. The py36 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.6", TOXENV: "py36-nocoverage"}
+          # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
+          - PYTHON: {VERSION: "3.7", TOXENV: "py37-nocoverage"}
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
@@ -440,7 +438,7 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36-nocoverage"}
+          - {VERSION: "3.7", TOXENV: "py37-nocoverage"}
           - {VERSION: "3.11", TOXENV: "py311"}
         JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
