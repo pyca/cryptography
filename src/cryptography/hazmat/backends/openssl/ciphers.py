@@ -119,7 +119,7 @@ class _CipherContext:
         lib = self._backend._lib
         if res == 0 and (
             (
-                lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
+                not lib.CRYPTOGRAPHY_IS_LIBRESSL
                 and errors[0]._lib_reason_match(
                     lib.ERR_LIB_EVP, lib.EVP_R_XTS_DUPLICATED_KEYS
                 )

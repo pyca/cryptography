@@ -136,7 +136,6 @@ jobs:
           - {IMAGE: "bullseye", TOXENV: "py39", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bookworm", TOXENV: "py311", RUNNER: "ubuntu-latest"}
           - {IMAGE: "sid", TOXENV: "py311", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-bionic", TOXENV: "py36", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-rolling", TOXENV: "py310", RUNNER: "ubuntu-latest"}
@@ -182,7 +181,6 @@ jobs:
         run: mkdir -p "${HOME}/.cache/pip"
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
-          echo "CFLAGS=-DUSE_OSRANDOM_RNG_FOR_TESTING" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
       - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage
       - run: '/venv/bin/tox -vvv --notest'
@@ -373,11 +371,11 @@ jobs:
           - {OS: 'macos-12', ARCH: 'x86_64'}
           - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36-nocoverage", EXTRA_CFLAGS: ""}
-          - {VERSION: "3.11", TOXENV: "py311", EXTRA_CFLAGS: "-DUSE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.6", TOXENV: "py36-nocoverage"}
+          - {VERSION: "3.11", TOXENV: "py311"}
         exclude:
           # We only test latest Python on arm64. The py36 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.6", TOXENV: "py36-nocoverage", EXTRA_CFLAGS: ""}
+          - PYTHON: {VERSION: "3.6", TOXENV: "py36-nocoverage"}
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
@@ -420,11 +418,10 @@ jobs:
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \
             OPENSSL_STATIC=1 \
-            CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12 $EXTRA_CFLAGS" \
+            CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12" \
             tox -vvv --notest
         env:
           TOXENV: ${{ matrix.PYTHON.TOXENV }}
-          EXTRA_CFLAGS: ${{ matrix.PYTHON.EXTRA_CFLAGS }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
         run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
@@ -443,8 +440,8 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "3.6", TOXENV: "py36-nocoverage", CL_FLAGS: ""}
-          - {VERSION: "3.11", TOXENV: "py311", CL_FLAGS: "/D USE_OSRANDOM_RNG_FOR_TESTING"}
+          - {VERSION: "3.6", TOXENV: "py36-nocoverage"}
+          - {VERSION: "3.11", TOXENV: "py311"}
         JOB_NUMBER: [0, 1]
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
@@ -481,7 +478,6 @@ jobs:
       - name: Configure
         run: |
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
         shell: bash
 
       - name: Clone wycheproof

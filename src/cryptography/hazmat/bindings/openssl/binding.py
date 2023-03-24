@@ -10,7 +10,6 @@ import typing
 import warnings
 
 import cryptography
-from cryptography import utils
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
@@ -99,18 +98,6 @@ class Binding:
         _openssl_assert(self.lib, res == 1)
 
     @classmethod
-    def _register_osrandom_engine(cls) -> None:
-        # Clear any errors extant in the queue before we start. In many
-        # scenarios other things may be interacting with OpenSSL in the same
-        # process space and it has proven untenable to assume that they will
-        # reliably clear the error queue. Once we clear it here we will
-        # error on any subsequent unexpected item in the stack.
-        cls.lib.ERR_clear_error()
-        if cls.lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
-            result = cls.lib.Cryptography_add_osrandom_engine()
-            _openssl_assert(cls.lib, result in (1, 2))
-
-    @classmethod
     def _ensure_ffi_initialized(cls) -> None:
         with cls._init_lock:
             if not cls._lib_loaded:
@@ -118,7 +105,6 @@ class Binding:
                     _openssl.lib, CONDITIONAL_NAMES
                 )
                 cls._lib_loaded = True
-                cls._register_osrandom_engine()
                 # As of OpenSSL 3.0.0 we must register a legacy cipher provider
                 # to get RC2 (needed for junk asymmetric private key
                 # serialization), RC4, Blowfish, IDEA, SEED, etc. These things
@@ -189,20 +175,3 @@ if (
         UserWarning,
         stacklevel=2,
     )
-
-
-def _verify_openssl_version(lib):
-    if (
-        not lib.CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
-        and not lib.CRYPTOGRAPHY_IS_LIBRESSL
-        and not lib.CRYPTOGRAPHY_IS_BORINGSSL
-    ):
-        warnings.warn(
-            "Support for OpenSSL less than version 1.1.1d is deprecated and "
-            "the next release of cryptography will drop support. Please "
-            "upgrade your OpenSSL to version 1.1.1d or newer.",
-            utils.DeprecatedIn40,
-        )
-
-
-_verify_openssl_version(Binding.lib)

@@ -100,7 +100,6 @@ ffi = build_ffi_for_binding(
         "nid",
         "objects",
         "opensslv",
-        "osrandom_engine",
         "pem",
         "pkcs12",
         "rand",

@@ -7,7 +7,6 @@ import collections
 import contextlib
 import itertools
 import typing
-import warnings
 from contextlib import contextmanager
 
 from cryptography import utils, x509
@@ -185,13 +184,6 @@ class Backend:
             typing.Callable,
         ] = {}
         self._register_default_ciphers()
-        if self._fips_enabled and self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
-            warnings.warn(
-                "OpenSSL FIPS mode is enabled. Can't enable DRBG fork safety.",
-                UserWarning,
-            )
-        else:
-            self.activate_osrandom_engine()
         self._dh_types = [self._lib.EVP_PKEY_DH]
         if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
             self._dh_types.append(self._lib.EVP_PKEY_DHX)
@@ -229,60 +221,6 @@ class Backend:
         self._binding._enable_fips()
         assert self._is_fips_enabled()
         self._fips_enabled = self._is_fips_enabled()
-
-    def activate_builtin_random(self) -> None:
-        if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
-            # Obtain a new structural reference.
-            e = self._lib.ENGINE_get_default_RAND()
-            if e != self._ffi.NULL:
-                self._lib.ENGINE_unregister_RAND(e)
-                # Reset the RNG to use the built-in.
-                res = self._lib.RAND_set_rand_method(self._ffi.NULL)
-                self.openssl_assert(res == 1)
-                # decrement the structural reference from get_default_RAND
-                res = self._lib.ENGINE_finish(e)
-                self.openssl_assert(res == 1)
-
-    @contextlib.contextmanager
-    def _get_osurandom_engine(self):
-        # Fetches an engine by id and returns it. This creates a structural
-        # reference.
-        e = self._lib.ENGINE_by_id(self._lib.Cryptography_osrandom_engine_id)
-        self.openssl_assert(e != self._ffi.NULL)
-        # Initialize the engine for use. This adds a functional reference.
-        res = self._lib.ENGINE_init(e)
-        self.openssl_assert(res == 1)
-
-        try:
-            yield e
-        finally:
-            # Decrement the structural ref incremented by ENGINE_by_id.
-            res = self._lib.ENGINE_free(e)
-            self.openssl_assert(res == 1)
-            # Decrement the functional ref incremented by ENGINE_init.
-            res = self._lib.ENGINE_finish(e)
-            self.openssl_assert(res == 1)
-
-    def activate_osrandom_engine(self) -> None:
-        if self._lib.CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE:
-            # Unregister and free the current engine.
-            self.activate_builtin_random()
-            with self._get_osurandom_engine() as e:
-                # Set the engine as the default RAND provider.
-                res = self._lib.ENGINE_set_default_RAND(e)
-                self.openssl_assert(res == 1)
-            # Reset the RNG to use the engine
-            res = self._lib.RAND_set_rand_method(self._ffi.NULL)
-            self.openssl_assert(res == 1)
-
-    def osrandom_engine_implementation(self) -> str:
-        buf = self._ffi.new("char[]", 64)
-        with self._get_osurandom_engine() as e:
-            res = self._lib.ENGINE_ctrl_cmd(
-                e, b"get_implementation", len(buf), buf, self._ffi.NULL, 0
-            )
-            self.openssl_assert(res > 0)
-        return self._ffi.string(buf).decode("ascii")
 
     def openssl_version_text(self) -> str:
         """
@@ -1968,7 +1906,7 @@ class Backend:
         if self._fips_enabled:
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B
+            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
