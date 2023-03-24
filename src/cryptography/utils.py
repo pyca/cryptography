@@ -21,7 +21,6 @@ class CryptographyDeprecationWarning(UserWarning):
 # cycle ends.
 DeprecatedIn36 = CryptographyDeprecationWarning
 DeprecatedIn37 = CryptographyDeprecationWarning
-DeprecatedIn39 = CryptographyDeprecationWarning
 DeprecatedIn40 = CryptographyDeprecationWarning
 
 
