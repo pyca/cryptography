@@ -204,16 +204,8 @@ jobs:
         PYTHON:
           - {VERSION: "3.11", TOXENV: "py311"}
         RUST:
-          # Cover MSRV (and likely next MSRV). In-dev versions are below in
-          # the linux-rust-coverage section. Once our MSRV is 1.60 we can
-          # remove this section entirely.
-          - 1.48.0
-          # 1.49.0 is the MSRV for parking_lot 0.12
-          # 1.51 - const generics (for rust-asn1)
-          # 1.56 - new versions of once_cell and bumpalo
+          # Cover MSRV. 1.60+ and beta/nightly are in the linux-rust-coverage section.
           - 1.56.0
-          # Potential future MSRVs
-          # 1.60 - new version of cxx
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
@@ -260,6 +252,8 @@ jobs:
         PYTHON:
           - {VERSION: "3.11", TOXENV: "py311"}
         RUST:
+          # 1.60 - new version of cxx
+          - 1.60.0
           - beta
           - nightly
     name: "Rust Coverage"
