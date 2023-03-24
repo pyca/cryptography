@@ -66,7 +66,7 @@ impl From<CryptographyError> for pyo3::PyErr {
                 let internal_error = py
                     .import("cryptography.exceptions")
                     .expect("Failed to import cryptography module")
-                    .getattr(crate::intern!(py, "InternalError"))
+                    .getattr(pyo3::intern!(py, "InternalError"))
                     .expect("Failed to get InternalError attribute");
 
                 let errors = pyo3::types::PyList::empty(py);

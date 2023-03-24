@@ -40,23 +40,23 @@ enum HashType {
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
     let rsa_private_key: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.rsa")?
-        .getattr(crate::intern!(py, "RSAPrivateKey"))?
+        .getattr(pyo3::intern!(py, "RSAPrivateKey"))?
         .extract()?;
     let dsa_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.dsa")?
-        .getattr(crate::intern!(py, "DSAPrivateKey"))?
+        .getattr(pyo3::intern!(py, "DSAPrivateKey"))?
         .extract()?;
     let ec_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ec")?
-        .getattr(crate::intern!(py, "EllipticCurvePrivateKey"))?
+        .getattr(pyo3::intern!(py, "EllipticCurvePrivateKey"))?
         .extract()?;
     let ed25519_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ed25519")?
-        .getattr(crate::intern!(py, "Ed25519PrivateKey"))?
+        .getattr(pyo3::intern!(py, "Ed25519PrivateKey"))?
         .extract()?;
     let ed448_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ed448")?
-        .getattr(crate::intern!(py, "Ed448PrivateKey"))?
+        .getattr(pyo3::intern!(py, "Ed448PrivateKey"))?
         .extract()?;
 
     if private_key.is_instance(rsa_private_key)? {
@@ -86,7 +86,7 @@ fn identify_hash_type(
 
     let hash_algorithm_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.hashes")?
-        .getattr(crate::intern!(py, "HashAlgorithm"))?
+        .getattr(pyo3::intern!(py, "HashAlgorithm"))?
         .extract()?;
     if !hash_algorithm.is_instance(hash_algorithm_type)? {
         return Err(pyo3::exceptions::PyTypeError::new_err(
@@ -95,7 +95,7 @@ fn identify_hash_type(
     }
 
     match hash_algorithm
-        .getattr(crate::intern!(py, "name"))?
+        .getattr(pyo3::intern!(py, "name"))?
         .extract()?
     {
         "sha224" => Ok(HashType::Sha224),
@@ -251,14 +251,14 @@ pub(crate) fn sign_data<'p>(
         KeyType::Ec => {
             let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
             let ecdsa = ec_mod
-                .getattr(crate::intern!(py, "ECDSA"))?
+                .getattr(pyo3::intern!(py, "ECDSA"))?
                 .call1((hash_algorithm,))?;
             private_key.call_method1("sign", (data, ecdsa))?
         }
         KeyType::Rsa => {
             let padding_mod = py.import("cryptography.hazmat.primitives.asymmetric.padding")?;
             let pkcs1v15 = padding_mod
-                .getattr(crate::intern!(py, "PKCS1v15"))?
+                .getattr(pyo3::intern!(py, "PKCS1v15"))?
                 .call0()?;
             private_key.call_method1("sign", (data, pkcs1v15, hash_algorithm))?
         }
@@ -311,14 +311,14 @@ pub(crate) fn verify_signature_with_oid<'p>(
         KeyType::Ec => {
             let ec_mod = py.import("cryptography.hazmat.primitives.asymmetric.ec")?;
             let ecdsa = ec_mod
-                .getattr(crate::intern!(py, "ECDSA"))?
+                .getattr(pyo3::intern!(py, "ECDSA"))?
                 .call1((signature_hash,))?;
             issuer_public_key.call_method1("verify", (signature, data, ecdsa))?
         }
         KeyType::Rsa => {
             let padding_mod = py.import("cryptography.hazmat.primitives.asymmetric.padding")?;
             let pkcs1v15 = padding_mod
-                .getattr(crate::intern!(py, "PKCS1v15"))?
+                .getattr(pyo3::intern!(py, "PKCS1v15"))?
                 .call0()?;
             issuer_public_key.call_method1("verify", (signature, data, pkcs1v15, signature_hash))?
         }
@@ -335,23 +335,23 @@ pub(crate) fn identify_public_key_type(
 ) -> pyo3::PyResult<KeyType> {
     let rsa_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.rsa")?
-        .getattr(crate::intern!(py, "RSAPublicKey"))?
+        .getattr(pyo3::intern!(py, "RSAPublicKey"))?
         .extract()?;
     let dsa_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.dsa")?
-        .getattr(crate::intern!(py, "DSAPublicKey"))?
+        .getattr(pyo3::intern!(py, "DSAPublicKey"))?
         .extract()?;
     let ec_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ec")?
-        .getattr(crate::intern!(py, "EllipticCurvePublicKey"))?
+        .getattr(pyo3::intern!(py, "EllipticCurvePublicKey"))?
         .extract()?;
     let ed25519_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ed25519")?
-        .getattr(crate::intern!(py, "Ed25519PublicKey"))?
+        .getattr(pyo3::intern!(py, "Ed25519PublicKey"))?
         .extract()?;
     let ed448_key_type: &pyo3::types::PyType = py
         .import("cryptography.hazmat.primitives.asymmetric.ed448")?
-        .getattr(crate::intern!(py, "Ed448PublicKey"))?
+        .getattr(pyo3::intern!(py, "Ed448PublicKey"))?
         .extract()?;
 
     if public_key.is_instance(rsa_key_type)? {

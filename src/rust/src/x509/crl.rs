@@ -28,7 +28,7 @@ fn load_der_x509_crl(
         let x509_module = py.import("cryptography.x509")?;
         return Err(CryptographyError::from(pyo3::PyErr::from_value(
             x509_module
-                .getattr(crate::intern!(py, "InvalidVersion"))?
+                .getattr(pyo3::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid CRL version", version), version))?,
         )));
     }
@@ -175,7 +175,7 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
         let h = hashes_mod
-            .getattr(crate::intern!(py, "Hash"))?
+            .getattr(pyo3::intern!(py, "Hash"))?
             .call1((algorithm,))?;
         h.call_method1("update", (self.public_bytes_der()?.as_slice(),))?;
         h.call_method0("finalize")
@@ -195,7 +195,7 @@ impl CertificateRevocationList {
         let oid_module = py.import("cryptography.hazmat._oid")?;
         let exceptions_module = py.import("cryptography.exceptions")?;
         match oid_module
-            .getattr(crate::intern!(py, "_SIG_OIDS_TO_HASH"))?
+            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?
             .get_item(oid)
         {
             Ok(v) => Ok(v),
@@ -274,7 +274,7 @@ impl CertificateRevocationList {
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "CRLNumber"))?
+                            .getattr(pyo3::intern!(py, "CRLNumber"))?
                             .call1((pynum,))?,
                     ))
                 }
@@ -283,7 +283,7 @@ impl CertificateRevocationList {
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "DeltaCRLIndicator"))?
+                            .getattr(pyo3::intern!(py, "DeltaCRLIndicator"))?
                             .call1((pynum,))?,
                     ))
                 }
@@ -294,7 +294,7 @@ impl CertificateRevocationList {
                     let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "IssuerAlternativeName"))?
+                            .getattr(pyo3::intern!(py, "IssuerAlternativeName"))?
                             .call1((ians,))?,
                     ))
                 }
@@ -302,7 +302,7 @@ impl CertificateRevocationList {
                     let ads = certificate::parse_access_descriptions(py, ext_data)?;
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "AuthorityInformationAccess"))?
+                            .getattr(pyo3::intern!(py, "AuthorityInformationAccess"))?
                             .call1((ads,))?,
                     ))
                 }
@@ -325,7 +325,7 @@ impl CertificateRevocationList {
                     };
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "IssuingDistributionPoint"))?
+                            .getattr(pyo3::intern!(py, "IssuingDistributionPoint"))?
                             .call1((
                                 full_name,
                                 relative_name,
@@ -341,7 +341,7 @@ impl CertificateRevocationList {
                     let dp = certificate::parse_distribution_points(py, ext_data)?;
                     Ok(Some(
                         x509_module
-                            .getattr(crate::intern!(py, "FreshestCRL"))?
+                            .getattr(pyo3::intern!(py, "FreshestCRL"))?
                             .call1((dp,))?,
                     ))
                 }
@@ -600,7 +600,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
         }
     };
     Ok(x509_module
-        .getattr(crate::intern!(py, "ReasonFlags"))?
+        .getattr(pyo3::intern!(py, "ReasonFlags"))?
         .getattr(flag_name)?)
 }
 
@@ -615,7 +615,7 @@ pub fn parse_crl_entry_ext<'p>(
             let flags = parse_crl_reason_flags(py, &asn1::parse_single::<CRLReason>(data)?)?;
             Ok(Some(
                 x509_module
-                    .getattr(crate::intern!(py, "CRLReason"))?
+                    .getattr(pyo3::intern!(py, "CRLReason"))?
                     .call1((flags,))?,
             ))
         }
@@ -624,7 +624,7 @@ pub fn parse_crl_entry_ext<'p>(
             let gns = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
-                    .getattr(crate::intern!(py, "CertificateIssuer"))?
+                    .getattr(pyo3::intern!(py, "CertificateIssuer"))?
                     .call1((gns,))?,
             ))
         }
@@ -633,7 +633,7 @@ pub fn parse_crl_entry_ext<'p>(
             let py_dt = x509::chrono_to_py(py, time.as_chrono())?;
             Ok(Some(
                 x509_module
-                    .getattr(crate::intern!(py, "InvalidityDate"))?
+                    .getattr(pyo3::intern!(py, "InvalidityDate"))?
                     .call1((py_dt,))?,
             ))
         }
@@ -652,29 +652,29 @@ fn create_x509_crl(
 
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder
-        .getattr(crate::intern!(py, "_revoked_certificates"))?
+        .getattr(pyo3::intern!(py, "_revoked_certificates"))?
         .iter()?
     {
         let py_revoked_cert = py_revoked_cert?;
         let serial_number = py_revoked_cert
-            .getattr(crate::intern!(py, "serial_number"))?
+            .getattr(pyo3::intern!(py, "serial_number"))?
             .extract()?;
-        let py_revocation_date = py_revoked_cert.getattr(crate::intern!(py, "revocation_date"))?;
+        let py_revocation_date = py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date"))?;
         revoked_certs.push(RawRevokedCertificate {
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),
             revocation_date: x509::certificate::time_from_py(py, py_revocation_date)?,
             crl_entry_extensions: x509::common::encode_extensions(
                 py,
-                py_revoked_cert.getattr(crate::intern!(py, "extensions"))?,
+                py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
                 extensions::encode_extension,
             )?,
         });
     }
 
-    let py_issuer_name = builder.getattr(crate::intern!(py, "_issuer_name"))?;
-    let py_this_update = builder.getattr(crate::intern!(py, "_last_update"))?;
-    let py_next_update = builder.getattr(crate::intern!(py, "_next_update"))?;
+    let py_issuer_name = builder.getattr(pyo3::intern!(py, "_issuer_name"))?;
+    let py_this_update = builder.getattr(pyo3::intern!(py, "_last_update"))?;
+    let py_next_update = builder.getattr(pyo3::intern!(py, "_next_update"))?;
     let tbs_cert_list = TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),
@@ -690,7 +690,7 @@ fn create_x509_crl(
         },
         crl_extensions: x509::common::encode_extensions(
             py,
-            builder.getattr(crate::intern!(py, "_extensions"))?,
+            builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,
     };

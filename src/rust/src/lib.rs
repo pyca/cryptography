@@ -13,7 +13,6 @@ mod asn1;
 mod backend;
 mod buf;
 mod error;
-mod intern;
 pub(crate) mod oid;
 mod pkcs7;
 mod pool;

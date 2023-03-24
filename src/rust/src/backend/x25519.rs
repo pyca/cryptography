@@ -106,16 +106,16 @@ impl X25519PrivateKey {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
         let encoding_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "Encoding"))?
+            .getattr(pyo3::intern!(py, "Encoding"))?
             .extract()?;
         let private_format_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "PrivateFormat"))?
+            .getattr(pyo3::intern!(py, "PrivateFormat"))?
             .extract()?;
         let no_encryption_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "NoEncryption"))?
+            .getattr(pyo3::intern!(py, "NoEncryption"))?
             .extract()?;
         let best_available_encryption_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "BestAvailableEncryption"))?
+            .getattr(pyo3::intern!(py, "BestAvailableEncryption"))?
             .extract()?;
 
         if !encoding.is_instance(encoding_class)? {
@@ -133,11 +133,11 @@ impl X25519PrivateKey {
             ));
         }
 
-        if encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
-            || format.is(private_format_class.getattr(crate::intern!(py, "Raw"))?)
+        if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+            || format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?)
         {
-            if !encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
-                || !format.is(private_format_class.getattr(crate::intern!(py, "Raw"))?)
+            if !encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+                || !format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?)
                 || !encryption_algorithm.is_instance(no_encryption_class)?
             {
                 return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
@@ -152,7 +152,7 @@ impl X25519PrivateKey {
             b""
         } else if encryption_algorithm.is_instance(best_available_encryption_class)? {
             encryption_algorithm
-                .getattr(crate::intern!(py, "password"))?
+                .getattr(pyo3::intern!(py, "password"))?
                 .extract::<&[u8]>()?
         } else {
             return Err(CryptographyError::from(
@@ -170,8 +170,8 @@ impl X25519PrivateKey {
             ));
         }
 
-        if format.is(private_format_class.getattr(crate::intern!(py, "PKCS8"))?) {
-            if encoding.is(encoding_class.getattr(crate::intern!(py, "PEM"))?) {
+        if format.is(private_format_class.getattr(pyo3::intern!(py, "PKCS8"))?) {
+            if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
                 let pem_bytes = if password.is_empty() {
                     self.pkey.private_key_to_pem_pkcs8()?
                 } else {
@@ -181,7 +181,7 @@ impl X25519PrivateKey {
                     )?
                 };
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-            } else if encoding.is(encoding_class.getattr(crate::intern!(py, "DER"))?) {
+            } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
                 let der_bytes = if password.is_empty() {
                     self.pkey.private_key_to_pkcs8()?
                 } else {
@@ -222,10 +222,10 @@ impl X25519PublicKey {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
         let encoding_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "Encoding"))?
+            .getattr(pyo3::intern!(py, "Encoding"))?
             .extract()?;
         let public_format_class: &pyo3::types::PyType = serialization_mod
-            .getattr(crate::intern!(py, "PublicFormat"))?
+            .getattr(pyo3::intern!(py, "PublicFormat"))?
             .extract()?;
 
         if !encoding.is_instance(encoding_class)? {
@@ -243,11 +243,11 @@ impl X25519PublicKey {
             ));
         }
 
-        if encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
-            || format.is(public_format_class.getattr(crate::intern!(py, "Raw"))?)
+        if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+            || format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?)
         {
-            if !encoding.is(encoding_class.getattr(crate::intern!(py, "Raw"))?)
-                || !format.is(public_format_class.getattr(crate::intern!(py, "Raw"))?)
+            if !encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+                || !format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?)
             {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -260,11 +260,11 @@ impl X25519PublicKey {
         }
 
         // SubjectPublicKeyInfo + PEM/DER
-        if format.is(public_format_class.getattr(crate::intern!(py, "SubjectPublicKeyInfo"))?) {
-            if encoding.is(encoding_class.getattr(crate::intern!(py, "PEM"))?) {
+        if format.is(public_format_class.getattr(pyo3::intern!(py, "SubjectPublicKeyInfo"))?) {
+            if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
                 let pem_bytes = self.pkey.public_key_to_pem()?;
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-            } else if encoding.is(encoding_class.getattr(crate::intern!(py, "DER"))?) {
+            } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
                 let der_bytes = self.pkey.public_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             } else {
