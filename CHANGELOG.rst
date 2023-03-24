@@ -3,10 +3,9 @@ Changelog
 
 .. _v40-0-0:
 
-40.0.0 - `main`_
-~~~~~~~~~~~~~~~~
+40.0.0 - 2023-03-24
+~~~~~~~~~~~~~~~~~~~
 
-.. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** As announced in the 39.0.0 changelog, the way
   ``cryptography`` links OpenSSL has changed. This only impacts users who
@@ -33,6 +32,7 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 * The minimum supported version of PyPy3 is now 7.3.10.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.0.
 * Added support for parsing SSH certificates in addition to public keys with
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_identity`.
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`
