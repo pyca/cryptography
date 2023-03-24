@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
+#[allow(clippy::unusual_byte_groupings)]
 fn main() {
     let target = env::var("TARGET").unwrap();
     let openssl_static = env::var("OPENSSL_STATIC")
@@ -71,6 +72,15 @@ fn main() {
     }
 
     build.compile("_openssl.a");
+
+    if let Ok(version) = env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER") {
+        let version = u64::from_str_radix(&version, 16).unwrap();
+
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_LIBRESSL");
+        if version >= 0x3_07_00_00_0 {
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER")
+        }
+    }
 }
 
 /// Run a python script using the specified interpreter binary.

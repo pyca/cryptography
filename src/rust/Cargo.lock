@@ -115,6 +115,7 @@ dependencies = [
  "asn1",
  "cc",
  "chrono",
+ "foreign-types-shared",
  "once_cell",
  "openssl",
  "openssl-sys",
