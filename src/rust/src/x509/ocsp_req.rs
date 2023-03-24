@@ -88,7 +88,7 @@ impl OCSPRequest {
                 let exceptions = py.import("cryptography.exceptions")?;
                 Err(CryptographyError::from(pyo3::PyErr::from_value(
                     exceptions
-                        .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
+                        .getattr(pyo3::intern!(py, "UnsupportedAlgorithm"))?
                         .call1((format!(
                             "Signature algorithm OID: {} not recognized",
                             cert_id.hash_algorithm.oid
@@ -139,8 +139,8 @@ impl OCSPRequest {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let der = py
             .import("cryptography.hazmat.primitives.serialization")?
-            .getattr(crate::intern!(py, "Encoding"))?
-            .getattr(crate::intern!(py, "DER"))?;
+            .getattr(pyo3::intern!(py, "Encoding"))?
+            .getattr(pyo3::intern!(py, "DER"))?;
         if !encoding.is(der) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
@@ -190,7 +190,7 @@ fn create_ocsp_request(
     py: pyo3::Python<'_>,
     builder: &pyo3::PyAny,
 ) -> CryptographyResult<OCSPRequest> {
-    let builder_request = builder.getattr(crate::intern!(py, "_request"))?;
+    let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
 
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash): (
@@ -215,7 +215,7 @@ fn create_ocsp_request(
             &pyo3::types::PyLong,
             &pyo3::PyAny,
         ) = builder
-            .getattr(crate::intern!(py, "_request_hash"))?
+            .getattr(pyo3::intern!(py, "_request_hash"))?
             .extract()?;
         let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
         ocsp::CertID::new_from_hash(
@@ -229,7 +229,7 @@ fn create_ocsp_request(
 
     let extensions = x509::common::encode_extensions(
         py,
-        builder.getattr(crate::intern!(py, "_extensions"))?,
+        builder.getattr(pyo3::intern!(py, "_extensions"))?,
         extensions::encode_extension,
     )?;
     let reqs = [Request {

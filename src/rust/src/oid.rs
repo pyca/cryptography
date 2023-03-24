@@ -32,7 +32,7 @@ impl ObjectIdentifier {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid_names = py
             .import("cryptography.hazmat._oid")?
-            .getattr(crate::intern!(py, "_OID_NAMES"))?;
+            .getattr(pyo3::intern!(py, "_OID_NAMES"))?;
         oid_names.call_method1("get", (slf, "Unknown OID"))
     }
 

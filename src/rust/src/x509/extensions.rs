@@ -129,7 +129,7 @@ pub(crate) fn encode_extension(
         }
         &oid::SUBJECT_KEY_IDENTIFIER_OID => {
             let digest = ext
-                .getattr(crate::intern!(py, "digest"))?
+                .getattr(pyo3::intern!(py, "digest"))?
                 .extract::<&[u8]>()?;
             Ok(Some(asn1::write_single(&digest)?))
         }
@@ -138,59 +138,52 @@ pub(crate) fn encode_extension(
             certificate::set_bit(
                 &mut bs,
                 0,
-                ext.getattr(crate::intern!(py, "digital_signature"))?
+                ext.getattr(pyo3::intern!(py, "digital_signature"))?
                     .is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 1,
-                ext.getattr(crate::intern!(py, "content_commitment"))?
+                ext.getattr(pyo3::intern!(py, "content_commitment"))?
                     .is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 2,
-                ext.getattr(crate::intern!(py, "key_encipherment"))?
+                ext.getattr(pyo3::intern!(py, "key_encipherment"))?
                     .is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 3,
-                ext.getattr(crate::intern!(py, "data_encipherment"))?
+                ext.getattr(pyo3::intern!(py, "data_encipherment"))?
                     .is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 4,
-                ext.getattr(crate::intern!(py, "key_agreement"))?
-                    .is_true()?,
+                ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 5,
-                ext.getattr(crate::intern!(py, "key_cert_sign"))?
-                    .is_true()?,
+                ext.getattr(pyo3::intern!(py, "key_cert_sign"))?.is_true()?,
             );
             certificate::set_bit(
                 &mut bs,
                 6,
-                ext.getattr(crate::intern!(py, "crl_sign"))?.is_true()?,
+                ext.getattr(pyo3::intern!(py, "crl_sign"))?.is_true()?,
             );
-            if ext
-                .getattr(crate::intern!(py, "key_agreement"))?
-                .is_true()?
-            {
+            if ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()? {
                 certificate::set_bit(
                     &mut bs,
                     7,
-                    ext.getattr(crate::intern!(py, "encipher_only"))?
-                        .is_true()?,
+                    ext.getattr(pyo3::intern!(py, "encipher_only"))?.is_true()?,
                 );
                 certificate::set_bit(
                     &mut bs,
                     8,
-                    ext.getattr(crate::intern!(py, "decipher_only"))?
-                        .is_true()?,
+                    ext.getattr(pyo3::intern!(py, "decipher_only"))?.is_true()?,
                 );
             }
             let (bits, unused_bits) = if bs[1] == 0 {
@@ -224,7 +217,7 @@ pub(crate) fn encode_extension(
             for py_policy_info in ext.iter()? {
                 let py_policy_info = py_policy_info?;
                 let py_policy_qualifiers =
-                    py_policy_info.getattr(crate::intern!(py, "policy_qualifiers"))?;
+                    py_policy_info.getattr(pyo3::intern!(py, "policy_qualifiers"))?;
                 let qualifiers = if py_policy_qualifiers.is_true()? {
                     let mut qualifiers = vec![];
                     for py_qualifier in py_policy_qualifiers.iter()? {
@@ -245,11 +238,11 @@ pub(crate) fn encode_extension(
                             }
                         } else {
                             let py_notice =
-                                py_qualifier.getattr(crate::intern!(py, "notice_reference"))?;
+                                py_qualifier.getattr(pyo3::intern!(py, "notice_reference"))?;
                             let notice_ref = if py_notice.is_true()? {
                                 let mut notice_numbers = vec![];
                                 for py_num in py_notice
-                                    .getattr(crate::intern!(py, "notice_numbers"))?
+                                    .getattr(pyo3::intern!(py, "notice_numbers"))?
                                     .iter()?
                                 {
                                     let bytes =
@@ -261,7 +254,7 @@ pub(crate) fn encode_extension(
                                     organization: certificate::DisplayText::Utf8String(
                                         asn1::Utf8String::new(
                                             py_notice
-                                                .getattr(crate::intern!(py, "organization"))?
+                                                .getattr(pyo3::intern!(py, "organization"))?
                                                 .extract()?,
                                         ),
                                     ),
@@ -273,7 +266,7 @@ pub(crate) fn encode_extension(
                                 None
                             };
                             let py_explicit_text =
-                                py_qualifier.getattr(crate::intern!(py, "explicit_text"))?;
+                                py_qualifier.getattr(pyo3::intern!(py, "explicit_text"))?;
                             let explicit_text = if py_explicit_text.is_true()? {
                                 Some(certificate::DisplayText::Utf8String(asn1::Utf8String::new(
                                     py_explicit_text.extract()?,
@@ -301,7 +294,7 @@ pub(crate) fn encode_extension(
                     None
                 };
                 let py_policy_id =
-                    py_policy_info.getattr(crate::intern!(py, "policy_identifier"))?;
+                    py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
                 policy_informations.push(certificate::PolicyInformation {
                     policy_identifier: py_oid_to_oid(py_policy_id)?,
                     policy_qualifiers: qualifiers,
@@ -314,17 +307,17 @@ pub(crate) fn encode_extension(
         &oid::POLICY_CONSTRAINTS_OID => {
             let pc = certificate::PolicyConstraints {
                 require_explicit_policy: ext
-                    .getattr(crate::intern!(py, "require_explicit_policy"))?
+                    .getattr(pyo3::intern!(py, "require_explicit_policy"))?
                     .extract()?,
                 inhibit_policy_mapping: ext
-                    .getattr(crate::intern!(py, "inhibit_policy_mapping"))?
+                    .getattr(pyo3::intern!(py, "inhibit_policy_mapping"))?
                     .extract()?,
             };
             Ok(Some(asn1::write_single(&pc)?))
         }
         &oid::NAME_CONSTRAINTS_OID => {
-            let permitted = ext.getattr(crate::intern!(py, "permitted_subtrees"))?;
-            let excluded = ext.getattr(crate::intern!(py, "excluded_subtrees"))?;
+            let permitted = ext.getattr(pyo3::intern!(py, "permitted_subtrees"))?;
+            let excluded = ext.getattr(pyo3::intern!(py, "excluded_subtrees"))?;
             let nc = certificate::NameConstraints {
                 permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
                 excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
@@ -333,7 +326,7 @@ pub(crate) fn encode_extension(
         }
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
-                .getattr(crate::intern!(py, "skip_certs"))?
+                .getattr(pyo3::intern!(py, "skip_certs"))?
                 .downcast::<pyo3::types::PyLong>()?;
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
@@ -360,7 +353,7 @@ pub(crate) fn encode_extension(
             // from Python.
             let mut els = vec![];
             for el in ext.iter()? {
-                els.push(el?.getattr(crate::intern!(py, "value"))?.extract::<u64>()?);
+                els.push(el?.getattr(pyo3::intern!(py, "value"))?.extract::<u64>()?);
             }
 
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))?))
@@ -387,8 +380,8 @@ pub(crate) fn encode_extension(
             let value = ext
                 .py()
                 .import("cryptography.hazmat.backends.openssl.decode_asn1")?
-                .getattr(crate::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
-                .get_item(ext.getattr(crate::intern!(py, "reason"))?)?
+                .getattr(pyo3::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
+                .get_item(ext.getattr(pyo3::intern!(py, "reason"))?)?
                 .extract::<u32>()?;
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))
         }
@@ -398,14 +391,14 @@ pub(crate) fn encode_extension(
         }
         &oid::INVALIDITY_DATE_OID => {
             let chrono_dt =
-                x509::py_to_chrono(py, ext.getattr(crate::intern!(py, "invalidity_date"))?)?;
+                x509::py_to_chrono(py, ext.getattr(pyo3::intern!(py, "invalidity_date"))?)?;
             Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
                 chrono_dt,
             )?)?))
         }
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
-                .getattr(crate::intern!(py, "crl_number"))?
+                .getattr(pyo3::intern!(py, "crl_number"))?
                 .downcast::<pyo3::types::PyLong>()?;
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
@@ -414,27 +407,24 @@ pub(crate) fn encode_extension(
         }
         &oid::ISSUING_DISTRIBUTION_POINT_OID => {
             let only_some_reasons = if ext
-                .getattr(crate::intern!(py, "only_some_reasons"))?
+                .getattr(pyo3::intern!(py, "only_some_reasons"))?
                 .is_true()?
             {
-                let py_reasons = ext.getattr(crate::intern!(py, "only_some_reasons"))?;
+                let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
                 let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
                 Some(x509::Asn1ReadableOrWritable::new_write(reasons))
             } else {
                 None
             };
-            let distribution_point = if ext.getattr(crate::intern!(py, "full_name"))?.is_true()? {
-                let py_full_name = ext.getattr(crate::intern!(py, "full_name"))?;
+            let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_true()? {
+                let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
                 let gns = x509::common::encode_general_names(ext.py(), py_full_name)?;
                 Some(certificate::DistributionPointName::FullName(
                     x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
                 ))
-            } else if ext
-                .getattr(crate::intern!(py, "relative_name"))?
-                .is_true()?
-            {
+            } else if ext.getattr(pyo3::intern!(py, "relative_name"))?.is_true()? {
                 let mut name_entries = vec![];
-                for py_name_entry in ext.getattr(crate::intern!(py, "relative_name"))?.iter()? {
+                for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
                     name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
                 }
                 Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
@@ -446,15 +436,15 @@ pub(crate) fn encode_extension(
 
             let idp = crl::IssuingDistributionPoint {
                 distribution_point,
-                indirect_crl: ext.getattr(crate::intern!(py, "indirect_crl"))?.extract()?,
+                indirect_crl: ext.getattr(pyo3::intern!(py, "indirect_crl"))?.extract()?,
                 only_contains_attribute_certs: ext
-                    .getattr(crate::intern!(py, "only_contains_attribute_certs"))?
+                    .getattr(pyo3::intern!(py, "only_contains_attribute_certs"))?
                     .extract()?,
                 only_contains_ca_certs: ext
-                    .getattr(crate::intern!(py, "only_contains_ca_certs"))?
+                    .getattr(pyo3::intern!(py, "only_contains_ca_certs"))?
                     .extract()?,
                 only_contains_user_certs: ext
-                    .getattr(crate::intern!(py, "only_contains_user_certs"))?
+                    .getattr(pyo3::intern!(py, "only_contains_user_certs"))?
                     .extract()?,
                 only_some_reasons,
             };
@@ -462,7 +452,7 @@ pub(crate) fn encode_extension(
         }
         &oid::NONCE_OID => {
             let nonce = ext
-                .getattr(crate::intern!(py, "nonce"))?
+                .getattr(pyo3::intern!(py, "nonce"))?
                 .extract::<&[u8]>()?;
             Ok(Some(asn1::write_single(&nonce)?))
         }

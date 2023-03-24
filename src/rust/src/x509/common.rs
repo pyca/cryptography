@@ -86,7 +86,7 @@ pub(crate) fn encode_name<'p>(
 ) -> pyo3::PyResult<Name<'p>> {
     let mut rdns = vec![];
 
-    for py_rdn in py_name.getattr(crate::intern!(py, "rdns"))?.iter()? {
+    for py_rdn in py_name.getattr(pyo3::intern!(py, "rdns"))?.iter()? {
         let py_rdn = py_rdn?;
         let mut attrs = vec![];
 
@@ -106,30 +106,30 @@ pub(crate) fn encode_name_entry<'p>(
 ) -> CryptographyResult<AttributeTypeValue<'p>> {
     let asn1_type = py
         .import("cryptography.x509.name")?
-        .getattr(crate::intern!(py, "_ASN1Type"))?;
+        .getattr(pyo3::intern!(py, "_ASN1Type"))?;
 
-    let attr_type = py_name_entry.getattr(crate::intern!(py, "_type"))?;
+    let attr_type = py_name_entry.getattr(pyo3::intern!(py, "_type"))?;
     let tag = attr_type
-        .getattr(crate::intern!(py, "value"))?
+        .getattr(pyo3::intern!(py, "value"))?
         .extract::<u8>()?;
-    let value: &[u8] = if !attr_type.is(asn1_type.getattr(crate::intern!(py, "BitString"))?) {
-        let encoding = if attr_type.is(asn1_type.getattr(crate::intern!(py, "BMPString"))?) {
+    let value: &[u8] = if !attr_type.is(asn1_type.getattr(pyo3::intern!(py, "BitString"))?) {
+        let encoding = if attr_type.is(asn1_type.getattr(pyo3::intern!(py, "BMPString"))?) {
             "utf_16_be"
-        } else if attr_type.is(asn1_type.getattr(crate::intern!(py, "UniversalString"))?) {
+        } else if attr_type.is(asn1_type.getattr(pyo3::intern!(py, "UniversalString"))?) {
             "utf_32_be"
         } else {
             "utf8"
         };
         py_name_entry
-            .getattr(crate::intern!(py, "value"))?
+            .getattr(pyo3::intern!(py, "value"))?
             .call_method1("encode", (encoding,))?
             .extract()?
     } else {
         py_name_entry
-            .getattr(crate::intern!(py, "value"))?
+            .getattr(pyo3::intern!(py, "value"))?
             .extract()?
     };
-    let oid = py_oid_to_oid(py_name_entry.getattr(crate::intern!(py, "oid"))?)?;
+    let oid = py_oid_to_oid(py_name_entry.getattr(pyo3::intern!(py, "oid"))?)?;
 
     Ok(AttributeTypeValue {
         type_id: oid,
@@ -232,21 +232,21 @@ pub(crate) fn encode_general_name<'a>(
 ) -> Result<GeneralName<'a>, CryptographyError> {
     let gn_module = py.import("cryptography.x509.general_name")?;
     let gn_type = gn.get_type().as_ref();
-    let gn_value = gn.getattr(crate::intern!(py, "value"))?;
-    if gn_type.is(gn_module.getattr(crate::intern!(py, "DNSName"))?) {
+    let gn_value = gn.getattr(pyo3::intern!(py, "value"))?;
+    if gn_type.is(gn_module.getattr(pyo3::intern!(py, "DNSName"))?) {
         Ok(GeneralName::DNSName(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "RFC822Name"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "RFC822Name"))?) {
         Ok(GeneralName::RFC822Name(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "DirectoryName"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "DirectoryName"))?) {
         let name = encode_name(py, gn_value)?;
         Ok(GeneralName::DirectoryName(name))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "OtherName"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "OtherName"))?) {
         Ok(GeneralName::OtherName(OtherName {
-            type_id: py_oid_to_oid(gn.getattr(crate::intern!(py, "type_id"))?)?,
+            type_id: py_oid_to_oid(gn.getattr(pyo3::intern!(py, "type_id"))?)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "OtherName value must be valid DER: {:?}",
@@ -254,15 +254,15 @@ pub(crate) fn encode_general_name<'a>(
                 ))
             })?,
         }))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "UniformResourceIdentifier"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "UniformResourceIdentifier"))?) {
         Ok(GeneralName::UniformResourceIdentifier(
             UnvalidatedIA5String(gn_value.extract::<&str>()?),
         ))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "IPAddress"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "IPAddress"))?) {
         Ok(GeneralName::IPAddress(
             gn.call_method0("_packed")?.extract::<&[u8]>()?,
         ))
-    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "RegisteredID"))?) {
+    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "RegisteredID"))?) {
         let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
@@ -291,9 +291,9 @@ pub(crate) fn encode_access_descriptions<'a>(
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
-        let access_method = py_oid_to_oid(py_ad.getattr(crate::intern!(py, "access_method"))?)?;
+        let access_method = py_oid_to_oid(py_ad.getattr(pyo3::intern!(py, "access_method"))?)?;
         let access_location =
-            encode_general_name(py, py_ad.getattr(crate::intern!(py, "access_location"))?)?;
+            encode_general_name(py, py_ad.getattr(pyo3::intern!(py, "access_location"))?)?;
         ads.push(AccessDescription {
             access_method,
             access_location,
@@ -360,7 +360,7 @@ fn parse_name_attribute(
     let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
     let tag_enum = py
         .import("cryptography.x509.name")?
-        .getattr(crate::intern!(py, "_ASN1_TYPE_TO_ENUM"))?;
+        .getattr(pyo3::intern!(py, "_ASN1_TYPE_TO_ENUM"))?;
     let tag_val = attribute
         .value
         .tag()
@@ -425,11 +425,11 @@ pub(crate) fn parse_general_name(
                 .to_object(py)
         }
         GeneralName::RFC822Name(data) => x509_module
-            .getattr(crate::intern!(py, "RFC822Name"))?
+            .getattr(pyo3::intern!(py, "RFC822Name"))?
             .call_method1("_init_without_validation", (data.0,))?
             .to_object(py),
         GeneralName::DNSName(data) => x509_module
-            .getattr(crate::intern!(py, "DNSName"))?
+            .getattr(pyo3::intern!(py, "DNSName"))?
             .call_method1("_init_without_validation", (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
@@ -439,7 +439,7 @@ pub(crate) fn parse_general_name(
                 .to_object(py)
         }
         GeneralName::UniformResourceIdentifier(data) => x509_module
-            .getattr(crate::intern!(py, "UniformResourceIdentifier"))?
+            .getattr(pyo3::intern!(py, "UniformResourceIdentifier"))?
             .call_method1("_init_without_validation", (data.0,))?
             .to_object(py),
         GeneralName::IPAddress(data) => {
@@ -510,7 +510,7 @@ fn create_ip_network(
     )?;
     let net = format!(
         "{}/{}",
-        base.getattr(crate::intern!(py, "exploded"))?
+        base.getattr(pyo3::intern!(py, "exploded"))?
             .extract::<&str>()?,
         prefix?
     );
@@ -604,21 +604,21 @@ pub(crate) fn encode_extensions<
 ) -> pyo3::PyResult<Option<Extensions<'p>>> {
     let unrecognized_extension_type: &pyo3::types::PyType = py
         .import("cryptography.x509")?
-        .getattr(crate::intern!(py, "UnrecognizedExtension"))?
+        .getattr(pyo3::intern!(py, "UnrecognizedExtension"))?
         .extract()?;
 
     let mut exts = vec![];
     for py_ext in py_exts.iter()? {
         let py_ext = py_ext?;
-        let oid = py_oid_to_oid(py_ext.getattr(crate::intern!(py, "oid"))?)?;
+        let oid = py_oid_to_oid(py_ext.getattr(pyo3::intern!(py, "oid"))?)?;
 
-        let ext_val = py_ext.getattr(crate::intern!(py, "value"))?;
+        let ext_val = py_ext.getattr(pyo3::intern!(py, "value"))?;
         if ext_val.is_instance(unrecognized_extension_type)? {
             exts.push(Extension {
                 extn_id: oid,
-                critical: py_ext.getattr(crate::intern!(py, "critical"))?.extract()?,
+                critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
                 extn_value: ext_val
-                    .getattr(crate::intern!(py, "value"))?
+                    .getattr(pyo3::intern!(py, "value"))?
                     .extract::<&[u8]>()?,
             });
             continue;
@@ -629,7 +629,7 @@ pub(crate) fn encode_extensions<
                 let py_data = pyo3::types::PyBytes::new(py, &data);
                 exts.push(Extension {
                     extn_id: oid,
-                    critical: py_ext.getattr(crate::intern!(py, "critical"))?.extract()?,
+                    critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
                     extn_value: py_data.as_bytes(),
                 })
             }
@@ -654,7 +654,7 @@ fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
     py_ext: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
-    let oid = py_oid_to_oid(py_ext.getattr(crate::intern!(py, "oid"))?)?;
+    let oid = py_oid_to_oid(py_ext.getattr(pyo3::intern!(py, "oid"))?)?;
 
     if let Some(data) = x509::extensions::encode_extension(py, &oid, py_ext)? {
         // TODO: extra copy
@@ -674,7 +674,7 @@ pub(crate) fn chrono_to_py<'p>(
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let datetime_module = py.import("datetime")?;
     datetime_module
-        .getattr(crate::intern!(py, "datetime"))?
+        .getattr(pyo3::intern!(py, "datetime"))?
         .call1((
             dt.year(),
             dt.month(),
@@ -691,12 +691,12 @@ pub(crate) fn py_to_chrono(
 ) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
     Ok(chrono::Utc
         .with_ymd_and_hms(
-            val.getattr(crate::intern!(py, "year"))?.extract()?,
-            val.getattr(crate::intern!(py, "month"))?.extract()?,
-            val.getattr(crate::intern!(py, "day"))?.extract()?,
-            val.getattr(crate::intern!(py, "hour"))?.extract()?,
-            val.getattr(crate::intern!(py, "minute"))?.extract()?,
-            val.getattr(crate::intern!(py, "second"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "year"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "month"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "day"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "hour"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "minute"))?.extract()?,
+            val.getattr(pyo3::intern!(py, "second"))?.extract()?,
         )
         .unwrap())
 }

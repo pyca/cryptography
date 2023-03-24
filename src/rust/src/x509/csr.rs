@@ -114,7 +114,7 @@ impl CertificateSigningRequest {
         );
         Ok(py
             .import("cryptography.hazmat.primitives.serialization")?
-            .getattr(crate::intern!(py, "load_der_public_key"))?
+            .getattr(pyo3::intern!(py, "load_der_public_key"))?
             .call1((serialized,))?)
     }
 
@@ -147,7 +147,7 @@ impl CertificateSigningRequest {
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let sig_oids_to_hash = py
             .import("cryptography.hazmat._oid")?
-            .getattr(crate::intern!(py, "_SIG_OIDS_TO_HASH"))?;
+            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
@@ -185,7 +185,7 @@ impl CertificateSigningRequest {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let cryptography_warning = py
             .import("cryptography.utils")?
-            .getattr(crate::intern!(py, "DeprecatedIn36"))?;
+            .getattr(pyo3::intern!(py, "DeprecatedIn36"))?;
         pyo3::PyErr::warn(
             py,
             cryptography_warning,
@@ -308,7 +308,7 @@ fn load_der_x509_csr(
         let x509_module = py.import("cryptography.x509")?;
         return Err(CryptographyError::from(pyo3::PyErr::from_value(
             x509_module
-                .getattr(crate::intern!(py, "InvalidVersion"))?
+                .getattr(pyo3::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid CSR version", version), version))?,
         )));
     }
@@ -329,11 +329,11 @@ fn create_x509_csr(
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
     let der_encoding = serialization_mod
-        .getattr(crate::intern!(py, "Encoding"))?
-        .getattr(crate::intern!(py, "DER"))?;
+        .getattr(pyo3::intern!(py, "Encoding"))?
+        .getattr(pyo3::intern!(py, "DER"))?;
     let spki_format = serialization_mod
-        .getattr(crate::intern!(py, "PublicFormat"))?
-        .getattr(crate::intern!(py, "SubjectPublicKeyInfo"))?;
+        .getattr(pyo3::intern!(py, "PublicFormat"))?
+        .getattr(pyo3::intern!(py, "SubjectPublicKeyInfo"))?;
 
     let spki_bytes = private_key
         .call_method0("public_key")?
@@ -344,7 +344,7 @@ fn create_x509_csr(
     let ext_bytes;
     if let Some(exts) = x509::common::encode_extensions(
         py,
-        builder.getattr(crate::intern!(py, "_extensions"))?,
+        builder.getattr(pyo3::intern!(py, "_extensions"))?,
         x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts)?;
@@ -356,7 +356,7 @@ fn create_x509_csr(
         })
     }
 
-    for py_attr in builder.getattr(crate::intern!(py, "_attributes"))?.iter()? {
+    for py_attr in builder.getattr(pyo3::intern!(py, "_attributes"))?.iter()? {
         let (py_oid, value, tag): (&pyo3::PyAny, &[u8], Option<u8>) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
         let tag = if let Some(tag) = tag {
@@ -380,7 +380,7 @@ fn create_x509_csr(
         })
     }
 
-    let py_subject_name = builder.getattr(crate::intern!(py, "_subject_name"))?;
+    let py_subject_name = builder.getattr(pyo3::intern!(py, "_subject_name"))?;
 
     let csr_info = CertificationRequestInfo {
         version: 0,

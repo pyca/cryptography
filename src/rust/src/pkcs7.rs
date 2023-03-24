@@ -134,12 +134,12 @@ fn sign_and_serialize<'p>(
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let pkcs7_options = py
         .import("cryptography.hazmat.primitives.serialization.pkcs7")?
-        .getattr(crate::intern!(py, "PKCS7Options"))?;
+        .getattr(pyo3::intern!(py, "PKCS7Options"))?;
 
-    let raw_data: CffiBuf<'p> = builder.getattr(crate::intern!(py, "_data"))?.extract()?;
-    let text_mode = options.contains(pkcs7_options.getattr(crate::intern!(py, "Text"))?)?;
+    let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
+    let text_mode = options.contains(pkcs7_options.getattr(pyo3::intern!(py, "Text"))?)?;
     let (data_with_header, data_without_header) =
-        if options.contains(pkcs7_options.getattr(crate::intern!(py, "Binary"))?)? {
+        if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "Binary"))?)? {
             (
                 Cow::Borrowed(raw_data.as_bytes()),
                 Cow::Borrowed(raw_data.as_bytes()),
@@ -165,10 +165,10 @@ fn sign_and_serialize<'p>(
         pyo3::PyRef<'p, x509::Certificate>,
         &pyo3::PyAny,
         &pyo3::PyAny,
-    )> = builder.getattr(crate::intern!(py, "_signers"))?.extract()?;
+    )> = builder.getattr(pyo3::intern!(py, "_signers"))?.extract()?;
 
     let py_certs: Vec<pyo3::PyRef<'p, x509::Certificate>> = builder
-        .getattr(crate::intern!(py, "_additional_certs"))?
+        .getattr(pyo3::intern!(py, "_additional_certs"))?
         .extract()?;
 
     let mut signer_infos = vec![];
@@ -179,7 +179,7 @@ fn sign_and_serialize<'p>(
         .collect::<Vec<_>>();
     for (cert, py_private_key, py_hash_alg) in &py_signers {
         let (authenticated_attrs, signature) = if options
-            .contains(pkcs7_options.getattr(crate::intern!(py, "NoAttributes"))?)?
+            .contains(pkcs7_options.getattr(pyo3::intern!(py, "NoAttributes"))?)?
         {
             (
                 None,
@@ -212,7 +212,7 @@ fn sign_and_serialize<'p>(
                 ])),
             });
 
-            if !options.contains(pkcs7_options.getattr(crate::intern!(py, "NoCapabilities"))?)? {
+            if !options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCapabilities"))?)? {
                 authenticated_attrs.push(x509::csr::Attribute {
                     type_id: PKCS7_SMIME_CAP_OID,
                     values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
@@ -234,7 +234,7 @@ fn sign_and_serialize<'p>(
 
         let digest_alg = x509::AlgorithmIdentifier {
             oid: x509::ocsp::HASH_NAME_TO_OIDS[py_hash_alg
-                .getattr(crate::intern!(py, "name"))?
+                .getattr(pyo3::intern!(py, "name"))?
                 .extract::<&str>()?]
             .clone(),
             params: Some(*x509::sign::NULL_TLV),
@@ -265,7 +265,7 @@ fn sign_and_serialize<'p>(
 
     let data_tlv_bytes;
     let content =
-        if options.contains(pkcs7_options.getattr(crate::intern!(py, "DetachedSignature"))?)? {
+        if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "DetachedSignature"))?)? {
             None
         } else {
             data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
@@ -279,7 +279,7 @@ fn sign_and_serialize<'p>(
             _content_type: asn1::DefinedByMarker::marker(),
             content: Content::Data(content.map(asn1::Explicit::new)),
         },
-        certificates: if options.contains(pkcs7_options.getattr(crate::intern!(py, "NoCerts"))?)? {
+        certificates: if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCerts"))?)? {
             None
         } else {
             Some(asn1::SetOfWriter::new(&certs))
@@ -296,9 +296,9 @@ fn sign_and_serialize<'p>(
 
     let encoding_class = py
         .import("cryptography.hazmat.primitives.serialization")?
-        .getattr(crate::intern!(py, "Encoding"))?;
+        .getattr(pyo3::intern!(py, "Encoding"))?;
 
-    if encoding.is(encoding_class.getattr(crate::intern!(py, "SMIME"))?) {
+    if encoding.is(encoding_class.getattr(pyo3::intern!(py, "SMIME"))?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid])
@@ -306,7 +306,7 @@ fn sign_and_serialize<'p>(
             .join(",");
         let smime_encode = py
             .import("cryptography.hazmat.primitives.serialization.pkcs7")?
-            .getattr(crate::intern!(py, "_smime_encode"))?;
+            .getattr(pyo3::intern!(py, "_smime_encode"))?;
         Ok(smime_encode
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
