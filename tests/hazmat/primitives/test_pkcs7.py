@@ -807,7 +807,7 @@ class TestPKCS7SerializeCerts:
         )
         with pytest.raises(TypeError):
             pkcs7.serialize_certificates(
-                "not a list of certs",  # type: ignore[arg-type]
+                object(),  # type: ignore[arg-type]
                 serialization.Encoding.PEM,
             )
 

@@ -183,7 +183,7 @@ impl OCSPResponse {
                     "Signature algorithm OID: {} not recognized",
                     self.requires_successful_response()?.signature_algorithm.oid
                 );
-                Err(CryptographyError::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_value(
                     py.import("cryptography.exceptions")?
                         .call_method1("UnsupportedAlgorithm", (exc_messsage,))?,
                 )))
@@ -383,7 +383,7 @@ impl OCSPResponse {
             .import("cryptography.hazmat.primitives.serialization")?
             .getattr(crate::intern!(py, "Encoding"))?
             .getattr(crate::intern!(py, "DER"))?;
-        if encoding != der {
+        if !encoding.is(der) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )
@@ -528,10 +528,10 @@ impl SingleResponse<'_> {
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
         match ocsp::OIDS_TO_HASH.get(&self.cert_id.hash_algorithm.oid) {
-            Some(alg_name) => Ok(hashes.getattr(alg_name)?.call0()?),
+            Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
             None => {
                 let exceptions = py.import("cryptography.exceptions")?;
-                Err(CryptographyError::from(pyo3::PyErr::from_instance(
+                Err(CryptographyError::from(pyo3::PyErr::from_value(
                     exceptions
                         .getattr(crate::intern!(py, "UnsupportedAlgorithm"))?
                         .call1((format!(
@@ -627,16 +627,14 @@ fn create_ocsp_response(
                 .extract()?;
 
         let py_cert_status = py_single_resp.getattr(crate::intern!(py, "_cert_status"))?;
-        let cert_status = if py_cert_status
-            == ocsp_mod
-                .getattr(crate::intern!(py, "OCSPCertStatus"))?
-                .getattr(crate::intern!(py, "GOOD"))?
+        let cert_status = if py_cert_status.is(ocsp_mod
+            .getattr(crate::intern!(py, "OCSPCertStatus"))?
+            .getattr(crate::intern!(py, "GOOD"))?)
         {
             CertStatus::Good(())
-        } else if py_cert_status
-            == ocsp_mod
-                .getattr(crate::intern!(py, "OCSPCertStatus"))?
-                .getattr(crate::intern!(py, "UNKNOWN"))?
+        } else if py_cert_status.is(ocsp_mod
+            .getattr(crate::intern!(py, "OCSPCertStatus"))?
+            .getattr(crate::intern!(py, "UNKNOWN"))?)
         {
             CertStatus::Unknown(())
         } else {
@@ -687,10 +685,9 @@ fn create_ocsp_response(
         }];
 
         borrowed_cert = responder_cert.borrow();
-        let responder_id = if responder_encoding
-            == ocsp_mod
-                .getattr(crate::intern!(py, "OCSPResponderEncoding"))?
-                .getattr(crate::intern!(py, "HASH"))?
+        let responder_id = if responder_encoding.is(ocsp_mod
+            .getattr(crate::intern!(py, "OCSPResponderEncoding"))?
+            .getattr(crate::intern!(py, "HASH"))?)
         {
             let sha1 = py
                 .import("cryptography.hazmat.primitives.hashes")?
@@ -801,15 +798,15 @@ struct OCSPResponseIterator {
     contents: OwnedOCSPResponseIteratorData,
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyIterProtocol<'_> for OCSPResponseIterator {
-    fn __iter__(slf: pyo3::PyRef<'p, Self>) -> pyo3::PyRef<'p, Self> {
+#[pyo3::prelude::pymethods]
+impl OCSPResponseIterator {
+    fn __iter__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
     }
 
-    fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<OCSPSingleResponse> {
+    fn __next__(&mut self) -> Option<OCSPSingleResponse> {
         let single_resp =
-            try_map_arc_data_mut_ocsp_response_iterator(&mut slf.contents, |_data, v| {
+            try_map_arc_data_mut_ocsp_response_iterator(&mut self.contents, |_data, v| {
                 match v.next() {
                     Some(single_resp) => Ok(single_resp),
                     None => Err(()),

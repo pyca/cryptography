@@ -39,14 +39,8 @@ impl ObjectIdentifier {
     fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
         slf
     }
-}
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyObjectProtocol for ObjectIdentifier {
-    fn __repr__(&self) -> pyo3::PyResult<String> {
-        let gil = pyo3::Python::acquire_gil();
-        let py = gil.python();
-
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let self_clone = pyo3::PyCell::new(
             py,
             ObjectIdentifier {
@@ -62,7 +56,7 @@ impl pyo3::PyObjectProtocol for ObjectIdentifier {
 
     fn __richcmp__(
         &self,
-        other: pyo3::PyRef<ObjectIdentifier>,
+        other: pyo3::PyRef<'_, ObjectIdentifier>,
         op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {

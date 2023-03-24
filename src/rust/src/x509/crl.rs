@@ -26,7 +26,7 @@ fn load_der_x509_crl(
     let version = raw.borrow_value().tbs_cert_list.version.unwrap_or(1);
     if version != 1 {
         let x509_module = py.import("cryptography.x509")?;
-        return Err(CryptographyError::from(pyo3::PyErr::from_instance(
+        return Err(CryptographyError::from(pyo3::PyErr::from_value(
             x509_module
                 .getattr(crate::intern!(py, "InvalidVersion"))?
                 .call1((format!("{} is not a valid CRL version", version), version))?,
@@ -97,11 +97,11 @@ impl CertificateRevocationList {
     }
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyObjectProtocol for CertificateRevocationList {
+#[pyo3::prelude::pymethods]
+impl CertificateRevocationList {
     fn __richcmp__(
         &self,
-        other: pyo3::PyRef<CertificateRevocationList>,
+        other: pyo3::PyRef<'_, CertificateRevocationList>,
         op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
@@ -112,18 +112,31 @@ impl pyo3::PyObjectProtocol for CertificateRevocationList {
             )),
         }
     }
-}
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyMappingProtocol for CertificateRevocationList {
     fn __len__(&self) -> usize {
         self.len()
     }
 
-    fn __getitem__(&self, idx: &pyo3::PyAny) -> pyo3::PyResult<pyo3::PyObject> {
-        let gil = pyo3::Python::acquire_gil();
-        let py = gil.python();
+    fn __iter__(&self) -> CRLIterator {
+        CRLIterator {
+            contents: OwnedCRLIteratorData::try_new(Arc::clone(&self.raw), |v| {
+                Ok::<_, ()>(
+                    v.borrow_value()
+                        .tbs_cert_list
+                        .revoked_certificates
+                        .as_ref()
+                        .map(|v| v.unwrap_read().clone()),
+                )
+            })
+            .unwrap(),
+        }
+    }
 
+    fn __getitem__(
+        &self,
+        py: pyo3::Python<'_>,
+        idx: &pyo3::PyAny,
+    ) -> pyo3::PyResult<pyo3::PyObject> {
         self.raw.with(|val| {
             val.revoked_certs.get_or_init(py, || {
                 match &val.value.tbs_cert_list.revoked_certificates {
@@ -133,7 +146,7 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
             });
         });
 
-        if idx.is_instance::<pyo3::types::PySlice>()? {
+        if idx.is_instance_of::<pyo3::types::PySlice>()? {
             let indices = idx
                 .downcast::<pyo3::types::PySlice>()?
                 .indices(self.len().try_into().unwrap())?;
@@ -154,10 +167,7 @@ impl pyo3::PyMappingProtocol for CertificateRevocationList {
             Ok(pyo3::PyCell::new(py, self.revoked_cert(py, idx as usize)?)?.to_object(py))
         }
     }
-}
 
-#[pyo3::prelude::pymethods]
-impl CertificateRevocationList {
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -189,7 +199,7 @@ impl CertificateRevocationList {
             .get_item(oid)
         {
             Ok(v) => Ok(v),
-            Err(_) => Err(pyo3::PyErr::from_instance(exceptions_module.call_method1(
+            Err(_) => Err(pyo3::PyErr::from_value(exceptions_module.call_method1(
                 "UnsupportedAlgorithm",
                 (format!(
                     "Signature algorithm OID:{} not recognized",
@@ -395,24 +405,6 @@ impl CertificateRevocationList {
     }
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyIterProtocol<'_> for CertificateRevocationList {
-    fn __iter__(slf: pyo3::PyRef<'p, Self>) -> CRLIterator {
-        CRLIterator {
-            contents: OwnedCRLIteratorData::try_new(Arc::clone(&slf.raw), |v| {
-                Ok::<_, ()>(
-                    v.borrow_value()
-                        .tbs_cert_list
-                        .revoked_certificates
-                        .as_ref()
-                        .map(|v| v.unwrap_read().clone()),
-                )
-            })
-            .unwrap(),
-        }
-    }
-}
-
 #[ouroboros::self_referencing]
 struct OwnedCRLIteratorData {
     data: Arc<OwnedRawCertificateRevocationList>,
@@ -455,14 +447,18 @@ fn try_map_arc_data_mut_crl_iterator<E>(
     })
 }
 
-#[pyo3::prelude::pyproto]
-impl pyo3::PyIterProtocol<'_> for CRLIterator {
-    fn __iter__(slf: pyo3::PyRef<'p, Self>) -> pyo3::PyRef<'p, Self> {
+#[pyo3::prelude::pymethods]
+impl CRLIterator {
+    fn __len__(&self) -> usize {
+        self.contents.borrow_value().clone().map_or(0, |v| v.len())
+    }
+
+    fn __iter__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
     }
 
-    fn __next__(mut slf: pyo3::PyRefMut<'p, Self>) -> Option<RevokedCertificate> {
-        let revoked = try_map_arc_data_mut_crl_iterator(&mut slf.contents, |_data, v| match v {
+    fn __next__(&mut self) -> Option<RevokedCertificate> {
+        let revoked = try_map_arc_data_mut_crl_iterator(&mut self.contents, |_data, v| match v {
             Some(v) => match v.next() {
                 Some(revoked) => Ok(revoked),
                 None => Err(()),
@@ -474,13 +470,6 @@ impl pyo3::PyIterProtocol<'_> for CRLIterator {
             raw: revoked,
             cached_extensions: None,
         })
-    }
-}
-
-#[pyo3::prelude::pyproto]
-impl pyo3::PySequenceProtocol<'_> for CRLIterator {
-    fn __len__(&self) -> usize {
-        self.contents.borrow_value().clone().map_or(0, |v| v.len())
     }
 }
 

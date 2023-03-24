@@ -105,9 +105,9 @@ pub(crate) fn encode_der_data<'p>(
         .import("cryptography.hazmat.primitives.serialization")?
         .getattr(crate::intern!(py, "Encoding"))?;
 
-    if encoding == encoding_class.getattr(crate::intern!(py, "DER"))? {
+    if encoding.is(encoding_class.getattr(crate::intern!(py, "DER"))?) {
         Ok(pyo3::types::PyBytes::new(py, &data))
-    } else if encoding == encoding_class.getattr(crate::intern!(py, "PEM"))? {
+    } else if encoding.is(encoding_class.getattr(crate::intern!(py, "PEM"))?) {
         Ok(pyo3::types::PyBytes::new(
             py,
             &pem::encode_config(

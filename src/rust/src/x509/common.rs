@@ -112,10 +112,10 @@ pub(crate) fn encode_name_entry<'p>(
     let tag = attr_type
         .getattr(crate::intern!(py, "value"))?
         .extract::<u8>()?;
-    let value: &[u8] = if attr_type != asn1_type.getattr(crate::intern!(py, "BitString"))? {
-        let encoding = if attr_type == asn1_type.getattr(crate::intern!(py, "BMPString"))? {
+    let value: &[u8] = if !attr_type.is(asn1_type.getattr(crate::intern!(py, "BitString"))?) {
+        let encoding = if attr_type.is(asn1_type.getattr(crate::intern!(py, "BMPString"))?) {
             "utf_16_be"
-        } else if attr_type == asn1_type.getattr(crate::intern!(py, "UniversalString"))? {
+        } else if attr_type.is(asn1_type.getattr(crate::intern!(py, "UniversalString"))?) {
             "utf_32_be"
         } else {
             "utf8"
@@ -233,18 +233,18 @@ pub(crate) fn encode_general_name<'a>(
     let gn_module = py.import("cryptography.x509.general_name")?;
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr(crate::intern!(py, "value"))?;
-    if gn_type == gn_module.getattr(crate::intern!(py, "DNSName"))? {
+    if gn_type.is(gn_module.getattr(crate::intern!(py, "DNSName"))?) {
         Ok(GeneralName::DNSName(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "RFC822Name"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "RFC822Name"))?) {
         Ok(GeneralName::RFC822Name(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "DirectoryName"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "DirectoryName"))?) {
         let name = encode_name(py, gn_value)?;
         Ok(GeneralName::DirectoryName(name))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "OtherName"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "OtherName"))?) {
         Ok(GeneralName::OtherName(OtherName {
             type_id: py_oid_to_oid(gn.getattr(crate::intern!(py, "type_id"))?)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
@@ -254,15 +254,15 @@ pub(crate) fn encode_general_name<'a>(
                 ))
             })?,
         }))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "UniformResourceIdentifier"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "UniformResourceIdentifier"))?) {
         Ok(GeneralName::UniformResourceIdentifier(
             UnvalidatedIA5String(gn_value.extract::<&str>()?),
         ))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "IPAddress"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "IPAddress"))?) {
         Ok(GeneralName::IPAddress(
             gn.call_method0("_packed")?.extract::<&[u8]>()?,
         ))
-    } else if gn_type == gn_module.getattr(crate::intern!(py, "RegisteredID"))? {
+    } else if gn_type.is(gn_module.getattr(crate::intern!(py, "RegisteredID"))?) {
         let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
@@ -462,7 +462,7 @@ pub(crate) fn parse_general_name(
                 .to_object(py)
         }
         _ => {
-            return Err(CryptographyError::from(pyo3::PyErr::from_instance(
+            return Err(CryptographyError::from(pyo3::PyErr::from_value(
                 x509_module.call_method1(
                     "UnsupportedGeneralNameType",
                     ("x400Address/EDIPartyName are not supported types",),
@@ -563,7 +563,7 @@ pub(crate) fn parse_and_cache_extensions<
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
             if seen_oids.contains(&raw_ext.extn_id) {
-                return Err(pyo3::PyErr::from_instance(x509_module.call_method1(
+                return Err(pyo3::PyErr::from_value(x509_module.call_method1(
                     "DuplicateExtension",
                     (
                         format!("Duplicate {} extension found", raw_ext.extn_id),
@@ -613,7 +613,7 @@ pub(crate) fn encode_extensions<
         let oid = py_oid_to_oid(py_ext.getattr(crate::intern!(py, "oid"))?)?;
 
         let ext_val = py_ext.getattr(crate::intern!(py, "value"))?;
-        if unrecognized_extension_type.is_instance(ext_val)? {
+        if ext_val.is_instance(unrecognized_extension_type)? {
             exts.push(Extension {
                 extn_id: oid,
                 critical: py_ext.getattr(crate::intern!(py, "critical"))?.extract()?,
