@@ -6,19 +6,22 @@ use crate::asn1::{big_byte_slice_to_py_int, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{extensions, ocsp, oid};
-use std::sync::Arc;
+use pyo3::IntoPy;
 
 #[ouroboros::self_referencing]
 struct OwnedRawOCSPRequest {
-    data: Arc<[u8]>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
     value: RawOCSPRequest<'this>,
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_ocsp_request(_py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<OCSPRequest> {
-    let raw = OwnedRawOCSPRequest::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
+fn load_der_ocsp_request(
+    py: pyo3::Python<'_>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
+) -> CryptographyResult<OCSPRequest> {
+    let raw = OwnedRawOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     if raw
         .borrow_value()
@@ -248,8 +251,7 @@ fn create_ocsp_request(
         optional_signature: None,
     };
     let data = asn1::write_single(&ocsp_req)?;
-    // TODO: extra copy as we round-trip through a slice
-    load_der_ocsp_request(py, &data)
+    load_der_ocsp_request(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
