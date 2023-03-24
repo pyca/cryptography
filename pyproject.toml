@@ -1,14 +1,92 @@
 [build-system]
 requires = [
-    # The minimum setuptools version is specific to the PEP 517 backend,
-    # and may be stricter than the version required in `setup.cfg`
-    "setuptools>=40.6.0,!=60.9.0",
+    # First version of setuptools to support pyproject.toml configuration
+    "setuptools>=61.0.0",
     "wheel",
-    # Must be kept in sync with the `install_requirements` in `setup.cfg`
+    # Must be kept in sync with `project.dependencies`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
     "setuptools-rust>=0.11.4",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryptography"
+authors = [
+    {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
+]
+description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
+license = {text = "Apache-2.0 OR BSD-3-Clause"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: BSD",
+    "Operating System :: POSIX :: Linux",
+    'Operating System :: Microsoft :: Windows',
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Security :: Cryptography",
+]
+requires-python = ">=3.7"
+dependencies = [
+    # Must be kept in sync with `build-system.requires`
+    "cffi >=1.12",
+]
+dynamic = ["version", "readme"]
+
+[project.urls]
+homepage = "https://github.com/pyca/cryptography"
+documentation = "https://cryptography.io/"
+source = "https://github.com/pyca/cryptography/"
+issues = "https://github.com/pyca/cryptography/issues"
+changelog = "https://cryptography.io/en/latest/changelog/"
+
+[tool.setuptools]
+zip-safe = false
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = [
+    "_cffi_src",
+    "_cffi_src.*",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "cryptography.__version__"}
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+[project.optional-dependencies]
+ssh = ["bcrypt >=3.1.5"]
+
+# All the following are used for our own testing.
+tox = ["tox"]
+test = [
+    "pytest >=6.2.0",
+    "pytest-shard >=0.1.2",
+    "pytest-benchmark",
+    "pytest-cov",
+    "pytest-subtests >=0.10.0",
+    "pytest-xdist",
+    "pretend",
+]
+test-randomorder = ["pytest-randomly"]
+docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=1.1.1"]
+docstest =  ["pyenchant >=1.6.11", "twine >=1.12.0", "sphinxcontrib-spelling >=4.0.1"]
+sdist = ["setuptools_rust >=0.11.4"]
+pep8test = ["black", "ruff", "mypy", "check-manifest"]
 
 [tool.black]
 line-length = 79

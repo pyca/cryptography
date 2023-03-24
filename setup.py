@@ -44,7 +44,7 @@ src_dir = os.path.join(base_dir, "src")
 sys.path.insert(0, src_dir)
 
 try:
-    # See setup.cfg for most of the config metadata.
+    # See pyproject.toml for most of the config metadata.
     setup(
         rust_extensions=[
             RustExtension(
