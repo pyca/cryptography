@@ -28,7 +28,7 @@ jobs:
       - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
         with:
           path: dist/
-          run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.event.id }}
+          run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
       - run: pip install twine requests
 
       - run: |
