@@ -16,7 +16,7 @@ chrono = { version = "0.4.24", default-features = false, features = ["alloc", "c
 ouroboros = "0.15"
 openssl = "0.10.48"
 openssl-sys = "0.9.72"
-foreign-types-shared = "0.1"
+foreign-types-shared = "0.3"
 
 [build-dependencies]
 cc = "1.0.72"
