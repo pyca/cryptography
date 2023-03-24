@@ -49,7 +49,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -158,7 +158,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -221,7 +221,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -269,7 +269,7 @@ jobs:
     name: "Rust Coverage"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -382,7 +382,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -449,7 +449,7 @@ jobs:
     name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -523,7 +523,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -566,7 +566,7 @@ jobs:
     name: "linkcheck"
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -602,7 +602,7 @@ jobs:
     needs: [linux, distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.4.0
+      - uses: actions/checkout@v3.5.0
         timeout-minutes: 3
         with:
           persist-credentials: false
