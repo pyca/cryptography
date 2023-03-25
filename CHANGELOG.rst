@@ -1,11 +1,18 @@
 Changelog
 =========
 
+.. _v40-0-1:
+
+40.0.1 - 2023-03-24
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug where certain operations would fail if an object happened to be
+  in the top-half of the memory-space. This only impacted 32-bit systems.
+
 .. _v40-0-0:
 
 40.0.0 - 2023-03-24
 ~~~~~~~~~~~~~~~~~~~
-
 
 * **BACKWARDS INCOMPATIBLE:** As announced in the 39.0.0 changelog, the way
   ``cryptography`` links OpenSSL has changed. This only impacts users who
