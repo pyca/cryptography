@@ -46,7 +46,7 @@ def _extract_buffer_length(obj: typing.Any) -> typing.Tuple[int, int]:
     from cryptography.hazmat.bindings._rust import _openssl
 
     buf = _openssl.ffi.from_buffer(obj)
-    return int(_openssl.ffi.cast("intptr_t", buf)), len(buf)
+    return int(_openssl.ffi.cast("uintptr_t", buf)), len(buf)
 
 
 class InterfaceNotImplemented(Exception):
