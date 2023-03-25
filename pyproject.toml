@@ -78,7 +78,6 @@ test = [
     "pytest-shard >=0.1.2",
     "pytest-benchmark",
     "pytest-cov",
-    "pytest-subtests >=0.10.0",
     "pytest-xdist",
     "pretend",
 ]
@@ -93,7 +92,7 @@ line-length = 79
 target-version = ["py37"]
 
 [tool.pytest.ini_options]
-addopts = "-r s --capture=no --strict-markers --benchmark-disable --no-subtests-shortletter"
+addopts = "-r s --capture=no --strict-markers --benchmark-disable"
 console_output_style = "progress-even-when-capture-no"
 markers = [
     "skip_fips: this test is not executed in FIPS mode",
