@@ -6,6 +6,7 @@ use std::{ptr, slice};
 
 pub(crate) struct CffiBuf<'p> {
     _pyobj: &'p pyo3::PyAny,
+    _bufobj: &'p pyo3::PyAny,
     buf: &'p [u8],
 }
 
@@ -19,10 +20,12 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
     fn extract(pyobj: &'a pyo3::PyAny) -> pyo3::PyResult<Self> {
         let py = pyobj.py();
 
-        let (ptrval, len): (usize, usize) = py
+        let (bufobj, ptrval): (&pyo3::PyAny, usize) = py
             .import("cryptography.utils")?
             .call_method1("_extract_buffer_length", (pyobj,))?
             .extract()?;
+
+        let len = bufobj.len()?;
         let ptr = if len == 0 {
             ptr::NonNull::dangling().as_ptr()
         } else {
@@ -31,6 +34,7 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
 
         Ok(CffiBuf {
             _pyobj: pyobj,
+            _bufobj: bufobj,
             // SAFETY: _extract_buffer_length ensures that we have a valid ptr
             // and length (and we ensure we meet slice's requirements for
             // 0-length slices above), we're keeping pyobj alive which ensures
