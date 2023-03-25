@@ -712,7 +712,7 @@ class Backend:
             return _X448PrivateKey(self, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.private_key_from_ptr(
-                int(self._ffi.cast("intptr_t", evp_pkey))
+                int(self._ffi.cast("uintptr_t", evp_pkey))
             )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
             # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
@@ -771,7 +771,7 @@ class Backend:
             return _X448PublicKey(self, evp_pkey)
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.public_key_from_ptr(
-                int(self._ffi.cast("intptr_t", evp_pkey))
+                int(self._ffi.cast("uintptr_t", evp_pkey))
             )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
             # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
