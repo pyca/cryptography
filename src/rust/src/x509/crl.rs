@@ -8,18 +8,18 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, extensions, oid, sign};
-use pyo3::ToPyObject;
+use pyo3::{IntoPy, ToPyObject};
 use std::convert::TryInto;
 use std::sync::Arc;
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
-    data: &[u8],
+    data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
     let raw = OwnedRawCertificateRevocationList::try_new(
-        Arc::from(data),
-        |data| asn1::parse_single(data),
+        data,
+        |data| asn1::parse_single(data.as_bytes(py)),
         |_| Ok(pyo3::once_cell::GILOnceCell::new()),
     )?;
 
@@ -49,13 +49,15 @@ fn load_pem_x509_crl(
         |p| p.tag == "X509 CRL",
         "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
     )?;
-    // TODO: Produces an extra copy
-    load_der_x509_crl(py, &block.contents)
+    load_der_x509_crl(
+        py,
+        pyo3::types::PyBytes::new(py, &block.contents).into_py(py),
+    )
 }
 
 #[ouroboros::self_referencing]
 struct OwnedRawCertificateRevocationList {
-    data: Arc<[u8]>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
     value: RawCertificateRevocationList<'this>,
@@ -702,8 +704,7 @@ fn create_x509_crl(
         signature_algorithm: sigalg,
         signature_value: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    // TODO: extra copy as we round-trip through a slice
-    load_der_x509_crl(py, &data)
+    load_der_x509_crl(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

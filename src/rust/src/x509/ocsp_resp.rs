@@ -7,16 +7,17 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
 use chrono::Timelike;
+use pyo3::IntoPy;
 use std::sync::Arc;
 
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 
 #[pyo3::prelude::pyfunction]
 fn load_der_ocsp_response(
-    _py: pyo3::Python<'_>,
-    data: &[u8],
+    py: pyo3::Python<'_>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> Result<OCSPResponse, CryptographyError> {
-    let raw = OwnedRawOCSPResponse::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawOCSPResponse::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     let response = raw.borrow_value();
     match response.response_status.value() {
@@ -58,7 +59,7 @@ fn load_der_ocsp_response(
 
 #[ouroboros::self_referencing]
 struct OwnedRawOCSPResponse {
-    data: Arc<[u8]>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
     value: RawOCSPResponse<'this>,
@@ -217,7 +218,7 @@ impl OCSPResponse {
         };
         for i in 0..certs.len() {
             // TODO: O(n^2), don't have too many certificates!
-            let raw_cert = map_arc_data_ocsp_response(&self.raw, |_data, resp| {
+            let raw_cert = map_arc_data_ocsp_response(py, &self.raw, |_data, resp| {
                 resp.response_bytes
                     .as_ref()
                     .unwrap()
@@ -397,14 +398,19 @@ impl OCSPResponse {
 // Open-coded implementation of the API discussed in
 // https://github.com/joshua-maros/ouroboros/issues/38
 fn map_arc_data_ocsp_response(
+    py: pyo3::Python<'_>,
     it: &OwnedRawOCSPResponse,
     f: impl for<'this> FnOnce(
         &'this [u8],
         &RawOCSPResponse<'this>,
     ) -> certificate::RawCertificate<'this>,
 ) -> certificate::OwnedRawCertificate {
-    certificate::OwnedRawCertificate::new_public(Arc::clone(it.borrow_data()), |inner_it| {
-        it.with(|value| f(inner_it, unsafe { std::mem::transmute(value.value) }))
+    certificate::OwnedRawCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
+        it.with(|value| {
+            f(inner_it.as_bytes(py), unsafe {
+                std::mem::transmute(value.value)
+            })
+        })
     })
 }
 fn try_map_arc_data_mut_ocsp_response_iterator<E>(
@@ -774,8 +780,7 @@ fn create_ocsp_response(
         response_bytes,
     };
     let data = asn1::write_single(&resp)?;
-    // TODO: extra copy as we round-trip through a slice
-    load_der_ocsp_response(py, &data)
+    load_der_ocsp_response(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

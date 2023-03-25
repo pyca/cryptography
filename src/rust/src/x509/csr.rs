@@ -7,6 +7,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, oid, sign};
 use asn1::SimpleAsn1Readable;
+use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -72,7 +73,7 @@ impl CertificationRequestInfo<'_> {
 
 #[ouroboros::self_referencing]
 struct OwnedRawCsr {
-    data: Vec<u8>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
     value: RawCsr<'this>,
@@ -86,20 +87,25 @@ struct CertificateSigningRequest {
 
 #[pyo3::prelude::pymethods]
 impl CertificateSigningRequest {
-    fn __hash__(&self) -> u64 {
+    fn __hash__(&self, py: pyo3::Python<'_>) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.raw.borrow_data().hash(&mut hasher);
+        self.raw.borrow_data().as_bytes(py).hash(&mut hasher);
         hasher.finish()
     }
 
     fn __richcmp__(
         &self,
+        py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, CertificateSigningRequest>,
         op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::basic::CompareOp::Eq => Ok(self.raw.borrow_data() == other.raw.borrow_data()),
-            pyo3::basic::CompareOp::Ne => Ok(self.raw.borrow_data() != other.raw.borrow_data()),
+            pyo3::basic::CompareOp::Eq => {
+                Ok(self.raw.borrow_data().as_bytes(py) == other.raw.borrow_data().as_bytes(py))
+            }
+            pyo3::basic::CompareOp::Ne => {
+                Ok(self.raw.borrow_data().as_bytes(py) != other.raw.borrow_data().as_bytes(py))
+            }
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "CSRs cannot be ordered",
             )),
@@ -293,15 +299,18 @@ fn load_pem_x509_csr(
         |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST",
         "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?",
     )?;
-    load_der_x509_csr(py, &parsed.contents)
+    load_der_x509_csr(
+        py,
+        pyo3::types::PyBytes::new(py, &parsed.contents).into_py(py),
+    )
 }
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_csr(
     py: pyo3::Python<'_>,
-    data: &[u8],
+    data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<CertificateSigningRequest> {
-    let raw = OwnedRawCsr::try_new(data.to_vec(), |data| asn1::parse_single(data))?;
+    let raw = OwnedRawCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     let version = raw.borrow_value().csr_info.version;
     if version != 0 {
@@ -396,8 +405,7 @@ fn create_x509_csr(
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    // TODO: extra copy as we round-trip through a slice
-    load_der_x509_csr(py, &data)
+    load_der_x509_csr(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

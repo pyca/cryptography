@@ -9,10 +9,9 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
 use chrono::Datelike;
-use pyo3::ToPyObject;
+use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::sync::Arc;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub(crate) struct RawCertificate<'a> {
@@ -56,7 +55,7 @@ pub(crate) struct SubjectPublicKeyInfo<'a> {
 
 #[ouroboros::self_referencing]
 pub(crate) struct OwnedRawCertificate {
-    data: Arc<[u8]>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
 
     #[borrows(data)]
     #[covariant]
@@ -66,8 +65,10 @@ pub(crate) struct OwnedRawCertificate {
 impl OwnedRawCertificate {
     // Re-expose ::new with `pub(crate)` visibility.
     pub(crate) fn new_public(
-        data: Arc<[u8]>,
-        value_ref_builder: impl for<'this> FnOnce(&'this Arc<[u8]>) -> RawCertificate<'this>,
+        data: pyo3::Py<pyo3::types::PyBytes>,
+        value_ref_builder: impl for<'this> FnOnce(
+            &'this pyo3::Py<pyo3::types::PyBytes>,
+        ) -> RawCertificate<'this>,
     ) -> OwnedRawCertificate {
         OwnedRawCertificate::new(data, value_ref_builder)
     }
@@ -374,7 +375,10 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyR
         |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE",
         "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?",
     )?;
-    load_der_x509_certificate(py, &parsed.contents)
+    load_der_x509_certificate(
+        py,
+        pyo3::types::PyBytes::new(py, &parsed.contents).into_py(py),
+    )
 }
 
 #[pyo3::prelude::pyfunction]
@@ -385,7 +389,9 @@ fn load_pem_x509_certificates(
     let certs = pem::parse_many(data)?
         .iter()
         .filter(|p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE")
-        .map(|p| load_der_x509_certificate(py, &p.contents))
+        .map(|p| {
+            load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &p.contents).into_py(py))
+        })
         .collect::<Result<Vec<_>, _>>()?;
 
     if certs.is_empty() {
@@ -396,8 +402,11 @@ fn load_pem_x509_certificates(
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<Certificate> {
-    let raw = OwnedRawCertificate::try_new(Arc::from(data), |data| asn1::parse_single(data))?;
+fn load_der_x509_certificate(
+    py: pyo3::Python<'_>,
+    data: pyo3::Py<pyo3::types::PyBytes>,
+) -> CryptographyResult<Certificate> {
+    let raw = OwnedRawCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
@@ -1059,8 +1068,7 @@ fn create_x509_certificate(
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    // TODO: extra copy as we round-trip through a slice
-    load_der_x509_certificate(py, &data)
+    load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
 pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
