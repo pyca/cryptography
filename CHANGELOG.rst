@@ -13,6 +13,14 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.6 has been removed.
 * Updated the minimum supported Rust version (MSRV) to 1.56.0, from 1.48.0.
 
+.. _v40-0-1:
+
+40.0.1 - 2023-03-24
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a bug where certain operations would fail if an object happened to be
+  in the top-half of the memory-space. This only impacted 32-bit systems.
+
 .. _v40-0-0:
 
 40.0.0 - 2023-03-24
