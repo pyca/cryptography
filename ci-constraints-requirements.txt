@@ -193,7 +193,7 @@ tomli==2.0.1
     #   pyproject-hooks
     #   pytest
     #   tox
-tox==4.4.7
+tox==4.4.8
     # via cryptography (pyproject.toml)
 twine==4.0.2
     # via cryptography (pyproject.toml)
