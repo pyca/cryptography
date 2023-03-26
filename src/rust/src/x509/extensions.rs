@@ -202,7 +202,7 @@ pub(crate) fn encode_extension(
             let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
             Ok(Some(asn1::write_single(&ads)?))
         }
-        &oid::EXTENDED_KEY_USAGE_OID => {
+        &oid::EXTENDED_KEY_USAGE_OID | &oid::ACCEPTABLE_RESPONSES_OID => {
             let mut oids = vec![];
             for el in ext.iter()? {
                 let oid = py_oid_to_oid(el?)?;

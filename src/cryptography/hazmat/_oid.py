@@ -42,6 +42,7 @@ class ExtensionOID:
 
 class OCSPExtensionOID:
     NONCE = ObjectIdentifier("1.3.6.1.5.5.7.48.1.2")
+    ACCEPTABLE_RESPONSES = ObjectIdentifier("1.3.6.1.5.5.7.48.1.4")
 
 
 class CRLEntryExtensionOID:
