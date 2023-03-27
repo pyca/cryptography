@@ -20,7 +20,7 @@ runs:
           exit 1
         fi
         echo "Setting mtimes for dirs"
-        for f in $(git ls-files src/rust src/_cffi_src); do touch -t $(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -1 HEAD -- "$f") "$f"; done
+        for f in $(git ls-tree -t -r --name-only HEAD src/rust src/_cffi_src); do touch -t $(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -1 HEAD -- "$f") "$f"; done
         echo "Done"
         ls -Rla src/rust/src src/_cffi_src
       shell: bash

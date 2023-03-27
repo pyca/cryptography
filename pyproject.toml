@@ -72,7 +72,7 @@ version = {attr = "cryptography.__version__"}
 ssh = ["bcrypt >=3.1.5"]
 
 # All the following are used for our own testing.
-tox = ["tox"]
+nox = ["nox"]
 test = [
     "pytest >=6.2.0",
     "pytest-shard >=0.1.2",
@@ -125,9 +125,9 @@ source = [
 [tool.coverage.paths]
 source = [
    "src/cryptography",
-   "*.tox/*/lib*/python*/site-packages/cryptography",
-   "*.tox\\*\\Lib\\site-packages\\cryptography",
-   "*.tox/pypy/site-packages/cryptography",
+   "*.nox/*/lib*/python*/site-packages/cryptography",
+   "*.nox\\*\\Lib\\site-packages\\cryptography",
+   "*.nox/pypy/site-packages/cryptography",
 ]
 tests =[
    "tests/",

@@ -26,27 +26,26 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.11", TOXENV: "flake"}
-          - {VERSION: "3.11", TOXENV: "rust"}
-          - {VERSION: "3.11", TOXENV: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0"}}
-          - {VERSION: "pypy-3.8", TOXENV: "pypy3-nocoverage"}
-          - {VERSION: "pypy-3.9", TOXENV: "pypy3-nocoverage"}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1t"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "3.0.8"}}
-          - {VERSION: "3.11", TOXENV: "py311-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.11", TOXENV: "py311", TOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.0"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.5.4"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.6.2"}}
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "libressl", VERSION: "3.7.1"}}
-          - {VERSION: "3.11", TOXENV: "py311-randomorder"}
-          - {VERSION: "3.12-dev", TOXENV: "py312"}
+          - {VERSION: "3.11", NOXSESSION: "flake"}
+          - {VERSION: "3.11", NOXSESSION: "rust"}
+          - {VERSION: "3.11", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0"}}
+          - {VERSION: "pypy-3.8", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "pypy-3.9", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1t"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.8"}}
+          - {VERSION: "3.11", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.0", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.0"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.5.4"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.6.2"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.1"}}
+          - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
+          - {VERSION: "3.12-dev", NOXSESSION: "tests"}
           # Latest commit on the BoringSSL master branch, as of Apr 01, 2023.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "boringssl", VERSION: "d89702704febab30774e8af22450899af297bfb0"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "d89702704febab30774e8af22450899af297bfb0"}}
           # Latest commit on the OpenSSL master branch, as of Apr 01, 2023.
-          - {VERSION: "3.11", TOXENV: "py311", OPENSSL: {TYPE: "openssl", VERSION: "9559ad0e8d433a2a212b63cc848fa2ac82a9b048"}}
-    name: "${{ matrix.PYTHON.TOXENV }} ${{ matrix.PYTHON.OPENSSL.TYPE }} ${{ matrix.PYTHON.OPENSSL.VERSION }} ${{ matrix.PYTHON.TOXARGS }} ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}"
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "9559ad0e8d433a2a212b63cc848fa2ac82a9b048"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
@@ -61,24 +60,18 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
           CONFIG_FLAGS="$DEFAULT_CONFIG_FLAGS $CONFIG_FLAGS"
-          CONFIG_HASH=$(echo "$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
+          OPENSSL_HASH=$(echo "${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
           echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
-          echo "CONFIG_HASH=${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "OPENSSL_HASH=${OPENSSL_HASH}" >> $GITHUB_ENV
           echo "OSSL_INFO=${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_FLAGS}" >> $GITHUB_ENV
-          echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_HASH}" >> $GITHUB_ENV
+          echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${OPENSSL_HASH}" >> $GITHUB_ENV
         env:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
@@ -90,7 +83,7 @@ jobs:
           path: ${{ github.workspace }}/osslcache
           # When altering the openssl build process you may need to increment the value on the end of this cache key
           # so that you can prevent it from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.CONFIG_HASH }}-8
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-8
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/workflows/build_openssl.sh
@@ -104,17 +97,27 @@ jobs:
           echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
           echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
-      - name: Build toxenv
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          # We have both the Python version from the matrix and from the
+          # setup-python step because the latter doesn't distinguish
+          # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
+          key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
+
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
+      - name: Create nox environment
         run: |
-            tox -vvv --notest
+            nox -v --install-only
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
         run: |
-            tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.TOXARGS }}
+            nox --no-install --  --color=yes --wycheproof-root=wycheproof ${{ matrix.PYTHON.NOXARGS }}
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
           CRYPTOGRAPHY_OPENSSL_NO_LEGACY: ${{ matrix.PYTHON.OPENSSL.NO_LEGACY }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -128,22 +131,22 @@ jobs:
       fail-fast: false
       matrix:
         IMAGE:
-          - {IMAGE: "rhel8", TOXENV: "py38", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "rhel8-fips", TOXENV: "py38", RUNNER: "ubuntu-latest", FIPS: true}
-          - {IMAGE: "buster", TOXENV: "py37", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "bullseye", TOXENV: "py39", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "bookworm", TOXENV: "py311", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "sid", TOXENV: "py311", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-jammy", TOXENV: "py310", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py310", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "fedora", TOXENV: "py311", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "alpine", TOXENV: "py310", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "centos-stream9", TOXENV: "py39", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "centos-stream9-fips", TOXENV: "py39", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "rhel8", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "rhel8-fips", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "buster", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bullseye", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bookworm", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "sid", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-focal", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-jammy", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-rolling", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "fedora", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "alpine", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9-fips", RUNNER: "ubuntu-latest", FIPS: true}
 
-          - {IMAGE: "ubuntu-jammy:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
-          - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "ubuntu-jammy:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "alpine:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
@@ -180,17 +183,15 @@ jobs:
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage
-      - run: '/venv/bin/tox -vvv --notest'
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' coverage
+      - run: '/venv/bin/nox -v --install-only -s tests'
         env:
-          TOXENV: ${{ matrix.IMAGE.TOXENV }}
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
-      - run: '/venv/bin/tox --skip-pkg-install --  --color=yes --wycheproof-root="wycheproof"'
+      - run: '/venv/bin/nox --no-install -s tests --  --color=yes --wycheproof-root="wycheproof"'
         env:
-          TOXENV: ${{ matrix.IMAGE.TOXENV }}
           COLUMNS: 80
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
@@ -202,11 +203,11 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.11", TOXENV: "py311"}
+          - "3.11"
         RUST:
           # Cover MSRV. 1.60+ and beta/nightly are in the linux-rust-coverage section.
           - 1.56.0
-    name: "${{ matrix.PYTHON.TOXENV }} with Rust ${{ matrix.RUST }}"
+    name: "${{ matrix.PYTHON }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
@@ -224,23 +225,21 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
+          python-version: ${{ matrix.PYTHON }}
       - uses: dtolnay/rust-toolchain@52e69531e6f69a396bc9d1226284493a5db969ff
         with:
           toolchain: ${{ matrix.RUST }}
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
-      - name: Create toxenv
-        run: tox -vvv --notest
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
+      - name: Create nox environment
+        run: nox -v --install-only -s tests
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes  --wycheproof-root=wycheproof
+        run: nox --no-install -s tests --  --color=yes  --wycheproof-root=wycheproof
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
           COLUMNS: 80
       - uses: ./.github/actions/upload-coverage
 
@@ -250,7 +249,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.11", TOXENV: "py311"}
+          - "3.11"
         RUST:
           # Potential future MSRVs:
           # 1.60 - new version of cxx
@@ -302,25 +301,23 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
+          python-version: ${{ matrix.PYTHON }}
       - run: cargo install cargo-binutils
         if: steps.cargo-cache.outputs.cache-hit != 'true'
 
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml] cffi
-      - name: Create toxenv
-        run: tox -vvv --notest
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml] cffi
+      - name: Create nox environment
+        run: nox -v --install-only -s tests
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
+        run: nox --no-install -s tests --  --color=yes --wycheproof-root=wycheproof
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
@@ -341,7 +338,7 @@ jobs:
             COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
 
             cargo cov -- export \
-              ../../.tox/${{ matrix.PYTHON.TOXENV }}/lib/python${{ matrix.PYTHON.VERSION }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+              ../../.nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
               -instr-profile=pytest-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
@@ -365,13 +362,12 @@ jobs:
           - {OS: 'macos-12', ARCH: 'x86_64'}
           - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.7", TOXENV: "py37-nocoverage"}
-          - {VERSION: "3.11", TOXENV: "py311"}
+          - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.11", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.7", TOXENV: "py37-nocoverage"}
+          - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
-    name: "${{ matrix.PYTHON.TOXENV }} on macOS ${{ matrix.RUNNER.ARCH }}"
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
@@ -385,7 +381,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.VERSION }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}
 
       - name: Setup python
         uses: actions/setup-python@v4.5.0
@@ -393,7 +389,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'tox>3' coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
 
       - name: Clone wycheproof
         timeout-minutes: 2
@@ -408,19 +404,19 @@ jobs:
           name: openssl-macos-universal2
           path: "../openssl-macos-universal2/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build toxenv
+      - name: Build nox environment
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \
             OPENSSL_STATIC=1 \
             CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12" \
-            tox -vvv --notest
+            nox -v --install-only
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof
+        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
 
       - uses: ./.github/actions/upload-coverage
@@ -434,10 +430,9 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "3.7", TOXENV: "py37-nocoverage"}
-          - {VERSION: "3.11", TOXENV: "py311"}
+          - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.11", NOXSESSION: "tests"}
         JOB_NUMBER: [0, 1]
-    name: "${{ matrix.PYTHON.TOXENV }} on ${{ matrix.WINDOWS.WINDOWS }} (part ${{ matrix.JOB_NUMBER }})"
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
@@ -457,8 +452,8 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "tox>3" coverage[toml]
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
+      - run: python -m pip install -c ci-constraints-requirements.txt "nox" coverage[toml]
 
       - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
         with:
@@ -478,15 +473,15 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - name: Build toxenv
-        run: tox -vvv --notest
+      - name: Build nox environment
+        run: nox -v --install-only
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: tox --skip-pkg-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
+        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
@@ -574,17 +569,14 @@ jobs:
           # This creates the same key as the docs job (as long as they have the same
           # python version)
           key: 3.11-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt tox
-      - name: Build toxenv
+      - run: python -m pip install -c ci-constraints-requirements.txt nox
+      - name: Build nox environment
         run: |
-            tox -vvv --notest
+            nox -v --install-only -s docs-linkcheck
         env:
-          TOXENV: docs-linkcheck
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: linkcheck
-        run: tox --skip-pkg-install -- --color=yes
-        env:
-          TOXENV: docs-linkcheck
+        run: nox --no-install -s docs-linkcheck -- --color=yes
 
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
