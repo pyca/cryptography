@@ -14,6 +14,7 @@ Changelog
 * Updated the minimum supported Rust version (MSRV) to 1.56.0, from 1.48.0.
 * Added support for the :class:`~cryptography.x509.OCSPAcceptableResponses`
   OCSP extension.
+* Restored X509 verification error codes to the OpenSSL bindings.
 
 .. _v40-0-1:
 
