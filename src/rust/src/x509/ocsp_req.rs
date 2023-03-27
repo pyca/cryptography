@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, py_uint_to_big_endian_bytes};
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{extensions, ocsp, oid};
@@ -118,8 +118,8 @@ impl OCSPRequest {
             &mut self.cached_extensions,
             &self.raw.borrow_value().tbs_request.request_extensions,
             |oid, value| {
-                match oid {
-                    &oid::NONCE_OID => {
+                match *oid {
+                    oid::NONCE_OID => {
                         // This is a disaster. RFC 2560 says that the contents of the nonce is
                         // just the raw extension value. This is nonsense, since they're always
                         // supposed to be ASN.1 TLVs. RFC 6960 correctly specifies that the
@@ -128,6 +128,19 @@ impl OCSPRequest {
                         // the raw value.
                         let nonce = asn1::parse_single::<&[u8]>(value).unwrap_or(value);
                         Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
+                    }
+                    oid::ACCEPTABLE_RESPONSES_OID => {
+                        let oids = asn1::parse_single::<
+                            asn1::SequenceOf<'_, asn1::ObjectIdentifier>,
+                        >(value)?;
+                        let py_oids = pyo3::types::PyList::empty(py);
+                        for oid in oids {
+                            py_oids.append(oid_to_py_oid(py, &oid)?)?;
+                        }
+
+                        Ok(Some(
+                            x509_module.call_method1("OCSPAcceptableResponses", (py_oids,))?,
+                        ))
                     }
                     _ => Ok(None),
                 }

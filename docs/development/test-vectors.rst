@@ -658,8 +658,10 @@ Custom X.509 OCSP Test Vectors
   extensions.
 * ``x509/ocsp/resp-unknown-extension.der`` - An OCSP response containing an
   extension with an unknown OID.
-* ``x509/ocsp/resp-unknown-hash-alg.der`` - AN OCSP response containing an
+* ``x509/ocsp/resp-unknown-hash-alg.der`` - An OCSP response containing an
   invalid hash algorithm OID.
+* ``x509/ocsp/req-acceptable-responses.der`` - An OCSP request containing an
+  acceptable responses extension.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

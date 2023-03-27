@@ -1932,6 +1932,35 @@ class OCSPNonce(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
+class OCSPAcceptableResponses(ExtensionType):
+    oid = OCSPExtensionOID.ACCEPTABLE_RESPONSES
+
+    def __init__(self, responses: typing.Iterable[ObjectIdentifier]) -> None:
+        responses = list(responses)
+        if any(not isinstance(r, ObjectIdentifier) for r in responses):
+            raise TypeError("All responses must be ObjectIdentifiers")
+
+        self._responses = responses
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, OCSPAcceptableResponses):
+            return NotImplemented
+
+        return self._responses == other._responses
+
+    def __hash__(self) -> int:
+        return hash(tuple(self._responses))
+
+    def __repr__(self) -> str:
+        return f"<OCSPAcceptableResponses(responses={self._responses})>"
+
+    def __iter__(self) -> typing.Iterator[ObjectIdentifier]:
+        return iter(self._responses)
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
+
 class IssuingDistributionPoint(ExtensionType):
     oid = ExtensionOID.ISSUING_DISTRIBUTION_POINT
 

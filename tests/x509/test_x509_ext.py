@@ -6132,6 +6132,73 @@ class TestOCSPNonce:
         assert ext.public_bytes() == b"\x04\x0500000"
 
 
+class TestOCSPAcceptableResponses:
+    def test_invalid_types(self):
+        with pytest.raises(TypeError):
+            x509.OCSPAcceptableResponses(38)  # type:ignore[arg-type]
+        with pytest.raises(TypeError):
+            x509.OCSPAcceptableResponses([38])  # type:ignore[list-item]
+
+    def test_eq(self):
+        acceptable_responses1 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+        acceptable_responses2 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+        assert acceptable_responses1 == acceptable_responses2
+
+    def test_ne(self):
+        acceptable_responses1 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+        acceptable_responses2 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.4")]
+        )
+        assert acceptable_responses1 != acceptable_responses2
+        assert acceptable_responses1 != object()
+
+    def test_repr(self):
+        acceptable_responses = x509.OCSPAcceptableResponses([])
+        assert (
+            repr(acceptable_responses)
+            == "<OCSPAcceptableResponses(responses=[])>"
+        )
+
+    def test_hash(self):
+        acceptable_responses1 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+        acceptable_responses2 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+        acceptable_responses3 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.4")]
+        )
+
+        assert hash(acceptable_responses1) == hash(acceptable_responses2)
+        assert hash(acceptable_responses1) != hash(acceptable_responses3)
+
+    def test_iter(self):
+        acceptable_responses1 = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.2.3")]
+        )
+
+        assert list(acceptable_responses1) == [ObjectIdentifier("1.2.3")]
+
+    def test_public_bytes(self):
+        ext = x509.OCSPAcceptableResponses([])
+        assert ext.public_bytes() == b"\x30\x00"
+
+        ext = x509.OCSPAcceptableResponses(
+            [ObjectIdentifier("1.3.6.1.5.5.7.48.1.1")]
+        )
+        assert (
+            ext.public_bytes()
+            == b"\x30\x0b\x06\t+\x06\x01\x05\x05\x07\x30\x01\x01"
+        )
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
