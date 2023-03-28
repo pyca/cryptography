@@ -17,6 +17,8 @@ Changelog
 * Added support for the :class:`~cryptography.x509.MSCertificateTemplate`
   proprietary Microsoft certificate extension.
 * Implemented support for equality checks on all asymmetric public key types.
+* Added support for ``aes256-gcm@openssh.com`` encrypted keys in
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`.
 
 .. _v40-0-2:
 

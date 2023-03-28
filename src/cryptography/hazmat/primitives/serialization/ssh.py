@@ -11,6 +11,7 @@ import re
 import typing
 import warnings
 from base64 import encodebytes as _base64_encode
+from dataclasses import dataclass
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
@@ -23,7 +24,12 @@ from cryptography.hazmat.primitives.asymmetric import (
     rsa,
 )
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import (
+    AEADDecryptionContext,
+    Cipher,
+    algorithms,
+    modes,
+)
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     KeySerializationEncryption,
@@ -78,18 +84,51 @@ _PEM_RC = re.compile(_SK_START + b"(.*?)" + _SK_END, re.DOTALL)
 # padding for max blocksize
 _PADDING = memoryview(bytearray(range(1, 1 + 16)))
 
+
+@dataclass
+class _SSHCipher:
+    alg: typing.Type[algorithms.AES]
+    key_len: int
+    mode: typing.Union[
+        typing.Type[modes.CTR],
+        typing.Type[modes.CBC],
+        typing.Type[modes.GCM],
+    ]
+    block_len: int
+    iv_len: int
+    tag_len: typing.Optional[int]
+    is_aead: bool
+
+
 # ciphers that are actually used in key wrapping
-_SSH_CIPHERS: typing.Dict[
-    bytes,
-    typing.Tuple[
-        typing.Type[algorithms.AES],
-        int,
-        typing.Union[typing.Type[modes.CTR], typing.Type[modes.CBC]],
-        int,
-    ],
-] = {
-    b"aes256-ctr": (algorithms.AES, 32, modes.CTR, 16),
-    b"aes256-cbc": (algorithms.AES, 32, modes.CBC, 16),
+_SSH_CIPHERS: typing.Dict[bytes, _SSHCipher] = {
+    b"aes256-ctr": _SSHCipher(
+        alg=algorithms.AES,
+        key_len=32,
+        mode=modes.CTR,
+        block_len=16,
+        iv_len=16,
+        tag_len=None,
+        is_aead=False,
+    ),
+    b"aes256-cbc": _SSHCipher(
+        alg=algorithms.AES,
+        key_len=32,
+        mode=modes.CBC,
+        block_len=16,
+        iv_len=16,
+        tag_len=None,
+        is_aead=False,
+    ),
+    b"aes256-gcm@openssh.com": _SSHCipher(
+        alg=algorithms.AES,
+        key_len=32,
+        mode=modes.GCM,
+        block_len=16,
+        iv_len=12,
+        tag_len=16,
+        is_aead=True,
+    ),
 }
 
 # map local curve name to key type
@@ -156,14 +195,19 @@ def _init_cipher(
     password: typing.Optional[bytes],
     salt: bytes,
     rounds: int,
-) -> Cipher[typing.Union[modes.CBC, modes.CTR]]:
+) -> Cipher[typing.Union[modes.CBC, modes.CTR, modes.GCM]]:
     """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
 
-    algo, key_len, mode, iv_len = _SSH_CIPHERS[ciphername]
-    seed = _bcrypt_kdf(password, salt, key_len + iv_len, rounds, True)
-    return Cipher(algo(seed[:key_len]), mode(seed[key_len:]))
+    ciph = _SSH_CIPHERS[ciphername]
+    seed = _bcrypt_kdf(
+        password, salt, ciph.key_len + ciph.iv_len, rounds, True
+    )
+    return Cipher(
+        ciph.alg(seed[: ciph.key_len]),
+        ciph.mode(seed[ciph.key_len :]),
+    )
 
 
 def _get_u32(data: memoryview) -> typing.Tuple[int, memoryview]:
@@ -604,10 +648,6 @@ def load_ssh_private_key(
     pubfields, pubdata = kformat.get_public(pubdata)
     _check_empty(pubdata)
 
-    # load secret data
-    edata, data = _get_sshstr(data)
-    _check_empty(data)
-
     if (ciphername, kdfname) != (_NONE, _NONE):
         ciphername_bytes = ciphername.tobytes()
         if ciphername_bytes not in _SSH_CIPHERS:
@@ -616,14 +656,32 @@ def load_ssh_private_key(
             )
         if kdfname != _BCRYPT:
             raise UnsupportedAlgorithm(f"Unsupported KDF: {kdfname!r}")
-        blklen = _SSH_CIPHERS[ciphername_bytes][3]
+        blklen = _SSH_CIPHERS[ciphername_bytes].block_len
+        tag_len = _SSH_CIPHERS[ciphername_bytes].tag_len
+        # load secret data
+        edata, data = _get_sshstr(data)
+        # see https://bugzilla.mindrot.org/show_bug.cgi?id=3553 for
+        # information about how OpenSSH handles AEAD tags
+        if _SSH_CIPHERS[ciphername_bytes].is_aead:
+            tag = bytes(data)
+            if len(data) != tag_len:
+                raise ValueError("Corrupt data: invalid tag length for cipher")
+        else:
+            _check_empty(data)
         _check_block_size(edata, blklen)
         salt, kbuf = _get_sshstr(kdfoptions)
         rounds, kbuf = _get_u32(kbuf)
         _check_empty(kbuf)
         ciph = _init_cipher(ciphername_bytes, password, salt.tobytes(), rounds)
-        edata = memoryview(ciph.decryptor().update(edata))
+        dec = ciph.decryptor()
+        edata = memoryview(dec.update(edata))
+        if _SSH_CIPHERS[ciphername_bytes].is_aead:
+            assert isinstance(dec, AEADDecryptionContext)
+            _check_empty(dec.finalize_with_tag(tag))
     else:
+        # load secret data
+        edata, data = _get_sshstr(data)
+        _check_empty(data)
         blklen = 8
         _check_block_size(edata, blklen)
     ck1, edata = _get_u32(edata)
@@ -676,7 +734,7 @@ def _serialize_ssh_private_key(
     f_kdfoptions = _FragList()
     if password:
         ciphername = _DEFAULT_CIPHER
-        blklen = _SSH_CIPHERS[ciphername][3]
+        blklen = _SSH_CIPHERS[ciphername].block_len
         kdfname = _BCRYPT
         rounds = _DEFAULT_ROUNDS
         if (
