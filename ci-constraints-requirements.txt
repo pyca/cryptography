@@ -46,7 +46,7 @@ exceptiongroup==1.1.1
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
-filelock==3.10.6
+filelock==3.10.7
     # via
     #   tox
     #   virtualenv
