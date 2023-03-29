@@ -43,6 +43,9 @@ src_dir = os.path.join(base_dir, "src")
 # means that we need to add the src/ directory to the sys.path.
 sys.path.insert(0, src_dir)
 
+if hasattr(sys, "pypy_version_info") and sys.pypy_version_info < (7, 3, 10):
+    raise RuntimeError("cryptography is not compatible with PyPy3 < 7.3.10")
+
 try:
     # See pyproject.toml for most of the config metadata.
     setup(
