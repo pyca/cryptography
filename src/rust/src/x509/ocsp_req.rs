@@ -44,7 +44,7 @@ fn load_der_ocsp_request(
     })
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPRequest {
     raw: OwnedRawOCSPRequest,
 

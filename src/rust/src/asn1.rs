@@ -143,7 +143,7 @@ fn encode_dss_signature(
     Ok(pyo3::types::PyBytes::new(py, &result).to_object(py))
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
 struct TestCertificate {
     #[pyo3(get)]
     not_before_tag: u8,
