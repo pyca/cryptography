@@ -254,6 +254,23 @@ Weak ciphers
         :term:`bits` in length in increments of 8 bits.
     :type key: :term:`bytes-like`
 
+    .. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.utils import CryptographyDeprecationWarning
+        >>> import warnings
+        >>> warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
+        >>> import os
+        >>> key = b"secret"
+        >>> algorithm = algorithms.Blowfish(key)
+        >>> iv = os.urandom(8)
+        >>> cipher = Cipher(algorithm, modes.CBC(iv))
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        b'a secret message'
+
 .. class:: ARC4(key)
 
     ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
