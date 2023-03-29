@@ -14,7 +14,7 @@ case "${1}" in
         # Ignore some warnings for now since they're now automatically promoted
         # to errors. We can probably remove this when acme gets split into
         # its own repo
-        pytest -Wignore certbot/tests
+        pytest -Wignore certbot
         pytest acme
         ;;
     *)
