@@ -7,14 +7,14 @@ use std::cell::Cell;
 // An object pool that can contain a single object and will dynamically
 // allocate new objects to fulfill requests if the pool'd object is already in
 // use.
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust")]
 pub(crate) struct FixedPool {
     create_fn: pyo3::PyObject,
 
     value: Cell<Option<pyo3::PyObject>>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct PoolAcquisition {
     pool: pyo3::Py<FixedPool>,
 

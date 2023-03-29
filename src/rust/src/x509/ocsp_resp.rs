@@ -65,7 +65,7 @@ struct OwnedRawOCSPResponse {
     value: RawOCSPResponse<'this>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponse {
     raw: Arc<OwnedRawOCSPResponse>,
 
@@ -798,7 +798,7 @@ struct OwnedOCSPResponseIteratorData {
     value: asn1::SequenceOf<'this, SingleResponse<'this>>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponseIterator {
     contents: OwnedOCSPResponseIteratorData,
 }
@@ -830,7 +830,7 @@ struct OwnedSingleResponse {
     value: SingleResponse<'this>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPSingleResponse {
     raw: OwnedSingleResponse,
 }

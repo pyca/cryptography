@@ -79,7 +79,7 @@ struct OwnedRawCsr {
     value: RawCsr<'this>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
     raw: OwnedRawCsr,
     cached_extensions: Option<pyo3::PyObject>,

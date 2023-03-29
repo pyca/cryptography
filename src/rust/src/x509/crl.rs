@@ -66,7 +66,7 @@ struct OwnedRawCertificateRevocationList {
     revoked_certs: pyo3::once_cell::GILOnceCell<Vec<RawRevokedCertificate<'this>>>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateRevocationList {
     raw: Arc<OwnedRawCertificateRevocationList>,
 
@@ -415,7 +415,7 @@ struct OwnedCRLIteratorData {
     value: Option<asn1::SequenceOf<'this, RawRevokedCertificate<'this>>>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CRLIterator {
     contents: OwnedCRLIteratorData,
 }
@@ -517,7 +517,7 @@ struct OwnedRawRevokedCertificate {
     value: RawRevokedCertificate<'this>,
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct RevokedCertificate {
     raw: OwnedRawRevokedCertificate,
     cached_extensions: Option<pyo3::PyObject>,

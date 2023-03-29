@@ -78,7 +78,7 @@ impl OwnedRawCertificate {
     }
 }
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedRawCertificate,
     pub(crate) cached_extensions: Option<pyo3::PyObject>,
