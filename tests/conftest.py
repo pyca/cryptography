@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import contextlib
 
 import pytest
 
@@ -46,3 +47,21 @@ def backend(request):
     # Ensure the error stack is clear after the test
     errors = openssl_backend._consume_errors()
     assert not errors
+
+
+@pytest.fixture()
+def subtests():
+    # This is a miniature version of the pytest-subtests package, but
+    # optimized for lower overhead.
+    #
+    # When tests are skipped, these are not logged in the final pytest output.
+    yield SubTests()
+
+
+class SubTests:
+    @contextlib.contextmanager
+    def test(self):
+        try:
+            yield
+        except pytest.skip.Exception:
+            pass
