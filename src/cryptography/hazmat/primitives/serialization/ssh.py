@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import binascii
 import enum
@@ -100,7 +101,7 @@ _ECDSA_KEY_TYPE = {
 
 
 def _get_ssh_key_type(
-    key: typing.Union["SSHPrivateKeyTypes", "SSHPublicKeyTypes"]
+    key: typing.Union[SSHPrivateKeyTypes, SSHPublicKeyTypes]
 ) -> bytes:
     if isinstance(key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(key.public_key())
@@ -229,7 +230,7 @@ class _FragList:
         """Big-endian uint64"""
         self.flist.append(val.to_bytes(length=8, byteorder="big"))
 
-    def put_sshstr(self, val: typing.Union[bytes, "_FragList"]) -> None:
+    def put_sshstr(self, val: typing.Union[bytes, _FragList]) -> None:
         """Bytes prefixed with u32 length"""
         if isinstance(val, (bytes, memoryview, bytearray)):
             self.put_u32(len(val))
@@ -1084,7 +1085,7 @@ class SSHCertificateBuilder:
 
     def public_key(
         self, public_key: SSHCertPublicKeyTypes
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if not isinstance(
             public_key,
             (
@@ -1110,7 +1111,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def serial(self, serial: int) -> "SSHCertificateBuilder":
+    def serial(self, serial: int) -> SSHCertificateBuilder:
         if not isinstance(serial, int):
             raise TypeError("serial must be an integer")
         if not 0 <= serial < 2**64:
@@ -1131,7 +1132,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def type(self, type: SSHCertificateType) -> "SSHCertificateBuilder":
+    def type(self, type: SSHCertificateType) -> SSHCertificateBuilder:
         if not isinstance(type, SSHCertificateType):
             raise TypeError("type must be an SSHCertificateType")
         if self._type is not None:
@@ -1150,7 +1151,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def key_id(self, key_id: bytes) -> "SSHCertificateBuilder":
+    def key_id(self, key_id: bytes) -> SSHCertificateBuilder:
         if not isinstance(key_id, bytes):
             raise TypeError("key_id must be bytes")
         if self._key_id is not None:
@@ -1171,7 +1172,7 @@ class SSHCertificateBuilder:
 
     def valid_principals(
         self, valid_principals: typing.List[bytes]
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if self._valid_for_all_principals:
             raise ValueError(
                 "Principals can't be set because the cert is valid "
@@ -1229,7 +1230,7 @@ class SSHCertificateBuilder:
 
     def valid_before(
         self, valid_before: typing.Union[int, float]
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if not isinstance(valid_before, (int, float)):
             raise TypeError("valid_before must be an int or float")
         valid_before = int(valid_before)
@@ -1253,7 +1254,7 @@ class SSHCertificateBuilder:
 
     def valid_after(
         self, valid_after: typing.Union[int, float]
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if not isinstance(valid_after, (int, float)):
             raise TypeError("valid_after must be an int or float")
         valid_after = int(valid_after)
@@ -1277,7 +1278,7 @@ class SSHCertificateBuilder:
 
     def add_critical_option(
         self, name: bytes, value: bytes
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if not isinstance(name, bytes) or not isinstance(value, bytes):
             raise TypeError("name and value must be bytes")
         # This is O(n**2)
@@ -1299,7 +1300,7 @@ class SSHCertificateBuilder:
 
     def add_extension(
         self, name: bytes, value: bytes
-    ) -> "SSHCertificateBuilder":
+    ) -> SSHCertificateBuilder:
         if not isinstance(name, bytes) or not isinstance(value, bytes):
             raise TypeError("name and value must be bytes")
         # This is O(n**2)

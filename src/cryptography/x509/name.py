@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import binascii
 import re
 import sys
@@ -300,7 +302,7 @@ class Name:
         cls,
         data: str,
         attr_name_overrides: typing.Optional[_NameOidMap] = None,
-    ) -> "Name":
+    ) -> Name:
         return _RFC4514NameParser(data, attr_name_overrides or {}).parse()
 
     def rfc4514_string(

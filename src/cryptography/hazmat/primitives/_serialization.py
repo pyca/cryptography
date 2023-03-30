@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import abc
 import typing
 
@@ -33,7 +35,7 @@ class PrivateFormat(utils.Enum):
     OpenSSH = "OpenSSH"
     PKCS12 = "PKCS12"
 
-    def encryption_builder(self) -> "KeySerializationEncryptionBuilder":
+    def encryption_builder(self) -> KeySerializationEncryptionBuilder:
         if self not in (PrivateFormat.OpenSSH, PrivateFormat.PKCS12):
             raise ValueError(
                 "encryption_builder only supported with PrivateFormat.OpenSSH"
@@ -86,7 +88,7 @@ class KeySerializationEncryptionBuilder:
         self._hmac_hash = _hmac_hash
         self._key_cert_algorithm = _key_cert_algorithm
 
-    def kdf_rounds(self, rounds: int) -> "KeySerializationEncryptionBuilder":
+    def kdf_rounds(self, rounds: int) -> KeySerializationEncryptionBuilder:
         if self._kdf_rounds is not None:
             raise ValueError("kdf_rounds already set")
 
@@ -105,7 +107,7 @@ class KeySerializationEncryptionBuilder:
 
     def hmac_hash(
         self, algorithm: HashAlgorithm
-    ) -> "KeySerializationEncryptionBuilder":
+    ) -> KeySerializationEncryptionBuilder:
         if self._format is not PrivateFormat.PKCS12:
             raise TypeError(
                 "hmac_hash only supported with PrivateFormat.PKCS12"
@@ -122,7 +124,7 @@ class KeySerializationEncryptionBuilder:
 
     def key_cert_algorithm(
         self, algorithm: PBES
-    ) -> "KeySerializationEncryptionBuilder":
+    ) -> KeySerializationEncryptionBuilder:
         if self._format is not PrivateFormat.PKCS12:
             raise TypeError(
                 "key_cert_algorithm only supported with "

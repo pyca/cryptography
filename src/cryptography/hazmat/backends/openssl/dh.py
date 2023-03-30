@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
@@ -12,7 +14,7 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-def _dh_params_dup(dh_cdata, backend: "Backend"):
+def _dh_params_dup(dh_cdata, backend: Backend):
     lib = backend._lib
     ffi = backend._ffi
 
@@ -30,13 +32,13 @@ def _dh_params_dup(dh_cdata, backend: "Backend"):
     return param_cdata
 
 
-def _dh_cdata_to_parameters(dh_cdata, backend: "Backend") -> "_DHParameters":
+def _dh_cdata_to_parameters(dh_cdata, backend: Backend) -> _DHParameters:
     param_cdata = _dh_params_dup(dh_cdata, backend)
     return _DHParameters(backend, param_cdata)
 
 
 class _DHParameters(dh.DHParameters):
-    def __init__(self, backend: "Backend", dh_cdata):
+    def __init__(self, backend: Backend, dh_cdata):
         self._backend = backend
         self._dh_cdata = dh_cdata
 
@@ -112,7 +114,7 @@ def _get_dh_num_bits(backend, dh_cdata) -> int:
 
 
 class _DHPrivateKey(dh.DHPrivateKey):
-    def __init__(self, backend: "Backend", dh_cdata, evp_pkey):
+    def __init__(self, backend: Backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
         self._evp_pkey = evp_pkey
@@ -249,7 +251,7 @@ class _DHPrivateKey(dh.DHPrivateKey):
 
 
 class _DHPublicKey(dh.DHPublicKey):
-    def __init__(self, backend: "Backend", dh_cdata, evp_pkey):
+    def __init__(self, backend: Backend, dh_cdata, evp_pkey):
         self._backend = backend
         self._dh_cdata = dh_cdata
         self._evp_pkey = evp_pkey

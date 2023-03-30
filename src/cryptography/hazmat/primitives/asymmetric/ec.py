@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import typing
@@ -64,7 +65,7 @@ class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
 class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def exchange(
-        self, algorithm: "ECDH", peer_public_key: "EllipticCurvePublicKey"
+        self, algorithm: ECDH, peer_public_key: EllipticCurvePublicKey
     ) -> bytes:
         """
         Performs a key exchange operation using the provided algorithm with the
@@ -72,7 +73,7 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> "EllipticCurvePublicKey":
+    def public_key(self) -> EllipticCurvePublicKey:
         """
         The EllipticCurvePublicKey for this private key.
         """
@@ -102,7 +103,7 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def private_numbers(self) -> "EllipticCurvePrivateNumbers":
+    def private_numbers(self) -> EllipticCurvePrivateNumbers:
         """
         Returns an EllipticCurvePrivateNumbers.
         """
@@ -138,7 +139,7 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_numbers(self) -> "EllipticCurvePublicNumbers":
+    def public_numbers(self) -> EllipticCurvePublicNumbers:
         """
         Returns an EllipticCurvePublicNumbers.
         """
@@ -167,7 +168,7 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     @classmethod
     def from_encoded_point(
         cls, curve: EllipticCurve, data: bytes
-    ) -> "EllipticCurvePublicKey":
+    ) -> EllipticCurvePublicKey:
         utils._check_bytes("data", data)
 
         if not isinstance(curve, EllipticCurve):

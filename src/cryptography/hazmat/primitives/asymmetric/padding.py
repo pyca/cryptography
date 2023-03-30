@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import typing
@@ -38,7 +39,7 @@ class PSS(AsymmetricPadding):
 
     def __init__(
         self,
-        mgf: "MGF",
+        mgf: MGF,
         salt_length: typing.Union[int, _MaxLength, _Auto, _DigestLength],
     ) -> None:
         self._mgf = mgf
@@ -62,7 +63,7 @@ class OAEP(AsymmetricPadding):
 
     def __init__(
         self,
-        mgf: "MGF",
+        mgf: MGF,
         algorithm: hashes.HashAlgorithm,
         label: typing.Optional[bytes],
     ):
@@ -89,7 +90,7 @@ class MGF1(MGF):
 
 
 def calculate_max_pss_salt_length(
-    key: typing.Union["rsa.RSAPrivateKey", "rsa.RSAPublicKey"],
+    key: typing.Union[rsa.RSAPrivateKey, rsa.RSAPublicKey],
     hash_algorithm: hashes.HashAlgorithm,
 ) -> int:
     if not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):

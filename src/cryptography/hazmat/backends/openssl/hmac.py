@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import (
@@ -18,7 +20,7 @@ if typing.TYPE_CHECKING:
 class _HMACContext(hashes.HashContext):
     def __init__(
         self,
-        backend: "Backend",
+        backend: Backend,
         key: bytes,
         algorithm: hashes.HashAlgorithm,
         ctx=None,
@@ -51,7 +53,7 @@ class _HMACContext(hashes.HashContext):
     def algorithm(self) -> hashes.HashAlgorithm:
         return self._algorithm
 
-    def copy(self) -> "_HMACContext":
+    def copy(self) -> _HMACContext:
         copied_ctx = self._backend._lib.HMAC_CTX_new()
         self._backend.openssl_assert(copied_ctx != self._backend._ffi.NULL)
         copied_ctx = self._backend._ffi.gc(

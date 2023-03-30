@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import typing
@@ -12,13 +13,13 @@ from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 
 class DSAParameters(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def generate_private_key(self) -> "DSAPrivateKey":
+    def generate_private_key(self) -> DSAPrivateKey:
         """
         Generates and returns a DSAPrivateKey.
         """
 
     @abc.abstractmethod
-    def parameter_numbers(self) -> "DSAParameterNumbers":
+    def parameter_numbers(self) -> DSAParameterNumbers:
         """
         Returns a DSAParameterNumbers.
         """
@@ -36,7 +37,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> "DSAPublicKey":
+    def public_key(self) -> DSAPublicKey:
         """
         The DSAPublicKey associated with this private key.
         """
@@ -58,7 +59,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def private_numbers(self) -> "DSAPrivateNumbers":
+    def private_numbers(self) -> DSAPrivateNumbers:
         """
         Returns a DSAPrivateNumbers.
         """
@@ -93,7 +94,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_numbers(self) -> "DSAPublicNumbers":
+    def public_numbers(self) -> DSAPublicNumbers:
         """
         Returns a DSAPublicNumbers.
         """

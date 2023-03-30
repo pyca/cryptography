@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import abc
 import typing
 
@@ -54,7 +56,7 @@ class HashContext(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def copy(self) -> "HashContext":
+    def copy(self) -> HashContext:
         """
         Return a HashContext that is a copy of the current context.
         """
@@ -73,7 +75,7 @@ class Hash(HashContext):
         self,
         algorithm: HashAlgorithm,
         backend: typing.Any = None,
-        ctx: typing.Optional["HashContext"] = None,
+        ctx: typing.Optional[HashContext] = None,
     ) -> None:
         if not isinstance(algorithm, HashAlgorithm):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
@@ -98,7 +100,7 @@ class Hash(HashContext):
         utils._check_byteslike("data", data)
         self._ctx.update(data)
 
-    def copy(self) -> "Hash":
+    def copy(self) -> Hash:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return Hash(self.algorithm, ctx=self._ctx.copy())

@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import typing
 
@@ -18,7 +19,7 @@ if typing.TYPE_CHECKING:
 
 
 def _dsa_sig_sign(
-    backend: "Backend", private_key: "_DSAPrivateKey", data: bytes
+    backend: Backend, private_key: _DSAPrivateKey, data: bytes
 ) -> bytes:
     sig_buf_len = backend._lib.DSA_size(private_key._dsa_cdata)
     sig_buf = backend._ffi.new("unsigned char[]", sig_buf_len)
@@ -36,8 +37,8 @@ def _dsa_sig_sign(
 
 
 def _dsa_sig_verify(
-    backend: "Backend",
-    public_key: "_DSAPublicKey",
+    backend: Backend,
+    public_key: _DSAPublicKey,
     signature: bytes,
     data: bytes,
 ) -> None:
@@ -53,7 +54,7 @@ def _dsa_sig_verify(
 
 
 class _DSAParameters(dsa.DSAParameters):
-    def __init__(self, backend: "Backend", dsa_cdata):
+    def __init__(self, backend: Backend, dsa_cdata):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
 
@@ -78,7 +79,7 @@ class _DSAParameters(dsa.DSAParameters):
 class _DSAPrivateKey(dsa.DSAPrivateKey):
     _key_size: int
 
-    def __init__(self, backend: "Backend", dsa_cdata, evp_pkey):
+    def __init__(self, backend: Backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
         self._evp_pkey = evp_pkey
@@ -173,7 +174,7 @@ class _DSAPrivateKey(dsa.DSAPrivateKey):
 class _DSAPublicKey(dsa.DSAPublicKey):
     _key_size: int
 
-    def __init__(self, backend: "Backend", dsa_cdata, evp_pkey):
+    def __init__(self, backend: Backend, dsa_cdata, evp_pkey):
         self._backend = backend
         self._dsa_cdata = dsa_cdata
         self._evp_pkey = evp_pkey

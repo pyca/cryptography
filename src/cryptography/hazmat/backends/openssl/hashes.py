@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
@@ -13,7 +15,7 @@ if typing.TYPE_CHECKING:
 
 class _HashContext(hashes.HashContext):
     def __init__(
-        self, backend: "Backend", algorithm: hashes.HashAlgorithm, ctx=None
+        self, backend: Backend, algorithm: hashes.HashAlgorithm, ctx=None
     ) -> None:
         self._algorithm = algorithm
 
@@ -43,7 +45,7 @@ class _HashContext(hashes.HashContext):
     def algorithm(self) -> hashes.HashAlgorithm:
         return self._algorithm
 
-    def copy(self) -> "_HashContext":
+    def copy(self) -> _HashContext:
         copied_ctx = self._backend._lib.EVP_MD_CTX_new()
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.EVP_MD_CTX_free

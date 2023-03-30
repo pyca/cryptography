@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import typing
 
@@ -36,7 +37,7 @@ def load_pem_public_key(
 
 def load_pem_parameters(
     data: bytes, backend: typing.Any = None
-) -> "dh.DHParameters":
+) -> dh.DHParameters:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
     return ossl.load_pem_parameters(data)
@@ -66,7 +67,7 @@ def load_der_public_key(
 
 def load_der_parameters(
     data: bytes, backend: typing.Any = None
-) -> "dh.DHParameters":
+) -> dh.DHParameters:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 
     return ossl.load_der_parameters(data)

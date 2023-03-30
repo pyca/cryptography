@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import InvalidTag
@@ -24,7 +26,7 @@ _ENCRYPT = 1
 _DECRYPT = 0
 
 
-def _aead_cipher_name(cipher: "_AEADTypes") -> bytes:
+def _aead_cipher_name(cipher: _AEADTypes) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
@@ -46,7 +48,7 @@ def _aead_cipher_name(cipher: "_AEADTypes") -> bytes:
         return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
 
 
-def _evp_cipher(cipher_name: bytes, backend: "Backend"):
+def _evp_cipher(cipher_name: bytes, backend: Backend):
     if cipher_name.endswith(b"-siv"):
         evp_cipher = backend._lib.EVP_CIPHER_fetch(
             backend._ffi.NULL,
@@ -63,8 +65,8 @@ def _evp_cipher(cipher_name: bytes, backend: "Backend"):
 
 
 def _aead_create_ctx(
-    backend: "Backend",
-    cipher: "_AEADTypes",
+    backend: Backend,
+    cipher: _AEADTypes,
     key: bytes,
 ):
     ctx = backend._lib.EVP_CIPHER_CTX_new()
@@ -86,7 +88,7 @@ def _aead_create_ctx(
 
 
 def _aead_setup(
-    backend: "Backend",
+    backend: Backend,
     cipher_name: bytes,
     key: bytes,
     nonce: bytes,
@@ -158,7 +160,7 @@ def _set_nonce_operation(backend, ctx, nonce: bytes, operation: int) -> None:
     backend.openssl_assert(res != 0)
 
 
-def _set_length(backend: "Backend", ctx, data_len: int) -> None:
+def _set_length(backend: Backend, ctx, data_len: int) -> None:
     intptr = backend._ffi.new("int *")
     res = backend._lib.EVP_CipherUpdate(
         ctx, backend._ffi.NULL, intptr, backend._ffi.NULL, data_len
@@ -166,7 +168,7 @@ def _set_length(backend: "Backend", ctx, data_len: int) -> None:
     backend.openssl_assert(res != 0)
 
 
-def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
+def _process_aad(backend: Backend, ctx, associated_data: bytes) -> None:
     outlen = backend._ffi.new("int *")
     a_data_ptr = backend._ffi.from_buffer(associated_data)
     res = backend._lib.EVP_CipherUpdate(
@@ -175,7 +177,7 @@ def _process_aad(backend: "Backend", ctx, associated_data: bytes) -> None:
     backend.openssl_assert(res != 0)
 
 
-def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
+def _process_data(backend: Backend, ctx, data: bytes) -> bytes:
     outlen = backend._ffi.new("int *")
     buf = backend._ffi.new("unsigned char[]", len(data))
     data_ptr = backend._ffi.from_buffer(data)
@@ -188,8 +190,8 @@ def _process_data(backend: "Backend", ctx, data: bytes) -> bytes:
 
 
 def _encrypt(
-    backend: "Backend",
-    cipher: "_AEADTypes",
+    backend: Backend,
+    cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
     associated_data: typing.List[bytes],
@@ -246,8 +248,8 @@ def _encrypt(
 
 
 def _decrypt(
-    backend: "Backend",
-    cipher: "_AEADTypes",
+    backend: Backend,
+    cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
     associated_data: typing.List[bytes],

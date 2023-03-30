@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import typing
 
@@ -56,7 +57,7 @@ class InvalidSignature(Exception):
 
 class InternalError(Exception):
     def __init__(
-        self, msg: str, err_code: typing.List["rust_openssl.OpenSSLError"]
+        self, msg: str, err_code: typing.List[rust_openssl.OpenSSLError]
     ) -> None:
         super().__init__(msg)
         self.err_code = err_code

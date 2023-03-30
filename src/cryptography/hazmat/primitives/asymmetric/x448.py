@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 
@@ -11,7 +12,7 @@ from cryptography.hazmat.primitives import _serialization
 
 class X448PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data: bytes) -> "X448PublicKey":
+    def from_public_bytes(cls, data: bytes) -> X448PublicKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():
@@ -44,7 +45,7 @@ class X448PublicKey(metaclass=abc.ABCMeta):
 
 class X448PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls) -> "X448PrivateKey":
+    def generate(cls) -> X448PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():
@@ -55,7 +56,7 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
         return backend.x448_generate_key()
 
     @classmethod
-    def from_private_bytes(cls, data: bytes) -> "X448PrivateKey":
+    def from_private_bytes(cls, data: bytes) -> X448PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x448_supported():

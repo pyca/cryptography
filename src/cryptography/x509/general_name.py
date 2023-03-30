@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import ipaddress
@@ -59,7 +60,7 @@ class RFC822Name(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(cls, value: str) -> "RFC822Name":
+    def _init_without_validation(cls, value: str) -> RFC822Name:
         instance = cls.__new__(cls)
         instance._value = value
         return instance
@@ -98,7 +99,7 @@ class DNSName(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(cls, value: str) -> "DNSName":
+    def _init_without_validation(cls, value: str) -> DNSName:
         instance = cls.__new__(cls)
         instance._value = value
         return instance
@@ -137,9 +138,7 @@ class UniformResourceIdentifier(GeneralName):
         return self._value
 
     @classmethod
-    def _init_without_validation(
-        cls, value: str
-    ) -> "UniformResourceIdentifier":
+    def _init_without_validation(cls, value: str) -> UniformResourceIdentifier:
         instance = cls.__new__(cls)
         instance._value = value
         return instance

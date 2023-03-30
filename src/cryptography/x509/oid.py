@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 from cryptography.hazmat._oid import (
     AttributeOID,
     AuthorityInformationAccessOID,
