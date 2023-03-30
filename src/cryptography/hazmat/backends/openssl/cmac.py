@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import (
@@ -20,8 +22,8 @@ if typing.TYPE_CHECKING:
 class _CMACContext:
     def __init__(
         self,
-        backend: "Backend",
-        algorithm: "ciphers.BlockCipherAlgorithm",
+        backend: Backend,
+        algorithm: ciphers.BlockCipherAlgorithm,
         ctx=None,
     ) -> None:
         if not backend.cmac_algorithm_supported(algorithm):
@@ -72,7 +74,7 @@ class _CMACContext:
 
         return self._backend._ffi.buffer(buf)[:]
 
-    def copy(self) -> "_CMACContext":
+    def copy(self) -> _CMACContext:
         copied_ctx = self._backend._lib.CMAC_CTX_new()
         copied_ctx = self._backend._ffi.gc(
             copied_ctx, self._backend._lib.CMAC_CTX_free

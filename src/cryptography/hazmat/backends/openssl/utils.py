@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.hazmat.primitives import hashes
@@ -11,7 +13,7 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-def _evp_pkey_derive(backend: "Backend", evp_pkey, peer_public_key) -> bytes:
+def _evp_pkey_derive(backend: Backend, evp_pkey, peer_public_key) -> bytes:
     ctx = backend._lib.EVP_PKEY_CTX_new(evp_pkey, backend._ffi.NULL)
     backend.openssl_assert(ctx != backend._ffi.NULL)
     ctx = backend._ffi.gc(ctx, backend._lib.EVP_PKEY_CTX_free)

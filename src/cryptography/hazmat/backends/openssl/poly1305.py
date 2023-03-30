@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.exceptions import InvalidSignature
@@ -16,7 +18,7 @@ if typing.TYPE_CHECKING:
 
 
 class _Poly1305Context:
-    def __init__(self, backend: "Backend", key: bytes) -> None:
+    def __init__(self, backend: Backend, key: bytes) -> None:
         self._backend = backend
 
         key_ptr = self._backend._ffi.from_buffer(key)

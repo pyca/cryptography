@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import datetime
@@ -111,13 +112,13 @@ class ExtensionType(metaclass=abc.ABCMeta):
 
 class Extensions:
     def __init__(
-        self, extensions: typing.Iterable["Extension[ExtensionType]"]
+        self, extensions: typing.Iterable[Extension[ExtensionType]]
     ) -> None:
         self._extensions = list(extensions)
 
     def get_extension_for_oid(
         self, oid: ObjectIdentifier
-    ) -> "Extension[ExtensionType]":
+    ) -> Extension[ExtensionType]:
         for ext in self:
             if ext.oid == oid:
                 return ext
@@ -126,7 +127,7 @@ class Extensions:
 
     def get_extension_for_class(
         self, extclass: typing.Type[ExtensionTypeVar]
-    ) -> "Extension[ExtensionTypeVar]":
+    ) -> Extension[ExtensionTypeVar]:
         if extclass is UnrecognizedExtension:
             raise TypeError(
                 "UnrecognizedExtension can't be used with "
@@ -221,7 +222,7 @@ class AuthorityKeyIdentifier(ExtensionType):
     @classmethod
     def from_issuer_public_key(
         cls, public_key: CertificateIssuerPublicKeyTypes
-    ) -> "AuthorityKeyIdentifier":
+    ) -> AuthorityKeyIdentifier:
         digest = _key_identifier_from_public_key(public_key)
         return cls(
             key_identifier=digest,
@@ -231,8 +232,8 @@ class AuthorityKeyIdentifier(ExtensionType):
 
     @classmethod
     def from_issuer_subject_key_identifier(
-        cls, ski: "SubjectKeyIdentifier"
-    ) -> "AuthorityKeyIdentifier":
+        cls, ski: SubjectKeyIdentifier
+    ) -> AuthorityKeyIdentifier:
         return cls(
             key_identifier=ski.digest,
             authority_cert_issuer=None,
@@ -294,7 +295,7 @@ class SubjectKeyIdentifier(ExtensionType):
     @classmethod
     def from_public_key(
         cls, public_key: CertificatePublicKeyTypes
-    ) -> "SubjectKeyIdentifier":
+    ) -> SubjectKeyIdentifier:
         return cls(_key_identifier_from_public_key(public_key))
 
     @property
@@ -325,7 +326,7 @@ class AuthorityInformationAccess(ExtensionType):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
     def __init__(
-        self, descriptions: typing.Iterable["AccessDescription"]
+        self, descriptions: typing.Iterable[AccessDescription]
     ) -> None:
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
@@ -358,7 +359,7 @@ class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
     def __init__(
-        self, descriptions: typing.Iterable["AccessDescription"]
+        self, descriptions: typing.Iterable[AccessDescription]
     ) -> None:
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
@@ -506,7 +507,7 @@ class CRLDistributionPoints(ExtensionType):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(
-        self, distribution_points: typing.Iterable["DistributionPoint"]
+        self, distribution_points: typing.Iterable[DistributionPoint]
     ) -> None:
         distribution_points = list(distribution_points)
         if not all(
@@ -543,7 +544,7 @@ class FreshestCRL(ExtensionType):
     oid = ExtensionOID.FRESHEST_CRL
 
     def __init__(
-        self, distribution_points: typing.Iterable["DistributionPoint"]
+        self, distribution_points: typing.Iterable[DistributionPoint]
     ) -> None:
         distribution_points = list(distribution_points)
         if not all(
@@ -581,7 +582,7 @@ class DistributionPoint:
         self,
         full_name: typing.Optional[typing.Iterable[GeneralName]],
         relative_name: typing.Optional[RelativeDistinguishedName],
-        reasons: typing.Optional[typing.FrozenSet["ReasonFlags"]],
+        reasons: typing.Optional[typing.FrozenSet[ReasonFlags]],
         crl_issuer: typing.Optional[typing.Iterable[GeneralName]],
     ) -> None:
         if full_name and relative_name:
@@ -679,7 +680,7 @@ class DistributionPoint:
         return self._relative_name
 
     @property
-    def reasons(self) -> typing.Optional[typing.FrozenSet["ReasonFlags"]]:
+    def reasons(self) -> typing.Optional[typing.FrozenSet[ReasonFlags]]:
         return self._reasons
 
     @property
@@ -803,7 +804,7 @@ class PolicyConstraints(ExtensionType):
 class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
-    def __init__(self, policies: typing.Iterable["PolicyInformation"]) -> None:
+    def __init__(self, policies: typing.Iterable[PolicyInformation]) -> None:
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
@@ -836,7 +837,7 @@ class PolicyInformation:
         self,
         policy_identifier: ObjectIdentifier,
         policy_qualifiers: typing.Optional[
-            typing.Iterable[typing.Union[str, "UserNotice"]]
+            typing.Iterable[typing.Union[str, UserNotice]]
         ],
     ) -> None:
         if not isinstance(policy_identifier, ObjectIdentifier):
@@ -874,7 +875,7 @@ class PolicyInformation:
     def __hash__(self) -> int:
         if self.policy_qualifiers is not None:
             pq: typing.Optional[
-                typing.Tuple[typing.Union[str, "UserNotice"], ...]
+                typing.Tuple[typing.Union[str, UserNotice], ...]
             ] = tuple(self.policy_qualifiers)
         else:
             pq = None
@@ -888,14 +889,14 @@ class PolicyInformation:
     @property
     def policy_qualifiers(
         self,
-    ) -> typing.Optional[typing.List[typing.Union[str, "UserNotice"]]]:
+    ) -> typing.Optional[typing.List[typing.Union[str, UserNotice]]]:
         return self._policy_qualifiers
 
 
 class UserNotice:
     def __init__(
         self,
-        notice_reference: typing.Optional["NoticeReference"],
+        notice_reference: typing.Optional[NoticeReference],
         explicit_text: typing.Optional[str],
     ) -> None:
         if notice_reference and not isinstance(
@@ -927,7 +928,7 @@ class UserNotice:
         return hash((self.notice_reference, self.explicit_text))
 
     @property
-    def notice_reference(self) -> typing.Optional["NoticeReference"]:
+    def notice_reference(self) -> typing.Optional[NoticeReference]:
         return self._notice_reference
 
     @property
@@ -1046,7 +1047,7 @@ class PrecertPoison(ExtensionType):
 class TLSFeature(ExtensionType):
     oid = ExtensionOID.TLS_FEATURE
 
-    def __init__(self, features: typing.Iterable["TLSFeatureType"]) -> None:
+    def __init__(self, features: typing.Iterable[TLSFeatureType]) -> None:
         features = list(features)
         if (
             not all(isinstance(x, TLSFeatureType) for x in features)

@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography import exceptions
@@ -19,7 +21,7 @@ _ED448_SIG_SIZE = 114
 
 
 class _Ed448PublicKey(Ed448PublicKey):
-    def __init__(self, backend: "Backend", evp_pkey):
+    def __init__(self, backend: Backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
@@ -79,7 +81,7 @@ class _Ed448PublicKey(Ed448PublicKey):
 
 
 class _Ed448PrivateKey(Ed448PrivateKey):
-    def __init__(self, backend: "Backend", evp_pkey):
+    def __init__(self, backend: Backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 

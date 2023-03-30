@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import datetime
@@ -279,7 +280,7 @@ class Certificate(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify_directly_issued_by(self, issuer: "Certificate") -> None:
+    def verify_directly_issued_by(self, issuer: Certificate) -> None:
         """
         This method verifies that certificate issuer name matches the
         issuer subject name and that the certificate is signed by the
@@ -627,7 +628,7 @@ class CertificateSigningRequestBuilder:
         self._extensions = extensions
         self._attributes = attributes
 
-    def subject_name(self, name: Name) -> "CertificateSigningRequestBuilder":
+    def subject_name(self, name: Name) -> CertificateSigningRequestBuilder:
         """
         Sets the certificate requestor's distinguished name.
         """
@@ -641,7 +642,7 @@ class CertificateSigningRequestBuilder:
 
     def add_extension(
         self, extval: ExtensionType, critical: bool
-    ) -> "CertificateSigningRequestBuilder":
+    ) -> CertificateSigningRequestBuilder:
         """
         Adds an X.509 extension to the certificate request.
         """
@@ -663,7 +664,7 @@ class CertificateSigningRequestBuilder:
         value: bytes,
         *,
         _tag: typing.Optional[_ASN1Type] = None,
-    ) -> "CertificateSigningRequestBuilder":
+    ) -> CertificateSigningRequestBuilder:
         """
         Adds an X.509 attribute with an OID and associated value.
         """
@@ -725,7 +726,7 @@ class CertificateBuilder:
         self._not_valid_after = not_valid_after
         self._extensions = extensions
 
-    def issuer_name(self, name: Name) -> "CertificateBuilder":
+    def issuer_name(self, name: Name) -> CertificateBuilder:
         """
         Sets the CA's distinguished name.
         """
@@ -743,7 +744,7 @@ class CertificateBuilder:
             self._extensions,
         )
 
-    def subject_name(self, name: Name) -> "CertificateBuilder":
+    def subject_name(self, name: Name) -> CertificateBuilder:
         """
         Sets the requestor's distinguished name.
         """
@@ -764,7 +765,7 @@ class CertificateBuilder:
     def public_key(
         self,
         key: CertificatePublicKeyTypes,
-    ) -> "CertificateBuilder":
+    ) -> CertificateBuilder:
         """
         Sets the requestor's public key (as found in the signing request).
         """
@@ -798,7 +799,7 @@ class CertificateBuilder:
             self._extensions,
         )
 
-    def serial_number(self, number: int) -> "CertificateBuilder":
+    def serial_number(self, number: int) -> CertificateBuilder:
         """
         Sets the certificate serial number.
         """
@@ -825,9 +826,7 @@ class CertificateBuilder:
             self._extensions,
         )
 
-    def not_valid_before(
-        self, time: datetime.datetime
-    ) -> "CertificateBuilder":
+    def not_valid_before(self, time: datetime.datetime) -> CertificateBuilder:
         """
         Sets the certificate activation time.
         """
@@ -856,7 +855,7 @@ class CertificateBuilder:
             self._extensions,
         )
 
-    def not_valid_after(self, time: datetime.datetime) -> "CertificateBuilder":
+    def not_valid_after(self, time: datetime.datetime) -> CertificateBuilder:
         """
         Sets the certificate expiration time.
         """
@@ -890,7 +889,7 @@ class CertificateBuilder:
 
     def add_extension(
         self, extval: ExtensionType, critical: bool
-    ) -> "CertificateBuilder":
+    ) -> CertificateBuilder:
         """
         Adds an X.509 extension to the certificate.
         """
@@ -960,7 +959,7 @@ class CertificateRevocationListBuilder:
 
     def issuer_name(
         self, issuer_name: Name
-    ) -> "CertificateRevocationListBuilder":
+    ) -> CertificateRevocationListBuilder:
         if not isinstance(issuer_name, Name):
             raise TypeError("Expecting x509.Name object.")
         if self._issuer_name is not None:
@@ -975,7 +974,7 @@ class CertificateRevocationListBuilder:
 
     def last_update(
         self, last_update: datetime.datetime
-    ) -> "CertificateRevocationListBuilder":
+    ) -> CertificateRevocationListBuilder:
         if not isinstance(last_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._last_update is not None:
@@ -999,7 +998,7 @@ class CertificateRevocationListBuilder:
 
     def next_update(
         self, next_update: datetime.datetime
-    ) -> "CertificateRevocationListBuilder":
+    ) -> CertificateRevocationListBuilder:
         if not isinstance(next_update, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._next_update is not None:
@@ -1023,7 +1022,7 @@ class CertificateRevocationListBuilder:
 
     def add_extension(
         self, extval: ExtensionType, critical: bool
-    ) -> "CertificateRevocationListBuilder":
+    ) -> CertificateRevocationListBuilder:
         """
         Adds an X.509 extension to the certificate revocation list.
         """
@@ -1042,7 +1041,7 @@ class CertificateRevocationListBuilder:
 
     def add_revoked_certificate(
         self, revoked_certificate: RevokedCertificate
-    ) -> "CertificateRevocationListBuilder":
+    ) -> CertificateRevocationListBuilder:
         """
         Adds a revoked certificate to the CRL.
         """
@@ -1086,7 +1085,7 @@ class RevokedCertificateBuilder:
         self._revocation_date = revocation_date
         self._extensions = extensions
 
-    def serial_number(self, number: int) -> "RevokedCertificateBuilder":
+    def serial_number(self, number: int) -> RevokedCertificateBuilder:
         if not isinstance(number, int):
             raise TypeError("Serial number must be of integral type.")
         if self._serial_number is not None:
@@ -1106,7 +1105,7 @@ class RevokedCertificateBuilder:
 
     def revocation_date(
         self, time: datetime.datetime
-    ) -> "RevokedCertificateBuilder":
+    ) -> RevokedCertificateBuilder:
         if not isinstance(time, datetime.datetime):
             raise TypeError("Expecting datetime object.")
         if self._revocation_date is not None:
@@ -1122,7 +1121,7 @@ class RevokedCertificateBuilder:
 
     def add_extension(
         self, extval: ExtensionType, critical: bool
-    ) -> "RevokedCertificateBuilder":
+    ) -> RevokedCertificateBuilder:
         if not isinstance(extval, ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 

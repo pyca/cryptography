@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import datetime
@@ -423,7 +424,7 @@ class OCSPRequestBuilder:
         cert: x509.Certificate,
         issuer: x509.Certificate,
         algorithm: hashes.HashAlgorithm,
-    ) -> "OCSPRequestBuilder":
+    ) -> OCSPRequestBuilder:
         if self._request is not None or self._request_hash is not None:
             raise ValueError("Only one certificate can be added to a request")
 
@@ -443,7 +444,7 @@ class OCSPRequestBuilder:
         issuer_key_hash: bytes,
         serial_number: int,
         algorithm: hashes.HashAlgorithm,
-    ) -> "OCSPRequestBuilder":
+    ) -> OCSPRequestBuilder:
         if self._request is not None or self._request_hash is not None:
             raise ValueError("Only one certificate can be added to a request")
 
@@ -469,7 +470,7 @@ class OCSPRequestBuilder:
 
     def add_extension(
         self, extval: x509.ExtensionType, critical: bool
-    ) -> "OCSPRequestBuilder":
+    ) -> OCSPRequestBuilder:
         if not isinstance(extval, x509.ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 
@@ -512,7 +513,7 @@ class OCSPResponseBuilder:
         next_update: typing.Optional[datetime.datetime],
         revocation_time: typing.Optional[datetime.datetime],
         revocation_reason: typing.Optional[x509.ReasonFlags],
-    ) -> "OCSPResponseBuilder":
+    ) -> OCSPResponseBuilder:
         if self._response is not None:
             raise ValueError("Only one response per OCSPResponse.")
 
@@ -535,7 +536,7 @@ class OCSPResponseBuilder:
 
     def responder_id(
         self, encoding: OCSPResponderEncoding, responder_cert: x509.Certificate
-    ) -> "OCSPResponseBuilder":
+    ) -> OCSPResponseBuilder:
         if self._responder_id is not None:
             raise ValueError("responder_id can only be set once")
         if not isinstance(responder_cert, x509.Certificate):
@@ -554,7 +555,7 @@ class OCSPResponseBuilder:
 
     def certificates(
         self, certs: typing.Iterable[x509.Certificate]
-    ) -> "OCSPResponseBuilder":
+    ) -> OCSPResponseBuilder:
         if self._certs is not None:
             raise ValueError("certificates may only be set once")
         certs = list(certs)
@@ -571,7 +572,7 @@ class OCSPResponseBuilder:
 
     def add_extension(
         self, extval: x509.ExtensionType, critical: bool
-    ) -> "OCSPResponseBuilder":
+    ) -> OCSPResponseBuilder:
         if not isinstance(extval, x509.ExtensionType):
             raise TypeError("extension must be an ExtensionType")
 

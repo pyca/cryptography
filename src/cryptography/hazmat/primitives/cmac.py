@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import typing
 
@@ -14,14 +15,14 @@ if typing.TYPE_CHECKING:
 
 
 class CMAC:
-    _ctx: typing.Optional["_CMACContext"]
+    _ctx: typing.Optional[_CMACContext]
     _algorithm: ciphers.BlockCipherAlgorithm
 
     def __init__(
         self,
         algorithm: ciphers.BlockCipherAlgorithm,
         backend: typing.Any = None,
-        ctx: typing.Optional["_CMACContext"] = None,
+        ctx: typing.Optional[_CMACContext] = None,
     ) -> None:
         if not isinstance(algorithm, ciphers.BlockCipherAlgorithm):
             raise TypeError("Expected instance of BlockCipherAlgorithm.")
@@ -58,7 +59,7 @@ class CMAC:
         ctx, self._ctx = self._ctx, None
         ctx.verify(signature)
 
-    def copy(self) -> "CMAC":
+    def copy(self) -> CMAC:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return CMAC(self._algorithm, ctx=self._ctx.copy())

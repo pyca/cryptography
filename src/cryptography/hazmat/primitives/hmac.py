@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import typing
 
@@ -45,7 +46,7 @@ class HMAC(hashes.HashContext):
         utils._check_byteslike("data", data)
         self._ctx.update(data)
 
-    def copy(self) -> "HMAC":
+    def copy(self) -> HMAC:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
         return HMAC(

@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 import typing
@@ -27,7 +28,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_key(self) -> "RSAPublicKey":
+    def public_key(self) -> RSAPublicKey:
         """
         The RSAPublicKey associated with this private key.
         """
@@ -44,7 +45,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def private_numbers(self) -> "RSAPrivateNumbers":
+    def private_numbers(self) -> RSAPrivateNumbers:
         """
         Returns an RSAPrivateNumbers.
         """
@@ -79,7 +80,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def public_numbers(self) -> "RSAPublicNumbers":
+    def public_numbers(self) -> RSAPublicNumbers:
         """
         Returns an RSAPublicNumbers
         """
@@ -297,7 +298,7 @@ class RSAPrivateNumbers:
         dmp1: int,
         dmq1: int,
         iqmp: int,
-        public_numbers: "RSAPublicNumbers",
+        public_numbers: RSAPublicNumbers,
     ):
         if (
             not isinstance(p, int)
@@ -351,7 +352,7 @@ class RSAPrivateNumbers:
         return self._iqmp
 
     @property
-    def public_numbers(self) -> "RSAPublicNumbers":
+    def public_numbers(self) -> RSAPublicNumbers:
         return self._public_numbers
 
     def private_key(

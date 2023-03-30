@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import email.base64mime
 import email.generator
 import email.message
@@ -73,7 +75,7 @@ class PKCS7SignatureBuilder:
         self._signers = signers
         self._additional_certs = additional_certs
 
-    def set_data(self, data: bytes) -> "PKCS7SignatureBuilder":
+    def set_data(self, data: bytes) -> PKCS7SignatureBuilder:
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")
@@ -85,7 +87,7 @@ class PKCS7SignatureBuilder:
         certificate: x509.Certificate,
         private_key: PKCS7PrivateKeyTypes,
         hash_algorithm: PKCS7HashTypes,
-    ) -> "PKCS7SignatureBuilder":
+    ) -> PKCS7SignatureBuilder:
         if not isinstance(
             hash_algorithm,
             (
@@ -114,7 +116,7 @@ class PKCS7SignatureBuilder:
 
     def add_certificate(
         self, certificate: x509.Certificate
-    ) -> "PKCS7SignatureBuilder":
+    ) -> PKCS7SignatureBuilder:
         if not isinstance(certificate, x509.Certificate):
             raise TypeError("certificate must be a x509.Certificate")
 

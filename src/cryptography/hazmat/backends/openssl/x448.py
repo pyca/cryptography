@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import typing
 
 from cryptography.hazmat.backends.openssl.utils import _evp_pkey_derive
@@ -18,7 +20,7 @@ _X448_KEY_SIZE = 56
 
 
 class _X448PublicKey(X448PublicKey):
-    def __init__(self, backend: "Backend", evp_pkey):
+    def __init__(self, backend: Backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 
@@ -57,7 +59,7 @@ class _X448PublicKey(X448PublicKey):
 
 
 class _X448PrivateKey(X448PrivateKey):
-    def __init__(self, backend: "Backend", evp_pkey):
+    def __init__(self, backend: Backend, evp_pkey):
         self._backend = backend
         self._evp_pkey = evp_pkey
 

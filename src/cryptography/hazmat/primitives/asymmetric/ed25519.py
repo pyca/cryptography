@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 
@@ -14,7 +15,7 @@ _ED25519_SIG_SIZE = 64
 
 class Ed25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data: bytes) -> "Ed25519PublicKey":
+    def from_public_bytes(cls, data: bytes) -> Ed25519PublicKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.ed25519_supported():
@@ -53,7 +54,7 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
 
 class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls) -> "Ed25519PrivateKey":
+    def generate(cls) -> Ed25519PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.ed25519_supported():
@@ -65,7 +66,7 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         return backend.ed25519_generate_key()
 
     @classmethod
-    def from_private_bytes(cls, data: bytes) -> "Ed25519PrivateKey":
+    def from_private_bytes(cls, data: bytes) -> Ed25519PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.ed25519_supported():

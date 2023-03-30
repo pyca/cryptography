@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
 
 import abc
 
@@ -12,7 +13,7 @@ from cryptography.hazmat.primitives import _serialization
 
 class X25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data: bytes) -> "X25519PublicKey":
+    def from_public_bytes(cls, data: bytes) -> X25519PublicKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x25519_supported():
@@ -48,7 +49,7 @@ if hasattr(rust_openssl, "x25519"):
 
 class X25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls) -> "X25519PrivateKey":
+    def generate(cls) -> X25519PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x25519_supported():
@@ -59,7 +60,7 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
         return backend.x25519_generate_key()
 
     @classmethod
-    def from_private_bytes(cls, data: bytes) -> "X25519PrivateKey":
+    def from_private_bytes(cls, data: bytes) -> X25519PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.x25519_supported():
