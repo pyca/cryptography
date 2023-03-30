@@ -15,6 +15,7 @@ authors = [
     {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
 ]
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
+readme = "README.rst"
 license = {text = "Apache-2.0 OR BSD-3-Clause"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -44,7 +45,7 @@ dependencies = [
     # Must be kept in sync with `build-system.requires`
     "cffi >=1.12",
 ]
-dynamic = ["version", "readme"]
+dynamic = ["version"]
 
 [project.urls]
 homepage = "https://github.com/pyca/cryptography"
@@ -66,7 +67,6 @@ exclude = [
 
 [tool.setuptools.dynamic]
 version = {attr = "cryptography.__version__"}
-readme = {file = "README.rst", content-type = "text/x-rst"}
 
 [project.optional-dependencies]
 ssh = ["bcrypt >=3.1.5"]
