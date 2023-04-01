@@ -15,7 +15,7 @@ pem = "1.1"
 chrono = { version = "0.4.24", default-features = false, features = ["alloc", "clock"] }
 ouroboros = "0.15"
 openssl = "0.10.48"
-openssl-sys = "0.9.72"
+openssl-sys = "0.9.84"
 foreign-types-shared = "0.1"
 
 [build-dependencies]
