@@ -14,7 +14,7 @@ asn1 = { version = "0.13.0", default-features = false, features = ["const-generi
 pem = "1.1"
 chrono = { version = "0.4.24", default-features = false, features = ["alloc", "clock"] }
 ouroboros = "0.15"
-openssl = "0.10.48"
+openssl = "0.10.49"
 openssl-sys = "0.9.84"
 foreign-types-shared = "0.1"
 
