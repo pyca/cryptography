@@ -4,7 +4,7 @@ include LICENSE
 include LICENSE.APACHE
 include LICENSE.BSD
 include README.rst
-include tox.ini
+include noxfile.py
 
 include pyproject.toml
 recursive-include src py.typed *.pyi
