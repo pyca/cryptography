@@ -20,24 +20,9 @@ installed with ``pip``.
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
 
-You must have installed `OpenSSL`_ via `Homebrew`_ or `MacPorts`_ and must set
-``CFLAGS`` and ``LDFLAGS`` environment variables before running ``nox``
-otherwise pip will fail with include errors.
-
-For example, with `Homebrew`_:
-
-.. code-block:: console
-
-    $ env LDFLAGS="-L$(brew --prefix openssl@1.1)/lib" \
-        CFLAGS="-I$(brew --prefix openssl@1.1)/include" \
-        nox -e tests -p py310
-
-Alternatively for a static build you can specify
-``CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1`` and ensure ``LDFLAGS`` points to the
-absolute path for the `OpenSSL`_ libraries before calling pip.
-
-.. tip::
-    You will also need to set these values when `Building documentation`_.
+You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_, or a custom
+build) and must configure the build `as documented here`_ before calling
+``nox`` or else pip will fail to compile.
 
 Running tests
 -------------
@@ -78,3 +63,4 @@ The HTML documentation index can now be found at
 .. _`pip`: https://pypi.org/project/pip/
 .. _`sphinx`: https://pypi.org/project/Sphinx/
 .. _`reStructured Text`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+.. _`as documented here`: https://docs.rs/openssl/latest/openssl/#automatic
