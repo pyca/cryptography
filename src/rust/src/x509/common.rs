@@ -701,6 +701,15 @@ pub(crate) fn py_to_chrono(
         .unwrap())
 }
 
+pub(crate) fn chrono_now(py: pyo3::Python<'_>) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
+    py_to_chrono(
+        py,
+        py.import(pyo3::intern!(py, "datetime"))?
+            .getattr(pyo3::intern!(py, "datetime"))?
+            .call_method0(pyo3::intern!(py, "utcnow"))?,
+    )
+}
+
 #[derive(Hash, PartialEq, Clone)]
 pub(crate) enum Asn1ReadableOrWritable<'a, T, U> {
     Read(T, PhantomData<&'a ()>),

@@ -252,7 +252,6 @@ jobs:
           - "3.11"
         RUST:
           # Potential future MSRVs:
-          # 1.60 - new version of cxx
           - 1.60.0
           # 1.67 - new version of pem
           - beta
