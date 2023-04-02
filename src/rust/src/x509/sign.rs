@@ -135,11 +135,9 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (oid::ED448_OID).clone(),
             params: None,
         }),
-        (KeyType::Ed25519, _) | (KeyType::Ed448, _) => {
-            Err(pyo3::exceptions::PyValueError::new_err(
-                "Algorithm must be None when signing via ed25519 or ed448",
-            ))
-        }
+        (KeyType::Ed25519 | KeyType::Ed448, _) => Err(pyo3::exceptions::PyValueError::new_err(
+            "Algorithm must be None when signing via ed25519 or ed448",
+        )),
 
         (KeyType::Ec, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA224_OID).clone(),
@@ -223,10 +221,10 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
-        (KeyType::Dsa, HashType::Sha3_224)
-        | (KeyType::Dsa, HashType::Sha3_256)
-        | (KeyType::Dsa, HashType::Sha3_384)
-        | (KeyType::Dsa, HashType::Sha3_512) => Err(pyo3::PyErr::from_value(
+        (
+            KeyType::Dsa,
+            HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512,
+        ) => Err(pyo3::PyErr::from_value(
             py.import("cryptography.exceptions")?.call_method1(
                 "UnsupportedAlgorithm",
                 ("SHA3 hashes are not supported with DSA keys",),

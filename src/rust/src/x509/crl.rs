@@ -9,7 +9,6 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, extensions, oid, sign};
 use pyo3::{IntoPy, ToPyObject};
-use std::convert::TryInto;
 use std::sync::Arc;
 
 #[pyo3::prelude::pyfunction]

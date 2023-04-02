@@ -20,7 +20,6 @@ mod x509;
 
 #[cfg(not(python_implementation = "PyPy"))]
 use pyo3::FromPyPointer;
-use std::convert::TryInto;
 
 #[cfg(python_implementation = "PyPy")]
 extern "C" {

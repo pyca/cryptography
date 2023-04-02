@@ -191,11 +191,10 @@ impl X25519PrivateKey {
                     )?
                 };
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
-            } else {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err("Unsupported encoding for PKCS8"),
-                ));
             }
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Unsupported encoding for PKCS8"),
+            ));
         }
 
         Err(CryptographyError::from(
@@ -267,13 +266,12 @@ impl X25519PublicKey {
             } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
                 let der_bytes = self.pkey.public_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
-            } else {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "SubjectPublicKeyInfo works only with PEM or DER encoding",
-                    ),
-                ));
             }
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "SubjectPublicKeyInfo works only with PEM or DER encoding",
+                ),
+            ));
         }
 
         Err(CryptographyError::from(

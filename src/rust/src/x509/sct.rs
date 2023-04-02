@@ -6,7 +6,6 @@ use crate::error::CryptographyError;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
-use std::convert::{TryFrom, TryInto};
 use std::hash::{Hash, Hasher};
 
 struct TLSReader<'a> {

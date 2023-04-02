@@ -78,7 +78,7 @@ fn main() {
 
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_LIBRESSL");
         if version >= 0x3_07_00_00_0 {
-            println!("cargo:rustc-cfg=CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER")
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER");
         }
     }
 }
