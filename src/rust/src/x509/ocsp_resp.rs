@@ -6,7 +6,6 @@ use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
-use chrono::Timelike;
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -723,9 +722,7 @@ fn create_ocsp_response(
 
         let tbs_response_data = ResponseData {
             version: 0,
-            produced_at: asn1::GeneralizedTime::new(
-                chrono::Utc::now().with_nanosecond(0).unwrap(),
-            )?,
+            produced_at: asn1::GeneralizedTime::new(x509::common::chrono_now(py)?)?,
             responder_id,
             responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 responses,

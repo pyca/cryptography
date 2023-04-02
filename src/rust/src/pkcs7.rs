@@ -7,7 +7,6 @@ use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::x509;
 
-use chrono::Timelike;
 use once_cell::sync::Lazy;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -149,9 +148,8 @@ fn sign_and_serialize<'p>(
         };
 
     let content_type_bytes = asn1::write_single(&PKCS7_DATA_OID)?;
-    let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_chrono(
-        chrono::Utc::now().with_nanosecond(0).unwrap(),
-    )?)?;
+    let now = x509::common::chrono_now(py)?;
+    let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_chrono(now)?)?;
     let smime_cap_bytes = asn1::write_single(&asn1::SequenceOfWriter::new([
         // Subset of values OpenSSL provides:
         // https://github.com/openssl/openssl/blob/667a8501f0b6e5705fd611d5bb3ca24848b07154/crypto/pkcs7/pk7_smime.c#L150
