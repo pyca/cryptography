@@ -7,8 +7,6 @@ from __future__ import annotations
 import os
 import platform
 import sys
-from distutils.ccompiler import new_compiler
-from distutils.dist import Distribution
 
 from cffi import FFI
 
@@ -23,8 +21,6 @@ def build_ffi_for_binding(
     module_name,
     module_prefix,
     modules,
-    libraries,
-    extra_compile_args,
 ):
     """
     Modules listed in ``modules`` should have the following attributes:
@@ -54,8 +50,6 @@ def build_ffi_for_binding(
         module_name,
         cdef_source="\n".join(types + functions),
         verify_source=verify_source,
-        libraries=libraries,
-        extra_compile_args=extra_compile_args,
     )
 
 
@@ -63,8 +57,6 @@ def build_ffi(
     module_name,
     cdef_source,
     verify_source,
-    libraries,
-    extra_compile_args,
 ):
     ffi = FFI()
     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
@@ -88,20 +80,5 @@ int Cryptography_make_openssl_module(void) {
     ffi.set_source(
         module_name,
         verify_source,
-        libraries=libraries,
-        extra_compile_args=extra_compile_args,
     )
     return ffi
-
-
-def compiler_type():
-    """
-    Gets the compiler type from distutils. On Windows with MSVC it will be
-    "msvc". On macOS and linux it is "unix".
-    """
-    dist = Distribution()
-    dist.parse_config_files()
-    cmd = dist.get_command_obj("build")
-    cmd.ensure_finalized()
-    compiler = new_compiler(compiler=cmd.compiler)
-    return compiler.compiler_type
