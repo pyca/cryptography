@@ -15,6 +15,7 @@ def install(session: nox.Session, *args: str) -> None:
         "-c",
         "ci-constraints-requirements.txt",
         *args,
+        silent=False,
     )
 
 
@@ -35,27 +36,23 @@ def tests(session: nox.Session) -> None:
     session.run("pip", "list")
 
     if session.name != "tests-nocoverage":
-        session.run(
-            "pytest",
-            "-n",
-            "auto",
-            "--dist=worksteal",
+        cov_args = [
             "--cov=cryptography",
             "--cov=tests",
-            "--durations=10",
-            *session.posargs,
-            "tests/",
-        )
+        ]
     else:
-        session.run(
-            "pytest",
-            "-n",
-            "auto",
-            "--dist=worksteal",
-            "--durations=10",
-            *session.posargs,
-            "tests/",
-        )
+        cov_args = []
+
+    session.run(
+        "pytest",
+        "-n",
+        "auto",
+        "--dist=worksteal",
+        *cov_args,
+        "--durations=10",
+        *session.posargs,
+        "tests/",
+    )
 
 
 @nox.session
@@ -107,6 +104,8 @@ def docs(session: nox.Session) -> None:
         "docs/_build/html",
     )
 
+    # This is in the docs job because `twine check` verifies that the README
+    # is valid reStructuredText.
     session.run("python", "setup.py", "sdist")
     session.run("twine", "check", "dist/*")
 
