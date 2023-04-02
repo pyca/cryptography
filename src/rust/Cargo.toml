@@ -2,7 +2,7 @@
 name = "cryptography-rust"
 version = "0.1.0"
 authors = ["The cryptography developers <cryptography-dev@python.org>"]
-edition = "2018"
+edition = "2021"
 publish = false
 # This specifies the MSRV
 rust-version = "1.56.0"
