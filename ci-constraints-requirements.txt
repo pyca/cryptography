@@ -7,7 +7,7 @@
 
 alabaster==0.7.13
     # via sphinx
-argcomplete==2.1.2
+argcomplete==3.0.5
     # via nox
 attrs==22.2.0
     # via
