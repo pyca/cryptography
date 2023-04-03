@@ -246,20 +246,20 @@ impl CertificateRevocationList {
     #[getter]
     fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         match &self.raw.borrow_value().tbs_cert_list.next_update {
-            Some(t) => x509::chrono_to_py(py, t.as_chrono()),
+            Some(t) => x509::datetime_to_py(py, t.as_datetime()),
             None => Ok(py.None().into_ref(py)),
         }
     }
 
     #[getter]
     fn last_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::chrono_to_py(
+        x509::datetime_to_py(
             py,
             self.raw
                 .borrow_value()
                 .tbs_cert_list
                 .this_update
-                .as_chrono(),
+                .as_datetime(),
         )
     }
 
@@ -532,7 +532,7 @@ impl RevokedCertificate {
 
     #[getter]
     fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::chrono_to_py(py, self.raw.borrow_value().revocation_date.as_chrono())
+        x509::datetime_to_py(py, self.raw.borrow_value().revocation_date.as_datetime())
     }
 
     #[getter]
@@ -632,7 +632,7 @@ pub fn parse_crl_entry_ext<'p>(
         }
         oid::INVALIDITY_DATE_OID => {
             let time = asn1::parse_single::<asn1::GeneralizedTime>(data)?;
-            let py_dt = x509::chrono_to_py(py, time.as_chrono())?;
+            let py_dt = x509::datetime_to_py(py, time.as_datetime())?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "InvalidityDate"))?

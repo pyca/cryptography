@@ -390,11 +390,8 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
-            let chrono_dt =
-                x509::py_to_chrono(py, ext.getattr(pyo3::intern!(py, "invalidity_date"))?)?;
-            Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(
-                chrono_dt,
-            )?)?))
+            let dt = x509::py_to_datetime(py, ext.getattr(pyo3::intern!(py, "invalidity_date"))?)?;
+            Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(dt)?)?))
         }
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext

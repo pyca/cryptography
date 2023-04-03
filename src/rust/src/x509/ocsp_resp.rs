@@ -5,7 +5,7 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_chrono, sct};
+use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_datetime, sct};
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -158,7 +158,7 @@ impl OCSPResponse {
     #[getter]
     fn produced_at<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
-        x509::chrono_to_py(py, resp.tbs_response_data.produced_at.as_chrono())
+        x509::datetime_to_py(py, resp.tbs_response_data.produced_at.as_datetime())
     }
 
     #[getter]
@@ -549,12 +549,12 @@ impl SingleResponse<'_> {
     }
 
     fn py_this_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::chrono_to_py(py, self.this_update.as_chrono())
+        x509::datetime_to_py(py, self.this_update.as_datetime())
     }
 
     fn py_next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         match &self.next_update {
-            Some(v) => x509::chrono_to_py(py, v.as_chrono()),
+            Some(v) => x509::datetime_to_py(py, v.as_datetime()),
             None => Ok(py.None().into_ref(py)),
         }
     }
@@ -575,7 +575,7 @@ impl SingleResponse<'_> {
     fn py_revocation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         match &self.cert_status {
             CertStatus::Revoked(revoked_info) => {
-                x509::chrono_to_py(py, revoked_info.revocation_time.as_chrono())
+                x509::datetime_to_py(py, revoked_info.revocation_time.as_datetime())
             }
             CertStatus::Good(_) | CertStatus::Unknown(_) => Ok(py.None().into_ref(py)),
         }
@@ -660,7 +660,7 @@ fn create_ocsp_response(
             let py_revocation_time =
                 py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
             let revocation_time =
-                asn1::GeneralizedTime::new(py_to_chrono(py, py_revocation_time)?)?;
+                asn1::GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
             CertStatus::Revoked(RevokedInfo {
                 revocation_time,
                 revocation_reason,
@@ -671,7 +671,7 @@ fn create_ocsp_response(
             .is_none()
         {
             let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
-            Some(asn1::GeneralizedTime::new(py_to_chrono(
+            Some(asn1::GeneralizedTime::new(py_to_datetime(
                 py,
                 py_next_update,
             )?)?)
@@ -679,7 +679,7 @@ fn create_ocsp_response(
             None
         };
         let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
-        let this_update = asn1::GeneralizedTime::new(py_to_chrono(py, py_this_update)?)?;
+        let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
         let responses = vec![SingleResponse {
             cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
@@ -722,7 +722,7 @@ fn create_ocsp_response(
 
         let tbs_response_data = ResponseData {
             version: 0,
-            produced_at: asn1::GeneralizedTime::new(x509::common::chrono_now(py)?)?,
+            produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
             responder_id,
             responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 responses,

@@ -8,7 +8,6 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
-use chrono::Datelike;
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -239,26 +238,26 @@ impl Certificate {
 
     #[getter]
     fn not_valid_before<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let chrono = &self
+        let dt = &self
             .raw
             .borrow_value()
             .tbs_cert
             .validity
             .not_before
-            .as_chrono();
-        x509::chrono_to_py(py, chrono)
+            .as_datetime();
+        x509::datetime_to_py(py, dt)
     }
 
     #[getter]
     fn not_valid_after<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let chrono = &self
+        let dt = &self
             .raw
             .borrow_value()
             .tbs_cert
             .validity
             .not_after
-            .as_chrono();
-        x509::chrono_to_py(py, chrono)
+            .as_datetime();
+        x509::datetime_to_py(py, dt)
     }
 
     #[getter]
@@ -994,13 +993,11 @@ pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
 ) -> CryptographyResult<x509::Time> {
-    let dt = x509::py_to_chrono(py, val)?;
-    time_from_chrono(dt)
+    let dt = x509::py_to_datetime(py, val)?;
+    time_from_datetime(dt)
 }
 
-pub(crate) fn time_from_chrono(
-    dt: chrono::DateTime<chrono::Utc>,
-) -> CryptographyResult<x509::Time> {
+pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<x509::Time> {
     if dt.year() >= 2050 {
         Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
     } else {

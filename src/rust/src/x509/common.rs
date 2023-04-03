@@ -5,7 +5,6 @@
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::HashSet;
@@ -311,10 +310,10 @@ pub(crate) enum Time {
 }
 
 impl Time {
-    pub(crate) fn as_chrono(&self) -> &chrono::DateTime<chrono::Utc> {
+    pub(crate) fn as_datetime(&self) -> &asn1::DateTime {
         match self {
-            Time::UtcTime(data) => data.as_chrono(),
-            Time::GeneralizedTime(data) => data.as_chrono(),
+            Time::UtcTime(data) => data.as_datetime(),
+            Time::GeneralizedTime(data) => data.as_datetime(),
         }
     }
 }
@@ -668,9 +667,9 @@ fn encode_extension_value<'p>(
     )))
 }
 
-pub(crate) fn chrono_to_py<'p>(
+pub(crate) fn datetime_to_py<'p>(
     py: pyo3::Python<'p>,
-    dt: &chrono::DateTime<chrono::Utc>,
+    dt: &asn1::DateTime,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let datetime_module = py.import("datetime")?;
     datetime_module
@@ -685,24 +684,25 @@ pub(crate) fn chrono_to_py<'p>(
         ))
 }
 
-pub(crate) fn py_to_chrono(
+// TODO
+pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
-) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
-    Ok(chrono::Utc
-        .with_ymd_and_hms(
-            val.getattr(pyo3::intern!(py, "year"))?.extract()?,
-            val.getattr(pyo3::intern!(py, "month"))?.extract()?,
-            val.getattr(pyo3::intern!(py, "day"))?.extract()?,
-            val.getattr(pyo3::intern!(py, "hour"))?.extract()?,
-            val.getattr(pyo3::intern!(py, "minute"))?.extract()?,
-            val.getattr(pyo3::intern!(py, "second"))?.extract()?,
-        )
-        .unwrap())
+) -> pyo3::PyResult<asn1::DateTime> {
+    Ok(asn1::DateTime::new(
+        val.getattr(pyo3::intern!(py, "year"))?.extract()?,
+        val.getattr(pyo3::intern!(py, "month"))?.extract()?,
+        val.getattr(pyo3::intern!(py, "day"))?.extract()?,
+        val.getattr(pyo3::intern!(py, "hour"))?.extract()?,
+        val.getattr(pyo3::intern!(py, "minute"))?.extract()?,
+        val.getattr(pyo3::intern!(py, "second"))?.extract()?,
+    )
+    .unwrap())
 }
 
-pub(crate) fn chrono_now(py: pyo3::Python<'_>) -> pyo3::PyResult<chrono::DateTime<chrono::Utc>> {
-    py_to_chrono(
+// TODO
+pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
+    py_to_datetime(
         py,
         py.import(pyo3::intern!(py, "datetime"))?
             .getattr(pyo3::intern!(py, "datetime"))?
