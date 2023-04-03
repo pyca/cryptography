@@ -216,13 +216,12 @@ impl CertificateSigningRequest {
                     || val.tag() == asn1::IA5String::TAG
                 {
                     return Ok(pyo3::types::PyBytes::new(py, val.data()));
-                } else {
-                    return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                        "OID {} has a disallowed ASN.1 type: {:?}",
-                        oid,
-                        val.tag()
-                    )));
                 }
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "OID {} has a disallowed ASN.1 type: {:?}",
+                    oid,
+                    val.tag()
+                )));
             }
         }
         Err(pyo3::PyErr::from_value(

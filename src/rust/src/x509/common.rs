@@ -9,7 +9,6 @@ use chrono::{Datelike, TimeZone, Timelike};
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::HashSet;
-use std::convert::TryInto;
 use std::marker::PhantomData;
 
 /// Parse all sections in a PEM file and return the first matching section.
