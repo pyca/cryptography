@@ -683,7 +683,6 @@ pub(crate) fn datetime_to_py<'p>(
         ))
 }
 
-// TODO
 pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
@@ -699,7 +698,6 @@ pub(crate) fn py_to_datetime(
     .unwrap())
 }
 
-// TODO
 pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
     py_to_datetime(
         py,
