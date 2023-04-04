@@ -431,7 +431,6 @@ jobs:
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.11", NOXSESSION: "tests"}
-        JOB_NUMBER: [0, 1]
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
@@ -478,7 +477,7 @@ jobs:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --num-shards=2 --shard-id=${{ matrix.JOB_NUMBER }}
+        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80

@@ -75,7 +75,6 @@ ssh = ["bcrypt >=3.1.5"]
 nox = ["nox"]
 test = [
     "pytest >=6.2.0",
-    "pytest-shard >=0.1.2",
     "pytest-benchmark",
     "pytest-cov",
     "pytest-xdist",

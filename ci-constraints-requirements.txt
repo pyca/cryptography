@@ -111,15 +111,12 @@ pytest==7.2.2
     #   pytest-benchmark
     #   pytest-cov
     #   pytest-randomly
-    #   pytest-shard
     #   pytest-xdist
 pytest-benchmark==4.0.0
     # via cryptography (pyproject.toml)
 pytest-cov==4.0.0
     # via cryptography (pyproject.toml)
 pytest-randomly==3.12.0
-    # via cryptography (pyproject.toml)
-pytest-shard==0.1.2
     # via cryptography (pyproject.toml)
 pytest-xdist==3.2.1
     # via cryptography (pyproject.toml)
