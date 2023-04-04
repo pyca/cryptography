@@ -148,8 +148,8 @@ fn sign_and_serialize<'p>(
         };
 
     let content_type_bytes = asn1::write_single(&PKCS7_DATA_OID)?;
-    let now = x509::common::chrono_now(py)?;
-    let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_chrono(now)?)?;
+    let now = x509::common::datetime_now(py)?;
+    let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_datetime(now)?)?;
     let smime_cap_bytes = asn1::write_single(&asn1::SequenceOfWriter::new([
         // Subset of values OpenSSL provides:
         // https://github.com/openssl/openssl/blob/667a8501f0b6e5705fd611d5bb3ca24848b07154/crypto/pkcs7/pk7_smime.c#L150
