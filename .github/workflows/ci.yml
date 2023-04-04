@@ -446,11 +446,11 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
+      # - name: Cache rust and pip
+      #   uses: ./.github/actions/cache
+      #   timeout-minutes: 2
+      #   with:
+      #     key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox" coverage[toml]
 
       - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
@@ -482,6 +482,10 @@ jobs:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - uses: actions/upload-artifact@v3.1.2
+        with:
+          name: "cargo-timing-${{ matrix.WINDOWS.ARCH }}-${{ matrix.PYTHON.VERSION }}"
+          path: src/rust/target/cargo-timings/cargo-timing.html
 
       - uses: ./.github/actions/upload-coverage
 
