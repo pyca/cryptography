@@ -44,8 +44,8 @@ jobs:
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
           # Latest commit on the BoringSSL master branch, as of Apr 04, 2023.
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "6e723e5b37f7387f1c787a57c63e6d993d0c0d92"}}
-          # Latest commit on the OpenSSL master branch, as of Apr 04, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "418c6c520764491262018c45481a20ef10cd3bca"}}
+          # Latest commit on the OpenSSL master branch, as of Apr 05, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "f06ef1657a3d4322153b26231a7afa3d55724e52"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.0
