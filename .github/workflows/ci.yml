@@ -394,7 +394,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
+      - uses: dawidd6/action-download-artifact@7132ab516fba5f602fafae6fdd4822afa10db76f
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -453,7 +453,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox" coverage[toml]
 
-      - uses: dawidd6/action-download-artifact@5e780fc7bbd0cac69fc73271ed86edf5dcb72d67
+      - uses: dawidd6/action-download-artifact@7132ab516fba5f602fafae6fdd4822afa10db76f
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
