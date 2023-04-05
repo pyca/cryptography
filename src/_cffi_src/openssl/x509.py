@@ -190,6 +190,8 @@ Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
 
 int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
 int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
+const ASN1_TIME *X509_CRL_get0_nextUpdate(X509_CRL *);
+const ASN1_TIME *X509_CRL_get0_lastUpdate(X509_CRL *);
 
 int i2d_ECPrivateKey_bio(BIO *, EC_KEY *);
 
