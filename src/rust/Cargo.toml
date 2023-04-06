@@ -11,7 +11,7 @@ rust-version = "1.56.0"
 once_cell = "1"
 pyo3 = { version = "0.18" }
 asn1 = { version = "0.14.0", default-features = false }
-pem = "1.1"
+pem = "2.0"
 ouroboros = "0.15"
 openssl = "0.10.49"
 openssl-sys = "0.9.84"
