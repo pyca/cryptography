@@ -19,10 +19,6 @@ runs:
   using: "composite"
 
   steps:
-    - name: Get rust version
-      id: rust-version
-      run: echo "version=$(rustc --version | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
-      shell: bash
     - name: Get pip cache dir
       id: pip-cache
       run: |
@@ -45,13 +41,13 @@ runs:
           ${{ steps.pip-cache.outputs.dir }}
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
-          src/rust/target/
           ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ steps.normalized-key.outputs.key }}-7-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}-${{ steps.rust-version.version }}
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ steps.normalized-key.outputs.key }}-7
     - name: Size of cache items
       run: |
         du -sh ~/.cargo/registry/index/
         du -sh ~/.cargo/registry/cache/
-        du -sh src/rust/target/
       shell: bash
       if: ${{ steps.cache.outputs.cache-hit }}
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@8417cffc2ec64127ad83077aceaa8631f7cdc83e
