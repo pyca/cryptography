@@ -460,11 +460,11 @@ jobs:
           branch: main
           workflow_conclusion: success
           name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
+          path: "D:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Configure
         run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
+            echo "OPENSSL_DIR=D:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
         shell: bash
 
       - name: Clone wycheproof
