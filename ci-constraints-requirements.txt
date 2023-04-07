@@ -43,7 +43,7 @@ exceptiongroup==1.1.1
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
-filelock==3.10.7
+filelock==3.11.0
     # via virtualenv
 idna==3.4
     # via requests
