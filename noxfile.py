@@ -43,9 +43,12 @@ def tests(session: nox.Session) -> None:
     if session.name == "tests-randomorder":
         extras += ",test-randomorder"
 
-    subprocess.check_call(
-        ["typeperf", "-qx", "Current Disk Queue Length", "-o", "counters.txt"]
-    )
+    output = subprocess.check_output(["typeperf", "-q"])
+    counters = [c for c in output.splitlines() if b"Current Disk Queue" in c]
+    print(f"Counters: {counters}")
+    with open("counters.txt", "wb") as f:
+        for c in counters:
+            f.write(c + b"\r\n")
     with background(["typeperf", "-cf", "counters.txt"]):
         install(session, f".[{extras}]")
     install(session, "-e", "./vectors")

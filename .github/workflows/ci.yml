@@ -471,7 +471,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - uses: mxschmitt/action-tmate@v3
+      # - uses: mxschmitt/action-tmate@v3
 
       - name: Build nox environment
         run: nox -v --install-only
