@@ -476,6 +476,9 @@ jobs:
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+
+      - uses: mxschmitt/action-tmate@v3
+
       - name: Tests
         run: nox --no-install --  --color=yes --wycheproof-root=wycheproof
         env:
