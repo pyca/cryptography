@@ -4,6 +4,10 @@
 
 from __future__ import annotations
 
+import contextlib
+import subprocess
+import typing
+
 import nox
 
 nox.options.reuse_existing_virtualenvs = True
@@ -19,6 +23,15 @@ def install(session: nox.Session, *args: str) -> None:
     )
 
 
+@contextlib.contextmanager
+def background(args: typing.List[str]):
+    p = subprocess.Popen(args)
+    try:
+        yield
+    finally:
+        p.kill()
+
+
 @nox.session
 @nox.session(name="tests-ssh")
 @nox.session(name="tests-randomorder")
@@ -30,7 +43,11 @@ def tests(session: nox.Session) -> None:
     if session.name == "tests-randomorder":
         extras += ",test-randomorder"
 
-    install(session, f".[{extras}]")
+    subprocess.check_call(
+        ["typeperf", "-qx", "Current Disk Queue Length", "-o", "counters.txt"]
+    )
+    with background(["typeperf", "-cf", "counters.txt"]):
+        install(session, f".[{extras}]")
     install(session, "-e", "./vectors")
 
     session.run("pip", "list")

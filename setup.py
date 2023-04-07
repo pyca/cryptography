@@ -61,6 +61,7 @@ try:
                     else ["pyo3/abi3-py37"]
                 ),
                 rust_version=">=1.56.0",
+                args=["--timings"],
             )
         ],
     )
