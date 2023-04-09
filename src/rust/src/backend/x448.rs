@@ -7,66 +7,66 @@ use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use foreign_types_shared::ForeignTypeRef;
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
-struct X25519PrivateKey {
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x448")]
+struct X448PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
-struct X25519PublicKey {
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x448")]
+struct X448PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
 #[pyo3::prelude::pyfunction]
-fn generate_key() -> CryptographyResult<X25519PrivateKey> {
-    Ok(X25519PrivateKey {
-        pkey: openssl::pkey::PKey::generate_x25519()?,
+fn generate_key() -> CryptographyResult<X448PrivateKey> {
+    Ok(X448PrivateKey {
+        pkey: openssl::pkey::PKey::generate_x448()?,
     })
 }
 
 #[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(ptr: usize) -> X25519PrivateKey {
+fn private_key_from_ptr(ptr: usize) -> X448PrivateKey {
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
-    X25519PrivateKey {
+    X448PrivateKey {
         pkey: pkey.to_owned(),
     }
 }
 
 #[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(ptr: usize) -> X25519PublicKey {
+fn public_key_from_ptr(ptr: usize) -> X448PublicKey {
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
-    X25519PublicKey {
+    X448PublicKey {
         pkey: pkey.to_owned(),
     }
 }
 
 #[pyo3::prelude::pyfunction]
-fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
+fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X448PrivateKey> {
     let pkey =
-        openssl::pkey::PKey::private_key_from_raw_bytes(data.as_bytes(), openssl::pkey::Id::X25519)
+        openssl::pkey::PKey::private_key_from_raw_bytes(data.as_bytes(), openssl::pkey::Id::X448)
             .map_err(|e| {
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "An X25519 private key is 32 bytes long: {}",
-                    e
-                ))
-            })?;
-    Ok(X25519PrivateKey { pkey })
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "An X448 private key is 56 bytes long: {}",
+                e
+            ))
+        })?;
+    Ok(X448PrivateKey { pkey })
 }
 #[pyo3::prelude::pyfunction]
-fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
-    let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::X25519)
+fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X448PublicKey> {
+    let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::X448)
         .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An X25519 public key is 32 bytes long")
+            pyo3::exceptions::PyValueError::new_err("An X448 public key is 32 bytes long")
         })?;
-    Ok(X25519PublicKey { pkey })
+    Ok(X448PublicKey { pkey })
 }
 
 #[pyo3::prelude::pymethods]
-impl X25519PrivateKey {
+impl X448PrivateKey {
     fn exchange<'p>(
         &self,
         py: pyo3::Python<'p>,
-        public_key: &X25519PublicKey,
+        public_key: &X448PublicKey,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
         deriver.set_peer(&public_key.pkey)?;
@@ -80,12 +80,12 @@ impl X25519PrivateKey {
         })?)
     }
 
-    fn public_key(&self) -> CryptographyResult<X25519PublicKey> {
+    fn public_key(&self) -> CryptographyResult<X448PublicKey> {
         let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(X25519PublicKey {
+        Ok(X448PublicKey {
             pkey: openssl::pkey::PKey::public_key_from_raw_bytes(
                 &raw_bytes,
-                openssl::pkey::Id::X25519,
+                openssl::pkey::Id::X448,
             )?,
         })
     }
@@ -110,7 +110,7 @@ impl X25519PrivateKey {
 }
 
 #[pyo3::prelude::pymethods]
-impl X25519PublicKey {
+impl X448PublicKey {
     fn public_bytes_raw<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -130,15 +130,15 @@ impl X25519PublicKey {
 }
 
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "x25519")?;
+    let m = pyo3::prelude::PyModule::new(py, "x448")?;
     m.add_wrapped(pyo3::wrap_pyfunction!(generate_key))?;
     m.add_wrapped(pyo3::wrap_pyfunction!(private_key_from_ptr))?;
     m.add_wrapped(pyo3::wrap_pyfunction!(public_key_from_ptr))?;
     m.add_wrapped(pyo3::wrap_pyfunction!(from_private_bytes))?;
     m.add_wrapped(pyo3::wrap_pyfunction!(from_public_bytes))?;
 
-    m.add_class::<X25519PrivateKey>()?;
-    m.add_class::<X25519PublicKey>()?;
+    m.add_class::<X448PrivateKey>()?;
+    m.add_class::<X448PublicKey>()?;
 
     Ok(m)
 }
