@@ -49,10 +49,6 @@ from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
     _RSAPublicKey,
 )
-from cryptography.hazmat.backends.openssl.x448 import (
-    _X448PrivateKey,
-    _X448PublicKey,
-)
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -648,7 +644,9 @@ class Backend:
             return _Ed25519PrivateKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _X448PrivateKey(self, evp_pkey)
+            return rust_openssl.x448.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.private_key_from_ptr(
                 int(self._ffi.cast("uintptr_t", evp_pkey))
@@ -707,7 +705,9 @@ class Backend:
             return _Ed25519PublicKey(self, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _X448PublicKey(self, evp_pkey)
+            return rust_openssl.x448.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.public_key_from_ptr(
                 int(self._ffi.cast("uintptr_t", evp_pkey))
@@ -1828,31 +1828,13 @@ class Backend:
         return not self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
 
     def x448_load_public_bytes(self, data: bytes) -> x448.X448PublicKey:
-        if len(data) != 56:
-            raise ValueError("An X448 public key is 56 bytes long")
-
-        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
-            self._lib.NID_X448, self._ffi.NULL, data, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return _X448PublicKey(self, evp_pkey)
+        return rust_openssl.x448.from_public_bytes(data)
 
     def x448_load_private_bytes(self, data: bytes) -> x448.X448PrivateKey:
-        if len(data) != 56:
-            raise ValueError("An X448 private key is 56 bytes long")
-
-        data_ptr = self._ffi.from_buffer(data)
-        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
-            self._lib.NID_X448, self._ffi.NULL, data_ptr, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return _X448PrivateKey(self, evp_pkey)
+        return rust_openssl.x448.from_private_bytes(data)
 
     def x448_generate_key(self) -> x448.X448PrivateKey:
-        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X448)
-        return _X448PrivateKey(self, evp_pkey)
+        return rust_openssl.x448.generate_key()
 
     def x448_supported(self) -> bool:
         if self._fips_enabled:
