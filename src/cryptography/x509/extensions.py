@@ -2122,6 +2122,57 @@ class IssuingDistributionPoint(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
+class MSCertificateTemplate(ExtensionType):
+    oid = ExtensionOID.MS_CERTIFICATE_TEMPLATE
+
+    def __init__(
+        self,
+        template_id: ObjectIdentifier,
+        major_version: typing.Optional[int],
+        minor_version: typing.Optional[int],
+    ) -> None:
+        if not isinstance(template_id, ObjectIdentifier):
+            raise TypeError("oid must be an ObjectIdentifier")
+        self._template_id = template_id
+        self._major_version = major_version
+        self._minor_version = minor_version
+
+    @property
+    def template_id(self) -> ObjectIdentifier:
+        return self._template_id
+
+    @property
+    def major_version(self) -> typing.Optional[int]:
+        return self._major_version
+
+    @property
+    def minor_version(self) -> typing.Optional[int]:
+        return self._minor_version
+
+    def __repr__(self) -> str:
+        return (
+            "<MSCertificateTemplate(template_id={0.template_id}, "
+            "major_version={0.major_version}, "
+            "minor_version={0.minor_version})>".format(self)
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, MSCertificateTemplate):
+            return NotImplemented
+
+        return (
+            self.template_id == other.template_id
+            and self.major_version == other.major_version
+            and self.minor_version == other.minor_version
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.template_id, self.major_version, self.minor_version))
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):

@@ -6199,6 +6199,80 @@ class TestOCSPAcceptableResponses:
         )
 
 
+class TestMSCertificateTemplate:
+    def test_invalid_type(self):
+        with pytest.raises(TypeError):
+            x509.MSCertificateTemplate(
+                "notanoid", None, None  # type:ignore[arg-type]
+            )
+
+    def test_eq(self):
+        template1 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        template2 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        assert template1 == template2
+
+    def test_ne(self):
+        template1 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        template2 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), 1, None
+        )
+        template3 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, 1
+        )
+        template4 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3"), None, None
+        )
+        assert template1 != template2
+        assert template1 != template3
+        assert template1 != template4
+        assert template1 != object()
+
+    def test_repr(self):
+        template = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        assert repr(template) == (
+            "<MSCertificateTemplate(template_id=<ObjectIdentifier(oid=1.2.3.4,"
+            " name=Unknown OID)>, major_version=None, minor_version=None)>"
+        )
+
+    def test_hash(self):
+        template1 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        template2 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        template3 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, 1
+        )
+        template4 = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3"), None, None
+        )
+
+        assert hash(template1) == hash(template2)
+        assert hash(template1) != hash(template3)
+        assert hash(template1) != hash(template4)
+
+    def test_public_bytes(self):
+        ext = x509.MSCertificateTemplate(
+            ObjectIdentifier("1.2.3.4"), None, None
+        )
+        assert ext.public_bytes() == b"0\x05\x06\x03*\x03\x04"
+
+        ext = x509.MSCertificateTemplate(ObjectIdentifier("1.2.3.4"), 1, 0)
+        assert (
+            ext.public_bytes()
+            == b"0\x0b\x06\x03*\x03\x04\x02\x01\x01\x02\x01\x00"
+        )
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):

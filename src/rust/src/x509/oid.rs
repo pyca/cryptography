@@ -6,6 +6,8 @@ pub(crate) const EXTENSION_REQUEST: asn1::ObjectIdentifier =
     asn1::oid!(1, 2, 840, 113549, 1, 9, 14);
 pub(crate) const MS_EXTENSION_REQUEST: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 311, 2, 1, 14);
+pub(crate) const MS_CERTIFICATE_TEMPLATE: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 311, 21, 7);
 pub(crate) const PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 2);
 pub(crate) const PRECERT_POISON_OID: asn1::ObjectIdentifier =

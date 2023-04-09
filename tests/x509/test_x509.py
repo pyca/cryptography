@@ -4861,6 +4861,22 @@ class TestECDSACertificate:
         with pytest.raises(ValueError, match="Long-form"):
             cert.issuer
 
+    def test_ms_certificate_template(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "ms-certificate-template.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.MSCertificateTemplate
+        )
+        tpl = ext.value
+        assert isinstance(tpl, x509.MSCertificateTemplate)
+        assert tpl == x509.MSCertificateTemplate(
+            template_id=x509.ObjectIdentifier("1.2.3.4.5.6.7.8.9.0"),
+            major_version=1,
+            minor_version=None,
+        )
+
     def test_signature(self, backend):
         cert = _load_cert(
             os.path.join("x509", "ecdsa_root.pem"),
