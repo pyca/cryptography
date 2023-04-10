@@ -106,7 +106,7 @@ Alpine
 
 .. warning::
 
-    The Rust available by default in Alpine < 3.14 is older than the minimum
+    The Rust available by default in Alpine < 3.15 is older than the minimum
     supported version. See the :ref:`Rust installation instructions
     <installation:Rust>` for information about installing a newer Rust.
 
