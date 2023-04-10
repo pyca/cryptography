@@ -16,6 +16,7 @@ Changelog
   OCSP extension.
 * Added support for the :class:`~cryptography.x509.MSCertificateTemplate`
   proprietary Microsoft certificate extension.
+* Implemented support for equality checks on all asymmetric public key types.
 
 .. _v40-0-1:
 

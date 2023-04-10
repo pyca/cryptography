@@ -120,6 +120,12 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         Verifies the signature of the data.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 DSAPublicKeyWithSerialization = DSAPublicKey
 

@@ -118,6 +118,12 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         Recovers the original data from the signature.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 RSAPublicKeyWithSerialization = RSAPublicKey
 

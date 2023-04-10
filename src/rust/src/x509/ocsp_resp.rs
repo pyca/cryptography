@@ -738,15 +738,16 @@ fn create_ocsp_response(
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
         let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
 
-        py.import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr(pyo3::intern!(py, "backend"))?
-            .call_method1(
-                "_check_keys_correspond",
-                (
-                    responder_cert.call_method0("public_key")?,
-                    private_key.call_method0("public_key")?,
+        if !responder_cert
+            .call_method0("public_key")?
+            .eq(private_key.call_method0("public_key")?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Certificate public key and provided private key do not match",
                 ),
-            )?;
+            ));
+        }
 
         py_certs = builder.getattr(pyo3::intern!(py, "_certs"))?.extract()?;
         let certs = py_certs.as_ref().map(|py_certs| {

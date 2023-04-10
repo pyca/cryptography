@@ -41,6 +41,12 @@ class X448PublicKey(metaclass=abc.ABCMeta):
         Equivalent to public_bytes(Raw, Raw).
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 if hasattr(rust_openssl, "x448"):
     X448PublicKey.register(rust_openssl.x448.X448PublicKey)

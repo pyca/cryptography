@@ -79,6 +79,12 @@ class _Ed448PublicKey(Ed448PublicKey):
             self._backend._consume_errors()
             raise exceptions.InvalidSignature
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Ed448PublicKey):
+            return NotImplemented
+
+        return self.public_bytes_raw() == other.public_bytes_raw()
+
 
 class _Ed448PrivateKey(Ed448PrivateKey):
     def __init__(self, backend: Backend, evp_pkey):

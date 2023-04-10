@@ -464,6 +464,28 @@ class TestDH:
         assert int.from_bytes(symkey1, "big") == int(vector["z"], 16)
         assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_x942_serialization_supported(),
+        skip_message="DH X9.42 not supported",
+    )
+    def test_public_key_equality(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key_bytes_2 = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key1 = serialization.load_pem_public_key(key_bytes)
+        key2 = serialization.load_pem_public_key(key_bytes)
+        key3 = serialization.load_pem_public_key(key_bytes_2)
+        assert key1 == key2
+        assert key1 != key3
+        assert key1 != object()
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dh_supported(),
