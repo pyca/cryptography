@@ -994,7 +994,7 @@ pub fn parse_cert_ext<'p>(
         }
         oid::MS_CERTIFICATE_TEMPLATE => {
             let ms_cert_tpl = asn1::parse_single::<MSCertificateTemplate>(ext_data)?;
-            let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?.to_object(py);
+            let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "MSCertificateTemplate"))?

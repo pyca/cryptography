@@ -6205,6 +6205,15 @@ class TestMSCertificateTemplate:
             x509.MSCertificateTemplate(
                 "notanoid", None, None  # type:ignore[arg-type]
             )
+        oid = x509.ObjectIdentifier("1.2.3.4")
+        with pytest.raises(TypeError):
+            x509.MSCertificateTemplate(
+                oid, "notanint", None  # type:ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            x509.MSCertificateTemplate(
+                oid, None, "notanint"  # type:ignore[arg-type]
+            )
 
     def test_eq(self):
         template1 = x509.MSCertificateTemplate(

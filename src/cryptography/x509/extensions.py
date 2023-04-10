@@ -2134,6 +2134,14 @@ class MSCertificateTemplate(ExtensionType):
         if not isinstance(template_id, ObjectIdentifier):
             raise TypeError("oid must be an ObjectIdentifier")
         self._template_id = template_id
+        if (
+            major_version is not None and not isinstance(major_version, int)
+        ) or (
+            minor_version is not None and not isinstance(minor_version, int)
+        ):
+            raise TypeError(
+                "major_version and minor_version must be integers or None"
+            )
         self._major_version = major_version
         self._minor_version = minor_version
 
@@ -2151,9 +2159,9 @@ class MSCertificateTemplate(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<MSCertificateTemplate(template_id={0.template_id}, "
-            "major_version={0.major_version}, "
-            "minor_version={0.minor_version})>".format(self)
+            f"<MSCertificateTemplate(template_id={self.template_id}, "
+            f"major_version={self.major_version}, "
+            f"minor_version={self.minor_version})>"
         )
 
     def __eq__(self, other: object) -> bool:
