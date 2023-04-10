@@ -177,6 +177,13 @@ class TestEd25519Signing:
                 serialization.NoEncryption(),
             )
 
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.OpenSSH,
+                serialization.NoEncryption(),
+            )
+
     def test_invalid_public_bytes(self, backend):
         key = Ed25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
@@ -193,6 +200,11 @@ class TestEd25519Signing:
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.PEM, serialization.PublicFormat.Raw
+            )
+
+        with pytest.raises(ValueError):
+            key.public_bytes(
+                serialization.Encoding.DER, serialization.PublicFormat.OpenSSH
             )
 
     @pytest.mark.parametrize(
