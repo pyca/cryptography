@@ -336,13 +336,6 @@ Key interfaces
         :return bytes: Serialized key.
 
 
-.. class:: DSAPrivateKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Alias for :class:`DSAPrivateKey`.
-
-
 .. class:: DSAPublicKey
 
     .. versionadded:: 0.3
@@ -410,13 +403,6 @@ Key interfaces
         :returns: None
         :raises cryptography.exceptions.InvalidSignature: If the signature does
             not validate.
-
-
-.. class:: DSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Alias for :class:`DSAPublicKey`.
 
 
 .. _`DSA`: https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
