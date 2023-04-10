@@ -14,6 +14,8 @@ Changelog
 * Updated the minimum supported Rust version (MSRV) to 1.56.0, from 1.48.0.
 * Added support for the :class:`~cryptography.x509.OCSPAcceptableResponses`
   OCSP extension.
+* Added support for the :class:`~cryptography.x509.MSCertificateTemplate`
+  proprietary Microsoft certificate extension.
 
 .. _v40-0-1:
 

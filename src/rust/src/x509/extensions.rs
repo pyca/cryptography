@@ -453,6 +453,15 @@ pub(crate) fn encode_extension(
                 .extract::<&[u8]>()?;
             Ok(Some(asn1::write_single(&nonce)?))
         }
+        &oid::MS_CERTIFICATE_TEMPLATE => {
+            let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
+            let mstpl = certificate::MSCertificateTemplate {
+                template_id: py_oid_to_oid(py_template_id)?,
+                major_version: ext.getattr(pyo3::intern!(py, "major_version"))?.extract()?,
+                minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,
+            };
+            Ok(Some(asn1::write_single(&mstpl)?))
+        }
         _ => Ok(None),
     }
 }

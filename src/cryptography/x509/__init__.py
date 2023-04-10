@@ -53,6 +53,7 @@ from cryptography.x509.extensions import (
     IssuerAlternativeName,
     IssuingDistributionPoint,
     KeyUsage,
+    MSCertificateTemplate,
     NameConstraints,
     NoticeReference,
     OCSPAcceptableResponses,
@@ -250,4 +251,5 @@ __all__ = [
     "SignedCertificateTimestamps",
     "SignatureAlgorithmOID",
     "NameOID",
+    "MSCertificateTemplate",
 ]

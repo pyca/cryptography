@@ -613,6 +613,13 @@ pub(crate) struct GeneralSubtree<'a> {
     pub maximum: Option<u64>,
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub(crate) struct MSCertificateTemplate {
+    pub template_id: asn1::ObjectIdentifier,
+    pub major_version: Option<u32>,
+    pub minor_version: Option<u32>,
+}
+
 fn parse_general_subtrees(
     py: pyo3::Python<'_>,
     subtrees: SequenceOfSubtrees<'_>,
@@ -983,6 +990,15 @@ pub fn parse_cert_ext<'p>(
                 x509_module
                     .getattr(pyo3::intern!(py, "NameConstraints"))?
                     .call1((permitted_subtrees, excluded_subtrees))?,
+            ))
+        }
+        oid::MS_CERTIFICATE_TEMPLATE => {
+            let ms_cert_tpl = asn1::parse_single::<MSCertificateTemplate>(ext_data)?;
+            let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?;
+            Ok(Some(
+                x509_module
+                    .getattr(pyo3::intern!(py, "MSCertificateTemplate"))?
+                    .call1((py_oid, ms_cert_tpl.major_version, ms_cert_tpl.minor_version))?,
             ))
         }
         _ => Ok(None),
