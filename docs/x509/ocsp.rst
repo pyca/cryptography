@@ -329,7 +329,7 @@ Creating Responses
             :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
             :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey` or
             :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
-            that will be used to sign the certificate.
+            that will be used to sign the response.
 
         :param algorithm: The
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
