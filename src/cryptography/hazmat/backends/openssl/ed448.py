@@ -83,10 +83,7 @@ class _Ed448PublicKey(Ed448PublicKey):
         if not isinstance(other, Ed448PublicKey):
             return NotImplemented
 
-        return (
-            self._raw_public_bytes()
-            == other._raw_public_bytes()  # type: ignore[attr-defined]
-        )
+        return self.public_bytes_raw() == other.public_bytes_raw()
 
 
 class _Ed448PrivateKey(Ed448PrivateKey):

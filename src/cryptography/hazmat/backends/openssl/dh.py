@@ -262,12 +262,10 @@ class _DHPublicKey(dh.DHPublicKey):
         return self._key_size_bits
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, dh.DHPublicKey):
+        if not isinstance(other, _DHPublicKey):
             return NotImplemented
 
-        res = self._backend._lib.EVP_PKEY_cmp(
-            self._evp_pkey, other._evp_pkey  # type: ignore[attr-defined]
-        )
+        res = self._backend._lib.EVP_PKEY_cmp(self._evp_pkey, other._evp_pkey)
         if res < 0:
             # DH public keys have two types (DH, DHX) that OpenSSL
             # considers different types but we do not. Mismatched types

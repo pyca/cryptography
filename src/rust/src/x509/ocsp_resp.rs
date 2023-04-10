@@ -740,8 +740,7 @@ fn create_ocsp_response(
 
         if !responder_cert
             .call_method0("public_key")?
-            .eq(private_key.call_method0("public_key")?)
-            .unwrap()
+            .eq(private_key.call_method0("public_key")?)?
         {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(

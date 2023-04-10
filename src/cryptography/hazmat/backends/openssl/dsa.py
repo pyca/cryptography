@@ -190,13 +190,11 @@ class _DSAPublicKey(dsa.DSAPublicKey):
         return self._key_size
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, dsa.DSAPublicKey):
+        if not isinstance(other, _DSAPublicKey):
             return NotImplemented
 
         return (
-            self._backend._lib.EVP_PKEY_cmp(
-                self._evp_pkey, other._evp_pkey  # type: ignore[attr-defined]
-            )
+            self._backend._lib.EVP_PKEY_cmp(self._evp_pkey, other._evp_pkey)
             == 1
         )
 

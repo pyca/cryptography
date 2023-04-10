@@ -82,10 +82,7 @@ class _Ed25519PublicKey(Ed25519PublicKey):
         if not isinstance(other, Ed25519PublicKey):
             return NotImplemented
 
-        return (
-            self._raw_public_bytes()
-            == other._raw_public_bytes()  # type:ignore[attr-defined]
-        )
+        return self.public_bytes_raw() == other.public_bytes_raw()
 
 
 class _Ed25519PrivateKey(Ed25519PrivateKey):
