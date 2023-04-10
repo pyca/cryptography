@@ -1782,16 +1782,16 @@ Changelog
   ``no-comp`` (``OPENSSL_NO_COMP``) option.
 * Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
   serialization of public keys using the ``public_bytes`` method of
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
   and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
 * Support :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`
   serialization of private keys using the ``private_bytes`` method of
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
   and
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`.
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`.
 * Add support for parsing X.509 certificate signing requests (CSRs) with
   :func:`~cryptography.x509.load_pem_x509_csr` and
   :func:`~cryptography.x509.load_der_x509_csr`.
@@ -1864,42 +1864,32 @@ Changelog
   and :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`
   now support PKCS1 RSA public keys (in addition to the previous support for
   SubjectPublicKeyInfo format for RSA, EC, and DSA).
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-  and deprecated ``EllipticCurvePrivateKeyWithNumbers``.
+* Added ``EllipticCurvePrivateKeyWithSerialization`` and deprecated
+  ``EllipticCurvePrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`.
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
-  and deprecated ``RSAPrivateKeyWithNumbers``.
+* Added ``RSAPrivateKeyWithSerialization`` and deprecated ``RSAPrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`.
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`
-  and deprecated ``DSAPrivateKeyWithNumbers``.
+* Added ``DSAPrivateKeyWithSerialization`` and deprecated ``DSAPrivateKeyWithNumbers``.
 * Added
   :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey.private_bytes`
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
-  and deprecated ``RSAPublicKeyWithNumbers``.
+* Added ``RSAPublicKeyWithSerialization`` and deprecated ``RSAPublicKeyWithNumbers``.
 * Added ``public_bytes`` to
-  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`.
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
-  and deprecated ``EllipticCurvePublicKeyWithNumbers``.
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
+* Added ``EllipticCurvePublicKeyWithSerialization`` and deprecated
+  ``EllipticCurvePublicKeyWithNumbers``.
 * Added ``public_bytes`` to
-  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`.
-* Added
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`
-  and deprecated ``DSAPublicKeyWithNumbers``.
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`.
+* Added ``DSAPublicKeyWithSerialization`` and deprecated ``DSAPublicKeyWithNumbers``.
 * Added ``public_bytes`` to
-  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 * :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` and
   :class:`~cryptography.hazmat.primitives.hashes.HashContext` were moved from
   ``cryptography.hazmat.primitives.interfaces`` to

@@ -174,13 +174,6 @@ Group parameters
 
         :return bytes: Serialized parameters.
 
-.. class:: DHParametersWithSerialization
-
-    .. versionadded:: 1.7
-
-    Alias for :class:`DHParameters`.
-
-
 Key interfaces
 ~~~~~~~~~~~~~~
 
@@ -247,13 +240,6 @@ Key interfaces
         :return bytes: Serialized key.
 
 
-.. class:: DHPrivateKeyWithSerialization
-
-    .. versionadded:: 1.7
-
-    Alias for :class:`DHPrivateKey`.
-
-
 .. class:: DHPublicKey
 
     .. versionadded:: 1.7
@@ -292,13 +278,6 @@ Key interfaces
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat` enum.
 
         :return bytes: Serialized key.
-
-.. class:: DHPublicKeyWithSerialization
-
-    .. versionadded:: 1.7
-
-    Alias for :class:`DHPublicKey`.
-
 
 Numbers
 ~~~~~~~

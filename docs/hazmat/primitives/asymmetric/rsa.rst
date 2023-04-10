@@ -642,13 +642,6 @@ Key interfaces
         :return bytes: Serialized key.
 
 
-.. class:: RSAPrivateKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Alias for :class:`RSAPrivateKey`.
-
-
 .. class:: RSAPublicKey
 
     .. versionadded:: 0.2
@@ -782,13 +775,6 @@ Key interfaces
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If signature
             data recovery is not supported with the provided ``padding`` type.
-
-.. class:: RSAPublicKeyWithSerialization
-
-    .. versionadded:: 0.8
-
-    Alias for :class:`RSAPublicKey`.
-
 
 .. _`RSA`: https://en.wikipedia.org/wiki/RSA_(cryptosystem)
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
