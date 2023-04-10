@@ -41,6 +41,12 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         Equivalent to public_bytes(Raw, Raw).
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 # For LibreSSL
 if hasattr(rust_openssl, "x25519"):

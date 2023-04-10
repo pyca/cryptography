@@ -51,6 +51,12 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         Verify the signature.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod

@@ -235,6 +235,17 @@ class _EllipticCurvePublicKey(ec.EllipticCurvePublicKey):
     def key_size(self) -> int:
         return self.curve.key_size
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ec.EllipticCurvePublicKey):
+            return NotImplemented
+
+        return (
+            self._backend._lib.EVP_PKEY_cmp(
+                self._evp_pkey, other._evp_pkey  # type: ignore[attr-defined]
+            )
+            == 1
+        )
+
     def public_numbers(self) -> ec.EllipticCurvePublicNumbers:
         group = self._backend._lib.EC_KEY_get0_group(self._ec_key)
         self._backend.openssl_assert(group != self._backend._ffi.NULL)

@@ -261,6 +261,20 @@ class _DHPublicKey(dh.DHPublicKey):
     def key_size(self) -> int:
         return self._key_size_bits
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, dh.DHPublicKey):
+            return NotImplemented
+
+        res = self._backend._lib.EVP_PKEY_cmp(
+            self._evp_pkey, other._evp_pkey  # type: ignore[attr-defined]
+        )
+        if res < 0:
+            # DH public keys have two types (DH, DHX) that OpenSSL
+            # considers different types but we do not. Mismatched types
+            # push an error on the stack, so we need to consume it.
+            self._backend._consume_errors()
+        return res == 1
+
     def public_numbers(self) -> dh.DHPublicNumbers:
         p = self._backend._ffi.new("BIGNUM **")
         g = self._backend._ffi.new("BIGNUM **")

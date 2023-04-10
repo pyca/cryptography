@@ -537,6 +537,17 @@ class _RSAPublicKey(RSAPublicKey):
     def key_size(self) -> int:
         return self._key_size
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RSAPublicKey):
+            return NotImplemented
+
+        return (
+            self._backend._lib.EVP_PKEY_cmp(
+                self._evp_pkey, other._evp_pkey  # type: ignore[attr-defined]
+            )
+            == 1
+        )
+
     def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
         return _enc_dec_rsa(self._backend, self, plaintext, padding)
 

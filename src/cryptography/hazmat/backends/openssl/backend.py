@@ -1049,10 +1049,6 @@ class Backend:
         self.openssl_assert(res == 1)
         return x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
-    def _check_keys_correspond(self, key1, key2) -> None:
-        if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
-            raise ValueError("Keys do not correspond")
-
     def _load_key(
         self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
     ) -> PrivateKeyTypes:
