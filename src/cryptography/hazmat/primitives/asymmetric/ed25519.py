@@ -7,6 +7,7 @@ from __future__ import annotations
 import abc
 
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
 
 _ED25519_KEY_SIZE = 32
@@ -36,14 +37,12 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         The serialized bytes of the public key.
         """
 
+    @abc.abstractmethod
     def public_bytes_raw(self) -> bytes:
         """
         The raw bytes of the public key.
         Equivalent to public_bytes(Raw, Raw).
         """
-        return self.public_bytes(
-            _serialization.Encoding.Raw, _serialization.PublicFormat.Raw
-        )
 
     @abc.abstractmethod
     def verify(self, signature: bytes, data: bytes) -> None:
@@ -56,6 +55,10 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         """
         Checks equality.
         """
+
+
+if hasattr(rust_openssl, "ed25519"):
+    Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
 
 
 class Ed25519PrivateKey(metaclass=abc.ABCMeta):
@@ -100,19 +103,19 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         The serialized bytes of the private key.
         """
 
+    @abc.abstractmethod
     def private_bytes_raw(self) -> bytes:
         """
         The raw bytes of the private key.
         Equivalent to private_bytes(Raw, Raw, NoEncryption()).
         """
-        return self.private_bytes(
-            _serialization.Encoding.Raw,
-            _serialization.PrivateFormat.Raw,
-            _serialization.NoEncryption(),
-        )
 
     @abc.abstractmethod
     def sign(self, data: bytes) -> bytes:
         """
         Signs the data.
         """
+
+
+if hasattr(rust_openssl, "x25519"):
+    Ed25519PrivateKey.register(rust_openssl.ed25519.Ed25519PrivateKey)

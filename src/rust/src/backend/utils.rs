@@ -6,10 +6,12 @@ use crate::error::{CryptographyError, CryptographyResult};
 
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
+    key_obj: &pyo3::PyAny,
     pkey: &openssl::pkey::PKey<openssl::pkey::Private>,
     encoding: &pyo3::PyAny,
     format: &pyo3::PyAny,
     encryption_algorithm: &pyo3::PyAny,
+    openssh_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
     let encoding_class: &pyo3::types::PyType = serialization_mod
@@ -104,6 +106,28 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
+    // OpenSSH + PEM
+    if openssh_allowed && format.is(private_format_class.getattr(pyo3::intern!(py, "OpenSSH"))?) {
+        if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
+            return Ok(py
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.serialization.ssh"
+                ))?
+                .call_method1(
+                    pyo3::intern!(py, "_serialize_ssh_private_key"),
+                    (key_obj, password, encryption_algorithm),
+                )?
+                .extract()?);
+        }
+
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "OpenSSH private key format can only be used with PEM encoding",
+            ),
+        ));
+    }
+
     Err(CryptographyError::from(
         pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
     ))
@@ -111,9 +135,11 @@ pub(crate) fn pkey_private_bytes<'p>(
 
 pub(crate) fn pkey_public_bytes<'p>(
     py: pyo3::Python<'p>,
+    key_obj: &pyo3::PyAny,
     pkey: &openssl::pkey::PKey<openssl::pkey::Public>,
     encoding: &pyo3::PyAny,
     format: &pyo3::PyAny,
+    openssh_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
     let encoding_class: &pyo3::types::PyType = serialization_mod
@@ -166,6 +192,25 @@ pub(crate) fn pkey_public_bytes<'p>(
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "SubjectPublicKeyInfo works only with PEM or DER encoding",
+            ),
+        ));
+    }
+
+    // OpenSSH + OpenSSH
+    if openssh_allowed && format.is(public_format_class.getattr(pyo3::intern!(py, "OpenSSH"))?) {
+        if encoding.is(encoding_class.getattr(pyo3::intern!(py, "OpenSSH"))?) {
+            return Ok(py
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.serialization.ssh"
+                ))?
+                .call_method1(pyo3::intern!(py, "serialize_ssh_public_key"), (key_obj,))?
+                .extract()?);
+        }
+
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "OpenSSH format must be used with OpenSSH encoding",
             ),
         ));
     }

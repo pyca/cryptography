@@ -99,13 +99,21 @@ impl X448PrivateKey {
     }
 
     fn private_bytes<'p>(
-        &self,
+        slf: &pyo3::PyCell<Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
         encryption_algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        utils::pkey_private_bytes(py, &self.pkey, encoding, format, encryption_algorithm)
+        utils::pkey_private_bytes(
+            py,
+            &*slf,
+            &slf.borrow().pkey,
+            encoding,
+            format,
+            encryption_algorithm,
+            false,
+        )
     }
 }
 
@@ -120,12 +128,12 @@ impl X448PublicKey {
     }
 
     fn public_bytes<'p>(
-        &self,
+        slf: &pyo3::PyCell<Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        utils::pkey_public_bytes(py, &self.pkey, encoding, format)
+        utils::pkey_public_bytes(py, &*slf, &slf.borrow().pkey, encoding, format, false)
     }
 
     fn __richcmp__(

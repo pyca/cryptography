@@ -277,3 +277,6 @@ def test_public_key_equality(backend):
     assert key1 == key2
     assert key1 != key3
     assert key1 != object()
+
+    with pytest.raises(TypeError):
+        key1 < key2  # type: ignore[operator]
