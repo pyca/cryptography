@@ -422,20 +422,15 @@ class Backend:
         val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
         return val
 
-    def _int_to_bn(self, num: int, bn=None):
+    def _int_to_bn(self, num: int):
         """
         Converts a python integer to a BIGNUM. The returned BIGNUM will not
         be garbage collected (to support adding them to structs that take
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
-        assert bn is None or bn != self._ffi.NULL
-
-        if bn is None:
-            bn = self._ffi.NULL
-
         binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
-        bn_ptr = self._lib.BN_bin2bn(binary, len(binary), bn)
+        bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
         self.openssl_assert(bn_ptr != self._ffi.NULL)
         return bn_ptr
 
