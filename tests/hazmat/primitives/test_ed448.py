@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.ed448 import (
     Ed448PublicKey,
 )
 
+from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_nist_vectors,
     load_vectors_from_file,
@@ -192,18 +193,24 @@ class TestEd448Signing:
 
     def test_invalid_private_bytes(self, backend):
         key = Ed448PrivateKey.generate()
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
                 None,  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                DummyKeySerializationEncryption(),
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None,  # type: ignore[arg-type]
+                DummyKeySerializationEncryption(),
             )
 
         with pytest.raises(ValueError):

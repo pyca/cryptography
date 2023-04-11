@@ -15,12 +15,6 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
-from cryptography.hazmat.backends.openssl.dh import (
-    _dh_params_dup,
-    _DHParameters,
-    _DHPrivateKey,
-    _DHPublicKey,
-)
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters,
     _DSAPrivateKey,
@@ -609,10 +603,9 @@ class Backend:
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
         elif key_type in self._dh_types:
-            dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
-            self.openssl_assert(dh_cdata != self._ffi.NULL)
-            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-            return _DHPrivateKey(self, dh_cdata, evp_pkey)
+            return rust_openssl.dh.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
             # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return rust_openssl.ed25519.private_key_from_ptr(
@@ -674,10 +667,9 @@ class Backend:
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
         elif key_type in self._dh_types:
-            dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
-            self.openssl_assert(dh_cdata != self._ffi.NULL)
-            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-            return _DHPublicKey(self, dh_cdata, evp_pkey)
+            return rust_openssl.dh.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
             # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
             return rust_openssl.ed25519.public_key_from_ptr(
@@ -925,16 +917,7 @@ class Backend:
                 self._handle_key_loading_error()
 
     def load_pem_parameters(self, data: bytes) -> dh.DHParameters:
-        mem_bio = self._bytes_to_bio(data)
-        # only DH is supported currently
-        dh_cdata = self._lib.PEM_read_bio_DHparams(
-            mem_bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
-        )
-        if dh_cdata != self._ffi.NULL:
-            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-            return _DHParameters(self, dh_cdata)
-        else:
-            self._handle_key_loading_error()
+        return rust_openssl.dh.from_pem_parameters(data)
 
     def load_der_private_key(
         self,
@@ -1000,22 +983,7 @@ class Backend:
                 self._handle_key_loading_error()
 
     def load_der_parameters(self, data: bytes) -> dh.DHParameters:
-        mem_bio = self._bytes_to_bio(data)
-        dh_cdata = self._lib.d2i_DHparams_bio(mem_bio.bio, self._ffi.NULL)
-        if dh_cdata != self._ffi.NULL:
-            dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-            return _DHParameters(self, dh_cdata)
-        elif self._lib.Cryptography_HAS_EVP_PKEY_DHX:
-            # We check to see if the is dhx.
-            self._consume_errors()
-            res = self._lib.BIO_reset(mem_bio.bio)
-            self.openssl_assert(res == 1)
-            dh_cdata = self._lib.d2i_DHxparams_bio(mem_bio.bio, self._ffi.NULL)
-            if dh_cdata != self._ffi.NULL:
-                dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-                return _DHParameters(self, dh_cdata)
-
-        self._handle_key_loading_error()
+        return rust_openssl.dh.from_der_parameters(data)
 
     def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)
@@ -1611,48 +1579,12 @@ class Backend:
     def generate_dh_parameters(
         self, generator: int, key_size: int
     ) -> dh.DHParameters:
-        if key_size < dh._MIN_MODULUS_SIZE:
-            raise ValueError(
-                "DH key_size must be at least {} bits".format(
-                    dh._MIN_MODULUS_SIZE
-                )
-            )
-
-        if generator not in (2, 5):
-            raise ValueError("DH generator must be 2 or 5")
-
-        dh_param_cdata = self._lib.DH_new()
-        self.openssl_assert(dh_param_cdata != self._ffi.NULL)
-        dh_param_cdata = self._ffi.gc(dh_param_cdata, self._lib.DH_free)
-
-        res = self._lib.DH_generate_parameters_ex(
-            dh_param_cdata, key_size, generator, self._ffi.NULL
-        )
-        if res != 1:
-            errors = self._consume_errors()
-            raise ValueError("Unable to generate DH parameters", errors)
-
-        return _DHParameters(self, dh_param_cdata)
-
-    def _dh_cdata_to_evp_pkey(self, dh_cdata):
-        evp_pkey = self._create_evp_pkey_gc()
-        res = self._lib.EVP_PKEY_set1_DH(evp_pkey, dh_cdata)
-        self.openssl_assert(res == 1)
-        return evp_pkey
+        return rust_openssl.dh.generate_parameters(generator, key_size)
 
     def generate_dh_private_key(
         self, parameters: dh.DHParameters
     ) -> dh.DHPrivateKey:
-        dh_key_cdata = _dh_params_dup(
-            parameters._dh_cdata, self  # type: ignore[attr-defined]
-        )
-
-        res = self._lib.DH_generate_key(dh_key_cdata)
-        self.openssl_assert(res == 1)
-
-        evp_pkey = self._dh_cdata_to_evp_pkey(dh_key_cdata)
-
-        return _DHPrivateKey(self, dh_key_cdata, evp_pkey)
+        return parameters.generate_private_key()
 
     def generate_dh_private_key_and_parameters(
         self, generator: int, key_size: int
@@ -1664,99 +1596,17 @@ class Backend:
     def load_dh_private_numbers(
         self, numbers: dh.DHPrivateNumbers
     ) -> dh.DHPrivateKey:
-        parameter_numbers = numbers.public_numbers.parameter_numbers
-
-        dh_cdata = self._lib.DH_new()
-        self.openssl_assert(dh_cdata != self._ffi.NULL)
-        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-
-        p = self._int_to_bn(parameter_numbers.p)
-        g = self._int_to_bn(parameter_numbers.g)
-
-        if parameter_numbers.q is not None:
-            q = self._int_to_bn(parameter_numbers.q)
-        else:
-            q = self._ffi.NULL
-
-        pub_key = self._int_to_bn(numbers.public_numbers.y)
-        priv_key = self._int_to_bn(numbers.x)
-
-        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
-        self.openssl_assert(res == 1)
-
-        res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
-        self.openssl_assert(res == 1)
-
-        codes = self._ffi.new("int[]", 1)
-        res = self._lib.DH_check(dh_cdata, codes)
-        self.openssl_assert(res == 1)
-
-        # DH_check will return DH_NOT_SUITABLE_GENERATOR if p % 24 does not
-        # equal 11 when the generator is 2 (a quadratic nonresidue).
-        # We want to ignore that error because p % 24 == 23 is also fine.
-        # Specifically, g is then a quadratic residue. Within the context of
-        # Diffie-Hellman this means it can only generate half the possible
-        # values. That sounds bad, but quadratic nonresidues leak a bit of
-        # the key to the attacker in exchange for having the full key space
-        # available. See: https://crypto.stackexchange.com/questions/12961
-        if codes[0] != 0 and not (
-            parameter_numbers.g == 2
-            and codes[0] ^ self._lib.DH_NOT_SUITABLE_GENERATOR == 0
-        ):
-            raise ValueError("DH private numbers did not pass safety checks.")
-
-        evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
-
-        return _DHPrivateKey(self, dh_cdata, evp_pkey)
+        return rust_openssl.dh.from_private_numbers(numbers)
 
     def load_dh_public_numbers(
         self, numbers: dh.DHPublicNumbers
     ) -> dh.DHPublicKey:
-        dh_cdata = self._lib.DH_new()
-        self.openssl_assert(dh_cdata != self._ffi.NULL)
-        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-
-        parameter_numbers = numbers.parameter_numbers
-
-        p = self._int_to_bn(parameter_numbers.p)
-        g = self._int_to_bn(parameter_numbers.g)
-
-        if parameter_numbers.q is not None:
-            q = self._int_to_bn(parameter_numbers.q)
-        else:
-            q = self._ffi.NULL
-
-        pub_key = self._int_to_bn(numbers.y)
-
-        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
-        self.openssl_assert(res == 1)
-
-        res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
-        self.openssl_assert(res == 1)
-
-        evp_pkey = self._dh_cdata_to_evp_pkey(dh_cdata)
-
-        return _DHPublicKey(self, dh_cdata, evp_pkey)
+        return rust_openssl.dh.from_public_numbers(numbers)
 
     def load_dh_parameter_numbers(
         self, numbers: dh.DHParameterNumbers
     ) -> dh.DHParameters:
-        dh_cdata = self._lib.DH_new()
-        self.openssl_assert(dh_cdata != self._ffi.NULL)
-        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-
-        p = self._int_to_bn(numbers.p)
-        g = self._int_to_bn(numbers.g)
-
-        if numbers.q is not None:
-            q = self._int_to_bn(numbers.q)
-        else:
-            q = self._ffi.NULL
-
-        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
-        self.openssl_assert(res == 1)
-
-        return _DHParameters(self, dh_cdata)
+        return rust_openssl.dh.from_parameter_numbers(numbers)
 
     def dh_parameters_supported(
         self, p: int, g: int, q: typing.Optional[int] = None

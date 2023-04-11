@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.x448 import (
     X448PublicKey,
 )
 
+from ...doubles import DummyKeySerializationEncryption
 from ...utils import (
     load_nist_vectors,
     load_vectors_from_file,
@@ -200,18 +201,24 @@ class TestX448Exchange:
 
     def test_invalid_private_bytes(self, backend):
         key = X448PrivateKey.generate()
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
                 None,  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                DummyKeySerializationEncryption(),
             )
 
         with pytest.raises(ValueError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.PKCS8,
-                None,  # type: ignore[arg-type]
+                DummyKeySerializationEncryption(),
             )
 
         with pytest.raises(ValueError):
