@@ -13,7 +13,10 @@ pub(crate) fn pkey_private_bytes<'p>(
     encryption_algorithm: &pyo3::PyAny,
     openssh_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
+    let serialization_mod = py.import(pyo3::intern!(
+        py,
+        "cryptography.hazmat.primitives.serialization"
+    ))?;
     let encoding_class: &pyo3::types::PyType = serialization_mod
         .getattr(pyo3::intern!(py, "Encoding"))?
         .extract()?;
@@ -141,7 +144,10 @@ pub(crate) fn pkey_public_bytes<'p>(
     format: &pyo3::PyAny,
     openssh_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    let serialization_mod = py.import("cryptography.hazmat.primitives.serialization")?;
+    let serialization_mod = py.import(pyo3::intern!(
+        py,
+        "cryptography.hazmat.primitives.serialization"
+    ))?;
     let encoding_class: &pyo3::types::PyType = serialization_mod
         .getattr(pyo3::intern!(py, "Encoding"))?
         .extract()?;

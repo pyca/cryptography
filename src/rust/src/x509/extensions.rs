@@ -379,7 +379,10 @@ pub(crate) fn encode_extension(
         &oid::CRL_REASON_OID => {
             let value = ext
                 .py()
-                .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.backends.openssl.decode_asn1"
+                ))?
                 .getattr(pyo3::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
                 .get_item(ext.getattr(pyo3::intern!(py, "reason"))?)?
                 .extract::<u32>()?;

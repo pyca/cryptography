@@ -126,8 +126,8 @@ impl Ed448PublicKey {
 
         if !valid {
             return Err(CryptographyError::from(pyo3::PyErr::from_value(
-                py.import("cryptography.exceptions")?
-                    .call_method1("InvalidSignature", ())?,
+                py.import(pyo3::intern!(py, "cryptography.exceptions"))?
+                    .call_method1(pyo3::intern!(py, "InvalidSignature"), ())?,
             )));
         }
 

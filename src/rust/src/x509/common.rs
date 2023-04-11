@@ -103,7 +103,7 @@ pub(crate) fn encode_name_entry<'p>(
     py_name_entry: &'p pyo3::PyAny,
 ) -> CryptographyResult<AttributeTypeValue<'p>> {
     let asn1_type = py
-        .import("cryptography.x509.name")?
+        .import(pyo3::intern!(py, "cryptography.x509.name"))?
         .getattr(pyo3::intern!(py, "_ASN1Type"))?;
 
     let attr_type = py_name_entry.getattr(pyo3::intern!(py, "_type"))?;
@@ -120,7 +120,7 @@ pub(crate) fn encode_name_entry<'p>(
         };
         py_name_entry
             .getattr(pyo3::intern!(py, "value"))?
-            .call_method1("encode", (encoding,))?
+            .call_method1(pyo3::intern!(py, "encode"), (encoding,))?
             .extract()?
     } else {
         py_name_entry
@@ -228,7 +228,7 @@ pub(crate) fn encode_general_name<'a>(
     py: pyo3::Python<'a>,
     gn: &'a pyo3::PyAny,
 ) -> Result<GeneralName<'a>, CryptographyError> {
-    let gn_module = py.import("cryptography.x509.general_name")?;
+    let gn_module = py.import(pyo3::intern!(py, "cryptography.x509.general_name"))?;
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr(pyo3::intern!(py, "value"))?;
     if gn_type.is(gn_module.getattr(pyo3::intern!(py, "DNSName"))?) {
@@ -258,7 +258,8 @@ pub(crate) fn encode_general_name<'a>(
         ))
     } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "IPAddress"))?) {
         Ok(GeneralName::IPAddress(
-            gn.call_method0("_packed")?.extract::<&[u8]>()?,
+            gn.call_method0(pyo3::intern!(py, "_packed"))?
+                .extract::<&[u8]>()?,
         ))
     } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "RegisteredID"))?) {
         let oid = py_oid_to_oid(gn_value)?;
@@ -341,23 +342,23 @@ pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
     name: &Name<'_>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.unwrap_read().clone() {
         let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
     }
-    Ok(x509_module.call_method1("Name", (py_rdns,))?)
+    Ok(x509_module.call_method1(pyo3::intern!(py, "Name"), (py_rdns,))?)
 }
 
 fn parse_name_attribute(
     py: pyo3::Python<'_>,
     attribute: AttributeTypeValue<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
     let tag_enum = py
-        .import("cryptography.x509.name")?
+        .import(pyo3::intern!(py, "cryptography.x509.name"))?
         .getattr(pyo3::intern!(py, "_ASN1_TYPE_TO_ENUM"))?;
     let tag_val = attribute
         .value
@@ -376,12 +377,12 @@ fn parse_name_attribute(
         // BMPString tag value
         Some(30) => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes.call_method1("decode", ("utf_16_be",))?
+            py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_16_be",))?
         }
         // UniversalString
         Some(28) => {
             let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
-            py_bytes.call_method1("decode", ("utf_32_be",))?
+            py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_32_be",))?
         }
         _ => {
             let parsed = std::str::from_utf8(attribute.value.data())
@@ -391,7 +392,11 @@ fn parse_name_attribute(
     };
     let kwargs = [("_validate", false)].into_py_dict(py);
     Ok(x509_module
-        .call_method("NameAttribute", (oid, py_data, py_tag), Some(kwargs))?
+        .call_method(
+            pyo3::intern!(py, "NameAttribute"),
+            (oid, py_data, py_tag),
+            Some(kwargs),
+        )?
         .to_object(py))
 }
 
@@ -399,14 +404,14 @@ pub(crate) fn parse_rdn<'a>(
     py: pyo3::Python<'_>,
     rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let py_attrs = pyo3::types::PySet::empty(py)?;
     for attribute in rdn.clone() {
         let na = parse_name_attribute(py, attribute)?;
         py_attrs.add(na)?;
     }
     Ok(x509_module
-        .call_method1("RelativeDistinguishedName", (py_attrs,))?
+        .call_method1(pyo3::intern!(py, "RelativeDistinguishedName"), (py_attrs,))?
         .to_object(py))
 }
 
@@ -414,38 +419,43 @@ pub(crate) fn parse_general_name(
     py: pyo3::Python<'_>,
     gn: GeneralName<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let py_gn = match gn {
         GeneralName::OtherName(data) => {
             let oid = oid_to_py_oid(py, &data.type_id)?.to_object(py);
             x509_module
-                .call_method1("OtherName", (oid, data.value.full_data()))?
+                .call_method1(
+                    pyo3::intern!(py, "OtherName"),
+                    (oid, data.value.full_data()),
+                )?
                 .to_object(py)
         }
         GeneralName::RFC822Name(data) => x509_module
             .getattr(pyo3::intern!(py, "RFC822Name"))?
-            .call_method1("_init_without_validation", (data.0,))?
+            .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DNSName(data) => x509_module
             .getattr(pyo3::intern!(py, "DNSName"))?
-            .call_method1("_init_without_validation", (data.0,))?
+            .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
             let py_name = parse_name(py, &data)?;
             x509_module
-                .call_method1("DirectoryName", (py_name,))?
+                .call_method1(pyo3::intern!(py, "DirectoryName"), (py_name,))?
                 .to_object(py)
         }
         GeneralName::UniformResourceIdentifier(data) => x509_module
             .getattr(pyo3::intern!(py, "UniformResourceIdentifier"))?
-            .call_method1("_init_without_validation", (data.0,))?
+            .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::IPAddress(data) => {
-            let ip_module = py.import("ipaddress")?;
+            let ip_module = py.import(pyo3::intern!(py, "ipaddress"))?;
             if data.len() == 4 || data.len() == 16 {
-                let addr = ip_module.call_method1("ip_address", (data,))?.to_object(py);
+                let addr = ip_module
+                    .call_method1(pyo3::intern!(py, "ip_address"), (data,))?
+                    .to_object(py);
                 x509_module
-                    .call_method1("IPAddress", (addr,))?
+                    .call_method1(pyo3::intern!(py, "IPAddress"), (addr,))?
                     .to_object(py)
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
@@ -456,7 +466,7 @@ pub(crate) fn parse_general_name(
         GeneralName::RegisteredID(data) => {
             let oid = oid_to_py_oid(py, &data)?.to_object(py);
             x509_module
-                .call_method1("RegisteredID", (oid,))?
+                .call_method1(pyo3::intern!(py, "RegisteredID"), (oid,))?
                 .to_object(py)
         }
         _ => {
@@ -487,8 +497,8 @@ fn create_ip_network(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let ip_module = py.import("ipaddress")?;
-    let x509_module = py.import("cryptography.x509")?;
+    let ip_module = py.import(pyo3::intern!(py, "ipaddress"))?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let prefix = match data.len() {
         8 => {
             let num = u32::from_be_bytes(data[4..].try_into().unwrap());
@@ -512,9 +522,11 @@ fn create_ip_network(
             .extract::<&str>()?,
         prefix?
     );
-    let addr = ip_module.call_method1("ip_network", (net,))?.to_object(py);
+    let addr = ip_module
+        .call_method1(pyo3::intern!(py, "ip_network"), (net,))?
+        .to_object(py);
     Ok(x509_module
-        .call_method1("IPAddress", (addr,))?
+        .call_method1(pyo3::intern!(py, "IPAddress"), (addr,))?
         .to_object(py))
 }
 
@@ -553,7 +565,7 @@ pub(crate) fn parse_and_cache_extensions<
         return Ok(cached.clone_ref(py));
     }
 
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);
     let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
@@ -572,17 +584,21 @@ pub(crate) fn parse_and_cache_extensions<
 
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
                 Some(e) => e,
-                None => x509_module
-                    .call_method1("UnrecognizedExtension", (oid_obj, raw_ext.extn_value))?,
+                None => x509_module.call_method1(
+                    pyo3::intern!(py, "UnrecognizedExtension"),
+                    (oid_obj, raw_ext.extn_value),
+                )?,
             };
-            let ext_obj =
-                x509_module.call_method1("Extension", (oid_obj, raw_ext.critical, extn_value))?;
+            let ext_obj = x509_module.call_method1(
+                pyo3::intern!(py, "Extension"),
+                (oid_obj, raw_ext.critical, extn_value),
+            )?;
             exts.append(ext_obj)?;
             seen_oids.insert(raw_ext.extn_id);
         }
     }
     let extensions = x509_module
-        .call_method1("Extensions", (exts,))?
+        .call_method1(pyo3::intern!(py, "Extensions"), (exts,))?
         .to_object(py);
     *cached_extensions = Some(extensions.clone_ref(py));
     Ok(extensions)
@@ -601,7 +617,7 @@ pub(crate) fn encode_extensions<
     encode_ext: F,
 ) -> pyo3::PyResult<Option<Extensions<'p>>> {
     let unrecognized_extension_type: &pyo3::types::PyType = py
-        .import("cryptography.x509")?
+        .import(pyo3::intern!(py, "cryptography.x509"))?
         .getattr(pyo3::intern!(py, "UnrecognizedExtension"))?
         .extract()?;
 
@@ -670,7 +686,7 @@ pub(crate) fn datetime_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let datetime_module = py.import("datetime")?;
+    let datetime_module = py.import(pyo3::intern!(py, "datetime"))?;
     datetime_module
         .getattr(pyo3::intern!(py, "datetime"))?
         .call1((
