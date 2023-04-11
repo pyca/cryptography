@@ -161,16 +161,6 @@ class TestOpenSSL:
         assert bn
         assert backend._bn_to_int(bn) == value
 
-    def test_int_to_bn_inplace(self):
-        value = (2**4242) - 4242
-        bn_ptr = backend._lib.BN_new()
-        assert bn_ptr != backend._ffi.NULL
-        bn_ptr = backend._ffi.gc(bn_ptr, backend._lib.BN_free)
-        bn = backend._int_to_bn(value, bn_ptr)
-
-        assert bn == bn_ptr
-        assert backend._bn_to_int(bn_ptr) == value
-
     def test_bn_to_int(self):
         bn = backend._int_to_bn(0)
         assert backend._bn_to_int(bn) == 0
