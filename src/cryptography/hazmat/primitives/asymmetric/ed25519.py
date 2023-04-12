@@ -10,9 +10,6 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
 
-_ED25519_KEY_SIZE = 32
-_ED25519_SIG_SIZE = 64
-
 
 class Ed25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
