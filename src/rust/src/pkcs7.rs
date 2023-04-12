@@ -132,7 +132,10 @@ fn sign_and_serialize<'p>(
     options: &'p pyo3::types::PyList,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let pkcs7_options = py
-        .import("cryptography.hazmat.primitives.serialization.pkcs7")?
+        .import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.serialization.pkcs7"
+        ))?
         .getattr(pyo3::intern!(py, "PKCS7Options"))?;
 
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
@@ -293,7 +296,10 @@ fn sign_and_serialize<'p>(
     let ci_bytes = asn1::write_single(&content_info)?;
 
     let encoding_class = py
-        .import("cryptography.hazmat.primitives.serialization")?
+        .import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.serialization"
+        ))?
         .getattr(pyo3::intern!(py, "Encoding"))?;
 
     if encoding.is(encoding_class.getattr(pyo3::intern!(py, "SMIME"))?) {
@@ -303,7 +309,10 @@ fn sign_and_serialize<'p>(
             .collect::<Vec<_>>()
             .join(",");
         let smime_encode = py
-            .import("cryptography.hazmat.primitives.serialization.pkcs7")?
+            .import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.serialization.pkcs7"
+            ))?
             .getattr(pyo3::intern!(py, "_smime_encode"))?;
         Ok(smime_encode
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?

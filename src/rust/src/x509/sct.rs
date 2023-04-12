@@ -164,9 +164,12 @@ impl Sct {
 
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        py.import("cryptography.x509.certificate_transparency")?
-            .getattr(pyo3::intern!(py, "Version"))?
-            .getattr(pyo3::intern!(py, "v1"))
+        py.import(pyo3::intern!(
+            py,
+            "cryptography.x509.certificate_transparency"
+        ))?
+        .getattr(pyo3::intern!(py, "Version"))?
+        .getattr(pyo3::intern!(py, "v1"))
     }
 
     #[getter]
@@ -177,10 +180,13 @@ impl Sct {
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let datetime_class = py
-            .import("datetime")?
+            .import(pyo3::intern!(py, "datetime"))?
             .getattr(pyo3::intern!(py, "datetime"))?;
         datetime_class
-            .call_method1("utcfromtimestamp", (self.timestamp / 1000,))?
+            .call_method1(
+                pyo3::intern!(py, "utcfromtimestamp"),
+                (self.timestamp / 1000,),
+            )?
             .call_method(
                 "replace",
                 (),
@@ -191,7 +197,10 @@ impl Sct {
     #[getter]
     fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let et_class = py
-            .import("cryptography.x509.certificate_transparency")?
+            .import(pyo3::intern!(
+                py,
+                "cryptography.x509.certificate_transparency"
+            ))?
             .getattr(pyo3::intern!(py, "LogEntryType"))?;
         let attr_name = match self.entry_type {
             LogEntryType::Certificate => "X509_CERTIFICATE",
@@ -205,14 +214,17 @@ impl Sct {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
+        let hashes_mod = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
         hashes_mod.call_method0(self.hash_algorithm.to_attr())
     }
 
     #[getter]
     fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let sa_class = py
-            .import("cryptography.x509.certificate_transparency")?
+            .import(pyo3::intern!(
+                py,
+                "cryptography.x509.certificate_transparency"
+            ))?
             .getattr(pyo3::intern!(py, "SignatureAlgorithm"))?;
         sa_class.getattr(self.signature_algorithm.to_attr())
     }
