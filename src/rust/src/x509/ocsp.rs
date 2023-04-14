@@ -4,7 +4,7 @@
 
 use crate::error::CryptographyResult;
 use crate::x509;
-use crate::x509::oid;
+use cryptography_x509::oid;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 

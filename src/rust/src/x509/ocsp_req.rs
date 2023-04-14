@@ -5,7 +5,9 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{extensions, ocsp, oid};
+use crate::x509::{extensions, ocsp};
+use cryptography_x509::extensions::Extensions;
+use cryptography_x509::oid;
 use pyo3::IntoPy;
 
 #[ouroboros::self_referencing]
@@ -197,14 +199,14 @@ struct TBSRequest<'a> {
         asn1::SequenceOfWriter<'a, Request<'a>>,
     >,
     #[explicit(2)]
-    request_extensions: Option<x509::Extensions<'a>>,
+    request_extensions: Option<Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct Request<'a> {
     req_cert: ocsp::CertID<'a>,
     #[explicit(0)]
-    single_request_extensions: Option<x509::Extensions<'a>>,
+    single_request_extensions: Option<Extensions<'a>>,
 }
 
 #[pyo3::prelude::pyfunction]

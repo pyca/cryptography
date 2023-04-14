@@ -7,7 +7,12 @@ use crate::asn1::{
 };
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, extensions, oid, sign};
+use crate::x509::{certificate, extensions, sign};
+use cryptography_x509::crl::{
+    CRLReason, IssuingDistributionPoint, RawCertificateRevocationList, RawRevokedCertificate,
+    TBSCertList,
+};
+use cryptography_x509::oid;
 use pyo3::{IntoPy, ToPyObject};
 use std::sync::Arc;
 
@@ -476,40 +481,6 @@ impl CRLIterator {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
-struct RawCertificateRevocationList<'a> {
-    tbs_cert_list: TBSCertList<'a>,
-    signature_algorithm: x509::AlgorithmIdentifier<'a>,
-    signature_value: asn1::BitString<'a>,
-}
-
-type RevokedCertificates<'a> = Option<
-    x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SequenceOf<'a, RawRevokedCertificate<'a>>,
-        asn1::SequenceOfWriter<'a, RawRevokedCertificate<'a>, Vec<RawRevokedCertificate<'a>>>,
-    >,
->;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
-struct TBSCertList<'a> {
-    version: Option<u8>,
-    signature: x509::AlgorithmIdentifier<'a>,
-    issuer: x509::Name<'a>,
-    this_update: x509::Time,
-    next_update: Option<x509::Time>,
-    revoked_certificates: RevokedCertificates<'a>,
-    #[explicit(0)]
-    crl_extensions: Option<x509::Extensions<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
-struct RawRevokedCertificate<'a> {
-    user_certificate: asn1::BigUint<'a>,
-    revocation_date: x509::Time,
-    crl_entry_extensions: Option<x509::Extensions<'a>>,
-}
-
 #[ouroboros::self_referencing]
 struct OwnedRawRevokedCertificate {
     data: Arc<OwnedRawCertificateRevocationList>,
@@ -546,36 +517,6 @@ impl RevokedCertificate {
         )
     }
 }
-
-pub(crate) type ReasonFlags<'a> =
-    Option<x509::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct IssuingDistributionPoint<'a> {
-    #[explicit(0)]
-    pub distribution_point: Option<certificate::DistributionPointName<'a>>,
-
-    #[implicit(1)]
-    #[default(false)]
-    pub only_contains_user_certs: bool,
-
-    #[implicit(2)]
-    #[default(false)]
-    pub only_contains_ca_certs: bool,
-
-    #[implicit(3)]
-    pub only_some_reasons: ReasonFlags<'a>,
-
-    #[implicit(4)]
-    #[default(false)]
-    pub indirect_crl: bool,
-
-    #[implicit(5)]
-    #[default(false)]
-    pub only_contains_attribute_certs: bool,
-}
-
-pub(crate) type CRLReason = asn1::Enumerated;
 
 pub(crate) fn parse_crl_reason_flags<'p>(
     py: pyo3::Python<'p>,

@@ -5,43 +5,14 @@
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, oid, sign};
+use crate::x509::{certificate, sign};
 use asn1::SimpleAsn1Readable;
+use cryptography_x509::common::RawTlv;
+use cryptography_x509::csr::{Attribute, CertificationRequestInfo, RawCsr};
+use cryptography_x509::oid;
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct RawCsr<'a> {
-    csr_info: CertificationRequestInfo<'a>,
-    signature_alg: x509::AlgorithmIdentifier<'a>,
-    signature: asn1::BitString<'a>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct CertificationRequestInfo<'a> {
-    version: u8,
-    subject: x509::Name<'a>,
-    spki: certificate::SubjectPublicKeyInfo<'a>,
-    #[implicit(0, required)]
-    attributes: Attributes<'a>,
-}
-
-pub(crate) type Attributes<'a> = x509::Asn1ReadableOrWritable<
-    'a,
-    asn1::SetOf<'a, Attribute<'a>>,
-    asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
->;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct Attribute<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier,
-    pub(crate) values: x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SetOf<'a, asn1::Tlv<'a>>,
-        asn1::SetOfWriter<'a, x509::common::RawTlv<'a>, [x509::common::RawTlv<'a>; 1]>,
-    >,
-}
 
 fn check_attribute_length<'a>(
     values: asn1::SetOf<'a, asn1::Tlv<'a>>,
@@ -52,22 +23,6 @@ fn check_attribute_length<'a>(
         ))
     } else {
         Ok(())
-    }
-}
-
-impl CertificationRequestInfo<'_> {
-    fn get_extension_attribute(&self) -> Result<Option<x509::Extensions<'_>>, CryptographyError> {
-        for attribute in self.attributes.unwrap_read().clone() {
-            if attribute.type_id == oid::EXTENSION_REQUEST
-                || attribute.type_id == oid::MS_EXTENSION_REQUEST
-            {
-                check_attribute_length(attribute.values.unwrap_read().clone())?;
-                let val = attribute.values.unwrap_read().clone().next().unwrap();
-                let exts = asn1::parse_single(val.full_data())?;
-                return Ok(Some(exts));
-            }
-        }
-        Ok(None)
     }
 }
 
@@ -268,7 +223,16 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let exts = self.raw.borrow_value().csr_info.get_extension_attribute()?;
+        let exts = self
+            .raw
+            .borrow_value()
+            .csr_info
+            .get_extension_attribute()
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "Only single-valued attributes are supported",
+                )
+            })?;
 
         x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &exts, |oid, ext_data| {
             certificate::parse_cert_ext(py, oid.clone(), ext_data)
@@ -393,9 +357,9 @@ fn create_x509_csr(
 
         attrs.push(Attribute {
             type_id: oid,
-            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                x509::common::RawTlv::new(tag, value),
-            ])),
+            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([RawTlv::new(
+                tag, value,
+            )])),
         })
     }
 

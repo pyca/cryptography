@@ -4,7 +4,7 @@
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::oid;
+use cryptography_x509::oid;
 
 use once_cell::sync::Lazy;
 
@@ -456,7 +456,7 @@ fn identify_key_hash_type_for_oid(
 #[cfg(test)]
 mod tests {
     use super::{identify_key_hash_type_for_oid, py_hash_name_from_hash_type, HashType, KeyType};
-    use crate::x509::oid;
+    use cryptography_x509::oid;
 
     #[test]
     fn test_identify_key_hash_type_for_oid() {

@@ -5,7 +5,11 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, crl, extensions, ocsp, oid, py_to_datetime, sct};
+use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
+use cryptography_x509::certificate::RawCertificate;
+use cryptography_x509::crl::CRLReason;
+use cryptography_x509::extensions::Extensions;
+use cryptography_x509::oid;
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -404,10 +408,7 @@ impl OCSPResponse {
 fn map_arc_data_ocsp_response(
     py: pyo3::Python<'_>,
     it: &OwnedRawOCSPResponse,
-    f: impl for<'this> FnOnce(
-        &'this [u8],
-        &RawOCSPResponse<'this>,
-    ) -> certificate::RawCertificate<'this>,
+    f: impl for<'this> FnOnce(&'this [u8], &RawOCSPResponse<'this>) -> RawCertificate<'this>,
 ) -> certificate::OwnedRawCertificate {
     certificate::OwnedRawCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
         it.with(|value| {
@@ -445,12 +446,8 @@ struct ResponseBytes<'a> {
 type OCSPCerts<'a> = Option<
     x509::Asn1ReadableOrWritable<
         'a,
-        asn1::SequenceOf<'a, certificate::RawCertificate<'a>>,
-        asn1::SequenceOfWriter<
-            'a,
-            certificate::RawCertificate<'a>,
-            Vec<certificate::RawCertificate<'a>>,
-        >,
+        asn1::SequenceOf<'a, RawCertificate<'a>>,
+        asn1::SequenceOfWriter<'a, RawCertificate<'a>, Vec<RawCertificate<'a>>>,
     >,
 >;
 
@@ -494,7 +491,7 @@ struct ResponseData<'a> {
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
     >,
     #[explicit(1)]
-    response_extensions: Option<x509::Extensions<'a>>,
+    response_extensions: Option<Extensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -513,7 +510,7 @@ struct SingleResponse<'a> {
     #[explicit(0)]
     next_update: Option<asn1::GeneralizedTime>,
     #[explicit(1)]
-    single_extensions: Option<x509::Extensions<'a>>,
+    single_extensions: Option<Extensions<'a>>,
 }
 
 impl SingleResponse<'_> {
@@ -601,7 +598,7 @@ enum CertStatus {
 struct RevokedInfo {
     revocation_time: asn1::GeneralizedTime,
     #[explicit(0)]
-    revocation_reason: Option<crl::CRLReason>,
+    revocation_reason: Option<CRLReason>,
 }
 
 #[pyo3::prelude::pyfunction]
