@@ -18,6 +18,14 @@ Changelog
   proprietary Microsoft certificate extension.
 * Implemented support for equality checks on all asymmetric public key types.
 
+.. _v40-0-2:
+
+40.0.2 - 2023-04-14
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 3.7.2.
+* Added some functions to support an upcoming ``pyOpenSSL`` release.
+
 .. _v40-0-1:
 
 40.0.1 - 2023-03-24
