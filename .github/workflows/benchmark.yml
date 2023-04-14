@@ -2,6 +2,7 @@ name: Benchmark
 on:
   pull_request:
     paths:
+      - '.github/workflows/benchmark.yml'
       - 'src/**'
       - 'tests/**'
 
@@ -27,7 +28,7 @@ jobs:
         with:
           repository: "pyca/cryptography"
           path: "cryptography-main"
-          ref: "main"
+          ref: "${{ github.base_ref }}"
 
       - name: Setup python
         id: setup-python
