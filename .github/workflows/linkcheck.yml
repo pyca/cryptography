@@ -1,0 +1,46 @@
+name: linkcheck
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+
+jobs:
+  docs-linkcheck:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'linkcheck'))
+    runs-on: ubuntu-latest
+    name: "linkcheck"
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3.5.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: set mtimes for rust dirs
+        uses: ./.github/actions/mtime-fix
+      - name: Setup python
+        id: setup-python
+        uses: actions/setup-python@v4.5.0
+        with:
+          python-version: 3.11
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          # This creates the same key as the docs job (as long as they have the same
+          # python version)
+          key: 3.11-${{ steps.setup-python.outputs.python-version }}
+      - run: python -m pip install -c ci-constraints-requirements.txt nox
+      - name: Build nox environment
+        run: |
+            nox -v --install-only -s docs-linkcheck
+        env:
+          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+      - name: linkcheck
+        run: nox --no-install -s docs-linkcheck -- --color=yes
