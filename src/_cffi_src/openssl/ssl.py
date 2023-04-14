@@ -254,6 +254,7 @@ int SSL_CTX_set_session_id_context(SSL_CTX *, const unsigned char *,
                                    unsigned int);
 
 X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
+void SSL_CTX_set_cert_store(SSL_CTX *, X509_STORE *);
 int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
