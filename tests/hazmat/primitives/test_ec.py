@@ -565,7 +565,7 @@ class TestECDSAVectors:
             )
 
 
-class TestECNumbersEquality:
+class TestECEquality:
     def test_public_numbers_eq(self):
         pub = ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
         assert pub == ec.EllipticCurvePublicNumbers(1, 2, ec.SECP192R1())
@@ -600,6 +600,19 @@ class TestECNumbersEquality:
             1, ec.EllipticCurvePublicNumbers(1, 2, ec.SECP521R1())
         )
         assert priv != object()
+
+    def test_public_key_equality(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        key1 = serialization.load_pem_private_key(key_bytes, None).public_key()
+        key2 = serialization.load_pem_private_key(key_bytes, None).public_key()
+        key3 = ec.generate_private_key(ec.SECP256R1()).public_key()
+        assert key1 == key2
+        assert key1 != key3
+        assert key1 != object()
 
 
 class TestECSerialization:

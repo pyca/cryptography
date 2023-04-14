@@ -483,6 +483,8 @@ Custom X.509 Vectors
 * ``mismatch_inner_outer_sig_algorithm.der`` - A leaf certificate derived from
   ``x509/cryptography.io.pem`` but modifying the ``tbs_cert.signature_algorithm``
   OID to not match the outer signature algorithm OID.
+* ``ms-certificate-template.pem`` - A certificate with a ``msCertificateTemplate``
+  extension.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

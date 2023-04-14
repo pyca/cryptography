@@ -106,7 +106,7 @@ Alpine
 
 .. warning::
 
-    The Rust available by default in Alpine < 3.14 is older than the minimum
+    The Rust available by default in Alpine < 3.15 is older than the minimum
     supported version. See the :ref:`Rust installation instructions
     <installation:Rust>` for information about installing a newer Rust.
 
@@ -121,8 +121,8 @@ Debian/Ubuntu
 
 .. warning::
 
-    The Rust available in some Debian versions is older than the minimum
-    supported version. Debian Bullseye is sufficiently new, but otherwise
+    The Rust available in most Debian versions is older than the minimum
+    supported version. Debian Bookworm is sufficiently new, but otherwise
     please see the :ref:`Rust installation instructions <installation:Rust>`
     for information about installing a newer Rust.
 
@@ -136,7 +136,7 @@ Fedora/RHEL/CentOS
 
 .. warning::
 
-    For RHEL and CentOS you must be on version 8.3 or newer for the command
+    For RHEL and CentOS you must be on version 8.6 or newer for the command
     below to install a sufficiently new Rust. If your Rust is less than 1.56.0
     please see the :ref:`Rust installation instructions <installation:Rust>`
     for information about installing a newer Rust.

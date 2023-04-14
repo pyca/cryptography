@@ -30,15 +30,6 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey,
     _EllipticCurvePublicKey,
 )
-from cryptography.hazmat.backends.openssl.ed448 import (
-    _ED448_KEY_SIZE,
-    _Ed448PrivateKey,
-    _Ed448PublicKey,
-)
-from cryptography.hazmat.backends.openssl.ed25519 import (
-    _Ed25519PrivateKey,
-    _Ed25519PublicKey,
-)
 from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.poly1305 import (
@@ -48,10 +39,6 @@ from cryptography.hazmat.backends.openssl.poly1305 import (
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
     _RSAPublicKey,
-)
-from cryptography.hazmat.backends.openssl.x448 import (
-    _X448PrivateKey,
-    _X448PublicKey,
 )
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
@@ -435,20 +422,15 @@ class Backend:
         val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
         return val
 
-    def _int_to_bn(self, num: int, bn=None):
+    def _int_to_bn(self, num: int):
         """
         Converts a python integer to a BIGNUM. The returned BIGNUM will not
         be garbage collected (to support adding them to structs that take
         ownership of the object). Be sure to register it for GC if it will
         be discarded after use.
         """
-        assert bn is None or bn != self._ffi.NULL
-
-        if bn is None:
-            bn = self._ffi.NULL
-
         binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
-        bn_ptr = self._lib.BN_bin2bn(binary, len(binary), bn)
+        bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
         self.openssl_assert(bn_ptr != self._ffi.NULL)
         return bn_ptr
 
@@ -645,17 +627,23 @@ class Backend:
             return _DHPrivateKey(self, dh_cdata, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
             # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _Ed25519PrivateKey(self, evp_pkey)
+            return rust_openssl.ed25519.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _X448PrivateKey(self, evp_pkey)
+            return rust_openssl.x448.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.private_key_from_ptr(
                 int(self._ffi.cast("uintptr_t", evp_pkey))
             )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
             # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _Ed448PrivateKey(self, evp_pkey)
+            return rust_openssl.ed448.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -704,17 +692,23 @@ class Backend:
             return _DHPublicKey(self, dh_cdata, evp_pkey)
         elif key_type == getattr(self._lib, "EVP_PKEY_ED25519", None):
             # EVP_PKEY_ED25519 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _Ed25519PublicKey(self, evp_pkey)
+            return rust_openssl.ed25519.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == getattr(self._lib, "EVP_PKEY_X448", None):
             # EVP_PKEY_X448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _X448PublicKey(self, evp_pkey)
+            return rust_openssl.x448.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif key_type == self._lib.EVP_PKEY_X25519:
             return rust_openssl.x25519.public_key_from_ptr(
                 int(self._ffi.cast("uintptr_t", evp_pkey))
             )
         elif key_type == getattr(self._lib, "EVP_PKEY_ED448", None):
             # EVP_PKEY_ED448 is not present in CRYPTOGRAPHY_IS_LIBRESSL
-            return _Ed448PublicKey(self, evp_pkey)
+            return rust_openssl.ed448.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -1049,9 +1043,20 @@ class Backend:
         self.openssl_assert(res == 1)
         return x509.load_der_x509_certificate(self._read_mem_bio(bio))
 
-    def _check_keys_correspond(self, key1, key2) -> None:
-        if self._lib.EVP_PKEY_cmp(key1._evp_pkey, key2._evp_pkey) != 1:
-            raise ValueError("Keys do not correspond")
+    def _key2ossl(self, key: PKCS12PrivateKeyTypes) -> typing.Any:
+        data = key.private_bytes(
+            serialization.Encoding.DER,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+        mem_bio = self._bytes_to_bio(data)
+
+        evp_pkey = self._lib.d2i_PrivateKey_bio(
+            mem_bio.bio,
+            self._ffi.NULL,
+        )
+        self.openssl_assert(evp_pkey != self._ffi.NULL)
+        return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
     def _load_key(
         self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
@@ -1492,12 +1497,9 @@ class Backend:
                     write_bio = self._lib.PEM_write_bio_RSAPrivateKey
                 elif key_type == self._lib.EVP_PKEY_DSA:
                     write_bio = self._lib.PEM_write_bio_DSAPrivateKey
-                elif key_type == self._lib.EVP_PKEY_EC:
-                    write_bio = self._lib.PEM_write_bio_ECPrivateKey
                 else:
-                    raise ValueError(
-                        "Unsupported key type for TraditionalOpenSSL"
-                    )
+                    assert key_type == self._lib.EVP_PKEY_EC
+                    write_bio = self._lib.PEM_write_bio_ECPrivateKey
                 return self._private_key_bytes_via_bio(
                     write_bio, cdata, password
                 )
@@ -1512,12 +1514,9 @@ class Backend:
                     write_bio = self._lib.i2d_RSAPrivateKey_bio
                 elif key_type == self._lib.EVP_PKEY_EC:
                     write_bio = self._lib.i2d_ECPrivateKey_bio
-                elif key_type == self._lib.EVP_PKEY_DSA:
-                    write_bio = self._lib.i2d_DSAPrivateKey_bio
                 else:
-                    raise ValueError(
-                        "Unsupported key type for TraditionalOpenSSL"
-                    )
+                    assert key_type == self._lib.EVP_PKEY_DSA
+                    write_bio = self._lib.i2d_DSAPrivateKey_bio
                 return self._bio_func_output(write_bio, cdata)
 
             raise ValueError("Unsupported encoding for TraditionalOpenSSL")
@@ -1806,19 +1805,6 @@ class Backend:
     ) -> x25519.X25519PrivateKey:
         return rust_openssl.x25519.from_private_bytes(data)
 
-    def _evp_pkey_keygen_gc(self, nid):
-        evp_pkey_ctx = self._lib.EVP_PKEY_CTX_new_id(nid, self._ffi.NULL)
-        self.openssl_assert(evp_pkey_ctx != self._ffi.NULL)
-        evp_pkey_ctx = self._ffi.gc(evp_pkey_ctx, self._lib.EVP_PKEY_CTX_free)
-        res = self._lib.EVP_PKEY_keygen_init(evp_pkey_ctx)
-        self.openssl_assert(res == 1)
-        evp_ppkey = self._ffi.new("EVP_PKEY **")
-        res = self._lib.EVP_PKEY_keygen(evp_pkey_ctx, evp_ppkey)
-        self.openssl_assert(res == 1)
-        self.openssl_assert(evp_ppkey[0] != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_ppkey[0], self._lib.EVP_PKEY_free)
-        return evp_pkey
-
     def x25519_generate_key(self) -> x25519.X25519PrivateKey:
         return rust_openssl.x25519.generate_key()
 
@@ -1828,31 +1814,13 @@ class Backend:
         return not self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
 
     def x448_load_public_bytes(self, data: bytes) -> x448.X448PublicKey:
-        if len(data) != 56:
-            raise ValueError("An X448 public key is 56 bytes long")
-
-        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
-            self._lib.NID_X448, self._ffi.NULL, data, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return _X448PublicKey(self, evp_pkey)
+        return rust_openssl.x448.from_public_bytes(data)
 
     def x448_load_private_bytes(self, data: bytes) -> x448.X448PrivateKey:
-        if len(data) != 56:
-            raise ValueError("An X448 private key is 56 bytes long")
-
-        data_ptr = self._ffi.from_buffer(data)
-        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
-            self._lib.NID_X448, self._ffi.NULL, data_ptr, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return _X448PrivateKey(self, evp_pkey)
+        return rust_openssl.x448.from_private_bytes(data)
 
     def x448_generate_key(self) -> x448.X448PrivateKey:
-        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_X448)
-        return _X448PrivateKey(self, evp_pkey)
+        return rust_openssl.x448.generate_key()
 
     def x448_supported(self) -> bool:
         if self._fips_enabled:
@@ -1870,38 +1838,15 @@ class Backend:
     def ed25519_load_public_bytes(
         self, data: bytes
     ) -> ed25519.Ed25519PublicKey:
-        utils._check_bytes("data", data)
-
-        if len(data) != ed25519._ED25519_KEY_SIZE:
-            raise ValueError("An Ed25519 public key is 32 bytes long")
-
-        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
-            self._lib.NID_ED25519, self._ffi.NULL, data, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        return _Ed25519PublicKey(self, evp_pkey)
+        return rust_openssl.ed25519.from_public_bytes(data)
 
     def ed25519_load_private_bytes(
         self, data: bytes
     ) -> ed25519.Ed25519PrivateKey:
-        if len(data) != ed25519._ED25519_KEY_SIZE:
-            raise ValueError("An Ed25519 private key is 32 bytes long")
-
-        utils._check_byteslike("data", data)
-        data_ptr = self._ffi.from_buffer(data)
-        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
-            self._lib.NID_ED25519, self._ffi.NULL, data_ptr, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        return _Ed25519PrivateKey(self, evp_pkey)
+        return rust_openssl.ed25519.from_private_bytes(data)
 
     def ed25519_generate_key(self) -> ed25519.Ed25519PrivateKey:
-        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED25519)
-        return _Ed25519PrivateKey(self, evp_pkey)
+        return rust_openssl.ed25519.generate_key()
 
     def ed448_supported(self) -> bool:
         if self._fips_enabled:
@@ -1912,35 +1857,13 @@ class Backend:
         )
 
     def ed448_load_public_bytes(self, data: bytes) -> ed448.Ed448PublicKey:
-        utils._check_bytes("data", data)
-        if len(data) != _ED448_KEY_SIZE:
-            raise ValueError("An Ed448 public key is 57 bytes long")
-
-        evp_pkey = self._lib.EVP_PKEY_new_raw_public_key(
-            self._lib.NID_ED448, self._ffi.NULL, data, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        return _Ed448PublicKey(self, evp_pkey)
+        return rust_openssl.ed448.from_public_bytes(data)
 
     def ed448_load_private_bytes(self, data: bytes) -> ed448.Ed448PrivateKey:
-        utils._check_byteslike("data", data)
-        if len(data) != _ED448_KEY_SIZE:
-            raise ValueError("An Ed448 private key is 57 bytes long")
-
-        data_ptr = self._ffi.from_buffer(data)
-        evp_pkey = self._lib.EVP_PKEY_new_raw_private_key(
-            self._lib.NID_ED448, self._ffi.NULL, data_ptr, len(data)
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        return _Ed448PrivateKey(self, evp_pkey)
+        return rust_openssl.ed448.from_private_bytes(data)
 
     def ed448_generate_key(self) -> ed448.Ed448PrivateKey:
-        evp_pkey = self._evp_pkey_keygen_gc(self._lib.NID_ED448)
-        return _Ed448PrivateKey(self, evp_pkey)
+        return rust_openssl.ed448.generate_key()
 
     def derive_scrypt(
         self,
@@ -2229,15 +2152,14 @@ class Backend:
         with self._zeroed_null_terminated_buf(password) as password_buf:
             with self._zeroed_null_terminated_buf(name) as name_buf:
                 ossl_cert = self._cert2ossl(cert) if cert else self._ffi.NULL
-                if key is not None:
-                    evp_pkey = key._evp_pkey  # type: ignore[union-attr]
-                else:
-                    evp_pkey = self._ffi.NULL
+                ossl_pkey = (
+                    self._key2ossl(key) if key is not None else self._ffi.NULL
+                )
 
                 p12 = self._lib.PKCS12_create(
                     password_buf,
                     name_buf,
-                    evp_pkey,
+                    ossl_pkey,
                     ossl_cert,
                     sk_x509,
                     nid_key,

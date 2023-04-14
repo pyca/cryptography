@@ -379,7 +379,10 @@ pub(crate) fn encode_extension(
         &oid::CRL_REASON_OID => {
             let value = ext
                 .py()
-                .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.backends.openssl.decode_asn1"
+                ))?
                 .getattr(pyo3::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
                 .get_item(ext.getattr(pyo3::intern!(py, "reason"))?)?
                 .extract::<u32>()?;
@@ -452,6 +455,15 @@ pub(crate) fn encode_extension(
                 .getattr(pyo3::intern!(py, "nonce"))?
                 .extract::<&[u8]>()?;
             Ok(Some(asn1::write_single(&nonce)?))
+        }
+        &oid::MS_CERTIFICATE_TEMPLATE => {
+            let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
+            let mstpl = certificate::MSCertificateTemplate {
+                template_id: py_oid_to_oid(py_template_id)?,
+                major_version: ext.getattr(pyo3::intern!(py, "major_version"))?.extract()?,
+                minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,
+            };
+            Ok(Some(asn1::write_single(&mstpl)?))
         }
         _ => Ok(None),
     }

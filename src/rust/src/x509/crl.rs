@@ -24,7 +24,7 @@ fn load_der_x509_crl(
 
     let version = raw.borrow_value().tbs_cert_list.version.unwrap_or(1);
     if version != 1 {
-        let x509_module = py.import("cryptography.x509")?;
+        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         return Err(CryptographyError::from(pyo3::PyErr::from_value(
             x509_module
                 .getattr(pyo3::intern!(py, "InvalidVersion"))?
@@ -174,12 +174,14 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
         algorithm: pyo3::PyObject,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let hashes_mod = py.import("cryptography.hazmat.primitives.hashes")?;
+        let hashes_mod = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
         let h = hashes_mod
             .getattr(pyo3::intern!(py, "Hash"))?
             .call1((algorithm,))?;
-        h.call_method1("update", (self.public_bytes_der()?.as_slice(),))?;
-        h.call_method0("finalize")
+
+        let data = self.public_bytes_der()?;
+        h.call_method1(pyo3::intern!(py, "update"), (data.as_slice(),))?;
+        h.call_method0(pyo3::intern!(py, "finalize"))
     }
 
     #[getter]
@@ -193,8 +195,8 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid = self.signature_algorithm_oid(py)?;
-        let oid_module = py.import("cryptography.hazmat._oid")?;
-        let exceptions_module = py.import("cryptography.exceptions")?;
+        let oid_module = py.import(pyo3::intern!(py, "cryptography.hazmat._oid"))?;
+        let exceptions_module = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
         match oid_module
             .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?
             .get_item(oid)
@@ -264,7 +266,7 @@ impl CertificateRevocationList {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let x509_module = py.import("cryptography.x509")?;
+        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
@@ -579,7 +581,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
     py: pyo3::Python<'p>,
     reason: &CRLReason,
 ) -> CryptographyResult<&'p pyo3::PyAny> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let flag_name = match reason.value() {
         0 => "unspecified",
         1 => "key_compromise",
@@ -610,7 +612,7 @@ pub fn parse_crl_entry_ext<'p>(
     oid: asn1::ObjectIdentifier,
     data: &[u8],
 ) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
-    let x509_module = py.import("cryptography.x509")?;
+    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     match oid {
         oid::CRL_REASON_OID => {
             let flags = parse_crl_reason_flags(py, &asn1::parse_single::<CRLReason>(data)?)?;

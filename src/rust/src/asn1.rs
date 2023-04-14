@@ -60,7 +60,7 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let int_type = py.get_type::<pyo3::types::PyLong>();
     let kwargs = [("signed", true)].into_py_dict(py);
-    int_type.call_method("from_bytes", (v, "big"), Some(kwargs))
+    int_type.call_method(pyo3::intern!(py, "from_bytes"), (v, "big"), Some(kwargs))
 }
 
 #[pyo3::prelude::pyfunction]
@@ -91,8 +91,13 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     // Round the length up so that we prefix an extra \x00. This ensures that
     // integers that'd have the high bit set in their first octet are not
     // encoded as negative in DER.
-    let n = v.call_method0("bit_length")?.extract::<usize>()? / 8 + 1;
-    v.call_method1("to_bytes", (n, "big"))?.extract()
+    let n = v
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?
+        / 8
+        + 1;
+    v.call_method1(pyo3::intern!(py, "to_bytes"), (n, "big"))?
+        .extract()
 }
 
 pub(crate) fn encode_der_data<'p>(
@@ -102,7 +107,10 @@ pub(crate) fn encode_der_data<'p>(
     encoding: &'p pyo3::PyAny,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let encoding_class = py
-        .import("cryptography.hazmat.primitives.serialization")?
+        .import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.serialization"
+        ))?
         .getattr(pyo3::intern!(py, "Encoding"))?;
 
     if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {

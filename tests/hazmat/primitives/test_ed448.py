@@ -260,3 +260,24 @@ class TestEd448Signing:
         key = Ed448PublicKey.from_public_bytes(public_bytes)
         with pytest.raises(InvalidSignature):
             key.verify(signature, b"8")
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed448_supported(),
+    skip_message="Requires OpenSSL with Ed448 support",
+)
+def test_public_key_equality(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key2 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key3 = Ed448PrivateKey.generate().public_key()
+    assert key1 == key2
+    assert key1 != key3
+    assert key1 != object()
+
+    with pytest.raises(TypeError):
+        key1 < key2  # type: ignore[operator]

@@ -243,9 +243,6 @@ def load_pkcs1_vectors(vector_data):
             attr = None
 
         if private_key_vector is None or public_key_vector is None:
-            # Random garbage to defeat CPython's peephole optimizer so that
-            # coverage records correctly: https://bugs.python.org/issue2506
-            1 + 1
             continue
 
         if line.startswith("# Private key"):

@@ -21,8 +21,8 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
         let py = pyobj.py();
 
         let (bufobj, ptrval): (&pyo3::PyAny, usize) = py
-            .import("cryptography.utils")?
-            .call_method1("_extract_buffer_length", (pyobj,))?
+            .import(pyo3::intern!(py, "cryptography.utils"))?
+            .call_method1(pyo3::intern!(py, "_extract_buffer_length"), (pyobj,))?
             .extract()?;
 
         let len = bufobj.len()?;

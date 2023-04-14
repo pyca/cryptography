@@ -253,3 +253,23 @@ class TestX448Exchange:
             )
             == private_bytes
         )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x448_supported(),
+    skip_message="Requires OpenSSL with X448 support",
+)
+def test_public_key_equality(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key2 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key3 = X448PrivateKey.generate().public_key()
+    assert key1 == key2
+    assert key1 != key3
+    assert key1 != object()
+    with pytest.raises(TypeError):
+        key1 < key2  # type: ignore[operator]

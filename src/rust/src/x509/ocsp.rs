@@ -99,9 +99,9 @@ pub(crate) fn hash_data<'p>(
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
     let hash = py
-        .import("cryptography.hazmat.primitives.hashes")?
+        .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
         .getattr(pyo3::intern!(py, "Hash"))?
         .call1((py_hash_alg,))?;
-    hash.call_method1("update", (data,))?;
-    hash.call_method0("finalize")?.extract()
+    hash.call_method1(pyo3::intern!(py, "update"), (data,))?;
+    hash.call_method0(pyo3::intern!(py, "finalize"))?.extract()
 }

@@ -2763,3 +2763,15 @@ class TestRSAPEMPublicKeySerialization:
         key = rsa_key_2048.public_key()
         with pytest.raises(ValueError):
             key.public_bytes(encoding, fmt)
+
+    def test_public_key_equality(self, rsa_key_2048: rsa.RSAPrivateKey):
+        key1 = rsa_key_2048.public_key()
+        key2 = RSA_KEY_2048.private_key(
+            unsafe_skip_rsa_key_validation=True
+        ).public_key()
+        key3 = RSA_KEY_2048_ALT.private_key(
+            unsafe_skip_rsa_key_validation=True
+        ).public_key()
+        assert key1 == key2
+        assert key1 != key3
+        assert key1 != object()

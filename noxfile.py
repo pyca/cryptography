@@ -141,6 +141,6 @@ def rust(session: nox.Session) -> None:
     install(session, ".")
 
     with session.chdir("src/rust/"):
-        session.run("cargo", "fmt", "--all", "--", "--check")
-        session.run("cargo", "clippy", "--", "-D", "warnings")
-        session.run("cargo", "test", "--no-default-features")
+        session.run("cargo", "fmt", "--all", "--", "--check", external=True)
+        session.run("cargo", "clippy", "--", "-D", "warnings", external=True)
+        session.run("cargo", "test", "--no-default-features", external=True)

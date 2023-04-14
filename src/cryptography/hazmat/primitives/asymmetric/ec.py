@@ -184,6 +184,12 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
 
         return backend.load_elliptic_curve_public_bytes(curve, data)
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 

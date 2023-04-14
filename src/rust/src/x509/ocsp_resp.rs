@@ -132,7 +132,7 @@ impl OCSPResponse {
             assert_eq!(status, UNAUTHORIZED_RESPONSE);
             "UNAUTHORIZED"
         };
-        py.import("cryptography.x509.ocsp")?
+        py.import(pyo3::intern!(py, "cryptography.x509.ocsp"))?
             .getattr(pyo3::intern!(py, "OCSPResponseStatus"))?
             .getattr(attr)
     }
@@ -173,7 +173,7 @@ impl OCSPResponse {
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let sig_oids_to_hash = py
-            .import("cryptography.hazmat._oid")?
+            .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
             .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
@@ -184,8 +184,8 @@ impl OCSPResponse {
                     self.requires_successful_response()?.signature_algorithm.oid
                 );
                 Err(CryptographyError::from(pyo3::PyErr::from_value(
-                    py.import("cryptography.exceptions")?
-                        .call_method1("UnsupportedAlgorithm", (exc_messsage,))?,
+                    py.import(pyo3::intern!(py, "cryptography.exceptions"))?
+                        .call_method1(pyo3::intern!(py, "UnsupportedAlgorithm"), (exc_messsage,))?,
                 )))
             }
         }
@@ -310,7 +310,7 @@ impl OCSPResponse {
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         self.requires_successful_response()?;
-        let x509_module = py.import("cryptography.x509")?;
+        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
@@ -334,7 +334,9 @@ impl OCSPResponse {
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
                         let nonce = asn1::parse_single::<&[u8]>(ext_data).unwrap_or(ext_data);
-                        Ok(Some(x509_module.call_method1("OCSPNonce", (nonce,))?))
+                        Ok(Some(
+                            x509_module.call_method1(pyo3::intern!(py, "OCSPNonce"), (nonce,))?,
+                        ))
                     }
                     _ => Ok(None),
                 }
@@ -354,7 +356,7 @@ impl OCSPResponse {
             .response
             .get()
             .single_response()?;
-        let x509_module = py.import("cryptography.x509")?;
+        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_single_extensions,
@@ -380,7 +382,10 @@ impl OCSPResponse {
         encoding: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let der = py
-            .import("cryptography.hazmat.primitives.serialization")?
+            .import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.serialization"
+            ))?
             .getattr(pyo3::intern!(py, "Encoding"))?
             .getattr(pyo3::intern!(py, "DER"))?;
         if !encoding.is(der) {
@@ -522,7 +527,7 @@ impl SingleResponse<'_> {
             CertStatus::Revoked(_) => "REVOKED",
             CertStatus::Unknown(_) => "UNKNOWN",
         };
-        py.import("cryptography.x509.ocsp")?
+        py.import(pyo3::intern!(py, "cryptography.x509.ocsp"))?
             .getattr(pyo3::intern!(py, "OCSPCertStatus"))?
             .getattr(attr)
     }
@@ -531,11 +536,11 @@ impl SingleResponse<'_> {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let hashes = py.import("cryptography.hazmat.primitives.hashes")?;
+        let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
         match ocsp::OIDS_TO_HASH.get(&self.cert_id.hash_algorithm.oid) {
             Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
             None => {
-                let exceptions = py.import("cryptography.exceptions")?;
+                let exceptions = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
                 Err(CryptographyError::from(pyo3::PyErr::from_value(
                     exceptions
                         .getattr(pyo3::intern!(py, "UnsupportedAlgorithm"))?
@@ -616,7 +621,7 @@ fn create_ocsp_response(
     let borrowed_cert;
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>>;
     let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
-        let ocsp_mod = py.import("cryptography.x509.ocsp")?;
+        let ocsp_mod = py.import(pyo3::intern!(py, "cryptography.x509.ocsp"))?;
 
         let py_single_resp = builder.getattr(pyo3::intern!(py, "_response"))?;
         py_cert = py_single_resp
@@ -648,7 +653,10 @@ fn create_ocsp_response(
                 .is_none()
             {
                 let value = py
-                    .import("cryptography.hazmat.backends.openssl.decode_asn1")?
+                    .import(pyo3::intern!(
+                        py,
+                        "cryptography.hazmat.backends.openssl.decode_asn1"
+                    ))?
                     .getattr(pyo3::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
                     .get_item(py_single_resp.getattr(pyo3::intern!(py, "_revocation_reason"))?)?
                     .extract::<u32>()?;
@@ -695,7 +703,7 @@ fn create_ocsp_response(
             .getattr(pyo3::intern!(py, "HASH"))?)
         {
             let sha1 = py
-                .import("cryptography.hazmat.primitives.hashes")?
+                .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
                 .getattr(pyo3::intern!(py, "SHA1"))?
                 .call0()?;
             ResponderId::ByKey(ocsp::hash_data(
@@ -738,15 +746,16 @@ fn create_ocsp_response(
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
         let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
 
-        py.import("cryptography.hazmat.backends.openssl.backend")?
-            .getattr(pyo3::intern!(py, "backend"))?
-            .call_method1(
-                "_check_keys_correspond",
-                (
-                    responder_cert.call_method0("public_key")?,
-                    private_key.call_method0("public_key")?,
+        if !responder_cert
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .eq(private_key.call_method0(pyo3::intern!(py, "public_key"))?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Certificate public key and provided private key do not match",
                 ),
-            )?;
+            ));
+        }
 
         py_certs = builder.getattr(pyo3::intern!(py, "_certs"))?.extract()?;
         let certs = py_certs.as_ref().map(|py_certs| {

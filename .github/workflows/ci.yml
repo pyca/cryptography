@@ -39,16 +39,16 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.0"}}
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.5.4"}}
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.6.2"}}
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.1"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.2"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of Apr 04, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "6e723e5b37f7387f1c787a57c63e6d993d0c0d92"}}
-          # Latest commit on the OpenSSL master branch, as of Apr 05, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "f06ef1657a3d4322153b26231a7afa3d55724e52"}}
+          # Latest commit on the BoringSSL master branch, as of Apr 14, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "298e6c2b9c97ca17ee8cf65d24819ec19420013c"}}
+          # Latest commit on the OpenSSL master branch, as of Apr 14, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "efbff4de3e259cee71a4e1bbd86b30ebd86bbdae"}}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -158,7 +158,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -210,7 +210,7 @@ jobs:
     name: "${{ matrix.PYTHON }} with Rust ${{ matrix.RUST }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -259,7 +259,7 @@ jobs:
     name: "Rust Coverage"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -369,7 +369,7 @@ jobs:
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -394,7 +394,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - uses: dawidd6/action-download-artifact@7132ab516fba5f602fafae6fdd4822afa10db76f
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -433,7 +433,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -453,7 +453,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox" coverage[toml]
 
-      - uses: dawidd6/action-download-artifact@7132ab516fba5f602fafae6fdd4822afa10db76f
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
@@ -506,7 +506,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -543,46 +543,13 @@ jobs:
         shell: python
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
-  docs-linkcheck:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'linkcheck'))
-    runs-on: ubuntu-latest
-    name: "linkcheck"
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v3.5.0
-        with:
-          persist-credentials: false
-          fetch-depth: 32
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
-      - name: Setup python
-        id: setup-python
-        uses: actions/setup-python@v4.5.0
-        with:
-          python-version: 3.11
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          # This creates the same key as the docs job (as long as they have the same
-          # python version)
-          key: 3.11-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt nox
-      - name: Build nox environment
-        run: |
-            nox -v --install-only -s docs-linkcheck
-        env:
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-      - name: linkcheck
-        run: nox --no-install -s docs-linkcheck -- --color=yes
-
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
     needs: [linux, distros, linux-rust, linux-rust-coverage, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false

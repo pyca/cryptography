@@ -200,6 +200,12 @@ class DHPublicKey(metaclass=abc.ABCMeta):
         Returns the key serialized as bytes.
         """
 
+    @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
 
 DHPublicKeyWithSerialization = DHPublicKey
 

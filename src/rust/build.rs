@@ -81,6 +81,9 @@ fn main() {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER");
         }
     }
+    if env::var("DEP_OPENSSL_BORINGSSL").is_ok() {
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
+    }
 }
 
 /// Run a python script using the specified interpreter binary.

@@ -1219,12 +1219,12 @@ Serialization Formats
 
     An enumeration for private key formats. Used with the ``private_bytes``
     method available on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
     ,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
     and
-    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
     .. attribute:: TraditionalOpenSSL
 
@@ -1326,12 +1326,12 @@ Serialization Formats
 
     An enumeration for public key formats. Used with the ``public_bytes``
     method available on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
     ,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKeyWithSerialization`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
     , and
-    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKeyWithSerialization`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
     .. attribute:: SubjectPublicKeyInfo
 
@@ -1390,7 +1390,7 @@ Serialization Formats
 
     An enumeration for parameters formats. Used with the ``parameter_bytes``
     method available on
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParametersWithSerialization`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
 
     .. attribute:: PKCS3
 
@@ -1404,11 +1404,11 @@ Serialization Encodings
 
     An enumeration for encoding types. Used with the ``private_bytes`` method
     available on
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKeyWithSerialization`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
     ,
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKeyWithSerialization`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKeyWithSerialization`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`
     as well as ``public_bytes`` on

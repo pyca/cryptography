@@ -189,6 +189,15 @@ class _DSAPublicKey(dsa.DSAPublicKey):
     def key_size(self) -> int:
         return self._key_size
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _DSAPublicKey):
+            return NotImplemented
+
+        return (
+            self._backend._lib.EVP_PKEY_cmp(self._evp_pkey, other._evp_pkey)
+            == 1
+        )
+
     def public_numbers(self) -> dsa.DSAPublicNumbers:
         p = self._backend._ffi.new("BIGNUM **")
         q = self._backend._ffi.new("BIGNUM **")

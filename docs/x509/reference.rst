@@ -2663,6 +2663,34 @@ X.509 Extensions
 
         Returns the DER encoded bytes payload of the extension.
 
+.. class:: MSCertificateTemplate(template_id, major_version, minor_version)
+    :canonical: cryptography.x509.extensions.MSCertificateTemplate
+
+    .. versionadded:: 41.0.0
+
+    The Microsoft certificate template extension is a proprietary Microsoft
+    PKI extension that is used to provide information about the template
+    associated with the certificate.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.MS_CERTIFICATE_TEMPLATE`.
+
+    .. attribute:: template_id
+
+        :type: :class:`ObjectIdentifier`
+
+    .. attribute:: major_version
+
+        :type: int or None
+
+    .. attribute:: minor_version
+
+        :type: int or None
+
 .. class:: CertificatePolicies(policies)
     :canonical: cryptography.x509.extensions.CertificatePolicies
 
@@ -3503,6 +3531,12 @@ instances. The following common OIDs are available as constants.
     .. attribute:: SUBJECT_DIRECTORY_ATTRIBUTES
 
         Corresponds to the dotted string ``"2.5.29.9"``.
+
+    .. attribute:: MS_CERTIFICATE_TEMPLATE
+
+        .. versionadded:: 41.0.0
+
+        Corresponds to the dotted string ``"1.3.6.1.4.1.311.21.7"``.
 
 
 .. class:: CRLEntryExtensionOID

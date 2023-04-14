@@ -2,6 +2,7 @@ name: Benchmark
 on:
   pull_request:
     paths:
+      - '.github/workflows/benchmark.yml'
       - 'src/**'
       - 'tests/**'
 
@@ -20,17 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           persist-credentials: false
           path: "cryptography-pr"
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3.5.2
         timeout-minutes: 3
         with:
           repository: "pyca/cryptography"
-          path: "cryptography-main"
-          ref: "main"
+          path: "cryptography-base"
+          ref: "${{ github.base_ref }}"
 
       - name: Setup python
         id: setup-python
@@ -38,19 +39,19 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Create virtualenv (main)
+      - name: Create virtualenv (base)
         run: |
-          python -m venv .venv-main
-          .venv-main/bin/pip install -v -c ./cryptography-main/ci-constraints-requirements.txt "./cryptography-main[test]" ./cryptography-main/vectors/
+          python -m venv .venv-base
+          .venv-base/bin/pip install -v -c ./cryptography-base/ci-constraints-requirements.txt "./cryptography-base[test]" ./cryptography-base/vectors/
       - name: Create virtualenv (PR)
         run: |
           python -m venv .venv-pr
           .venv-pr/bin/pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt "./cryptography-pr[test]" ./cryptography-pr/vectors/
 
-      - name: Run benchmarks (main)
-        run: .venv-main/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-main.json
+      - name: Run benchmarks (base)
+        run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json
       - name: Run benchmarks (PR)
         run: .venv-pr/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-pr.json
 
       - name: Compare results
-        run: python ./cryptography-pr/.github/compare_benchmarks.py bench-main.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY
+        run: python ./cryptography-pr/.github/compare_benchmarks.py bench-base.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY

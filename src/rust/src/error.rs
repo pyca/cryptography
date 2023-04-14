@@ -64,7 +64,7 @@ impl From<CryptographyError> for pyo3::PyErr {
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
                 let internal_error = py
-                    .import("cryptography.exceptions")
+                    .import(pyo3::intern!(py, "cryptography.exceptions"))
                     .expect("Failed to import cryptography module")
                     .getattr(pyo3::intern!(py, "InternalError"))
                     .expect("Failed to get InternalError attribute");
