@@ -14,7 +14,7 @@ asn1 = { version = "0.14.0", default-features = false }
 pem = "1.1"
 ouroboros = "0.15"
 openssl = "0.10.50"
-openssl-sys = "0.9.84"
+openssl-sys = "0.9.85"
 foreign-types-shared = "0.1"
 
 [build-dependencies]
