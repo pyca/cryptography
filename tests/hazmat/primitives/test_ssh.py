@@ -248,6 +248,10 @@ class TestOpenSSHSerialization:
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires Ed25519 support",
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: ssh._bcrypt_supported,
+        skip_message="Requires that bcrypt exists",
+    )
     def test_load_ssh_private_key_invalid_tag(self, backend):
         priv_data = bytearray(
             load_vectors_from_file(
@@ -266,6 +270,10 @@ class TestOpenSSHSerialization:
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires Ed25519 support",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: ssh._bcrypt_supported,
+        skip_message="Requires that bcrypt exists",
     )
     def test_load_ssh_private_key_tag_incorrect_length(self, backend):
         priv_data = load_vectors_from_file(
