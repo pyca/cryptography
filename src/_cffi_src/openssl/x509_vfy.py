@@ -143,6 +143,7 @@ int X509_STORE_set_flags(X509_STORE *, unsigned long);
 /* Included due to external consumer, see
    https://github.com/pyca/pyopenssl/issues/1031 */
 int X509_STORE_set_purpose(X509_STORE *, int);
+int X509_STORE_up_ref(X509_STORE *);
 void X509_STORE_free(X509_STORE *);
 
 /* X509_STORE_CTX */
