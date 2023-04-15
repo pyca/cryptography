@@ -10,7 +10,7 @@ import os
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import InvalidSignature
+from cryptography.exceptions import InvalidSignature, InvalidTag
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -153,6 +153,7 @@ class TestOpenSSHSerialization:
             ("ecdsa-psw.key",),
             ("ed25519-nopsw.key",),
             ("ed25519-psw.key",),
+            ("ed25519-aesgcm-psw.key",),
         ],
     )
     def test_load_ssh_private_key(self, key_file, backend):
@@ -242,6 +243,48 @@ class TestOpenSSHSerialization:
         # make sure multi-line base64 is used
         maxline = max(map(len, priv_data2.split(b"\n")))
         assert maxline < 80
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires Ed25519 support",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: ssh._bcrypt_supported,
+        skip_message="Requires that bcrypt exists",
+    )
+    def test_load_ssh_private_key_invalid_tag(self, backend):
+        priv_data = bytearray(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "OpenSSH", "ed25519-aesgcm-psw.key"
+                ),
+                lambda f: f.read(),
+                mode="rb",
+            )
+        )
+        # mutate one byte to break the tag
+        priv_data[-38] = 82
+        with pytest.raises(InvalidTag):
+            load_ssh_private_key(priv_data, b"password")
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires Ed25519 support",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: ssh._bcrypt_supported,
+        skip_message="Requires that bcrypt exists",
+    )
+    def test_load_ssh_private_key_tag_incorrect_length(self, backend):
+        priv_data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "ed25519-aesgcm-psw.key"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        # clip out a byte
+        broken_data = priv_data[:-37] + priv_data[-38:]
+        with pytest.raises(ValueError):
+            load_ssh_private_key(broken_data, b"password")
 
     @pytest.mark.supported(
         only_if=lambda backend: ssh._bcrypt_supported,
