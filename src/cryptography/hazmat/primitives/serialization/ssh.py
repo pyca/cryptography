@@ -664,7 +664,7 @@ def load_ssh_private_key(
         # information about how OpenSSH handles AEAD tags
         if _SSH_CIPHERS[ciphername_bytes].is_aead:
             tag = bytes(data)
-            if len(data) != tag_len:
+            if len(tag) != tag_len:
                 raise ValueError("Corrupt data: invalid tag length for cipher")
         else:
             _check_empty(data)
@@ -678,6 +678,10 @@ def load_ssh_private_key(
         if _SSH_CIPHERS[ciphername_bytes].is_aead:
             assert isinstance(dec, AEADDecryptionContext)
             _check_empty(dec.finalize_with_tag(tag))
+        else:
+            # _check_block_size requires data to be a full block so there
+            # should be no output from finalize
+            _check_empty(dec.finalize())
     else:
         # load secret data
         edata, data = _get_sshstr(data)
