@@ -6,7 +6,6 @@ use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
-use cryptography_x509::certificate::Certificate as X509Certificate;
 use cryptography_x509::crl::CRLReason;
 use cryptography_x509::extensions::Extensions;
 use cryptography_x509::{common, name, ocsp_req, oid};
@@ -408,9 +407,12 @@ impl OCSPResponse {
 fn map_arc_data_ocsp_response(
     py: pyo3::Python<'_>,
     it: &OwnedRawOCSPResponse,
-    f: impl for<'this> FnOnce(&'this [u8], &RawOCSPResponse<'this>) -> X509Certificate<'this>,
-) -> certificate::OwnedRawCertificate {
-    certificate::OwnedRawCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
+    f: impl for<'this> FnOnce(
+        &'this [u8],
+        &RawOCSPResponse<'this>,
+    ) -> cryptography_x509::certificate::Certificate<'this>,
+) -> certificate::OwnedCertificate {
+    certificate::OwnedCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
         it.with(|value| {
             f(inner_it.as_bytes(py), unsafe {
                 std::mem::transmute(value.value)
@@ -446,8 +448,12 @@ struct ResponseBytes<'a> {
 type OCSPCerts<'a> = Option<
     common::Asn1ReadableOrWritable<
         'a,
-        asn1::SequenceOf<'a, X509Certificate<'a>>,
-        asn1::SequenceOfWriter<'a, X509Certificate<'a>, Vec<X509Certificate<'a>>>,
+        asn1::SequenceOf<'a, cryptography_x509::certificate::Certificate<'a>>,
+        asn1::SequenceOfWriter<
+            'a,
+            cryptography_x509::certificate::Certificate<'a>,
+            Vec<cryptography_x509::certificate::Certificate<'a>>,
+        >,
     >,
 >;
 

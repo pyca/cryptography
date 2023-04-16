@@ -22,7 +22,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 #[ouroboros::self_referencing]
-pub(crate) struct OwnedRawCertificate {
+pub(crate) struct OwnedCertificate {
     data: pyo3::Py<pyo3::types::PyBytes>,
 
     #[borrows(data)]
@@ -30,7 +30,7 @@ pub(crate) struct OwnedRawCertificate {
     value: cryptography_x509::certificate::Certificate<'this>,
 }
 
-impl OwnedRawCertificate {
+impl OwnedCertificate {
     // Re-expose ::new with `pub(crate)` visibility.
     pub(crate) fn new_public(
         data: pyo3::Py<pyo3::types::PyBytes>,
@@ -38,8 +38,8 @@ impl OwnedRawCertificate {
             &'this pyo3::Py<pyo3::types::PyBytes>,
         )
             -> cryptography_x509::certificate::Certificate<'this>,
-    ) -> OwnedRawCertificate {
-        OwnedRawCertificate::new(data, value_ref_builder)
+    ) -> OwnedCertificate {
+        OwnedCertificate::new(data, value_ref_builder)
     }
 
     pub(crate) fn borrow_value_public(&self) -> &cryptography_x509::certificate::Certificate<'_> {
@@ -49,7 +49,7 @@ impl OwnedRawCertificate {
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
-    pub(crate) raw: OwnedRawCertificate,
+    pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: Option<pyo3::PyObject>,
 }
 
@@ -379,7 +379,7 @@ fn load_der_x509_certificate(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<Certificate> {
-    let raw = OwnedRawCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
+    let raw = OwnedCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
