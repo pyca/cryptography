@@ -9,7 +9,7 @@ use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
 use cryptography_x509::certificate::Certificate as X509Certificate;
 use cryptography_x509::crl::CRLReason;
 use cryptography_x509::extensions::Extensions;
-use cryptography_x509::{common, name, oid};
+use cryptography_x509::{common, name, ocsp_req, oid};
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -504,7 +504,7 @@ enum ResponderId<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct SingleResponse<'a> {
-    cert_id: ocsp::CertID<'a>,
+    cert_id: ocsp_req::CertID<'a>,
     cert_status: CertStatus,
     this_update: asn1::GeneralizedTime,
     #[explicit(0)]
@@ -689,7 +689,7 @@ fn create_ocsp_response(
         let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
         let responses = vec![SingleResponse {
-            cert_id: ocsp::CertID::new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
+            cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
             cert_status,
             next_update,
             this_update,

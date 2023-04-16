@@ -5,6 +5,7 @@
 use crate::error::CryptographyResult;
 use crate::x509;
 use crate::x509::certificate::Certificate;
+use cryptography_x509::ocsp_req::CertID;
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -29,69 +30,59 @@ pub(crate) static HASH_NAME_TO_OIDS: Lazy<HashMap<&str, &asn1::ObjectIdentifier>
         h
     });
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct CertID<'a> {
-    pub(crate) hash_algorithm: common::AlgorithmIdentifier<'a>,
-    pub(crate) issuer_name_hash: &'a [u8],
-    pub(crate) issuer_key_hash: &'a [u8],
-    pub(crate) serial_number: asn1::BigInt<'a>,
+pub(crate) fn certid_new<'p>(
+    py: pyo3::Python<'p>,
+    cert: &'p Certificate,
+    issuer: &'p Certificate,
+    hash_algorithm: &'p pyo3::PyAny,
+) -> CryptographyResult<CertID<'p>> {
+    let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
+    let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
+    let issuer_key_hash = hash_data(
+        py,
+        hash_algorithm,
+        issuer
+            .raw
+            .borrow_value_public()
+            .tbs_cert
+            .spki
+            .subject_public_key
+            .as_bytes(),
+    )?;
+
+    Ok(CertID {
+        hash_algorithm: common::AlgorithmIdentifier {
+            oid: HASH_NAME_TO_OIDS[hash_algorithm
+                .getattr(pyo3::intern!(py, "name"))?
+                .extract::<&str>()?]
+            .clone(),
+            params: Some(*x509::sign::NULL_TLV),
+        },
+        issuer_name_hash,
+        issuer_key_hash,
+        serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
+    })
 }
 
-impl CertID<'_> {
-    pub(crate) fn new<'p>(
-        py: pyo3::Python<'p>,
-        cert: &'p Certificate,
-        issuer: &'p Certificate,
-        hash_algorithm: &'p pyo3::PyAny,
-    ) -> CryptographyResult<CertID<'p>> {
-        let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
-        let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
-        let issuer_key_hash = hash_data(
-            py,
-            hash_algorithm,
-            issuer
-                .raw
-                .borrow_value_public()
-                .tbs_cert
-                .spki
-                .subject_public_key
-                .as_bytes(),
-        )?;
-
-        Ok(CertID {
-            hash_algorithm: common::AlgorithmIdentifier {
-                oid: HASH_NAME_TO_OIDS[hash_algorithm
-                    .getattr(pyo3::intern!(py, "name"))?
-                    .extract::<&str>()?]
-                .clone(),
-                params: Some(*x509::sign::NULL_TLV),
-            },
-            issuer_name_hash,
-            issuer_key_hash,
-            serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
-        })
-    }
-
-    pub(crate) fn new_from_hash<'p>(
-        py: pyo3::Python<'p>,
-        issuer_name_hash: &'p [u8],
-        issuer_key_hash: &'p [u8],
-        serial_number: asn1::BigInt<'p>,
-        hash_algorithm: &'p pyo3::PyAny,
-    ) -> CryptographyResult<CertID<'p>> {
-        Ok(CertID {
-            hash_algorithm: common::AlgorithmIdentifier {
-                oid: HASH_NAME_TO_OIDS[hash_algorithm
-                    .getattr(pyo3::intern!(py, "name"))?
-                    .extract::<&str>()?]
-                .clone(),
-                params: Some(*x509::sign::NULL_TLV),
-            },
-            issuer_name_hash,
-            issuer_key_hash,
-            serial_number,
-        })
-    }
+pub(crate) fn certid_new_from_hash<'p>(
+    py: pyo3::Python<'p>,
+    issuer_name_hash: &'p [u8],
+    issuer_key_hash: &'p [u8],
+    serial_number: asn1::BigInt<'p>,
+    hash_algorithm: &'p pyo3::PyAny,
+) -> CryptographyResult<CertID<'p>> {
+    Ok(CertID {
+        hash_algorithm: common::AlgorithmIdentifier {
+            oid: HASH_NAME_TO_OIDS[hash_algorithm
+                .getattr(pyo3::intern!(py, "name"))?
+                .extract::<&str>()?]
+            .clone(),
+            params: Some(*x509::sign::NULL_TLV),
+        },
+        issuer_name_hash,
+        issuer_key_hash,
+        serial_number,
+    })
 }
 
 pub(crate) fn hash_data<'p>(
