@@ -325,6 +325,8 @@ jobs:
         run: |
             cd src/rust
             cargo test --no-default-features
+            cd cryptography-x509
+            cargo test
         env:
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%m-%p.profraw"
