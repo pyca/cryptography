@@ -7,9 +7,8 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, sign};
 use asn1::SimpleAsn1Readable;
-use cryptography_x509::common::RawTlv;
 use cryptography_x509::csr::{Attribute, CertificationRequestInfo, RawCsr};
-use cryptography_x509::oid;
+use cryptography_x509::{common, oid};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -333,7 +332,7 @@ fn create_x509_csr(
         ext_bytes = asn1::write_single(&exts)?;
         attrs.push(Attribute {
             type_id: (oid::EXTENSION_REQUEST).clone(),
-            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+            values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),
         })
@@ -357,9 +356,9 @@ fn create_x509_csr(
 
         attrs.push(Attribute {
             type_id: oid,
-            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([RawTlv::new(
-                tag, value,
-            )])),
+            values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                common::RawTlv::new(tag, value),
+            ])),
         })
     }
 
@@ -369,7 +368,7 @@ fn create_x509_csr(
         version: 0,
         subject: x509::common::encode_name(py, py_subject_name)?,
         spki: asn1::parse_single(spki_bytes)?,
-        attributes: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
+        attributes: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };
 
     let tbs_bytes = asn1::write_single(&csr_info)?;

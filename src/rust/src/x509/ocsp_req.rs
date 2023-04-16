@@ -7,7 +7,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{extensions, ocsp};
 use cryptography_x509::extensions::Extensions;
-use cryptography_x509::oid;
+use cryptography_x509::{common, name, oid};
 use pyo3::IntoPy;
 
 #[ouroboros::self_referencing]
@@ -192,8 +192,8 @@ struct TBSRequest<'a> {
     #[default(0)]
     version: u8,
     #[explicit(1)]
-    requestor_name: Option<x509::GeneralName<'a>>,
-    request_list: x509::Asn1ReadableOrWritable<
+    requestor_name: Option<name::GeneralName<'a>>,
+    request_list: common::Asn1ReadableOrWritable<
         'a,
         asn1::SequenceOf<'a, Request<'a>>,
         asn1::SequenceOfWriter<'a, Request<'a>>,
@@ -218,14 +218,14 @@ fn create_ocsp_request(
 
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash): (
-        pyo3::PyRef<'_, x509::Certificate>,
-        pyo3::PyRef<'_, x509::Certificate>,
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
         &pyo3::PyAny,
     );
     let req_cert = if !builder_request.is_none() {
         let tuple = builder_request.extract::<(
-            pyo3::PyRef<'_, x509::Certificate>,
-            pyo3::PyRef<'_, x509::Certificate>,
+            pyo3::PyRef<'_, x509::certificate::Certificate>,
+            pyo3::PyRef<'_, x509::certificate::Certificate>,
             &pyo3::PyAny,
         )>()?;
         py_cert = tuple.0;
@@ -264,7 +264,7 @@ fn create_ocsp_request(
         tbs_request: TBSRequest {
             version: 0,
             requestor_name: None,
-            request_list: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            request_list: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 &reqs,
             )),
             request_extensions: extensions,

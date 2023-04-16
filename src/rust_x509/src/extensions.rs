@@ -169,3 +169,10 @@ pub struct AuthorityKeyIdentifier<'a> {
     #[implicit(2)]
     pub authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct BasicConstraints {
+    #[default(false)]
+    pub ca: bool,
+    pub path_length: Option<u64>,
+}

@@ -4,7 +4,8 @@
 
 use crate::error::CryptographyResult;
 use crate::x509;
-use cryptography_x509::oid;
+use crate::x509::certificate::Certificate;
+use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
@@ -30,7 +31,7 @@ pub(crate) static HASH_NAME_TO_OIDS: Lazy<HashMap<&str, &asn1::ObjectIdentifier>
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct CertID<'a> {
-    pub(crate) hash_algorithm: x509::AlgorithmIdentifier<'a>,
+    pub(crate) hash_algorithm: common::AlgorithmIdentifier<'a>,
     pub(crate) issuer_name_hash: &'a [u8],
     pub(crate) issuer_key_hash: &'a [u8],
     pub(crate) serial_number: asn1::BigInt<'a>,
@@ -39,8 +40,8 @@ pub(crate) struct CertID<'a> {
 impl CertID<'_> {
     pub(crate) fn new<'p>(
         py: pyo3::Python<'p>,
-        cert: &'p x509::Certificate,
-        issuer: &'p x509::Certificate,
+        cert: &'p Certificate,
+        issuer: &'p Certificate,
         hash_algorithm: &'p pyo3::PyAny,
     ) -> CryptographyResult<CertID<'p>> {
         let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
@@ -58,7 +59,7 @@ impl CertID<'_> {
         )?;
 
         Ok(CertID {
-            hash_algorithm: x509::AlgorithmIdentifier {
+            hash_algorithm: common::AlgorithmIdentifier {
                 oid: HASH_NAME_TO_OIDS[hash_algorithm
                     .getattr(pyo3::intern!(py, "name"))?
                     .extract::<&str>()?]
@@ -79,7 +80,7 @@ impl CertID<'_> {
         hash_algorithm: &'p pyo3::PyAny,
     ) -> CryptographyResult<CertID<'p>> {
         Ok(CertID {
-            hash_algorithm: x509::AlgorithmIdentifier {
+            hash_algorithm: common::AlgorithmIdentifier {
                 oid: HASH_NAME_TO_OIDS[hash_algorithm
                     .getattr(pyo3::intern!(py, "name"))?
                     .extract::<&str>()?]

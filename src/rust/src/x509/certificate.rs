@@ -8,15 +8,15 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{extensions, sct, sign};
-use cryptography_x509::certificate::{RawCertificate, TbsCertificate, Validity};
 use cryptography_x509::common::Asn1ReadableOrWritable;
 use cryptography_x509::extensions::{
-    AuthorityKeyIdentifier, DisplayText, DistributionPoint, DistributionPointName,
-    MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
-    PolicyQualifierInfo, Qualifier, SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
+    AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
+    DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
+    PolicyInformation, PolicyQualifierInfo, Qualifier, SequenceOfAccessDescriptions,
+    SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, Extensions};
-use cryptography_x509::oid;
+use cryptography_x509::{common, name, oid};
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -27,7 +27,7 @@ pub(crate) struct OwnedRawCertificate {
 
     #[borrows(data)]
     #[covariant]
-    value: RawCertificate<'this>,
+    value: cryptography_x509::certificate::Certificate<'this>,
 }
 
 impl OwnedRawCertificate {
@@ -36,12 +36,13 @@ impl OwnedRawCertificate {
         data: pyo3::Py<pyo3::types::PyBytes>,
         value_ref_builder: impl for<'this> FnOnce(
             &'this pyo3::Py<pyo3::types::PyBytes>,
-        ) -> RawCertificate<'this>,
+        )
+            -> cryptography_x509::certificate::Certificate<'this>,
     ) -> OwnedRawCertificate {
         OwnedRawCertificate::new(data, value_ref_builder)
     }
 
-    pub(crate) fn borrow_value_public(&self) -> &RawCertificate<'_> {
+    pub(crate) fn borrow_value_public(&self) -> &cryptography_x509::certificate::Certificate<'_> {
         self.borrow_value()
     }
 }
@@ -613,14 +614,6 @@ pub(crate) fn encode_distribution_point_reasons(
     Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
 }
 
-// TODO: not moved since it has a FromPyObject on it
-#[derive(asn1::Asn1Read, asn1::Asn1Write, pyo3::prelude::FromPyObject)]
-pub(crate) struct BasicConstraints {
-    #[default(false)]
-    pub ca: bool,
-    pub path_length: Option<u64>,
-}
-
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext_data: &[u8],
@@ -668,7 +661,7 @@ pub fn parse_cert_ext<'p>(
     match oid {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
             let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -678,7 +671,7 @@ pub fn parse_cert_ext<'p>(
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
             let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -855,16 +848,18 @@ pub fn parse_cert_ext<'p>(
 pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
-) -> CryptographyResult<x509::Time> {
+) -> CryptographyResult<common::Time> {
     let dt = x509::py_to_datetime(py, val)?;
     time_from_datetime(dt)
 }
 
-pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<x509::Time> {
+pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<common::Time> {
     if dt.year() >= 2050 {
-        Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
+        Ok(common::Time::GeneralizedTime(asn1::GeneralizedTime::new(
+            dt,
+        )?))
     } else {
-        Ok(x509::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
+        Ok(common::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
     }
 }
 
@@ -904,7 +899,7 @@ fn create_x509_certificate(
     let py_not_before = builder.getattr(pyo3::intern!(py, "_not_valid_before"))?;
     let py_not_after = builder.getattr(pyo3::intern!(py, "_not_valid_after"))?;
 
-    let tbs_cert = TbsCertificate {
+    let tbs_cert = cryptography_x509::certificate::TbsCertificate {
         version: builder
             .getattr(pyo3::intern!(py, "_version"))?
             .getattr(pyo3::intern!(py, "value"))?
@@ -912,7 +907,7 @@ fn create_x509_certificate(
         serial: asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
         signature_alg: sigalg.clone(),
         issuer: x509::common::encode_name(py, py_issuer_name)?,
-        validity: Validity {
+        validity: cryptography_x509::certificate::Validity {
             not_before: time_from_py(py, py_not_before)?,
             not_after: time_from_py(py, py_not_after)?,
         },
@@ -929,7 +924,7 @@ fn create_x509_certificate(
 
     let tbs_bytes = asn1::write_single(&tbs_cert)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
-    let data = asn1::write_single(&RawCertificate {
+    let data = asn1::write_single(&cryptography_x509::certificate::Certificate {
         tbs_cert,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),

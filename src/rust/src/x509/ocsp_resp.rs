@@ -6,10 +6,10 @@ use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
-use cryptography_x509::certificate::RawCertificate;
+use cryptography_x509::certificate::Certificate as X509Certificate;
 use cryptography_x509::crl::CRLReason;
 use cryptography_x509::extensions::Extensions;
-use cryptography_x509::oid;
+use cryptography_x509::{common, name, oid};
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -237,7 +237,7 @@ impl OCSPResponse {
             });
             py_certs.append(pyo3::PyCell::new(
                 py,
-                x509::Certificate {
+                x509::certificate::Certificate {
                     raw: raw_cert,
                     cached_extensions: None,
                 },
@@ -408,7 +408,7 @@ impl OCSPResponse {
 fn map_arc_data_ocsp_response(
     py: pyo3::Python<'_>,
     it: &OwnedRawOCSPResponse,
-    f: impl for<'this> FnOnce(&'this [u8], &RawOCSPResponse<'this>) -> RawCertificate<'this>,
+    f: impl for<'this> FnOnce(&'this [u8], &RawOCSPResponse<'this>) -> X509Certificate<'this>,
 ) -> certificate::OwnedRawCertificate {
     certificate::OwnedRawCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
         it.with(|value| {
@@ -444,17 +444,17 @@ struct ResponseBytes<'a> {
 }
 
 type OCSPCerts<'a> = Option<
-    x509::Asn1ReadableOrWritable<
+    common::Asn1ReadableOrWritable<
         'a,
-        asn1::SequenceOf<'a, RawCertificate<'a>>,
-        asn1::SequenceOfWriter<'a, RawCertificate<'a>, Vec<RawCertificate<'a>>>,
+        asn1::SequenceOf<'a, X509Certificate<'a>>,
+        asn1::SequenceOfWriter<'a, X509Certificate<'a>, Vec<X509Certificate<'a>>>,
     >,
 >;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 struct BasicOCSPResponse<'a> {
     tbs_response_data: ResponseData<'a>,
-    signature_algorithm: x509::AlgorithmIdentifier<'a>,
+    signature_algorithm: common::AlgorithmIdentifier<'a>,
     signature: asn1::BitString<'a>,
     #[explicit(0)]
     certs: OCSPCerts<'a>,
@@ -485,7 +485,7 @@ struct ResponseData<'a> {
     version: u8,
     responder_id: ResponderId<'a>,
     produced_at: asn1::GeneralizedTime,
-    responses: x509::Asn1ReadableOrWritable<
+    responses: common::Asn1ReadableOrWritable<
         'a,
         asn1::SequenceOf<'a, SingleResponse<'a>>,
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
@@ -497,7 +497,7 @@ struct ResponseData<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 enum ResponderId<'a> {
     #[explicit(1)]
-    ByName(x509::Name<'a>),
+    ByName(name::Name<'a>),
     #[explicit(2)]
     ByKey(&'a [u8]),
 }
@@ -613,10 +613,10 @@ fn create_ocsp_response(
         .getattr(pyo3::intern!(py, "value"))?
         .extract::<u32>()?;
 
-    let py_cert: pyo3::PyRef<'_, x509::Certificate>;
-    let py_issuer: pyo3::PyRef<'_, x509::Certificate>;
+    let py_cert: pyo3::PyRef<'_, x509::certificate::Certificate>;
+    let py_issuer: pyo3::PyRef<'_, x509::certificate::Certificate>;
     let borrowed_cert;
-    let py_certs: Option<Vec<pyo3::PyRef<'_, x509::Certificate>>>;
+    let py_certs: Option<Vec<pyo3::PyRef<'_, x509::certificate::Certificate>>>;
     let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
         let ocsp_mod = py.import(pyo3::intern!(py, "cryptography.x509.ocsp"))?;
 
@@ -628,10 +628,12 @@ fn create_ocsp_response(
             .getattr(pyo3::intern!(py, "_issuer"))?
             .extract()?;
         let py_cert_hash_algorithm = py_single_resp.getattr(pyo3::intern!(py, "_algorithm"))?;
-        let (responder_cert, responder_encoding): (&pyo3::PyCell<x509::Certificate>, &pyo3::PyAny) =
-            builder
-                .getattr(pyo3::intern!(py, "_responder_id"))?
-                .extract()?;
+        let (responder_cert, responder_encoding): (
+            &pyo3::PyCell<x509::certificate::Certificate>,
+            &pyo3::PyAny,
+        ) = builder
+            .getattr(pyo3::intern!(py, "_responder_id"))?
+            .extract()?;
 
         let py_cert_status = py_single_resp.getattr(pyo3::intern!(py, "_cert_status"))?;
         let cert_status = if py_cert_status.is(ocsp_mod
@@ -729,7 +731,7 @@ fn create_ocsp_response(
             version: 0,
             produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
             responder_id,
-            responses: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            responses: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 responses,
             )),
             response_extensions: x509::common::encode_extensions(
@@ -756,7 +758,7 @@ fn create_ocsp_response(
 
         py_certs = builder.getattr(pyo3::intern!(py, "_certs"))?.extract()?;
         let certs = py_certs.as_ref().map(|py_certs| {
-            x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 py_certs
                     .iter()
                     .map(|c| c.raw.borrow_value_public().clone())

@@ -4,7 +4,7 @@ use crate::name;
 use asn1;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub struct RawCertificate<'a> {
+pub struct Certificate<'a> {
     pub tbs_cert: TbsCertificate<'a>,
     pub signature_alg: common::AlgorithmIdentifier<'a>,
     pub signature: asn1::BitString<'a>,

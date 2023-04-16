@@ -12,7 +12,7 @@ use cryptography_x509::crl::{
     CRLReason, IssuingDistributionPoint, RawCertificateRevocationList, RawRevokedCertificate,
     TBSCertList,
 };
-use cryptography_x509::oid;
+use cryptography_x509::{common, name, oid};
 use pyo3::{IntoPy, ToPyObject};
 use std::sync::Arc;
 
@@ -296,7 +296,7 @@ impl CertificateRevocationList {
                     ))
                 }
                 oid::ISSUER_ALTERNATIVE_NAME_OID => {
-                    let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(
+                    let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(
                         ext_data,
                     )?;
                     let ians = x509::parse_general_names(py, &gn_seq)?;
@@ -564,7 +564,7 @@ pub fn parse_crl_entry_ext<'p>(
             ))
         }
         oid::CERTIFICATE_ISSUER_OID => {
-            let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(data)?;
+            let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(data)?;
             let gns = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -628,7 +628,7 @@ fn create_x509_crl(
         revoked_certificates: if revoked_certs.is_empty() {
             None
         } else {
-            Some(x509::Asn1ReadableOrWritable::new_write(
+            Some(common::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(revoked_certs),
             ))
         },
