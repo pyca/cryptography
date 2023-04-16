@@ -5,7 +5,7 @@ pub type ReasonFlags<'a> =
     Option<common::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
-pub struct RawCertificateRevocationList<'a> {
+pub struct CertificateRevocationList<'a> {
     pub tbs_cert_list: TBSCertList<'a>,
     pub signature_algorithm: common::AlgorithmIdentifier<'a>,
     pub signature_value: asn1::BitString<'a>,
@@ -14,8 +14,8 @@ pub struct RawCertificateRevocationList<'a> {
 pub type RevokedCertificates<'a> = Option<
     common::Asn1ReadableOrWritable<
         'a,
-        asn1::SequenceOf<'a, RawRevokedCertificate<'a>>,
-        asn1::SequenceOfWriter<'a, RawRevokedCertificate<'a>, Vec<RawRevokedCertificate<'a>>>,
+        asn1::SequenceOf<'a, RevokedCertificate<'a>>,
+        asn1::SequenceOfWriter<'a, RevokedCertificate<'a>, Vec<RevokedCertificate<'a>>>,
     >,
 >;
 
@@ -32,7 +32,7 @@ pub struct TBSCertList<'a> {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
-pub struct RawRevokedCertificate<'a> {
+pub struct RevokedCertificate<'a> {
     pub user_certificate: asn1::BigUint<'a>,
     pub revocation_date: common::Time,
     pub crl_entry_extensions: Option<extensions::Extensions<'a>>,
