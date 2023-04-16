@@ -343,7 +343,7 @@ jobs:
               --ignore-filename-regex='/rustc/' \
               --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../${COV_UUID}-1.lcov
             cargo cov -- export \
-              $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
+              $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --all --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
               -instr-profile=cargo-test-rust-cov.profdata \
               --ignore-filename-regex='/.cargo/registry' \
               --ignore-filename-regex='/rustc/' \
