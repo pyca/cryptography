@@ -11,6 +11,7 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1d has been
   removed.  Users on older version of OpenSSL will need to upgrade.
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.6 has been removed.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.6.
 * Updated the minimum supported Rust version (MSRV) to 1.56.0, from 1.48.0.
 * Added support for the :class:`~cryptography.x509.OCSPAcceptableResponses`
   OCSP extension.

@@ -124,12 +124,6 @@ def cryptography_has_custom_ext() -> typing.List[str]:
     ]
 
 
-def cryptography_has_openssl_cleanup() -> typing.List[str]:
-    return [
-        "OPENSSL_cleanup",
-    ]
-
-
 def cryptography_has_tlsv13_functions() -> typing.List[str]:
     return [
         "SSL_VERIFY_POST_HANDSHAKE",
@@ -299,7 +293,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
-    "Cryptography_HAS_OPENSSL_CLEANUP": cryptography_has_openssl_cleanup,
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
     "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
     "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
