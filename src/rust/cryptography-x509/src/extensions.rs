@@ -1,7 +1,10 @@
+// This file is dual licensed under the terms of the Apache License, Version
+// 2.0, and the BSD License. See the LICENSE file in the root of this repository
+// for complete details.
+
 use crate::common;
 use crate::crl;
 use crate::name;
-use asn1;
 
 pub type Extensions<'a> = common::Asn1ReadableOrWritable<
     'a,

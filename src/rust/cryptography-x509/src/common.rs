@@ -1,4 +1,7 @@
-use asn1;
+// This file is dual licensed under the terms of the Apache License, Version
+// 2.0, and the BSD License. See the LICENSE file in the root of this repository
+// for complete details.
+
 use std::marker::PhantomData;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
