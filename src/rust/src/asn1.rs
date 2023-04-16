@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::Name;
+use cryptography_x509::name::Name;
 use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;

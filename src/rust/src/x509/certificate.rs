@@ -7,79 +7,49 @@ use crate::asn1::{
 };
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{crl, extensions, oid, sct, sign, Asn1ReadableOrWritable};
+use crate::x509::{extensions, sct, sign};
+use cryptography_x509::common::Asn1ReadableOrWritable;
+use cryptography_x509::extensions::{
+    AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
+    DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
+    PolicyInformation, PolicyQualifierInfo, Qualifier, SequenceOfAccessDescriptions,
+    SequenceOfSubtrees, UserNotice,
+};
+use cryptography_x509::extensions::{Extension, Extensions};
+use cryptography_x509::{common, name, oid};
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub(crate) struct RawCertificate<'a> {
-    pub(crate) tbs_cert: TbsCertificate<'a>,
-    signature_alg: x509::AlgorithmIdentifier<'a>,
-    signature: asn1::BitString<'a>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub(crate) struct TbsCertificate<'a> {
-    #[explicit(0)]
-    #[default(0)]
-    version: u8,
-    pub(crate) serial: asn1::BigInt<'a>,
-    signature_alg: x509::AlgorithmIdentifier<'a>,
-
-    pub(crate) issuer: x509::Name<'a>,
-    validity: Validity,
-    pub(crate) subject: x509::Name<'a>,
-
-    pub(crate) spki: SubjectPublicKeyInfo<'a>,
-    #[implicit(1)]
-    issuer_unique_id: Option<asn1::BitString<'a>>,
-    #[implicit(2)]
-    subject_unique_id: Option<asn1::BitString<'a>>,
-    #[explicit(3)]
-    extensions: Option<x509::Extensions<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub(crate) struct Validity {
-    not_before: x509::Time,
-    not_after: x509::Time,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub(crate) struct SubjectPublicKeyInfo<'a> {
-    _algorithm: x509::AlgorithmIdentifier<'a>,
-    pub(crate) subject_public_key: asn1::BitString<'a>,
-}
-
 #[ouroboros::self_referencing]
-pub(crate) struct OwnedRawCertificate {
+pub(crate) struct OwnedCertificate {
     data: pyo3::Py<pyo3::types::PyBytes>,
 
     #[borrows(data)]
     #[covariant]
-    value: RawCertificate<'this>,
+    value: cryptography_x509::certificate::Certificate<'this>,
 }
 
-impl OwnedRawCertificate {
+impl OwnedCertificate {
     // Re-expose ::new with `pub(crate)` visibility.
     pub(crate) fn new_public(
         data: pyo3::Py<pyo3::types::PyBytes>,
         value_ref_builder: impl for<'this> FnOnce(
             &'this pyo3::Py<pyo3::types::PyBytes>,
-        ) -> RawCertificate<'this>,
-    ) -> OwnedRawCertificate {
-        OwnedRawCertificate::new(data, value_ref_builder)
+        )
+            -> cryptography_x509::certificate::Certificate<'this>,
+    ) -> OwnedCertificate {
+        OwnedCertificate::new(data, value_ref_builder)
     }
 
-    pub(crate) fn borrow_value_public(&self) -> &RawCertificate<'_> {
+    pub(crate) fn borrow_value_public(&self) -> &cryptography_x509::certificate::Certificate<'_> {
         self.borrow_value()
     }
 }
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
-    pub(crate) raw: OwnedRawCertificate,
+    pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: Option<pyo3::PyObject>,
 }
 
@@ -209,7 +179,7 @@ impl Certificate {
             Some(extensions) => {
                 let readable_extensions = extensions.unwrap_read().clone();
                 let ext_count = readable_extensions.len();
-                let filtered_extensions: Vec<x509::common::Extension<'_>> = readable_extensions
+                let filtered_extensions: Vec<Extension<'_>> = readable_extensions
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
                     .collect();
                 if filtered_extensions.len() == ext_count {
@@ -219,7 +189,7 @@ impl Certificate {
                         ),
                     ));
                 }
-                let filtered_extensions: x509::Extensions<'_> = Asn1ReadableOrWritable::new_write(
+                let filtered_extensions: Extensions<'_> = Asn1ReadableOrWritable::new_write(
                     asn1::SequenceOfWriter::new(filtered_extensions),
                 );
                 tbs_precert.extensions = Some(filtered_extensions);
@@ -409,7 +379,7 @@ fn load_der_x509_certificate(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<Certificate> {
-    let raw = OwnedRawCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
+    let raw = OwnedCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_value().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
@@ -435,57 +405,6 @@ fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyRes
         )?;
     }
     Ok(())
-}
-
-// Needed due to clippy type complexity warning.
-type SequenceOfPolicyQualifiers<'a> = x509::Asn1ReadableOrWritable<
-    'a,
-    asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
-    asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
->;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct PolicyInformation<'a> {
-    pub policy_identifier: asn1::ObjectIdentifier,
-    pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct PolicyQualifierInfo<'a> {
-    pub policy_qualifier_id: asn1::ObjectIdentifier,
-    pub qualifier: Qualifier<'a>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) enum Qualifier<'a> {
-    CpsUri(asn1::IA5String<'a>),
-    UserNotice(UserNotice<'a>),
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct UserNotice<'a> {
-    pub notice_ref: Option<NoticeReference<'a>>,
-    pub explicit_text: Option<DisplayText<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct NoticeReference<'a> {
-    pub organization: DisplayText<'a>,
-    pub notice_numbers: x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SequenceOf<'a, asn1::BigUint<'a>>,
-        asn1::SequenceOfWriter<'a, asn1::BigUint<'a>, Vec<asn1::BigUint<'a>>>,
-    >,
-}
-
-// DisplayText also allows BMPString, which we currently do not support.
-#[allow(clippy::enum_variant_names)]
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) enum DisplayText<'a> {
-    IA5String(asn1::IA5String<'a>),
-    Utf8String(asn1::Utf8String<'a>),
-    VisibleString(asn1::VisibleString<'a>),
-    BmpString(asn1::BMPString<'a>),
 }
 
 fn parse_display_text(
@@ -592,41 +511,6 @@ fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, Cry
     Ok(certificate_policies.to_object(py))
 }
 
-// Needed due to clippy type complexity warning.
-pub(crate) type SequenceOfSubtrees<'a> = x509::Asn1ReadableOrWritable<
-    'a,
-    asn1::SequenceOf<'a, GeneralSubtree<'a>>,
-    asn1::SequenceOfWriter<'a, GeneralSubtree<'a>, Vec<GeneralSubtree<'a>>>,
->;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct NameConstraints<'a> {
-    #[implicit(0)]
-    pub permitted_subtrees: Option<SequenceOfSubtrees<'a>>,
-
-    #[implicit(1)]
-    pub excluded_subtrees: Option<SequenceOfSubtrees<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct GeneralSubtree<'a> {
-    pub base: x509::GeneralName<'a>,
-
-    #[implicit(0)]
-    #[default(0u64)]
-    pub minimum: u64,
-
-    #[implicit(1)]
-    pub maximum: Option<u64>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct MSCertificateTemplate {
-    pub template_id: asn1::ObjectIdentifier,
-    pub major_version: Option<u32>,
-    pub minor_version: Option<u32>,
-}
-
 fn parse_general_subtrees(
     py: pyo3::Python<'_>,
     subtrees: SequenceOfSubtrees<'_>,
@@ -636,43 +520,6 @@ fn parse_general_subtrees(
         gns.append(x509::parse_general_name(py, gs.base)?)?;
     }
     Ok(gns.to_object(py))
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct DistributionPoint<'a> {
-    #[explicit(0)]
-    pub distribution_point: Option<DistributionPointName<'a>>,
-
-    #[implicit(1)]
-    pub reasons: crl::ReasonFlags<'a>,
-
-    #[implicit(2)]
-    pub crl_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) enum DistributionPointName<'a> {
-    #[implicit(0)]
-    FullName(x509::common::SequenceOfGeneralName<'a>),
-
-    #[implicit(1)]
-    NameRelativeToCRLIssuer(
-        x509::Asn1ReadableOrWritable<
-            'a,
-            asn1::SetOf<'a, x509::AttributeTypeValue<'a>>,
-            asn1::SetOfWriter<'a, x509::AttributeTypeValue<'a>, Vec<x509::AttributeTypeValue<'a>>>,
-        >,
-    ),
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct AuthorityKeyIdentifier<'a> {
-    #[implicit(0)]
-    pub key_identifier: Option<&'a [u8]>,
-    #[implicit(1)]
-    pub authority_cert_issuer: Option<x509::common::SequenceOfGeneralName<'a>>,
-    #[implicit(2)]
-    pub authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
 
 pub(crate) fn parse_distribution_point_name(
@@ -767,21 +614,6 @@ pub(crate) fn encode_distribution_point_reasons(
     Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, pyo3::prelude::FromPyObject)]
-pub(crate) struct BasicConstraints {
-    #[default(false)]
-    pub ca: bool,
-    pub path_length: Option<u64>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct PolicyConstraints {
-    #[implicit(0)]
-    pub require_explicit_policy: Option<u64>,
-    #[implicit(1)]
-    pub inhibit_policy_mapping: Option<u64>,
-}
-
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext_data: &[u8],
@@ -807,7 +639,7 @@ pub(crate) fn parse_access_descriptions(
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let ads = pyo3::types::PyList::empty(py);
-    let parsed = asn1::parse_single::<x509::common::SequenceOfAccessDescriptions<'_>>(ext_data)?;
+    let parsed = asn1::parse_single::<SequenceOfAccessDescriptions<'_>>(ext_data)?;
     for access in parsed.unwrap_read().clone() {
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
@@ -829,7 +661,7 @@ pub fn parse_cert_ext<'p>(
     match oid {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
             let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -839,7 +671,7 @@ pub fn parse_cert_ext<'p>(
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
             let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, x509::GeneralName<'_>>>(ext_data)?;
+                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -1016,16 +848,18 @@ pub fn parse_cert_ext<'p>(
 pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
-) -> CryptographyResult<x509::Time> {
+) -> CryptographyResult<common::Time> {
     let dt = x509::py_to_datetime(py, val)?;
     time_from_datetime(dt)
 }
 
-pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<x509::Time> {
+pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<common::Time> {
     if dt.year() >= 2050 {
-        Ok(x509::Time::GeneralizedTime(asn1::GeneralizedTime::new(dt)?))
+        Ok(common::Time::GeneralizedTime(asn1::GeneralizedTime::new(
+            dt,
+        )?))
     } else {
-        Ok(x509::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
+        Ok(common::Time::UtcTime(asn1::UtcTime::new(dt).unwrap()))
     }
 }
 
@@ -1065,7 +899,7 @@ fn create_x509_certificate(
     let py_not_before = builder.getattr(pyo3::intern!(py, "_not_valid_before"))?;
     let py_not_after = builder.getattr(pyo3::intern!(py, "_not_valid_after"))?;
 
-    let tbs_cert = TbsCertificate {
+    let tbs_cert = cryptography_x509::certificate::TbsCertificate {
         version: builder
             .getattr(pyo3::intern!(py, "_version"))?
             .getattr(pyo3::intern!(py, "value"))?
@@ -1073,7 +907,7 @@ fn create_x509_certificate(
         serial: asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap(),
         signature_alg: sigalg.clone(),
         issuer: x509::common::encode_name(py, py_issuer_name)?,
-        validity: Validity {
+        validity: cryptography_x509::certificate::Validity {
             not_before: time_from_py(py, py_not_before)?,
             not_after: time_from_py(py, py_not_after)?,
         },
@@ -1090,7 +924,7 @@ fn create_x509_certificate(
 
     let tbs_bytes = asn1::write_single(&tbs_cert)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
-    let data = asn1::write_single(&RawCertificate {
+    let data = asn1::write_single(&cryptography_x509::certificate::Certificate {
         tbs_cert,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),

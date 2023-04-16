@@ -5,25 +5,26 @@
 use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, crl, oid, sct};
+use crate::x509::{certificate, sct};
+use cryptography_x509::{common, crl, extensions, oid};
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
     subtrees: &'a pyo3::PyAny,
-) -> Result<Option<certificate::SequenceOfSubtrees<'a>>, CryptographyError> {
+) -> Result<Option<extensions::SequenceOfSubtrees<'a>>, CryptographyError> {
     if subtrees.is_none() {
         Ok(None)
     } else {
         let mut subtree_seq = vec![];
         for name in subtrees.iter()? {
             let gn = x509::common::encode_general_name(py, name?)?;
-            subtree_seq.push(certificate::GeneralSubtree {
+            subtree_seq.push(extensions::GeneralSubtree {
                 base: gn,
                 minimum: 0,
                 maximum: None,
             });
         }
-        Ok(Some(x509::Asn1ReadableOrWritable::new_write(
+        Ok(Some(common::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(subtree_seq),
         )))
     }
@@ -32,7 +33,7 @@ fn encode_general_subtrees<'a>(
 pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
     py_aki: &'a pyo3::PyAny,
-) -> pyo3::PyResult<certificate::AuthorityKeyIdentifier<'a>> {
+) -> pyo3::PyResult<extensions::AuthorityKeyIdentifier<'a>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyAuthorityKeyIdentifier<'a> {
         key_identifier: Option<&'a [u8]>,
@@ -42,7 +43,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
         let gns = x509::common::encode_general_names(py, authority_cert_issuer)?;
-        Some(x509::Asn1ReadableOrWritable::new_write(
+        Some(common::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
     } else {
@@ -55,7 +56,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
         } else {
             None
         };
-    Ok(certificate::AuthorityKeyIdentifier {
+    Ok(extensions::AuthorityKeyIdentifier {
         authority_cert_issuer,
         authority_cert_serial_number,
         key_identifier: aki.key_identifier,
@@ -65,7 +66,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
 pub(crate) fn encode_distribution_points<'p>(
     py: pyo3::Python<'p>,
     py_dps: &'p pyo3::PyAny,
-) -> pyo3::PyResult<Vec<certificate::DistributionPoint<'p>>> {
+) -> pyo3::PyResult<Vec<extensions::DistributionPoint<'p>>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyDistributionPoint<'a> {
         crl_issuer: Option<&'a pyo3::PyAny>,
@@ -80,7 +81,7 @@ pub(crate) fn encode_distribution_points<'p>(
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
             let gns = x509::common::encode_general_names(py, py_crl_issuer)?;
-            Some(x509::Asn1ReadableOrWritable::new_write(
+            Some(common::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(gns),
             ))
         } else {
@@ -88,27 +89,27 @@ pub(crate) fn encode_distribution_points<'p>(
         };
         let distribution_point = if let Some(py_full_name) = py_dp.full_name {
             let gns = x509::common::encode_general_names(py, py_full_name)?;
-            Some(certificate::DistributionPointName::FullName(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+            Some(extensions::DistributionPointName::FullName(
+                common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
             ))
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
             for py_name_entry in py_relative_name.iter()? {
                 name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
             }
-            Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
-                x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+            Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
+                common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
             ))
         } else {
             None
         };
         let reasons = if let Some(py_reasons) = py_dp.reasons {
             let reasons = certificate::encode_distribution_point_reasons(py, py_reasons)?;
-            Some(x509::Asn1ReadableOrWritable::new_write(reasons))
+            Some(common::Asn1ReadableOrWritable::new_write(reasons))
         } else {
             None
         };
-        dps.push(certificate::DistributionPoint {
+        dps.push(extensions::DistributionPoint {
             crl_issuer,
             distribution_point,
             reasons,
@@ -124,7 +125,16 @@ pub(crate) fn encode_extension(
 ) -> CryptographyResult<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
-            let bc = ext.extract::<certificate::BasicConstraints>()?;
+            #[derive(pyo3::prelude::FromPyObject)]
+            struct PyBasicConstraints {
+                ca: bool,
+                path_length: Option<u64>,
+            }
+            let pybc = ext.extract::<PyBasicConstraints>()?;
+            let bc = extensions::BasicConstraints {
+                ca: pybc.ca,
+                path_length: pybc.path_length,
+            };
             Ok(Some(asn1::write_single(&bc)?))
         }
         &oid::SUBJECT_KEY_IDENTIFIER_OID => {
@@ -232,9 +242,9 @@ pub(crate) fn encode_extension(
                                     .into())
                                 }
                             };
-                            certificate::PolicyQualifierInfo {
+                            extensions::PolicyQualifierInfo {
                                 policy_qualifier_id: (oid::CP_CPS_URI_OID).clone(),
-                                qualifier: certificate::Qualifier::CpsUri(cps_uri),
+                                qualifier: extensions::Qualifier::CpsUri(cps_uri),
                             }
                         } else {
                             let py_notice =
@@ -250,15 +260,15 @@ pub(crate) fn encode_extension(
                                     notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
                                 }
 
-                                Some(certificate::NoticeReference {
-                                    organization: certificate::DisplayText::Utf8String(
+                                Some(extensions::NoticeReference {
+                                    organization: extensions::DisplayText::Utf8String(
                                         asn1::Utf8String::new(
                                             py_notice
                                                 .getattr(pyo3::intern!(py, "organization"))?
                                                 .extract()?,
                                         ),
                                     ),
-                                    notice_numbers: x509::Asn1ReadableOrWritable::new_write(
+                                    notice_numbers: common::Asn1ReadableOrWritable::new_write(
                                         asn1::SequenceOfWriter::new(notice_numbers),
                                     ),
                                 })
@@ -268,17 +278,17 @@ pub(crate) fn encode_extension(
                             let py_explicit_text =
                                 py_qualifier.getattr(pyo3::intern!(py, "explicit_text"))?;
                             let explicit_text = if py_explicit_text.is_true()? {
-                                Some(certificate::DisplayText::Utf8String(asn1::Utf8String::new(
+                                Some(extensions::DisplayText::Utf8String(asn1::Utf8String::new(
                                     py_explicit_text.extract()?,
                                 )))
                             } else {
                                 None
                             };
 
-                            certificate::PolicyQualifierInfo {
+                            extensions::PolicyQualifierInfo {
                                 policy_qualifier_id: (oid::CP_USER_NOTICE_OID).clone(),
-                                qualifier: certificate::Qualifier::UserNotice(
-                                    certificate::UserNotice {
+                                qualifier: extensions::Qualifier::UserNotice(
+                                    extensions::UserNotice {
                                         notice_ref,
                                         explicit_text,
                                     },
@@ -287,7 +297,7 @@ pub(crate) fn encode_extension(
                         };
                         qualifiers.push(qualifier);
                     }
-                    Some(x509::Asn1ReadableOrWritable::new_write(
+                    Some(common::Asn1ReadableOrWritable::new_write(
                         asn1::SequenceOfWriter::new(qualifiers),
                     ))
                 } else {
@@ -295,7 +305,7 @@ pub(crate) fn encode_extension(
                 };
                 let py_policy_id =
                     py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
-                policy_informations.push(certificate::PolicyInformation {
+                policy_informations.push(extensions::PolicyInformation {
                     policy_identifier: py_oid_to_oid(py_policy_id)?,
                     policy_qualifiers: qualifiers,
                 });
@@ -305,7 +315,7 @@ pub(crate) fn encode_extension(
             ))?))
         }
         &oid::POLICY_CONSTRAINTS_OID => {
-            let pc = certificate::PolicyConstraints {
+            let pc = extensions::PolicyConstraints {
                 require_explicit_policy: ext
                     .getattr(pyo3::intern!(py, "require_explicit_policy"))?
                     .extract()?,
@@ -318,7 +328,7 @@ pub(crate) fn encode_extension(
         &oid::NAME_CONSTRAINTS_OID => {
             let permitted = ext.getattr(pyo3::intern!(py, "permitted_subtrees"))?;
             let excluded = ext.getattr(pyo3::intern!(py, "excluded_subtrees"))?;
-            let nc = certificate::NameConstraints {
+            let nc = extensions::NameConstraints {
                 permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
                 excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
             };
@@ -412,23 +422,23 @@ pub(crate) fn encode_extension(
             {
                 let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
                 let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
-                Some(x509::Asn1ReadableOrWritable::new_write(reasons))
+                Some(common::Asn1ReadableOrWritable::new_write(reasons))
             } else {
                 None
             };
             let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_true()? {
                 let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
                 let gns = x509::common::encode_general_names(ext.py(), py_full_name)?;
-                Some(certificate::DistributionPointName::FullName(
-                    x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+                Some(extensions::DistributionPointName::FullName(
+                    common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
                 ))
             } else if ext.getattr(pyo3::intern!(py, "relative_name"))?.is_true()? {
                 let mut name_entries = vec![];
                 for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
                     name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
                 }
-                Some(certificate::DistributionPointName::NameRelativeToCRLIssuer(
-                    x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+                Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
+                    common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
                 ))
             } else {
                 None
@@ -458,7 +468,7 @@ pub(crate) fn encode_extension(
         }
         &oid::MS_CERTIFICATE_TEMPLATE => {
             let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
-            let mstpl = certificate::MSCertificateTemplate {
+            let mstpl = extensions::MSCertificateTemplate {
                 template_id: py_oid_to_oid(py_template_id)?,
                 major_version: ext.getattr(pyo3::intern!(py, "major_version"))?.extract()?,
                 minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,

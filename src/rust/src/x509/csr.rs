@@ -5,83 +5,25 @@
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{certificate, oid, sign};
+use crate::x509::{certificate, sign};
 use asn1::SimpleAsn1Readable;
+use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
+use cryptography_x509::{common, oid};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct RawCsr<'a> {
-    csr_info: CertificationRequestInfo<'a>,
-    signature_alg: x509::AlgorithmIdentifier<'a>,
-    signature: asn1::BitString<'a>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct CertificationRequestInfo<'a> {
-    version: u8,
-    subject: x509::Name<'a>,
-    spki: certificate::SubjectPublicKeyInfo<'a>,
-    #[implicit(0, required)]
-    attributes: Attributes<'a>,
-}
-
-pub(crate) type Attributes<'a> = x509::Asn1ReadableOrWritable<
-    'a,
-    asn1::SetOf<'a, Attribute<'a>>,
-    asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
->;
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub(crate) struct Attribute<'a> {
-    pub(crate) type_id: asn1::ObjectIdentifier,
-    pub(crate) values: x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SetOf<'a, asn1::Tlv<'a>>,
-        asn1::SetOfWriter<'a, x509::common::RawTlv<'a>, [x509::common::RawTlv<'a>; 1]>,
-    >,
-}
-
-fn check_attribute_length<'a>(
-    values: asn1::SetOf<'a, asn1::Tlv<'a>>,
-) -> Result<(), CryptographyError> {
-    if values.count() > 1 {
-        Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Only single-valued attributes are supported"),
-        ))
-    } else {
-        Ok(())
-    }
-}
-
-impl CertificationRequestInfo<'_> {
-    fn get_extension_attribute(&self) -> Result<Option<x509::Extensions<'_>>, CryptographyError> {
-        for attribute in self.attributes.unwrap_read().clone() {
-            if attribute.type_id == oid::EXTENSION_REQUEST
-                || attribute.type_id == oid::MS_EXTENSION_REQUEST
-            {
-                check_attribute_length(attribute.values.unwrap_read().clone())?;
-                let val = attribute.values.unwrap_read().clone().next().unwrap();
-                let exts = asn1::parse_single(val.full_data())?;
-                return Ok(Some(exts));
-            }
-        }
-        Ok(None)
-    }
-}
-
 #[ouroboros::self_referencing]
-struct OwnedRawCsr {
+struct OwnedCsr {
     data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
-    value: RawCsr<'this>,
+    value: Csr<'this>,
 }
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
-    raw: OwnedRawCsr,
+    raw: OwnedCsr,
     cached_extensions: Option<pyo3::PyObject>,
 }
 
@@ -212,7 +154,11 @@ impl CertificateSigningRequest {
             .clone()
         {
             if rust_oid == attribute.type_id {
-                check_attribute_length(attribute.values.unwrap_read().clone())?;
+                check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Only single-valued attributes are supported",
+                    )
+                })?;
                 let val = attribute.values.unwrap_read().clone().next().unwrap();
                 // We allow utf8string, printablestring, and ia5string at this time
                 if val.tag() == asn1::Utf8String::TAG
@@ -248,7 +194,11 @@ impl CertificateSigningRequest {
             .unwrap_read()
             .clone()
         {
-            check_attribute_length(attribute.values.unwrap_read().clone())?;
+            check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "Only single-valued attributes are supported",
+                )
+            })?;
             let oid = oid_to_py_oid(py, &attribute.type_id)?;
             let val = attribute.values.unwrap_read().clone().next().unwrap();
             let serialized = pyo3::types::PyBytes::new(py, val.data());
@@ -268,7 +218,16 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let exts = self.raw.borrow_value().csr_info.get_extension_attribute()?;
+        let exts = self
+            .raw
+            .borrow_value()
+            .csr_info
+            .get_extension_attribute()
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "Only single-valued attributes are supported",
+                )
+            })?;
 
         x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &exts, |oid, ext_data| {
             certificate::parse_cert_ext(py, oid.clone(), ext_data)
@@ -314,7 +273,7 @@ fn load_der_x509_csr(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<CertificateSigningRequest> {
-    let raw = OwnedRawCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
+    let raw = OwnedCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     let version = raw.borrow_value().csr_info.version;
     if version != 0 {
@@ -369,7 +328,7 @@ fn create_x509_csr(
         ext_bytes = asn1::write_single(&exts)?;
         attrs.push(Attribute {
             type_id: (oid::EXTENSION_REQUEST).clone(),
-            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+            values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),
         })
@@ -393,8 +352,8 @@ fn create_x509_csr(
 
         attrs.push(Attribute {
             type_id: oid,
-            values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                x509::common::RawTlv::new(tag, value),
+            values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                common::RawTlv::new(tag, value),
             ])),
         })
     }
@@ -405,12 +364,12 @@ fn create_x509_csr(
         version: 0,
         subject: x509::common::encode_name(py, py_subject_name)?,
         spki: asn1::parse_single(spki_bytes)?,
-        attributes: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
+        attributes: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };
 
     let tbs_bytes = asn1::write_single(&csr_info)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
-    let data = asn1::write_single(&RawCsr {
+    let data = asn1::write_single(&Csr {
         csr_info,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),

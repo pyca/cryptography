@@ -5,15 +5,16 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
-use crate::x509::{extensions, ocsp, oid};
+use crate::x509::{extensions, ocsp};
+use cryptography_x509::{common, ocsp_req, oid};
 use pyo3::IntoPy;
 
 #[ouroboros::self_referencing]
-struct OwnedRawOCSPRequest {
+struct OwnedOCSPRequest {
     data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
-    value: RawOCSPRequest<'this>,
+    value: ocsp_req::OCSPRequest<'this>,
 }
 
 #[pyo3::prelude::pyfunction]
@@ -21,7 +22,7 @@ fn load_der_ocsp_request(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<OCSPRequest> {
-    let raw = OwnedRawOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
+    let raw = OwnedOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     if raw
         .borrow_value()
@@ -46,13 +47,13 @@ fn load_der_ocsp_request(
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPRequest {
-    raw: OwnedRawOCSPRequest,
+    raw: OwnedOCSPRequest,
 
     cached_extensions: Option<pyo3::PyObject>,
 }
 
 impl OCSPRequest {
-    fn cert_id(&self) -> ocsp::CertID<'_> {
+    fn cert_id(&self) -> ocsp_req::CertID<'_> {
         self.raw
             .borrow_value()
             .tbs_request
@@ -174,39 +175,6 @@ impl OCSPRequest {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct RawOCSPRequest<'a> {
-    tbs_request: TBSRequest<'a>,
-    // Parsing out the full structure, which includes the entirety of a
-    // certificate is more trouble than it's worth, since it's not in the
-    // Python API.
-    #[explicit(0)]
-    optional_signature: Option<asn1::Sequence<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct TBSRequest<'a> {
-    #[explicit(0)]
-    #[default(0)]
-    version: u8,
-    #[explicit(1)]
-    requestor_name: Option<x509::GeneralName<'a>>,
-    request_list: x509::Asn1ReadableOrWritable<
-        'a,
-        asn1::SequenceOf<'a, Request<'a>>,
-        asn1::SequenceOfWriter<'a, Request<'a>>,
-    >,
-    #[explicit(2)]
-    request_extensions: Option<x509::Extensions<'a>>,
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct Request<'a> {
-    req_cert: ocsp::CertID<'a>,
-    #[explicit(0)]
-    single_request_extensions: Option<x509::Extensions<'a>>,
-}
-
 #[pyo3::prelude::pyfunction]
 fn create_ocsp_request(
     py: pyo3::Python<'_>,
@@ -216,20 +184,20 @@ fn create_ocsp_request(
 
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash): (
-        pyo3::PyRef<'_, x509::Certificate>,
-        pyo3::PyRef<'_, x509::Certificate>,
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
         &pyo3::PyAny,
     );
     let req_cert = if !builder_request.is_none() {
         let tuple = builder_request.extract::<(
-            pyo3::PyRef<'_, x509::Certificate>,
-            pyo3::PyRef<'_, x509::Certificate>,
+            pyo3::PyRef<'_, x509::certificate::Certificate>,
+            pyo3::PyRef<'_, x509::certificate::Certificate>,
             &pyo3::PyAny,
         )>()?;
         py_cert = tuple.0;
         py_issuer = tuple.1;
         py_hash = tuple.2;
-        ocsp::CertID::new(py, &py_cert, &py_issuer, py_hash)?
+        ocsp::certid_new(py, &py_cert, &py_issuer, py_hash)?
     } else {
         let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
             &[u8],
@@ -240,7 +208,7 @@ fn create_ocsp_request(
             .getattr(pyo3::intern!(py, "_request_hash"))?
             .extract()?;
         let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
-        ocsp::CertID::new_from_hash(
+        ocsp::certid_new_from_hash(
             py,
             issuer_name_hash,
             issuer_key_hash,
@@ -254,15 +222,15 @@ fn create_ocsp_request(
         builder.getattr(pyo3::intern!(py, "_extensions"))?,
         extensions::encode_extension,
     )?;
-    let reqs = [Request {
+    let reqs = [ocsp_req::Request {
         req_cert,
         single_request_extensions: None,
     }];
-    let ocsp_req = RawOCSPRequest {
-        tbs_request: TBSRequest {
+    let ocsp_req = ocsp_req::OCSPRequest {
+        tbs_request: ocsp_req::TBSRequest {
             version: 0,
             requestor_name: None,
-            request_list: x509::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            request_list: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 &reqs,
             )),
             request_extensions: extensions,

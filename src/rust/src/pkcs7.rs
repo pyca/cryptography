@@ -6,6 +6,8 @@ use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::x509;
+use cryptography_x509::csr::{Attribute, Attributes};
+use cryptography_x509::{common, name, oid};
 
 use once_cell::sync::Lazy;
 use std::borrow::Cow;
@@ -26,10 +28,10 @@ const AES_128_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3
 
 static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
     let mut h = HashMap::new();
-    h.insert(&x509::oid::SHA224_OID, "sha-224");
-    h.insert(&x509::oid::SHA256_OID, "sha-256");
-    h.insert(&x509::oid::SHA384_OID, "sha-384");
-    h.insert(&x509::oid::SHA512_OID, "sha-512");
+    h.insert(&oid::SHA224_OID, "sha-224");
+    h.insert(&oid::SHA256_OID, "sha-256");
+    h.insert(&oid::SHA384_OID, "sha-384");
+    h.insert(&oid::SHA512_OID, "sha-512");
     h
 });
 
@@ -52,10 +54,11 @@ enum Content<'a> {
 #[derive(asn1::Asn1Write)]
 struct SignedData<'a> {
     version: u8,
-    digest_algorithms: asn1::SetOfWriter<'a, x509::AlgorithmIdentifier<'a>>,
+    digest_algorithms: asn1::SetOfWriter<'a, common::AlgorithmIdentifier<'a>>,
     content_info: ContentInfo<'a>,
     #[implicit(0)]
-    certificates: Option<asn1::SetOfWriter<'a, &'a x509::certificate::RawCertificate<'a>>>,
+    certificates:
+        Option<asn1::SetOfWriter<'a, &'a cryptography_x509::certificate::Certificate<'a>>>,
 
     // We don't ever supply any of these, so for now, don't fill out the fields.
     #[implicit(1)]
@@ -68,27 +71,27 @@ struct SignedData<'a> {
 struct SignerInfo<'a> {
     version: u8,
     issuer_and_serial_number: IssuerAndSerialNumber<'a>,
-    digest_algorithm: x509::AlgorithmIdentifier<'a>,
+    digest_algorithm: common::AlgorithmIdentifier<'a>,
     #[implicit(0)]
-    authenticated_attributes: Option<x509::csr::Attributes<'a>>,
+    authenticated_attributes: Option<Attributes<'a>>,
 
-    digest_encryption_algorithm: x509::AlgorithmIdentifier<'a>,
+    digest_encryption_algorithm: common::AlgorithmIdentifier<'a>,
     encrypted_digest: &'a [u8],
 
     #[implicit(1)]
-    unauthenticated_attributes: Option<x509::csr::Attributes<'a>>,
+    unauthenticated_attributes: Option<Attributes<'a>>,
 }
 
 #[derive(asn1::Asn1Write)]
 struct IssuerAndSerialNumber<'a> {
-    issuer: x509::Name<'a>,
+    issuer: name::Name<'a>,
     serial_number: asn1::BigInt<'a>,
 }
 
 #[pyo3::prelude::pyfunction]
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
-    py_certs: Vec<pyo3::PyRef<'p, x509::Certificate>>,
+    py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
     encoding: &'p pyo3::PyAny,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     if py_certs.is_empty() {
@@ -163,12 +166,12 @@ fn sign_and_serialize<'p>(
     ]))?;
 
     let py_signers: Vec<(
-        pyo3::PyRef<'p, x509::Certificate>,
+        pyo3::PyRef<'p, x509::certificate::Certificate>,
         &pyo3::PyAny,
         &pyo3::PyAny,
     )> = builder.getattr(pyo3::intern!(py, "_signers"))?.extract()?;
 
-    let py_certs: Vec<pyo3::PyRef<'p, x509::Certificate>> = builder
+    let py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>> = builder
         .getattr(pyo3::intern!(py, "_additional_certs"))?
         .extract()?;
 
@@ -189,15 +192,15 @@ fn sign_and_serialize<'p>(
         } else {
             let mut authenticated_attrs = vec![];
 
-            authenticated_attrs.push(x509::csr::Attribute {
+            authenticated_attrs.push(Attribute {
                 type_id: PKCS7_CONTENT_TYPE_OID,
-                values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                     asn1::parse_single(&content_type_bytes).unwrap(),
                 ])),
             });
-            authenticated_attrs.push(x509::csr::Attribute {
+            authenticated_attrs.push(Attribute {
                 type_id: PKCS7_SIGNING_TIME_OID,
-                values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                     asn1::parse_single(&signing_time_bytes).unwrap(),
                 ])),
             });
@@ -206,17 +209,17 @@ fn sign_and_serialize<'p>(
                 asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;
             // Gross hack: copy to PyBytes to extend the lifetime to 'p
             let digest_bytes = pyo3::types::PyBytes::new(py, &digest);
-            authenticated_attrs.push(x509::csr::Attribute {
+            authenticated_attrs.push(Attribute {
                 type_id: PKCS7_MESSAGE_DIGEST_OID,
-                values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                     asn1::parse_single(digest_bytes.as_bytes()).unwrap(),
                 ])),
             });
 
             if !options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCapabilities"))?)? {
-                authenticated_attrs.push(x509::csr::Attribute {
+                authenticated_attrs.push(Attribute {
                     type_id: PKCS7_SMIME_CAP_OID,
-                    values: x509::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                    values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                         asn1::parse_single(&smime_cap_bytes).unwrap(),
                     ])),
                 });
@@ -226,14 +229,14 @@ fn sign_and_serialize<'p>(
                 asn1::write_single(&asn1::SetOfWriter::new(authenticated_attrs.as_slice()))?;
 
             (
-                Some(x509::Asn1ReadableOrWritable::new_write(
+                Some(common::Asn1ReadableOrWritable::new_write(
                     asn1::SetOfWriter::new(authenticated_attrs),
                 )),
                 x509::sign::sign_data(py, py_private_key, py_hash_alg, &signed_data)?,
             )
         };
 
-        let digest_alg = x509::AlgorithmIdentifier {
+        let digest_alg = common::AlgorithmIdentifier {
             oid: x509::ocsp::HASH_NAME_TO_OIDS[py_hash_alg
                 .getattr(pyo3::intern!(py, "name"))?
                 .extract::<&str>()?]

@@ -3,8 +3,7 @@
 // for complete details.
 
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
-use crate::x509::oid;
+use cryptography_x509::{common, oid};
 
 use once_cell::sync::Lazy;
 
@@ -138,16 +137,16 @@ pub(crate) fn compute_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
-) -> pyo3::PyResult<x509::AlgorithmIdentifier<'static>> {
+) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
     let key_type = identify_key_type(py, private_key)?;
     let hash_type = identify_hash_type(py, hash_algorithm)?;
 
     match (key_type, hash_type) {
-        (KeyType::Ed25519, HashType::None) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ed25519, HashType::None) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ED25519_OID).clone(),
             params: None,
         }),
-        (KeyType::Ed448, HashType::None) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ed448, HashType::None) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ED448_OID).clone(),
             params: None,
         }),
@@ -155,85 +154,85 @@ pub(crate) fn compute_signature_algorithm<'p>(
             "Algorithm must be None when signing via ed25519 or ed448",
         )),
 
-        (KeyType::Ec, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA224_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA384_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA3_224_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA3_256_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA3_384_OID).clone(),
             params: None,
         }),
-        (KeyType::Ec, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Ec, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ECDSA_WITH_SHA3_512_OID).clone(),
             params: None,
         }),
 
-        (KeyType::Rsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA224_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA256_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA384_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA512_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha3_224) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA3_224_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha3_256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA3_256_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha3_384) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA3_384_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, HashType::Sha3_512) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Rsa, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSA_WITH_SHA3_512_OID).clone(),
             params: Some(*NULL_TLV),
         }),
 
-        (KeyType::Dsa, HashType::Sha224) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Dsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::DSA_WITH_SHA224_OID).clone(),
             params: None,
         }),
-        (KeyType::Dsa, HashType::Sha256) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Dsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::DSA_WITH_SHA256_OID).clone(),
             params: None,
         }),
-        (KeyType::Dsa, HashType::Sha384) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Dsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::DSA_WITH_SHA384_OID).clone(),
             params: None,
         }),
-        (KeyType::Dsa, HashType::Sha512) => Ok(x509::AlgorithmIdentifier {
+        (KeyType::Dsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
@@ -456,7 +455,7 @@ fn identify_key_hash_type_for_oid(
 #[cfg(test)]
 mod tests {
     use super::{identify_key_hash_type_for_oid, py_hash_name_from_hash_type, HashType, KeyType};
-    use crate::x509::oid;
+    use cryptography_x509::oid;
 
     #[test]
     fn test_identify_key_hash_type_for_oid() {
