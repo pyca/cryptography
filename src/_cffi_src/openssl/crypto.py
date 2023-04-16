@@ -10,7 +10,6 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_MEM_FUNCTIONS;
-static const long Cryptography_HAS_OPENSSL_CLEANUP;
 
 static const int OPENSSL_VERSION;
 static const int OPENSSL_CFLAGS;
@@ -42,13 +41,6 @@ void Cryptography_free_wrapper(void *, const char *, int);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_360
-static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
-void (*OPENSSL_cleanup)(void) = NULL;
-#else
-static const long Cryptography_HAS_OPENSSL_CLEANUP = 1;
-#endif
-
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_MEM_FUNCTIONS = 0;
 int (*Cryptography_CRYPTO_set_mem_functions)(

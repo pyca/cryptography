@@ -122,8 +122,7 @@ def main(argv):
             _openssl.lib.OSSL_PROVIDER_unload(backend._binding._legacy_provider)
             _openssl.lib.OSSL_PROVIDER_unload(backend._binding._default_provider)
 
-        if _openssl.lib.Cryptography_HAS_OPENSSL_CLEANUP:
-            _openssl.lib.OPENSSL_cleanup()
+        _openssl.lib.OPENSSL_cleanup()
 
         # Swap back to the original functions so that if OpenSSL tries to free
         # something from its atexit handle it won't be going through a Python
