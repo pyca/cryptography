@@ -7,23 +7,11 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, sign};
 use asn1::SimpleAsn1Readable;
-use cryptography_x509::csr::{Attribute, CertificationRequestInfo, Csr};
+use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-
-fn check_attribute_length<'a>(
-    values: asn1::SetOf<'a, asn1::Tlv<'a>>,
-) -> Result<(), CryptographyError> {
-    if values.count() > 1 {
-        Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Only single-valued attributes are supported"),
-        ))
-    } else {
-        Ok(())
-    }
-}
 
 #[ouroboros::self_referencing]
 struct OwnedCsr {
@@ -166,7 +154,11 @@ impl CertificateSigningRequest {
             .clone()
         {
             if rust_oid == attribute.type_id {
-                check_attribute_length(attribute.values.unwrap_read().clone())?;
+                check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Only single-valued attributes are supported",
+                    )
+                })?;
                 let val = attribute.values.unwrap_read().clone().next().unwrap();
                 // We allow utf8string, printablestring, and ia5string at this time
                 if val.tag() == asn1::Utf8String::TAG
@@ -202,7 +194,11 @@ impl CertificateSigningRequest {
             .unwrap_read()
             .clone()
         {
-            check_attribute_length(attribute.values.unwrap_read().clone())?;
+            check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "Only single-valued attributes are supported",
+                )
+            })?;
             let oid = oid_to_py_oid(py, &attribute.type_id)?;
             let val = attribute.values.unwrap_read().clone().next().unwrap();
             let serialized = pyo3::types::PyBytes::new(py, val.data());

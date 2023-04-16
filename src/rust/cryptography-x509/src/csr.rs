@@ -41,8 +41,7 @@ impl CertificationRequestInfo<'_> {
     }
 }
 
-// TODO: this is mostly a duplicate of the same logic in csr.rs in the cryptography crate
-fn check_attribute_length<'a>(
+pub fn check_attribute_length<'a>(
     values: asn1::SetOf<'a, asn1::Tlv<'a>>,
 ) -> Result<(), asn1::ParseError> {
     if values.count() > 1 {
