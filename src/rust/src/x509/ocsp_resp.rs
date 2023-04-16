@@ -464,9 +464,9 @@ fn singleresp_py_certificate_status<'p>(
     py: pyo3::Python<'p>,
 ) -> pyo3::PyResult<&'p pyo3::PyAny> {
     let attr = match resp.cert_status {
-        ocsp_resp::CertStatus::Good(_) => "GOOD",
-        ocsp_resp::CertStatus::Revoked(_) => "REVOKED",
-        ocsp_resp::CertStatus::Unknown(_) => "UNKNOWN",
+        ocsp_resp::CertStatus::Good(_) => pyo3::intern!(py, "GOOD"),
+        ocsp_resp::CertStatus::Revoked(_) => pyo3::intern!(py, "REVOKED"),
+        ocsp_resp::CertStatus::Unknown(_) => pyo3::intern!(py, "UNKNOWN"),
     };
     py.import(pyo3::intern!(py, "cryptography.x509.ocsp"))?
         .getattr(pyo3::intern!(py, "OCSPCertStatus"))?
