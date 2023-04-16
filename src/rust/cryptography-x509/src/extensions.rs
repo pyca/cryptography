@@ -12,12 +12,6 @@ pub type Extensions<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
-pub struct AlgorithmIdentifier<'a> {
-    pub oid: asn1::ObjectIdentifier,
-    pub params: Option<asn1::Tlv<'a>>,
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct Extension<'a> {
     pub extn_id: asn1::ObjectIdentifier,
