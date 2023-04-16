@@ -7,7 +7,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
 use crate::x509::{certificate, sign};
 use asn1::SimpleAsn1Readable;
-use cryptography_x509::csr::{Attribute, CertificationRequestInfo, RawCsr};
+use cryptography_x509::csr::{Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
@@ -26,16 +26,16 @@ fn check_attribute_length<'a>(
 }
 
 #[ouroboros::self_referencing]
-struct OwnedRawCsr {
+struct OwnedCsr {
     data: pyo3::Py<pyo3::types::PyBytes>,
     #[borrows(data)]
     #[covariant]
-    value: RawCsr<'this>,
+    value: Csr<'this>,
 }
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
-    raw: OwnedRawCsr,
+    raw: OwnedCsr,
     cached_extensions: Option<pyo3::PyObject>,
 }
 
@@ -277,7 +277,7 @@ fn load_der_x509_csr(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<CertificateSigningRequest> {
-    let raw = OwnedRawCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
+    let raw = OwnedCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     let version = raw.borrow_value().csr_info.version;
     if version != 0 {
@@ -373,7 +373,7 @@ fn create_x509_csr(
 
     let tbs_bytes = asn1::write_single(&csr_info)?;
     let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
-    let data = asn1::write_single(&RawCsr {
+    let data = asn1::write_single(&Csr {
         csr_info,
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
