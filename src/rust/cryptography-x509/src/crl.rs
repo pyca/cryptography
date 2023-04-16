@@ -1,5 +1,4 @@
 use crate::{common, extensions, name};
-use asn1;
 
 pub type ReasonFlags<'a> =
     Option<common::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;

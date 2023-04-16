@@ -1,7 +1,6 @@
 use crate::common;
 use crate::extensions;
 use crate::name;
-use asn1;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub struct Certificate<'a> {
