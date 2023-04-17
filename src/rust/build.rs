@@ -1,7 +1,6 @@
 use std::env;
-use std::io::Write;
 use std::path::Path;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 #[allow(clippy::unusual_byte_groupings)]
 fn main() {
@@ -91,18 +90,9 @@ fn run_python_script(interpreter: impl AsRef<Path>, script: &str) -> Result<Stri
     let interpreter = interpreter.as_ref();
     let out = Command::new(interpreter)
         .env("PYTHONIOENCODING", "utf-8")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .and_then(|mut child| {
-            child
-                .stdin
-                .as_mut()
-                .expect("piped stdin")
-                .write_all(script.as_bytes())?;
-            child.wait_with_output()
-        });
+        .arg("-c")
+        .arg(script)
+        .output();
 
     match out {
         Err(err) => Err(format!(
