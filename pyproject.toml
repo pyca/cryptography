@@ -60,10 +60,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-exclude = [
-    "_cffi_src",
-    "_cffi_src.*",
-]
+include = ["cryptography*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "cryptography.__version__"}
