@@ -219,8 +219,6 @@ jobs:
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
-        with:
-          key: ${{ matrix.RUST }}
       - name: Setup python
         uses: actions/setup-python@v4.5.0
         with:
@@ -275,7 +273,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ steps.rust-toolchain.outputs.cachekey }}-coverage
+          key: coverage
           additional-paths: |
             ~/.cargo/bin/cargo-cov
             ~/.cargo/bin/cargo-nm
