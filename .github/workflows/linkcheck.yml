@@ -26,7 +26,7 @@ jobs:
         uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@v4.5.0
+        uses: actions/setup-python@v4.6.0
         with:
           python-version: 3.11
       - name: Cache rust and pip
