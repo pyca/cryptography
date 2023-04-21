@@ -58,10 +58,6 @@ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
 void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
 int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
 
-int EVP_MD_CTX_copy_ex(EVP_MD_CTX *, const EVP_MD_CTX *);
-int EVP_DigestInit_ex(EVP_MD_CTX *, const EVP_MD *, ENGINE *);
-int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
-int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
 int EVP_DigestFinalXOF(EVP_MD_CTX *, unsigned char *, size_t);
 const EVP_MD *EVP_get_digestbyname(const char *);
 
@@ -91,13 +87,9 @@ int EVP_DigestSignInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
                        ENGINE *, EVP_PKEY *);
 int EVP_DigestSignUpdate(EVP_MD_CTX *, const void *, size_t);
 int EVP_DigestSignFinal(EVP_MD_CTX *, unsigned char *, size_t *);
-int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
-                         ENGINE *, EVP_PKEY *);
-
 
 
 EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
-EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
 void EVP_PKEY_CTX_free(EVP_PKEY_CTX *);
 int EVP_PKEY_sign_init(EVP_PKEY_CTX *);
 int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
@@ -117,8 +109,6 @@ int EVP_PKEY_set1_DH(EVP_PKEY *, DH *);
 
 int EVP_PKEY_cmp(const EVP_PKEY *, const EVP_PKEY *);
 
-int EVP_PKEY_keygen_init(EVP_PKEY_CTX *);
-int EVP_PKEY_keygen(EVP_PKEY_CTX *, EVP_PKEY **);
 int EVP_PKEY_derive_init(EVP_PKEY_CTX *);
 int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *, EVP_PKEY *);
 int EVP_PKEY_derive_set_peer_ex(EVP_PKEY_CTX *, EVP_PKEY *, int);
@@ -131,8 +121,6 @@ void EVP_MD_CTX_free(EVP_MD_CTX *);
 
 int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
                    const unsigned char *, size_t);
-int EVP_DigestVerify(EVP_MD_CTX *, const unsigned char *, size_t,
-                     const unsigned char *, size_t);
 
 int EVP_PKEY_bits(const EVP_PKEY *);
 
