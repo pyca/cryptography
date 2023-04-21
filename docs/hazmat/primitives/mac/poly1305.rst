@@ -48,7 +48,7 @@ messages allows an attacker to forge tags. Poly1305 is described in
         ...
         cryptography.exceptions.InvalidSignature: Value did not match computed tag.
 
-    :param key: Secret key as ``bytes``.
+    :param key: The secret key.
     :type key: :term:`bytes-like`
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
         the version of OpenSSL ``cryptography`` is compiled against does not
