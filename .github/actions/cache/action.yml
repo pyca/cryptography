@@ -21,8 +21,7 @@ runs:
   steps:
     - name: Get rust version
       id: rust-version
-      run: |
-        echo "version=$(rustc --version | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "version=$(rustc --version | sha256sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
     - name: Get pip cache dir
       id: pip-cache
