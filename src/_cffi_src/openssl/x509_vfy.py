@@ -103,7 +103,6 @@ static const long X509_V_FLAG_ALLOW_PROXY_CERTS;
 static const long X509_V_FLAG_POLICY_CHECK;
 static const long X509_V_FLAG_EXPLICIT_POLICY;
 static const long X509_V_FLAG_INHIBIT_MAP;
-static const long X509_V_FLAG_NOTIFY_POLICY;
 static const long X509_V_FLAG_CHECK_SS_SIGNATURE;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
 
