@@ -54,7 +54,7 @@ of a message.
         ...
         cryptography.exceptions.InvalidSignature: Signature did not match digest.
 
-    :param key: Secret key as ``bytes``.
+    :param key: The secret key.
     :type key: :term:`bytes-like`
     :param algorithm: An
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
