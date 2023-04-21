@@ -29,7 +29,7 @@ jobs:
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
-      - run: pip install twine requests
+      - run: pip install twine requests sigstore
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
@@ -67,3 +67,10 @@ jobs:
         shell: python
 
       - run: twine upload --skip-existing $(find dist/ -type f -name 'cryptography*')
+
+      # Do not perform sigstore signatures for things for TestPyPI. This is
+      # because there's nothing that would prevent a malicious PyPI from
+      # serving a signed TestPyPI asset in place of a release intended for
+      # PyPI.
+      - run: sigstore sign $(find dist/ -type f -name 'cryptography*')
+        if: env.TWINE_REPOSITORY == 'pypi'
