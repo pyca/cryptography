@@ -30,7 +30,6 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey,
     _EllipticCurvePublicKey,
 )
-from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.poly1305 import (
     _POLY1305_KEY_SIZE,
     _Poly1305Context,
@@ -222,11 +221,6 @@ class Backend:
 
     def openssl_version_number(self) -> int:
         return self._lib.OpenSSL_version_num()
-
-    def create_hmac_ctx(
-        self, key: bytes, algorithm: hashes.HashAlgorithm
-    ) -> _HMACContext:
-        return _HMACContext(self, key, algorithm)
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":

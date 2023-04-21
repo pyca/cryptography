@@ -1,0 +1,14 @@
+[package]
+name = "cryptography-openssl"
+version = "0.1.0"
+authors = ["The cryptography developers <cryptography-dev@python.org>"]
+edition = "2021"
+publish = false
+# This specifies the MSRV
+rust-version = "1.56.0"
+
+[dependencies]
+openssl = "0.10.51"
+ffi = { package = "openssl-sys", version = "0.9.85" }
+foreign-types = "0.3"
+foreign-types-shared = "0.1"

@@ -13,18 +13,24 @@ struct Hash {
     ctx: Option<openssl::hash::Hasher>,
 }
 
+pub(crate) fn already_finalized_error(
+    py: pyo3::Python<'_>,
+) -> CryptographyResult<CryptographyError> {
+    Ok(CryptographyError::from(pyo3::PyErr::from_value(
+        py.import(pyo3::intern!(py, "cryptography.exceptions"))?
+            .call_method1(
+                pyo3::intern!(py, "AlreadyFinalized"),
+                ("Context was already finalized.",),
+            )?,
+    )))
+}
+
 impl Hash {
     fn get_ctx(&self, py: pyo3::Python<'_>) -> CryptographyResult<&openssl::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(CryptographyError::from(pyo3::PyErr::from_value(
-            py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                .call_method1(
-                    pyo3::intern!(py, "AlreadyFinalized"),
-                    ("Context was already finalized.",),
-                )?,
-        )))
+        Err(already_finalized_error(py)?)
     }
 
     fn get_mut_ctx(
@@ -34,13 +40,52 @@ impl Hash {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(CryptographyError::from(pyo3::PyErr::from_value(
-            py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                .call_method1(
-                    pyo3::intern!(py, "AlreadyFinalized"),
-                    ("Context was already finalized.",),
+        Err(already_finalized_error(py)?)
+    }
+}
+
+pub(crate) fn message_digest_from_algorithm(
+    py: pyo3::Python<'_>,
+    algorithm: &pyo3::PyAny,
+) -> CryptographyResult<openssl::hash::MessageDigest> {
+    let hash_algorithm_class = py
+        .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
+        .getattr(pyo3::intern!(py, "HashAlgorithm"))?;
+    if !algorithm.is_instance(hash_algorithm_class)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err("Expected instance of hashes.HashAlgorithm."),
+        ));
+    }
+
+    let name = algorithm
+        .getattr(pyo3::intern!(py, "name"))?
+        .extract::<&str>()?;
+    let openssl_name = if name == "blake2b" || name == "blake2s" {
+        let digest_size = algorithm
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+        Cow::Owned(format!("{}{}", name, digest_size * 8))
+    } else {
+        Cow::Borrowed(name)
+    };
+
+    match openssl::hash::MessageDigest::from_name(&openssl_name) {
+        Some(md) => Ok(md),
+        None => {
+            let exceptions_module = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
+            let reason = exceptions_module
+                .getattr(pyo3::intern!(py, "_Reasons"))?
+                .getattr(pyo3::intern!(py, "UNSUPPORTED_HASH"))?;
+            Err(CryptographyError::from(pyo3::PyErr::from_value(
+                exceptions_module.call_method1(
+                    pyo3::intern!(py, "UnsupportedAlgorithm"),
+                    (
+                        format!("{} is not a supported hash on this backend", name),
+                        reason,
+                    ),
                 )?,
-        )))
+            )))
+        }
     }
 }
 
@@ -54,47 +99,8 @@ impl Hash {
         backend: Option<&pyo3::PyAny>,
     ) -> CryptographyResult<Hash> {
         let _ = backend;
-        let hash_algorithm_class = py
-            .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
-            .getattr(pyo3::intern!(py, "HashAlgorithm"))?;
-        if !algorithm.is_instance(hash_algorithm_class)? {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "Expected instance of hashes.HashAlgorithm.",
-                ),
-            ));
-        }
 
-        let name = algorithm
-            .getattr(pyo3::intern!(py, "name"))?
-            .extract::<&str>()?;
-        let openssl_name = if name == "blake2b" || name == "blake2s" {
-            let digest_size = algorithm
-                .getattr(pyo3::intern!(py, "digest_size"))?
-                .extract::<usize>()?;
-            Cow::Owned(format!("{}{}", name, digest_size * 8))
-        } else {
-            Cow::Borrowed(name)
-        };
-
-        let md = match openssl::hash::MessageDigest::from_name(&openssl_name) {
-            Some(md) => md,
-            None => {
-                let exceptions_module = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
-                let reason = exceptions_module
-                    .getattr(pyo3::intern!(py, "_Reasons"))?
-                    .getattr(pyo3::intern!(py, "UNSUPPORTED_HASH"))?;
-                return Err(CryptographyError::from(pyo3::PyErr::from_value(
-                    exceptions_module.call_method1(
-                        pyo3::intern!(py, "UnsupportedAlgorithm"),
-                        (
-                            format!("{} is not a supported hash on this backend", name),
-                            reason,
-                        ),
-                    )?,
-                )));
-            }
-        };
+        let md = message_digest_from_algorithm(py, algorithm)?;
         let ctx = openssl::hash::Hasher::new(md)?;
 
         Ok(Hash {

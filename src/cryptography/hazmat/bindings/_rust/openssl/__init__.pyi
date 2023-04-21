@@ -8,6 +8,7 @@ from cryptography.hazmat.bindings._rust.openssl import (
     ed448,
     ed25519,
     hashes,
+    hmac,
     x448,
     x25519,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "openssl_version",
     "raise_openssl_error",
     "hashes",
+    "hmac",
     "ed448",
     "ed25519",
     "x448",

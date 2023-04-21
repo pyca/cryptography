@@ -88,3 +88,8 @@ class TestHMAC:
         assert h.finalize() == binascii.unhexlify(
             b"a1bf7169c56a501c6585190ff4f07cad6e492a3ee187c0372614fb444b9fc3f0"
         )
+
+    def test_algorithm(self):
+        alg = hashes.SHA256()
+        h = hmac.HMAC(b"123456", alg)
+        assert h.algorithm is alg
