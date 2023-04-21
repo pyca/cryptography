@@ -30,7 +30,6 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey,
     _EllipticCurvePublicKey,
 )
-from cryptography.hazmat.backends.openssl.hashes import _HashContext
 from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.poly1305 import (
     _POLY1305_KEY_SIZE,
@@ -273,11 +272,6 @@ class Backend:
             return True
 
         return self.hash_supported(algorithm)
-
-    def create_hash_ctx(
-        self, algorithm: hashes.HashAlgorithm
-    ) -> hashes.HashContext:
-        return _HashContext(self, algorithm)
 
     def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
         if self._fips_enabled:

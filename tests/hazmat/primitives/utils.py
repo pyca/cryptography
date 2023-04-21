@@ -209,7 +209,6 @@ def base_hash_test(backend, algorithm, digest_size):
     assert m.algorithm.digest_size == digest_size
     m_copy = m.copy()
     assert m != m_copy
-    assert m._ctx != m_copy._ctx
 
     m.update(b"abc")
     copy = m.copy()

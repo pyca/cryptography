@@ -7,8 +7,31 @@ from __future__ import annotations
 import abc
 import typing
 
-from cryptography import utils
-from cryptography.exceptions import AlreadyFinalized
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+
+__all__ = [
+    "HashAlgorithm",
+    "HashContext",
+    "Hash",
+    "ExtendableOutputFunction",
+    "SHA1",
+    "SHA512_224",
+    "SHA512_256",
+    "SHA224",
+    "SHA256",
+    "SHA384",
+    "SHA512",
+    "SHA3_224",
+    "SHA3_256",
+    "SHA3_384",
+    "SHA3_512",
+    "SHAKE128",
+    "SHAKE256",
+    "MD5",
+    "BLAKE2b",
+    "BLAKE2s",
+    "SM3",
+]
 
 
 class HashAlgorithm(metaclass=abc.ABCMeta):
@@ -62,55 +85,14 @@ class HashContext(metaclass=abc.ABCMeta):
         """
 
 
+Hash = rust_openssl.hashes.Hash
+HashContext.register(Hash)
+
+
 class ExtendableOutputFunction(metaclass=abc.ABCMeta):
     """
     An interface for extendable output functions.
     """
-
-
-class Hash(HashContext):
-    _ctx: typing.Optional[HashContext]
-
-    def __init__(
-        self,
-        algorithm: HashAlgorithm,
-        backend: typing.Any = None,
-        ctx: typing.Optional[HashContext] = None,
-    ) -> None:
-        if not isinstance(algorithm, HashAlgorithm):
-            raise TypeError("Expected instance of hashes.HashAlgorithm.")
-        self._algorithm = algorithm
-
-        if ctx is None:
-            from cryptography.hazmat.backends.openssl.backend import (
-                backend as ossl,
-            )
-
-            self._ctx = ossl.create_hash_ctx(self.algorithm)
-        else:
-            self._ctx = ctx
-
-    @property
-    def algorithm(self) -> HashAlgorithm:
-        return self._algorithm
-
-    def update(self, data: bytes) -> None:
-        if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized.")
-        utils._check_byteslike("data", data)
-        self._ctx.update(data)
-
-    def copy(self) -> Hash:
-        if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized.")
-        return Hash(self.algorithm, ctx=self._ctx.copy())
-
-    def finalize(self) -> bytes:
-        if self._ctx is None:
-            raise AlreadyFinalized("Context was already finalized.")
-        digest = self._ctx.finalize()
-        self._ctx = None
-        return digest
 
 
 class SHA1(HashAlgorithm):
