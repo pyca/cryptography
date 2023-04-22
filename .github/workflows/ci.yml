@@ -330,7 +330,7 @@ jobs:
             set -xe
             cd src/rust/
             cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o pytest-rust-cov.profdata
-            cargo profdata -- merge -sparse rust-cov/*.profraw cryptography-x509/rust-cov/*.profraw -o cargo-test-rust-cov.profdata
+            cargo profdata -- merge -sparse $(find . -iname "*.profraw") -o cargo-test-rust-cov.profdata
             COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
 
             cargo cov -- export \
