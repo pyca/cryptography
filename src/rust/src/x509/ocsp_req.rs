@@ -4,8 +4,8 @@
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
 use crate::x509::{extensions, ocsp};
+use crate::{exceptions, x509};
 use cryptography_x509::{common, ocsp_req, oid};
 use pyo3::IntoPy;
 
@@ -88,17 +88,12 @@ impl OCSPRequest {
         let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
         match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
             Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
-            None => {
-                let exceptions = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
-                Err(CryptographyError::from(pyo3::PyErr::from_value(
-                    exceptions
-                        .getattr(pyo3::intern!(py, "UnsupportedAlgorithm"))?
-                        .call1((format!(
-                            "Signature algorithm OID: {} not recognized",
-                            cert_id.hash_algorithm.oid
-                        ),))?,
-                )))
-            }
+            None => Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err(format!(
+                    "Signature algorithm OID: {} not recognized",
+                    cert_id.hash_algorithm.oid
+                )),
+            )),
         }
     }
 

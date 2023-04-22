@@ -6,25 +6,12 @@ from __future__ import annotations
 
 import typing
 
-from cryptography import utils
+from cryptography.hazmat.bindings._rust import exceptions as rust_exceptions
 
 if typing.TYPE_CHECKING:
     from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
-
-class _Reasons(utils.Enum):
-    BACKEND_MISSING_INTERFACE = 0
-    UNSUPPORTED_HASH = 1
-    UNSUPPORTED_CIPHER = 2
-    UNSUPPORTED_PADDING = 3
-    UNSUPPORTED_MGF = 4
-    UNSUPPORTED_PUBLIC_KEY_ALGORITHM = 5
-    UNSUPPORTED_ELLIPTIC_CURVE = 6
-    UNSUPPORTED_SERIALIZATION = 7
-    UNSUPPORTED_X509 = 8
-    UNSUPPORTED_EXCHANGE_ALGORITHM = 9
-    UNSUPPORTED_DIFFIE_HELLMAN = 10
-    UNSUPPORTED_MAC = 11
+_Reasons = rust_exceptions._Reasons
 
 
 class UnsupportedAlgorithm(Exception):

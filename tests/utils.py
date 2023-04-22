@@ -33,7 +33,7 @@ def raises_unsupported_algorithm(reason):
     with pytest.raises(UnsupportedAlgorithm) as exc_info:
         yield exc_info
 
-    assert exc_info.value._reason is reason
+    assert exc_info.value._reason == reason
 
 
 T = typing.TypeVar("T")

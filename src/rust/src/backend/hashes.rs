@@ -4,6 +4,7 @@
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::exceptions;
 use std::borrow::Cow;
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
@@ -71,21 +72,12 @@ pub(crate) fn message_digest_from_algorithm(
 
     match openssl::hash::MessageDigest::from_name(&openssl_name) {
         Some(md) => Ok(md),
-        None => {
-            let exceptions_module = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
-            let reason = exceptions_module
-                .getattr(pyo3::intern!(py, "_Reasons"))?
-                .getattr(pyo3::intern!(py, "UNSUPPORTED_HASH"))?;
-            Err(CryptographyError::from(pyo3::PyErr::from_value(
-                exceptions_module.call_method1(
-                    pyo3::intern!(py, "UnsupportedAlgorithm"),
-                    (
-                        format!("{} is not a supported hash on this backend", name),
-                        reason,
-                    ),
-                )?,
-            )))
-        }
+        None => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err((
+                format!("{} is not a supported hash on this backend", name),
+                exceptions::Reasons::UNSUPPORTED_HASH,
+            )),
+        )),
     }
 }
 

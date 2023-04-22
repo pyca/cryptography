@@ -4,8 +4,8 @@
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
+use crate::{exceptions, x509};
 use cryptography_x509::ocsp_resp::SingleResponse;
 use cryptography_x509::{common, ocsp_resp, oid};
 use pyo3::IntoPy;
@@ -187,10 +187,9 @@ impl OCSPResponse {
                     "Signature algorithm OID: {} not recognized",
                     self.requires_successful_response()?.signature_algorithm.oid
                 );
-                Err(CryptographyError::from(pyo3::PyErr::from_value(
-                    py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                        .call_method1(pyo3::intern!(py, "UnsupportedAlgorithm"), (exc_messsage,))?,
-                )))
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err(exc_messsage),
+                ))
             }
         }
     }
@@ -480,17 +479,12 @@ fn singleresp_py_hash_algorithm<'p>(
     let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
     match ocsp::OIDS_TO_HASH.get(&resp.cert_id.hash_algorithm.oid) {
         Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
-        None => {
-            let exceptions = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
-            Err(CryptographyError::from(pyo3::PyErr::from_value(
-                exceptions
-                    .getattr(pyo3::intern!(py, "UnsupportedAlgorithm"))?
-                    .call1((format!(
-                        "Signature algorithm OID: {} not recognized",
-                        resp.cert_id.hash_algorithm.oid
-                    ),))?,
-            )))
-        }
+        None => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err(format!(
+                "Signature algorithm OID: {} not recognized",
+                resp.cert_id.hash_algorithm.oid
+            )),
+        )),
     }
 }
 
