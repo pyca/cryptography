@@ -170,13 +170,10 @@ impl CertificateSigningRequest {
                 )));
             }
         }
-        Err(pyo3::PyErr::from_value(
-            py.import(pyo3::intern!(py, "cryptography.x509"))?
-                .call_method1(
-                    "AttributeNotFound",
-                    (format!("No {} attribute was found", oid), oid),
-                )?,
-        ))
+        Err(exceptions::AttributeNotFound::new_err((
+            format!("No {} attribute was found", oid),
+            oid.into_py(py),
+        )))
     }
 
     #[getter]
@@ -273,12 +270,12 @@ fn load_der_x509_csr(
 
     let version = raw.borrow_value().csr_info.version;
     if version != 0 {
-        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-        return Err(CryptographyError::from(pyo3::PyErr::from_value(
-            x509_module
-                .getattr(pyo3::intern!(py, "InvalidVersion"))?
-                .call1((format!("{} is not a valid CSR version", version), version))?,
-        )));
+        return Err(CryptographyError::from(
+            exceptions::InvalidVersion::new_err((
+                format!("{} is not a valid CSR version", version),
+                version,
+            )),
+        ));
     }
 
     Ok(CertificateSigningRequest {

@@ -5,6 +5,7 @@
 use crate::backend::hashes::{already_finalized_error, message_digest_from_algorithm};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::exceptions;
 
 #[pyo3::prelude::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.hmac",
@@ -17,24 +18,18 @@ struct Hmac {
 }
 
 impl Hmac {
-    fn get_ctx(
-        &self,
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<&cryptography_openssl::hmac::Hmac> {
+    fn get_ctx(&self) -> CryptographyResult<&cryptography_openssl::hmac::Hmac> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(already_finalized_error(py)?)
+        Err(already_finalized_error())
     }
 
-    fn get_mut_ctx(
-        &mut self,
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<&mut cryptography_openssl::hmac::Hmac> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::hmac::Hmac> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(already_finalized_error(py)?)
+        Err(already_finalized_error())
     }
 }
 
@@ -59,8 +54,8 @@ impl Hmac {
         })
     }
 
-    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.get_mut_ctx(py)?.update(data.as_bytes())?;
+    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        self.get_mut_ctx()?.update(data.as_bytes())?;
         Ok(())
     }
 
@@ -68,7 +63,7 @@ impl Hmac {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let data = self.get_mut_ctx(py)?.finish()?;
+        let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
         Ok(pyo3::types::PyBytes::new(py, &data))
     }
@@ -76,13 +71,9 @@ impl Hmac {
     fn verify(&mut self, py: pyo3::Python<'_>, signature: &[u8]) -> CryptographyResult<()> {
         let actual = self.finalize(py)?.as_bytes();
         if actual.len() != signature.len() || !openssl::memcmp::eq(actual, signature) {
-            return Err(CryptographyError::from(pyo3::PyErr::from_value(
-                py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                    .call_method1(
-                        pyo3::intern!(py, "InvalidSignature"),
-                        ("Signature did not match digest.",),
-                    )?,
-            )));
+            return Err(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(("Signature did not match digest.",)),
+            ));
         }
 
         Ok(())
@@ -90,7 +81,7 @@ impl Hmac {
 
     fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hmac> {
         Ok(Hmac {
-            ctx: Some(self.get_ctx(py)?.copy()?),
+            ctx: Some(self.get_ctx()?.copy()?),
             algorithm: self.algorithm.clone_ref(py),
         })
     }

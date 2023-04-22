@@ -327,11 +327,12 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, Crypt
         2 => Ok(x509_module
             .getattr(pyo3::intern!(py, "Version"))?
             .get_item(pyo3::intern!(py, "v3"))?),
-        _ => Err(CryptographyError::from(pyo3::PyErr::from_value(
-            x509_module
-                .getattr(pyo3::intern!(py, "InvalidVersion"))?
-                .call1((format!("{} is not a valid X509 version", version), version))?,
-        ))),
+        _ => Err(CryptographyError::from(
+            exceptions::InvalidVersion::new_err((
+                format!("{} is not a valid X509 version", version),
+                version,
+            )),
+        )),
     }
 }
 
