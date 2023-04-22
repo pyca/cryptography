@@ -329,24 +329,18 @@ jobs:
         run: |
             set -xe
             cd src/rust/
-            cargo profdata -- merge -sparse ../../rust-cov/*.profraw -o pytest-rust-cov.profdata
-            cargo profdata -- merge -sparse $(find . -iname "*.profraw") -o cargo-test-rust-cov.profdata
+            cargo profdata -- merge -sparse $(find ../.. -iname "*.profraw") -o rust-cov.profdata
             COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
 
             cargo cov -- export \
               ../../.nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              -instr-profile=pytest-rust-cov.profdata \
+              $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --all --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]" | awk '{print "-object " $0}') \
+              -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../${COV_UUID}-1.lcov
-            cargo cov -- export \
-              $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --all --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]") \
-              -instr-profile=cargo-test-rust-cov.profdata \
-              --ignore-filename-regex='/.cargo/' \
-              --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > ../../${COV_UUID}-2.lcov
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > "../../${COV_UUID}.lcov"
 
-            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' ../../*.lcov
+            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' "../../${COV_UUID}.lcov"
       - uses: ./.github/actions/upload-coverage
 
   macos:
