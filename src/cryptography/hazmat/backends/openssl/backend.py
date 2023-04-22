@@ -85,7 +85,6 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     XTS,
     Mode,
 )
-from cryptography.hazmat.primitives.kdf import scrypt
 from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
@@ -364,30 +363,6 @@ class Backend:
 
     def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hmac_supported(algorithm)
-
-    def derive_pbkdf2_hmac(
-        self,
-        algorithm: hashes.HashAlgorithm,
-        length: int,
-        salt: bytes,
-        iterations: int,
-        key_material: bytes,
-    ) -> bytes:
-        buf = self._ffi.new("unsigned char[]", length)
-        evp_md = self._evp_md_non_null_from_algorithm(algorithm)
-        key_material_ptr = self._ffi.from_buffer(key_material)
-        res = self._lib.PKCS5_PBKDF2_HMAC(
-            key_material_ptr,
-            len(key_material),
-            salt,
-            len(salt),
-            iterations,
-            evp_md,
-            length,
-            buf,
-        )
-        self.openssl_assert(res == 1)
-        return self._ffi.buffer(buf)[:]
 
     def _consume_errors(self) -> typing.List[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
@@ -1702,41 +1677,6 @@ class Backend:
 
     def ed448_generate_key(self) -> ed448.Ed448PrivateKey:
         return rust_openssl.ed448.generate_key()
-
-    def derive_scrypt(
-        self,
-        key_material: bytes,
-        salt: bytes,
-        length: int,
-        n: int,
-        r: int,
-        p: int,
-    ) -> bytes:
-        buf = self._ffi.new("unsigned char[]", length)
-        key_material_ptr = self._ffi.from_buffer(key_material)
-        res = self._lib.EVP_PBE_scrypt(
-            key_material_ptr,
-            len(key_material),
-            salt,
-            len(salt),
-            n,
-            r,
-            p,
-            scrypt._MEM_LIMIT,
-            buf,
-            length,
-        )
-        if res != 1:
-            errors = self._consume_errors()
-            # memory required formula explained here:
-            # https://blog.filippo.io/the-scrypt-parameters/
-            min_memory = 128 * n * r // (1024**2)
-            raise MemoryError(
-                "Not enough memory to derive key. These parameters require"
-                " {} MB of memory.".format(min_memory),
-                errors,
-            )
-        return self._ffi.buffer(buf)[:]
 
     def aead_cipher_supported(self, cipher) -> bool:
         cipher_name = aead._aead_cipher_name(cipher)
