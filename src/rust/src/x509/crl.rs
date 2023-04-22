@@ -25,12 +25,12 @@ fn load_der_x509_crl(
 
     let version = owned.borrow_value().tbs_cert_list.version.unwrap_or(1);
     if version != 1 {
-        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-        return Err(CryptographyError::from(pyo3::PyErr::from_value(
-            x509_module
-                .getattr(pyo3::intern!(py, "InvalidVersion"))?
-                .call1((format!("{} is not a valid CRL version", version), version))?,
-        )));
+        return Err(CryptographyError::from(
+            exceptions::InvalidVersion::new_err((
+                format!("{} is not a valid CRL version", version),
+                version,
+            )),
+        ));
     }
 
     Ok(CertificateRevocationList {

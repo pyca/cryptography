@@ -22,7 +22,14 @@ pub(crate) enum Reasons {
     UNSUPPORTED_MAC,
 }
 
+pyo3::import_exception!(cryptography.exceptions, AlreadyFinalized);
+pyo3::import_exception!(cryptography.exceptions, InternalError);
+pyo3::import_exception!(cryptography.exceptions, InvalidSignature);
 pyo3::import_exception!(cryptography.exceptions, UnsupportedAlgorithm);
+pyo3::import_exception!(cryptography.x509, AttributeNotFound);
+pyo3::import_exception!(cryptography.x509, DuplicateExtension);
+pyo3::import_exception!(cryptography.x509, UnsupportedGeneralNameType);
+pyo3::import_exception!(cryptography.x509, InvalidVersion);
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "exceptions")?;

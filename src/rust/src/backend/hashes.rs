@@ -14,34 +14,25 @@ struct Hash {
     ctx: Option<openssl::hash::Hasher>,
 }
 
-pub(crate) fn already_finalized_error(
-    py: pyo3::Python<'_>,
-) -> CryptographyResult<CryptographyError> {
-    Ok(CryptographyError::from(pyo3::PyErr::from_value(
-        py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-            .call_method1(
-                pyo3::intern!(py, "AlreadyFinalized"),
-                ("Context was already finalized.",),
-            )?,
-    )))
+pub(crate) fn already_finalized_error() -> CryptographyError {
+    CryptographyError::from(exceptions::AlreadyFinalized::new_err(
+        "Context was already finalized.",
+    ))
 }
 
 impl Hash {
-    fn get_ctx(&self, py: pyo3::Python<'_>) -> CryptographyResult<&openssl::hash::Hasher> {
+    fn get_ctx(&self) -> CryptographyResult<&openssl::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(already_finalized_error(py)?)
+        Err(already_finalized_error())
     }
 
-    fn get_mut_ctx(
-        &mut self,
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<&mut openssl::hash::Hasher> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(already_finalized_error(py)?)
+        Err(already_finalized_error())
     }
 }
 
@@ -101,8 +92,8 @@ impl Hash {
         })
     }
 
-    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.get_mut_ctx(py)?.update(data.as_bytes())?;
+    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        self.get_mut_ctx()?.update(data.as_bytes())?;
         Ok(())
     }
 
@@ -118,7 +109,7 @@ impl Hash {
             let algorithm = self.algorithm.clone_ref(py);
             let algorithm = algorithm.as_ref(py);
             if algorithm.is_instance(xof_class)? {
-                let ctx = self.get_mut_ctx(py)?;
+                let ctx = self.get_mut_ctx()?;
                 let digest_size = algorithm
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
@@ -131,7 +122,7 @@ impl Hash {
             }
         }
 
-        let data = self.get_mut_ctx(py)?.finish()?;
+        let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
         Ok(pyo3::types::PyBytes::new(py, &data))
     }
@@ -139,7 +130,7 @@ impl Hash {
     fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hash> {
         Ok(Hash {
             algorithm: self.algorithm.clone_ref(py),
-            ctx: Some(self.get_ctx(py)?.clone()),
+            ctx: Some(self.get_ctx()?.clone()),
         })
     }
 }

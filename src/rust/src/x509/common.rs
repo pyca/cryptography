@@ -4,14 +4,14 @@
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
+use crate::{exceptions, x509};
 use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawTlv};
 use cryptography_x509::extensions::{
     AccessDescription, Extension, Extensions, SequenceOfAccessDescriptions,
 };
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
-use pyo3::ToPyObject;
+use pyo3::{IntoPy, ToPyObject};
 use std::collections::HashSet;
 
 /// Parse all sections in a PEM file and return the first matching section.
@@ -308,12 +308,11 @@ pub(crate) fn parse_general_name(
                 .to_object(py)
         }
         _ => {
-            return Err(CryptographyError::from(pyo3::PyErr::from_value(
-                x509_module.call_method1(
-                    "UnsupportedGeneralNameType",
-                    ("x400Address/EDIPartyName are not supported types",),
-                )?,
-            )))
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedGeneralNameType::new_err(
+                    "x400Address/EDIPartyName are not supported types",
+                ),
+            ))
         }
     };
     Ok(py_gn)
@@ -411,13 +410,10 @@ pub(crate) fn parse_and_cache_extensions<
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
             if seen_oids.contains(&raw_ext.extn_id) {
-                return Err(pyo3::PyErr::from_value(x509_module.call_method1(
-                    "DuplicateExtension",
-                    (
-                        format!("Duplicate {} extension found", raw_ext.extn_id),
-                        oid_obj,
-                    ),
-                )?));
+                return Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", raw_ext.extn_id),
+                    oid_obj.into_py(py),
+                )));
             }
 
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {

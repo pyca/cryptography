@@ -2,7 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::OpenSSLError;
+use crate::{exceptions, OpenSSLError};
+use pyo3::ToPyObject;
 
 pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),
@@ -63,12 +64,6 @@ impl From<CryptographyError> for pyo3::PyErr {
             }
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
-                let internal_error = py
-                    .import(pyo3::intern!(py, "cryptography.exceptions"))
-                    .expect("Failed to import cryptography module")
-                    .getattr(pyo3::intern!(py, "InternalError"))
-                    .expect("Failed to get InternalError attribute");
-
                 let errors = pyo3::types::PyList::empty(py);
                 for e in error_stack.errors() {
                     errors
@@ -78,20 +73,16 @@ impl From<CryptographyError> for pyo3::PyErr {
                         )
                         .expect("Failed to append to list");
                 }
-                pyo3::PyErr::from_value(
-                    internal_error
-                        .call1((
-                            "Unknown OpenSSL error. This error is commonly encountered
+                exceptions::InternalError::new_err((
+                    "Unknown OpenSSL error. This error is commonly encountered
                         when another library is not cleaning up the OpenSSL error
                         stack. If you are using cryptography with another library
                         that uses OpenSSL try disabling it before reporting a bug.
                         Otherwise please file an issue at
                         https://github.com/pyca/cryptography/issues with
                         information on how to reproduce this.",
-                            errors,
-                        ))
-                        .expect("Failed to create InternalError"),
-                )
+                    errors.to_object(py),
+                ))
             }),
         }
     }

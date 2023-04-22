@@ -5,6 +5,7 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::exceptions;
 use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
@@ -117,20 +118,14 @@ impl Ed25519PrivateKey {
 
 #[pyo3::prelude::pymethods]
 impl Ed25519PublicKey {
-    fn verify(
-        &self,
-        py: pyo3::Python<'_>,
-        signature: &[u8],
-        data: &[u8],
-    ) -> CryptographyResult<()> {
+    fn verify(&self, signature: &[u8], data: &[u8]) -> CryptographyResult<()> {
         let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
             .verify_oneshot(signature, data)?;
 
         if !valid {
-            return Err(CryptographyError::from(pyo3::PyErr::from_value(
-                py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                    .call_method1(pyo3::intern!(py, "InvalidSignature"), ())?,
-            )));
+            return Err(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(()),
+            ));
         }
 
         Ok(())
