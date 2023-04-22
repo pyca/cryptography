@@ -24,10 +24,6 @@ from cryptography.hazmat.backends.openssl.ec import (
     _EllipticCurvePrivateKey,
     _EllipticCurvePublicKey,
 )
-from cryptography.hazmat.backends.openssl.poly1305 import (
-    _POLY1305_KEY_SIZE,
-    _Poly1305Context,
-)
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
     _RSAPublicKey,
@@ -1948,13 +1944,6 @@ class Backend:
         if self._fips_enabled:
             return False
         return self._lib.Cryptography_HAS_POLY1305 == 1
-
-    def create_poly1305_ctx(self, key: bytes) -> _Poly1305Context:
-        utils._check_byteslike("key", key)
-        if len(key) != _POLY1305_KEY_SIZE:
-            raise ValueError("A poly1305 key is 32 bytes long")
-
-        return _Poly1305Context(self, key)
 
     def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
