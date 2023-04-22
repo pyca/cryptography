@@ -6,8 +6,8 @@ use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
 };
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
 use crate::x509::{certificate, extensions, sign};
+use crate::{exceptions, x509};
 use cryptography_x509::{common, crl, name, oid};
 use pyo3::{IntoPy, ToPyObject};
 use std::sync::Arc;
@@ -201,19 +201,15 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid = self.signature_algorithm_oid(py)?;
         let oid_module = py.import(pyo3::intern!(py, "cryptography.hazmat._oid"))?;
-        let exceptions_module = py.import(pyo3::intern!(py, "cryptography.exceptions"))?;
         match oid_module
             .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?
             .get_item(oid)
         {
             Ok(v) => Ok(v),
-            Err(_) => Err(pyo3::PyErr::from_value(exceptions_module.call_method1(
-                "UnsupportedAlgorithm",
-                (format!(
-                    "Signature algorithm OID:{} not recognized",
-                    self.owned.borrow_value().signature_algorithm.oid
-                ),),
-            )?)),
+            Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
+                "Signature algorithm OID: {} not recognized",
+                self.owned.borrow_value().signature_algorithm.oid
+            ))),
         }
     }
 

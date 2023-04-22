@@ -6,8 +6,8 @@ use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
 };
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
 use crate::x509::{extensions, sct, sign};
+use crate::{exceptions, x509};
 use cryptography_x509::common::Asn1ReadableOrWritable;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
@@ -244,16 +244,12 @@ impl Certificate {
         let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
-            Err(_) => Err(CryptographyError::from(pyo3::PyErr::from_value(
-                py.import(pyo3::intern!(py, "cryptography.exceptions"))?
-                    .call_method1(
-                        "UnsupportedAlgorithm",
-                        (format!(
-                            "Signature algorithm OID: {} not recognized",
-                            self.raw.borrow_value().signature_alg.oid
-                        ),),
-                    )?,
-            ))),
+            Err(_) => Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err(format!(
+                    "Signature algorithm OID: {} not recognized",
+                    self.raw.borrow_value().signature_alg.oid
+                )),
+            )),
         }
     }
 
