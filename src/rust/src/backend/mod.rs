@@ -7,6 +7,7 @@ pub(crate) mod ed25519;
 #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
 pub(crate) mod ed448;
 pub(crate) mod hashes;
+pub(crate) mod hmac;
 #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
 pub(crate) mod utils;
 #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
@@ -26,6 +27,7 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     module.add_submodule(x448::create_module(module.py())?)?;
 
     module.add_submodule(hashes::create_module(module.py())?)?;
+    module.add_submodule(hmac::create_module(module.py())?)?;
 
     Ok(())
 }
