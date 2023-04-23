@@ -483,6 +483,8 @@ Custom X.509 Vectors
   signature algorithm.
 * ``rsa_pss_cert_no_sig_params.der`` - A self-signed certificate with an invalid
   RSA PSS signature algorithm that is missing signature parameters for PSS.
+* ``rsa_pss_cert_unsupported_mgf_hash.der`` - A self-signed certificate with an
+  unsupported MGF1 hash algorithm in the signature algorithm.
 * ``long-form-name-attribute.pem`` - A certificate with ``subject`` and ``issuer``
   names containing attributes whose value's tag is encoded in long-form.
 * ``mismatch_inner_outer_sig_algorithm.der`` - A leaf certificate derived from
