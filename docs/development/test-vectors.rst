@@ -478,6 +478,11 @@ Custom X.509 Vectors
   are longer than 2 characters.
 * ``rsa_pss_cert.pem`` - A self-signed certificate with an RSA PSS signature
   with ``asymmetric/PKCS8/rsa_pss_2048.pem`` as its key.
+* ``rsa_pss_cert_invalid_mgf.der`` - A self-signed certificate with an invalid
+  RSA PSS signature that has a non-MGF1 OID for its mask generation function in the
+  signature algorithm.
+* ``rsa_pss_cert_no_sig_params.der`` - A self-signed certificate with an invalid
+  RSA PSS signature algorithm that is missing signature parameters for PSS.
 * ``long-form-name-attribute.pem`` - A certificate with ``subject`` and ``issuer``
   names containing attributes whose value's tag is encoded in long-form.
 * ``mismatch_inner_outer_sig_algorithm.der`` - A leaf certificate derived from
