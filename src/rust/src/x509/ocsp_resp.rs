@@ -7,7 +7,11 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
 use crate::{exceptions, x509};
 use cryptography_x509::ocsp_resp::SingleResponse;
-use cryptography_x509::{common, ocsp_resp, oid};
+use cryptography_x509::{
+    common,
+    ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
+    oid,
+};
 use pyo3::IntoPy;
 use std::sync::Arc;
 
@@ -20,7 +24,7 @@ fn load_der_ocsp_response(
 ) -> Result<OCSPResponse, CryptographyError> {
     let raw = OwnedOCSPResponse::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
-    let response = raw.borrow_value();
+    let response = raw.borrow_dependent();
     match response.response_status.value() {
         SUCCESSFUL_RESPONSE => match response.response_bytes {
             Some(ref bytes) => {
@@ -58,13 +62,13 @@ fn load_der_ocsp_response(
     })
 }
 
-#[ouroboros::self_referencing]
-struct OwnedOCSPResponse {
-    data: pyo3::Py<pyo3::types::PyBytes>,
-    #[borrows(data)]
-    #[covariant]
-    value: ocsp_resp::OCSPResponse<'this>,
-}
+self_cell::self_cell!(
+    struct OwnedOCSPResponse {
+        owner: pyo3::Py<pyo3::types::PyBytes>,
+        #[covariant]
+        dependent: RawOCSPResponse,
+    }
+);
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponse {
@@ -76,7 +80,7 @@ struct OCSPResponse {
 
 impl OCSPResponse {
     fn requires_successful_response(&self) -> pyo3::PyResult<&ocsp_resp::BasicOCSPResponse<'_>> {
-        match self.raw.borrow_value().response_bytes.as_ref() {
+        match self.raw.borrow_dependent().response_bytes.as_ref() {
             Some(b) => Ok(b.response.get()),
             None => Err(pyo3::exceptions::PyValueError::new_err(
                 "OCSP response status is not successful so the property has no value",
@@ -101,7 +105,7 @@ impl OCSPResponse {
         Ok(OCSPResponseIterator {
             contents: OwnedOCSPResponseIteratorData::try_new(Arc::clone(&self.raw), |v| {
                 Ok::<_, ()>(
-                    v.borrow_value()
+                    v.borrow_dependent()
                         .response_bytes
                         .as_ref()
                         .unwrap()
@@ -119,7 +123,7 @@ impl OCSPResponse {
 
     #[getter]
     fn response_status<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let status = self.raw.borrow_value().response_status.value();
+        let status = self.raw.borrow_dependent().response_status.value();
         let attr = if status == SUCCESSFUL_RESPONSE {
             "SUCCESSFUL"
         } else if status == MALFORMED_REQUEST_RESPOSNE {
@@ -319,7 +323,7 @@ impl OCSPResponse {
 
         let response_data = &self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .response_bytes
             .as_ref()
             .unwrap()
@@ -357,7 +361,7 @@ impl OCSPResponse {
         self.requires_successful_response()?;
         let single_resp = single_response(
             self.raw
-                .borrow_value()
+                .borrow_dependent()
                 .response_bytes
                 .as_ref()
                 .unwrap()
@@ -403,7 +407,7 @@ impl OCSPResponse {
             )
             .into());
         }
-        let result = asn1::write_single(self.raw.borrow_value())?;
+        let result = asn1::write_single(self.raw.borrow_dependent())?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
@@ -418,11 +422,9 @@ fn map_arc_data_ocsp_response(
         &ocsp_resp::OCSPResponse<'this>,
     ) -> cryptography_x509::certificate::Certificate<'this>,
 ) -> certificate::OwnedCertificate {
-    certificate::OwnedCertificate::new_public(it.borrow_data().clone_ref(py), |inner_it| {
-        it.with(|value| {
-            f(inner_it.as_bytes(py), unsafe {
-                std::mem::transmute(value.value)
-            })
+    certificate::OwnedCertificate::new(it.borrow_owner().clone_ref(py), |inner_it| {
+        it.with_dependent(|_, value| {
+            f(inner_it.as_bytes(py), unsafe { std::mem::transmute(value) })
         })
     })
 }
@@ -433,8 +435,8 @@ fn try_map_arc_data_mut_ocsp_response_iterator<E>(
         &mut asn1::SequenceOf<'this, ocsp_resp::SingleResponse<'this>>,
     ) -> Result<ocsp_resp::SingleResponse<'this>, E>,
 ) -> Result<OwnedSingleResponse, E> {
-    OwnedSingleResponse::try_new(Arc::clone(it.borrow_data()), |inner_it| {
-        it.with_value_mut(|value| f(inner_it, unsafe { std::mem::transmute(value) }))
+    OwnedSingleResponse::try_new(Arc::clone(it.borrow_owner()), |inner_it| {
+        it.with_dependent_mut(|_, value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }
 
@@ -648,7 +650,7 @@ fn create_ocsp_response(
                 sha1,
                 borrowed_cert
                     .raw
-                    .borrow_value_public()
+                    .borrow_dependent()
                     .tbs_cert
                     .spki
                     .subject_public_key
@@ -658,7 +660,7 @@ fn create_ocsp_response(
             ocsp_resp::ResponderId::ByName(
                 borrowed_cert
                     .raw
-                    .borrow_value_public()
+                    .borrow_dependent()
                     .tbs_cert
                     .subject
                     .clone(),
@@ -710,7 +712,7 @@ fn create_ocsp_response(
             common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 py_certs
                     .iter()
-                    .map(|c| c.raw.borrow_value_public().clone())
+                    .map(|c| c.raw.borrow_dependent().clone())
                     .collect(),
             ))
         });
@@ -744,13 +746,15 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     Ok(())
 }
 
-#[ouroboros::self_referencing]
-struct OwnedOCSPResponseIteratorData {
-    data: Arc<OwnedOCSPResponse>,
-    #[borrows(data)]
-    #[covariant]
-    value: asn1::SequenceOf<'this, SingleResponse<'this>>,
-}
+type RawOCSPResponseIterator<'a> = asn1::SequenceOf<'a, SingleResponse<'a>>;
+
+self_cell::self_cell!(
+    struct OwnedOCSPResponseIteratorData {
+        owner: Arc<OwnedOCSPResponse>,
+        #[covariant]
+        dependent: RawOCSPResponseIterator,
+    }
+);
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponseIterator {
@@ -776,13 +780,13 @@ impl OCSPResponseIterator {
     }
 }
 
-#[ouroboros::self_referencing]
-struct OwnedSingleResponse {
-    data: Arc<OwnedOCSPResponse>,
-    #[borrows(data)]
-    #[covariant]
-    value: ocsp_resp::SingleResponse<'this>,
-}
+self_cell::self_cell!(
+    struct OwnedSingleResponse {
+        owner: Arc<OwnedOCSPResponse>,
+        #[covariant]
+        dependent: RawSingleResponse,
+    }
+);
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPSingleResponse {
@@ -791,7 +795,7 @@ struct OCSPSingleResponse {
 
 impl OCSPSingleResponse {
     fn single_response(&self) -> &SingleResponse<'_> {
-        self.raw.borrow_value()
+        self.raw.borrow_dependent()
     }
 }
 

@@ -70,14 +70,14 @@ pub(crate) fn certid_new<'p>(
     issuer: &'p Certificate,
     hash_algorithm: &'p pyo3::PyAny,
 ) -> CryptographyResult<CertID<'p>> {
-    let issuer_der = asn1::write_single(&cert.raw.borrow_value_public().tbs_cert.issuer)?;
+    let issuer_der = asn1::write_single(&cert.raw.borrow_dependent().tbs_cert.issuer)?;
     let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
     let issuer_key_hash = hash_data(
         py,
         hash_algorithm,
         issuer
             .raw
-            .borrow_value_public()
+            .borrow_dependent()
             .tbs_cert
             .spki
             .subject_public_key
@@ -91,7 +91,7 @@ pub(crate) fn certid_new<'p>(
         .clone(),
         issuer_name_hash,
         issuer_key_hash,
-        serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
+        serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
     })
 }
 

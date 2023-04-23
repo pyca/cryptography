@@ -6,16 +6,20 @@ use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, ocsp};
 use crate::{exceptions, x509};
-use cryptography_x509::{common, ocsp_req, oid};
+use cryptography_x509::{
+    common,
+    ocsp_req::{self, OCSPRequest as RawOCSPRequest},
+    oid,
+};
 use pyo3::IntoPy;
 
-#[ouroboros::self_referencing]
-struct OwnedOCSPRequest {
-    data: pyo3::Py<pyo3::types::PyBytes>,
-    #[borrows(data)]
-    #[covariant]
-    value: ocsp_req::OCSPRequest<'this>,
-}
+self_cell::self_cell!(
+    struct OwnedOCSPRequest {
+        owner: pyo3::Py<pyo3::types::PyBytes>,
+        #[covariant]
+        dependent: RawOCSPRequest,
+    }
+);
 
 #[pyo3::prelude::pyfunction]
 fn load_der_ocsp_request(
@@ -25,7 +29,7 @@ fn load_der_ocsp_request(
     let raw = OwnedOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     if raw
-        .borrow_value()
+        .borrow_dependent()
         .tbs_request
         .request_list
         .unwrap_read()
@@ -55,7 +59,7 @@ struct OCSPRequest {
 impl OCSPRequest {
     fn cert_id(&self) -> ocsp_req::CertID<'_> {
         self.raw
-            .borrow_value()
+            .borrow_dependent()
             .tbs_request
             .request_list
             .unwrap_read()
@@ -108,7 +112,7 @@ impl OCSPRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let tbs_request = &self.raw.borrow_value().tbs_request;
+        let tbs_request = &self.raw.borrow_dependent().tbs_request;
 
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
@@ -167,7 +171,7 @@ impl OCSPRequest {
             )
             .into());
         }
-        let result = asn1::write_single(self.raw.borrow_value())?;
+        let result = asn1::write_single(self.raw.borrow_dependent())?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }

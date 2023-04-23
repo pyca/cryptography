@@ -15,10 +15,10 @@ cryptography-cffi = { path = "cryptography-cffi" }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = "1.1"
-ouroboros = "0.15"
 openssl = "0.10.54"
 openssl-sys = "0.9.88"
 foreign-types-shared = "0.1"
+self_cell = "1"
 
 [build-dependencies]
 cc = "1.0.72"
