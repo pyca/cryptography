@@ -17,11 +17,9 @@ fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
-    let owned = OwnedCertificateRevocationList::try_new(
-        data,
-        |data| asn1::parse_single(data.as_bytes(py)),
-        |_| Ok(pyo3::once_cell::GILOnceCell::new()),
-    )?;
+    let owned = OwnedCertificateRevocationList::try_new(data, |data| {
+        asn1::parse_single(data.as_bytes(py))
+    })?;
 
     let version = owned.borrow_value().tbs_cert_list.version.unwrap_or(1);
     if version != 1 {
@@ -35,6 +33,7 @@ fn load_der_x509_crl(
 
     Ok(CertificateRevocationList {
         owned: Arc::new(owned),
+        revoked_certs: pyo3::once_cell::GILOnceCell::new(),
         cached_extensions: None,
     })
 }
@@ -61,15 +60,13 @@ struct OwnedCertificateRevocationList {
     #[borrows(data)]
     #[covariant]
     value: crl::CertificateRevocationList<'this>,
-    #[borrows(data)]
-    #[not_covariant]
-    revoked_certs: pyo3::once_cell::GILOnceCell<Vec<crl::RevokedCertificate<'this>>>,
 }
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
+    revoked_certs: pyo3::once_cell::GILOnceCell<Vec<OwnedRevokedCertificate>>,
     cached_extensions: Option<pyo3::PyObject>,
 }
 
@@ -78,15 +75,11 @@ impl CertificateRevocationList {
         Ok(asn1::write_single(self.owned.borrow_value())?)
     }
 
-    fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> pyo3::PyResult<RevokedCertificate> {
-        let owned = try_map_arc_data_crl(&self.owned, |_crl, revoked_certs| {
-            let revoked_certs = revoked_certs.get(py).unwrap();
-            Ok::<_, pyo3::PyErr>(revoked_certs[idx].clone())
-        })?;
-        Ok(RevokedCertificate {
-            owned,
+    fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
+        RevokedCertificate {
+            owned: self.revoked_certs.get(py).unwrap()[idx].clone(),
             cached_extensions: None,
-        })
+        }
     }
 
     fn len(&self) -> usize {
@@ -143,13 +136,13 @@ impl CertificateRevocationList {
         py: pyo3::Python<'_>,
         idx: &pyo3::PyAny,
     ) -> pyo3::PyResult<pyo3::PyObject> {
-        self.owned.with(|val| {
-            val.revoked_certs.get_or_init(py, || {
-                match &val.value.tbs_cert_list.revoked_certificates {
-                    Some(c) => c.unwrap_read().clone().collect(),
-                    None => vec![],
-                }
-            });
+        self.revoked_certs.get_or_init(py, || {
+            let mut revoked_certs = vec![];
+            let mut it = self.__iter__();
+            while let Some(c) = it.__next__() {
+                revoked_certs.push(c.owned);
+            }
+            revoked_certs
         });
 
         if idx.is_instance_of::<pyo3::types::PySlice>()? {
@@ -158,7 +151,7 @@ impl CertificateRevocationList {
                 .indices(self.len().try_into().unwrap())?;
             let result = pyo3::types::PyList::empty(py);
             for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {
-                let revoked_cert = pyo3::PyCell::new(py, self.revoked_cert(py, i as usize)?)?;
+                let revoked_cert = pyo3::PyCell::new(py, self.revoked_cert(py, i as usize))?;
                 result.append(revoked_cert)?;
             }
             Ok(result.to_object(py))
@@ -170,7 +163,7 @@ impl CertificateRevocationList {
             if idx >= (self.len() as isize) || idx < 0 {
                 return Err(pyo3::exceptions::PyIndexError::new_err(()));
             }
-            Ok(pyo3::PyCell::new(py, self.revoked_cert(py, idx as usize)?)?.to_object(py))
+            Ok(pyo3::PyCell::new(py, self.revoked_cert(py, idx as usize))?.to_object(py))
         }
     }
 
@@ -424,21 +417,6 @@ struct CRLIterator {
 
 // Open-coded implementation of the API discussed in
 // https://github.com/joshua-maros/ouroboros/issues/38
-fn try_map_arc_data_crl<E>(
-    crl: &Arc<OwnedCertificateRevocationList>,
-    f: impl for<'this> FnOnce(
-        &'this OwnedCertificateRevocationList,
-        &pyo3::once_cell::GILOnceCell<Vec<crl::RevokedCertificate<'this>>>,
-    ) -> Result<crl::RevokedCertificate<'this>, E>,
-) -> Result<OwnedRevokedCertificate, E> {
-    OwnedRevokedCertificate::try_new(Arc::clone(crl), |inner_crl| {
-        crl.with(|value| {
-            f(inner_crl, unsafe {
-                std::mem::transmute(value.revoked_certs)
-            })
-        })
-    })
-}
 fn try_map_arc_data_mut_crl_iterator<E>(
     it: &mut OwnedCRLIteratorData,
     f: impl for<'this> FnOnce(
@@ -483,6 +461,18 @@ struct OwnedRevokedCertificate {
     #[borrows(data)]
     #[covariant]
     value: crl::RevokedCertificate<'this>,
+}
+
+impl Clone for OwnedRevokedCertificate {
+    fn clone(&self) -> OwnedRevokedCertificate {
+        // This is safe because `Arc::clone` ensures the data is alive, but
+        // Rust doesn't understand the lifetime relationship it produces.
+        // Open-coded implementation of the API discussed in
+        // https://github.com/joshua-maros/ouroboros/issues/38
+        OwnedRevokedCertificate::new(Arc::clone(self.borrow_data()), |_| unsafe {
+            std::mem::transmute(self.borrow_value().clone())
+        })
+    }
 }
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
