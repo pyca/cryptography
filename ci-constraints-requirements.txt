@@ -46,6 +46,10 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==6.6.0
+    # via
+    #   keyring
+    #   twine
 iniconfig==2.0.0
     # via pytest
 jaraco-classes==3.2.3
