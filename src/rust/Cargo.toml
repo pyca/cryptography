@@ -16,7 +16,7 @@ cryptography-x509 = { path = "cryptography-x509" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = "1.1"
 ouroboros = "0.15"
-openssl = "0.10.51"
+openssl = "0.10.52"
 openssl-sys = "0.9.87"
 foreign-types-shared = "0.1"
 
