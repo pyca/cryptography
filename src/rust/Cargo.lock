@@ -65,6 +65,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cryptography-cffi"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "openssl-sys",
+ "pyo3",
+]
+
+[[package]]
 name = "cryptography-openssl"
 version = "0.1.0"
 dependencies = [
@@ -80,6 +89,7 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "cc",
+ "cryptography-cffi",
  "cryptography-openssl",
  "cryptography-x509",
  "foreign-types-shared",
