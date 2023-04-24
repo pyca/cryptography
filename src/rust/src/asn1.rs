@@ -3,7 +3,9 @@
 // for complete details.
 
 use crate::error::{CryptographyError, CryptographyResult};
-use cryptography_x509::common::SubjectPublicKeyInfo;
+use asn1::SimpleAsn1Readable;
+use cryptography_x509::certificate::Certificate;
+use cryptography_x509::common::{SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
 use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
@@ -152,39 +154,6 @@ struct TestCertificate {
     subject_value_tags: Vec<u8>,
 }
 
-#[derive(asn1::Asn1Read)]
-struct Asn1Certificate<'a> {
-    tbs_cert: TbsCertificate<'a>,
-    _signature_alg: asn1::Sequence<'a>,
-    _signature: asn1::BitString<'a>,
-}
-
-#[derive(asn1::Asn1Read)]
-struct TbsCertificate<'a> {
-    #[explicit(0)]
-    _version: Option<u8>,
-    _serial: asn1::BigUint<'a>,
-    _signature_alg: asn1::Sequence<'a>,
-
-    issuer: Name<'a>,
-    validity: Validity<'a>,
-    subject: Name<'a>,
-
-    _spki: asn1::Sequence<'a>,
-    #[implicit(1)]
-    _issuer_unique_id: Option<asn1::BitString<'a>>,
-    #[implicit(2)]
-    _subject_unique_id: Option<asn1::BitString<'a>>,
-    #[explicit(3)]
-    _extensions: Option<asn1::Sequence<'a>>,
-}
-
-#[derive(asn1::Asn1Read)]
-struct Validity<'a> {
-    not_before: asn1::Tlv<'a>,
-    not_after: asn1::Tlv<'a>,
-}
-
 fn parse_name_value_tags(rdns: &mut Name<'_>) -> Vec<u8> {
     let mut tags = vec![];
     for rdn in rdns.unwrap_read().clone() {
@@ -196,21 +165,22 @@ fn parse_name_value_tags(rdns: &mut Name<'_>) -> Vec<u8> {
     tags
 }
 
+fn time_tag(t: &Time) -> u8 {
+    match t {
+        Time::UtcTime(_) => asn1::UtcTime::TAG.as_u8().unwrap(),
+        Time::GeneralizedTime(_) => asn1::GeneralizedTime::TAG.as_u8().unwrap(),
+    }
+}
+
 #[pyo3::prelude::pyfunction]
 fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyError> {
-    let mut asn1_cert = asn1::parse_single::<Asn1Certificate<'_>>(data)?;
+    let mut cert = asn1::parse_single::<Certificate<'_>>(data)?;
 
     Ok(TestCertificate {
-        not_before_tag: asn1_cert
-            .tbs_cert
-            .validity
-            .not_before
-            .tag()
-            .as_u8()
-            .unwrap(),
-        not_after_tag: asn1_cert.tbs_cert.validity.not_after.tag().as_u8().unwrap(),
-        issuer_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.issuer),
-        subject_value_tags: parse_name_value_tags(&mut asn1_cert.tbs_cert.subject),
+        not_before_tag: time_tag(&cert.tbs_cert.validity.not_before),
+        not_after_tag: time_tag(&cert.tbs_cert.validity.not_after),
+        issuer_value_tags: parse_name_value_tags(&mut cert.tbs_cert.issuer),
+        subject_value_tags: parse_name_value_tags(&mut cert.tbs_cert.subject),
     })
 }
 
