@@ -33,7 +33,7 @@ fn encode_general_subtrees<'a>(
 pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
     py_aki: &'a pyo3::PyAny,
-) -> pyo3::PyResult<extensions::AuthorityKeyIdentifier<'a>> {
+) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyAuthorityKeyIdentifier<'a> {
         key_identifier: Option<&'a [u8]>,
@@ -56,17 +56,17 @@ pub(crate) fn encode_authority_key_identifier<'a>(
         } else {
             None
         };
-    Ok(extensions::AuthorityKeyIdentifier {
+    Ok(asn1::write_single(&extensions::AuthorityKeyIdentifier {
         authority_cert_issuer,
         authority_cert_serial_number,
         key_identifier: aki.key_identifier,
-    })
+    })?)
 }
 
 pub(crate) fn encode_distribution_points<'p>(
     py: pyo3::Python<'p>,
     py_dps: &'p pyo3::PyAny,
-) -> pyo3::PyResult<Vec<extensions::DistributionPoint<'p>>> {
+) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyDistributionPoint<'a> {
         crl_issuer: Option<&'a pyo3::PyAny>,
@@ -115,7 +115,7 @@ pub(crate) fn encode_distribution_points<'p>(
             reasons,
         });
     }
-    Ok(dps)
+    Ok(asn1::write_single(&asn1::SequenceOfWriter::new(dps))?)
 }
 
 fn encode_basic_constraints(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
@@ -338,6 +338,45 @@ fn encode_issuing_distribution_point(
     Ok(asn1::write_single(&idp)?)
 }
 
+fn encode_oid_sequence(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+    let mut oids = vec![];
+    for el in ext.iter()? {
+        let oid = py_oid_to_oid(el?)?;
+        oids.push(oid);
+    }
+    Ok(asn1::write_single(&asn1::SequenceOfWriter::new(oids))?)
+}
+
+fn encode_tls_features(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+    // Ideally we'd skip building up a vec and just write directly into the
+    // writer. This isn't possible at the moment because the callback to write
+    // an asn1::Sequence can't return an error, and we need to handle errors
+    // from Python.
+    let mut els = vec![];
+    for el in ext.iter()? {
+        els.push(el?.getattr(pyo3::intern!(py, "value"))?.extract::<u64>()?);
+    }
+
+    Ok(asn1::write_single(&asn1::SequenceOfWriter::new(els))?)
+}
+
+fn encode_scts(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+    let mut length = 0;
+    for sct in ext.iter()? {
+        let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
+        length += sct.borrow().sct_data.len() + 2;
+    }
+
+    let mut result = vec![];
+    result.extend_from_slice(&(length as u16).to_be_bytes());
+    for sct in ext.iter()? {
+        let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
+        result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
+        result.extend_from_slice(&sct.borrow().sct_data);
+    }
+    Ok(asn1::write_single(&result.as_slice())?)
+}
+
 pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
@@ -359,18 +398,12 @@ pub(crate) fn encode_extension(
             Ok(Some(der))
         }
         &oid::AUTHORITY_INFORMATION_ACCESS_OID | &oid::SUBJECT_INFORMATION_ACCESS_OID => {
-            let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&ads)?))
+            let der = x509::common::encode_access_descriptions(ext.py(), ext)?;
+            Ok(Some(der))
         }
         &oid::EXTENDED_KEY_USAGE_OID | &oid::ACCEPTABLE_RESPONSES_OID => {
-            let mut oids = vec![];
-            for el in ext.iter()? {
-                let oid = py_oid_to_oid(el?)?;
-                oids.push(oid);
-            }
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
-                oids,
-            ))?))
+            let der = encode_oid_sequence(ext)?;
+            Ok(Some(der))
         }
         &oid::CERTIFICATE_POLICIES_OID => {
             let der = encode_certificate_policies(py, ext)?;
@@ -410,43 +443,23 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::AUTHORITY_KEY_IDENTIFIER_OID => {
-            let aki = encode_authority_key_identifier(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&aki)?))
+            let der = encode_authority_key_identifier(ext.py(), ext)?;
+            Ok(Some(der))
         }
         &oid::FRESHEST_CRL_OID | &oid::CRL_DISTRIBUTION_POINTS_OID => {
-            let dps = encode_distribution_points(ext.py(), ext)?;
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(dps))?))
+            let der = encode_distribution_points(ext.py(), ext)?;
+            Ok(Some(der))
         }
         &oid::OCSP_NO_CHECK_OID => Ok(Some(asn1::write_single(&())?)),
         &oid::TLS_FEATURE_OID => {
-            // Ideally we'd skip building up a vec and just write directly into the
-            // writer. This isn't possible at the moment because the callback to write
-            // an asn1::Sequence can't return an error, and we need to handle errors
-            // from Python.
-            let mut els = vec![];
-            for el in ext.iter()? {
-                els.push(el?.getattr(pyo3::intern!(py, "value"))?.extract::<u64>()?);
-            }
-
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(els))?))
+            let der = encode_tls_features(py, ext)?;
+            Ok(Some(der))
         }
         &oid::PRECERT_POISON_OID => Ok(Some(asn1::write_single(&())?)),
         &oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID
         | &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
-            let mut length = 0;
-            for sct in ext.iter()? {
-                let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-                length += sct.borrow().sct_data.len() + 2;
-            }
-
-            let mut result = vec![];
-            result.extend_from_slice(&(length as u16).to_be_bytes());
-            for sct in ext.iter()? {
-                let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-                result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
-                result.extend_from_slice(&sct.borrow().sct_data);
-            }
-            Ok(Some(asn1::write_single(&result.as_slice())?))
+            let der = encode_scts(ext)?;
+            Ok(Some(der))
         }
         &oid::CRL_REASON_OID => {
             let value = ext
