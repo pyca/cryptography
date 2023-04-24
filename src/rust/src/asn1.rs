@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::error::{CryptographyError, CryptographyResult};
+use cryptography_x509::common::SubjectPublicKeyInfo;
 use cryptography_x509::name::Name;
 use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
@@ -23,29 +24,17 @@ pub(crate) fn oid_to_py_oid<'p>(
     Ok(pyo3::Py::new(py, crate::oid::ObjectIdentifier { oid: oid.clone() })?.into_ref(py))
 }
 
-#[derive(asn1::Asn1Read)]
-struct AlgorithmIdentifier<'a> {
-    _oid: asn1::ObjectIdentifier,
-    _params: Option<asn1::Tlv<'a>>,
-}
-
-#[derive(asn1::Asn1Read)]
-struct Spki<'a> {
-    _algorithm: AlgorithmIdentifier<'a>,
-    data: asn1::BitString<'a>,
-}
-
 #[pyo3::prelude::pyfunction]
 fn parse_spki_for_data(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let spki = asn1::parse_single::<Spki<'_>>(data)?;
-    if spki.data.padding_bits() != 0 {
+    let spki = asn1::parse_single::<SubjectPublicKeyInfo<'_>>(data)?;
+    if spki.subject_public_key.padding_bits() != 0 {
         return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
     }
 
-    Ok(pyo3::types::PyBytes::new(py, spki.data.as_bytes()).to_object(py))
+    Ok(pyo3::types::PyBytes::new(py, spki.subject_public_key.as_bytes()).to_object(py))
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
