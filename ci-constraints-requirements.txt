@@ -7,7 +7,7 @@
 
 alabaster==0.7.13
     # via sphinx
-argcomplete==3.0.6
+argcomplete==3.0.8
     # via nox
 babel==2.12.1
     # via sphinx
