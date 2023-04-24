@@ -17,7 +17,7 @@ cryptography-openssl = { path = "cryptography-openssl" }
 pem = "1.1"
 ouroboros = "0.15"
 openssl = "0.10.51"
-openssl-sys = "0.9.85"
+openssl-sys = "0.9.87"
 foreign-types-shared = "0.1"
 
 [build-dependencies]
