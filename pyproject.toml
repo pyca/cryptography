@@ -80,7 +80,7 @@ test = [
 test-randomorder = ["pytest-randomly"]
 docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=1.1.1"]
 docstest =  ["pyenchant >=1.6.11", "twine >=1.12.0", "sphinxcontrib-spelling >=4.0.1"]
-sdist = ["setuptools_rust >=0.11.4"]
+sdist = ["build"]
 pep8test = ["black", "ruff", "mypy", "check-manifest"]
 
 [tool.black]
