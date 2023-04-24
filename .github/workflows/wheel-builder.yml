@@ -35,11 +35,11 @@ jobs:
 
       - run: python -m venv .venv
       - name: Install Python dependencies
-        run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
+        run: .venv/bin/pip install -U pip build
       - name: Make sdist (cryptography)
-        run: .venv/bin/python setup.py sdist
+        run: .venv/bin/python -m build --sdist
       - name: Make sdist and wheel (vectors)
-        run: cd vectors/ && ../.venv/bin/python setup.py sdist bdist_wheel
+        run: cd vectors/ && ../.venv/bin/python -m build
       - uses: actions/upload-artifact@v3.1.2
         with:
           name: "cryptography-sdist"
