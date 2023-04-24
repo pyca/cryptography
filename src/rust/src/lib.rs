@@ -3,11 +3,6 @@
 // for complete details.
 
 #![deny(rust_2018_idioms)]
-// Temporarily allow `clippy::borrow_deref_ref` until we can upgrade to the
-// latest pyo3: https://github.com/PyO3/pyo3/pull/2503
-//
-// `unknown_lints` is required until GHA upgrades their rustc.
-#![allow(unknown_lints, clippy::borrow_deref_ref)]
 
 mod asn1;
 mod backend;

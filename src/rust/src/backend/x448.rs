@@ -107,7 +107,7 @@ impl X448PrivateKey {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         utils::pkey_private_bytes(
             py,
-            &*slf,
+            slf,
             &slf.borrow().pkey,
             encoding,
             format,
@@ -133,7 +133,7 @@ impl X448PublicKey {
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        utils::pkey_public_bytes(py, &*slf, &slf.borrow().pkey, encoding, format, false)
+        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, false)
     }
 
     fn __richcmp__(
