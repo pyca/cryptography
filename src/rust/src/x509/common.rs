@@ -6,9 +6,7 @@ use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, x509};
 use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawTlv};
-use cryptography_x509::extensions::{
-    AccessDescription, Extension, Extensions, SequenceOfAccessDescriptions,
-};
+use cryptography_x509::extensions::{AccessDescription, Extension, Extensions};
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
 use pyo3::{IntoPy, ToPyObject};
@@ -159,7 +157,7 @@ pub(crate) fn encode_general_name<'a>(
 pub(crate) fn encode_access_descriptions<'a>(
     py: pyo3::Python<'a>,
     py_ads: &'a pyo3::PyAny,
-) -> Result<SequenceOfAccessDescriptions<'a>, CryptographyError> {
+) -> CryptographyResult<Vec<u8>> {
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
@@ -171,9 +169,7 @@ pub(crate) fn encode_access_descriptions<'a>(
             access_location,
         });
     }
-    Ok(Asn1ReadableOrWritable::new_write(
-        asn1::SequenceOfWriter::new(ads),
-    ))
+    Ok(asn1::write_single(&asn1::SequenceOfWriter::new(ads))?)
 }
 
 pub(crate) fn parse_name<'p>(
