@@ -61,8 +61,8 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'cp37' }
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'cp39' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'py37' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'py39' }
           - { VERSION: "pp39-pypy39_pp73" }
           - { VERSION: "pp310-pypy310_pp73" }
         MANYLINUX:
@@ -127,8 +127,10 @@ jobs:
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=--build-option=--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
           fi
+
+          source .venv/bin/activate
           OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
               OPENSSL_STATIC=1 \
               .venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/ && mv dist/cryptography*.whl tmpwheelhouse
@@ -162,7 +164,7 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '3.11'
-            ABI_VERSION: 'cp37'
+            ABI_VERSION: 'py37'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
@@ -174,7 +176,7 @@ jobs:
             # build against
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: '3.11'
-            ABI_VERSION: 'cp39'
+            ABI_VERSION: 'py39'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
@@ -243,9 +245,10 @@ jobs:
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=--build-option=--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
           fi
 
+          source venv/bin/activate
           OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
               OPENSSL_STATIC=1 \
               venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/ && mv dist/cryptography*.whl wheelhouse
@@ -279,8 +282,8 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.11", "ABI_VERSION": "cp37"}
-          - {VERSION: "3.11", "ABI_VERSION": "cp39"}
+          - {VERSION: "3.11", "ABI_VERSION": "py37"}
+          - {VERSION: "3.11", "ABI_VERSION": "py39"}
           - {VERSION: "pypy-3.9"}
           - {VERSION: "pypy-3.10"}
         exclude:
@@ -334,7 +337,7 @@ jobs:
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=--build-option=--py-limited-api=${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
           fi
 
           python -m pip wheel -v --no-deps cryptography*.tar.gz $PY_LIMITED_API -w dist/ && mv dist/cryptography*.whl wheelhouse/
