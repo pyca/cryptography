@@ -19,18 +19,6 @@ mod pkcs7;
 mod pool;
 mod x509;
 
-#[cfg(not(python_implementation = "PyPy"))]
-use pyo3::FromPyPointer;
-
-#[cfg(python_implementation = "PyPy")]
-extern "C" {
-    fn Cryptography_make_openssl_module() -> std::os::raw::c_int;
-}
-#[cfg(not(python_implementation = "PyPy"))]
-extern "C" {
-    fn PyInit__openssl() -> *mut pyo3::ffi::PyObject;
-}
-
 /// Returns the value of the input with the most-significant-bit copied to all
 /// of the bits.
 fn duplicate_msb_to_all(a: u8) -> u8 {
@@ -172,18 +160,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
     m.add_submodule(ocsp_mod)?;
 
-    #[cfg(python_implementation = "PyPy")]
-    let openssl_mod = unsafe {
-        let res = Cryptography_make_openssl_module();
-        assert_eq!(res, 0);
-        pyo3::types::PyModule::import(py, "_openssl")?
-    };
-    #[cfg(not(python_implementation = "PyPy"))]
-    let openssl_mod = unsafe {
-        let ptr = PyInit__openssl();
-        pyo3::types::PyModule::from_owned_ptr(py, ptr)
-    };
-    m.add_submodule(openssl_mod)?;
+    m.add_submodule(cryptography_cffi::create_module(py)?)?;
 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;

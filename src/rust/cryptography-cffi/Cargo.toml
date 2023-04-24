@@ -1,0 +1,15 @@
+[package]
+name = "cryptography-cffi"
+version = "0.1.0"
+authors = ["The cryptography developers <cryptography-dev@python.org>"]
+edition = "2021"
+publish = false
+# This specifies the MSRV
+rust-version = "1.56.0"
+
+[dependencies]
+pyo3 = { version = "0.18" }
+openssl-sys = "0.9.85"
+
+[build-dependencies]
+cc = "1.0.72"
