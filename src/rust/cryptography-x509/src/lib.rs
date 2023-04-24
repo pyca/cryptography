@@ -13,3 +13,4 @@ pub mod name;
 pub mod ocsp_req;
 pub mod ocsp_resp;
 pub mod oid;
+pub mod pkcs7;

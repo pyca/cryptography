@@ -5,7 +5,7 @@
 use crate::error::{CryptographyError, CryptographyResult};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
-use cryptography_x509::common::{SubjectPublicKeyInfo, Time};
+use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
 use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
@@ -37,12 +37,6 @@ fn parse_spki_for_data(
     }
 
     Ok(pyo3::types::PyBytes::new(py, spki.subject_public_key.as_bytes()).to_object(py))
-}
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct DssSignature<'a> {
-    r: asn1::BigUint<'a>,
-    s: asn1::BigUint<'a>,
 }
 
 pub(crate) fn big_byte_slice_to_py_int<'p>(

@@ -117,6 +117,12 @@ impl<'a, T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleA
     }
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct DssSignature<'a> {
+    pub r: asn1::BigUint<'a>,
+    pub s: asn1::BigUint<'a>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Asn1ReadableOrWritable, RawTlv};
