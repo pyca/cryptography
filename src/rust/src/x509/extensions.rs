@@ -118,6 +118,226 @@ pub(crate) fn encode_distribution_points<'p>(
     Ok(dps)
 }
 
+fn encode_basic_constraints(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+    #[derive(pyo3::prelude::FromPyObject)]
+    struct PyBasicConstraints {
+        ca: bool,
+        path_length: Option<u64>,
+    }
+    let pybc = ext.extract::<PyBasicConstraints>()?;
+    let bc = extensions::BasicConstraints {
+        ca: pybc.ca,
+        path_length: pybc.path_length,
+    };
+    Ok(asn1::write_single(&bc)?)
+}
+
+fn encode_key_usage(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+    let mut bs = [0, 0];
+    certificate::set_bit(
+        &mut bs,
+        0,
+        ext.getattr(pyo3::intern!(py, "digital_signature"))?
+            .is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        1,
+        ext.getattr(pyo3::intern!(py, "content_commitment"))?
+            .is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        2,
+        ext.getattr(pyo3::intern!(py, "key_encipherment"))?
+            .is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        3,
+        ext.getattr(pyo3::intern!(py, "data_encipherment"))?
+            .is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        4,
+        ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        5,
+        ext.getattr(pyo3::intern!(py, "key_cert_sign"))?.is_true()?,
+    );
+    certificate::set_bit(
+        &mut bs,
+        6,
+        ext.getattr(pyo3::intern!(py, "crl_sign"))?.is_true()?,
+    );
+    if ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()? {
+        certificate::set_bit(
+            &mut bs,
+            7,
+            ext.getattr(pyo3::intern!(py, "encipher_only"))?.is_true()?,
+        );
+        certificate::set_bit(
+            &mut bs,
+            8,
+            ext.getattr(pyo3::intern!(py, "decipher_only"))?.is_true()?,
+        );
+    }
+    let (bits, unused_bits) = if bs[1] == 0 {
+        if bs[0] == 0 {
+            (&[][..], 0)
+        } else {
+            (&bs[..1], bs[0].trailing_zeros() as u8)
+        }
+    } else {
+        (&bs[..], bs[1].trailing_zeros() as u8)
+    };
+    let v = asn1::BitString::new(bits, unused_bits).unwrap();
+    Ok(asn1::write_single(&v)?)
+}
+
+fn encode_certificate_policies(
+    py: pyo3::Python<'_>,
+    ext: &pyo3::PyAny,
+) -> CryptographyResult<Vec<u8>> {
+    let mut policy_informations = vec![];
+    for py_policy_info in ext.iter()? {
+        let py_policy_info = py_policy_info?;
+        let py_policy_qualifiers =
+            py_policy_info.getattr(pyo3::intern!(py, "policy_qualifiers"))?;
+        let qualifiers = if py_policy_qualifiers.is_true()? {
+            let mut qualifiers = vec![];
+            for py_qualifier in py_policy_qualifiers.iter()? {
+                let py_qualifier = py_qualifier?;
+                let qualifier = if py_qualifier.is_instance_of::<pyo3::types::PyString>()? {
+                    let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
+                        Some(s) => s,
+                        None => {
+                            return Err(pyo3::exceptions::PyValueError::new_err(
+                                "Qualifier must be an ASCII-string.",
+                            )
+                            .into())
+                        }
+                    };
+                    extensions::PolicyQualifierInfo {
+                        policy_qualifier_id: (oid::CP_CPS_URI_OID).clone(),
+                        qualifier: extensions::Qualifier::CpsUri(cps_uri),
+                    }
+                } else {
+                    let py_notice = py_qualifier.getattr(pyo3::intern!(py, "notice_reference"))?;
+                    let notice_ref = if py_notice.is_true()? {
+                        let mut notice_numbers = vec![];
+                        for py_num in py_notice
+                            .getattr(pyo3::intern!(py, "notice_numbers"))?
+                            .iter()?
+                        {
+                            let bytes = py_uint_to_big_endian_bytes(ext.py(), py_num?.downcast()?)?;
+                            notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
+                        }
+
+                        Some(extensions::NoticeReference {
+                            organization: extensions::DisplayText::Utf8String(
+                                asn1::Utf8String::new(
+                                    py_notice
+                                        .getattr(pyo3::intern!(py, "organization"))?
+                                        .extract()?,
+                                ),
+                            ),
+                            notice_numbers: common::Asn1ReadableOrWritable::new_write(
+                                asn1::SequenceOfWriter::new(notice_numbers),
+                            ),
+                        })
+                    } else {
+                        None
+                    };
+                    let py_explicit_text =
+                        py_qualifier.getattr(pyo3::intern!(py, "explicit_text"))?;
+                    let explicit_text = if py_explicit_text.is_true()? {
+                        Some(extensions::DisplayText::Utf8String(asn1::Utf8String::new(
+                            py_explicit_text.extract()?,
+                        )))
+                    } else {
+                        None
+                    };
+
+                    extensions::PolicyQualifierInfo {
+                        policy_qualifier_id: (oid::CP_USER_NOTICE_OID).clone(),
+                        qualifier: extensions::Qualifier::UserNotice(extensions::UserNotice {
+                            notice_ref,
+                            explicit_text,
+                        }),
+                    }
+                };
+                qualifiers.push(qualifier);
+            }
+            Some(common::Asn1ReadableOrWritable::new_write(
+                asn1::SequenceOfWriter::new(qualifiers),
+            ))
+        } else {
+            None
+        };
+        let py_policy_id = py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
+        policy_informations.push(extensions::PolicyInformation {
+            policy_identifier: py_oid_to_oid(py_policy_id)?,
+            policy_qualifiers: qualifiers,
+        });
+    }
+    Ok(asn1::write_single(&asn1::SequenceOfWriter::new(
+        policy_informations,
+    ))?)
+}
+
+fn encode_issuing_distribution_point(
+    py: pyo3::Python<'_>,
+    ext: &pyo3::PyAny,
+) -> CryptographyResult<Vec<u8>> {
+    let only_some_reasons = if ext
+        .getattr(pyo3::intern!(py, "only_some_reasons"))?
+        .is_true()?
+    {
+        let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
+        let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
+        Some(common::Asn1ReadableOrWritable::new_write(reasons))
+    } else {
+        None
+    };
+    let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_true()? {
+        let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
+        let gns = x509::common::encode_general_names(ext.py(), py_full_name)?;
+        Some(extensions::DistributionPointName::FullName(
+            common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+        ))
+    } else if ext.getattr(pyo3::intern!(py, "relative_name"))?.is_true()? {
+        let mut name_entries = vec![];
+        for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
+            name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
+        }
+        Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
+            common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+        ))
+    } else {
+        None
+    };
+
+    let idp = crl::IssuingDistributionPoint {
+        distribution_point,
+        indirect_crl: ext.getattr(pyo3::intern!(py, "indirect_crl"))?.extract()?,
+        only_contains_attribute_certs: ext
+            .getattr(pyo3::intern!(py, "only_contains_attribute_certs"))?
+            .extract()?,
+        only_contains_ca_certs: ext
+            .getattr(pyo3::intern!(py, "only_contains_ca_certs"))?
+            .extract()?,
+        only_contains_user_certs: ext
+            .getattr(pyo3::intern!(py, "only_contains_user_certs"))?
+            .extract()?,
+        only_some_reasons,
+    };
+    Ok(asn1::write_single(&idp)?)
+}
+
 pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
@@ -125,17 +345,8 @@ pub(crate) fn encode_extension(
 ) -> CryptographyResult<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
-            #[derive(pyo3::prelude::FromPyObject)]
-            struct PyBasicConstraints {
-                ca: bool,
-                path_length: Option<u64>,
-            }
-            let pybc = ext.extract::<PyBasicConstraints>()?;
-            let bc = extensions::BasicConstraints {
-                ca: pybc.ca,
-                path_length: pybc.path_length,
-            };
-            Ok(Some(asn1::write_single(&bc)?))
+            let der = encode_basic_constraints(ext)?;
+            Ok(Some(der))
         }
         &oid::SUBJECT_KEY_IDENTIFIER_OID => {
             let digest = ext
@@ -144,69 +355,8 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&digest)?))
         }
         &oid::KEY_USAGE_OID => {
-            let mut bs = [0, 0];
-            certificate::set_bit(
-                &mut bs,
-                0,
-                ext.getattr(pyo3::intern!(py, "digital_signature"))?
-                    .is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                1,
-                ext.getattr(pyo3::intern!(py, "content_commitment"))?
-                    .is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                2,
-                ext.getattr(pyo3::intern!(py, "key_encipherment"))?
-                    .is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                3,
-                ext.getattr(pyo3::intern!(py, "data_encipherment"))?
-                    .is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                4,
-                ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                5,
-                ext.getattr(pyo3::intern!(py, "key_cert_sign"))?.is_true()?,
-            );
-            certificate::set_bit(
-                &mut bs,
-                6,
-                ext.getattr(pyo3::intern!(py, "crl_sign"))?.is_true()?,
-            );
-            if ext.getattr(pyo3::intern!(py, "key_agreement"))?.is_true()? {
-                certificate::set_bit(
-                    &mut bs,
-                    7,
-                    ext.getattr(pyo3::intern!(py, "encipher_only"))?.is_true()?,
-                );
-                certificate::set_bit(
-                    &mut bs,
-                    8,
-                    ext.getattr(pyo3::intern!(py, "decipher_only"))?.is_true()?,
-                );
-            }
-            let (bits, unused_bits) = if bs[1] == 0 {
-                if bs[0] == 0 {
-                    (&[][..], 0)
-                } else {
-                    (&bs[..1], bs[0].trailing_zeros() as u8)
-                }
-            } else {
-                (&bs[..], bs[1].trailing_zeros() as u8)
-            };
-            let v = asn1::BitString::new(bits, unused_bits).unwrap();
-            Ok(Some(asn1::write_single(&v)?))
+            let der = encode_key_usage(py, ext)?;
+            Ok(Some(der))
         }
         &oid::AUTHORITY_INFORMATION_ACCESS_OID | &oid::SUBJECT_INFORMATION_ACCESS_OID => {
             let ads = x509::common::encode_access_descriptions(ext.py(), ext)?;
@@ -223,96 +373,8 @@ pub(crate) fn encode_extension(
             ))?))
         }
         &oid::CERTIFICATE_POLICIES_OID => {
-            let mut policy_informations = vec![];
-            for py_policy_info in ext.iter()? {
-                let py_policy_info = py_policy_info?;
-                let py_policy_qualifiers =
-                    py_policy_info.getattr(pyo3::intern!(py, "policy_qualifiers"))?;
-                let qualifiers = if py_policy_qualifiers.is_true()? {
-                    let mut qualifiers = vec![];
-                    for py_qualifier in py_policy_qualifiers.iter()? {
-                        let py_qualifier = py_qualifier?;
-                        let qualifier = if py_qualifier.is_instance_of::<pyo3::types::PyString>()? {
-                            let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
-                                Some(s) => s,
-                                None => {
-                                    return Err(pyo3::exceptions::PyValueError::new_err(
-                                        "Qualifier must be an ASCII-string.",
-                                    )
-                                    .into())
-                                }
-                            };
-                            extensions::PolicyQualifierInfo {
-                                policy_qualifier_id: (oid::CP_CPS_URI_OID).clone(),
-                                qualifier: extensions::Qualifier::CpsUri(cps_uri),
-                            }
-                        } else {
-                            let py_notice =
-                                py_qualifier.getattr(pyo3::intern!(py, "notice_reference"))?;
-                            let notice_ref = if py_notice.is_true()? {
-                                let mut notice_numbers = vec![];
-                                for py_num in py_notice
-                                    .getattr(pyo3::intern!(py, "notice_numbers"))?
-                                    .iter()?
-                                {
-                                    let bytes =
-                                        py_uint_to_big_endian_bytes(ext.py(), py_num?.downcast()?)?;
-                                    notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
-                                }
-
-                                Some(extensions::NoticeReference {
-                                    organization: extensions::DisplayText::Utf8String(
-                                        asn1::Utf8String::new(
-                                            py_notice
-                                                .getattr(pyo3::intern!(py, "organization"))?
-                                                .extract()?,
-                                        ),
-                                    ),
-                                    notice_numbers: common::Asn1ReadableOrWritable::new_write(
-                                        asn1::SequenceOfWriter::new(notice_numbers),
-                                    ),
-                                })
-                            } else {
-                                None
-                            };
-                            let py_explicit_text =
-                                py_qualifier.getattr(pyo3::intern!(py, "explicit_text"))?;
-                            let explicit_text = if py_explicit_text.is_true()? {
-                                Some(extensions::DisplayText::Utf8String(asn1::Utf8String::new(
-                                    py_explicit_text.extract()?,
-                                )))
-                            } else {
-                                None
-                            };
-
-                            extensions::PolicyQualifierInfo {
-                                policy_qualifier_id: (oid::CP_USER_NOTICE_OID).clone(),
-                                qualifier: extensions::Qualifier::UserNotice(
-                                    extensions::UserNotice {
-                                        notice_ref,
-                                        explicit_text,
-                                    },
-                                ),
-                            }
-                        };
-                        qualifiers.push(qualifier);
-                    }
-                    Some(common::Asn1ReadableOrWritable::new_write(
-                        asn1::SequenceOfWriter::new(qualifiers),
-                    ))
-                } else {
-                    None
-                };
-                let py_policy_id =
-                    py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
-                policy_informations.push(extensions::PolicyInformation {
-                    policy_identifier: py_oid_to_oid(py_policy_id)?,
-                    policy_qualifiers: qualifiers,
-                });
-            }
-            Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(
-                policy_informations,
-            ))?))
+            let der = encode_certificate_policies(py, ext)?;
+            Ok(Some(der))
         }
         &oid::POLICY_CONSTRAINTS_OID => {
             let pc = extensions::PolicyConstraints {
@@ -416,49 +478,8 @@ pub(crate) fn encode_extension(
             )?))
         }
         &oid::ISSUING_DISTRIBUTION_POINT_OID => {
-            let only_some_reasons = if ext
-                .getattr(pyo3::intern!(py, "only_some_reasons"))?
-                .is_true()?
-            {
-                let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
-                let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
-                Some(common::Asn1ReadableOrWritable::new_write(reasons))
-            } else {
-                None
-            };
-            let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_true()? {
-                let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
-                let gns = x509::common::encode_general_names(ext.py(), py_full_name)?;
-                Some(extensions::DistributionPointName::FullName(
-                    common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
-                ))
-            } else if ext.getattr(pyo3::intern!(py, "relative_name"))?.is_true()? {
-                let mut name_entries = vec![];
-                for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
-                    name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
-                }
-                Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
-                    common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
-                ))
-            } else {
-                None
-            };
-
-            let idp = crl::IssuingDistributionPoint {
-                distribution_point,
-                indirect_crl: ext.getattr(pyo3::intern!(py, "indirect_crl"))?.extract()?,
-                only_contains_attribute_certs: ext
-                    .getattr(pyo3::intern!(py, "only_contains_attribute_certs"))?
-                    .extract()?,
-                only_contains_ca_certs: ext
-                    .getattr(pyo3::intern!(py, "only_contains_ca_certs"))?
-                    .extract()?,
-                only_contains_user_certs: ext
-                    .getattr(pyo3::intern!(py, "only_contains_user_certs"))?
-                    .extract()?,
-                only_some_reasons,
-            };
-            Ok(Some(asn1::write_single(&idp)?))
+            let der = encode_issuing_distribution_point(py, ext)?;
+            Ok(Some(der))
         }
         &oid::NONCE_OID => {
             let nonce = ext
