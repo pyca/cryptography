@@ -6,16 +6,13 @@ use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::x509;
-use cryptography_x509::csr::{Attribute, Attributes};
-use cryptography_x509::{common, name, oid};
+use cryptography_x509::csr::Attribute;
+use cryptography_x509::{common, oid, pkcs7};
 
 use once_cell::sync::Lazy;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
-
-const PKCS7_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 7, 1);
-const PKCS7_SIGNED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 7, 2);
 
 const PKCS7_CONTENT_TYPE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 3);
 const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 4);
@@ -35,59 +32,6 @@ static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::ne
     h
 });
 
-#[derive(asn1::Asn1Write)]
-struct ContentInfo<'a> {
-    _content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
-
-    #[defined_by(_content_type)]
-    content: Content<'a>,
-}
-
-#[derive(asn1::Asn1DefinedByWrite)]
-enum Content<'a> {
-    #[defined_by(PKCS7_SIGNED_DATA_OID)]
-    SignedData(asn1::Explicit<'a, Box<SignedData<'a>>, 0>),
-    #[defined_by(PKCS7_DATA_OID)]
-    Data(Option<asn1::Explicit<'a, &'a [u8], 0>>),
-}
-
-#[derive(asn1::Asn1Write)]
-struct SignedData<'a> {
-    version: u8,
-    digest_algorithms: asn1::SetOfWriter<'a, common::AlgorithmIdentifier<'a>>,
-    content_info: ContentInfo<'a>,
-    #[implicit(0)]
-    certificates:
-        Option<asn1::SetOfWriter<'a, &'a cryptography_x509::certificate::Certificate<'a>>>,
-
-    // We don't ever supply any of these, so for now, don't fill out the fields.
-    #[implicit(1)]
-    crls: Option<asn1::SetOfWriter<'a, asn1::Sequence<'a>>>,
-
-    signer_infos: asn1::SetOfWriter<'a, SignerInfo<'a>>,
-}
-
-#[derive(asn1::Asn1Write)]
-struct SignerInfo<'a> {
-    version: u8,
-    issuer_and_serial_number: IssuerAndSerialNumber<'a>,
-    digest_algorithm: common::AlgorithmIdentifier<'a>,
-    #[implicit(0)]
-    authenticated_attributes: Option<Attributes<'a>>,
-
-    digest_encryption_algorithm: common::AlgorithmIdentifier<'a>,
-    encrypted_digest: &'a [u8],
-
-    #[implicit(1)]
-    unauthenticated_attributes: Option<Attributes<'a>>,
-}
-
-#[derive(asn1::Asn1Write)]
-struct IssuerAndSerialNumber<'a> {
-    issuer: name::Name<'a>,
-    serial_number: asn1::BigInt<'a>,
-}
-
 #[pyo3::prelude::pyfunction]
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
@@ -106,21 +50,21 @@ fn serialize_certificates<'p>(
         .map(|c| c.raw.borrow_value_public())
         .collect::<Vec<_>>();
 
-    let signed_data = SignedData {
+    let signed_data = pkcs7::SignedData {
         version: 1,
         digest_algorithms: asn1::SetOfWriter::new(&[]),
-        content_info: ContentInfo {
+        content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
-            content: Content::Data(Some(asn1::Explicit::new(b""))),
+            content: pkcs7::Content::Data(Some(asn1::Explicit::new(b""))),
         },
         certificates: Some(asn1::SetOfWriter::new(&raw_certs)),
         crls: None,
         signer_infos: asn1::SetOfWriter::new(&[]),
     };
 
-    let content_info = ContentInfo {
+    let content_info = pkcs7::ContentInfo {
         _content_type: asn1::DefinedByMarker::marker(),
-        content: Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
+        content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let content_info_bytes = asn1::write_single(&content_info)?;
 
@@ -153,7 +97,7 @@ fn sign_and_serialize<'p>(
             smime_canonicalize(raw_data.as_bytes(), text_mode)
         };
 
-    let content_type_bytes = asn1::write_single(&PKCS7_DATA_OID)?;
+    let content_type_bytes = asn1::write_single(&pkcs7::PKCS7_DATA_OID)?;
     let now = x509::common::datetime_now(py)?;
     let signing_time_bytes = asn1::write_single(&x509::certificate::time_from_datetime(now)?)?;
     let smime_cap_bytes = asn1::write_single(&asn1::SequenceOfWriter::new([
@@ -249,9 +193,9 @@ fn sign_and_serialize<'p>(
         }
         certs.push(cert.raw.borrow_value_public());
 
-        signer_infos.push(SignerInfo {
+        signer_infos.push(pkcs7::SignerInfo {
             version: 1,
-            issuer_and_serial_number: IssuerAndSerialNumber {
+            issuer_and_serial_number: pkcs7::IssuerAndSerialNumber {
                 issuer: cert.raw.borrow_value_public().tbs_cert.issuer.clone(),
                 serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
             },
@@ -276,12 +220,12 @@ fn sign_and_serialize<'p>(
             Some(asn1::parse_single(&data_tlv_bytes).unwrap())
         };
 
-    let signed_data = SignedData {
+    let signed_data = pkcs7::SignedData {
         version: 1,
         digest_algorithms: asn1::SetOfWriter::new(&digest_algs),
-        content_info: ContentInfo {
+        content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
-            content: Content::Data(content.map(asn1::Explicit::new)),
+            content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
         certificates: if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCerts"))?)? {
             None
@@ -292,9 +236,9 @@ fn sign_and_serialize<'p>(
         signer_infos: asn1::SetOfWriter::new(&signer_infos),
     };
 
-    let content_info = ContentInfo {
+    let content_info = pkcs7::ContentInfo {
         _content_type: asn1::DefinedByMarker::marker(),
-        content: Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
+        content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
