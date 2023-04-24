@@ -32,7 +32,7 @@ name = "cryptography_rust"
 crate-type = ["cdylib"]
 
 [profile.release]
-lto = "thin"
+lto = "off"
 overflow-checks = true
 
 [workspace]
