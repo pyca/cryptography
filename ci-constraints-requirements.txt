@@ -1,7 +1,7 @@
 # This is named ambigiously, but it's a pip constraints file, named like a
 # requirements file so dependabot will update the pins.
 # It was originally generated with;
-#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=nox --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools pyproject.toml
+#    pip-compile --extra=docs --extra=docstest --extra=pep8test --extra=test --extra=test-randomorder --extra=nox --extra=sdist --resolver=backtracking --strip-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools pyproject.toml
 # and then manually massaged to add version specifiers to packages whose
 # versions vary by Python version
 
@@ -16,7 +16,9 @@ black==23.3.0
 bleach==6.0.0
     # via readme-renderer
 build==0.10.0
-    # via check-manifest
+    # via
+    #   check-manifest
+    #   cryptography (pyproject.toml)
 certifi==2022.12.7
     # via requests
 charset-normalizer==3.1.0

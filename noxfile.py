@@ -106,7 +106,7 @@ def docs(session: nox.Session) -> None:
 
     # This is in the docs job because `twine check` verifies that the README
     # is valid reStructuredText.
-    session.run("python", "setup.py", "sdist")
+    session.run("python", "-m", "build", "--sdist")
     session.run("twine", "check", "dist/*")
 
 
