@@ -136,7 +136,7 @@ rfc3986==2.0.0
     # via twine
 rich==13.3.4
     # via twine
-ruff==0.0.262
+ruff==0.0.263
     # via cryptography (pyproject.toml)
 six==1.16.0
     # via bleach
