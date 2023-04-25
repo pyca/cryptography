@@ -146,7 +146,7 @@ jobs:
           - VERSION: '3.11'
             ABI_VERSION: 'cp37'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.2/python-3.11.2-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
             DEPLOYMENT_TARGET: '10.12'
             # This archflags is default, but let's be explicit
@@ -157,7 +157,7 @@ jobs:
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: '3.11'
             ABI_VERSION: 'cp37'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.2/python-3.11.2-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
             DEPLOYMENT_TARGET: '10.12'
             # We continue to build a non-universal2 for a bit to see metrics on
