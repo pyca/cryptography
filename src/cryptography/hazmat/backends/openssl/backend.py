@@ -156,7 +156,7 @@ class Backend:
         self._binding = binding.Binding()
         self._ffi = self._binding.ffi
         self._lib = self._binding.lib
-        self._fips_enabled = self._is_fips_enabled()
+        self._fips_enabled = rust_openssl.is_fips_enabled()
 
         self._cipher_registry: typing.Dict[
             typing.Tuple[typing.Type[CipherAlgorithm], typing.Type[Mode]],
@@ -181,25 +181,12 @@ class Backend:
     ) -> None:
         return binding._openssl_assert(self._lib, ok, errors=errors)
 
-    def _is_fips_enabled(self) -> bool:
-        if self._lib.Cryptography_HAS_300_FIPS:
-            mode = self._lib.EVP_default_properties_is_fips_enabled(
-                self._ffi.NULL
-            )
-        else:
-            mode = self._lib.FIPS_mode()
-
-        if mode == 0:
-            # OpenSSL without FIPS pushes an error on the error stack
-            self._lib.ERR_clear_error()
-        return bool(mode)
-
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
         self._binding._enable_fips()
-        assert self._is_fips_enabled()
-        self._fips_enabled = self._is_fips_enabled()
+        assert rust_openssl.is_fips_enabled()
+        self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def openssl_version_text(self) -> str:
         """

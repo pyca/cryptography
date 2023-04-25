@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+pub mod fips;
 pub mod hmac;
 
 pub type OpenSSLResult<T> = Result<T, openssl::error::ErrorStack>;

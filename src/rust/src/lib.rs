@@ -131,6 +131,11 @@ fn capture_error_stack(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::types::PyL
     Ok(errs)
 }
 
+#[pyo3::prelude::pyfunction]
+fn is_fips_enabled() -> bool {
+    cryptography_openssl::fips::is_enabled()
+}
+
 #[pyo3::prelude::pymodule]
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(check_pkcs7_padding, m)?)?;
@@ -161,6 +166,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(raise_openssl_error, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(capture_error_stack, m)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction!(is_fips_enabled, m)?)?;
     openssl_mod.add_class::<OpenSSLError>()?;
     crate::backend::add_to_module(openssl_mod)?;
     m.add_submodule(openssl_mod)?;
