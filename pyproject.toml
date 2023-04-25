@@ -11,6 +11,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cryptography"
+version = "41.0.0.dev1"
+
+
 authors = [
     {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
 ]
@@ -45,7 +48,6 @@ dependencies = [
     # Must be kept in sync with `build-system.requires`
     "cffi >=1.12",
 ]
-dynamic = ["version"]
 
 [project.urls]
 homepage = "https://github.com/pyca/cryptography"
@@ -61,9 +63,6 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["cryptography*"]
-
-[tool.setuptools.dynamic]
-version = {attr = "cryptography.__version__"}
 
 [project.optional-dependencies]
 ssh = ["bcrypt >=3.1.5"]
