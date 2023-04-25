@@ -148,7 +148,7 @@ class TestDH:
         with pytest.raises(ValueError):
             dh.generate_parameters(7, 512, backend)
 
-    def test_large_key_generate_dh(self):
+    def test_large_key_generate_dh(self, backend):
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 1 << 30)
 
@@ -485,6 +485,9 @@ class TestDH:
         assert key1 == key2
         assert key1 != key3
         assert key1 != object()
+
+        with pytest.raises(TypeError):
+            key1 < key2  # type: ignore[operator]
 
 
 @pytest.mark.supported(

@@ -13,7 +13,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import dh, padding
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
@@ -27,7 +27,6 @@ from ...doubles import (
 )
 from ...hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from ...utils import (
-    load_nist_vectors,
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
@@ -373,36 +372,6 @@ class TestRSAPEMSerialization:
     skip_message="Requires DH support",
 )
 class TestOpenSSLDHSerialization:
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "RFC5114.txt"), load_nist_vectors
-        ),
-    )
-    def test_dh_serialization_with_q_unsupported(self, backend, vector):
-        parameters = dh.DHParameterNumbers(
-            int(vector["p"], 16), int(vector["g"], 16), int(vector["q"], 16)
-        )
-        public = dh.DHPublicNumbers(int(vector["ystatcavs"], 16), parameters)
-        private = dh.DHPrivateNumbers(int(vector["xstatcavs"], 16), public)
-        private_key = private.private_key(backend)
-        public_key = private_key.public_key()
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            private_key.private_bytes(
-                serialization.Encoding.PEM,
-                serialization.PrivateFormat.PKCS8,
-                serialization.NoEncryption(),
-            )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            public_key.public_bytes(
-                serialization.Encoding.PEM,
-                serialization.PublicFormat.SubjectPublicKeyInfo,
-            )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            parameters.parameters(backend).parameter_bytes(
-                serialization.Encoding.PEM, serialization.ParameterFormat.PKCS3
-            )
-
     @pytest.mark.parametrize(
         ("key_path", "loader_func"),
         [

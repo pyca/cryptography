@@ -4,6 +4,39 @@
 
 use crate::error::{CryptographyError, CryptographyResult};
 
+pub(crate) fn py_int_to_bn(
+    py: pyo3::Python<'_>,
+    v: &pyo3::PyAny,
+) -> CryptographyResult<openssl::bn::BigNum> {
+    let n = v
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?
+        / 8
+        + 1;
+    let bytes: &[u8] = v
+        .call_method1(pyo3::intern!(py, "to_bytes"), (n, pyo3::intern!(py, "big")))?
+        .extract()?;
+
+    Ok(openssl::bn::BigNum::from_slice(bytes)?)
+}
+
+pub(crate) fn bn_to_py_int<'p>(
+    py: pyo3::Python<'p>,
+    b: &openssl::bn::BigNumRef,
+) -> CryptographyResult<&'p pyo3::PyAny> {
+    assert!(!b.is_negative());
+
+    let int_type = py.get_type::<pyo3::types::PyLong>();
+    Ok(int_type.call_method1(
+        pyo3::intern!(py, "from_bytes"),
+        (b.to_vec(), pyo3::intern!(py, "big")),
+    )?)
+}
+
+pub(crate) fn bn_to_big_endian_bytes(b: &openssl::bn::BigNumRef) -> CryptographyResult<Vec<u8>> {
+    Ok(b.to_vec_padded(b.num_bits() / 8 + 1)?)
+}
+
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::PyAny,
@@ -22,6 +55,9 @@ pub(crate) fn pkey_private_bytes<'p>(
         .extract()?;
     let private_format_class: &pyo3::types::PyType = serialization_mod
         .getattr(pyo3::intern!(py, "PrivateFormat"))?
+        .extract()?;
+    let key_serialization_encryption_class: &pyo3::types::PyType = serialization_mod
+        .getattr(pyo3::intern!(py, "KeySerializationEncryption"))?
         .extract()?;
     let no_encryption_class: &pyo3::types::PyType = serialization_mod
         .getattr(pyo3::intern!(py, "NoEncryption"))?
@@ -44,7 +80,15 @@ pub(crate) fn pkey_private_bytes<'p>(
             ),
         ));
     }
+    if !encryption_algorithm.is_instance(key_serialization_encryption_class)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err(
+                "Encryption algorithm must be a KeySerializationEncryption instance",
+            ),
+        ));
+    }
 
+    #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
     if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
         || format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?)
     {
@@ -68,9 +112,7 @@ pub(crate) fn pkey_private_bytes<'p>(
             .extract::<&[u8]>()?
     } else {
         return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "Encryption algorithm must be a KeySerializationEncryption instance",
-            ),
+            pyo3::exceptions::PyValueError::new_err("Unsupported encryption type"),
         ));
     };
 
@@ -170,6 +212,7 @@ pub(crate) fn pkey_public_bytes<'p>(
         ));
     }
 
+    #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
     if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
         || format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?)
     {

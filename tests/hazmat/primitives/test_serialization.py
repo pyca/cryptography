@@ -395,6 +395,10 @@ class TestDERSerialization:
         assert key.curve.name == "secp256r1"
         assert key.curve.key_size == 256
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
     def test_wrong_parameters_format(self, backend):
         param_data = b"---- NOT A KEY ----\n"
 
@@ -734,6 +738,10 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_public_key(key_data, backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
     def test_wrong_parameters_format(self, backend):
         param_data = b"---- NOT A KEY ----\n"
 

@@ -7,9 +7,8 @@ from __future__ import annotations
 import abc
 import typing
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
-
-_MIN_MODULUS_SIZE = 512
 
 
 def generate_parameters(
@@ -30,9 +29,10 @@ class DHParameterNumbers:
         if g < 2:
             raise ValueError("DH generator must be 2 or greater")
 
-        if p.bit_length() < _MIN_MODULUS_SIZE:
+        if p.bit_length() < rust_openssl.dh.MIN_MODULUS_SIZE:
             raise ValueError(
-                f"p (modulus) must be at least {_MIN_MODULUS_SIZE}-bit"
+                f"p (modulus) must be at least "
+                f"{rust_openssl.dh.MIN_MODULUS_SIZE}-bit"
             )
 
         self._p = p
@@ -168,6 +168,7 @@ class DHParameters(metaclass=abc.ABCMeta):
 
 
 DHParametersWithSerialization = DHParameters
+DHParameters.register(rust_openssl.dh.DHParameters)
 
 
 class DHPublicKey(metaclass=abc.ABCMeta):
@@ -208,6 +209,7 @@ class DHPublicKey(metaclass=abc.ABCMeta):
 
 
 DHPublicKeyWithSerialization = DHPublicKey
+DHPublicKey.register(rust_openssl.dh.DHPublicKey)
 
 
 class DHPrivateKey(metaclass=abc.ABCMeta):
@@ -256,3 +258,4 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
 
 
 DHPrivateKeyWithSerialization = DHPrivateKey
+DHPrivateKey.register(rust_openssl.dh.DHPrivateKey)
