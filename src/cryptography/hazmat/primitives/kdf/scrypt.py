@@ -13,6 +13,7 @@ from cryptography.exceptions import (
     InvalidKey,
     UnsupportedAlgorithm,
 )
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import constant_time
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
@@ -62,10 +63,15 @@ class Scrypt(KeyDerivationFunction):
         self._used = True
 
         utils._check_byteslike("key_material", key_material)
-        from cryptography.hazmat.backends.openssl.backend import backend
 
-        return backend.derive_scrypt(
-            key_material, self._salt, self._length, self._n, self._r, self._p
+        return rust_openssl.kdf.derive_scrypt(
+            key_material,
+            self._salt,
+            self._n,
+            self._r,
+            self._p,
+            _MEM_LIMIT,
+            self._length,
         )
 
     def verify(self, key_material: bytes, expected_key: bytes) -> None:
