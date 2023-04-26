@@ -1573,26 +1573,14 @@ class Backend:
     def dh_parameters_supported(
         self, p: int, g: int, q: typing.Optional[int] = None
     ) -> bool:
-        dh_cdata = self._lib.DH_new()
-        self.openssl_assert(dh_cdata != self._ffi.NULL)
-        dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
-
-        p = self._int_to_bn(p)
-        g = self._int_to_bn(g)
-
-        if q is not None:
-            q = self._int_to_bn(q)
+        try:
+            rust_openssl.dh.from_parameter_numbers(
+                dh.DHParameterNumbers(p=p, g=g, q=q)
+            )
+        except ValueError:
+            return False
         else:
-            q = self._ffi.NULL
-
-        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
-        self.openssl_assert(res == 1)
-
-        codes = self._ffi.new("int[]", 1)
-        res = self._lib.DH_check(dh_cdata, codes)
-        self.openssl_assert(res == 1)
-
-        return codes[0] == 0
+            return True
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1

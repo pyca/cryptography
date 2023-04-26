@@ -30,17 +30,9 @@ def cryptography_has_tls_st() -> typing.List[str]:
     ]
 
 
-def cryptography_has_scrypt() -> typing.List[str]:
-    return [
-        "EVP_PBE_scrypt",
-    ]
-
-
 def cryptography_has_evp_pkey_dhx() -> typing.List[str]:
     return [
         "EVP_PKEY_DHX",
-        "d2i_DHxparams_bio",
-        "i2d_DHxparams_bio",
     ]
 
 
@@ -279,7 +271,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_SCRYPT": cryptography_has_scrypt,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
     "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
