@@ -125,7 +125,7 @@ pytest-xdist==3.2.1
     # via cryptography (pyproject.toml)
 readme-renderer==37.3
     # via twine
-requests==2.28.2
+requests==2.29.0
     # via
     #   requests-toolbelt
     #   sphinx
