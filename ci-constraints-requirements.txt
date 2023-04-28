@@ -179,7 +179,7 @@ twine==4.0.2
     # via cryptography (pyproject.toml)
 typing-extensions==4.5.0
     # via mypy
-urllib3==1.26.15
+urllib3==2.0.0
     # via
     #   requests
     #   twine
