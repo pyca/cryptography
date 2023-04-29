@@ -123,6 +123,13 @@ pub struct DssSignature<'a> {
     pub s: asn1::BigUint<'a>,
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct DHParams<'a> {
+    pub p: asn1::BigUint<'a>,
+    pub g: asn1::BigUint<'a>,
+    pub q: Option<asn1::BigUint<'a>>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Asn1ReadableOrWritable, RawTlv};
