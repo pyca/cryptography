@@ -6,6 +6,7 @@ use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509;
+use cryptography_x509::common;
 use foreign_types_shared::ForeignTypeRef;
 
 const MIN_MODULUS_SIZE: u32 = 512;
@@ -62,16 +63,9 @@ fn public_key_from_ptr(ptr: usize) -> DHPublicKey {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct ASN1DHParams<'a> {
-    p: asn1::BigUint<'a>,
-    g: asn1::BigUint<'a>,
-    q: Option<asn1::BigUint<'a>>,
-}
-
 #[pyo3::prelude::pyfunction]
 fn from_der_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
-    let asn1_params = asn1::parse_single::<ASN1DHParams<'_>>(data)?;
+    let asn1_params = asn1::parse_single::<common::DHParams<'_>>(data)?;
 
     let p = openssl::bn::BigNum::from_slice(asn1_params.p.as_bytes())?;
     let q = asn1_params
@@ -407,7 +401,7 @@ impl DHParameters {
             .map(utils::bn_to_big_endian_bytes)
             .transpose()?;
         let g_bytes = utils::bn_to_big_endian_bytes(self.dh.generator())?;
-        let asn1dh_params = ASN1DHParams {
+        let asn1dh_params = common::DHParams {
             p: asn1::BigUint::new(&p_bytes).unwrap(),
             q: q_bytes.as_ref().map(|q| asn1::BigUint::new(q).unwrap()),
             g: asn1::BigUint::new(&g_bytes).unwrap(),
