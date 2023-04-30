@@ -125,7 +125,7 @@ def flake(session: nox.Session) -> None:
 
     session.run("ruff", ".")
     session.run("black", "--check", ".")
-    session.run("check-manifest")
+    session.run("check-sdist")
     session.run(
         "mypy",
         "src/cryptography/",

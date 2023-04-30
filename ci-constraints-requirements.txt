@@ -17,13 +17,13 @@ bleach==6.0.0
     # via readme-renderer
 build==0.10.0
     # via
-    #   check-manifest
+    #   check-sdist
     #   cryptography (pyproject.toml)
 certifi==2022.12.7
     # via requests
 charset-normalizer==3.1.0
     # via requests
-check-manifest==0.49
+check-sdist==0.1.2
     # via cryptography (pyproject.toml)
 click==8.1.3
     # via black
@@ -84,7 +84,9 @@ packaging==23.1
     #   pytest
     #   sphinx
 pathspec==0.11.1
-    # via black
+    # via
+    #   black
+    #   check-sdist
 pkginfo==1.9.6
     # via twine
 platformdirs==3.5.0
@@ -193,4 +195,3 @@ zipp==3.15.0
 # The following packages are considered to be unsafe in a requirements file:
 # cffi
 # pycparser
-# setuptools

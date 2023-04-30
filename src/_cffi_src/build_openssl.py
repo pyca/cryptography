@@ -54,7 +54,7 @@ ffi = build_ffi_for_binding(
 )
 
 if __name__ == "__main__":
-    out_dir = os.getenv("OUT_DIR")
+    out_dir = os.environ["OUT_DIR"]
     module_name, source, source_extension, kwds = ffi._assigned_source
     c_file = os.path.join(out_dir, module_name + source_extension)
     if platform.python_implementation() == "PyPy":
