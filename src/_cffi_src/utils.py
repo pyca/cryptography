@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import platform
 import sys
+import typing
 
 from cffi import FFI
 
@@ -18,9 +19,9 @@ with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
 
 
 def build_ffi_for_binding(
-    module_name,
-    module_prefix,
-    modules,
+    module_name: str,
+    module_prefix: str,
+    modules: typing.List[str],
 ):
     """
     Modules listed in ``modules`` should have the following attributes:
@@ -54,9 +55,9 @@ def build_ffi_for_binding(
 
 
 def build_ffi(
-    module_name,
-    cdef_source,
-    verify_source,
+    module_name: str,
+    cdef_source: str,
+    verify_source: str,
 ):
     ffi = FFI()
     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
