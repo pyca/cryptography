@@ -29,7 +29,7 @@ click==8.1.3
     # via black
 colorlog==6.7.0
     # via nox
-coverage==7.2.4
+coverage==7.2.5
     # via pytest-cov
 distlib==0.3.6
     # via virtualenv
