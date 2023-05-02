@@ -86,9 +86,8 @@ Post-release tasks
 * Close the `milestone`_ for the previous release on GitHub.
 * For major version releases, send a pull request to pyOpenSSL increasing the
   maximum ``cryptography`` version pin and perform a pyOpenSSL release.
-* Update the version number to the next major (e.g. ``0.5.dev1``) in
-  ``src/cryptography/__about__.py`` and
-  ``vectors/cryptography_vectors/__about__.py``.
+* Update the version number to the next major (e.g. ``0.5.dev1``) with
+  ``python release.py bump-version {new_version}``.
 * Add new :doc:`/changelog` entry with next version and note that it is under
   active development
 * Send a pull request with these items

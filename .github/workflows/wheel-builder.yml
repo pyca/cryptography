@@ -17,7 +17,7 @@ on:
       - .github/workflows/wheel-builder.yml
       - setup.py
       - pyproject.toml
-      - src/cryptography/__about__.py
+      - vectors/pyproject.toml
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
