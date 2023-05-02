@@ -675,7 +675,8 @@ fn create_ocsp_response(
             )?,
         };
 
-        let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+        let sigalg = x509::sign::compute_signature_algorithm(py, private_key,
+                                                             padding, hash_algorithm)?;
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
         let signature =
             x509::sign::sign_data(py, private_key, padding, hash_algorithm, &tbs_bytes)?;

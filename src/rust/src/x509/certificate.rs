@@ -981,7 +981,7 @@ fn create_x509_certificate(
     padding: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
 ) -> CryptographyResult<Certificate> {
-    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, padding, hash_algorithm)?;
     let serialization_mod = py.import(pyo3::intern!(
         py,
         "cryptography.hazmat.primitives.serialization"

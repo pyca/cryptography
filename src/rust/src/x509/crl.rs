@@ -579,7 +579,7 @@ fn create_x509_crl(
     padding: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateRevocationList> {
-    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, padding, hash_algorithm)?;
 
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder

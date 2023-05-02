@@ -211,6 +211,7 @@ fn sign_and_serialize<'p>(
             digest_encryption_algorithm: x509::sign::compute_signature_algorithm(
                 py,
                 py_private_key,
+                py_padding,
                 py_hash_alg,
             )?,
             encrypted_digest: signature,
