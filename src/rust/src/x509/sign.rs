@@ -246,6 +246,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
 pub(crate) fn sign_data<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
+    padding: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
@@ -266,6 +267,7 @@ pub(crate) fn sign_data<'p>(
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, ecdsa))?
         }
         KeyType::Rsa => {
+            /*
             let padding_mod = py.import(pyo3::intern!(
                 py,
                 "cryptography.hazmat.primitives.asymmetric.padding"
@@ -273,7 +275,8 @@ pub(crate) fn sign_data<'p>(
             let pkcs1v15 = padding_mod
                 .getattr(pyo3::intern!(py, "PKCS1v15"))?
                 .call0()?;
-            private_key.call_method1(pyo3::intern!(py, "sign"), (data, pkcs1v15, hash_algorithm))?
+             */
+            private_key.call_method1(pyo3::intern!(py, "sign"), (data, padding, hash_algorithm))?
         }
         KeyType::Dsa => {
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, hash_algorithm))?

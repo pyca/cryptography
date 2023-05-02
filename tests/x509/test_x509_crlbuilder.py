@@ -10,7 +10,13 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    ec,
+    ed448,
+    ed25519,
+    padding,
+    rsa,
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
     NameOID,
@@ -169,6 +175,43 @@ class TestCertificateRevocationListBuilder:
 
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
+
+    def test_no_issuer_name_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .last_update(datetime.datetime(2002, 1, 1, 12, 1))
+            .next_update(datetime.datetime(2030, 1, 1, 12, 1))
+        )
+        padding_type = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH,
+        )
+        with pytest.raises(ValueError):
+            builder.sign_pad(
+                private_key=private_key,
+                padding_type=padding_type,
+                algorithm=hashes.SHA256(),
+            )
+
+    def test_no_issuer_name_pkcs1v15(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .last_update(datetime.datetime(2002, 1, 1, 12, 1))
+            .next_update(datetime.datetime(2030, 1, 1, 12, 1))
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign_pad(
+                private_key=private_key,
+                padding_type=padding.PKCS1v15(),
+                algorithm=hashes.SHA256(),
+            )
 
     def test_no_last_update(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048

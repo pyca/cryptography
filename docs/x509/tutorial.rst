@@ -56,6 +56,7 @@ a few details:
 
     >>> from cryptography import x509
     >>> from cryptography.x509.oid import NameOID
+    >>> from cryptography.hazmat.primitives.asymmetric import padding
     >>> from cryptography.hazmat.primitives import hashes
     >>> # Generate a CSR
     >>> csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
@@ -74,7 +75,7 @@ a few details:
     ...     ]),
     ...     critical=False,
     ... # Sign the CSR with our private key.
-    ... ).sign(key, hashes.SHA256())
+    ... ).sign_pad(key, padding.PKCS1v15(), hashes.SHA256())
     >>> # Write our CSR out to disk.
     >>> with open("path/to/csr.pem", "wb") as f:
     ...     f.write(csr.public_bytes(serialization.Encoding.PEM))
@@ -142,7 +143,7 @@ Then we generate the certificate itself:
     ...     x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
     ...     critical=False,
     ... # Sign our certificate with our private key
-    ... ).sign(key, hashes.SHA256())
+    ... ).sign_pad(key, padding.PKCS1v15(), hashes.SHA256())
     >>> # Write our certificate out to disk.
     >>> with open("path/to/certificate.pem", "wb") as f:
     ...     f.write(cert.public_bytes(serialization.Encoding.PEM))

@@ -12,11 +12,13 @@ import typing
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed448,
     ed25519,
+    padding,
     rsa,
     x448,
     x25519,
@@ -699,9 +701,43 @@ class CertificateSigningRequestBuilder:
         """
         Signs the request using the requestor's private key.
         """
+        return self.sign_pad(
+            private_key=private_key,
+            padding_type=padding.PKCS1v15(),
+            algorithm=algorithm,
+        )
+
+    def sign_pad(
+        self,
+        private_key: CertificateIssuerPrivateKeyTypes,
+        padding_type: typing.Optional[AsymmetricPadding],
+        algorithm: typing.Optional[_AllowedHashTypes],
+    ) -> CertificateSigningRequest:
+        """
+        Signs the request using the requestor's private key.
+        """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
-        return rust_x509.create_x509_csr(self, private_key, algorithm)
+
+        if not isinstance(
+            padding_type,
+            (
+                padding.PKCS1v15,
+                padding.MGF,
+                padding.MGF1,
+                padding.PSS,
+                padding.OAEP,
+            ),
+        ):
+            raise ValueError(
+                "Padding must be either PKCS1v15, " + "MGF, MGF1, PSS or OAEP"
+            )
+        return rust_x509.create_x509_csr(
+            self,
+            private_key=private_key,
+            padding=padding.PKCS1v15(),
+            hash_algorithm=algorithm,
+        )
 
 
 class CertificateBuilder:
@@ -918,6 +954,21 @@ class CertificateBuilder:
         """
         Signs the certificate using the CA's private key.
         """
+        return self.sign_pad(
+            private_key=private_key,
+            padding_type=padding.PKCS1v15(),
+            algorithm=algorithm,
+        )
+
+    def sign_pad(
+        self,
+        private_key: CertificateIssuerPrivateKeyTypes,
+        padding_type: typing.Optional[AsymmetricPadding],
+        algorithm: typing.Optional[_AllowedHashTypes],
+    ) -> Certificate:
+        """
+        Signs the certificate using the CA's private key and specific padding.
+        """
         if self._subject_name is None:
             raise ValueError("A certificate must have a subject name")
 
@@ -936,7 +987,25 @@ class CertificateBuilder:
         if self._public_key is None:
             raise ValueError("A certificate must have a public key")
 
-        return rust_x509.create_x509_certificate(self, private_key, algorithm)
+        if not isinstance(
+            padding_type,
+            (
+                padding.PKCS1v15,
+                padding.MGF,
+                padding.MGF1,
+                padding.PSS,
+                padding.OAEP,
+            ),
+        ):
+            raise ValueError(
+                "Padding must be either PKCS1v15, " + "MGF, MGF1, PSS or OAEP"
+            )
+        return rust_x509.create_x509_certificate(
+            self,
+            private_key=private_key,
+            padding=padding_type,
+            hash_algorithm=algorithm,
+        )
 
 
 class CertificateRevocationListBuilder:
@@ -1062,6 +1131,18 @@ class CertificateRevocationListBuilder:
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
     ) -> CertificateRevocationList:
+        return self.sign_pad(
+            private_key=private_key,
+            padding_type=padding.PKCS1v15(),
+            algorithm=algorithm,
+        )
+
+    def sign_pad(
+        self,
+        private_key: CertificateIssuerPrivateKeyTypes,
+        padding_type: typing.Optional[AsymmetricPadding],
+        algorithm: typing.Optional[_AllowedHashTypes],
+    ) -> CertificateRevocationList:
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
 
@@ -1071,7 +1152,26 @@ class CertificateRevocationListBuilder:
         if self._next_update is None:
             raise ValueError("A CRL must have a next update time")
 
-        return rust_x509.create_x509_crl(self, private_key, algorithm)
+        if not isinstance(
+            padding_type,
+            (
+                padding.PKCS1v15,
+                padding.MGF,
+                padding.MGF1,
+                padding.PSS,
+                padding.OAEP,
+            ),
+        ):
+            raise ValueError(
+                "Padding must be either PKCS1v15, " + "MGF, MGF1, PSS or OAEP"
+            )
+
+        return rust_x509.create_x509_crl(
+            self,
+            private_key=private_key,
+            padding=padding_type,
+            hash_algorithm=algorithm,
+        )
 
 
 class RevokedCertificateBuilder:

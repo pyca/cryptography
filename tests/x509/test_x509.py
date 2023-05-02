@@ -2022,6 +2022,107 @@ class TestRSACertificateRequest:
             x509.DNSName("cryptography.io"),
         ]
 
+    @pytest.mark.parametrize(
+        ("hashalg", "hashalg_oid"),
+        [
+            (hashes.SHA224, x509.SignatureAlgorithmOID.RSA_WITH_SHA224),
+            (hashes.SHA256, x509.SignatureAlgorithmOID.RSA_WITH_SHA256),
+            (hashes.SHA384, x509.SignatureAlgorithmOID.RSA_WITH_SHA384),
+            (hashes.SHA512, x509.SignatureAlgorithmOID.RSA_WITH_SHA512),
+            (hashes.SHA3_224, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_224),
+            (hashes.SHA3_256, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_256),
+            (hashes.SHA3_384, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_384),
+            (hashes.SHA3_512, x509.SignatureAlgorithmOID.RSA_WITH_SHA3_512),
+        ],
+    )
+    def test_build_cert_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey, hashalg, hashalg_oid, backend
+    ):
+        if not backend.signature_hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} signature not supported")
+
+        issuer_private_key = rsa_key_2048
+        subject_private_key = rsa_key_2048
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
+                        ),
+                        x509.NameAttribute(NameOID.LOCALITY_NAME, "Austin"),
+                        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io"
+                        ),
+                    ]
+                )
+            )
+            .subject_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        x509.NameAttribute(
+                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
+                        ),
+                        x509.NameAttribute(NameOID.LOCALITY_NAME, "Austin"),
+                        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io"
+                        ),
+                    ]
+                )
+            )
+            .public_key(subject_private_key.public_key())
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
+            )
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("cryptography.io")]),
+                critical=False,
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+        padding_type = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH,
+        )
+        cert = builder.sign_pad(
+            private_key=issuer_private_key,
+            padding_type=padding_type,
+            algorithm=hashalg(),
+        )
+
+        assert cert.version is x509.Version.v3
+        assert cert.signature_algorithm_oid == hashalg_oid
+        assert type(cert.signature_hash_algorithm) is hashalg
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_after == not_valid_after
+        basic_constraints = cert.extensions.get_extension_for_oid(
+            ExtensionOID.BASIC_CONSTRAINTS
+        )
+        assert isinstance(basic_constraints.value, x509.BasicConstraints)
+        assert basic_constraints.value.ca is False
+        assert basic_constraints.value.path_length is None
+        subject_alternative_name = cert.extensions.get_extension_for_oid(
+            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        )
+        assert isinstance(
+            subject_alternative_name.value, x509.SubjectAlternativeName
+        )
+        assert list(subject_alternative_name.value) == [
+            x509.DNSName("cryptography.io"),
+        ]
+
     def test_build_cert_private_type_encoding(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):

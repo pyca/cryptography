@@ -14,7 +14,8 @@ import typing
 from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
+from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.utils import _check_byteslike
 
 
@@ -66,6 +67,7 @@ class PKCS7SignatureBuilder:
             typing.Tuple[
                 x509.Certificate,
                 PKCS7PrivateKeyTypes,
+                AsymmetricPadding,
                 PKCS7HashTypes,
             ]
         ] = [],
@@ -87,6 +89,7 @@ class PKCS7SignatureBuilder:
         certificate: x509.Certificate,
         private_key: PKCS7PrivateKeyTypes,
         hash_algorithm: PKCS7HashTypes,
+        padding: AsymmetricPadding = padding.PKCS1v15(),
     ) -> PKCS7SignatureBuilder:
         if not isinstance(
             hash_algorithm,
@@ -111,7 +114,8 @@ class PKCS7SignatureBuilder:
 
         return PKCS7SignatureBuilder(
             self._data,
-            self._signers + [(certificate, private_key, hash_algorithm)],
+            self._signers
+            + [(certificate, private_key, padding, hash_algorithm)],
         )
 
     def add_certificate(

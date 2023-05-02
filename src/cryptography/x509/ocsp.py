@@ -11,6 +11,8 @@ import typing
 from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import ocsp
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.types import (
     CertificateIssuerPrivateKeyTypes,
 )
@@ -597,7 +599,42 @@ class OCSPResponseBuilder:
             raise ValueError("You must add a responder_id before signing")
 
         return ocsp.create_ocsp_response(
-            OCSPResponseStatus.SUCCESSFUL, self, private_key, algorithm
+            status=OCSPResponseStatus.SUCCESSFUL,
+            builder=self,
+            private_key=private_key,
+            padding=padding.PKCS1v15(),
+            hash_algorithm=algorithm,
+        )
+
+    def sign_pad(
+        self,
+        private_key: CertificateIssuerPrivateKeyTypes,
+        padding_type: AsymmetricPadding,
+        algorithm: typing.Optional[hashes.HashAlgorithm],
+    ) -> OCSPResponse:
+        if self._response is None:
+            raise ValueError("You must add a response before signing")
+        if self._responder_id is None:
+            raise ValueError("You must add a responder_id before signing")
+        if not isinstance(
+            padding_type,
+            (
+                padding.PKCS1v15,
+                padding.MGF,
+                padding.MGF1,
+                padding.PSS,
+                padding.OAEP,
+            ),
+        ):
+            raise ValueError(
+                "Padding must be either PKCS1v15," + " MGF, MGF1, PSS or OAEP"
+            )
+        return ocsp.create_ocsp_response(
+            status=OCSPResponseStatus.SUCCESSFUL,
+            builder=self,
+            private_key=private_key,
+            padding=padding_type,
+            hash_algorithm=algorithm,
         )
 
     @classmethod
@@ -611,7 +648,13 @@ class OCSPResponseBuilder:
         if response_status is OCSPResponseStatus.SUCCESSFUL:
             raise ValueError("response_status cannot be SUCCESSFUL")
 
-        return ocsp.create_ocsp_response(response_status, None, None, None)
+        return ocsp.create_ocsp_response(
+            status=response_status,
+            builder=None,
+            private_key=None,
+            padding=None,
+            hash_algorithm=None,
+        )
 
 
 def load_der_ocsp_request(data: bytes) -> OCSPRequest:

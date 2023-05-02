@@ -540,6 +540,7 @@ fn create_ocsp_response(
     status: &pyo3::PyAny,
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
+    padding: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
 ) -> CryptographyResult<OCSPResponse> {
     let response_status = status
@@ -676,7 +677,8 @@ fn create_ocsp_response(
 
         let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
-        let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+        let signature =
+            x509::sign::sign_data(py, private_key, padding, hash_algorithm, &tbs_bytes)?;
 
         if !responder_cert
             .call_method0(pyo3::intern!(py, "public_key"))?

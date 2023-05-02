@@ -576,6 +576,7 @@ fn create_x509_crl(
     py: pyo3::Python<'_>,
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
+    padding: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateRevocationList> {
     let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
@@ -626,7 +627,7 @@ fn create_x509_crl(
     };
 
     let tbs_bytes = asn1::write_single(&tbs_cert_list)?;
-    let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+    let signature = x509::sign::sign_data(py, private_key, padding, hash_algorithm, &tbs_bytes)?;
     let data = asn1::write_single(&crl::CertificateRevocationList {
         tbs_cert_list,
         signature_algorithm: sigalg,
