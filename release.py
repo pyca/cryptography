@@ -60,6 +60,11 @@ def bump_version(new_version: str) -> None:
         base_dir / "src/cryptography/__about__.py", "__version__", new_version
     )
     replace_version(
+        base_dir / "vectors/pyproject.toml",
+        "version",
+        new_version,
+    )
+    replace_version(
         base_dir / "vectors/cryptography_vectors/__about__.py",
         "__version__",
         new_version,

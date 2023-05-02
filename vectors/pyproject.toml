@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryptography_vectors"
+version = "41.0.0.dev1"
+authors = [
+    {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
+]
+description = "Test vectors for the cryptography package."
+license = {text = "Apache-2.0 OR BSD-3-Clause"}
+
+[project.urls]
+homepage = "https://github.com/pyca/cryptography"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.distutils.bdist_wheel]
+universal = true
