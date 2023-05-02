@@ -17,8 +17,10 @@ use cryptography_x509::extensions::{
 };
 use cryptography_x509::extensions::{Extension, Extensions};
 use cryptography_x509::{common, name, oid};
+use once_cell::sync::Lazy;
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 #[ouroboros::self_referencing]
@@ -241,21 +243,91 @@ impl Certificate {
         let sig_oids_to_hash = py
             .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
             .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
-        let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
-        match hash_alg {
-            Ok(data) => Ok(data),
-            Err(_) => Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err(format!(
-                    "Signature algorithm OID: {} not recognized",
-                    self.raw.borrow_value().signature_alg.oid
+        if self.raw.borrow_value().signature_alg.oid == oid::RSASSA_PSS_OID {
+            let parsed = parse_pss_params(self.raw.borrow_value().signature_alg.params)?;
+            hash_oid_py_hash(py, parsed.hash_algorithm.oid)
+        } else {
+            let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
+            match hash_alg {
+                Ok(data) => Ok(data),
+                Err(_) => Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err(format!(
+                        "Signature algorithm OID: {} not recognized",
+                        self.raw.borrow_value().signature_alg.oid
+                    )),
                 )),
-            )),
+            }
         }
     }
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         oid_to_py_oid(py, &self.raw.borrow_value().signature_alg.oid)
+    }
+
+    #[getter]
+    fn signature_algorithm_parameters<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
+        match self.raw.borrow_value().signature_alg.oid {
+            oid::RSASSA_PSS_OID => {
+                let pss = parse_pss_params(self.raw.borrow_value().signature_alg.params)?;
+                if pss.mask_gen_algorithm.oid != oid::MGF1_OID {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(format!(
+                            "Unsupported mask generation OID: {}",
+                            pss.mask_gen_algorithm.oid
+                        )),
+                    ));
+                }
+                let py_mask_gen_hash_alg = hash_oid_py_hash(py, pss.mask_gen_algorithm.params.oid)?;
+                let padding = py.import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.asymmetric.padding"
+                ))?;
+                let py_mgf = padding
+                    .getattr(pyo3::intern!(py, "MGF1"))?
+                    .call1((py_mask_gen_hash_alg,))?;
+                Ok(padding
+                    .getattr(pyo3::intern!(py, "PSS"))?
+                    .call1((py_mgf, pss.salt_length))?)
+            }
+            oid::RSA_WITH_SHA1_OID
+            | oid::RSA_WITH_SHA1_ALT_OID
+            | oid::RSA_WITH_SHA224_OID
+            | oid::RSA_WITH_SHA256_OID
+            | oid::RSA_WITH_SHA384_OID
+            | oid::RSA_WITH_SHA512_OID
+            | oid::RSA_WITH_SHA3_224_OID
+            | oid::RSA_WITH_SHA3_256_OID
+            | oid::RSA_WITH_SHA3_384_OID
+            | oid::RSA_WITH_SHA3_512_OID => {
+                let pkcs = py
+                    .import(pyo3::intern!(
+                        py,
+                        "cryptography.hazmat.primitives.asymmetric.padding"
+                    ))?
+                    .getattr(pyo3::intern!(py, "PKCS1v15"))?
+                    .call0()?;
+                Ok(pkcs)
+            }
+            oid::ECDSA_WITH_SHA224_OID
+            | oid::ECDSA_WITH_SHA256_OID
+            | oid::ECDSA_WITH_SHA384_OID
+            | oid::ECDSA_WITH_SHA512_OID
+            | oid::ECDSA_WITH_SHA3_224_OID
+            | oid::ECDSA_WITH_SHA3_256_OID
+            | oid::ECDSA_WITH_SHA3_384_OID
+            | oid::ECDSA_WITH_SHA3_512_OID => Ok(py
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.asymmetric.ec"
+                ))?
+                .getattr(pyo3::intern!(py, "ECDSA"))?
+                .call1((self.signature_hash_algorithm(py)?,))?),
+            _ => Ok(py.None().into_ref(py)),
+        }
     }
 
     #[getter]
@@ -842,6 +914,47 @@ pub fn parse_cert_ext<'p>(
     }
 }
 
+// This is similar to a hashmap in ocsp.rs but contains more hash algorithms
+// that aren't allowable in OCSP
+static HASH_OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+    let mut h = HashMap::new();
+    h.insert(&oid::SHA1_OID, "SHA1");
+    h.insert(&oid::SHA224_OID, "SHA224");
+    h.insert(&oid::SHA256_OID, "SHA256");
+    h.insert(&oid::SHA384_OID, "SHA384");
+    h.insert(&oid::SHA512_OID, "SHA512");
+    h.insert(&oid::SHA3_224_OID, "SHA3_224");
+    h.insert(&oid::SHA3_256_OID, "SHA3_256");
+    h.insert(&oid::SHA3_384_OID, "SHA3_384");
+    h.insert(&oid::SHA3_512_OID, "SHA3_512");
+    h
+});
+
+fn hash_oid_py_hash(
+    py: pyo3::Python<'_>,
+    oid: asn1::ObjectIdentifier,
+) -> CryptographyResult<&pyo3::PyAny> {
+    let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
+    match HASH_OIDS_TO_HASH.get(&oid) {
+        Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
+        None => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err(format!(
+                "Signature algorithm OID: {} not recognized",
+                &oid
+            )),
+        )),
+    }
+}
+
+fn parse_pss_params(params: Option<asn1::Tlv<'_>>) -> CryptographyResult<common::RsaPssParams<'_>> {
+    let params = params.ok_or_else(|| {
+        pyo3::exceptions::PyValueError::new_err(
+            "RSASSA-PSS signature algorithm must have parameters",
+        )
+    })?;
+    Ok(params.parse::<common::RsaPssParams<'_>>()?)
+}
+
 pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
@@ -943,7 +1056,6 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificates))?;
     module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_certificate))?;
-
     module.add_class::<Certificate>()?;
 
     Ok(())

@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::oid;
 use std::marker::PhantomData;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
@@ -115,6 +116,53 @@ impl<'a, T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleA
             Asn1ReadableOrWritable::Write(v, _) => U::write_data(v, w),
         }
     }
+}
+
+// RSA-PSS parameters
+pub const PSS_DEFAULT_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: oid::SHA1_OID,
+    params: None,
+};
+
+// This is defined as an AlgorithmIdentifier in RFC 4055,
+// but the mask generation algorithm **must** contain an AlgorithmIdentifier
+// in its params, so we define it this way.
+#[derive(asn1::Asn1Read, PartialEq)]
+pub struct MaskGenAlgorithm<'a> {
+    pub oid: asn1::ObjectIdentifier,
+    pub params: AlgorithmIdentifier<'a>,
+}
+
+pub const PSS_DEFAULT_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
+    oid: oid::MGF1_OID,
+    params: AlgorithmIdentifier {
+        oid: oid::SHA1_OID,
+        params: None,
+    },
+};
+
+// From RFC 4055 section 3.1:
+// RSASSA-PSS-params  ::=  SEQUENCE  {
+//     hashAlgorithm      [0] HashAlgorithm DEFAULT
+//                               sha1Identifier,
+//     maskGenAlgorithm   [1] MaskGenAlgorithm DEFAULT
+//                               mgf1SHA1Identifier,
+//     saltLength         [2] INTEGER DEFAULT 20,
+//     trailerField       [3] INTEGER DEFAULT 1  }
+#[derive(asn1::Asn1Read)]
+pub struct RsaPssParams<'a> {
+    #[explicit(0)]
+    #[default(PSS_DEFAULT_HASH_ALG)]
+    pub hash_algorithm: AlgorithmIdentifier<'a>,
+    #[explicit(1)]
+    #[default(PSS_DEFAULT_MASK_GEN_ALG)]
+    pub mask_gen_algorithm: MaskGenAlgorithm<'a>,
+    #[explicit(2)]
+    #[default(20u8)]
+    pub salt_length: u8,
+    #[explicit(3)]
+    #[default(1u8)]
+    _trailer_field: u8,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

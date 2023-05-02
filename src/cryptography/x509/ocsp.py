@@ -618,14 +618,9 @@ class OCSPResponseBuilder:
             raise ValueError("You must add a responder_id before signing")
         if not isinstance(
             padding_type,
-            (
-                padding.PKCS1v15,
-                padding.PSS
-            ),
+            (padding.PKCS1v15, padding.PSS),
         ):
-            raise ValueError(
-                "Padding must be either PKCS1v15 or PSS"
-            )
+            raise ValueError("Padding must be either PKCS1v15 or PSS")
         return ocsp.create_ocsp_response(
             status=OCSPResponseStatus.SUCCESSFUL,
             builder=self,

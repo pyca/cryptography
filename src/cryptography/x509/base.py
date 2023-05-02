@@ -236,6 +236,15 @@ class Certificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def signature_algorithm_parameters(
+        self,
+    ) -> typing.Union[None, padding.PSS, padding.PKCS1v15, ec.ECDSA]:
+        """
+        Returns the signature algorithm parameters.
+        """
+
+    @property
+    @abc.abstractmethod
     def extensions(self) -> Extensions:
         """
         Returns an Extensions object.
@@ -721,17 +730,9 @@ class CertificateSigningRequestBuilder:
 
         if not isinstance(
             padding_type,
-            (
-                padding.PKCS1v15,
-                padding.MGF,
-                padding.MGF1,
-                padding.PSS,
-                padding.OAEP,
-            ),
+            (padding.PKCS1v15, padding.PSS),
         ):
-            raise ValueError(
-                "Padding must be either PKCS1v15, " + "MGF, MGF1, PSS or OAEP"
-            )
+            raise ValueError("Padding must be either PKCS1v15 or PSS")
         return rust_x509.create_x509_csr(
             self,
             private_key=private_key,
@@ -1154,14 +1155,9 @@ class CertificateRevocationListBuilder:
 
         if not isinstance(
             padding_type,
-            (
-                padding.PKCS1v15,
-                padding.PSS
-            ),
+            (padding.PKCS1v15, padding.PSS),
         ):
-            raise ValueError(
-                "Padding must be either PKCS1v15 or PSS"
-            )
+            raise ValueError("Padding must be either PKCS1v15 or PSS")
 
         return rust_x509.create_x509_crl(
             self,

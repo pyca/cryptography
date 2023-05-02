@@ -44,6 +44,8 @@ pub const ACCEPTABLE_RESPONSES_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 4);
 
 // Signing methods
+pub const RSA_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 5);
+pub const RSA_WITH_SHA1_ALT_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 14, 3, 2, 29);
 pub const ECDSA_WITH_SHA224_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 4, 3, 1);
 pub const ECDSA_WITH_SHA256_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 4, 3, 2);
 pub const ECDSA_WITH_SHA384_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 4, 3, 3);
@@ -84,3 +86,14 @@ pub const SHA224_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3,
 pub const SHA256_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 2, 1);
 pub const SHA384_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 2, 2);
 pub const SHA512_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 2, 3);
+pub const SHA3_224_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 37476, 3, 2, 1, 99, 7, 224);
+pub const SHA3_256_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 37476, 3, 2, 1, 99, 7, 256);
+pub const SHA3_384_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 37476, 3, 2, 1, 99, 7, 384);
+pub const SHA3_512_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 3, 6, 1, 4, 1, 37476, 3, 2, 1, 99, 7, 512);
+
+pub const MGF1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 8);
+pub const RSASSA_PSS_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 10);
