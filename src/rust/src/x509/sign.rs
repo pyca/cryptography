@@ -271,44 +271,40 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
-        (KeyType::Rsa, PaddingType::Pss, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
-            params: Some(*NULL_TLV),
-        }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
+            /* toDo: params should contain the tlv structure for pss
+            RSASSA-PSS-params ::= SEQUENCE {
+                hashAlgorithm      [0] HashAlgorithm      DEFAULT sha1,
+                maskGenAlgorithm   [1] MaskGenAlgorithm   DEFAULT mgf1SHA1,
+                saltLength         [2] INTEGER            DEFAULT 20,
+                trailerField       [3] TrailerField       DEFAULT trailerFieldBC
+            }
+            */
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
+            /* toDo: params should contain the tlv structure for pss
+            RSASSA-PSS-params ::= SEQUENCE {
+                hashAlgorithm      [0] HashAlgorithm      DEFAULT sha1,
+                maskGenAlgorithm   [1] MaskGenAlgorithm   DEFAULT mgf1SHA1,
+                saltLength         [2] INTEGER            DEFAULT 20,
+                trailerField       [3] TrailerField       DEFAULT trailerFieldBC
+            }
+            */
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
-            params: Some(*NULL_TLV),
-        }),
-        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
-            params: Some(*NULL_TLV),
-        }),
-        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
-            params: Some(*NULL_TLV),
-        }),
-        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
-            params: Some(*NULL_TLV),
-        }),
-        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSASSA_PSS_OID).clone(),
-            // toDo: params should contain the tlv structure for pss
+            /* toDo: params should contain the tlv structure for pss
+            RSASSA-PSS-params ::= SEQUENCE {
+                hashAlgorithm      [0] HashAlgorithm      DEFAULT sha1,
+                maskGenAlgorithm   [1] MaskGenAlgorithm   DEFAULT mgf1SHA1,
+                saltLength         [2] INTEGER            DEFAULT 20,
+                trailerField       [3] TrailerField       DEFAULT trailerFieldBC
+            }
+            */
             params: Some(*NULL_TLV),
         }),
         (
@@ -317,6 +313,13 @@ pub(crate) fn compute_signature_algorithm<'p>(
             HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512,
         ) => Err(exceptions::UnsupportedAlgorithm::new_err(
             "SHA3 hashes are not supported with DSA keys",
+        )),
+        (
+            KeyType::Rsa,
+            PaddingType::Pss,
+            HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512,
+        ) => Err(exceptions::UnsupportedAlgorithm::new_err(
+            "SHA3 hashes are not supported with PSS padding",
         )),
         (_, _, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
