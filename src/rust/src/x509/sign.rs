@@ -317,8 +317,11 @@ pub(crate) fn compute_signature_algorithm<'p>(
         (
             KeyType::Rsa,
             PaddingType::Pss,
-            HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512 |
-            HashType::Sha224,
+            HashType::Sha3_224
+            | HashType::Sha3_256
+            | HashType::Sha3_384
+            | HashType::Sha3_512
+            | HashType::Sha224,
         ) => Err(exceptions::UnsupportedAlgorithm::new_err(
             "SHA224/SHA3 hashes are not supported with PSS padding",
         )),

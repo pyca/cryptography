@@ -2087,14 +2087,9 @@ class TestRSACertificateRequest:
     @pytest.mark.parametrize(
         ("hashalg", "hashalg_oid"),
         [
-            (hashes.SHA224, x509.SignatureAlgorithmOID.RSASSA_PSS),
             (hashes.SHA256, x509.SignatureAlgorithmOID.RSASSA_PSS),
             (hashes.SHA384, x509.SignatureAlgorithmOID.RSASSA_PSS),
             (hashes.SHA512, x509.SignatureAlgorithmOID.RSASSA_PSS),
-            (hashes.SHA3_224, x509.SignatureAlgorithmOID.RSASSA_PSS),
-            (hashes.SHA3_256, x509.SignatureAlgorithmOID.RSASSA_PSS),
-            (hashes.SHA3_384, x509.SignatureAlgorithmOID.RSASSA_PSS),
-            (hashes.SHA3_512, x509.SignatureAlgorithmOID.RSASSA_PSS),
         ],
     )
     def test_build_cert_pss(
