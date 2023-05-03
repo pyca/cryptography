@@ -41,7 +41,7 @@ enum HashType {
 enum PaddingType {
     None,
     PKCS1v15,
-    PSS,
+    Pss,
 }
 
 fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
@@ -143,22 +143,9 @@ fn identify_padding_type(
         return Ok(PaddingType::None);
     }
 
-    let padding_type: &pyo3::types::PyType = py
-        .import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives._asymmetric"
-        ))?
-        .getattr(pyo3::intern!(py, "AsymmetricPadding"))?
-        .extract()?;
-    if !padding_type.is_instance(padding_type)? {
-        return Err(pyo3::exceptions::PyTypeError::new_err(
-            "Padding must be a registered padding algorithm.",
-        ));
-    }
-
     match padding_opt.getattr(pyo3::intern!(py, "name"))?.extract()? {
         "EMSA-PKCS1-v1_5" => Ok(PaddingType::PKCS1v15),
-        "EMSA-PSS" => Ok(PaddingType::PSS),
+        "EMSA-PSS" => Ok(PaddingType::Pss),
         name => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
             "Padding algorithm {:?} not supported for signatures",
             name
@@ -284,35 +271,35 @@ pub(crate) fn compute_signature_algorithm<'p>(
             oid: (oid::DSA_WITH_SHA512_OID).clone(),
             params: None,
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
-        (KeyType::Rsa, PaddingType::PSS, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
+        (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
             params: Some(*NULL_TLV),
         }),
