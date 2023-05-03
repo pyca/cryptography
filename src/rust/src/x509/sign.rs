@@ -156,12 +156,12 @@ fn identify_padding_type(
 pub(crate) fn compute_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
-    padding_type: &'p pyo3::PyAny,
+    padding: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
     let key_type = identify_key_type(py, private_key)?;
     let hash_type = identify_hash_type(py, hash_algorithm)?;
-    let padding_type = identify_padding_type(py, padding_type)?;
+    let padding_type = identify_padding_type(py, padding)?;
     match (key_type, padding_type, hash_type) {
         (KeyType::Ed25519, _, HashType::None) => Ok(common::AlgorithmIdentifier {
             oid: (oid::ED25519_OID).clone(),
@@ -273,39 +273,47 @@ pub(crate) fn compute_signature_algorithm<'p>(
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (KeyType::Rsa, PaddingType::Pss, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: (oid::RSASSA_PSS_OID).clone(),
+            // toDo: params should contain the tlv structure for pss
             params: Some(*NULL_TLV),
         }),
         (
             KeyType::Dsa,
-            PaddingType::None,
+            _,
             HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512,
         ) => Err(exceptions::UnsupportedAlgorithm::new_err(
             "SHA3 hashes are not supported with DSA keys",
@@ -313,7 +321,6 @@ pub(crate) fn compute_signature_algorithm<'p>(
         (_, _, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
         )),
-        _ => todo!(),
     }
 }
 

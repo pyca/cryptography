@@ -990,17 +990,9 @@ class CertificateBuilder:
 
         if not isinstance(
             padding_type,
-            (
-                padding.PKCS1v15,
-                padding.MGF,
-                padding.MGF1,
-                padding.PSS,
-                padding.OAEP,
-            ),
+            (padding.PKCS1v15, padding.PSS),
         ):
-            raise ValueError(
-                "Padding must be either PKCS1v15, " + "MGF, MGF1, PSS or OAEP"
-            )
+            raise ValueError("Padding must be either PKCS1v15 or PSS")
         return rust_x509.create_x509_certificate(
             self,
             private_key=private_key,
