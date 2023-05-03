@@ -317,9 +317,10 @@ pub(crate) fn compute_signature_algorithm<'p>(
         (
             KeyType::Rsa,
             PaddingType::Pss,
-            HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512,
+            HashType::Sha3_224 | HashType::Sha3_256 | HashType::Sha3_384 | HashType::Sha3_512 |
+            HashType::Sha224,
         ) => Err(exceptions::UnsupportedAlgorithm::new_err(
-            "SHA3 hashes are not supported with PSS padding",
+            "SHA224/SHA3 hashes are not supported with PSS padding",
         )),
         (_, _, HashType::None) => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
