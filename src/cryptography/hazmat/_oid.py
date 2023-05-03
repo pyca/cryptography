@@ -66,6 +66,7 @@ class NameOID:
     SURNAME = ObjectIdentifier("2.5.4.4")
     GIVEN_NAME = ObjectIdentifier("2.5.4.42")
     TITLE = ObjectIdentifier("2.5.4.12")
+    INITIALS = ObjectIdentifier("2.5.4.43")
     GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
     X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
     DN_QUALIFIER = ObjectIdentifier("2.5.4.46")

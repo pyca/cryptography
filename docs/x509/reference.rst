@@ -3034,6 +3034,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.12"``.
 
+    .. attribute:: INITIALS
+
+        .. versionadded:: 41.0.0
+
+        Corresponds to the dotted string ``"2.5.4.43"``.
+
     .. attribute:: GENERATION_QUALIFIER
 
         Corresponds to the dotted string ``"2.5.4.44"``.
