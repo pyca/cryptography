@@ -168,7 +168,7 @@ impl OCSPResponse {
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let resp = self.requires_successful_response()?;
-        oid_to_py_oid(py, &resp.signature_algorithm.oid)
+        oid_to_py_oid(py, resp.signature_algorithm.oid())
     }
 
     #[getter]
@@ -185,7 +185,9 @@ impl OCSPResponse {
             Err(_) => {
                 let exc_messsage = format!(
                     "Signature algorithm OID: {} not recognized",
-                    self.requires_successful_response()?.signature_algorithm.oid
+                    self.requires_successful_response()?
+                        .signature_algorithm
+                        .oid()
                 );
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(exc_messsage),
@@ -477,12 +479,12 @@ fn singleresp_py_hash_algorithm<'p>(
     py: pyo3::Python<'p>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-    match ocsp::OIDS_TO_HASH.get(&resp.cert_id.hash_algorithm.oid) {
+    match ocsp::OIDS_TO_HASH.get(&resp.cert_id.hash_algorithm.oid()) {
         Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
-                resp.cert_id.hash_algorithm.oid
+                resp.cert_id.hash_algorithm.oid()
             )),
         )),
     }

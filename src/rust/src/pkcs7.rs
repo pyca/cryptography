@@ -8,7 +8,6 @@ use crate::error::CryptographyResult;
 use crate::x509;
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::{common, oid, pkcs7};
-
 use once_cell::sync::Lazy;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -181,11 +180,14 @@ fn sign_and_serialize<'p>(
         };
 
         let digest_alg = common::AlgorithmIdentifier {
-            oid: x509::ocsp::HASH_NAME_TO_OIDS[py_hash_alg
-                .getattr(pyo3::intern!(py, "name"))?
-                .extract::<&str>()?]
-            .clone(),
-            params: Some(*x509::sign::NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                x509::ocsp::HASH_NAME_TO_OIDS[py_hash_alg
+                    .getattr(pyo3::intern!(py, "name"))?
+                    .extract::<&str>()?]
+                .clone(),
+                Some(*x509::sign::NULL_TLV),
+            ),
         };
         // Technically O(n^2), but no one will have that many signers.
         if !digest_algs.contains(&digest_alg) {
@@ -252,7 +254,7 @@ fn sign_and_serialize<'p>(
     if encoding.is(encoding_class.getattr(pyo3::intern!(py, "SMIME"))?) {
         let mic_algs = digest_algs
             .iter()
-            .map(|d| OIDS_TO_MIC_NAME[&d.oid])
+            .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
             .collect::<Vec<_>>()
             .join(",");
         let smime_encode = py

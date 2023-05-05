@@ -247,7 +247,7 @@ impl Certificate {
             Err(_) => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
                     "Signature algorithm OID: {} not recognized",
-                    self.raw.borrow_value().signature_alg.oid
+                    self.raw.borrow_value().signature_alg.oid(),
                 )),
             )),
         }
@@ -255,7 +255,7 @@ impl Certificate {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        oid_to_py_oid(py, &self.raw.borrow_value().signature_alg.oid)
+        oid_to_py_oid(py, self.raw.borrow_value().signature_alg.oid())
     }
 
     #[getter]
@@ -311,7 +311,7 @@ impl Certificate {
         sign::verify_signature_with_oid(
             py,
             issuer.public_key(py)?,
-            &self.raw.borrow_value().signature_alg.oid,
+            self.raw.borrow_value().signature_alg.oid(),
             self.raw.borrow_value().signature.as_bytes(),
             &asn1::write_single(&self.raw.borrow_value().tbs_cert)?,
         )

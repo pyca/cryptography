@@ -138,98 +138,134 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
     match (key_type, hash_type) {
         (KeyType::Ed25519, HashType::None) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ED25519_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Ed25519,
         }),
         (KeyType::Ed448, HashType::None) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ED448_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Ed448,
         }),
         (KeyType::Ed25519 | KeyType::Ed448, _) => Err(pyo3::exceptions::PyValueError::new_err(
             "Algorithm must be None when signing via ed25519 or ed448",
         )),
 
         (KeyType::Ec, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA224_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA224_OID).clone(), None),
         }),
         (KeyType::Ec, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA256_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA256_OID).clone(), None),
         }),
         (KeyType::Ec, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA384_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA384_OID).clone(), None),
         }),
         (KeyType::Ec, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA512_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA512_OID).clone(), None),
         }),
         (KeyType::Ec, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA3_224_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::ECDSA_WITH_SHA3_224_OID).clone(),
+                None,
+            ),
         }),
         (KeyType::Ec, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA3_256_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::ECDSA_WITH_SHA3_256_OID).clone(),
+                None,
+            ),
         }),
         (KeyType::Ec, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA3_384_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::ECDSA_WITH_SHA3_384_OID).clone(),
+                None,
+            ),
         }),
         (KeyType::Ec, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::ECDSA_WITH_SHA3_512_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::ECDSA_WITH_SHA3_512_OID).clone(),
+                None,
+            ),
         }),
 
         (KeyType::Rsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA224_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA224_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA256_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA256_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA384_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA384_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA512_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA512_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA3_224_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA3_224_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA3_256_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA3_256_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA3_384_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA3_384_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
         (KeyType::Rsa, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::RSA_WITH_SHA3_512_OID).clone(),
-            params: Some(*NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                (oid::RSA_WITH_SHA3_512_OID).clone(),
+                Some(*NULL_TLV),
+            ),
         }),
 
         (KeyType::Dsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::DSA_WITH_SHA224_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA224_OID).clone(), None),
         }),
         (KeyType::Dsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::DSA_WITH_SHA256_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA256_OID).clone(), None),
         }),
         (KeyType::Dsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::DSA_WITH_SHA384_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA384_OID).clone(), None),
         }),
         (KeyType::Dsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
-            oid: (oid::DSA_WITH_SHA512_OID).clone(),
-            params: None,
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA512_OID).clone(), None),
         }),
         (
             KeyType::Dsa,

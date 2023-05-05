@@ -2,12 +2,32 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::oid;
+use asn1::Asn1DefinedByWritable;
 use std::marker::PhantomData;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub struct AlgorithmIdentifier<'a> {
-    pub oid: asn1::ObjectIdentifier,
-    pub params: Option<asn1::Tlv<'a>>,
+    pub oid: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    #[defined_by(oid)]
+    pub params: AlgorithmParameters<'a>,
+}
+
+impl AlgorithmIdentifier<'_> {
+    pub fn oid(&self) -> &asn1::ObjectIdentifier {
+        self.params.item()
+    }
+}
+
+#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Hash, Clone)]
+pub enum AlgorithmParameters<'a> {
+    #[defined_by(oid::ED25519_OID)]
+    Ed25519,
+    #[defined_by(oid::ED448_OID)]
+    Ed448,
+
+    #[default]
+    Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
