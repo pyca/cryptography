@@ -52,11 +52,14 @@ pub(crate) fn certid_new<'p>(
 
     Ok(CertID {
         hash_algorithm: common::AlgorithmIdentifier {
-            oid: HASH_NAME_TO_OIDS[hash_algorithm
-                .getattr(pyo3::intern!(py, "name"))?
-                .extract::<&str>()?]
-            .clone(),
-            params: Some(*x509::sign::NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                HASH_NAME_TO_OIDS[hash_algorithm
+                    .getattr(pyo3::intern!(py, "name"))?
+                    .extract::<&str>()?]
+                .clone(),
+                Some(*x509::sign::NULL_TLV),
+            ),
         },
         issuer_name_hash,
         issuer_key_hash,
@@ -73,11 +76,14 @@ pub(crate) fn certid_new_from_hash<'p>(
 ) -> CryptographyResult<CertID<'p>> {
     Ok(CertID {
         hash_algorithm: common::AlgorithmIdentifier {
-            oid: HASH_NAME_TO_OIDS[hash_algorithm
-                .getattr(pyo3::intern!(py, "name"))?
-                .extract::<&str>()?]
-            .clone(),
-            params: Some(*x509::sign::NULL_TLV),
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Other(
+                HASH_NAME_TO_OIDS[hash_algorithm
+                    .getattr(pyo3::intern!(py, "name"))?
+                    .extract::<&str>()?]
+                .clone(),
+                Some(*x509::sign::NULL_TLV),
+            ),
         },
         issuer_name_hash,
         issuer_key_hash,

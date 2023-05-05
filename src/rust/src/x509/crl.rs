@@ -184,7 +184,7 @@ impl CertificateRevocationList {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        oid_to_py_oid(py, &self.owned.borrow_value().signature_algorithm.oid)
+        oid_to_py_oid(py, self.owned.borrow_value().signature_algorithm.oid())
     }
 
     #[getter]
@@ -201,7 +201,7 @@ impl CertificateRevocationList {
             Ok(v) => Ok(v),
             Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
-                self.owned.borrow_value().signature_algorithm.oid
+                self.owned.borrow_value().signature_algorithm.oid(),
             ))),
         }
     }
@@ -394,7 +394,7 @@ impl CertificateRevocationList {
         Ok(sign::verify_signature_with_oid(
             py,
             public_key,
-            &slf.owned.borrow_value().signature_algorithm.oid,
+            slf.owned.borrow_value().signature_algorithm.oid(),
             slf.owned.borrow_value().signature_value.as_bytes(),
             &asn1::write_single(&slf.owned.borrow_value().tbs_cert_list)?,
         )

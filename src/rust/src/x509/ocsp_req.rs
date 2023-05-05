@@ -86,12 +86,12 @@ impl OCSPRequest {
         let cert_id = self.cert_id();
 
         let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-        match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid) {
+        match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid()) {
             Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
             None => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
                     "Signature algorithm OID: {} not recognized",
-                    cert_id.hash_algorithm.oid
+                    cert_id.hash_algorithm.oid()
                 )),
             )),
         }
