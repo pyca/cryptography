@@ -196,59 +196,35 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Rsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA224_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha224(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA256_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha256(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA384_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha384(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA512_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha512(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA3_224_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha3_224(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA3_256_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha3_256(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA3_384_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha3_384(Some(())),
         }),
         (KeyType::Rsa, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::RSA_WITH_SHA3_512_OID).clone(),
-                Some(*NULL_TLV),
-            ),
+            params: common::AlgorithmParameters::RsaWithSha3_512(Some(())),
         }),
 
         (KeyType::Dsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
