@@ -179,16 +179,10 @@ fn sign_and_serialize<'p>(
             )
         };
 
-        let digest_alg = common::AlgorithmIdentifier {
-            oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                x509::ocsp::HASH_NAME_TO_OIDS[py_hash_alg
-                    .getattr(pyo3::intern!(py, "name"))?
-                    .extract::<&str>()?]
-                .clone(),
-                Some(*x509::sign::NULL_TLV),
-            ),
-        };
+        let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[py_hash_alg
+            .getattr(pyo3::intern!(py, "name"))?
+            .extract::<&str>()?]
+        .clone();
         // Technically O(n^2), but no one will have that many signers.
         if !digest_algs.contains(&digest_alg) {
             digest_algs.push(digest_alg.clone());

@@ -19,16 +19,47 @@ pub(crate) static OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = L
     h.insert(&oid::SHA512_OID, "SHA512");
     h
 });
-pub(crate) static HASH_NAME_TO_OIDS: Lazy<HashMap<&str, &asn1::ObjectIdentifier>> =
-    Lazy::new(|| {
-        let mut h = HashMap::new();
-        h.insert("sha1", &oid::SHA1_OID);
-        h.insert("sha224", &oid::SHA224_OID);
-        h.insert("sha256", &oid::SHA256_OID);
-        h.insert("sha384", &oid::SHA384_OID);
-        h.insert("sha512", &oid::SHA512_OID);
-        h
-    });
+pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: Lazy<
+    HashMap<&str, common::AlgorithmIdentifier<'_>>,
+> = Lazy::new(|| {
+    let mut h = HashMap::new();
+    h.insert(
+        "sha1",
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Sha1(()),
+        },
+    );
+    h.insert(
+        "sha224",
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Sha224(()),
+        },
+    );
+    h.insert(
+        "sha256",
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Sha256(()),
+        },
+    );
+    h.insert(
+        "sha384",
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Sha384(()),
+        },
+    );
+    h.insert(
+        "sha512",
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Sha512(()),
+        },
+    );
+    h
+});
 
 pub(crate) fn certid_new<'p>(
     py: pyo3::Python<'p>,
@@ -51,16 +82,10 @@ pub(crate) fn certid_new<'p>(
     )?;
 
     Ok(CertID {
-        hash_algorithm: common::AlgorithmIdentifier {
-            oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                HASH_NAME_TO_OIDS[hash_algorithm
-                    .getattr(pyo3::intern!(py, "name"))?
-                    .extract::<&str>()?]
-                .clone(),
-                Some(*x509::sign::NULL_TLV),
-            ),
-        },
+        hash_algorithm: x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
+            .getattr(pyo3::intern!(py, "name"))?
+            .extract::<&str>()?]
+        .clone(),
         issuer_name_hash,
         issuer_key_hash,
         serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
@@ -75,16 +100,10 @@ pub(crate) fn certid_new_from_hash<'p>(
     hash_algorithm: &'p pyo3::PyAny,
 ) -> CryptographyResult<CertID<'p>> {
     Ok(CertID {
-        hash_algorithm: common::AlgorithmIdentifier {
-            oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                HASH_NAME_TO_OIDS[hash_algorithm
-                    .getattr(pyo3::intern!(py, "name"))?
-                    .extract::<&str>()?]
-                .clone(),
-                Some(*x509::sign::NULL_TLV),
-            ),
-        },
+        hash_algorithm: x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
+            .getattr(pyo3::intern!(py, "name"))?
+            .extract::<&str>()?]
+        .clone(),
         issuer_name_hash,
         issuer_key_hash,
         serial_number,

@@ -21,6 +21,17 @@ impl AlgorithmIdentifier<'_> {
 
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Hash, Clone)]
 pub enum AlgorithmParameters<'a> {
+    #[defined_by(oid::SHA1_OID)]
+    Sha1(asn1::Null),
+    #[defined_by(oid::SHA224_OID)]
+    Sha224(asn1::Null),
+    #[defined_by(oid::SHA256_OID)]
+    Sha256(asn1::Null),
+    #[defined_by(oid::SHA384_OID)]
+    Sha384(asn1::Null),
+    #[defined_by(oid::SHA512_OID)]
+    Sha512(asn1::Null),
+
     #[defined_by(oid::ED25519_OID)]
     Ed25519,
     #[defined_by(oid::ED448_OID)]
