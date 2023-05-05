@@ -26,6 +26,24 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    #[defined_by(oid::RSA_WITH_SHA224_OID)]
+    RsaWithSha224(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA256_OID)]
+    RsaWithSha256(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA384_OID)]
+    RsaWithSha384(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA512_OID)]
+    RsaWithSha512(Option<asn1::Null>),
+
+    #[defined_by(oid::RSA_WITH_SHA3_224_OID)]
+    RsaWithSha3_224(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA3_256_OID)]
+    RsaWithSha3_256(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA3_384_OID)]
+    RsaWithSha3_384(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA3_512_OID)]
+    RsaWithSha3_512(Option<asn1::Null>),
+
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }
