@@ -6,7 +6,7 @@ use crate::oid;
 use asn1::Asn1DefinedByWritable;
 use std::marker::PhantomData;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone, Eq)]
 pub struct AlgorithmIdentifier<'a> {
     pub oid: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(oid)]
@@ -55,6 +55,11 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ECDSA_WITH_SHA3_512_OID)]
     EcDsaWithSha3_512,
 
+    #[defined_by(oid::RSA_WITH_SHA1_OID)]
+    RsaWithSha1(Option<asn1::Null>),
+    #[defined_by(oid::RSA_WITH_SHA1_ALT_OID)]
+    RsaWithSha1Alt(Option<asn1::Null>),
+
     #[defined_by(oid::RSA_WITH_SHA224_OID)]
     RsaWithSha224(Option<asn1::Null>),
     #[defined_by(oid::RSA_WITH_SHA256_OID)]
@@ -72,6 +77,12 @@ pub enum AlgorithmParameters<'a> {
     RsaWithSha3_384(Option<asn1::Null>),
     #[defined_by(oid::RSA_WITH_SHA3_512_OID)]
     RsaWithSha3_512(Option<asn1::Null>),
+
+    // RsaPssParameters must be present in Certificate::tbs_cert::signature_alg::params
+    // and Certificate::signature_alg::params, but Certificate::tbs_cert::spki::algorithm::oid
+    // also uses RSASSA_PSS_OID and the params field is omitted since it has no meaning there.
+    #[defined_by(oid::RSASSA_PSS_OID)]
+    RsaPss(Option<Box<RsaPssParameters<'a>>>),
 
     #[defined_by(oid::DSA_WITH_SHA224_OID)]
     DsaWithSha224,
@@ -204,6 +215,50 @@ pub struct DHParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
     pub q: Option<asn1::BigUint<'a>>,
+}
+// RSA-PSS ASN.1 default hash algorithm
+pub const PSS_SHA1_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Sha1(()),
+};
+
+// This is defined as an AlgorithmIdentifier in RFC 4055,
+// but the mask generation algorithm **must** contain an AlgorithmIdentifier
+// in its params, so we define it this way.
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq)]
+pub struct MaskGenAlgorithm<'a> {
+    pub oid: asn1::ObjectIdentifier,
+    pub params: AlgorithmIdentifier<'a>,
+}
+
+// RSA-PSS ASN.1 default mask gen algorithm
+pub const PSS_SHA1_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
+    oid: oid::MGF1_OID,
+    params: PSS_SHA1_HASH_ALG,
+};
+
+// From RFC 4055 section 3.1:
+// RSASSA-PSS-params  ::=  SEQUENCE  {
+//     hashAlgorithm      [0] HashAlgorithm DEFAULT
+//                               sha1Identifier,
+//     maskGenAlgorithm   [1] MaskGenAlgorithm DEFAULT
+//                               mgf1SHA1Identifier,
+//     saltLength         [2] INTEGER DEFAULT 20,
+//     trailerField       [3] INTEGER DEFAULT 1  }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq)]
+pub struct RsaPssParameters<'a> {
+    #[explicit(0)]
+    #[default(PSS_SHA1_HASH_ALG)]
+    pub hash_algorithm: AlgorithmIdentifier<'a>,
+    #[explicit(1)]
+    #[default(PSS_SHA1_MASK_GEN_ALG)]
+    pub mask_gen_algorithm: MaskGenAlgorithm<'a>,
+    #[explicit(2)]
+    #[default(20u16)]
+    pub salt_length: u16,
+    #[explicit(3)]
+    #[default(1u8)]
+    _trailer_field: u8,
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the

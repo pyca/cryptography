@@ -729,15 +729,15 @@ class TestRevokedCertificate:
         assert crl[2].serial_number == 3
 
 
+@pytest.mark.supported(
+    only_if=lambda backend: (
+        not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+    ),
+    skip_message="Does not support RSA PSS loading",
+)
 class TestRSAPSSCertificate:
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
-        ),
-        skip_message="Does not support RSA PSS loading",
-    )
     def test_load_cert_pub_key(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "rsa_pss_cert.pem"),
@@ -751,7 +751,47 @@ class TestRSAPSSCertificate:
         assert isinstance(expected_pub_key, rsa.RSAPublicKey)
         pub_key = cert.public_key()
         assert isinstance(pub_key, rsa.RSAPublicKey)
-        assert pub_key.public_numbers() == expected_pub_key.public_numbers()
+        assert pub_key == expected_pub_key
+        pss = cert.signature_algorithm_parameters
+        assert isinstance(pss, padding.PSS)
+        assert isinstance(pss._mgf, padding.MGF1)
+        assert isinstance(pss._mgf._algorithm, hashes.SHA256)
+        assert pss._salt_length == 222
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+        pub_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            pss,
+            cert.signature_hash_algorithm,
+        )
+
+    def test_invalid_mgf(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss_cert_invalid_mgf.der"),
+            x509.load_der_x509_certificate,
+        )
+        with pytest.raises(ValueError):
+            cert.signature_algorithm_parameters
+
+    def test_unsupported_mgf_hash(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "rsa_pss_cert_unsupported_mgf_hash.der"
+            ),
+            x509.load_der_x509_certificate,
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            cert.signature_algorithm_parameters
+
+    def test_no_sig_params(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "rsa_pss_cert_no_sig_params.der"),
+            x509.load_der_x509_certificate,
+        )
+        with pytest.raises(ValueError):
+            cert.signature_algorithm_parameters
+        with pytest.raises(ValueError):
+            cert.signature_hash_algorithm
 
 
 class TestRSACertificate:
@@ -767,6 +807,28 @@ class TestRSACertificate:
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         assert (
             cert.signature_algorithm_oid == SignatureAlgorithmOID.RSA_WITH_SHA1
+        )
+        assert isinstance(
+            cert.signature_algorithm_parameters, padding.PKCS1v15
+        )
+
+    def test_check_pkcs1_signature_algorithm_parameters(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        assert isinstance(cert, x509.Certificate)
+        assert isinstance(
+            cert.signature_algorithm_parameters, padding.PKCS1v15
+        )
+        pk = cert.public_key()
+        assert isinstance(pk, rsa.RSAPublicKey)
+        assert cert.signature_hash_algorithm is not None
+        pk.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            cert.signature_algorithm_parameters,
+            cert.signature_hash_algorithm,
         )
 
     def test_load_legacy_pem_header(self, backend):
@@ -4599,6 +4661,7 @@ class TestDSACertificate:
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
         public_key = cert.public_key()
         assert isinstance(public_key, dsa.DSAPublicKey)
+        assert cert.signature_algorithm_parameters is None
         num = public_key.public_numbers()
         assert num.y == int(
             "4c08bfe5f2d76649c80acf7d431f6ae2124b217abc8c9f6aca776ddfa94"
@@ -4847,6 +4910,15 @@ class TestECDSACertificate:
             16,
         )
         assert isinstance(num.curve, ec.SECP384R1)
+        assert isinstance(cert.signature_algorithm_parameters, ec.ECDSA)
+        assert isinstance(
+            cert.signature_algorithm_parameters.algorithm, hashes.SHA384
+        )
+        public_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            cert.signature_algorithm_parameters,
+        )
 
     def test_load_bitstring_dn(self, backend):
         cert = _load_cert(
@@ -5590,6 +5662,7 @@ class TestEd25519Certificate:
         assert cert.serial_number == 9579446940964433301
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
+        assert cert.signature_algorithm_parameters is None
 
     def test_deepcopy(self, backend):
         cert = _load_cert(
@@ -5635,6 +5708,7 @@ class TestEd448Certificate:
         assert cert.serial_number == 448
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
+        assert cert.signature_algorithm_parameters is None
 
     def test_verify_directly_issued_by_ed448(self, backend):
         issuer_private_key = ed448.Ed448PrivateKey.generate()

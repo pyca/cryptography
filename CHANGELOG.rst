@@ -20,6 +20,9 @@ Changelog
 * Implemented support for equality checks on all asymmetric public key types.
 * Added support for ``aes256-gcm@openssh.com`` encrypted keys in
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`.
+* Added support for obtaining X.509 certificate signature algorithm parameters
+  (including PSS) via
+  :meth:`~cryptography.x509.Certificate.signature_algorithm_parameters`.
 
 .. _v40-0-2:
 
