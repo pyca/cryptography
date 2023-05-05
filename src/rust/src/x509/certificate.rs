@@ -8,7 +8,7 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
-use cryptography_x509::common::Asn1ReadableOrWritable;
+use cryptography_x509::common::{Asn1ReadableOrWritable, UnvalidatedVisibleString};
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
     DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
@@ -412,6 +412,17 @@ fn parse_display_text(
         DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
         DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
         DisplayText::VisibleString(o) => {
+            if !UnvalidatedVisibleString::verify(o.as_str()) {
+                let cryptography_warning = py
+                    .import(pyo3::intern!(py, "cryptography.utils"))?
+                    .getattr(pyo3::intern!(py, "DeprecatedIn41"))?;
+                pyo3::PyErr::warn(
+                    py,
+                    cryptography_warning,
+                    "Invalid ASN.1 (UTF-8 characters in a VisibleString). A future version of cryptography will error on this input.",
+                    1,
+                )?;
+            }
             Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py))
         }
         DisplayText::BmpString(o) => {

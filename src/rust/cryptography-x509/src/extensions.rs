@@ -87,7 +87,7 @@ pub struct NoticeReference<'a> {
 pub enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
-    VisibleString(asn1::VisibleString<'a>),
+    VisibleString(common::UnvalidatedVisibleString<'a>),
     BmpString(asn1::BMPString<'a>),
 }
 

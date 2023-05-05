@@ -206,10 +206,55 @@ pub struct DHParams<'a> {
     pub q: Option<asn1::BigUint<'a>>,
 }
 
+/// A VisibleString ASN.1 element whose contents is not validated as meeting the
+/// requirements (visible characters of IA5), and instead is only known to be
+/// valid UTF-8.
+pub struct UnvalidatedVisibleString<'a>(pub &'a str);
+
+impl<'a> UnvalidatedVisibleString<'a> {
+    pub fn as_str(&self) -> &'a str {
+        self.0
+    }
+
+    // Ported from rust-asn1 VisibleString
+    pub fn verify(s: &str) -> bool {
+        for b in s.chars() {
+            if !(b.is_ascii_graphic() || b == ' ') {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedVisibleString<'a> {
+    const TAG: asn1::Tag = asn1::VisibleString::TAG;
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        Ok(UnvalidatedVisibleString(
+            std::str::from_utf8(data)
+                .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?,
+        ))
+    }
+}
+
+impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
+    const TAG: asn1::Tag = asn1::VisibleString::TAG;
+    fn write_data(&self, _: &mut asn1::WriteBuf) -> asn1::WriteResult {
+        unimplemented!();
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, RawTlv};
+    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString};
     use asn1::Asn1Readable;
+
+    #[test]
+    #[should_panic]
+    fn test_unvalidated_visible_string_write() {
+        let v = UnvalidatedVisibleString("foo");
+        asn1::write_single(&v).unwrap();
+    }
 
     #[test]
     #[should_panic]

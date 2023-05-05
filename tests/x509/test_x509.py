@@ -1250,6 +1250,25 @@ class TestRSACertificate:
 
         assert exc.value.parsed_version == 7
 
+    def test_invalid_visiblestring_in_explicit_text(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509",
+                "belgian-eid-invalid-visiblestring.pem",
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.warns(utils.DeprecatedIn41):
+            cp = cert.extensions.get_extension_for_class(
+                x509.CertificatePolicies
+            ).value
+        assert isinstance(cp, x509.CertificatePolicies)
+        assert cp[0].policy_qualifiers[1].explicit_text == (
+            "Gebruik onderworpen aan aansprakelijkheidsbeperkingen, zie CPS "
+            "- Usage soumis à des limitations de responsabilité, voir CPS - "
+            "Verwendung unterliegt Haftungsbeschränkungen, gemäss CPS"
+        )
+
     def test_eq(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
