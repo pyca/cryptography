@@ -26,6 +26,24 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    #[defined_by(oid::ECDSA_WITH_SHA224_OID)]
+    EcDsaWithSha224,
+    #[defined_by(oid::ECDSA_WITH_SHA256_OID)]
+    EcDsaWithSha256,
+    #[defined_by(oid::ECDSA_WITH_SHA384_OID)]
+    EcDsaWithSha384,
+    #[defined_by(oid::ECDSA_WITH_SHA512_OID)]
+    EcDsaWithSha512,
+
+    #[defined_by(oid::ECDSA_WITH_SHA3_224_OID)]
+    EcDsaWithSha3_224,
+    #[defined_by(oid::ECDSA_WITH_SHA3_256_OID)]
+    EcDsaWithSha3_256,
+    #[defined_by(oid::ECDSA_WITH_SHA3_384_OID)]
+    EcDsaWithSha3_384,
+    #[defined_by(oid::ECDSA_WITH_SHA3_512_OID)]
+    EcDsaWithSha3_512,
+
     #[defined_by(oid::RSA_WITH_SHA224_OID)]
     RsaWithSha224(Option<asn1::Null>),
     #[defined_by(oid::RSA_WITH_SHA256_OID)]
@@ -43,6 +61,15 @@ pub enum AlgorithmParameters<'a> {
     RsaWithSha3_384(Option<asn1::Null>),
     #[defined_by(oid::RSA_WITH_SHA3_512_OID)]
     RsaWithSha3_512(Option<asn1::Null>),
+
+    #[defined_by(oid::DSA_WITH_SHA224_OID)]
+    DsaWithSha224,
+    #[defined_by(oid::DSA_WITH_SHA256_OID)]
+    DsaWithSha256,
+    #[defined_by(oid::DSA_WITH_SHA384_OID)]
+    DsaWithSha384,
+    #[defined_by(oid::DSA_WITH_SHA512_OID)]
+    DsaWithSha512,
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),

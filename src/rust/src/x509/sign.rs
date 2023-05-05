@@ -151,47 +151,35 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Ec, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA224_OID).clone(), None),
+            params: common::AlgorithmParameters::EcDsaWithSha224,
         }),
         (KeyType::Ec, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA256_OID).clone(), None),
+            params: common::AlgorithmParameters::EcDsaWithSha256,
         }),
         (KeyType::Ec, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA384_OID).clone(), None),
+            params: common::AlgorithmParameters::EcDsaWithSha384,
         }),
         (KeyType::Ec, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::ECDSA_WITH_SHA512_OID).clone(), None),
+            params: common::AlgorithmParameters::EcDsaWithSha512,
         }),
         (KeyType::Ec, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::ECDSA_WITH_SHA3_224_OID).clone(),
-                None,
-            ),
+            params: common::AlgorithmParameters::EcDsaWithSha3_224,
         }),
         (KeyType::Ec, HashType::Sha3_256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::ECDSA_WITH_SHA3_256_OID).clone(),
-                None,
-            ),
+            params: common::AlgorithmParameters::EcDsaWithSha3_256,
         }),
         (KeyType::Ec, HashType::Sha3_384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::ECDSA_WITH_SHA3_384_OID).clone(),
-                None,
-            ),
+            params: common::AlgorithmParameters::EcDsaWithSha3_384,
         }),
         (KeyType::Ec, HashType::Sha3_512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other(
-                (oid::ECDSA_WITH_SHA3_512_OID).clone(),
-                None,
-            ),
+            params: common::AlgorithmParameters::EcDsaWithSha3_512,
         }),
 
         (KeyType::Rsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
@@ -229,19 +217,19 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Dsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA224_OID).clone(), None),
+            params: common::AlgorithmParameters::DsaWithSha224,
         }),
         (KeyType::Dsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA256_OID).clone(), None),
+            params: common::AlgorithmParameters::DsaWithSha256,
         }),
         (KeyType::Dsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA384_OID).clone(), None),
+            params: common::AlgorithmParameters::DsaWithSha384,
         }),
         (KeyType::Dsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Other((oid::DSA_WITH_SHA512_OID).clone(), None),
+            params: common::AlgorithmParameters::DsaWithSha512,
         }),
         (
             KeyType::Dsa,
