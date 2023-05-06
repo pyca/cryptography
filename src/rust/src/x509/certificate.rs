@@ -311,7 +311,7 @@ impl Certificate {
         sign::verify_signature_with_oid(
             py,
             issuer.public_key(py)?,
-            self.raw.borrow_value().signature_alg.oid(),
+            &self.raw.borrow_value().signature_alg,
             self.raw.borrow_value().signature.as_bytes(),
             &asn1::write_single(&self.raw.borrow_value().tbs_cert)?,
         )
