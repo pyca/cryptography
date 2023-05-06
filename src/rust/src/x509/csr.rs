@@ -235,7 +235,7 @@ impl CertificateSigningRequest {
         Ok(sign::verify_signature_with_oid(
             py,
             slf.public_key(py)?,
-            slf.raw.borrow_value().signature_alg.oid(),
+            &slf.raw.borrow_value().signature_alg,
             slf.raw.borrow_value().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_value().csr_info)?,
         )

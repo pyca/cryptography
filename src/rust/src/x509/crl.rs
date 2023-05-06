@@ -394,7 +394,7 @@ impl CertificateRevocationList {
         Ok(sign::verify_signature_with_oid(
             py,
             public_key,
-            slf.owned.borrow_value().signature_algorithm.oid(),
+            &slf.owned.borrow_value().signature_algorithm,
             slf.owned.borrow_value().signature_value.as_bytes(),
             &asn1::write_single(&slf.owned.borrow_value().tbs_cert_list)?,
         )
