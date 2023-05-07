@@ -287,6 +287,8 @@ X.509
   a subject DN with a bit string type.
 * ``cryptography-scts-tbs-precert.der`` - The "to-be-signed" pre-certificate
   bytes from ``cryptography-scts.pem``, with the SCT list extension removed.
+* ``belgian-eid-invalid-visiblestring.pem`` - A certificate with UTF-8
+  bytes in a ``VisibleString`` type.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~

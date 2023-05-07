@@ -87,7 +87,8 @@ pub struct NoticeReference<'a> {
 pub enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
-    VisibleString(asn1::VisibleString<'a>),
+    // Not validated due to certificates with UTF-8 in VisibleString. See PR #8884
+    VisibleString(common::UnvalidatedVisibleString<'a>),
     BmpString(asn1::BMPString<'a>),
 }
 
