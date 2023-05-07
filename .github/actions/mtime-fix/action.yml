@@ -11,7 +11,7 @@ runs:
           echo "The git available is probably too old so checkout didn't create a real git clone, skipping mtime fix"
           exit 0
         fi
-        ls -Rla src/rust/src src/_cffi_src
+        ls -Rla src/rust src/_cffi_src
         echo "Verifying commits are monotonic because if they're not caching gets wrecked"
         COMMIT_ORDER=$(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -5)
         SORTED_COMMIT_ORDER=$(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -5 | sort -rn)
@@ -22,5 +22,5 @@ runs:
         echo "Setting mtimes for dirs"
         for f in $(git ls-tree -t -r --name-only HEAD src/rust src/_cffi_src); do touch -t $(git log --pretty=format:%cd --date=format-local:%Y%m%d%H%M.%S -1 HEAD -- "$f") "$f"; done
         echo "Done"
-        ls -Rla src/rust/src src/_cffi_src
+        ls -Rla src/rust src/_cffi_src
       shell: bash
