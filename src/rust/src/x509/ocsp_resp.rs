@@ -479,7 +479,7 @@ fn singleresp_py_hash_algorithm<'p>(
     py: pyo3::Python<'p>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-    match ocsp::OIDS_TO_HASH.get(&resp.cert_id.hash_algorithm.oid()) {
+    match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&resp.cert_id.hash_algorithm.params) {
         Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(

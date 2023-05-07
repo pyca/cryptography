@@ -86,7 +86,7 @@ impl OCSPRequest {
         let cert_id = self.cert_id();
 
         let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-        match ocsp::OIDS_TO_HASH.get(&cert_id.hash_algorithm.oid()) {
+        match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
             Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
             None => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
