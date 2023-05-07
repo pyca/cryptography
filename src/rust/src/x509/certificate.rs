@@ -412,14 +412,14 @@ fn parse_display_text(
         DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
         DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
         DisplayText::VisibleString(o) => {
-            if !UnvalidatedVisibleString::verify(o.as_str()) {
+            if asn1::VisibleString::new(o.as_str()).is_none() {
                 let cryptography_warning = py
                     .import(pyo3::intern!(py, "cryptography.utils"))?
                     .getattr(pyo3::intern!(py, "DeprecatedIn41"))?;
                 pyo3::PyErr::warn(
                     py,
                     cryptography_warning,
-                    "Invalid ASN.1 (UTF-8 characters in a VisibleString). A future version of cryptography will error on this input.",
+                    "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.",
                     1,
                 )?;
             }

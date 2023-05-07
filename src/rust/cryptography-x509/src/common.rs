@@ -215,16 +215,6 @@ impl<'a> UnvalidatedVisibleString<'a> {
     pub fn as_str(&self) -> &'a str {
         self.0
     }
-
-    // Ported from rust-asn1 VisibleString
-    pub fn verify(s: &str) -> bool {
-        for b in s.chars() {
-            if !(b.is_ascii_graphic() || b == ' ') {
-                return false;
-            }
-        }
-        true
-    }
 }
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedVisibleString<'a> {
