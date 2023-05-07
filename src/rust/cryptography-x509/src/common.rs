@@ -19,7 +19,7 @@ impl AlgorithmIdentifier<'_> {
     }
 }
 
-#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Hash, Clone)]
+#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone)]
 pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::SHA1_OID)]
     Sha1(asn1::Null),

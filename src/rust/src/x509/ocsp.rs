@@ -5,20 +5,23 @@
 use crate::error::CryptographyResult;
 use crate::x509;
 use crate::x509::certificate::Certificate;
+use cryptography_x509::common;
 use cryptography_x509::ocsp_req::CertID;
-use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
-pub(crate) static OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
+    HashMap<common::AlgorithmParameters<'_>, &str>,
+> = Lazy::new(|| {
     let mut h = HashMap::new();
-    h.insert(&oid::SHA1_OID, "SHA1");
-    h.insert(&oid::SHA224_OID, "SHA224");
-    h.insert(&oid::SHA256_OID, "SHA256");
-    h.insert(&oid::SHA384_OID, "SHA384");
-    h.insert(&oid::SHA512_OID, "SHA512");
+    h.insert(common::AlgorithmParameters::Sha1(()), "SHA1");
+    h.insert(common::AlgorithmParameters::Sha224(()), "SHA224");
+    h.insert(common::AlgorithmParameters::Sha256(()), "SHA256");
+    h.insert(common::AlgorithmParameters::Sha384(()), "SHA384");
+    h.insert(common::AlgorithmParameters::Sha512(()), "SHA512");
     h
 });
+
 pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: Lazy<
     HashMap<&str, common::AlgorithmIdentifier<'_>>,
 > = Lazy::new(|| {
