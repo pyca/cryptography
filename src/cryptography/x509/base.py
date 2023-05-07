@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    padding,
     rsa,
     x448,
     x25519,
@@ -230,6 +231,15 @@ class Certificate(metaclass=abc.ABCMeta):
     def signature_algorithm_oid(self) -> ObjectIdentifier:
         """
         Returns the ObjectIdentifier of the signature algorithm.
+        """
+
+    @property
+    @abc.abstractmethod
+    def signature_algorithm_parameters(
+        self,
+    ) -> typing.Union[None, padding.PSS, padding.PKCS1v15, ec.ECDSA]:
+        """
+        Returns the signature algorithm parameters.
         """
 
     @property
