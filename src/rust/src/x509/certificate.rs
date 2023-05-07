@@ -8,7 +8,7 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
-use cryptography_x509::common::{Asn1ReadableOrWritable, UnvalidatedVisibleString};
+use cryptography_x509::common::Asn1ReadableOrWritable;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
     DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
