@@ -130,7 +130,13 @@ fn sign_and_serialize<'p>(
         {
             (
                 None,
-                x509::sign::sign_data(py, py_private_key, py_hash_alg, &data_with_header)?,
+                x509::sign::sign_data(
+                    py,
+                    py_private_key,
+                    py_hash_alg,
+                    py.None().into_ref(py),
+                    &data_with_header,
+                )?,
             )
         } else {
             let mut authenticated_attrs = vec![];
@@ -175,7 +181,13 @@ fn sign_and_serialize<'p>(
                 Some(common::Asn1ReadableOrWritable::new_write(
                     asn1::SetOfWriter::new(authenticated_attrs),
                 )),
-                x509::sign::sign_data(py, py_private_key, py_hash_alg, &signed_data)?,
+                x509::sign::sign_data(
+                    py,
+                    py_private_key,
+                    py_hash_alg,
+                    py.None().into_ref(py),
+                    &signed_data,
+                )?,
             )
         };
 
@@ -201,6 +213,7 @@ fn sign_and_serialize<'p>(
                 py,
                 py_private_key,
                 py_hash_alg,
+                py.None().into_ref(py),
             )?,
             encrypted_digest: signature,
             unauthenticated_attributes: None,

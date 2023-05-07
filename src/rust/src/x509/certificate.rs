@@ -1002,8 +1002,10 @@ fn create_x509_certificate(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
+    rsa_padding: &pyo3::PyAny,
 ) -> CryptographyResult<Certificate> {
-    let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+    let sigalg =
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
     let serialization_mod = py.import(pyo3::intern!(
         py,
         "cryptography.hazmat.primitives.serialization"
@@ -1056,7 +1058,8 @@ fn create_x509_certificate(
     };
 
     let tbs_bytes = asn1::write_single(&tbs_cert)?;
-    let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+    let signature =
+        x509::sign::sign_data(py, private_key, hash_algorithm, rsa_padding, &tbs_bytes)?;
     let data = asn1::write_single(&cryptography_x509::certificate::Certificate {
         tbs_cert,
         signature_alg: sigalg,

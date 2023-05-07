@@ -679,9 +679,20 @@ fn create_ocsp_response(
             )?,
         };
 
-        let sigalg = x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm)?;
+        let sigalg = x509::sign::compute_signature_algorithm(
+            py,
+            private_key,
+            hash_algorithm,
+            py.None().into_ref(py),
+        )?;
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
-        let signature = x509::sign::sign_data(py, private_key, hash_algorithm, &tbs_bytes)?;
+        let signature = x509::sign::sign_data(
+            py,
+            private_key,
+            hash_algorithm,
+            py.None().into_ref(py),
+            &tbs_bytes,
+        )?;
 
         if !responder_cert
             .call_method0(pyo3::intern!(py, "public_key"))?

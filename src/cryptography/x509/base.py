@@ -924,6 +924,8 @@ class CertificateBuilder:
         private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
+        *,
+        rsa_padding: typing.Optional[padding.AsymmetricPadding] = None,
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
@@ -946,7 +948,20 @@ class CertificateBuilder:
         if self._public_key is None:
             raise ValueError("A certificate must have a public key")
 
-        return rust_x509.create_x509_certificate(self, private_key, algorithm)
+        if rsa_padding is not None:
+            if isinstance(private_key, rsa.RSAPrivateKey):
+                if not isinstance(
+                    rsa_padding, (padding.PSS, padding.PKCS1v15)
+                ):
+                    raise TypeError(
+                        "Padding must be PSS or PKCS1v15 for RSA keys"
+                    )
+            else:
+                raise ValueError("Padding must be None for non-RSA keys")
+
+        return rust_x509.create_x509_certificate(
+            self, private_key, algorithm, rsa_padding
+        )
 
 
 class CertificateRevocationListBuilder:

@@ -872,7 +872,7 @@ X.509 Certificate Builder
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
 
-    .. method:: sign(private_key, algorithm)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
 
         Sign the certificate using the CA's private key.
 
@@ -890,6 +890,22 @@ X.509 Certificate Builder
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
+
+        :param rsa_padding:
+
+            .. versionadded:: 41.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``RSAPrivateKey`` then this can be set to either
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` to sign
+            with those respective paddings. If this is ``None`` then RSA
+            keys will default to ``PKCS1v15`` padding. All other key types **must**
+            not pass a value other than ``None``.
+
+        :type rsa_padding: ``None``,
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
+            or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
 
         :returns: :class:`~cryptography.x509.Certificate`
 

@@ -4,7 +4,7 @@
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use cryptography_x509::common;
+use cryptography_x509::{common, oid};
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum KeyType {
@@ -123,10 +123,53 @@ pub(crate) fn compute_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
+    rsa_padding: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
     let key_type = identify_key_type(py, private_key)?;
     let hash_type = identify_hash_type(py, hash_algorithm)?;
 
+    let pss_type: &pyo3::types::PyType = py
+        .import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.asymmetric.padding"
+        ))?
+        .getattr(pyo3::intern!(py, "PSS"))?
+        .extract()?;
+    // If this is RSA-PSS we need to compute the signature algorithm from the
+    // parameters provided in rsa_padding.
+    if !rsa_padding.is_none() && rsa_padding.is_instance(pss_type)? {
+        let hash_alg_params = identify_alg_params_for_hash_type(hash_type)?;
+        let hash_algorithm = common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: hash_alg_params,
+        };
+        let salt_length = rsa_padding.getattr("_salt_length")?.extract::<u16>()?;
+        let py_mgf_alg = rsa_padding
+            .getattr(pyo3::intern!(py, "_mgf"))?
+            .getattr(pyo3::intern!(py, "_algorithm"))?;
+        let mgf_hash_type = identify_hash_type(py, py_mgf_alg)?;
+        let mgf_alg = common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: identify_alg_params_for_hash_type(mgf_hash_type)?,
+        };
+        let params =
+            common::AlgorithmParameters::RsaPss(Some(Box::new(common::RsaPssParameters {
+                hash_algorithm,
+                mask_gen_algorithm: common::MaskGenAlgorithm {
+                    oid: oid::MGF1_OID,
+                    params: mgf_alg,
+                },
+                salt_length,
+                _trailer_field: 1,
+            })));
+
+        return Ok(common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params,
+        });
+    }
+    // It's not an RSA PSS signature, so we compute the signature algorithm from
+    // the union of key type and hash type.
     match (key_type, hash_type) {
         (KeyType::Ed25519, HashType::None) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
@@ -238,6 +281,7 @@ pub(crate) fn sign_data<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
     hash_algorithm: &'p pyo3::PyAny,
+    rsa_padding: &'p pyo3::PyAny,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
     let key_type = identify_key_type(py, private_key)?;
@@ -257,14 +301,22 @@ pub(crate) fn sign_data<'p>(
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, ecdsa))?
         }
         KeyType::Rsa => {
-            let padding_mod = py.import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.padding"
-            ))?;
-            let pkcs1v15 = padding_mod
-                .getattr(pyo3::intern!(py, "PKCS1v15"))?
-                .call0()?;
-            private_key.call_method1(pyo3::intern!(py, "sign"), (data, pkcs1v15, hash_algorithm))?
+            if rsa_padding.is_none() {
+                let padding_mod = py.import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.asymmetric.padding"
+                ))?;
+                let pkcs1v15 = padding_mod
+                    .getattr(pyo3::intern!(py, "PKCS1v15"))?
+                    .call0()?;
+                private_key
+                    .call_method1(pyo3::intern!(py, "sign"), (data, pkcs1v15, hash_algorithm))?
+            } else {
+                private_key.call_method1(
+                    pyo3::intern!(py, "sign"),
+                    (data, rsa_padding, hash_algorithm),
+                )?
+            }
         }
         KeyType::Dsa => {
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, hash_algorithm))?
@@ -435,10 +487,29 @@ fn identify_key_hash_type_for_algorithm_params(
     }
 }
 
+fn identify_alg_params_for_hash_type(
+    hash_type: HashType,
+) -> pyo3::PyResult<common::AlgorithmParameters<'static>> {
+    match hash_type {
+        HashType::Sha224 => Ok(common::AlgorithmParameters::Sha224(())),
+        HashType::Sha256 => Ok(common::AlgorithmParameters::Sha256(())),
+        HashType::Sha384 => Ok(common::AlgorithmParameters::Sha384(())),
+        HashType::Sha512 => Ok(common::AlgorithmParameters::Sha512(())),
+        HashType::Sha3_224 => Ok(common::AlgorithmParameters::Sha3_224(())),
+        HashType::Sha3_256 => Ok(common::AlgorithmParameters::Sha3_256(())),
+        HashType::Sha3_384 => Ok(common::AlgorithmParameters::Sha3_384(())),
+        HashType::Sha3_512 => Ok(common::AlgorithmParameters::Sha3_512(())),
+        HashType::None => Err(pyo3::exceptions::PyTypeError::new_err(
+            "Algorithm must be a registered hash algorithm, not None.",
+        )),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        identify_key_hash_type_for_algorithm_params, py_hash_name_from_hash_type, HashType, KeyType,
+        identify_alg_params_for_hash_type, identify_key_hash_type_for_algorithm_params,
+        py_hash_name_from_hash_type, HashType, KeyType,
     };
     use cryptography_x509::{common, oid};
 
@@ -601,6 +672,34 @@ mod tests {
             ))
             .is_err()
         );
+    }
+
+    #[test]
+    fn test_identify_alg_params_for_hash_type() {
+        for (hash, params) in [
+            (HashType::Sha224, common::AlgorithmParameters::Sha224(())),
+            (HashType::Sha256, common::AlgorithmParameters::Sha256(())),
+            (HashType::Sha384, common::AlgorithmParameters::Sha384(())),
+            (HashType::Sha512, common::AlgorithmParameters::Sha512(())),
+            (
+                HashType::Sha3_224,
+                common::AlgorithmParameters::Sha3_224(()),
+            ),
+            (
+                HashType::Sha3_256,
+                common::AlgorithmParameters::Sha3_256(()),
+            ),
+            (
+                HashType::Sha3_384,
+                common::AlgorithmParameters::Sha3_384(()),
+            ),
+            (
+                HashType::Sha3_512,
+                common::AlgorithmParameters::Sha3_512(()),
+            ),
+        ] {
+            assert_eq!(identify_alg_params_for_hash_type(hash).unwrap(), params);
+        }
     }
 
     #[test]
