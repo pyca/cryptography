@@ -119,6 +119,37 @@ fn identify_hash_type(
     }
 }
 
+fn compute_pss_salt_length<'p>(
+    py: pyo3::Python<'p>,
+    private_key: &'p pyo3::PyAny,
+    hash_algorithm: &'p pyo3::PyAny,
+    rsa_padding: &'p pyo3::PyAny,
+) -> pyo3::PyResult<u16> {
+    let padding_mod = py.import(pyo3::intern!(
+        py,
+        "cryptography.hazmat.primitives.asymmetric.padding"
+    ))?;
+    let maxlen = padding_mod.getattr(pyo3::intern!(py, "_MaxLength"))?;
+    let digestlen = padding_mod.getattr(pyo3::intern!(py, "_DigestLength"))?;
+    let py_saltlen = rsa_padding.getattr(pyo3::intern!(py, "_salt_length"))?;
+    if py_saltlen.is_instance(maxlen)? {
+        padding_mod
+            .getattr(pyo3::intern!(py, "calculate_max_pss_salt_length"))?
+            .call1((private_key, hash_algorithm))?
+            .extract::<u16>()
+    } else if py_saltlen.is_instance(digestlen)? {
+        hash_algorithm
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<u16>()
+    } else if py_saltlen.is_instance(py.get_type::<pyo3::types::PyLong>())? {
+        py_saltlen.extract::<u16>()
+    } else {
+        Err(pyo3::exceptions::PyTypeError::new_err(
+            "salt_length must be an int, MaxLength, or DigestLength.",
+        ))
+    }
+}
+
 pub(crate) fn compute_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
     private_key: &'p pyo3::PyAny,
@@ -139,11 +170,11 @@ pub(crate) fn compute_signature_algorithm<'p>(
     // parameters provided in rsa_padding.
     if !rsa_padding.is_none() && rsa_padding.is_instance(pss_type)? {
         let hash_alg_params = identify_alg_params_for_hash_type(hash_type)?;
-        let hash_algorithm = common::AlgorithmIdentifier {
+        let hash_algorithm_id = common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
             params: hash_alg_params,
         };
-        let salt_length = rsa_padding.getattr("_salt_length")?.extract::<u16>()?;
+        let salt_length = compute_pss_salt_length(py, private_key, hash_algorithm, rsa_padding)?;
         let py_mgf_alg = rsa_padding
             .getattr(pyo3::intern!(py, "_mgf"))?
             .getattr(pyo3::intern!(py, "_algorithm"))?;
@@ -154,7 +185,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
         };
         let params =
             common::AlgorithmParameters::RsaPss(Some(Box::new(common::RsaPssParameters {
-                hash_algorithm,
+                hash_algorithm: hash_algorithm_id,
                 mask_gen_algorithm: common::MaskGenAlgorithm {
                     oid: oid::MGF1_OID,
                     params: mgf_alg,
@@ -301,22 +332,17 @@ pub(crate) fn sign_data<'p>(
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, ecdsa))?
         }
         KeyType::Rsa => {
-            if rsa_padding.is_none() {
+            let mut padding = rsa_padding;
+            if padding.is_none() {
                 let padding_mod = py.import(pyo3::intern!(
                     py,
                     "cryptography.hazmat.primitives.asymmetric.padding"
                 ))?;
-                let pkcs1v15 = padding_mod
+                padding = padding_mod
                     .getattr(pyo3::intern!(py, "PKCS1v15"))?
                     .call0()?;
-                private_key
-                    .call_method1(pyo3::intern!(py, "sign"), (data, pkcs1v15, hash_algorithm))?
-            } else {
-                private_key.call_method1(
-                    pyo3::intern!(py, "sign"),
-                    (data, rsa_padding, hash_algorithm),
-                )?
             }
+            private_key.call_method1(pyo3::intern!(py, "sign"), (data, padding, hash_algorithm))?
         }
         KeyType::Dsa => {
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, hash_algorithm))?

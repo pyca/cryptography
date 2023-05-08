@@ -925,7 +925,9 @@ class CertificateBuilder:
         algorithm: typing.Optional[_AllowedHashTypes],
         backend: typing.Any = None,
         *,
-        rsa_padding: typing.Optional[padding.AsymmetricPadding] = None,
+        rsa_padding: typing.Optional[
+            typing.Union[padding.PSS, padding.PKCS1v15]
+        ] = None,
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
@@ -949,15 +951,10 @@ class CertificateBuilder:
             raise ValueError("A certificate must have a public key")
 
         if rsa_padding is not None:
-            if isinstance(private_key, rsa.RSAPrivateKey):
-                if not isinstance(
-                    rsa_padding, (padding.PSS, padding.PKCS1v15)
-                ):
-                    raise TypeError(
-                        "Padding must be PSS or PKCS1v15 for RSA keys"
-                    )
-            else:
-                raise ValueError("Padding must be None for non-RSA keys")
+            if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
+                raise TypeError("Padding must be PSS or PKCS1v15")
+            if not isinstance(private_key, rsa.RSAPrivateKey):
+                raise TypeError("Padding is only supported for RSA keys")
 
         return rust_x509.create_x509_certificate(
             self, private_key, algorithm, rsa_padding
