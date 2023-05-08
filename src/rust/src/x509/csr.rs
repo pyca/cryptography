@@ -222,28 +222,10 @@ impl CertificateSigningRequest {
                 )
             })?;
 
-        let extensions = {
-            let extensions = raw_exts
-                .as_ref()
-                .map(|raw_exts| raw_exts.try_into())
-                .transpose();
-
-            match extensions {
-                Ok(extensions) => extensions,
-                Err(oid) => {
-                    let oid_obj = oid_to_py_oid(py, &oid)?;
-                    return Err(exceptions::DuplicateExtension::new_err((
-                        format!("Duplicate {} extension found", oid),
-                        oid_obj.into_py(py),
-                    )));
-                }
-            }
-        };
-
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &extensions,
+            &raw_exts,
             |oid, ext_data| certificate::parse_cert_ext(py, oid.clone(), ext_data),
         )
     }

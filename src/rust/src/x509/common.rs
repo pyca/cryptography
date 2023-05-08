@@ -9,7 +9,7 @@ use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawT
 use cryptography_x509::extensions::{AccessDescription, Extension, Extensions, RawExtensions};
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
-use pyo3::ToPyObject;
+use pyo3::{IntoPy, ToPyObject};
 
 /// Parse all sections in a PEM file and return the first matching section.
 /// If no matching sections are found, return an error.
@@ -390,7 +390,7 @@ pub(crate) fn parse_and_cache_extensions<
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
-    extensions: &Option<Extensions<'_>>,
+    raw_extensions: &Option<RawExtensions<'_>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {
     if let Some(cached) = cached_extensions {
@@ -399,7 +399,19 @@ pub(crate) fn parse_and_cache_extensions<
 
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);
-    if let Some(extensions) = extensions {
+    if let Some(raw_extensions) = raw_extensions {
+        let extensions: Extensions<'_> = match raw_extensions.try_into() {
+            Ok(extensions) => extensions,
+            Err(oid) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
+                return Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", oid),
+                    oid_obj.into_py(py),
+                ))
+                .into());
+            }
+        };
+
         for raw_ext in extensions.as_ref().unwrap_read().clone() {
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 

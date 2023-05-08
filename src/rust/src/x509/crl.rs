@@ -262,22 +262,11 @@ impl CertificateRevocationList {
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let tbs_cert_list = &self.owned.borrow_value().tbs_cert_list;
 
-        let extensions = match tbs_cert_list.extensions() {
-            Ok(exts) => exts,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &extensions,
+            &tbs_cert_list.raw_crl_extensions,
             |oid, ext_data| match *oid {
                 oid::CRL_NUMBER_OID => {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
@@ -508,21 +497,10 @@ impl RevokedCertificate {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let extensions = match self.owned.borrow_value().extensions() {
-            Ok(exts) => exts,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &extensions,
+            &self.owned.borrow_value().raw_crl_entry_extensions,
             |oid, ext_data| parse_crl_entry_ext(py, oid.clone(), ext_data),
         )
     }

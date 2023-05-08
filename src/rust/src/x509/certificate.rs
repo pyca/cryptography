@@ -364,22 +364,11 @@ impl Certificate {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let extensions: Option<Extensions<'_>> = match self.raw.borrow_value().extensions() {
-            Ok(exts) => exts,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &extensions,
+            &self.raw.borrow_value().tbs_cert.raw_extensions,
             |oid, ext_data| match *oid {
                 oid::PRECERT_POISON_OID => {
                     asn1::parse_single::<()>(ext_data)?;

@@ -328,22 +328,11 @@ impl OCSPResponse {
             .get()
             .tbs_response_data;
 
-        let extensions = match response_data.extensions() {
-            Ok(exts) => exts,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &extensions,
+            &response_data.raw_response_extensions,
             |oid, ext_data| {
                 match oid {
                     &oid::NONCE_OID => {
@@ -377,22 +366,11 @@ impl OCSPResponse {
                 .get(),
         )?;
 
-        let extensions: Option<Extensions<'_>> = match single_resp.extensions() {
-            Ok(exts) => exts,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_single_extensions,
-            &extensions,
+            &single_resp.raw_single_extensions,
             |oid, ext_data| match oid {
                 &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = asn1::parse_single::<&[u8]>(ext_data)?;
