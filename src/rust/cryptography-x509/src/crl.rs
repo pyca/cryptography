@@ -2,7 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{common, extensions, name};
+use crate::{
+    common,
+    extensions::{self, Extensions},
+    name,
+};
 
 pub type ReasonFlags<'a> =
     Option<common::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
@@ -31,14 +35,32 @@ pub struct TBSCertList<'a> {
     pub next_update: Option<common::Time>,
     pub revoked_certificates: RevokedCertificates<'a>,
     #[explicit(0)]
-    pub crl_extensions: Option<extensions::RawExtensions<'a>>,
+    pub raw_crl_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> TBSCertList<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        match &self.raw_crl_extensions {
+            None => Ok(None),
+            Some(extensions) => Some(extensions.try_into()).transpose(),
+        }
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
     pub user_certificate: asn1::BigUint<'a>,
     pub revocation_date: common::Time,
-    pub crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
+    pub raw_crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> RevokedCertificate<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        match &self.raw_crl_entry_extensions {
+            None => Ok(None),
+            Some(extensions) => Some(extensions.try_into()).transpose(),
+        }
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

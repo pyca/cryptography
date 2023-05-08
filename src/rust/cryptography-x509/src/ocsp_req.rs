@@ -2,7 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{common, extensions, name};
+use crate::{
+    common,
+    extensions::{self, Extensions},
+    name,
+};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct TBSRequest<'a> {
@@ -17,7 +21,16 @@ pub struct TBSRequest<'a> {
         asn1::SequenceOfWriter<'a, Request<'a>>,
     >,
     #[explicit(2)]
-    pub request_extensions: Option<extensions::RawExtensions<'a>>,
+    pub raw_request_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> TBSRequest<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        match &self.raw_request_extensions {
+            None => Ok(None),
+            Some(extensions) => Some(extensions.try_into()).transpose(),
+        }
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

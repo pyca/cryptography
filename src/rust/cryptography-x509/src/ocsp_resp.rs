@@ -51,7 +51,16 @@ pub struct ResponseData<'a> {
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
     >,
     #[explicit(1)]
-    pub response_extensions: Option<extensions::RawExtensions<'a>>,
+    pub raw_response_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> ResponseData<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        match &self.raw_response_extensions {
+            None => Ok(None),
+            Some(extensions) => Some(extensions.try_into()).transpose(),
+        }
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
