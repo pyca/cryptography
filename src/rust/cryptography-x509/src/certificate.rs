@@ -15,11 +15,8 @@ pub struct Certificate<'a> {
 }
 
 impl<'a> Certificate<'a> {
-    pub fn extensions(&'a self) -> Option<Result<Extensions<'a>, asn1::ObjectIdentifier>> {
-        match &self.tbs_cert.extensions {
-            None => None,
-            Some(extensions) => Some(extensions.try_into()),
-        }
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        self.tbs_cert.extensions()
     }
 }
 
@@ -41,7 +38,16 @@ pub struct TbsCertificate<'a> {
     #[implicit(2)]
     pub subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
-    pub extensions: Option<extensions::RawExtensions<'a>>,
+    pub raw_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> TbsCertificate<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        match &self.raw_extensions {
+            None => Ok(None),
+            Some(extensions) => Some(extensions.try_into()).transpose(),
+        }
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]

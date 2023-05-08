@@ -35,6 +35,12 @@ impl<'a> TryFrom<&RawExtensions<'a>> for Extensions<'a> {
     }
 }
 
+impl<'a> AsRef<RawExtensions<'a>> for Extensions<'a> {
+    fn as_ref(&self) -> &RawExtensions<'a> {
+        &self.inner
+    }
+}
+
 impl Extensions<'_> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
