@@ -13,6 +13,21 @@ pub struct Certificate<'a> {
     pub signature: asn1::BitString<'a>,
 }
 
+impl Certificate<'_> {
+    /// Retrieves the extension identified by the given OID,
+    /// or None if the extension is not present (or no extensions are present).
+    pub fn get_extension(&self, oid: asn1::ObjectIdentifier) -> Option<extensions::Extension> {
+        match &self.tbs_cert.extensions {
+            None => None,
+            Some(extensions) => {
+                let mut extensions = extensions.unwrap_read().clone();
+
+                extensions.find(|ext| ext.extn_id == oid)
+            }
+        }
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub struct TbsCertificate<'a> {
     #[explicit(0)]
