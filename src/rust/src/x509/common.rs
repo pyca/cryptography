@@ -397,20 +397,20 @@ pub(crate) fn parse_and_cache_extensions<
         return Ok(cached.clone_ref(py));
     }
 
+    let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {
+        Ok(extensions) => extensions,
+        Err(oid) => {
+            let oid_obj = oid_to_py_oid(py, &oid)?;
+            return Err(exceptions::DuplicateExtension::new_err((
+                format!("Duplicate {} extension found", oid),
+                oid_obj.into_py(py),
+            )));
+        }
+    };
+
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);
-    if let Some(raw_extensions) = raw_extensions {
-        let extensions: Extensions<'_> = match raw_extensions.try_into() {
-            Ok(extensions) => extensions,
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                )));
-            }
-        };
-
+    if let Some(extensions) = extensions {
         for raw_ext in extensions.as_raw().unwrap_read().clone() {
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
