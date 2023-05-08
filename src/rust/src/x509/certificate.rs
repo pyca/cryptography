@@ -196,11 +196,11 @@ impl Certificate {
         match val.tbs_cert.extensions() {
             Err(oid) => {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
-                return Err(exceptions::DuplicateExtension::new_err((
+                Err(exceptions::DuplicateExtension::new_err((
                     format!("Duplicate {} extension found", oid),
                     oid_obj.into_py(py),
                 ))
-                .into());
+                .into())
             }
             Ok(Some(extensions)) => {
                 let readable_extensions = extensions.as_ref().unwrap_read().clone();

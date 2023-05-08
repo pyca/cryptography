@@ -223,11 +223,10 @@ impl CertificateSigningRequest {
             })?;
 
         let extensions = {
-            let extensions = match &raw_exts {
-                Some(raw_exts) => Some(raw_exts.try_into()),
-                None => None,
-            }
-            .transpose();
+            let extensions = raw_exts
+                .as_ref()
+                .map(|raw_exts| raw_exts.try_into())
+                .transpose();
 
             match extensions {
                 Ok(extensions) => extensions,
