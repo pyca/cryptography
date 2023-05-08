@@ -207,9 +207,10 @@ impl Certificate {
                         ),
                     ));
                 }
-                let filtered_extensions: Extensions<'_> = Asn1ReadableOrWritable::new_write(
-                    asn1::SequenceOfWriter::new(filtered_extensions),
-                );
+                let filtered_extensions: Extensions<'_> =
+                    Extensions(Asn1ReadableOrWritable::new_write(
+                        asn1::SequenceOfWriter::new(filtered_extensions),
+                    ));
                 tbs_precert.extensions = Some(filtered_extensions);
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))

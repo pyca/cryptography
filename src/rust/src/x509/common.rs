@@ -478,9 +478,9 @@ pub(crate) fn encode_extensions<
     if exts.is_empty() {
         return Ok(None);
     }
-    Ok(Some(Asn1ReadableOrWritable::new_write(
+    Ok(Some(Extensions(Asn1ReadableOrWritable::new_write(
         asn1::SequenceOfWriter::new(exts),
-    )))
+    ))))
 }
 
 #[pyo3::prelude::pyfunction]

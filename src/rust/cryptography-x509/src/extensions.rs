@@ -2,15 +2,38 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashSet;
+
 use crate::common;
 use crate::crl;
 use crate::name;
 
-pub type Extensions<'a> = common::Asn1ReadableOrWritable<
-    'a,
-    asn1::SequenceOf<'a, Extension<'a>>,
-    asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
->;
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
+pub struct Extensions<'a>(
+    pub  common::Asn1ReadableOrWritable<
+        'a,
+        asn1::SequenceOf<'a, Extension<'a>>,
+        asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
+    >,
+);
+
+impl Extensions<'_> {
+    pub fn unwrap_read(&self) -> &asn1::SequenceOf<'_, Extension<'_>> {
+        self.0.unwrap_read()
+    }
+
+    pub fn check_duplicates(&self) -> Option<asn1::ObjectIdentifier> {
+        let mut seen_oids = HashSet::new();
+
+        for ext in self.unwrap_read().clone() {
+            if !seen_oids.insert(ext.extn_id.clone()) {
+                return Some(ext.extn_id);
+            }
+        }
+
+        None
+    }
+}
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct Extension<'a> {
