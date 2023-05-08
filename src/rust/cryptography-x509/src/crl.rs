@@ -40,10 +40,7 @@ pub struct TBSCertList<'a> {
 
 impl<'a> TBSCertList<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_crl_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_crl_extensions.as_ref())
     }
 }
 
@@ -56,10 +53,7 @@ pub struct RevokedCertificate<'a> {
 
 impl<'a> RevokedCertificate<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_crl_entry_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_crl_entry_extensions.as_ref())
     }
 }
 

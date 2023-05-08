@@ -43,10 +43,7 @@ pub struct TbsCertificate<'a> {
 
 impl<'a> TbsCertificate<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_extensions.as_ref())
     }
 }
 

@@ -56,10 +56,7 @@ pub struct ResponseData<'a> {
 
 impl<'a> ResponseData<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_response_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_response_extensions.as_ref())
     }
 }
 
@@ -84,10 +81,7 @@ pub struct SingleResponse<'a> {
 
 impl<'a> SingleResponse<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_single_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_single_extensions.as_ref())
     }
 }
 

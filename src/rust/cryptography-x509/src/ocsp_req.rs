@@ -26,10 +26,7 @@ pub struct TBSRequest<'a> {
 
 impl<'a> TBSRequest<'a> {
     pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        match &self.raw_request_extensions {
-            None => Ok(None),
-            Some(extensions) => Some(extensions.try_into()).transpose(),
-        }
+        Extensions::from_raw_extensions(self.raw_request_extensions.as_ref())
     }
 }
 

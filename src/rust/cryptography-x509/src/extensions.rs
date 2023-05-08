@@ -19,23 +19,28 @@ pub struct Extensions<'a> {
     inner: RawExtensions<'a>,
 }
 
-impl<'a> TryFrom<&RawExtensions<'a>> for Extensions<'a> {
-    type Error = asn1::ObjectIdentifier;
+impl<'a> Extensions<'a> {
+    pub fn from_raw_extensions(
+        raw: Option<&RawExtensions<'a>>,
+    ) -> Result<Option<Self>, asn1::ObjectIdentifier> {
+        match raw {
+            Some(raw_exts) => {
+                let mut seen_oids = HashSet::new();
 
-    fn try_from(raw: &RawExtensions<'a>) -> Result<Self, Self::Error> {
-        let mut seen_oids = HashSet::new();
+                for ext in raw_exts.unwrap_read().clone() {
+                    if !seen_oids.insert(ext.extn_id.clone()) {
+                        return Err(ext.extn_id);
+                    }
+                }
 
-        for ext in raw.unwrap_read().clone() {
-            if !seen_oids.insert(ext.extn_id.clone()) {
-                return Err(ext.extn_id);
+                Ok(Some(Self {
+                    inner: raw_exts.clone(),
+                }))
             }
+            None => Ok(None),
         }
-
-        Ok(Self { inner: raw.clone() })
     }
-}
 
-impl Extensions<'_> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
     pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
