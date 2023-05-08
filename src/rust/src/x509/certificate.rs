@@ -9,13 +9,13 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
 use cryptography_x509::common::Asn1ReadableOrWritable;
+use cryptography_x509::extensions::Extension;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
     DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
     PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
     SequenceOfSubtrees, UserNotice,
 };
-use cryptography_x509::extensions::{Extension, Extensions};
 use cryptography_x509::{common, name, oid};
 use once_cell::sync::Lazy;
 use pyo3::{IntoPy, ToPyObject};
@@ -195,7 +195,7 @@ impl Certificate {
         // Remove the SCT list extension
         match val.tbs_cert.extensions() {
             Ok(Some(extensions)) => {
-                let readable_extensions = extensions.as_ref().unwrap_read().clone();
+                let readable_extensions = extensions.as_raw().unwrap_read().clone();
                 let ext_count = readable_extensions.len();
                 let filtered_extensions: Vec<Extension<'_>> = readable_extensions
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)

@@ -6,7 +6,6 @@ use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
 use crate::{exceptions, x509};
-use cryptography_x509::extensions::Extensions;
 use cryptography_x509::ocsp_resp::SingleResponse;
 use cryptography_x509::{common, ocsp_resp, oid};
 use pyo3::IntoPy;

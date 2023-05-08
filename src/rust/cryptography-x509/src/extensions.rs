@@ -35,12 +35,6 @@ impl<'a> TryFrom<&RawExtensions<'a>> for Extensions<'a> {
     }
 }
 
-impl<'a> AsRef<RawExtensions<'a>> for Extensions<'a> {
-    fn as_ref(&self) -> &RawExtensions<'a> {
-        &self.inner
-    }
-}
-
 impl Extensions<'_> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
@@ -48,6 +42,11 @@ impl Extensions<'_> {
         let mut extensions = self.inner.unwrap_read().clone();
 
         extensions.find(|ext| &ext.extn_id == oid)
+    }
+
+    /// Returns a reference to the underlying extensions.
+    pub fn as_raw(&self) -> &RawExtensions<'_> {
+        &self.inner
     }
 }
 
