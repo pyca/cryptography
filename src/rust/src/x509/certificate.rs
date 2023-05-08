@@ -194,14 +194,6 @@ impl Certificate {
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
         match val.tbs_cert.extensions() {
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
-                Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                ))
-                .into())
-            }
             Ok(Some(extensions)) => {
                 let readable_extensions = extensions.as_ref().unwrap_read().clone();
                 let ext_count = readable_extensions.len();
@@ -227,6 +219,14 @@ impl Certificate {
                     "Could not find any extensions in TBS certificate",
                 ),
             )),
+            Err(oid) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
+                Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", oid),
+                    oid_obj.into_py(py),
+                ))
+                .into())
+            }
         }
     }
 
