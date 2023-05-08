@@ -16,7 +16,7 @@ pub struct Certificate<'a> {
 impl Certificate<'_> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
-    pub fn get_extension(&self, oid: asn1::ObjectIdentifier) -> Option<extensions::Extension> {
+    pub fn get_extension(&self, &oid: asn1::ObjectIdentifier) -> Option<extensions::Extension> {
         match &self.tbs_cert.extensions {
             None => None,
             Some(extensions) => {
