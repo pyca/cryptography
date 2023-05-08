@@ -21,23 +21,18 @@ impl Certificate<'_> {
     ///
     /// If no duplicates are found, returns `None`.
     pub fn check_duplicate_extensions(&self) -> Option<asn1::ObjectIdentifier> {
-        let mut seen_oids = HashSet::new();
+        if let Some(extensions) = &self.tbs_cert.extensions {
+            let mut seen_oids = HashSet::new();
 
-        match &self.tbs_cert.extensions {
-            None => None,
-            Some(extensions) => {
-                let extensions = extensions.unwrap_read().clone();
-
-                for ext in extensions {
-                    if seen_oids.contains(&ext.extn_id) {
-                        return Some(ext.extn_id);
-                    }
-
-                    seen_oids.insert(ext.extn_id);
+            for ext in extensions.unwrap_read().clone() {
+                if !seen_oids.insert(ext.extn_id.clone()) {
+                    return Some(ext.extn_id);
                 }
-
-                None
             }
+
+            None
+        } else {
+            None
         }
     }
 
