@@ -8,30 +8,40 @@ use crate::common;
 use crate::crl;
 use crate::name;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
-pub struct Extensions<'a>(
-    pub  common::Asn1ReadableOrWritable<
-        'a,
-        asn1::SequenceOf<'a, Extension<'a>>,
-        asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
-    >,
-);
+pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
+    'a,
+    asn1::SequenceOf<'a, Extension<'a>>,
+    asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
+>;
 
-impl Extensions<'_> {
-    pub fn unwrap_read(&self) -> &asn1::SequenceOf<'_, Extension<'_>> {
-        self.0.unwrap_read()
-    }
+#[derive(Hash, PartialEq, Clone)]
+pub struct Extensions<'a> {
+    inner: RawExtensions<'a>,
+}
 
-    pub fn check_duplicates(&self) -> Option<asn1::ObjectIdentifier> {
+impl<'a> TryFrom<&RawExtensions<'a>> for Extensions<'a> {
+    type Error = asn1::ObjectIdentifier;
+
+    fn try_from(raw: &RawExtensions<'a>) -> Result<Self, Self::Error> {
         let mut seen_oids = HashSet::new();
 
-        for ext in self.unwrap_read().clone() {
+        for ext in raw.unwrap_read().clone() {
             if !seen_oids.insert(ext.extn_id.clone()) {
-                return Some(ext.extn_id);
+                return Err(ext.extn_id);
             }
         }
 
-        None
+        Ok(Self { inner: raw.clone() })
+    }
+}
+
+impl Extensions<'_> {
+    /// Retrieves the extension identified by the given OID,
+    /// or None if the extension is not present (or no extensions are present).
+    pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
+        let mut extensions = self.inner.unwrap_read().clone();
+
+        extensions.find(|ext| &ext.extn_id == oid)
     }
 }
 

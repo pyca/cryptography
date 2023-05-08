@@ -47,7 +47,7 @@ pub struct ResponseData<'a> {
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
     >,
     #[explicit(1)]
-    pub response_extensions: Option<extensions::Extensions<'a>>,
+    pub response_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -66,7 +66,7 @@ pub struct SingleResponse<'a> {
     #[explicit(0)]
     pub next_update: Option<asn1::GeneralizedTime>,
     #[explicit(1)]
-    pub single_extensions: Option<extensions::Extensions<'a>>,
+    pub single_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

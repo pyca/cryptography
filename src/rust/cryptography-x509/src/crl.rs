@@ -31,14 +31,14 @@ pub struct TBSCertList<'a> {
     pub next_update: Option<common::Time>,
     pub revoked_certificates: RevokedCertificates<'a>,
     #[explicit(0)]
-    pub crl_extensions: Option<extensions::Extensions<'a>>,
+    pub crl_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
     pub user_certificate: asn1::BigUint<'a>,
     pub revocation_date: common::Time,
-    pub crl_entry_extensions: Option<extensions::Extensions<'a>>,
+    pub crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

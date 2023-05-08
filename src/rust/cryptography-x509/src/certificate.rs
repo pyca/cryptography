@@ -2,10 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use std::collections::HashSet;
-
 use crate::common;
 use crate::extensions;
+use crate::extensions::Extensions;
 use crate::name;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
@@ -15,29 +14,11 @@ pub struct Certificate<'a> {
     pub signature: asn1::BitString<'a>,
 }
 
-impl Certificate<'_> {
-    /// Checks whether this certificate contains any duplicated extensions;
-    /// returns the first duplicate's OID.
-    ///
-    /// If no duplicates are found, returns `None`.
-    pub fn check_duplicate_extensions(&self) -> Option<asn1::ObjectIdentifier> {
-        if let Some(extensions) = &self.tbs_cert.extensions {
-            extensions.check_duplicates()
-        } else {
-            None
-        }
-    }
-
-    /// Retrieves the extension identified by the given OID,
-    /// or None if the extension is not present (or no extensions are present).
-    pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<extensions::Extension> {
+impl<'a> Certificate<'a> {
+    pub fn extensions(&'a self) -> Option<Result<Extensions<'a>, asn1::ObjectIdentifier>> {
         match &self.tbs_cert.extensions {
             None => None,
-            Some(extensions) => {
-                let mut extensions = extensions.unwrap_read().clone();
-
-                extensions.find(|ext| &ext.extn_id == oid)
-            }
+            Some(extensions) => Some(extensions.try_into()),
         }
     }
 }
@@ -60,7 +41,7 @@ pub struct TbsCertificate<'a> {
     #[implicit(2)]
     pub subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
-    pub extensions: Option<extensions::Extensions<'a>>,
+    pub extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]

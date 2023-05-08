@@ -17,14 +17,14 @@ pub struct TBSRequest<'a> {
         asn1::SequenceOfWriter<'a, Request<'a>>,
     >,
     #[explicit(2)]
-    pub request_extensions: Option<extensions::Extensions<'a>>,
+    pub request_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Request<'a> {
     pub req_cert: CertID<'a>,
     #[explicit(0)]
-    pub single_request_extensions: Option<extensions::Extensions<'a>>,
+    pub single_request_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

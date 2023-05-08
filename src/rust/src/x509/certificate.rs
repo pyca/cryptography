@@ -12,7 +12,7 @@ use cryptography_x509::common::Asn1ReadableOrWritable;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
     DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
-    PolicyInformation, PolicyQualifierInfo, Qualifier, SequenceOfAccessDescriptions,
+    PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
     SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, Extensions};
@@ -207,10 +207,9 @@ impl Certificate {
                         ),
                     ));
                 }
-                let filtered_extensions: Extensions<'_> =
-                    Extensions(Asn1ReadableOrWritable::new_write(
-                        asn1::SequenceOfWriter::new(filtered_extensions),
-                    ));
+                let filtered_extensions: RawExtensions<'_> = Asn1ReadableOrWritable::new_write(
+                    asn1::SequenceOfWriter::new(filtered_extensions),
+                );
                 tbs_precert.extensions = Some(filtered_extensions);
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
@@ -357,13 +356,13 @@ impl Certificate {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        if let Some(oid) = self.raw.borrow_value().check_duplicate_extensions() {
-            let oid_obj = oid_to_py_oid(py, &oid)?;
-            return Err(exceptions::DuplicateExtension::new_err((
-                format!("Duplicate {} extension found", oid),
-                oid_obj.into_py(py),
-            )));
-        }
+        // if let Some(oid) = self.raw.borrow_value().check_duplicate_extensions() {
+        //     let oid_obj = oid_to_py_oid(py, &oid)?;
+        //     return Err(exceptions::DuplicateExtension::new_err((
+        //         format!("Duplicate {} extension found", oid),
+        //         oid_obj.into_py(py),
+        //     )));
+        // }
 
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(

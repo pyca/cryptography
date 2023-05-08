@@ -6,7 +6,7 @@ use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, x509};
 use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawTlv};
-use cryptography_x509::extensions::{AccessDescription, Extension, Extensions};
+use cryptography_x509::extensions::{AccessDescription, Extension, Extensions, RawExtensions};
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
@@ -390,7 +390,7 @@ pub(crate) fn parse_and_cache_extensions<
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
-    raw_exts: &Option<Extensions<'_>>,
+    raw_exts: &Option<RawExtensions<'_>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {
     if let Some(cached) = cached_extensions {
@@ -435,7 +435,7 @@ pub(crate) fn encode_extensions<
     py: pyo3::Python<'p>,
     py_exts: &'p pyo3::PyAny,
     encode_ext: F,
-) -> pyo3::PyResult<Option<Extensions<'p>>> {
+) -> pyo3::PyResult<Option<RawExtensions<'p>>> {
     let unrecognized_extension_type: &pyo3::types::PyType = py
         .import(pyo3::intern!(py, "cryptography.x509"))?
         .getattr(pyo3::intern!(py, "UnrecognizedExtension"))?
@@ -478,9 +478,9 @@ pub(crate) fn encode_extensions<
     if exts.is_empty() {
         return Ok(None);
     }
-    Ok(Some(Extensions(Asn1ReadableOrWritable::new_write(
+    Ok(Some(Asn1ReadableOrWritable::new_write(
         asn1::SequenceOfWriter::new(exts),
-    ))))
+    )))
 }
 
 #[pyo3::prelude::pyfunction]
