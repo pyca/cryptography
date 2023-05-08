@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashSet;
+
 use crate::common;
 use crate::extensions;
 use crate::name;
@@ -14,6 +16,31 @@ pub struct Certificate<'a> {
 }
 
 impl Certificate<'_> {
+    /// Checks whether this certificate contains any duplicated extensions;
+    /// returns the first duplicate's OID.
+    ///
+    /// If no duplicates are found, returns `None`.
+    pub fn check_duplicate_extensions(&self) -> Option<asn1::ObjectIdentifier> {
+        let mut seen_oids = HashSet::new();
+
+        match &self.tbs_cert.extensions {
+            None => None,
+            Some(extensions) => {
+                let extensions = extensions.unwrap_read().clone();
+
+                for ext in extensions {
+                    if seen_oids.contains(&ext.extn_id) {
+                        return Some(ext.extn_id);
+                    }
+
+                    seen_oids.insert(ext.extn_id);
+                }
+
+                None
+            }
+        }
+    }
+
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
     pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<extensions::Extension> {
@@ -22,7 +49,7 @@ impl Certificate<'_> {
             Some(extensions) => {
                 let mut extensions = extensions.unwrap_read().clone();
 
-                extensions.find(|ext| ext.extn_id == oid)
+                extensions.find(|ext| &ext.extn_id == oid)
             }
         }
     }

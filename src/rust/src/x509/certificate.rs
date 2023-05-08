@@ -356,6 +356,17 @@ impl Certificate {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        match self.raw.borrow_value().check_duplicate_extensions() {
+            None => (),
+            Some(oid) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
+                return Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", oid),
+                    oid_obj.into_py(py),
+                )));
+            }
+        };
+
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,

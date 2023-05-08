@@ -9,8 +9,7 @@ use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawT
 use cryptography_x509::extensions::{AccessDescription, Extension, Extensions};
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
-use pyo3::{IntoPy, ToPyObject};
-use std::collections::HashSet;
+use pyo3::ToPyObject;
 
 /// Parse all sections in a PEM file and return the first matching section.
 /// If no matching sections are found, return an error.
@@ -400,17 +399,9 @@ pub(crate) fn parse_and_cache_extensions<
 
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);
-    let mut seen_oids = HashSet::new();
     if let Some(raw_exts) = raw_exts {
         for raw_ext in raw_exts.unwrap_read().clone() {
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
-
-            if seen_oids.contains(&raw_ext.extn_id) {
-                return Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", raw_ext.extn_id),
-                    oid_obj.into_py(py),
-                )));
-            }
 
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
                 Some(e) => e,
@@ -424,7 +415,6 @@ pub(crate) fn parse_and_cache_extensions<
                 (oid_obj, raw_ext.critical, extn_value),
             )?;
             exts.append(ext_obj)?;
-            seen_oids.insert(raw_ext.extn_id);
         }
     }
     let extensions = x509_module
