@@ -407,8 +407,7 @@ pub(crate) fn parse_and_cache_extensions<
                 return Err(exceptions::DuplicateExtension::new_err((
                     format!("Duplicate {} extension found", oid),
                     oid_obj.into_py(py),
-                ))
-                .into());
+                )));
             }
         };
 
