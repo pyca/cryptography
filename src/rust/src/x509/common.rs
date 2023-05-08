@@ -390,7 +390,7 @@ pub(crate) fn parse_and_cache_extensions<
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
-    raw_exts: &Option<RawExtensions<'_>>,
+    extensions: &Option<Extensions<'_>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {
     if let Some(cached) = cached_extensions {
@@ -399,8 +399,8 @@ pub(crate) fn parse_and_cache_extensions<
 
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);
-    if let Some(raw_exts) = raw_exts {
-        for raw_ext in raw_exts.unwrap_read().clone() {
+    if let Some(extensions) = extensions {
+        for raw_ext in extensions.as_ref().unwrap_read().clone() {
             let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
             let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {

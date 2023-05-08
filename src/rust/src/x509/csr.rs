@@ -211,7 +211,7 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let exts = self
+        let raw_exts = self
             .raw
             .borrow_value()
             .csr_info
@@ -222,9 +222,31 @@ impl CertificateSigningRequest {
                 )
             })?;
 
-        x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &exts, |oid, ext_data| {
-            certificate::parse_cert_ext(py, oid.clone(), ext_data)
-        })
+        let extensions = {
+            let extensions = match &raw_exts {
+                Some(raw_exts) => Some(raw_exts.try_into()),
+                None => None,
+            }
+            .transpose();
+
+            match extensions {
+                Ok(extensions) => extensions,
+                Err(oid) => {
+                    let oid_obj = oid_to_py_oid(py, &oid)?;
+                    return Err(exceptions::DuplicateExtension::new_err((
+                        format!("Duplicate {} extension found", oid),
+                        oid_obj.into_py(py),
+                    )));
+                }
+            }
+        };
+
+        x509::parse_and_cache_extensions(
+            py,
+            &mut self.cached_extensions,
+            &extensions,
+            |oid, ext_data| certificate::parse_cert_ext(py, oid.clone(), ext_data),
+        )
     }
 
     #[getter]

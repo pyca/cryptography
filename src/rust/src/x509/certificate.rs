@@ -193,9 +193,17 @@ impl Certificate {
         let val = self.raw.borrow_value();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
-        match tbs_precert.extensions {
-            Some(extensions) => {
-                let readable_extensions = extensions.unwrap_read().clone();
+        match val.tbs_cert.extensions() {
+            Err(oid) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
+                return Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", oid),
+                    oid_obj.into_py(py),
+                ))
+                .into());
+            }
+            Ok(Some(extensions)) => {
+                let readable_extensions = extensions.as_ref().unwrap_read().clone();
                 let ext_count = readable_extensions.len();
                 let filtered_extensions: Vec<Extension<'_>> = readable_extensions
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
@@ -210,11 +218,11 @@ impl Certificate {
                 let filtered_extensions: RawExtensions<'_> = Asn1ReadableOrWritable::new_write(
                     asn1::SequenceOfWriter::new(filtered_extensions),
                 );
-                tbs_precert.extensions = Some(filtered_extensions);
+                tbs_precert.raw_extensions = Some(filtered_extensions);
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            None => Err(CryptographyError::from(
+            Ok(None) => Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Could not find any extensions in TBS certificate",
                 ),
@@ -356,19 +364,22 @@ impl Certificate {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        // if let Some(oid) = self.raw.borrow_value().check_duplicate_extensions() {
-        //     let oid_obj = oid_to_py_oid(py, &oid)?;
-        //     return Err(exceptions::DuplicateExtension::new_err((
-        //         format!("Duplicate {} extension found", oid),
-        //         oid_obj.into_py(py),
-        //     )));
-        // }
+        let extensions: Option<Extensions<'_>> = match self.raw.borrow_value().extensions() {
+            Ok(exts) => exts,
+            Err(oid) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
+                return Err(exceptions::DuplicateExtension::new_err((
+                    format!("Duplicate {} extension found", oid),
+                    oid_obj.into_py(py),
+                )));
+            }
+        };
 
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &self.raw.borrow_value().tbs_cert.extensions,
+            &extensions,
             |oid, ext_data| match *oid {
                 oid::PRECERT_POISON_OID => {
                     asn1::parse_single::<()>(ext_data)?;
@@ -1043,7 +1054,7 @@ fn create_x509_certificate(
         spki: asn1::parse_single(spki_bytes)?,
         issuer_unique_id: None,
         subject_unique_id: None,
-        extensions: x509::common::encode_extensions(
+        raw_extensions: x509::common::encode_extensions(
             py,
             builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
