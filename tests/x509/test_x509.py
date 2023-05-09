@@ -1000,6 +1000,20 @@ class TestRSACertificate:
             cert.signature_hash_algorithm,
         )
 
+    def test_tbs_precertificate_bytes_duplicate_extensions_raises(
+        self, backend
+    ):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "two_basic_constraints.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(
+            x509.DuplicateExtension,
+            match="Duplicate 2.5.29.19 extension found",
+        ):
+            cert.tbs_precertificate_bytes
+
     def test_tbs_precertificate_bytes_no_extensions_raises(self, backend):
         cert = _load_cert(
             os.path.join("x509", "v1_cert.pem"),
