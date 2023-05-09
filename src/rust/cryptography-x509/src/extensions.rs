@@ -19,6 +19,10 @@ pub struct Extensions<'a> {
 }
 
 impl<'a> Extensions<'a> {
+    /// Create an `Extensions` from the given `RawExtensions`.
+    ///
+    /// Returns an `Err` variant containing the first duplicated extension's
+    /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
         raw: Option<&RawExtensions<'a>>,
     ) -> Result<Option<Self>, asn1::ObjectIdentifier> {
