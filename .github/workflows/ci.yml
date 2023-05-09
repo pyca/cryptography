@@ -41,10 +41,10 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.2"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of May 06, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "b1c6f45f1fe6d808555d04a41bb44b322e4f4c1d"}}
-          # Latest commit on the OpenSSL master branch, as of May 06, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "6aeb42eca97227c8235af0986d1525ee4a916504"}}
+          # Latest commit on the BoringSSL master branch, as of May 09, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "2aae3f58b42e75690f28853f712a2e204857b7f6"}}
+          # Latest commit on the OpenSSL master branch, as of May 09, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3868807d2fe5a72aa897ce5f7f7ba7e9cc3c09cb"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3.5.2
@@ -105,7 +105,7 @@ jobs:
           # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
           key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
       - name: Create nox environment
         run: |
             nox -v --install-only
@@ -182,7 +182,7 @@ jobs:
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' coverage
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox'
       - run: '/venv/bin/nox -v --install-only -s tests'
         env:
           RUSTUP_HOME: /root/.rustup
@@ -229,7 +229,7 @@ jobs:
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
       - name: Create nox environment
         run: nox -v --install-only -s tests
         env:
@@ -304,7 +304,7 @@ jobs:
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml] cffi
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' cffi
       - name: Create nox environment
         run: nox -v --install-only -s tests
         env:
@@ -379,7 +379,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
 
       - name: Clone wycheproof
         timeout-minutes: 2
@@ -442,7 +442,7 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox" coverage[toml]
+      - run: python -m pip install -c ci-constraints-requirements.txt "nox"
 
       - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
         with:
