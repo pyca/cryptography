@@ -14,9 +14,11 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
 
-pub struct Extensions<'a> {
-    inner: RawExtensions<'a>,
-}
+/// An invariant-enforcing wrapper for `RawExtensions`.
+///
+/// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
+/// that contains duplicated extensions (by OID).
+pub struct Extensions<'a>(RawExtensions<'a>);
 
 impl<'a> Extensions<'a> {
     /// Create an `Extensions` from the given `RawExtensions`.
@@ -36,9 +38,7 @@ impl<'a> Extensions<'a> {
                     }
                 }
 
-                Ok(Some(Self {
-                    inner: raw_exts.clone(),
-                }))
+                Ok(Some(Self(raw_exts.clone())))
             }
             None => Ok(None),
         }
@@ -47,14 +47,14 @@ impl<'a> Extensions<'a> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
     pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
-        let mut extensions = self.inner.unwrap_read().clone();
+        let mut extensions = self.0.unwrap_read().clone();
 
         extensions.find(|ext| &ext.extn_id == oid)
     }
 
     /// Returns a reference to the underlying extensions.
     pub fn as_raw(&self) -> &RawExtensions<'_> {
-        &self.inner
+        &self.0
     }
 }
 
