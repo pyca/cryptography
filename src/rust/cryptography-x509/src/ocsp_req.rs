@@ -24,12 +24,6 @@ pub struct TBSRequest<'a> {
     pub raw_request_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-impl<'a> TBSRequest<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        Extensions::from_raw_extensions(self.raw_request_extensions.as_ref())
-    }
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Request<'a> {
     pub req_cert: CertID<'a>,

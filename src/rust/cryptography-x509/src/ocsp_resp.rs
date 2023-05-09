@@ -4,7 +4,7 @@
 
 use crate::{
     certificate, common, crl,
-    extensions::{self, Extensions},
+    extensions::{self},
     name, ocsp_req,
 };
 
@@ -54,12 +54,6 @@ pub struct ResponseData<'a> {
     pub raw_response_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-impl<'a> ResponseData<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        Extensions::from_raw_extensions(self.raw_response_extensions.as_ref())
-    }
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub enum ResponderId<'a> {
     #[explicit(1)]
@@ -77,12 +71,6 @@ pub struct SingleResponse<'a> {
     pub next_update: Option<asn1::GeneralizedTime>,
     #[explicit(1)]
     pub raw_single_extensions: Option<extensions::RawExtensions<'a>>,
-}
-
-impl<'a> SingleResponse<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        Extensions::from_raw_extensions(self.raw_single_extensions.as_ref())
-    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
