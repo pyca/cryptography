@@ -14,12 +14,6 @@ pub struct Certificate<'a> {
     pub signature: asn1::BitString<'a>,
 }
 
-impl<'a> Certificate<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        self.tbs_cert.extensions()
-    }
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub struct TbsCertificate<'a> {
     #[explicit(0)]
