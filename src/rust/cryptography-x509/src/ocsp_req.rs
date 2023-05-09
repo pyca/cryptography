@@ -4,7 +4,7 @@
 
 use crate::{
     common,
-    extensions::{self, Extensions},
+    extensions::{self},
     name,
 };
 
