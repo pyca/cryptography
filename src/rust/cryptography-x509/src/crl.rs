@@ -38,23 +38,11 @@ pub struct TBSCertList<'a> {
     pub raw_crl_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-impl<'a> TBSCertList<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        Extensions::from_raw_extensions(self.raw_crl_extensions.as_ref())
-    }
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
     pub user_certificate: asn1::BigUint<'a>,
     pub revocation_date: common::Time,
     pub raw_crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
-}
-
-impl<'a> RevokedCertificate<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
-        Extensions::from_raw_extensions(self.raw_crl_entry_extensions.as_ref())
-    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
