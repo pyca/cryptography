@@ -14,7 +14,6 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
 
-#[derive(Hash, PartialEq, Clone)]
 pub struct Extensions<'a> {
     inner: RawExtensions<'a>,
 }
