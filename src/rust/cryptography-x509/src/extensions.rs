@@ -217,3 +217,38 @@ pub struct BasicConstraints {
     pub ca: bool,
     pub path_length: Option<u64>,
 }
+
+#[cfg(test)]
+mod tests {
+    use asn1::SequenceOfWriter;
+
+    use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
+
+    use super::{BasicConstraints, Extension, Extensions};
+
+    #[test]
+    fn test_get_extension() {
+        let extension_value = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let extension = Extension {
+            extn_id: BASIC_CONSTRAINTS_OID,
+            critical: true,
+            extn_value: &asn1::write_single(&extension_value).unwrap(),
+        };
+        let extensions = SequenceOfWriter::new(vec![extension]);
+
+        let der = asn1::write_single(&extensions).unwrap();
+
+        let extensions: Extensions =
+            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap()))
+                .unwrap()
+                .unwrap();
+
+        assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
+        assert!(&extensions
+            .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
+            .is_none());
+    }
+}
