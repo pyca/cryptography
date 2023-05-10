@@ -2,7 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{certificate, common, crl, extensions, name, ocsp_req};
+use crate::{
+    certificate, common, crl,
+    extensions::{self},
+    name, ocsp_req,
+};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct OCSPResponse<'a> {
@@ -47,7 +51,7 @@ pub struct ResponseData<'a> {
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
     >,
     #[explicit(1)]
-    pub response_extensions: Option<extensions::Extensions<'a>>,
+    pub raw_response_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -66,7 +70,7 @@ pub struct SingleResponse<'a> {
     #[explicit(0)]
     pub next_update: Option<asn1::GeneralizedTime>,
     #[explicit(1)]
-    pub single_extensions: Option<extensions::Extensions<'a>>,
+    pub raw_single_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

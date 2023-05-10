@@ -211,7 +211,7 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let exts = self
+        let raw_exts = self
             .raw
             .borrow_value()
             .csr_info
@@ -222,9 +222,12 @@ impl CertificateSigningRequest {
                 )
             })?;
 
-        x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &exts, |oid, ext_data| {
-            certificate::parse_cert_ext(py, oid.clone(), ext_data)
-        })
+        x509::parse_and_cache_extensions(
+            py,
+            &mut self.cached_extensions,
+            &raw_exts,
+            |oid, ext_data| certificate::parse_cert_ext(py, oid.clone(), ext_data),
+        )
     }
 
     #[getter]

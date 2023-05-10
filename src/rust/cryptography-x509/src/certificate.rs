@@ -4,6 +4,7 @@
 
 use crate::common;
 use crate::extensions;
+use crate::extensions::Extensions;
 use crate::name;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
@@ -31,7 +32,13 @@ pub struct TbsCertificate<'a> {
     #[implicit(2)]
     pub subject_unique_id: Option<asn1::BitString<'a>>,
     #[explicit(3)]
-    pub extensions: Option<extensions::Extensions<'a>>,
+    pub raw_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> TbsCertificate<'a> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+        Extensions::from_raw_extensions(self.raw_extensions.as_ref())
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]

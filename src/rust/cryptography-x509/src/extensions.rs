@@ -2,15 +2,61 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashSet;
+
 use crate::common;
 use crate::crl;
 use crate::name;
 
-pub type Extensions<'a> = common::Asn1ReadableOrWritable<
+pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     'a,
     asn1::SequenceOf<'a, Extension<'a>>,
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
+
+/// An invariant-enforcing wrapper for `RawExtensions`.
+///
+/// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
+/// that contains duplicated extensions (by OID).
+pub struct Extensions<'a>(RawExtensions<'a>);
+
+impl<'a> Extensions<'a> {
+    /// Create an `Extensions` from the given `RawExtensions`.
+    ///
+    /// Returns an `Err` variant containing the first duplicated extension's
+    /// OID, if there are any duplicates.
+    pub fn from_raw_extensions(
+        raw: Option<&RawExtensions<'a>>,
+    ) -> Result<Option<Self>, asn1::ObjectIdentifier> {
+        match raw {
+            Some(raw_exts) => {
+                let mut seen_oids = HashSet::new();
+
+                for ext in raw_exts.unwrap_read().clone() {
+                    if !seen_oids.insert(ext.extn_id.clone()) {
+                        return Err(ext.extn_id);
+                    }
+                }
+
+                Ok(Some(Self(raw_exts.clone())))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Retrieves the extension identified by the given OID,
+    /// or None if the extension is not present (or no extensions are present).
+    pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
+        let mut extensions = self.0.unwrap_read().clone();
+
+        extensions.find(|ext| &ext.extn_id == oid)
+    }
+
+    /// Returns a reference to the underlying extensions.
+    pub fn as_raw(&self) -> &RawExtensions<'_> {
+        &self.0
+    }
+}
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct Extension<'a> {
@@ -173,4 +219,39 @@ pub struct BasicConstraints {
     #[default(false)]
     pub ca: bool,
     pub path_length: Option<u64>,
+}
+
+#[cfg(test)]
+mod tests {
+    use asn1::SequenceOfWriter;
+
+    use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
+
+    use super::{BasicConstraints, Extension, Extensions};
+
+    #[test]
+    fn test_get_extension() {
+        let extension_value = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let extension = Extension {
+            extn_id: BASIC_CONSTRAINTS_OID,
+            critical: true,
+            extn_value: &asn1::write_single(&extension_value).unwrap(),
+        };
+        let extensions = SequenceOfWriter::new(vec![extension]);
+
+        let der = asn1::write_single(&extensions).unwrap();
+
+        let extensions: Extensions =
+            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap()))
+                .unwrap()
+                .unwrap();
+
+        assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
+        assert!(&extensions
+            .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
+            .is_none());
+    }
 }

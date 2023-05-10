@@ -26,7 +26,7 @@ pub struct CertificationRequestInfo<'a> {
 impl CertificationRequestInfo<'_> {
     pub fn get_extension_attribute(
         &self,
-    ) -> Result<Option<extensions::Extensions<'_>>, asn1::ParseError> {
+    ) -> Result<Option<extensions::RawExtensions<'_>>, asn1::ParseError> {
         for attribute in self.attributes.unwrap_read().clone() {
             if attribute.type_id == oid::EXTENSION_REQUEST
                 || attribute.type_id == oid::MS_EXTENSION_REQUEST

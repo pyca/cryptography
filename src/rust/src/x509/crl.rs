@@ -260,11 +260,13 @@ impl CertificateRevocationList {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        let tbs_cert_list = &self.owned.borrow_value().tbs_cert_list;
+
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &self.owned.borrow_value().tbs_cert_list.crl_extensions,
+            &tbs_cert_list.raw_crl_extensions,
             |oid, ext_data| match *oid {
                 oid::CRL_NUMBER_OID => {
                     let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
@@ -498,7 +500,7 @@ impl RevokedCertificate {
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &self.owned.borrow_value().crl_entry_extensions,
+            &self.owned.borrow_value().raw_crl_entry_extensions,
             |oid, ext_data| parse_crl_entry_ext(py, oid.clone(), ext_data),
         )
     }
@@ -594,7 +596,7 @@ fn create_x509_crl(
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),
             revocation_date: x509::certificate::time_from_py(py, py_revocation_date)?,
-            crl_entry_extensions: x509::common::encode_extensions(
+            raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
                 extensions::encode_extension,
@@ -618,7 +620,7 @@ fn create_x509_crl(
                 asn1::SequenceOfWriter::new(revoked_certs),
             ))
         },
-        crl_extensions: x509::common::encode_extensions(
+        raw_crl_extensions: x509::common::encode_extensions(
             py,
             builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,

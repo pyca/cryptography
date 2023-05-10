@@ -108,11 +108,13 @@ impl OCSPRequest {
 
     #[getter]
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        let tbs_request = &self.raw.borrow_value().tbs_request;
+
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &self.raw.borrow_value().tbs_request.request_extensions,
+            &tbs_request.raw_request_extensions,
             |oid, value| {
                 match *oid {
                     oid::NONCE_OID => {
@@ -228,7 +230,7 @@ fn create_ocsp_request(
             request_list: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
                 &reqs,
             )),
-            request_extensions: extensions,
+            raw_request_extensions: extensions,
         },
         optional_signature: None,
     };
