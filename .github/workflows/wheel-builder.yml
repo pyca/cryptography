@@ -104,6 +104,7 @@ jobs:
           rustc --version
         env:
           RUSTUP_HOME: /root/.rustup
+          CARGO_HOME: /root/.cargo
 
       - uses: actions/download-artifact@v3.0.2
         with:
