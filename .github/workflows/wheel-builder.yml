@@ -102,6 +102,8 @@ jobs:
           rustup toolchain add nightly
           rustup default nightly
           rustc --version
+        env:
+          RUSTUP_HOME: /root/.rustup
 
       - uses: actions/download-artifact@v3.0.2
         with:
