@@ -194,8 +194,17 @@ impl Certificate {
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
         match val.tbs_cert.extensions() {
-            Ok(Some(extensions)) => {
-                let readable_extensions = extensions.as_raw().unwrap_read().clone();
+            Ok(extensions) => {
+                let readable_extensions = match extensions.as_raw() {
+                    Some(raw_exts) => raw_exts.unwrap_read().clone(),
+                    None => {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "Could not find any extensions in TBS certificate",
+                            ),
+                        ))
+                    }
+                };
                 let ext_count = readable_extensions.len();
                 let filtered_extensions: Vec<Extension<'_>> = readable_extensions
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
@@ -210,15 +219,11 @@ impl Certificate {
                 let filtered_extensions: RawExtensions<'_> = Asn1ReadableOrWritable::new_write(
                     asn1::SequenceOfWriter::new(filtered_extensions),
                 );
+
                 tbs_precert.raw_extensions = Some(filtered_extensions);
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            Ok(None) => Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Could not find any extensions in TBS certificate",
-                ),
-            )),
             Err(oid) => {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 Err(exceptions::DuplicateExtension::new_err((
