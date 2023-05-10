@@ -18,7 +18,7 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
 ///
 /// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
 /// that contains duplicated extensions (by OID).
-pub struct Extensions<'a>(RawExtensions<'a>);
+pub struct Extensions<'a>(Option<RawExtensions<'a>>);
 
 impl<'a> Extensions<'a> {
     /// Create an `Extensions` from the given `RawExtensions`.
@@ -27,7 +27,7 @@ impl<'a> Extensions<'a> {
     /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
         raw: Option<&RawExtensions<'a>>,
-    ) -> Result<Option<Self>, asn1::ObjectIdentifier> {
+    ) -> Result<Self, asn1::ObjectIdentifier> {
         match raw {
             Some(raw_exts) => {
                 let mut seen_oids = HashSet::new();
@@ -38,22 +38,22 @@ impl<'a> Extensions<'a> {
                     }
                 }
 
-                Ok(Some(Self(raw_exts.clone())))
+                Ok(Self(Some(raw_exts.clone())))
             }
-            None => Ok(None),
+            None => Ok(Self(None)),
         }
     }
 
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
     pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
-        let mut extensions = self.0.unwrap_read().clone();
-
-        extensions.find(|ext| &ext.extn_id == oid)
+        self.0
+            .as_ref()
+            .and_then(|exts| exts.unwrap_read().clone().find(|ext| &ext.extn_id == oid))
     }
 
     /// Returns a reference to the underlying extensions.
-    pub fn as_raw(&self) -> &RawExtensions<'_> {
+    pub fn as_raw(&self) -> &Option<RawExtensions<'_>> {
         &self.0
     }
 }
@@ -245,9 +245,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
 
         let extensions: Extensions =
-            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap()))
-                .unwrap()
-                .unwrap();
+            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions
