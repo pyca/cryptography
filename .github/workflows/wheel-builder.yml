@@ -98,6 +98,11 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.MANYLINUX.NAME == 'musllinux_1_1_aarch64'
 
+      - run: |
+          rustup toolchain add nightly
+          rustup default nightly
+          rustc --version
+
       - uses: actions/download-artifact@v3.0.2
         with:
           name: cryptography-sdist
