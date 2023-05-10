@@ -33,7 +33,7 @@ coverage==7.2.5
     # via pytest-cov
 distlib==0.3.6
     # via virtualenv
-docutils==0.18.1
+docutils==0.20
     # via
     #   readme-renderer
     #   sphinx
