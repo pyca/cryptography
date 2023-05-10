@@ -43,7 +43,7 @@ runs:
           ~/.cargo/registry/cache/
           src/rust/target/
           ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-3-${{ hashFiles('**/Cargo.lock') }}-${{ steps.rust-version.version }}
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-3-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}-${{ steps.rust-version.version }}
     - name: Size of cache items
       run: |
         du -sh ~/.cargo/registry/index/
