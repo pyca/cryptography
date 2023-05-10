@@ -9,7 +9,7 @@ use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawT
 use cryptography_x509::extensions::{AccessDescription, Extension, Extensions, RawExtensions};
 use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
-use pyo3::ToPyObject;
+use pyo3::{IntoPy, ToPyObject};
 
 /// Parse all sections in a PEM file and return the first matching section.
 /// If no matching sections are found, return an error.
@@ -397,8 +397,16 @@ pub(crate) fn parse_and_cache_extensions<
         return Ok(cached.clone_ref(py));
     }
 
-    let extensions = Extensions::from_raw_extensions(raw_extensions.as_ref())
-        .map_err(CryptographyError::from)?;
+    let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {
+        Ok(extensions) => extensions,
+        Err(oid) => {
+            let oid_obj = oid_to_py_oid(py, &oid)?;
+            return Err(exceptions::DuplicateExtension::new_err((
+                format!("Duplicate {} extension found", oid),
+                oid_obj.into_py(py),
+            )));
+        }
+    };
 
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let exts = pyo3::types::PyList::empty(py);

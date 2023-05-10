@@ -2,29 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid, py_uint_to_big_endian_bytes};
+use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509;
 use crate::x509::{certificate, sct};
-use crate::{exceptions, x509};
-use cryptography_x509::extensions::ExtensionsError;
 use cryptography_x509::{common, crl, extensions, oid};
-use pyo3::IntoPy;
-
-impl From<ExtensionsError> for CryptographyError {
-    fn from(err: ExtensionsError) -> Self {
-        match err {
-            ExtensionsError::DuplicateOid(oid) => pyo3::Python::with_gil(|py| {
-                let oid_obj =
-                    oid_to_py_oid(py, &oid).expect("Failed to convert OID to Python object");
-                exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
-                    oid_obj.into_py(py),
-                ))
-                .into()
-            }),
-        }
-    }
-}
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,

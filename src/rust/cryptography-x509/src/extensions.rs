@@ -14,10 +14,6 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
 
-pub enum ExtensionsError {
-    DuplicateOid(asn1::ObjectIdentifier),
-}
-
 /// An invariant-enforcing wrapper for `RawExtensions`.
 ///
 /// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
@@ -31,14 +27,14 @@ impl<'a> Extensions<'a> {
     /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
         raw: Option<&RawExtensions<'a>>,
-    ) -> Result<Option<Self>, ExtensionsError> {
+    ) -> Result<Option<Self>, asn1::ObjectIdentifier> {
         match raw {
             Some(raw_exts) => {
                 let mut seen_oids = HashSet::new();
 
                 for ext in raw_exts.unwrap_read().clone() {
                     if !seen_oids.insert(ext.extn_id.clone()) {
-                        return Err(ExtensionsError::DuplicateOid(ext.extn_id));
+                        return Err(ext.extn_id);
                     }
                 }
 
