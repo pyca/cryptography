@@ -5,6 +5,7 @@
 use crate::common;
 use crate::extensions;
 use crate::extensions::Extensions;
+use crate::extensions::ExtensionsError;
 use crate::name;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
@@ -36,7 +37,7 @@ pub struct TbsCertificate<'a> {
 }
 
 impl<'a> TbsCertificate<'a> {
-    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, asn1::ObjectIdentifier> {
+    pub fn extensions(&'a self) -> Result<Option<Extensions<'a>>, ExtensionsError> {
         Extensions::from_raw_extensions(self.raw_extensions.as_ref())
     }
 }
