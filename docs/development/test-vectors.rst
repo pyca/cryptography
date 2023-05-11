@@ -289,6 +289,8 @@ X.509
   bytes from ``cryptography-scts.pem``, with the SCT list extension removed.
 * ``belgian-eid-invalid-visiblestring.pem`` - A certificate with UTF-8
   bytes in a ``VisibleString`` type.
+* ``ee-pss-sha1-cert.pem`` - An RSA PSS certificate using a SHA1 signature and
+  SHA1 for MGF1 from the OpenSSL test suite.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~
