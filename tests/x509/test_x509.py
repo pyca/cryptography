@@ -2429,6 +2429,8 @@ class TestCertificateBuilder:
     def test_sign_pss(
         self, rsa_key_2048: rsa.RSAPrivateKey, alg, mgf_alg, backend
     ):
+        if not backend.signature_hash_supported(alg):
+            pytest.skip(f"{alg} signature not supported")
         builder = (
             x509.CertificateBuilder()
             .subject_name(
