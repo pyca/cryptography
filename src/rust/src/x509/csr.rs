@@ -235,9 +235,10 @@ impl CertificateSigningRequest {
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'_>,
     ) -> CryptographyResult<bool> {
-        Ok(sign::verify_signature_with_oid(
+        let public_key = slf.public_key(py)?;
+        Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            slf.public_key(py)?,
+            public_key,
             &slf.raw.borrow_value().signature_alg,
             slf.raw.borrow_value().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_value().csr_info)?,

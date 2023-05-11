@@ -1558,6 +1558,50 @@ class TestRSACertificate:
             [x509.TLSFeatureType.status_request]
         )
 
+    def test_verify_directly_issued_by_rsa_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        subject_private_key = RSA_KEY_2048_ALT.private_key(
+            unsafe_skip_rsa_key_validation=True
+        )
+
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(1)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2030, 1, 1))
+        )
+        ca = builder.sign(rsa_key_2048, hashes.SHA256())
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "leaf")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA CA")])
+            )
+            .public_key(subject_private_key.public_key())
+            .serial_number(100)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2025, 1, 1))
+        )
+        cert = builder.sign(
+            rsa_key_2048,
+            hashes.SHA256(),
+            rsa_padding=padding.PSS(
+                padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            ),
+        )
+        cert.verify_directly_issued_by(ca)
+
     def test_verify_directly_issued_by_rsa(
         self, rsa_key_2048: rsa.RSAPrivateKey
     ):
