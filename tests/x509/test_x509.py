@@ -765,6 +765,21 @@ class TestRSAPSSCertificate:
             cert.signature_hash_algorithm,
         )
 
+    def test_load_pss_sha1_mgf1_sha1(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "ee-pss-sha1-cert.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        assert isinstance(cert, x509.Certificate)
+        pub_key = cert.public_key()
+        assert isinstance(pub_key, rsa.RSAPublicKey)
+        pss = cert.signature_algorithm_parameters
+        assert isinstance(pss, padding.PSS)
+        assert isinstance(pss._mgf, padding.MGF1)
+        assert isinstance(pss._mgf._algorithm, hashes.SHA1)
+        assert pss._salt_length == 20
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
+
     def test_invalid_mgf(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "rsa_pss_cert_invalid_mgf.der"),
@@ -2403,6 +2418,154 @@ class TestCertificateBuilder:
         assert parsed.not_before_tag == 0x17
         # GENERALIZED TIME
         assert parsed.not_after_tag == 0x18
+
+    @pytest.mark.parametrize(
+        ("alg", "mgf_alg"),
+        [
+            (hashes.SHA512(), hashes.SHA256()),
+            (hashes.SHA3_512(), hashes.SHA3_256()),
+        ],
+    )
+    def test_sign_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey, alg, mgf_alg, backend
+    ):
+        if not backend.signature_hash_supported(alg):
+            pytest.skip(f"{alg} signature not supported")
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(mgf_alg), salt_length=alg.digest_size
+        )
+        cert = builder.sign(rsa_key_2048, alg, rsa_padding=pss)
+        pk = cert.public_key()
+        assert isinstance(pk, rsa.RSAPublicKey)
+        assert isinstance(cert.signature_hash_algorithm, type(alg))
+        cert_params = cert.signature_algorithm_parameters
+        assert isinstance(cert_params, padding.PSS)
+        assert cert_params._salt_length == pss._salt_length
+        assert isinstance(cert_params._mgf, padding.MGF1)
+        assert isinstance(cert_params._mgf._algorithm, type(mgf_alg))
+        pk.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            cert_params,
+            alg,
+        )
+
+    @pytest.mark.parametrize(
+        ("padding_len", "computed_len"),
+        [
+            (padding.PSS.MAX_LENGTH, 222),
+            (padding.PSS.DIGEST_LENGTH, 32),
+        ],
+    )
+    def test_sign_pss_length_options(
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        padding_len,
+        computed_len,
+        backend,
+    ):
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
+        )
+        cert = builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+        assert isinstance(cert.signature_algorithm_parameters, padding.PSS)
+        assert cert.signature_algorithm_parameters._salt_length == computed_len
+
+    def test_sign_pss_auto_unsupported(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.AUTO
+        )
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+
+    def test_sign_invalid_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+            )
+        eckey = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            builder.sign(
+                eckey, hashes.SHA256(), rsa_padding=padding.PKCS1v15()
+            )
+
+    def test_sign_pss_hash_none(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+        )
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32)
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, None, rsa_padding=pss)
 
     def test_no_subject_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         subject_private_key = rsa_key_2048

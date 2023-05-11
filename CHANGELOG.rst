@@ -23,6 +23,9 @@ Changelog
 * Added support for obtaining X.509 certificate signature algorithm parameters
   (including PSS) via
   :meth:`~cryptography.x509.Certificate.signature_algorithm_parameters`.
+* Support signing :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+  X.509 certificates via the new keyword-only argument ``rsa_padding`` on
+  :meth:`~cryptography.x509.CertificateBuilder.sign`.
 
 .. _v40-0-2:
 

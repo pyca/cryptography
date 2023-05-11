@@ -6,7 +6,7 @@ use crate::oid;
 use asn1::Asn1DefinedByWritable;
 use std::marker::PhantomData;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone, Eq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone, Eq, Debug)]
 pub struct AlgorithmIdentifier<'a> {
     pub oid: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(oid)]
@@ -19,7 +19,7 @@ impl AlgorithmIdentifier<'_> {
     }
 }
 
-#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone)]
+#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone, Debug)]
 pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::SHA1_OID)]
     Sha1(asn1::Null),
@@ -31,6 +31,14 @@ pub enum AlgorithmParameters<'a> {
     Sha384(asn1::Null),
     #[defined_by(oid::SHA512_OID)]
     Sha512(asn1::Null),
+    #[defined_by(oid::SHA3_224_OID)]
+    Sha3_224(asn1::Null),
+    #[defined_by(oid::SHA3_256_OID)]
+    Sha3_256(asn1::Null),
+    #[defined_by(oid::SHA3_384_OID)]
+    Sha3_384(asn1::Null),
+    #[defined_by(oid::SHA3_512_OID)]
+    Sha3_512(asn1::Null),
 
     #[defined_by(oid::ED25519_OID)]
     Ed25519,
@@ -225,7 +233,7 @@ pub const PSS_SHA1_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 // This is defined as an AlgorithmIdentifier in RFC 4055,
 // but the mask generation algorithm **must** contain an AlgorithmIdentifier
 // in its params, so we define it this way.
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
 pub struct MaskGenAlgorithm<'a> {
     pub oid: asn1::ObjectIdentifier,
     pub params: AlgorithmIdentifier<'a>,
@@ -245,7 +253,7 @@ pub const PSS_SHA1_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
 //                               mgf1SHA1Identifier,
 //     saltLength         [2] INTEGER DEFAULT 20,
 //     trailerField       [3] INTEGER DEFAULT 1  }
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
 pub struct RsaPssParameters<'a> {
     #[explicit(0)]
     #[default(PSS_SHA1_HASH_ALG)]
@@ -258,7 +266,7 @@ pub struct RsaPssParameters<'a> {
     pub salt_length: u16,
     #[explicit(3)]
     #[default(1u8)]
-    _trailer_field: u8,
+    pub _trailer_field: u8,
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the

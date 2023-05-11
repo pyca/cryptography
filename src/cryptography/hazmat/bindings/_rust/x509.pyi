@@ -6,6 +6,7 @@ import typing
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.padding import PSS, PKCS1v15
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 
 def load_pem_x509_certificate(data: bytes) -> x509.Certificate: ...
@@ -23,6 +24,7 @@ def create_x509_certificate(
     builder: x509.CertificateBuilder,
     private_key: PrivateKeyTypes,
     hash_algorithm: typing.Optional[hashes.HashAlgorithm],
+    padding: typing.Optional[typing.Union[PKCS1v15, PSS]],
 ) -> x509.Certificate: ...
 def create_x509_csr(
     builder: x509.CertificateSigningRequestBuilder,
