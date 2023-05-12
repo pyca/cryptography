@@ -418,14 +418,14 @@ impl DHParameters {
 
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "dh")?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(generate_parameters))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(private_key_from_ptr))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(public_key_from_ptr))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_der_parameters))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_pem_parameters))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_private_numbers))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_public_numbers))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_parameter_numbers))?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_private_numbers, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_public_numbers, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_parameter_numbers, m)?)?;
 
     m.add_class::<DHPrivateKey>()?;
     m.add_class::<DHPublicKey>()?;

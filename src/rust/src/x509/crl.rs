@@ -648,9 +648,9 @@ fn create_x509_crl(
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_crl))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_crl))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_crl))?;
+    module.add_function(pyo3::wrap_pyfunction!(load_der_x509_crl, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_crl, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_x509_crl, module)?)?;
 
     module.add_class::<CertificateRevocationList>()?;
     module.add_class::<RevokedCertificate>()?;

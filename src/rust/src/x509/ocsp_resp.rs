@@ -738,8 +738,8 @@ fn create_ocsp_response(
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_response))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(create_ocsp_response))?;
+    module.add_function(pyo3::wrap_pyfunction!(load_der_ocsp_response, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_ocsp_response, module)?)?;
 
     Ok(())
 }

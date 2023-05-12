@@ -1077,10 +1077,10 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_der_x509_certificate))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificate))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_pem_x509_certificates))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(create_x509_certificate))?;
+    module.add_function(pyo3::wrap_pyfunction!(load_der_x509_certificate, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_certificate, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_certificates, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_x509_certificate, module)?)?;
 
     module.add_class::<Certificate>()?;
 

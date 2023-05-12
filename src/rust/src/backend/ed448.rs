@@ -161,11 +161,11 @@ impl Ed448PublicKey {
 
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "ed448")?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(generate_key))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(private_key_from_ptr))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(public_key_from_ptr))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_private_bytes))?;
-    m.add_wrapped(pyo3::wrap_pyfunction!(from_public_bytes))?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
 
     m.add_class::<Ed448PrivateKey>()?;
     m.add_class::<Ed448PublicKey>()?;
