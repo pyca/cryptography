@@ -180,12 +180,12 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyEr
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(parse_spki_for_data))?;
+    submod.add_function(pyo3::wrap_pyfunction!(parse_spki_for_data, submod)?)?;
 
-    submod.add_wrapped(pyo3::wrap_pyfunction!(decode_dss_signature))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(encode_dss_signature))?;
+    submod.add_function(pyo3::wrap_pyfunction!(decode_dss_signature, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(encode_dss_signature, submod)?)?;
 
-    submod.add_wrapped(pyo3::wrap_pyfunction!(test_parse_certificate))?;
+    submod.add_function(pyo3::wrap_pyfunction!(test_parse_certificate, submod)?)?;
 
     Ok(submod)
 }

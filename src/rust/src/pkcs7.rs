@@ -316,8 +316,8 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "pkcs7")?;
 
-    submod.add_wrapped(pyo3::wrap_pyfunction!(serialize_certificates))?;
-    submod.add_wrapped(pyo3::wrap_pyfunction!(sign_and_serialize))?;
+    submod.add_function(pyo3::wrap_pyfunction!(serialize_certificates, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(sign_and_serialize, submod)?)?;
 
     Ok(submod)
 }

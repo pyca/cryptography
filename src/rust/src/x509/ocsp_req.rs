@@ -239,8 +239,8 @@ fn create_ocsp_request(
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(load_der_ocsp_request))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(create_ocsp_request))?;
+    module.add_function(pyo3::wrap_pyfunction!(load_der_ocsp_request, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_ocsp_request, module)?)?;
 
     Ok(())
 }

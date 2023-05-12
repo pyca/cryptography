@@ -555,8 +555,8 @@ pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTim
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_extension_value))?;
-    module.add_wrapped(pyo3::wrap_pyfunction!(encode_name_bytes))?;
+    module.add_function(pyo3::wrap_pyfunction!(encode_extension_value, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(encode_name_bytes, module)?)?;
 
     Ok(())
 }

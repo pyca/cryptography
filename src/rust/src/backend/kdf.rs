@@ -52,9 +52,9 @@ fn derive_scrypt<'p>(
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "kdf")?;
 
-    m.add_wrapped(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac))?;
+    m.add_function(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac, m)?)?;
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
-    m.add_wrapped(pyo3::wrap_pyfunction!(derive_scrypt))?;
+    m.add_function(pyo3::wrap_pyfunction!(derive_scrypt, m)?)?;
 
     Ok(m)
 }
