@@ -269,29 +269,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let sig_oids_to_hash = py
-            .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
-            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
-        match &self.raw.borrow_value().signature_alg.params {
-            common::AlgorithmParameters::RsaPss(opt_pss) => {
-                let pss = opt_pss.as_ref().ok_or_else(|| {
-                    pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
-                })?;
-                hash_oid_py_hash(py, pss.hash_algorithm.oid().clone())
-            }
-            _ => {
-                let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
-                match hash_alg {
-                    Ok(data) => Ok(data),
-                    Err(_) => Err(CryptographyError::from(
-                        exceptions::UnsupportedAlgorithm::new_err(format!(
-                            "Signature algorithm OID: {} not recognized",
-                            self.raw.borrow_value().signature_alg.oid()
-                        )),
-                    )),
-                }
-            }
-        }
+        identify_signature_hash_algorithm(py, &self.raw.borrow_value().signature_alg)
     }
 
     #[getter]
@@ -304,11 +282,7 @@ impl Certificate {
         &'p self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        identify_signature_algorithm_parameters(
-            py,
-            &self.raw.borrow_value().signature_alg.params,
-            self.signature_hash_algorithm(py)?,
-        )
+        identify_signature_algorithm_parameters(py, &self.raw.borrow_value().signature_alg)
     }
 
     #[getter]
@@ -1020,12 +994,41 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     }
 }
 
+pub(crate) fn identify_signature_hash_algorithm<'p>(
+    py: pyo3::Python<'p>,
+    signature_algorithm: &common::AlgorithmIdentifier<'_>,
+) -> CryptographyResult<&'p pyo3::PyAny> {
+    let sig_oids_to_hash = py
+        .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
+        .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
+    match &signature_algorithm.params {
+        common::AlgorithmParameters::RsaPss(opt_pss) => {
+            let pss = opt_pss.as_ref().ok_or_else(|| {
+                pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
+            })?;
+            hash_oid_py_hash(py, pss.hash_algorithm.oid().clone())
+        }
+        _ => {
+            let py_sig_alg_oid = oid_to_py_oid(py, signature_algorithm.oid())?;
+            let hash_alg = sig_oids_to_hash.get_item(py_sig_alg_oid);
+            match hash_alg {
+                Ok(data) => Ok(data),
+                Err(_) => Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err(format!(
+                        "Signature algorithm OID: {} not recognized",
+                        signature_algorithm.oid()
+                    )),
+                )),
+            }
+        }
+    }
+}
+
 pub(crate) fn identify_signature_algorithm_parameters<'p>(
     py: pyo3::Python<'p>,
-    params: &common::AlgorithmParameters<'p>,
-    signature_hash_algorithm: &pyo3::PyAny,
+    signature_algorithm: &common::AlgorithmIdentifier<'_>,
 ) -> CryptographyResult<&'p pyo3::PyAny> {
-    match params {
+    match &signature_algorithm.params {
         common::AlgorithmParameters::RsaPss(opt_pss) => {
             let pss = opt_pss.as_ref().ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
@@ -1077,13 +1080,18 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
         | common::AlgorithmParameters::EcDsaWithSha3_224
         | common::AlgorithmParameters::EcDsaWithSha3_256
         | common::AlgorithmParameters::EcDsaWithSha3_384
-        | common::AlgorithmParameters::EcDsaWithSha3_512 => Ok(py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.ec"
-            ))?
-            .getattr(pyo3::intern!(py, "ECDSA"))?
-            .call1((signature_hash_algorithm,))?),
+        | common::AlgorithmParameters::EcDsaWithSha3_512 => {
+            let signature_hash_algorithm =
+                identify_signature_hash_algorithm(py, signature_algorithm)?;
+
+            Ok(py
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.asymmetric.ec"
+                ))?
+                .getattr(pyo3::intern!(py, "ECDSA"))?
+                .call1((signature_hash_algorithm,))?)
+        }
         _ => Ok(py.None().into_ref(py)),
     }
 }
