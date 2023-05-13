@@ -304,67 +304,11 @@ impl Certificate {
         &'p self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        match &self.raw.borrow_value().signature_alg.params {
-            common::AlgorithmParameters::RsaPss(opt_pss) => {
-                let pss = opt_pss.as_ref().ok_or_else(|| {
-                    pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
-                })?;
-                if pss.mask_gen_algorithm.oid != oid::MGF1_OID {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyValueError::new_err(format!(
-                            "Unsupported mask generation OID: {}",
-                            pss.mask_gen_algorithm.oid
-                        )),
-                    ));
-                }
-                let py_mask_gen_hash_alg =
-                    hash_oid_py_hash(py, pss.mask_gen_algorithm.params.oid().clone())?;
-                let padding = py.import(pyo3::intern!(
-                    py,
-                    "cryptography.hazmat.primitives.asymmetric.padding"
-                ))?;
-                let py_mgf = padding
-                    .getattr(pyo3::intern!(py, "MGF1"))?
-                    .call1((py_mask_gen_hash_alg,))?;
-                Ok(padding
-                    .getattr(pyo3::intern!(py, "PSS"))?
-                    .call1((py_mgf, pss.salt_length))?)
-            }
-            common::AlgorithmParameters::RsaWithSha1(_)
-            | common::AlgorithmParameters::RsaWithSha1Alt(_)
-            | common::AlgorithmParameters::RsaWithSha224(_)
-            | common::AlgorithmParameters::RsaWithSha256(_)
-            | common::AlgorithmParameters::RsaWithSha384(_)
-            | common::AlgorithmParameters::RsaWithSha512(_)
-            | common::AlgorithmParameters::RsaWithSha3_224(_)
-            | common::AlgorithmParameters::RsaWithSha3_256(_)
-            | common::AlgorithmParameters::RsaWithSha3_384(_)
-            | common::AlgorithmParameters::RsaWithSha3_512(_) => {
-                let pkcs = py
-                    .import(pyo3::intern!(
-                        py,
-                        "cryptography.hazmat.primitives.asymmetric.padding"
-                    ))?
-                    .getattr(pyo3::intern!(py, "PKCS1v15"))?
-                    .call0()?;
-                Ok(pkcs)
-            }
-            common::AlgorithmParameters::EcDsaWithSha224
-            | common::AlgorithmParameters::EcDsaWithSha256
-            | common::AlgorithmParameters::EcDsaWithSha384
-            | common::AlgorithmParameters::EcDsaWithSha512
-            | common::AlgorithmParameters::EcDsaWithSha3_224
-            | common::AlgorithmParameters::EcDsaWithSha3_256
-            | common::AlgorithmParameters::EcDsaWithSha3_384
-            | common::AlgorithmParameters::EcDsaWithSha3_512 => Ok(py
-                .import(pyo3::intern!(
-                    py,
-                    "cryptography.hazmat.primitives.asymmetric.ec"
-                ))?
-                .getattr(pyo3::intern!(py, "ECDSA"))?
-                .call1((self.signature_hash_algorithm(py)?,))?),
-            _ => Ok(py.None().into_ref(py)),
-        }
+        identify_signature_algorithm_parameters(
+            py,
+            &self.raw.borrow_value().signature_alg.params,
+            self.signature_hash_algorithm(py)?,
+        )
     }
 
     #[getter]
@@ -1073,6 +1017,74 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     let v = 1 << (7 - (n & 0x07));
     if set {
         vals[idx] |= v;
+    }
+}
+
+pub(crate) fn identify_signature_algorithm_parameters<'p>(
+    py: pyo3::Python<'p>,
+    params: &common::AlgorithmParameters<'p>,
+    signature_hash_algorithm: &pyo3::PyAny,
+) -> CryptographyResult<&'p pyo3::PyAny> {
+    match params {
+        common::AlgorithmParameters::RsaPss(opt_pss) => {
+            let pss = opt_pss.as_ref().ok_or_else(|| {
+                pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
+            })?;
+            if pss.mask_gen_algorithm.oid != oid::MGF1_OID {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(format!(
+                        "Unsupported mask generation OID: {}",
+                        pss.mask_gen_algorithm.oid
+                    )),
+                ));
+            }
+            let py_mask_gen_hash_alg =
+                hash_oid_py_hash(py, pss.mask_gen_algorithm.params.oid().clone())?;
+            let padding = py.import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.asymmetric.padding"
+            ))?;
+            let py_mgf = padding
+                .getattr(pyo3::intern!(py, "MGF1"))?
+                .call1((py_mask_gen_hash_alg,))?;
+            Ok(padding
+                .getattr(pyo3::intern!(py, "PSS"))?
+                .call1((py_mgf, pss.salt_length))?)
+        }
+        common::AlgorithmParameters::RsaWithSha1(_)
+        | common::AlgorithmParameters::RsaWithSha1Alt(_)
+        | common::AlgorithmParameters::RsaWithSha224(_)
+        | common::AlgorithmParameters::RsaWithSha256(_)
+        | common::AlgorithmParameters::RsaWithSha384(_)
+        | common::AlgorithmParameters::RsaWithSha512(_)
+        | common::AlgorithmParameters::RsaWithSha3_224(_)
+        | common::AlgorithmParameters::RsaWithSha3_256(_)
+        | common::AlgorithmParameters::RsaWithSha3_384(_)
+        | common::AlgorithmParameters::RsaWithSha3_512(_) => {
+            let pkcs = py
+                .import(pyo3::intern!(
+                    py,
+                    "cryptography.hazmat.primitives.asymmetric.padding"
+                ))?
+                .getattr(pyo3::intern!(py, "PKCS1v15"))?
+                .call0()?;
+            Ok(pkcs)
+        }
+        common::AlgorithmParameters::EcDsaWithSha224
+        | common::AlgorithmParameters::EcDsaWithSha256
+        | common::AlgorithmParameters::EcDsaWithSha384
+        | common::AlgorithmParameters::EcDsaWithSha512
+        | common::AlgorithmParameters::EcDsaWithSha3_224
+        | common::AlgorithmParameters::EcDsaWithSha3_256
+        | common::AlgorithmParameters::EcDsaWithSha3_384
+        | common::AlgorithmParameters::EcDsaWithSha3_512 => Ok(py
+            .import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.asymmetric.ec"
+            ))?
+            .getattr(pyo3::intern!(py, "ECDSA"))?
+            .call1((signature_hash_algorithm,))?),
+        _ => Ok(py.None().into_ref(py)),
     }
 }
 
