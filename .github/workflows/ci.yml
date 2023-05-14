@@ -267,7 +267,7 @@ jobs:
         id: rust-toolchain
         with:
           toolchain: ${{ matrix.RUST }}
-          components: llvm-tools-preview
+          components: llvm-tools-preview,rustfmt
       - name: Cache rust and pip
         id: cargo-cache
         uses: ./.github/actions/cache
