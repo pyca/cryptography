@@ -393,7 +393,7 @@ impl CertificateRevocationList {
         // being an invalid signature.
         sign::identify_public_key_type(py, public_key)?;
 
-        Ok(sign::verify_signature_with_oid(
+        Ok(sign::verify_signature_with_signature_algorithm(
             py,
             public_key,
             &slf.owned.borrow_value().signature_algorithm,

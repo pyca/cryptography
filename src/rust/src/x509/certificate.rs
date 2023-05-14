@@ -335,7 +335,7 @@ impl Certificate {
                 ),
             ));
         };
-        sign::verify_signature_with_oid(
+        sign::verify_signature_with_signature_algorithm(
             py,
             issuer.public_key(py)?,
             &self.raw.borrow_value().signature_alg,

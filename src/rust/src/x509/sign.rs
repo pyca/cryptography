@@ -4,6 +4,7 @@
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use crate::x509::certificate;
 use cryptography_x509::{common, oid};
 
 #[derive(Debug, PartialEq)]
@@ -15,7 +16,6 @@ pub(crate) enum KeyType {
     Ed448,
 }
 
-#[derive(Debug, PartialEq)]
 enum HashType {
     None,
     Sha224,
@@ -351,21 +351,7 @@ pub(crate) fn sign_data<'p>(
     signature.extract()
 }
 
-fn py_hash_name_from_hash_type(hash_type: HashType) -> Option<&'static str> {
-    match hash_type {
-        HashType::None => None,
-        HashType::Sha224 => Some("SHA224"),
-        HashType::Sha256 => Some("SHA256"),
-        HashType::Sha384 => Some("SHA384"),
-        HashType::Sha512 => Some("SHA512"),
-        HashType::Sha3_224 => Some("SHA3_224"),
-        HashType::Sha3_256 => Some("SHA3_256"),
-        HashType::Sha3_384 => Some("SHA3_384"),
-        HashType::Sha3_512 => Some("SHA3_512"),
-    }
-}
-
-pub(crate) fn verify_signature_with_oid<'p>(
+pub(crate) fn verify_signature_with_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
     issuer_public_key: &'p pyo3::PyAny,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
@@ -373,8 +359,7 @@ pub(crate) fn verify_signature_with_oid<'p>(
     data: &[u8],
 ) -> CryptographyResult<()> {
     let key_type = identify_public_key_type(py, issuer_public_key)?;
-    let (sig_key_type, sig_hash_type) =
-        identify_key_hash_type_for_algorithm_params(&signature_algorithm.params)?;
+    let sig_key_type = identify_key_type_for_algorithm_params(&signature_algorithm.params)?;
     if key_type != sig_key_type {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
@@ -382,43 +367,30 @@ pub(crate) fn verify_signature_with_oid<'p>(
             ),
         ));
     }
-    let sig_hash_name = py_hash_name_from_hash_type(sig_hash_type);
-    let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-    let signature_hash = match sig_hash_name {
-        Some(data) => hashes.getattr(data)?.call0()?,
-        None => py.None().into_ref(py),
-    };
-
+    let py_signature_algorithm_parameters =
+        certificate::identify_signature_algorithm_parameters(py, signature_algorithm)?;
+    let py_signature_hash_algorithm =
+        certificate::identify_signature_hash_algorithm(py, signature_algorithm)?;
     match key_type {
         KeyType::Ed25519 | KeyType::Ed448 => {
             issuer_public_key.call_method1(pyo3::intern!(py, "verify"), (signature, data))?
         }
-        KeyType::Ec => {
-            let ec_mod = py.import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.ec"
-            ))?;
-            let ecdsa = ec_mod
-                .getattr(pyo3::intern!(py, "ECDSA"))?
-                .call1((signature_hash,))?;
-            issuer_public_key.call_method1(pyo3::intern!(py, "verify"), (signature, data, ecdsa))?
-        }
-        KeyType::Rsa => {
-            let padding_mod = py.import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.padding"
-            ))?;
-            let pkcs1v15 = padding_mod
-                .getattr(pyo3::intern!(py, "PKCS1v15"))?
-                .call0()?;
-            issuer_public_key.call_method1(
-                pyo3::intern!(py, "verify"),
-                (signature, data, pkcs1v15, signature_hash),
-            )?
-        }
+        KeyType::Ec => issuer_public_key.call_method1(
+            pyo3::intern!(py, "verify"),
+            (signature, data, py_signature_algorithm_parameters),
+        )?,
+        KeyType::Rsa => issuer_public_key.call_method1(
+            pyo3::intern!(py, "verify"),
+            (
+                signature,
+                data,
+                py_signature_algorithm_parameters,
+                py_signature_hash_algorithm,
+            ),
+        )?,
         KeyType::Dsa => issuer_public_key.call_method1(
             pyo3::intern!(py, "verify"),
-            (signature, data, signature_hash),
+            (signature, data, py_signature_hash_algorithm),
         )?,
     };
     Ok(())
@@ -481,32 +453,33 @@ pub(crate) fn identify_public_key_type(
     }
 }
 
-fn identify_key_hash_type_for_algorithm_params(
+fn identify_key_type_for_algorithm_params(
     params: &common::AlgorithmParameters<'_>,
-) -> pyo3::PyResult<(KeyType, HashType)> {
+) -> pyo3::PyResult<KeyType> {
     match params {
-        common::AlgorithmParameters::RsaWithSha224(..) => Ok((KeyType::Rsa, HashType::Sha224)),
-        common::AlgorithmParameters::RsaWithSha256(..) => Ok((KeyType::Rsa, HashType::Sha256)),
-        common::AlgorithmParameters::RsaWithSha384(..) => Ok((KeyType::Rsa, HashType::Sha384)),
-        common::AlgorithmParameters::RsaWithSha512(..) => Ok((KeyType::Rsa, HashType::Sha512)),
-        common::AlgorithmParameters::RsaWithSha3_224(..) => Ok((KeyType::Rsa, HashType::Sha3_224)),
-        common::AlgorithmParameters::RsaWithSha3_256(..) => Ok((KeyType::Rsa, HashType::Sha3_256)),
-        common::AlgorithmParameters::RsaWithSha3_384(..) => Ok((KeyType::Rsa, HashType::Sha3_384)),
-        common::AlgorithmParameters::RsaWithSha3_512(..) => Ok((KeyType::Rsa, HashType::Sha3_512)),
-        common::AlgorithmParameters::EcDsaWithSha224 => Ok((KeyType::Ec, HashType::Sha224)),
-        common::AlgorithmParameters::EcDsaWithSha256 => Ok((KeyType::Ec, HashType::Sha256)),
-        common::AlgorithmParameters::EcDsaWithSha384 => Ok((KeyType::Ec, HashType::Sha384)),
-        common::AlgorithmParameters::EcDsaWithSha512 => Ok((KeyType::Ec, HashType::Sha512)),
-        common::AlgorithmParameters::EcDsaWithSha3_224 => Ok((KeyType::Ec, HashType::Sha3_224)),
-        common::AlgorithmParameters::EcDsaWithSha3_256 => Ok((KeyType::Ec, HashType::Sha3_256)),
-        common::AlgorithmParameters::EcDsaWithSha3_384 => Ok((KeyType::Ec, HashType::Sha3_384)),
-        common::AlgorithmParameters::EcDsaWithSha3_512 => Ok((KeyType::Ec, HashType::Sha3_512)),
-        common::AlgorithmParameters::Ed25519 => Ok((KeyType::Ed25519, HashType::None)),
-        common::AlgorithmParameters::Ed448 => Ok((KeyType::Ed448, HashType::None)),
-        common::AlgorithmParameters::DsaWithSha224 => Ok((KeyType::Dsa, HashType::Sha224)),
-        common::AlgorithmParameters::DsaWithSha256 => Ok((KeyType::Dsa, HashType::Sha256)),
-        common::AlgorithmParameters::DsaWithSha384 => Ok((KeyType::Dsa, HashType::Sha384)),
-        common::AlgorithmParameters::DsaWithSha512 => Ok((KeyType::Dsa, HashType::Sha512)),
+        common::AlgorithmParameters::RsaWithSha224(..)
+        | common::AlgorithmParameters::RsaWithSha256(..)
+        | common::AlgorithmParameters::RsaWithSha384(..)
+        | common::AlgorithmParameters::RsaWithSha512(..)
+        | common::AlgorithmParameters::RsaWithSha3_224(..)
+        | common::AlgorithmParameters::RsaWithSha3_256(..)
+        | common::AlgorithmParameters::RsaWithSha3_384(..)
+        | common::AlgorithmParameters::RsaWithSha3_512(..)
+        | common::AlgorithmParameters::RsaPss(..) => Ok(KeyType::Rsa),
+        common::AlgorithmParameters::EcDsaWithSha224
+        | common::AlgorithmParameters::EcDsaWithSha256
+        | common::AlgorithmParameters::EcDsaWithSha384
+        | common::AlgorithmParameters::EcDsaWithSha512
+        | common::AlgorithmParameters::EcDsaWithSha3_224
+        | common::AlgorithmParameters::EcDsaWithSha3_256
+        | common::AlgorithmParameters::EcDsaWithSha3_384
+        | common::AlgorithmParameters::EcDsaWithSha3_512 => Ok(KeyType::Ec),
+        common::AlgorithmParameters::Ed25519 => Ok(KeyType::Ed25519),
+        common::AlgorithmParameters::Ed448 => Ok(KeyType::Ed448),
+        common::AlgorithmParameters::DsaWithSha224
+        | common::AlgorithmParameters::DsaWithSha256
+        | common::AlgorithmParameters::DsaWithSha384
+        | common::AlgorithmParameters::DsaWithSha512 => Ok(KeyType::Dsa),
         _ => Err(pyo3::exceptions::PyValueError::new_err(
             "Unsupported signature algorithm",
         )),
@@ -534,165 +507,68 @@ fn identify_alg_params_for_hash_type(
 #[cfg(test)]
 mod tests {
     use super::{
-        identify_alg_params_for_hash_type, identify_key_hash_type_for_algorithm_params,
-        py_hash_name_from_hash_type, HashType, KeyType,
+        identify_alg_params_for_hash_type, identify_key_type_for_algorithm_params, HashType,
+        KeyType,
     };
     use cryptography_x509::{common, oid};
 
     #[test]
-    fn test_identify_key_hash_type_for_algorithm_params() {
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha224(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha224)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha256(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha256)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha384(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha384)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha512(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha512)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha3_224(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha3_224)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha3_256(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha3_256)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha3_384(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha3_384)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::RsaWithSha3_512(Some(()))
-            )
-            .unwrap(),
-            (KeyType::Rsa, HashType::Sha3_512)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha224
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha224)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha256
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha256)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha384
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha384)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha512
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha512)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha3_224
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha3_224)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha3_256
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha3_256)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha3_384
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha3_384)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::EcDsaWithSha3_512
-            )
-            .unwrap(),
-            (KeyType::Ec, HashType::Sha3_512)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(&common::AlgorithmParameters::Ed25519)
-                .unwrap(),
-            (KeyType::Ed25519, HashType::None)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(&common::AlgorithmParameters::Ed448)
-                .unwrap(),
-            (KeyType::Ed448, HashType::None)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::DsaWithSha224
-            )
-            .unwrap(),
-            (KeyType::Dsa, HashType::Sha224)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::DsaWithSha256
-            )
-            .unwrap(),
-            (KeyType::Dsa, HashType::Sha256)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::DsaWithSha384
-            )
-            .unwrap(),
-            (KeyType::Dsa, HashType::Sha384)
-        );
-        assert_eq!(
-            identify_key_hash_type_for_algorithm_params(
-                &common::AlgorithmParameters::DsaWithSha512
-            )
-            .unwrap(),
-            (KeyType::Dsa, HashType::Sha512)
-        );
+    fn test_identify_key_type_for_algorithm_params() {
+        for (params, keytype) in [
+            (
+                &common::AlgorithmParameters::RsaWithSha224(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha256(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha384(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha512(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha3_224(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha3_256(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha3_384(Some(())),
+                KeyType::Rsa,
+            ),
+            (
+                &common::AlgorithmParameters::RsaWithSha3_512(Some(())),
+                KeyType::Rsa,
+            ),
+            (&common::AlgorithmParameters::EcDsaWithSha224, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha256, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha384, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha512, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha3_224, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha3_256, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha3_384, KeyType::Ec),
+            (&common::AlgorithmParameters::EcDsaWithSha3_512, KeyType::Ec),
+            (&common::AlgorithmParameters::Ed25519, KeyType::Ed25519),
+            (&common::AlgorithmParameters::Ed448, KeyType::Ed448),
+            (&common::AlgorithmParameters::DsaWithSha224, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha256, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha384, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha512, KeyType::Dsa),
+        ] {
+            assert_eq!(
+                identify_key_type_for_algorithm_params(params).unwrap(),
+                keytype
+            );
+        }
         assert!(
-            identify_key_hash_type_for_algorithm_params(&common::AlgorithmParameters::Other(
+            identify_key_type_for_algorithm_params(&common::AlgorithmParameters::Other(
                 oid::TLS_FEATURE_OID,
                 None
             ))
@@ -725,23 +601,6 @@ mod tests {
             ),
         ] {
             assert_eq!(identify_alg_params_for_hash_type(hash).unwrap(), params);
-        }
-    }
-
-    #[test]
-    fn test_py_hash_name_from_hash_type() {
-        for (hash, name) in [
-            (HashType::Sha224, "SHA224"),
-            (HashType::Sha256, "SHA256"),
-            (HashType::Sha384, "SHA384"),
-            (HashType::Sha512, "SHA512"),
-            (HashType::Sha3_224, "SHA3_224"),
-            (HashType::Sha3_256, "SHA3_256"),
-            (HashType::Sha3_384, "SHA3_384"),
-            (HashType::Sha3_512, "SHA3_512"),
-        ] {
-            let hash_str = py_hash_name_from_hash_type(hash).unwrap();
-            assert_eq!(hash_str, name);
         }
     }
 }
