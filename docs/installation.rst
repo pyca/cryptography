@@ -79,11 +79,10 @@ Building cryptography on Linux
 
 .. note::
 
-    If you are on RHEL/CentOS/Fedora/Debian/Ubuntu or another distribution
-    derived from the preceding list, then you should **upgrade pip** and
-    attempt to install ``cryptography`` again before following the instructions
-    to compile it below. These platforms will receive a binary wheel and
-    require no compiler if you have an updated ``pip``!
+    You should **upgrade pip** and attempt to install ``cryptography`` again
+    before following the instructions to compile it below. Most Linux
+    platforms will receive a binary wheel and require no compiler if you have
+    an updated ``pip``!
 
 ``cryptography`` ships ``manylinux`` wheels (as of 2.0) so all dependencies
 are included. For users on **pip 19.3** or above running on a ``manylinux2014``
