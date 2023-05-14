@@ -304,27 +304,20 @@ jobs:
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' cffi
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
       - name: Create nox environment
-        run: nox -v --install-only -s tests
+        run: nox -v --install-only -s tests rust
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
       - name: Tests
-        run: nox --no-install -s tests --  --color=yes --wycheproof-root=wycheproof
+        run: nox --no-install -s tests rust --  --color=yes --wycheproof-root=wycheproof
         env:
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           RUSTFLAGS: "-Cinstrument-coverage"
           LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
-      - name: Rust Tests
-        run: |
-            cd src/rust
-            cargo test --no-default-features --all
-        env:
-          RUSTFLAGS: "-Cinstrument-coverage"
-          LLVM_PROFILE_FILE: "rust-cov/cov-%m-%p.profraw"
       - name: Process coverage data
         run: |
             set -xe
