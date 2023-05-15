@@ -41,8 +41,8 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.2"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of May 13, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "c215ce7e8230786e0d4ec463d95a9e44af513e6a"}}
+          # Latest commit on the BoringSSL master branch, as of May 15, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "c1f5d795c2e5778254c94ca115fb89ff56624b73"}}
           # Latest commit on the OpenSSL master branch, as of May 13, 2023.
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "2b5a546ce1960883febc51f5d2a71a8b7c1b3ab9"}}
     timeout-minutes: 15
