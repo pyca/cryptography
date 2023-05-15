@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import json
+
 import nox
 
 nox.options.reuse_existing_virtualenvs = True
@@ -29,6 +31,15 @@ def tests(session: nox.Session) -> None:
         extras += ",ssh"
     if session.name == "tests-randomorder":
         extras += ",test-randomorder"
+
+    if session.name != "tests-nocoverage":
+        session.env.update(
+            {
+                "RUSTFLAGS": "-Cinstrument-coverage "
+                + session.env.get("RUSTFLAGS", ""),
+                "LLVM_PROFILE_FILE": ".rust-cov/cov-%p.profraw",
+            }
+        )
 
     install(session, f".[{extras}]")
     install(session, "-e", "./vectors")
@@ -138,11 +149,43 @@ def flake(session: nox.Session) -> None:
 
 @nox.session
 def rust(session: nox.Session) -> None:
+    session.env.update(
+        {
+            "RUSTFLAGS": "-Cinstrument-coverage  "
+            + session.env.get("RUSTFLAGS", ""),
+            "LLVM_PROFILE_FILE": ".rust-cov/cov-%p.profraw",
+        }
+    )
+
     install(session, ".")
 
     with session.chdir("src/rust/"):
         session.run("cargo", "fmt", "--all", "--", "--check", external=True)
         session.run("cargo", "clippy", "--", "-D", "warnings", external=True)
+
+        build_output = session.run(
+            "cargo",
+            "test",
+            "--no-default-features",
+            "--all",
+            "--no-run",
+            "-q",
+            "--message-format=json",
+            external=True,
+            silent=True,
+        )
         session.run(
             "cargo", "test", "--no-default-features", "--all", external=True
         )
+
+    # It's None on install-only invocations
+    if build_output is not None:
+        assert isinstance(build_output, str)
+        rust_tests = []
+        for line in build_output.splitlines():
+            data = json.loads(line)
+            if data.get("profile", {}).get("test", False):
+                rust_tests.extend(data["filenames"])
+
+        with open("rust-tests.txt", "w") as f:
+            f.write("\n".join(rust_tests))
