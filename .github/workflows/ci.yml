@@ -130,22 +130,22 @@ jobs:
       fail-fast: false
       matrix:
         IMAGE:
-          - {IMAGE: "rhel8", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "rhel8-fips", RUNNER: "ubuntu-latest", FIPS: true}
-          - {IMAGE: "buster", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "bullseye", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "bookworm", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "sid", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-focal", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-jammy", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-rolling", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "fedora", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "alpine", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "centos-stream9", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "centos-stream9-fips", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "rhel8", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "rhel8-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
+          - {IMAGE: "buster", NOXSESSION: "tests-nocoverage", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bullseye", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "bookworm", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "sid", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-focal", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-jammy", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-rolling", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "fedora", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
 
-          - {IMAGE: "ubuntu-jammy:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
-          - {IMAGE: "alpine:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "ubuntu-jammy:aarch64", NOXSESSION: "tests", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "alpine:aarch64", NOXSESSION: "tests-nocoverage", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
@@ -183,17 +183,19 @@ jobs:
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
       - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox'
-      - run: '/venv/bin/nox -v --install-only -s tests'
+      - run: '/venv/bin/nox -v --install-only'
         env:
           RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
-      - run: '/venv/bin/nox --no-install -s tests --  --color=yes --wycheproof-root="wycheproof"'
+          NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
+      - run: '/venv/bin/nox --no-install --  --color=yes --wycheproof-root="wycheproof"'
         env:
           COLUMNS: 80
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
       - uses: ./.github/actions/upload-coverage
 
   linux-rust:
@@ -231,11 +233,11 @@ jobs:
         uses: ./.github/actions/wycheproof
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
       - name: Create nox environment
-        run: nox -v --install-only -s tests
+        run: nox -v --install-only -s tests-nocoverage
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
-        run: nox --no-install -s tests --  --color=yes  --wycheproof-root=wycheproof
+        run: nox --no-install -s tests-nocoverage --  --color=yes  --wycheproof-root=wycheproof
         env:
           COLUMNS: 80
       - uses: ./.github/actions/upload-coverage
@@ -309,15 +311,11 @@ jobs:
         run: nox -v --install-only -s tests rust
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-          RUSTFLAGS: "-Cinstrument-coverage"
-          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
       - name: Tests
         run: nox --no-install -s tests rust --  --color=yes --wycheproof-root=wycheproof
         env:
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-          RUSTFLAGS: "-Cinstrument-coverage"
-          LLVM_PROFILE_FILE: "rust-cov/cov-%p.profraw"
       - name: Process coverage data
         run: |
             set -xe
@@ -327,7 +325,7 @@ jobs:
 
             cargo cov -- export \
               ../../.nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              $(env RUSTFLAGS="-Cinstrument-coverage" cargo test --no-default-features --all --tests --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]" | awk '{print "-object " $0}') \
+              $(cat ../../rust-tests.txt | awk '{print "-object " $0}') \
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/' \
               --ignore-filename-regex='/rustc/' \
