@@ -139,20 +139,20 @@ fn sign_and_serialize<'p>(
                 )?,
             )
         } else {
-            let mut authenticated_attrs = vec![];
-
-            authenticated_attrs.push(Attribute {
-                type_id: PKCS7_CONTENT_TYPE_OID,
-                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                    asn1::parse_single(&content_type_bytes).unwrap(),
-                ])),
-            });
-            authenticated_attrs.push(Attribute {
-                type_id: PKCS7_SIGNING_TIME_OID,
-                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                    asn1::parse_single(&signing_time_bytes).unwrap(),
-                ])),
-            });
+            let mut authenticated_attrs = vec![
+                Attribute {
+                    type_id: PKCS7_CONTENT_TYPE_OID,
+                    values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                        asn1::parse_single(&content_type_bytes).unwrap(),
+                    ])),
+                },
+                Attribute {
+                    type_id: PKCS7_SIGNING_TIME_OID,
+                    values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
+                        asn1::parse_single(&signing_time_bytes).unwrap(),
+                    ])),
+                },
+            ];
 
             let digest =
                 asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;

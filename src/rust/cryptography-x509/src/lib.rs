@@ -3,6 +3,7 @@
 // for complete details.
 
 #![forbid(unsafe_code)]
+#![allow(clippy::eval_order_dependence)]
 
 pub mod certificate;
 pub mod common;
