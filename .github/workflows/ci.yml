@@ -278,24 +278,9 @@ jobs:
           key: coverage
           additional-paths: |
             ~/.cargo/bin/cargo-cov
-            ~/.cargo/bin/cargo-nm
-            ~/.cargo/bin/cargo-objcopy
-            ~/.cargo/bin/cargo-objdump
             ~/.cargo/bin/cargo-profdata
-            ~/.cargo/bin/cargo-readobj
-            ~/.cargo/bin/cargo-size
-            ~/.cargo/bin/cargo-strip
-            ~/.cargo/bin/rust-ar
             ~/.cargo/bin/rust-cov
-            ~/.cargo/bin/rust-ld
-            ~/.cargo/bin/rust-lld
-            ~/.cargo/bin/rust-nm
-            ~/.cargo/bin/rust-objcopy
-            ~/.cargo/bin/rust-objdump
             ~/.cargo/bin/rust-profdata
-            ~/.cargo/bin/rust-readobj
-            ~/.cargo/bin/rust-size
-            ~/.cargo/bin/rust-strip
       - name: Setup python
         uses: actions/setup-python@v4.6.0
         with:
