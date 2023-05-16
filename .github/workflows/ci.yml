@@ -276,17 +276,10 @@ jobs:
         timeout-minutes: 2
         with:
           key: coverage
-          additional-paths: |
-            ~/.cargo/bin/cargo-cov
-            ~/.cargo/bin/cargo-profdata
-            ~/.cargo/bin/rust-cov
-            ~/.cargo/bin/rust-profdata
       - name: Setup python
         uses: actions/setup-python@v4.6.0
         with:
           python-version: ${{ matrix.PYTHON }}
-      - run: cargo install cargo-binutils
-        if: steps.cargo-cache.outputs.cache-hit != 'true'
 
       - name: Clone wycheproof
         timeout-minutes: 2
@@ -304,19 +297,18 @@ jobs:
       - name: Process coverage data
         run: |
             set -xe
-            cd src/rust/
-            cargo profdata -- merge -sparse $(find ../.. -iname "*.profraw") -o rust-cov.profdata
+            "$(rustc --print target-libdir)/../bin/llvm-profdata" merge -sparse $(find . -iname "*.profraw") -o rust-cov.profdata
             COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
 
-            cargo cov -- export \
-              ../../.nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              $(cat ../../rust-tests.txt | awk '{print "-object " $0}') \
+            "$(rustc --print target-libdir)/../bin/llvm-cov" export \
+              .nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
+              $(cat rust-tests.txt | awk '{print "-object " $0}') \
               -instr-profile=rust-cov.profdata \
               --ignore-filename-regex='/.cargo/' \
               --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > "../../${COV_UUID}.lcov"
+              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > "${COV_UUID}.lcov"
 
-            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' "../../${COV_UUID}.lcov"
+            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' "${COV_UUID}.lcov"
       - uses: ./.github/actions/upload-coverage
 
   macos:
