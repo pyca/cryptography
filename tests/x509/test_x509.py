@@ -2463,6 +2463,47 @@ class TestCertificateBuilder:
         # GENERALIZED TIME
         assert parsed.not_after_tag == 0x18
 
+    def test_rdns_preserve_iteration_order(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        """
+        This test checks that RDN ordering is consistent when loading
+        data from a certificate. Since the underlying RDN is an ASN.1
+        set these values get lexicographically ordered on encode and
+        the parsed value won't necessarily be in the same order as
+        the originally provided list. However, we want to make sure
+        that the order is always consistent since it confuses people
+        when it isn't.
+        """
+        name = x509.Name(
+            [
+                x509.RelativeDistinguishedName(
+                    [
+                        x509.NameAttribute(NameOID.TITLE, "Test"),
+                        x509.NameAttribute(NameOID.COMMON_NAME, "Multivalue"),
+                        x509.NameAttribute(NameOID.SURNAME, "RDNs"),
+                    ]
+                ),
+            ]
+        )
+
+        cert = (
+            x509.CertificateBuilder()
+            .serial_number(1)
+            .issuer_name(name)
+            .subject_name(name)
+            .public_key(rsa_key_2048.public_key())
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2038, 1, 1))
+            .sign(rsa_key_2048, hashes.SHA256(), backend)
+        )
+        loaded_cert = x509.load_pem_x509_certificate(
+            cert.public_bytes(encoding=serialization.Encoding.PEM)
+        )
+        assert next(iter(loaded_cert.subject.rdns[0])) == x509.NameAttribute(
+            NameOID.SURNAME, "RDNs"
+        )
+
     @pytest.mark.parametrize(
         ("alg", "mgf_alg"),
         [

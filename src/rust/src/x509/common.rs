@@ -238,10 +238,10 @@ pub(crate) fn parse_rdn<'a>(
     rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    let py_attrs = pyo3::types::PySet::empty(py)?;
+    let py_attrs = pyo3::types::PyList::empty(py);
     for attribute in rdn.clone() {
         let na = parse_name_attribute(py, attribute)?;
-        py_attrs.add(na)?;
+        py_attrs.append(na)?;
     }
     Ok(x509_module
         .call_method1(pyo3::intern!(py, "RelativeDistinguishedName"), (py_attrs,))?
