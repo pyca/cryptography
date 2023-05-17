@@ -59,6 +59,7 @@ jobs:
         uses: actions/setup-python@v4.6.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+      - run: rustup component add llvm-tools-preview
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
@@ -147,6 +148,8 @@ jobs:
           - {IMAGE: "ubuntu-jammy:aarch64", NOXSESSION: "tests", RUNNER: [self-hosted, Linux, ARM64]}
           - {IMAGE: "alpine:aarch64", NOXSESSION: "tests-nocoverage", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
+    env:
+      RUSTUP_HOME: /root/.rustup
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
         run: |
@@ -185,7 +188,6 @@ jobs:
       - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox'
       - run: '/venv/bin/nox -v --install-only'
         env:
-          RUSTUP_HOME: /root/.rustup
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
@@ -294,21 +296,6 @@ jobs:
         env:
           COLUMNS: 80
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
-      - name: Process coverage data
-        run: |
-            set -xe
-            "$(rustc --print target-libdir)/../bin/llvm-profdata" merge -sparse $(find . -iname "*.profraw") -o rust-cov.profdata
-            COV_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
-
-            "$(rustc --print target-libdir)/../bin/llvm-cov" export \
-              .nox/tests/lib/python${{ matrix.PYTHON }}/site-packages/cryptography/hazmat/bindings/_rust.abi3.so \
-              $(cat rust-tests.txt | awk '{print "-object " $0}') \
-              -instr-profile=rust-cov.profdata \
-              --ignore-filename-regex='/.cargo/' \
-              --ignore-filename-regex='/rustc/' \
-              --ignore-filename-regex='/.rustup/toolchains/' --format=lcov > "${COV_UUID}.lcov"
-
-            sed -E -i 's/SF:(.*)\/src\/rust\/(.*)/SF:src\/rust\/\2/g' "${COV_UUID}.lcov"
       - uses: ./.github/actions/upload-coverage
 
   macos:
@@ -346,6 +333,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
+      - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
 
@@ -405,6 +393,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
+      - run: rustup component add llvm-tools-preview
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
