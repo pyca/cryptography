@@ -9,18 +9,8 @@ import typing
 from cryptography.exceptions import InvalidTag
 
 if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl.aead import _AEADTypes
     from cryptography.hazmat.backends.openssl.backend import Backend
-    from cryptography.hazmat.primitives.ciphers.aead import (
-        AESCCM,
-        AESGCM,
-        AESOCB3,
-        AESSIV,
-        ChaCha20Poly1305,
-    )
-
-    _AEADTypes = typing.Union[
-        AESCCM, AESGCM, AESOCB3, AESSIV, ChaCha20Poly1305
-    ]
 
 _ENCRYPT = 1
 _DECRYPT = 0

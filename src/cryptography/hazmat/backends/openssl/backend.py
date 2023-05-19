@@ -1654,18 +1654,7 @@ class Backend:
         return rust_openssl.ed448.generate_key()
 
     def aead_cipher_supported(self, cipher) -> bool:
-        cipher_name = aead._aead_cipher_name(cipher)
-        if self._fips_enabled and cipher_name not in self._fips_aead:
-            return False
-        # SIV isn't loaded through get_cipherbyname but instead a new fetch API
-        # only available in 3.0+. But if we know we're on 3.0+ then we know
-        # it's supported.
-        if cipher_name.endswith(b"-siv"):
-            return self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER == 1
-        else:
-            return (
-                self._lib.EVP_get_cipherbyname(cipher_name) != self._ffi.NULL
-            )
+        return aead.aead_cipher_supported(self, cipher)
 
     def _zero_data(self, data, length: int) -> None:
         # We clear things this way because at the moment we're not
