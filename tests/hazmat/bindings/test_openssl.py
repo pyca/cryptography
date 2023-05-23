@@ -21,16 +21,13 @@ class TestOpenSSL:
         assert binding.lib
         assert binding.ffi
 
-    def test_ssl_ctx_options(self, backend):
+    def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         # SSL_OP_ALL is 0 on BoringSSL
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
-        # work around a bug in CentOS 9 stream FIPS
-        # https://bugzilla.redhat.com/show_bug.cgi?id=2208724
-        backend._consume_errors()
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         current_options = b.lib.SSL_CTX_get_options(ctx)
@@ -39,7 +36,7 @@ class TestOpenSSL:
         assert resp == expected_options
         assert b.lib.SSL_CTX_get_options(ctx) == expected_options
 
-    def test_ssl_options(self, backend):
+    def test_ssl_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
         # SSL_OP_ALL is 0 on BoringSSL
@@ -49,9 +46,6 @@ class TestOpenSSL:
         assert ctx != b.ffi.NULL
         ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
         ssl = b.lib.SSL_new(ctx)
-        # work around a bug in CentOS 9 stream FIPS
-        # https://bugzilla.redhat.com/show_bug.cgi?id=2208724
-        backend._consume_errors()
         ssl = b.ffi.gc(ssl, b.lib.SSL_free)
         current_options = b.lib.SSL_get_options(ssl)
         resp = b.lib.SSL_set_options(ssl, b.lib.SSL_OP_ALL)
