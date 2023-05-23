@@ -1654,7 +1654,7 @@ class Backend:
         return rust_openssl.ed448.generate_key()
 
     def aead_cipher_supported(self, cipher) -> bool:
-        return aead.aead_cipher_supported(self, cipher)
+        return aead._aead_cipher_supported(self, cipher)
 
     def _zero_data(self, data, length: int) -> None:
         # We clear things this way because at the moment we're not

@@ -14,6 +14,8 @@ TYPES = """
 typedef ... EVP_AEAD;
 typedef ... EVP_AEAD_CTX;
 static const size_t EVP_AEAD_DEFAULT_TAG_LENGTH;
+
+static const long Cryptography_HAS_EVP_AEAD;
 """
 
 FUNCTIONS = """
@@ -35,16 +37,37 @@ EVP_AEAD_CTX *Cryptography_EVP_AEAD_CTX_new(const EVP_AEAD *,
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_LIBRESSL
+static const long Cryptography_HAS_EVP_AEAD = 1;
+#else
+static const long Cryptography_HAS_EVP_AEAD = 0;
+#endif
+
 #if CRYPTOGRAPHY_IS_BORINGSSL
 EVP_AEAD_CTX *Cryptography_EVP_AEAD_CTX_new(const EVP_AEAD *aead,
                                             const uint8_t *key,
                                             size_t key_len, size_t tag_len) {
-    return EVP_AEAD_CTX_new(aead, key, key_len, tag_len);
+   return EVP_AEAD_CTX_new(aead, key, key_len, tag_len);
 }
 #elif CRYPTOGRAPHY_IS_LIBRESSL
-EVP_AEAD_CTX *(*Cryptography_EVP_AEAD_CTX_new)(const EVP_AEAD *,
-                                               const uint8_t *, size_t,
-                                               size_t) = NULL;
+EVP_AEAD_CTX *Cryptography_EVP_AEAD_CTX_new(const EVP_AEAD *aead,
+                                            const uint8_t *key,
+                                            size_t key_len, size_t tag_len) {
+   EVP_AEAD_CTX *ctx = EVP_AEAD_CTX_new();
+   if (ctx == NULL) {
+      return NULL;
+   }
+
+   /* This mimics BoringSSL's behavior: any error here is pushed onto
+      the stack.
+   */
+   int result = EVP_AEAD_CTX_init(ctx, aead, key, key_len, tag_len, NULL);
+   if (result != 1) {
+      return NULL;
+   }
+
+   return ctx;
+}
 #else
 typedef void EVP_AEAD;
 typedef void EVP_AEAD_CTX;
