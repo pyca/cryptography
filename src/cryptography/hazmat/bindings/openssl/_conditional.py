@@ -262,6 +262,17 @@ def cryptography_has_evp_pkey_set_peer_ex() -> typing.List[str]:
     return ["EVP_PKEY_derive_set_peer_ex"]
 
 
+def cryptography_has_evp_aead() -> typing.List[str]:
+    return [
+        "EVP_aead_chacha20_poly1305",
+        "EVP_AEAD_CTX_free",
+        "EVP_AEAD_CTX_seal",
+        "EVP_AEAD_CTX_open",
+        "EVP_AEAD_max_overhead",
+        "Cryptography_EVP_AEAD_CTX_new",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -314,4 +325,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_EVP_PKEY_SET_PEER_EX": (
         cryptography_has_evp_pkey_set_peer_ex
     ),
+    "Cryptography_HAS_EVP_AEAD": (cryptography_has_evp_aead),
 }
