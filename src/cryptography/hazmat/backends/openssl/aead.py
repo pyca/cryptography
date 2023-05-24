@@ -41,7 +41,7 @@ def _aead_cipher_supported(backend: Backend, cipher: _AEADTypes) -> bool:
     if _is_evp_aead_supported_cipher(backend, cipher):
         return True
     else:
-        cipher_name = _EVPCIPHER.aead_cipher_name(cipher)
+        cipher_name = _EVPCIPHER._evp_aead_cipher_name(cipher)
         if backend._fips_enabled and cipher_name not in backend._fips_aead:
             return False
         # SIV isn't loaded through get_cipherbyname but instead a new fetch API
@@ -62,9 +62,9 @@ def _aead_create_ctx(
     key: bytes,
 ):
     if _is_evp_aead_supported_cipher(backend, cipher):
-        return _EVPAEAD.create_ctx(backend, cipher, key)
+        return _evp_aead_create_ctx(backend, cipher, key)
     else:
-        return _EVPCIPHER.create_ctx(backend, cipher, key)
+        return _EVPCIPHER._evp_cipher_create_ctx(backend, cipher, key)
 
 
 def _encrypt(
@@ -77,11 +77,11 @@ def _encrypt(
     ctx: typing.Any = None,
 ) -> bytes:
     if _is_evp_aead_supported_cipher(backend, cipher):
-        return _EVPAEAD.encrypt(
+        return _evp_aead_encrypt(
             backend, cipher, nonce, data, associated_data, tag_length, ctx
         )
     else:
-        return _EVPCIPHER.encrypt(
+        return _EVPCIPHER._evp_cipher_encrypt(
             backend, cipher, nonce, data, associated_data, tag_length, ctx
         )
 
@@ -96,138 +96,130 @@ def _decrypt(
     ctx: typing.Any = None,
 ) -> bytes:
     if _is_evp_aead_supported_cipher(backend, cipher):
-        return _EVPAEAD.decrypt(
+        return _evp_aead_decrypt(
             backend, cipher, nonce, data, associated_data, tag_length, ctx
         )
     else:
-        return _EVPCIPHER.decrypt(
+        return _EVPCIPHER._evp_cipher_decrypt(
             backend, cipher, nonce, data, associated_data, tag_length, ctx
         )
 
 
-class _EVPAEAD:
-    """
-    Access to AEADs through EVP_AEAD APIs.
-    """
+def _evp_aead_create_ctx(
+    backend: Backend,
+    cipher: _AEADTypes,
+    key: bytes,
+    tag_len: typing.Optional[int] = None,
+):
+    aead_cipher = _evp_aead_get_cipher(backend, cipher)
+    assert aead_cipher is not None
+    key_ptr = backend._ffi.from_buffer(key)
+    tag_len = (
+        backend._lib.EVP_AEAD_DEFAULT_TAG_LENGTH
+        if tag_len is None
+        else tag_len
+    )
+    ctx = backend._lib.Cryptography_EVP_AEAD_CTX_new(
+        aead_cipher, key_ptr, len(key), tag_len
+    )
+    backend.openssl_assert(ctx != backend._ffi.NULL)
+    ctx = backend._ffi.gc(ctx, backend._lib.EVP_AEAD_CTX_free)
+    return ctx
 
-    @staticmethod
-    def create_ctx(
-        backend: Backend,
-        cipher: _AEADTypes,
-        key: bytes,
-        tag_len: typing.Optional[int] = None,
-    ):
-        aead_cipher = _EVPAEAD.get_cipher(backend, cipher)
-        assert aead_cipher is not None
-        key_ptr = backend._ffi.from_buffer(key)
-        tag_len = (
-            backend._lib.EVP_AEAD_DEFAULT_TAG_LENGTH
-            if tag_len is None
-            else tag_len
-        )
-        ctx = backend._lib.Cryptography_EVP_AEAD_CTX_new(
-            aead_cipher, key_ptr, len(key), tag_len
-        )
-        backend.openssl_assert(ctx != backend._ffi.NULL)
-        ctx = backend._ffi.gc(ctx, backend._lib.EVP_AEAD_CTX_free)
-        return ctx
 
-    @staticmethod
-    def get_cipher(backend: Backend, cipher: _AEADTypes):
-        from cryptography.hazmat.primitives.ciphers.aead import (
-            ChaCha20Poly1305,
-        )
+def _evp_aead_get_cipher(backend: Backend, cipher: _AEADTypes):
+    from cryptography.hazmat.primitives.ciphers.aead import (
+        ChaCha20Poly1305,
+    )
 
-        # Currently only ChaCha20-Poly1305 is supported using this API
-        assert isinstance(cipher, ChaCha20Poly1305)
-        return backend._lib.EVP_aead_chacha20_poly1305()
+    # Currently only ChaCha20-Poly1305 is supported using this API
+    assert isinstance(cipher, ChaCha20Poly1305)
+    return backend._lib.EVP_aead_chacha20_poly1305()
 
-    @staticmethod
-    def encrypt(
-        backend: Backend,
-        cipher: _AEADTypes,
-        nonce: bytes,
-        data: bytes,
-        associated_data: typing.List[bytes],
-        tag_length: int,
-        ctx: typing.Any,
-    ) -> bytes:
-        assert ctx is not None
 
-        aead_cipher = _EVPAEAD.get_cipher(backend, cipher)
-        assert aead_cipher is not None
+def _evp_aead_encrypt(
+    backend: Backend,
+    cipher: _AEADTypes,
+    nonce: bytes,
+    data: bytes,
+    associated_data: typing.List[bytes],
+    tag_length: int,
+    ctx: typing.Any,
+) -> bytes:
+    assert ctx is not None
 
-        out_len = backend._ffi.new("size_t *")
-        # max_out_len should be in_len plus the result of
-        # EVP_AEAD_max_overhead.
-        max_out_len = len(data) + backend._lib.EVP_AEAD_max_overhead(
-            aead_cipher
-        )
-        out_buf = backend._ffi.new("uint8_t[]", max_out_len)
-        data_ptr = backend._ffi.from_buffer(data)
-        nonce_ptr = backend._ffi.from_buffer(nonce)
-        aad = b"".join(associated_data)
-        aad_ptr = backend._ffi.from_buffer(aad)
+    aead_cipher = _evp_aead_get_cipher(backend, cipher)
+    assert aead_cipher is not None
 
-        res = backend._lib.EVP_AEAD_CTX_seal(
-            ctx,
-            out_buf,
-            out_len,
-            max_out_len,
-            nonce_ptr,
-            len(nonce),
-            data_ptr,
-            len(data),
-            aad_ptr,
-            len(aad),
-        )
-        backend.openssl_assert(res == 1)
-        encrypted_data = backend._ffi.buffer(out_buf, out_len[0])[:]
-        return encrypted_data
+    out_len = backend._ffi.new("size_t *")
+    # max_out_len should be in_len plus the result of
+    # EVP_AEAD_max_overhead.
+    max_out_len = len(data) + backend._lib.EVP_AEAD_max_overhead(aead_cipher)
+    out_buf = backend._ffi.new("uint8_t[]", max_out_len)
+    data_ptr = backend._ffi.from_buffer(data)
+    nonce_ptr = backend._ffi.from_buffer(nonce)
+    aad = b"".join(associated_data)
+    aad_ptr = backend._ffi.from_buffer(aad)
 
-    @staticmethod
-    def decrypt(
-        backend: Backend,
-        cipher: _AEADTypes,
-        nonce: bytes,
-        data: bytes,
-        associated_data: typing.List[bytes],
-        tag_length: int,
-        ctx: typing.Any,
-    ) -> bytes:
-        if len(data) < tag_length:
-            raise InvalidTag
+    res = backend._lib.EVP_AEAD_CTX_seal(
+        ctx,
+        out_buf,
+        out_len,
+        max_out_len,
+        nonce_ptr,
+        len(nonce),
+        data_ptr,
+        len(data),
+        aad_ptr,
+        len(aad),
+    )
+    backend.openssl_assert(res == 1)
+    encrypted_data = backend._ffi.buffer(out_buf, out_len[0])[:]
+    return encrypted_data
 
-        assert ctx is not None
 
-        out_len = backend._ffi.new("size_t *")
-        #  max_out_len should at least in_len
-        max_out_len = len(data)
-        out_buf = backend._ffi.new("uint8_t[]", max_out_len)
-        data_ptr = backend._ffi.from_buffer(data)
-        nonce_ptr = backend._ffi.from_buffer(nonce)
-        aad = b"".join(associated_data)
-        aad_ptr = backend._ffi.from_buffer(aad)
+def _evp_aead_decrypt(
+    backend: Backend,
+    cipher: _AEADTypes,
+    nonce: bytes,
+    data: bytes,
+    associated_data: typing.List[bytes],
+    tag_length: int,
+    ctx: typing.Any,
+) -> bytes:
+    if len(data) < tag_length:
+        raise InvalidTag
 
-        res = backend._lib.EVP_AEAD_CTX_open(
-            ctx,
-            out_buf,
-            out_len,
-            max_out_len,
-            nonce_ptr,
-            len(nonce),
-            data_ptr,
-            len(data),
-            aad_ptr,
-            len(aad),
-        )
+    assert ctx is not None
 
-        if res == 0:
-            backend._consume_errors()
-            raise InvalidTag
+    out_len = backend._ffi.new("size_t *")
+    #  max_out_len should at least in_len
+    max_out_len = len(data)
+    out_buf = backend._ffi.new("uint8_t[]", max_out_len)
+    data_ptr = backend._ffi.from_buffer(data)
+    nonce_ptr = backend._ffi.from_buffer(nonce)
+    aad = b"".join(associated_data)
+    aad_ptr = backend._ffi.from_buffer(aad)
 
-        decrypted_data = backend._ffi.buffer(out_buf, out_len[0])[:]
-        return decrypted_data
+    res = backend._lib.EVP_AEAD_CTX_open(
+        ctx,
+        out_buf,
+        out_len,
+        max_out_len,
+        nonce_ptr,
+        len(nonce),
+        data_ptr,
+        len(data),
+        aad_ptr,
+        len(aad),
+    )
+
+    if res == 0:
+        backend._consume_errors()
+        raise InvalidTag
+
+    decrypted_data = backend._ffi.buffer(out_buf, out_len[0])[:]
+    return decrypted_data
 
 
 class _EVPCIPHER:
@@ -239,7 +231,7 @@ class _EVPCIPHER:
     _DECRYPT = 0
 
     @staticmethod
-    def aead_cipher_name(cipher: _AEADTypes) -> bytes:
+    def _evp_aead_cipher_name(cipher: _AEADTypes) -> bytes:
         from cryptography.hazmat.primitives.ciphers.aead import (
             AESCCM,
             AESGCM,
@@ -279,7 +271,7 @@ class _EVPCIPHER:
         return evp_cipher
 
     @staticmethod
-    def create_ctx(
+    def _evp_cipher_create_ctx(
         backend: Backend,
         cipher: _AEADTypes,
         key: bytes,
@@ -287,7 +279,7 @@ class _EVPCIPHER:
         ctx = backend._lib.EVP_CIPHER_CTX_new()
         backend.openssl_assert(ctx != backend._ffi.NULL)
         ctx = backend._ffi.gc(ctx, backend._lib.EVP_CIPHER_CTX_free)
-        cipher_name = _EVPCIPHER.aead_cipher_name(cipher)
+        cipher_name = _EVPCIPHER._evp_aead_cipher_name(cipher)
         evp_cipher = _EVPCIPHER.evp_cipher(cipher_name, backend)
         key_ptr = backend._ffi.from_buffer(key)
         res = backend._lib.EVP_CipherInit_ex(
@@ -411,7 +403,7 @@ class _EVPCIPHER:
         return backend._ffi.buffer(buf, outlen[0])[:]
 
     @staticmethod
-    def encrypt(
+    def _evp_cipher_encrypt(
         backend: Backend,
         cipher: _AEADTypes,
         nonce: bytes,
@@ -423,7 +415,7 @@ class _EVPCIPHER:
         from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
 
         if ctx is None:
-            cipher_name = _EVPCIPHER.aead_cipher_name(cipher)
+            cipher_name = _EVPCIPHER._evp_aead_cipher_name(cipher)
             ctx = _EVPCIPHER.aead_setup(
                 backend,
                 cipher_name,
@@ -472,7 +464,7 @@ class _EVPCIPHER:
             return processed_data + tag
 
     @staticmethod
-    def decrypt(
+    def _evp_cipher_decrypt(
         backend: Backend,
         cipher: _AEADTypes,
         nonce: bytes,
@@ -496,7 +488,7 @@ class _EVPCIPHER:
             tag = data[-tag_length:]
             data = data[:-tag_length]
         if ctx is None:
-            cipher_name = _EVPCIPHER.aead_cipher_name(cipher)
+            cipher_name = _EVPCIPHER._evp_aead_cipher_name(cipher)
             ctx = _EVPCIPHER.aead_setup(
                 backend,
                 cipher_name,
