@@ -26,6 +26,9 @@ Changelog
 * Support signing :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
   X.509 certificates via the new keyword-only argument ``rsa_padding`` on
   :meth:`~cryptography.x509.CertificateBuilder.sign`.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+  on BoringSSL.
 
 .. _v40-0-2:
 
