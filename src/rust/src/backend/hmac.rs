@@ -72,7 +72,7 @@ impl Hmac {
         let actual = self.finalize(py)?.as_bytes();
         if actual.len() != signature.len() || !openssl::memcmp::eq(actual, signature) {
             return Err(CryptographyError::from(
-                exceptions::InvalidSignature::new_err(("Signature did not match digest.",)),
+                exceptions::InvalidSignature::new_err("Signature did not match digest."),
             ));
         }
 
