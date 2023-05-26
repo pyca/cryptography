@@ -34,6 +34,10 @@ runs:
           echo "dir=$(python -m pip cache dir)" >> $GITHUB_OUTPUT
         fi
       shell: bash
+    - name: Normalize key
+      id: normalized-key
+      run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
+      shell: bash
     - uses: actions/cache@v3.3.1
       id: cache
       with:
@@ -43,7 +47,7 @@ runs:
           ~/.cargo/registry/cache/
           src/rust/target/
           ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ inputs.key }}-5-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}-${{ steps.rust-version.version }}
+        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ steps.normalized-key.outputs.key }}-5-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}-${{ steps.rust-version.version }}
     - name: Size of cache items
       run: |
         du -sh ~/.cargo/registry/index/
