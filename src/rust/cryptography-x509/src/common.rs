@@ -22,23 +22,23 @@ impl AlgorithmIdentifier<'_> {
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone, Debug)]
 pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::SHA1_OID)]
-    Sha1(asn1::Null),
+    Sha1(Option<asn1::Null>),
     #[defined_by(oid::SHA224_OID)]
-    Sha224(asn1::Null),
+    Sha224(Option<asn1::Null>),
     #[defined_by(oid::SHA256_OID)]
-    Sha256(asn1::Null),
+    Sha256(Option<asn1::Null>),
     #[defined_by(oid::SHA384_OID)]
-    Sha384(asn1::Null),
+    Sha384(Option<asn1::Null>),
     #[defined_by(oid::SHA512_OID)]
-    Sha512(asn1::Null),
+    Sha512(Option<asn1::Null>),
     #[defined_by(oid::SHA3_224_OID)]
-    Sha3_224(asn1::Null),
+    Sha3_224(Option<asn1::Null>),
     #[defined_by(oid::SHA3_256_OID)]
-    Sha3_256(asn1::Null),
+    Sha3_256(Option<asn1::Null>),
     #[defined_by(oid::SHA3_384_OID)]
-    Sha3_384(asn1::Null),
+    Sha3_384(Option<asn1::Null>),
     #[defined_by(oid::SHA3_512_OID)]
-    Sha3_512(asn1::Null),
+    Sha3_512(Option<asn1::Null>),
 
     #[defined_by(oid::ED25519_OID)]
     Ed25519,
@@ -227,7 +227,7 @@ pub struct DHParams<'a> {
 // RSA-PSS ASN.1 default hash algorithm
 pub const PSS_SHA1_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::Sha1(()),
+    params: AlgorithmParameters::Sha1(Some(())),
 };
 
 // This is defined as an AlgorithmIdentifier in RFC 4055,
