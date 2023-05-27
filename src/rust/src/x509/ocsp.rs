@@ -14,11 +14,11 @@ pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
     HashMap<common::AlgorithmParameters<'_>, &str>,
 > = Lazy::new(|| {
     let mut h = HashMap::new();
-    h.insert(common::AlgorithmParameters::Sha1(()), "SHA1");
-    h.insert(common::AlgorithmParameters::Sha224(()), "SHA224");
-    h.insert(common::AlgorithmParameters::Sha256(()), "SHA256");
-    h.insert(common::AlgorithmParameters::Sha384(()), "SHA384");
-    h.insert(common::AlgorithmParameters::Sha512(()), "SHA512");
+    h.insert(common::AlgorithmParameters::Sha1(Some(())), "SHA1");
+    h.insert(common::AlgorithmParameters::Sha224(Some(())), "SHA224");
+    h.insert(common::AlgorithmParameters::Sha256(Some(())), "SHA256");
+    h.insert(common::AlgorithmParameters::Sha384(Some(())), "SHA384");
+    h.insert(common::AlgorithmParameters::Sha512(Some(())), "SHA512");
     h
 });
 
@@ -30,35 +30,35 @@ pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: Lazy<
         "sha1",
         common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Sha1(()),
+            params: common::AlgorithmParameters::Sha1(Some(())),
         },
     );
     h.insert(
         "sha224",
         common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Sha224(()),
+            params: common::AlgorithmParameters::Sha224(Some(())),
         },
     );
     h.insert(
         "sha256",
         common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Sha256(()),
+            params: common::AlgorithmParameters::Sha256(Some(())),
         },
     );
     h.insert(
         "sha384",
         common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Sha384(()),
+            params: common::AlgorithmParameters::Sha384(Some(())),
         },
     );
     h.insert(
         "sha512",
         common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::Sha512(()),
+            params: common::AlgorithmParameters::Sha512(Some(())),
         },
     );
     h
