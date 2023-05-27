@@ -39,8 +39,6 @@ BN_MONT_CTX *BN_MONT_CTX_new(void);
 int BN_MONT_CTX_set(BN_MONT_CTX *, const BIGNUM *, BN_CTX *);
 void BN_MONT_CTX_free(BN_MONT_CTX *);
 
-BIGNUM *BN_dup(const BIGNUM *);
-
 int BN_set_word(BIGNUM *, BN_ULONG);
 
 char *BN_bn2hex(const BIGNUM *);

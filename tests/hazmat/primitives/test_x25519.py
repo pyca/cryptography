@@ -254,6 +254,13 @@ class TestX25519Exchange:
                 serialization.NoEncryption(),
             )
 
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
+            )
+
     def test_invalid_public_bytes(self, backend):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):

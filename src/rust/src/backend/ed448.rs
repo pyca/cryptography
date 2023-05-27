@@ -110,6 +110,7 @@ impl Ed448PrivateKey {
             format,
             encryption_algorithm,
             true,
+            true,
         )
     }
 }
@@ -143,7 +144,7 @@ impl Ed448PublicKey {
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true)
+        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
     }
 
     fn __richcmp__(

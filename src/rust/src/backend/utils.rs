@@ -37,6 +37,7 @@ pub(crate) fn bn_to_big_endian_bytes(b: &openssl::bn::BigNumRef) -> Cryptography
     Ok(b.to_vec_padded(b.num_bits() / 8 + 1)?)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::PyAny,
@@ -45,6 +46,7 @@ pub(crate) fn pkey_private_bytes<'p>(
     format: &pyo3::PyAny,
     encryption_algorithm: &pyo3::PyAny,
     openssh_allowed: bool,
+    raw_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let serialization_mod = py.import(pyo3::intern!(
         py,
@@ -89,8 +91,9 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
-    if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
-        || format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?)
+    if raw_allowed
+        && (encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+            || format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?))
     {
         if !encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
             || !format.is(private_format_class.getattr(pyo3::intern!(py, "Raw"))?)
@@ -151,6 +154,33 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
+    if format.is(private_format_class.getattr(pyo3::intern!(py, "TraditionalOpenSSL"))?) {
+        if let Ok(dsa) = pkey.dsa() {
+            if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
+                let pem_bytes = if password.is_empty() {
+                    dsa.private_key_to_pem()?
+                } else {
+                    dsa.private_key_to_pem_passphrase(
+                        openssl::symm::Cipher::aes_256_cbc(),
+                        password,
+                    )?
+                };
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
+            } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
+                if !password.is_empty() {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Encryption is not supported for DER encoded traditional OpenSSL keys",
+                        ),
+                    ));
+                }
+
+                let der_bytes = dsa.private_key_to_der()?;
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
+            }
+        }
+    }
+
     // OpenSSH + PEM
     if openssh_allowed && format.is(private_format_class.getattr(pyo3::intern!(py, "OpenSSH"))?) {
         if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
@@ -185,6 +215,7 @@ pub(crate) fn pkey_public_bytes<'p>(
     encoding: &pyo3::PyAny,
     format: &pyo3::PyAny,
     openssh_allowed: bool,
+    raw_allowed: bool,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
     let serialization_mod = py.import(pyo3::intern!(
         py,
@@ -213,8 +244,9 @@ pub(crate) fn pkey_public_bytes<'p>(
     }
 
     #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
-    if encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
-        || format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?)
+    if raw_allowed
+        && (encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
+            || format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?))
     {
         if !encoding.is(encoding_class.getattr(pyo3::intern!(py, "Raw"))?)
             || !format.is(public_format_class.getattr(pyo3::intern!(py, "Raw"))?)
