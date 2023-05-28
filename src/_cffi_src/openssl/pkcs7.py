@@ -48,8 +48,6 @@ static const int PKCS7_TEXT;
 
 FUNCTIONS = """
 void PKCS7_free(PKCS7 *);
-PKCS7 *PKCS7_sign(X509 *, EVP_PKEY *, Cryptography_STACK_OF_X509 *,
-                   BIO *, int);
 int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
 int PEM_write_bio_PKCS7_stream(BIO *, PKCS7 *, BIO *, int);
 PKCS7_SIGNER_INFO *PKCS7_sign_add_signer(PKCS7 *, X509 *, EVP_PKEY *,
