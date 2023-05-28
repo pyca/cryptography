@@ -12,7 +12,6 @@ TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
-static const long Cryptography_HAS_DTLS;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_PSK_TLSv1_3;
@@ -336,8 +335,6 @@ const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
 
-void *SSL_get_ex_data(const SSL *, int);
-
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
@@ -498,7 +495,6 @@ size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 1;
 #endif
 
-static const long Cryptography_HAS_DTLS = 1;
 /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
 long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
                                      long *ptv_usec) {

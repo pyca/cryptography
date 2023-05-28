@@ -35,7 +35,6 @@ int EC_GROUP_get_curve_name(const EC_GROUP *);
 
 size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 
-EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *);
 
 EC_KEY *EC_KEY_new_by_curve_name(int);

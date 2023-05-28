@@ -42,7 +42,6 @@ X509_CRL *PEM_read_bio_X509_CRL(BIO *, X509_CRL **, pem_password_cb *, void *);
 int PEM_write_bio_X509_CRL(BIO *, X509_CRL *);
 
 PKCS7 *PEM_read_bio_PKCS7(BIO *, PKCS7 **, pem_password_cb *, void *);
-int PEM_write_bio_PKCS7(BIO *, PKCS7 *);
 
 DH *PEM_read_bio_DHparams(BIO *, DH **, pem_password_cb *, void *);
 

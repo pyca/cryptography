@@ -39,7 +39,6 @@ char *X509_NAME_oneline(const X509_NAME *, char *, int);
 
 ASN1_OBJECT *X509_NAME_ENTRY_get_object(const X509_NAME_ENTRY *);
 ASN1_STRING *X509_NAME_ENTRY_get_data(const X509_NAME_ENTRY *);
-int X509_NAME_add_entry(X509_NAME *, X509_NAME_ENTRY *, int, int);
 
 int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, const unsigned char *,
                                int, int, int);
