@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v40-0-3:
+
+40.0.3 - 2023-05-30
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.1.
+
 .. _v40-0-2:
 
 40.0.2 - 2023-04-14
