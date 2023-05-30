@@ -74,8 +74,7 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git checkout "${VERSION}"
   mkdir build
   pushd build
-  # Find the default rust target based on what rustc is built for
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DRUST_BINDINGS="$(rustc -V --verbose | grep 'host: ' | sed 's/host: //')" -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   make -j"$(nproc)"
   make install
   # delete binaries we don't need

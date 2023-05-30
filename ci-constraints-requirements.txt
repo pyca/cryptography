@@ -46,7 +46,7 @@ exceptiongroup==1.1.1
     #   pytest
 execnet==1.9.0
     # via pytest-xdist
-filelock==3.10.3; python_version >= "3.7"
+filelock==3.12.0; python_version >= "3.7"
     # via
     #   tox
     #   virtualenv
@@ -54,7 +54,7 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.1.0; python_version >= "3.7"
+importlib-metadata==6.6.0; python_version >= "3.7"
     # via
     #   keyring
     #   twine
@@ -82,7 +82,7 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-packaging==23.0; python_version >= "3.7"
+packaging==23.1; python_version >= "3.7"
     # via
     #   black
     #   build
@@ -94,7 +94,7 @@ pathspec==0.11.1
     # via black
 pkginfo==1.9.6
     # via twine
-platformdirs==3.1.1; python_version >= "3.7"
+platformdirs==3.5.1; python_version >= "3.7"
     # via
     #   black
     #   tox
@@ -197,17 +197,17 @@ tomli==2.0.1; python_version >= "3.7"
     #   pyproject-hooks
     #   pytest
     #   tox
-tox==4.4.7; python_version >= "3.7"
+tox==4.5.2; python_version >= "3.7"
     # via cryptography (setup.cfg)
 twine==4.0.2
     # via cryptography (setup.cfg)
-typing-extensions==4.5.0; python_version >= "3.7"
+typing-extensions==4.6.2; python_version >= "3.7"
     # via mypy
 urllib3==1.26.15
     # via
     #   requests
     #   twine
-virtualenv==20.21.0; python_version >= "3.7"
+virtualenv==20.23.0; python_version >= "3.7"
     # via tox
 webencodings==0.5.1
     # via bleach

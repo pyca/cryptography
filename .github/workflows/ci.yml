@@ -139,14 +139,14 @@ jobs:
           - {IMAGE: "ubuntu-bionic", TOXENV: "py36", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-focal", TOXENV: "py38", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-jammy", TOXENV: "py310", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "ubuntu-rolling", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-rolling", TOXENV: "py311", RUNNER: "ubuntu-latest"}
           - {IMAGE: "fedora", TOXENV: "py311", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "alpine", TOXENV: "py310", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "alpine", TOXENV: "py311", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9", TOXENV: "py39", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9-fips", TOXENV: "py39", RUNNER: "ubuntu-latest", FIPS: true}
 
           - {IMAGE: "ubuntu-jammy:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
-          - {IMAGE: "alpine:aarch64", TOXENV: "py310", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "alpine:aarch64", TOXENV: "py311", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     steps:
       - name: Ridiculous alpine workaround for actions support on arm64
