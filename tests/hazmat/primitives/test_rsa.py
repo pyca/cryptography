@@ -187,7 +187,7 @@ class TestRSA:
             if key_size < backend._fips_rsa_min_key_size:
                 pytest.skip(f"Key size not FIPS compliant: {key_size}")
             if public_exponent < backend._fips_rsa_min_public_exponent:
-                pytest.skip(f"Exponent not FIPS compliant: {public_exponent}")
+                pytest.skip(f"Exponent too weak: {public_exponent}")
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 

@@ -396,7 +396,7 @@ class Backend:
         self, public_exponent: int, key_size: int
     ) -> bool:
         return (
-            public_exponent >= 3
+            public_exponent >= 65537
             and public_exponent & 1 != 0
             and key_size >= 512
         )
