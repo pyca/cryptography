@@ -1038,4 +1038,4 @@ Interface
 .. _`here`: https://stackoverflow.com/a/30308723/1170681
 .. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
 .. _`The scrypt paper`: https://www.tarsnap.com/scrypt/scrypt.pdf
-.. _`Understanding HKDF`: https://soatok.blog/2021/11/17/understanding-hkdf/
+.. _`understanding HKDF`: https://soatok.blog/2021/11/17/understanding-hkdf/
