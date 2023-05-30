@@ -7,6 +7,7 @@ from __future__ import annotations
 import abc
 import typing
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 
@@ -26,6 +27,7 @@ class DSAParameters(metaclass=abc.ABCMeta):
 
 
 DSAParametersWithNumbers = DSAParameters
+DSAParameters.register(rust_openssl.dsa.DSAParameters)
 
 
 class DSAPrivateKey(metaclass=abc.ABCMeta):
@@ -77,6 +79,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
 
 
 DSAPrivateKeyWithSerialization = DSAPrivateKey
+DSAPrivateKey.register(rust_openssl.dsa.DSAPrivateKey)
 
 
 class DSAPublicKey(metaclass=abc.ABCMeta):
@@ -128,6 +131,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
 
 
 DSAPublicKeyWithSerialization = DSAPublicKey
+DSAPublicKey.register(rust_openssl.dsa.DSAPublicKey)
 
 
 class DSAParameterNumbers:

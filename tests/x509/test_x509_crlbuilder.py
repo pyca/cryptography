@@ -524,6 +524,10 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Requires OpenSSL with DSA support",
+    )
     def test_sign_dsa_key(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)
         invalidity_date = x509.InvalidityDate(

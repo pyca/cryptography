@@ -395,6 +395,8 @@ class TestDSA:
         assert key1 == key2
         assert key1 != key3
         assert key1 != object()
+        with pytest.raises(TypeError):
+            key1 < key2  # type: ignore[operator]
 
 
 @pytest.mark.supported(
@@ -711,6 +713,10 @@ class TestDSASerialization:
             (serialization.Encoding.DER, serialization.PrivateFormat.Raw),
             (serialization.Encoding.Raw, serialization.PrivateFormat.Raw),
             (serialization.Encoding.X962, serialization.PrivateFormat.PKCS8),
+            (
+                serialization.Encoding.SMIME,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+            ),
         ],
     )
     def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):

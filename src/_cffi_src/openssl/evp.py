@@ -66,7 +66,6 @@ void EVP_PKEY_free(EVP_PKEY *);
 int EVP_PKEY_type(int);
 int EVP_PKEY_size(EVP_PKEY *);
 RSA *EVP_PKEY_get1_RSA(EVP_PKEY *);
-DSA *EVP_PKEY_get1_DSA(EVP_PKEY *);
 
 int EVP_PKEY_encrypt(EVP_PKEY_CTX *, unsigned char *, size_t *,
                      const unsigned char *, size_t);

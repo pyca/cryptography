@@ -271,6 +271,7 @@ impl DHPrivateKey {
             format,
             encryption_algorithm,
             true,
+            false,
         )
     }
 }
@@ -302,7 +303,7 @@ impl DHPublicKey {
             ));
         }
 
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true)
+        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
     }
 
     fn parameters(&self) -> CryptographyResult<DHParameters> {

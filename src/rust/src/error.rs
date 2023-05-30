@@ -74,13 +74,16 @@ impl From<CryptographyError> for pyo3::PyErr {
                         .expect("Failed to append to list");
                 }
                 exceptions::InternalError::new_err((
-                    "Unknown OpenSSL error. This error is commonly encountered
+                    format!(
+                        "Unknown OpenSSL error. This error is commonly encountered
                         when another library is not cleaning up the OpenSSL error
                         stack. If you are using cryptography with another library
                         that uses OpenSSL try disabling it before reporting a bug.
                         Otherwise please file an issue at
                         https://github.com/pyca/cryptography/issues with
-                        information on how to reproduce this.",
+                        information on how to reproduce this. ({:?})",
+                        errors
+                    ),
                     errors.to_object(py),
                 ))
             }),
