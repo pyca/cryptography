@@ -3,16 +3,15 @@ Changelog
 
 .. _v41-0-0:
 
-41.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+41.0.0 - 2023-05-30
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1d has been
   removed.  Users on older version of OpenSSL will need to upgrade.
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.6 has been removed.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.6.
 * Updated the minimum supported Rust version (MSRV) to 1.56.0, from 1.48.0.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.1.
 * Added support for the :class:`~cryptography.x509.OCSPAcceptableResponses`
   OCSP extension.
 * Added support for the :class:`~cryptography.x509.MSCertificateTemplate`
