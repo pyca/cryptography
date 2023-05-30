@@ -9,7 +9,7 @@ rust-version = "1.56.0"
 
 [dependencies]
 pyo3 = { version = "0.18", features = ["abi3-py37"] }
-openssl-sys = "0.9.87"
+openssl-sys = "0.9.88"
 
 [build-dependencies]
 cc = "1.0.72"
