@@ -145,7 +145,7 @@ impl CertificateRevocationList {
             revoked_certs
         });
 
-        if idx.is_instance_of::<pyo3::types::PySlice>()? {
+        if idx.is_instance_of::<pyo3::types::PySlice>() {
             let indices = idx
                 .downcast::<pyo3::types::PySlice>()?
                 .indices(self.len().try_into().unwrap())?;
