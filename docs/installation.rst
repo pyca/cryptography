@@ -16,6 +16,7 @@ Supported platforms
 Currently we test ``cryptography`` on Python 3.7+ and PyPy3 7.3.10+ on these
 operating systems.
 
+* AWS Lambda Layer
 * x86-64 RHEL 8.x
 * x86-64 CentOS 9 Stream
 * x86-64 Fedora (latest)
@@ -28,6 +29,7 @@ operating systems.
 * x86-64 Alpine (latest)
 * ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2022
+
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases in addition to distribution provided releases from the
@@ -99,6 +101,18 @@ for the OpenSSL and ``libffi`` libraries available on your system.
 
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
+
+
+AWS Lambda Layer
+~~~~~~
+
+```shell
+mkdir -p python/lib/python3.10/site-packages 
+echo "cryptography" > requirements.txt 
+sudo docker run -v "$PWD":/var/task "public.ecr.aws/sam/build-python3.10:latest" /bin/sh -c "pip install -r requirements.txt -t python/lib/python3.10/site-packages/; exit"
+zip -r lambda_function.zip .
+```
+
 
 Alpine
 ~~~~~~
