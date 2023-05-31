@@ -211,7 +211,7 @@ fn encode_certificate_policies(
             let mut qualifiers = vec![];
             for py_qualifier in py_policy_qualifiers.iter()? {
                 let py_qualifier = py_qualifier?;
-                let qualifier = if py_qualifier.is_instance_of::<pyo3::types::PyString>()? {
+                let qualifier = if py_qualifier.is_instance_of::<pyo3::types::PyString>() {
                     let cps_uri = match asn1::IA5String::new(py_qualifier.extract()?) {
                         Some(s) => s,
                         None => {
