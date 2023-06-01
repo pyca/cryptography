@@ -27,6 +27,7 @@ fn main() {
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
     println!("cargo:rerun-if-changed=../../_cffi_src/");
+    println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
         .env("OUT_DIR", &out_dir)
         .arg("../../_cffi_src/build_openssl.py")
