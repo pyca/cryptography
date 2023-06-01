@@ -245,6 +245,13 @@ class TestEd25519Signing:
                 None,
                 serialization.load_der_private_key,
             ),
+            (
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.PKCS8,
+                serialization.BestAvailableEncryption(b"\x00"),
+                b"\x00",
+                serialization.load_der_private_key,
+            ),
         ],
     )
     def test_round_trip_private_serialization(
