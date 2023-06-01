@@ -234,19 +234,19 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Ec, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::EcDsaWithSha224,
+            params: common::AlgorithmParameters::EcDsaWithSha224(None),
         }),
         (KeyType::Ec, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::EcDsaWithSha256,
+            params: common::AlgorithmParameters::EcDsaWithSha256(None),
         }),
         (KeyType::Ec, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::EcDsaWithSha384,
+            params: common::AlgorithmParameters::EcDsaWithSha384(None),
         }),
         (KeyType::Ec, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::EcDsaWithSha512,
+            params: common::AlgorithmParameters::EcDsaWithSha512(None),
         }),
         (KeyType::Ec, HashType::Sha3_224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
@@ -483,10 +483,10 @@ fn identify_key_type_for_algorithm_params(
         | common::AlgorithmParameters::RsaWithSha3_384(..)
         | common::AlgorithmParameters::RsaWithSha3_512(..)
         | common::AlgorithmParameters::RsaPss(..) => Ok(KeyType::Rsa),
-        common::AlgorithmParameters::EcDsaWithSha224
-        | common::AlgorithmParameters::EcDsaWithSha256
-        | common::AlgorithmParameters::EcDsaWithSha384
-        | common::AlgorithmParameters::EcDsaWithSha512
+        common::AlgorithmParameters::EcDsaWithSha224(..)
+        | common::AlgorithmParameters::EcDsaWithSha256(..)
+        | common::AlgorithmParameters::EcDsaWithSha384(..)
+        | common::AlgorithmParameters::EcDsaWithSha512(..)
         | common::AlgorithmParameters::EcDsaWithSha3_224
         | common::AlgorithmParameters::EcDsaWithSha3_256
         | common::AlgorithmParameters::EcDsaWithSha3_384
@@ -616,10 +616,10 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
                 .call0()?;
             Ok(pkcs)
         }
-        common::AlgorithmParameters::EcDsaWithSha224
-        | common::AlgorithmParameters::EcDsaWithSha256
-        | common::AlgorithmParameters::EcDsaWithSha384
-        | common::AlgorithmParameters::EcDsaWithSha512
+        common::AlgorithmParameters::EcDsaWithSha224(_)
+        | common::AlgorithmParameters::EcDsaWithSha256(_)
+        | common::AlgorithmParameters::EcDsaWithSha384(_)
+        | common::AlgorithmParameters::EcDsaWithSha512(_)
         | common::AlgorithmParameters::EcDsaWithSha3_224
         | common::AlgorithmParameters::EcDsaWithSha3_256
         | common::AlgorithmParameters::EcDsaWithSha3_384
@@ -682,10 +682,22 @@ mod tests {
                 &common::AlgorithmParameters::RsaWithSha3_512(Some(())),
                 KeyType::Rsa,
             ),
-            (&common::AlgorithmParameters::EcDsaWithSha224, KeyType::Ec),
-            (&common::AlgorithmParameters::EcDsaWithSha256, KeyType::Ec),
-            (&common::AlgorithmParameters::EcDsaWithSha384, KeyType::Ec),
-            (&common::AlgorithmParameters::EcDsaWithSha512, KeyType::Ec),
+            (
+                &common::AlgorithmParameters::EcDsaWithSha224(None),
+                KeyType::Ec,
+            ),
+            (
+                &common::AlgorithmParameters::EcDsaWithSha256(None),
+                KeyType::Ec,
+            ),
+            (
+                &common::AlgorithmParameters::EcDsaWithSha384(None),
+                KeyType::Ec,
+            ),
+            (
+                &common::AlgorithmParameters::EcDsaWithSha512(None),
+                KeyType::Ec,
+            ),
             (&common::AlgorithmParameters::EcDsaWithSha3_224, KeyType::Ec),
             (&common::AlgorithmParameters::EcDsaWithSha3_256, KeyType::Ec),
             (&common::AlgorithmParameters::EcDsaWithSha3_384, KeyType::Ec),
