@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v41-0-1:
+
+41.0.1 - 2023-06-01
+~~~~~~~~~~~~~~~~~~~
+
+* Temporarily allow invalid ECDSA signature algorithm parameters in X.509
+  certificates.
+
 .. _v41-0-0:
 
 41.0.0 - 2023-05-30
