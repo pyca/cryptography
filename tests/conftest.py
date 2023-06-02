@@ -36,7 +36,7 @@ def pytest_runtest_setup(item):
             pytest.skip(marker.kwargs["reason"])
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def backend(request):
     check_backend_support(openssl_backend, request)
 
