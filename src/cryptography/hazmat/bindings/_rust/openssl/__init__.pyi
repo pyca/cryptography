@@ -7,6 +7,7 @@ import typing
 from cryptography.hazmat.bindings._rust.openssl import (
     dh,
     dsa,
+    ec,
     ed448,
     ed25519,
     hashes,
@@ -22,6 +23,7 @@ __all__ = [
     "raise_openssl_error",
     "dh",
     "dsa",
+    "ec",
     "hashes",
     "hmac",
     "kdf",

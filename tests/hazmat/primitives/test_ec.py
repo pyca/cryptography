@@ -134,7 +134,12 @@ def test_derive_point_at_infinity(backend):
     _skip_curve_unsupported(backend, curve)
     # order of the curve
     q = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
-    with pytest.raises(ValueError, match="Unable to derive"):
+    # BoringSSL rejects infinity points before it ever gets to us, so it
+    # uses a more generic error message.
+    match = (
+        "infinity" if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL else "Invalid"
+    )
+    with pytest.raises(ValueError, match=match):
         ec.derive_private_key(q, ec.SECP256R1())
 
 
