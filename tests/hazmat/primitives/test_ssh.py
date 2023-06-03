@@ -244,6 +244,45 @@ class TestOpenSSHSerialization:
         maxline = max(map(len, priv_data2.split(b"\n")))
         assert maxline < 80
 
+        # check serialization with comment
+        comment = b"test  comment"
+        parsed_comment = []
+        encryption._comment = comment
+        if key_file.startswith("dsa"):
+            with pytest.warns(utils.DeprecatedIn40):
+                priv_data2 = private_key.private_bytes(
+                    Encoding.PEM,
+                    PrivateFormat.OpenSSH,
+                    encryption,
+                )
+            with pytest.warns(utils.DeprecatedIn40):
+                private_key2 = load_ssh_private_key(
+                    priv_data2,
+                    password,
+                    backend,
+                    comment_collector=lambda c: parsed_comment.apppend(c),
+                )
+            with pytest.warns(utils.DeprecatedIn40):
+                assert len(parsed_comment) == 1
+            with pytest.warns(utils.DeprecatedIn40):
+                assert parsed_comment[0] == comment
+        else:
+            parsed_comment = None
+            priv_data2 = private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                encryption,
+            )
+            private_key2 = load_ssh_private_key(
+                priv_data2,
+                password,
+                backend,
+                comment_collector=lambda c: parsed_comment.apppend(c),
+            )
+            assert len(parsed_comment) == 1
+            assert parsed_comment[0] == comment
+        del encryption._comment
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
         skip_message="Requires Ed25519 support",
