@@ -760,7 +760,12 @@ def _serialize_ssh_private_key(
     nkeys = 1
     checkval = os.urandom(4)
     comment = b""
-    if '_comment' in dir(encryption_algorithm) and encryption_algorithm._comment is not None:
+    if (
+        '_comment' in dir(encryption_algorithm)
+        and encryption_algorithm._comment is not None
+        and isinstance(encryption_algorithm._comment, bytes)
+        and len(encryption_algorithm._comment) > 0
+    ):
         comment = encryption_algorithm._comment
 
     # encode public and private parts together
