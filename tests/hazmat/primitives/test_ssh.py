@@ -261,7 +261,7 @@ class TestOpenSSHSerialization:
                     priv_data2,
                     password,
                     backend,
-                    comment_collector=lambda c: parsed_comment.apppend(c),
+                    comment_collector=lambda c: parsed_comment.append(c),
                 )
             with pytest.warns(utils.DeprecatedIn40):
                 assert len(parsed_comment) == 1
@@ -277,7 +277,7 @@ class TestOpenSSHSerialization:
                 priv_data2,
                 password,
                 backend,
-                comment_collector=lambda c: parsed_comment.apppend(c),
+                comment_collector=lambda c: parsed_comment.append(c),
             )
             assert len(parsed_comment) == 1
             assert parsed_comment[0] == comment
