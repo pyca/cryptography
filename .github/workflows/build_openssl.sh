@@ -72,13 +72,10 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  mkdir build
-  pushd build
-  cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
-  make -j"$(nproc)"
-  make install
+  cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  make -C build -j"$(nproc)"
+  make -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
-  popd
   popd
 fi
