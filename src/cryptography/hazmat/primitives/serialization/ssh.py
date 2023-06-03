@@ -617,6 +617,7 @@ def load_ssh_private_key(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Any = None,
+    comment_collector: typing.Callable[[bytes], None] = None,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
@@ -699,6 +700,8 @@ def load_ssh_private_key(
         raise ValueError("Corrupt data: key type mismatch")
     private_key, edata = kformat.load_private(edata, pubfields)
     comment, edata = _get_sshstr(edata)
+    if comment_collector is not None:
+        comment_collector(comment.tobytes())
 
     # yes, SSH does padding check *after* all other parsing is done.
     # need to follow as it writes zero-byte padding too.
@@ -757,6 +760,8 @@ def _serialize_ssh_private_key(
     nkeys = 1
     checkval = os.urandom(4)
     comment = b""
+    if '_comment' in dir(encryption_algorithm) and encryption_algorithm._comment is not None:
+        comment = encryption_algorithm._comment
 
     # encode public and private parts together
     f_public_key = _FragList()
