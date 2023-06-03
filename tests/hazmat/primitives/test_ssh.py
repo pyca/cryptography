@@ -6,6 +6,7 @@
 import base64
 import datetime
 import os
+import typing
 
 import pytest
 
@@ -246,7 +247,7 @@ class TestOpenSSHSerialization:
 
         # check serialization with comment
         comment = b"test  comment"
-        parsed_comment: List[str] = []
+        parsed_comment: typing.List[str] = []
         setattr(encryption, "_comment", comment)
         if key_file.startswith("dsa"):
             with pytest.warns(utils.DeprecatedIn40):
