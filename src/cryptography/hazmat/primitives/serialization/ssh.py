@@ -618,7 +618,7 @@ def load_ssh_private_key(
     password: typing.Optional[bytes],
     backend: typing.Any = None,
     comment_collector: typing.Union[
-        typetyping.Callable[[bytes], None], None
+        typing.Callable[[bytes], None], None
     ] = None,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
