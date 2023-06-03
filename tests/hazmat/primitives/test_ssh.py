@@ -246,8 +246,8 @@ class TestOpenSSHSerialization:
 
         # check serialization with comment
         comment = b"test  comment"
-        parsed_comment = []
-        encryption._comment = comment
+        parsed_comment: List[str] = []
+        setattr(encryption, "_comment", comment)
         if key_file.startswith("dsa"):
             with pytest.warns(utils.DeprecatedIn40):
                 priv_data2 = private_key.private_bytes(
@@ -267,7 +267,6 @@ class TestOpenSSHSerialization:
             with pytest.warns(utils.DeprecatedIn40):
                 assert parsed_comment[0] == comment
         else:
-            parsed_comment = None
             priv_data2 = private_key.private_bytes(
                 Encoding.PEM,
                 PrivateFormat.OpenSSH,
@@ -281,7 +280,7 @@ class TestOpenSSHSerialization:
             )
             assert len(parsed_comment) == 1
             assert parsed_comment[0] == comment
-        del encryption._comment
+        delattr(encryption, "_comment")
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),

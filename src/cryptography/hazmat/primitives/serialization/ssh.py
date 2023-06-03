@@ -762,7 +762,7 @@ def _serialize_ssh_private_key(
     nkeys = 1
     checkval = os.urandom(4)
     comment = b""
-    if "_comment" in dir(encryption_algorithm):
+    if hasattr(encryption_algorithm, "_comment"):
         _comment_attr = getattr(encryption_algorithm, "_comment")
         if isinstance(_comment_attr, bytes):
             comment = _comment_attr
