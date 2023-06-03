@@ -617,7 +617,7 @@ def load_ssh_private_key(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Any = None,
-    comment_collector: typing.Callable[[bytes], None] = None,
+    comment_collector: typing.Union[typetyping.Callable[[bytes], None], None] = None,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
@@ -760,13 +760,10 @@ def _serialize_ssh_private_key(
     nkeys = 1
     checkval = os.urandom(4)
     comment = b""
-    if (
-        "_comment" in dir(encryption_algorithm)
-        and encryption_algorithm._comment is not None
-        and isinstance(encryption_algorithm._comment, bytes)
-        and len(encryption_algorithm._comment) > 0
-    ):
-        comment = encryption_algorithm._comment
+    if "_comment" in dir(encryption_algorithm):
+        _comment_attr = getattr(encryption_algorithm, "_comment")
+        if isinstance(_comment_attr, bytes):
+            comment = _comment_attr
 
     # encode public and private parts together
     f_public_key = _FragList()
