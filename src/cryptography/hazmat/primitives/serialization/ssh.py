@@ -761,7 +761,7 @@ def _serialize_ssh_private_key(
     checkval = os.urandom(4)
     comment = b""
     if (
-        '_comment' in dir(encryption_algorithm)
+        "_comment" in dir(encryption_algorithm)
         and encryption_algorithm._comment is not None
         and isinstance(encryption_algorithm._comment, bytes)
         and len(encryption_algorithm._comment) > 0
