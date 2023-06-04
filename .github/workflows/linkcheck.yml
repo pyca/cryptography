@@ -10,6 +10,9 @@ permissions:
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+  CARGO_INCREMENTAL: 0
 
 jobs:
   docs-linkcheck:
@@ -21,9 +24,6 @@ jobs:
       - uses: actions/checkout@v3.5.2
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v4.6.1
