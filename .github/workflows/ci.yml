@@ -18,6 +18,9 @@ concurrency:
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+  CARGO_INCREMENTAL: 0
 
 jobs:
   linux:
@@ -59,9 +62,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v4.6.1
@@ -179,12 +179,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: git config shenanigans
-        run: |
-          git config --global --add safe.directory $(pwd) # needed for the mtime fix since git doesn't think it owns the files due to being in containers
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -236,9 +230,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -301,9 +292,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@v4.6.1
@@ -375,9 +363,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: set mtimes for rust dirs
-        uses: ./.github/actions/mtime-fix
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
