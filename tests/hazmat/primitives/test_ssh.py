@@ -308,7 +308,8 @@ class TestOpenSSHSerialization:
                 backend,
                 comment_collector=lambda c: parsed_comment.append(c),
             )
-        assert len(parsed_comment) == 0
+        assert len(parsed_comment) == 1
+        assert parsed_comment[0] == b''
         delattr(encryption, "_comment")
 
     @pytest.mark.supported(
