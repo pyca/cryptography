@@ -45,10 +45,6 @@ PKCS7 *PEM_read_bio_PKCS7(BIO *, PKCS7 **, pem_password_cb *, void *);
 
 DH *PEM_read_bio_DHparams(BIO *, DH **, pem_password_cb *, void *);
 
-int PEM_write_bio_DSAPrivateKey(BIO *, DSA *, const EVP_CIPHER *,
-                                unsigned char *, int,
-                                pem_password_cb *, void *);
-
 int PEM_write_bio_RSAPrivateKey(BIO *, RSA *, const EVP_CIPHER *,
                                 unsigned char *, int,
                                 pem_password_cb *, void *);
