@@ -51,7 +51,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "80935bf5ad309bf6c03591acf1d48fe1db57b78f"}}
           # Builds with various Rust versions. Includes MSRV and potential
           # future MSRV:
-          # 1.60 - pem 2.0.1
+          # 1.60 - pem 2.0.1, once_cell 1.18.0
           - {VERSION: "3.11", NOXSESSION: "tests-nocoverage", RUST: "1.56.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.60.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "beta"}
