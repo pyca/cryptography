@@ -10,6 +10,7 @@ Changelog
 
 * Parsing SSH certificates no longer permits malformed critical options with
   values, as documented in the 41.0.2 release notes.
+* Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
 
 .. _v41-0-2:
 

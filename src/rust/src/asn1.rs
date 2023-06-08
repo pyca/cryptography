@@ -104,13 +104,8 @@ pub(crate) fn encode_der_data<'p>(
         Ok(pyo3::types::PyBytes::new(
             py,
             &pem::encode_config(
-                &pem::Pem {
-                    tag: pem_tag,
-                    contents: data,
-                },
-                pem::EncodeConfig {
-                    line_ending: pem::LineEnding::LF,
-                },
+                &pem::Pem::new(pem_tag, data),
+                pem::EncodeConfig::new().set_line_ending(pem::LineEnding::LF),
             )
             .into_bytes(),
         ))

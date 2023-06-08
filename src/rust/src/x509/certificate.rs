@@ -334,12 +334,12 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyR
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
     let parsed = x509::find_in_pem(
         data,
-        |p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE",
+        |p| p.tag() == "CERTIFICATE" || p.tag() == "X509 CERTIFICATE",
         "Valid PEM but no BEGIN CERTIFICATE/END CERTIFICATE delimiters. Are you sure this is a certificate?",
     )?;
     load_der_x509_certificate(
         py,
-        pyo3::types::PyBytes::new(py, &parsed.contents).into_py(py),
+        pyo3::types::PyBytes::new(py, parsed.contents()).into_py(py),
     )
 }
 
@@ -350,9 +350,9 @@ fn load_pem_x509_certificates(
 ) -> CryptographyResult<Vec<Certificate>> {
     let certs = pem::parse_many(data)?
         .iter()
-        .filter(|p| p.tag == "CERTIFICATE" || p.tag == "X509 CERTIFICATE")
+        .filter(|p| p.tag() == "CERTIFICATE" || p.tag() == "X509 CERTIFICATE")
         .map(|p| {
-            load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &p.contents).into_py(py))
+            load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, p.contents()).into_py(py))
         })
         .collect::<Result<Vec<_>, _>>()?;
 

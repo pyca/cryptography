@@ -43,7 +43,7 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedIA5String<'a> {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]
 pub struct OtherName<'a> {
     pub type_id: asn1::ObjectIdentifier,
     #[explicit(0, required)]
