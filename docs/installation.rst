@@ -120,10 +120,9 @@ Debian/Ubuntu
 
 .. warning::
 
-    The Rust available in most Debian versions is older than the minimum
-    supported version. Debian Bookworm is sufficiently new, but otherwise
-    please see the :ref:`Rust installation instructions <installation:Rust>`
-    for information about installing a newer Rust.
+    The Rust available in Debian versions prior to Bookworm are older than the
+    minimum supported version. See the :ref:`Rust installation instructions
+    <installation:Rust>` for information about installing a newer Rust.
 
 .. code-block:: console
 
