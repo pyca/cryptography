@@ -613,6 +613,8 @@ class TestECEquality:
         assert key1 == key2
         assert key1 != key3
         assert key1 != object()
+        with pytest.raises(TypeError):
+            key1 < key2  # type: ignore[operator]
 
 
 class TestECSerialization:
@@ -792,6 +794,13 @@ class TestECSerialization:
                 serialization.Encoding.DER,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 serialization.BestAvailableEncryption(b"password"),
+            )
+
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.SMIME,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
             )
 
     def test_private_bytes_invalid_encoding(self, backend):

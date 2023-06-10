@@ -79,8 +79,11 @@ def test_ecdsa_signature(backend, wycheproof):
         )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
-    if not backend.hash_supported(digest):
-        pytest.skip(f"Hash {digest} not supported")
+    alg = ec.ECDSA(digest)
+    if not backend.elliptic_curve_signature_algorithm_supported(
+        alg, key.curve
+    ):
+        pytest.skip(f"Signature with {digest} and {key.curve} not supported")
 
     if wycheproof.valid or (
         wycheproof.acceptable and not wycheproof.has_flag("MissingZero")
@@ -88,12 +91,12 @@ def test_ecdsa_signature(backend, wycheproof):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),
             binascii.unhexlify(wycheproof.testcase["msg"]),
-            ec.ECDSA(digest),
+            alg,
         )
     else:
         with pytest.raises(InvalidSignature):
             key.verify(
                 binascii.unhexlify(wycheproof.testcase["sig"]),
                 binascii.unhexlify(wycheproof.testcase["msg"]),
-                ec.ECDSA(digest),
+                alg,
             )
