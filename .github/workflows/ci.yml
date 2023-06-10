@@ -60,7 +60,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -177,7 +177,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -228,7 +228,7 @@ jobs:
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -290,7 +290,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -361,7 +361,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -401,7 +401,7 @@ jobs:
     needs: [linux, distros, macos, windows, linux-downstream]
     if: ${{ always() }}
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
         with:
           persist-credentials: false
