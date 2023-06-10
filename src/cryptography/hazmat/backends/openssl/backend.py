@@ -37,6 +37,9 @@ from cryptography.hazmat.primitives.asymmetric import (
     x448,
     x25519,
 )
+from cryptography.hazmat.primitives.asymmetric import (
+    utils as asym_utils,
+)
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
     OAEP,
@@ -990,6 +993,11 @@ class Backend:
             )
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
+        if self._fips_enabled and not isinstance(
+            curve, self._fips_ecdh_curves
+        ):
+            return False
+
         try:
             curve_nid = self._elliptic_curve_to_nid(curve)
         except UnsupportedAlgorithm:
@@ -1014,7 +1022,10 @@ class Backend:
         if not isinstance(signature_algorithm, ec.ECDSA):
             return False
 
-        return self.elliptic_curve_supported(curve)
+        return self.elliptic_curve_supported(curve) and (
+            isinstance(signature_algorithm.algorithm, asym_utils.Prehashed)
+            or self.hash_supported(signature_algorithm.algorithm)
+        )
 
     def generate_elliptic_curve_private_key(
         self, curve: ec.EllipticCurve
@@ -1178,11 +1189,6 @@ class Backend:
     def elliptic_curve_exchange_algorithm_supported(
         self, algorithm: ec.ECDH, curve: ec.EllipticCurve
     ) -> bool:
-        if self._fips_enabled and not isinstance(
-            curve, self._fips_ecdh_curves
-        ):
-            return False
-
         return self.elliptic_curve_supported(curve) and isinstance(
             algorithm, ec.ECDH
         )

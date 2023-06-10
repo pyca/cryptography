@@ -38,6 +38,9 @@ from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 from .fixtures_rsa import RSA_KEY_2048
 from .test_ec import _skip_curve_unsupported
+from .test_rsa import rsa_key_2048
+
+__all__ = ["rsa_key_2048"]
 
 
 class TestOpenSSHSerialization:
@@ -589,7 +592,9 @@ class TestOpenSSHSerialization:
                 Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
             )
 
-    def test_serialize_ssh_private_key_errors(self, backend):
+    def test_serialize_ssh_private_key_errors(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
         # bad encoding
         private_key = ec.generate_private_key(ec.SECP256R1(), backend)
         with pytest.raises(ValueError):
@@ -615,6 +620,11 @@ class TestOpenSSHSerialization:
                 DummyKeySerializationEncryption(),
             )
 
+        with pytest.raises(ValueError):
+            rsa_key_2048.private_bytes(
+                Encoding.DER, PrivateFormat.OpenSSH, NoEncryption()
+            )
+
     @pytest.mark.supported(
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
@@ -636,34 +646,40 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_serialize_ssh_private_key_with_password(
-        self, password, kdf_rounds, backend
+        self, password, kdf_rounds, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
-        original_key = ec.generate_private_key(ec.SECP256R1(), backend)
-        encoded_key_data = original_key.private_bytes(
-            Encoding.PEM,
-            PrivateFormat.OpenSSH,
-            (
-                PrivateFormat.OpenSSH.encryption_builder()
-                .kdf_rounds(kdf_rounds)
-                .build(password)
-            ),
-        )
+        for original_key in [
+            ec.generate_private_key(ec.SECP256R1(), backend),
+            rsa_key_2048,
+        ]:
+            assert isinstance(
+                original_key, (ec.EllipticCurvePrivateKey, rsa.RSAPrivateKey)
+            )
+            encoded_key_data = original_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                (
+                    PrivateFormat.OpenSSH.encryption_builder()
+                    .kdf_rounds(kdf_rounds)
+                    .build(password)
+                ),
+            )
 
-        decoded_key = load_ssh_private_key(
-            data=encoded_key_data,
-            password=password,
-            backend=backend,
-        )
+            decoded_key = load_ssh_private_key(
+                data=encoded_key_data,
+                password=password,
+                backend=backend,
+            )
 
-        original_public_key = original_key.public_key().public_bytes(
-            Encoding.OpenSSH, PublicFormat.OpenSSH
-        )
+            original_public_key = original_key.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH
+            )
 
-        decoded_public_key = decoded_key.public_key().public_bytes(
-            Encoding.OpenSSH, PublicFormat.OpenSSH
-        )
+            decoded_public_key = decoded_key.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH
+            )
 
-        assert original_public_key == decoded_public_key
+            assert original_public_key == decoded_public_key
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
