@@ -5,6 +5,13 @@ We take the security of ``cryptography`` seriously. The following are a set of
 policies we have adopted to ensure that security issues are addressed in a
 timely fashion.
 
+Known vulnerabilities
+---------------------
+
+A list of all known vulnerabilities in ``cryptography`` can be found on
+`osv.dev`_, as well as other ecosystem vulnerability databases. They can
+automatically be scanned for using tools such as `pip-audit`_ or `osv-scan`_.
+
 Infrastructure
 --------------
 
@@ -87,5 +94,8 @@ The steps for issuing a security release are described in our
 :doc:`/doing-a-release` documentation.
 
 
+.. _`osv.dev`: https://osv.dev/list?ecosystem=PyPI&q=cryptography
+.. _`pip-audit`: https://pypi.org/project/pip-audit/
+.. _`osv-scan`: https://google.github.io/osv-scanner/
 .. _`security advisory page`: https://github.com/pyca/cryptography/security/advisories/new
 .. _`main`: https://github.com/pyca/cryptography
