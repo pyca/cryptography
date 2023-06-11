@@ -363,9 +363,7 @@ fn create_ip_network(
 }
 
 fn ipv4_netmask(num: u32) -> Result<u32, CryptographyError> {
-    // we invert and check leading zeros because leading_ones wasn't stabilized
-    // until 1.46.0. When we raise our MSRV we should change this
-    if (!num).leading_zeros() + num.trailing_zeros() != 32 {
+    if num.leading_ones() + num.trailing_zeros() != 32 {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid netmask"),
         ));
@@ -374,9 +372,7 @@ fn ipv4_netmask(num: u32) -> Result<u32, CryptographyError> {
 }
 
 fn ipv6_netmask(num: u128) -> Result<u32, CryptographyError> {
-    // we invert and check leading zeros because leading_ones wasn't stabilized
-    // until 1.46.0. When we raise our MSRV we should change this
-    if (!num).leading_zeros() + num.trailing_zeros() != 128 {
+    if num.leading_ones() + num.trailing_zeros() != 128 {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid netmask"),
         ));
