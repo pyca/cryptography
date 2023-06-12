@@ -46,7 +46,7 @@ fn serialize_certificates<'p>(
 
     let raw_certs = py_certs
         .iter()
-        .map(|c| c.raw.borrow_value_public())
+        .map(|c| c.raw.borrow_dependent())
         .collect::<Vec<_>>();
 
     let signed_data = pkcs7::SignedData {
@@ -122,7 +122,7 @@ fn sign_and_serialize<'p>(
     let mut digest_algs = vec![];
     let mut certs = py_certs
         .iter()
-        .map(|p| p.raw.borrow_value_public())
+        .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
     for (cert, py_private_key, py_hash_alg) in &py_signers {
         let (authenticated_attrs, signature) = if options
@@ -199,13 +199,13 @@ fn sign_and_serialize<'p>(
         if !digest_algs.contains(&digest_alg) {
             digest_algs.push(digest_alg.clone());
         }
-        certs.push(cert.raw.borrow_value_public());
+        certs.push(cert.raw.borrow_dependent());
 
         signer_infos.push(pkcs7::SignerInfo {
             version: 1,
             issuer_and_serial_number: pkcs7::IssuerAndSerialNumber {
-                issuer: cert.raw.borrow_value_public().tbs_cert.issuer.clone(),
-                serial_number: cert.raw.borrow_value_public().tbs_cert.serial,
+                issuer: cert.raw.borrow_dependent().tbs_cert.issuer.clone(),
+                serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
             },
             digest_algorithm: digest_alg,
             authenticated_attributes: authenticated_attrs,

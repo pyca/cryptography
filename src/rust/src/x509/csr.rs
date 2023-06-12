@@ -13,13 +13,14 @@ use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[ouroboros::self_referencing]
-struct OwnedCsr {
-    data: pyo3::Py<pyo3::types::PyBytes>,
-    #[borrows(data)]
-    #[covariant]
-    value: Csr<'this>,
-}
+self_cell::self_cell!(
+    struct OwnedCsr {
+        owner: pyo3::Py<pyo3::types::PyBytes>,
+
+        #[covariant]
+        dependent: Csr,
+    }
+);
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
@@ -31,7 +32,7 @@ struct CertificateSigningRequest {
 impl CertificateSigningRequest {
     fn __hash__(&self, py: pyo3::Python<'_>) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.raw.borrow_data().as_bytes(py).hash(&mut hasher);
+        self.raw.borrow_owner().as_bytes(py).hash(&mut hasher);
         hasher.finish()
     }
 
@@ -43,10 +44,10 @@ impl CertificateSigningRequest {
     ) -> pyo3::PyResult<bool> {
         match op {
             pyo3::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_data().as_bytes(py) == other.raw.borrow_data().as_bytes(py))
+                Ok(self.raw.borrow_owner().as_bytes(py) == other.raw.borrow_owner().as_bytes(py))
             }
             pyo3::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_data().as_bytes(py) != other.raw.borrow_data().as_bytes(py))
+                Ok(self.raw.borrow_owner().as_bytes(py) != other.raw.borrow_owner().as_bytes(py))
             }
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "CSRs cannot be ordered",
@@ -58,7 +59,7 @@ impl CertificateSigningRequest {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
-            &asn1::write_single(&self.raw.borrow_value().csr_info.spki)?,
+            &asn1::write_single(&self.raw.borrow_dependent().csr_info.spki)?,
         );
         Ok(py
             .import(pyo3::intern!(
@@ -73,7 +74,7 @@ impl CertificateSigningRequest {
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         Ok(x509::parse_name(
             py,
-            &self.raw.borrow_value().csr_info.subject,
+            &self.raw.borrow_dependent().csr_info.subject,
         )?)
     }
 
@@ -82,13 +83,13 @@ impl CertificateSigningRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let result = asn1::write_single(&self.raw.borrow_value().csr_info)?;
+        let result = asn1::write_single(&self.raw.borrow_dependent().csr_info)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
     fn signature<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
-        pyo3::types::PyBytes::new(py, self.raw.borrow_value().signature.as_bytes())
+        pyo3::types::PyBytes::new(py, self.raw.borrow_dependent().signature.as_bytes())
     }
 
     #[getter]
@@ -105,7 +106,7 @@ impl CertificateSigningRequest {
             Err(_) => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
                     "Signature algorithm OID: {} not recognized",
-                    self.raw.borrow_value().signature_alg.oid()
+                    self.raw.borrow_dependent().signature_alg.oid()
                 )),
             )),
         }
@@ -113,7 +114,7 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        oid_to_py_oid(py, self.raw.borrow_value().signature_alg.oid())
+        oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
     }
 
     fn public_bytes<'p>(
@@ -121,7 +122,7 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         encoding: &'p pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let result = asn1::write_single(self.raw.borrow_value())?;
+        let result = asn1::write_single(self.raw.borrow_dependent())?;
 
         encode_der_data(py, "CERTIFICATE REQUEST".to_string(), result, encoding)
     }
@@ -143,7 +144,7 @@ impl CertificateSigningRequest {
         let rust_oid = py_oid_to_oid(oid)?;
         for attribute in self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .csr_info
             .attributes
             .unwrap_read()
@@ -181,7 +182,7 @@ impl CertificateSigningRequest {
         let pyattrs = pyo3::types::PyList::empty(py);
         for attribute in self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .csr_info
             .attributes
             .unwrap_read()
@@ -213,7 +214,7 @@ impl CertificateSigningRequest {
     fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let raw_exts = self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .csr_info
             .get_extension_attribute()
             .map_err(|_| {
@@ -239,9 +240,9 @@ impl CertificateSigningRequest {
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
             public_key,
-            &slf.raw.borrow_value().signature_alg,
-            slf.raw.borrow_value().signature.as_bytes(),
-            &asn1::write_single(&slf.raw.borrow_value().csr_info)?,
+            &slf.raw.borrow_dependent().signature_alg,
+            slf.raw.borrow_dependent().signature.as_bytes(),
+            &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
         )
         .is_ok())
     }
@@ -272,7 +273,7 @@ fn load_der_x509_csr(
 ) -> CryptographyResult<CertificateSigningRequest> {
     let raw = OwnedCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
-    let version = raw.borrow_value().csr_info.version;
+    let version = raw.borrow_dependent().csr_info.version;
     if version != 0 {
         return Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((

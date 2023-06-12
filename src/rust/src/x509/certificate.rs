@@ -8,6 +8,7 @@ use crate::asn1::{
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
+use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::Extension;
 use cryptography_x509::extensions::{
@@ -21,31 +22,14 @@ use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[ouroboros::self_referencing]
-pub(crate) struct OwnedCertificate {
-    data: pyo3::Py<pyo3::types::PyBytes>,
+self_cell::self_cell!(
+    pub(crate) struct OwnedCertificate {
+        owner: pyo3::Py<pyo3::types::PyBytes>,
 
-    #[borrows(data)]
-    #[covariant]
-    value: cryptography_x509::certificate::Certificate<'this>,
-}
-
-impl OwnedCertificate {
-    // Re-expose ::new with `pub(crate)` visibility.
-    pub(crate) fn new_public(
-        data: pyo3::Py<pyo3::types::PyBytes>,
-        value_ref_builder: impl for<'this> FnOnce(
-            &'this pyo3::Py<pyo3::types::PyBytes>,
-        )
-            -> cryptography_x509::certificate::Certificate<'this>,
-    ) -> OwnedCertificate {
-        OwnedCertificate::new(data, value_ref_builder)
+        #[covariant]
+        dependent: RawCertificate,
     }
-
-    pub(crate) fn borrow_value_public(&self) -> &cryptography_x509::certificate::Certificate<'_> {
-        self.borrow_value()
-    }
-}
+);
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
@@ -57,7 +41,7 @@ pub(crate) struct Certificate {
 impl Certificate {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.raw.borrow_value().hash(&mut hasher);
+        self.raw.borrow_dependent().hash(&mut hasher);
         hasher.finish()
     }
 
@@ -67,8 +51,12 @@ impl Certificate {
         op: pyo3::basic::CompareOp,
     ) -> pyo3::PyResult<bool> {
         match op {
-            pyo3::basic::CompareOp::Eq => Ok(self.raw.borrow_value() == other.raw.borrow_value()),
-            pyo3::basic::CompareOp::Ne => Ok(self.raw.borrow_value() != other.raw.borrow_value()),
+            pyo3::basic::CompareOp::Eq => {
+                Ok(self.raw.borrow_dependent() == other.raw.borrow_dependent())
+            }
+            pyo3::basic::CompareOp::Ne => {
+                Ok(self.raw.borrow_dependent() != other.raw.borrow_dependent())
+            }
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "Certificates cannot be ordered",
             )),
@@ -89,7 +77,7 @@ impl Certificate {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
-            &asn1::write_single(&self.raw.borrow_value().tbs_cert.spki)?,
+            &asn1::write_single(&self.raw.borrow_dependent().tbs_cert.spki)?,
         );
         Ok(py
             .import(pyo3::intern!(
@@ -111,7 +99,7 @@ impl Certificate {
             .call1((algorithm,))?;
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized =
-            pyo3::types::PyBytes::new(py, &asn1::write_single(&self.raw.borrow_value())?);
+            pyo3::types::PyBytes::new(py, &asn1::write_single(&self.raw.borrow_dependent())?);
         hasher.call_method1(pyo3::intern!(py, "update"), (serialized,))?;
         Ok(hasher.call_method0(pyo3::intern!(py, "finalize"))?)
     }
@@ -121,7 +109,7 @@ impl Certificate {
         py: pyo3::Python<'p>,
         encoding: &'p pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let result = asn1::write_single(self.raw.borrow_value())?;
+        let result = asn1::write_single(self.raw.borrow_dependent())?;
 
         encode_der_data(py, "CERTIFICATE".to_string(), result, encoding)
     }
@@ -131,21 +119,21 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let bytes = self.raw.borrow_value().tbs_cert.serial.as_bytes();
+        let bytes = self.raw.borrow_dependent().tbs_cert.serial.as_bytes();
         warn_if_negative_serial(py, bytes)?;
         Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
 
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let version = &self.raw.borrow_value().tbs_cert.version;
+        let version = &self.raw.borrow_dependent().tbs_cert.version;
         cert_version(py, *version)
     }
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         Ok(
-            x509::parse_name(py, &self.raw.borrow_value().tbs_cert.issuer)
+            x509::parse_name(py, &self.raw.borrow_dependent().tbs_cert.issuer)
                 .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?,
         )
     }
@@ -153,7 +141,7 @@ impl Certificate {
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         Ok(
-            x509::parse_name(py, &self.raw.borrow_value().tbs_cert.subject)
+            x509::parse_name(py, &self.raw.borrow_dependent().tbs_cert.subject)
                 .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?,
         )
     }
@@ -163,7 +151,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let result = asn1::write_single(&self.raw.borrow_value().tbs_cert)?;
+        let result = asn1::write_single(&self.raw.borrow_dependent().tbs_cert)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
@@ -172,7 +160,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let val = self.raw.borrow_value();
+        let val = self.raw.borrow_dependent();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
         match val.tbs_cert.extensions() {
@@ -219,14 +207,14 @@ impl Certificate {
 
     #[getter]
     fn signature<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyBytes {
-        pyo3::types::PyBytes::new(py, self.raw.borrow_value().signature.as_bytes())
+        pyo3::types::PyBytes::new(py, self.raw.borrow_dependent().signature.as_bytes())
     }
 
     #[getter]
     fn not_valid_before<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let dt = &self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .tbs_cert
             .validity
             .not_before
@@ -238,7 +226,7 @@ impl Certificate {
     fn not_valid_after<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let dt = &self
             .raw
-            .borrow_value()
+            .borrow_dependent()
             .tbs_cert
             .validity
             .not_after
@@ -251,12 +239,12 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        sign::identify_signature_hash_algorithm(py, &self.raw.borrow_value().signature_alg)
+        sign::identify_signature_hash_algorithm(py, &self.raw.borrow_dependent().signature_alg)
     }
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        oid_to_py_oid(py, self.raw.borrow_value().signature_alg.oid())
+        oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
     }
 
     #[getter]
@@ -264,7 +252,10 @@ impl Certificate {
         &'p self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        sign::identify_signature_algorithm_parameters(py, &self.raw.borrow_value().signature_alg)
+        sign::identify_signature_algorithm_parameters(
+            py,
+            &self.raw.borrow_dependent().signature_alg,
+        )
     }
 
     #[getter]
@@ -273,7 +264,7 @@ impl Certificate {
         x509::parse_and_cache_extensions(
             py,
             &mut self.cached_extensions,
-            &self.raw.borrow_value().tbs_cert.raw_extensions,
+            &self.raw.borrow_dependent().tbs_cert.raw_extensions,
             |oid, ext_data| match *oid {
                 oid::PRECERT_POISON_OID => {
                     asn1::parse_single::<()>(ext_data)?;
@@ -305,12 +296,16 @@ impl Certificate {
         py: pyo3::Python<'_>,
         issuer: pyo3::PyRef<'_, Certificate>,
     ) -> CryptographyResult<()> {
-        if self.raw.borrow_value().tbs_cert.signature_alg != self.raw.borrow_value().signature_alg {
+        if self.raw.borrow_dependent().tbs_cert.signature_alg
+            != self.raw.borrow_dependent().signature_alg
+        {
             return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                 "Inner and outer signature algorithms do not match. This is an invalid certificate."
             )));
         };
-        if self.raw.borrow_value().tbs_cert.issuer != issuer.raw.borrow_value().tbs_cert.subject {
+        if self.raw.borrow_dependent().tbs_cert.issuer
+            != issuer.raw.borrow_dependent().tbs_cert.subject
+        {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Issuer certificate subject does not match certificate issuer.",
@@ -320,9 +315,9 @@ impl Certificate {
         sign::verify_signature_with_signature_algorithm(
             py,
             issuer.public_key(py)?,
-            &self.raw.borrow_value().signature_alg,
-            self.raw.borrow_value().signature.as_bytes(),
-            &asn1::write_single(&self.raw.borrow_value().tbs_cert)?,
+            &self.raw.borrow_dependent().signature_alg,
+            self.raw.borrow_dependent().signature.as_bytes(),
+            &asn1::write_single(&self.raw.borrow_dependent().tbs_cert)?,
         )
     }
 }
@@ -387,14 +382,17 @@ fn load_der_x509_certificate(
 ) -> CryptographyResult<Certificate> {
     let raw = OwnedCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
-    cert_version(py, raw.borrow_value().tbs_cert.version)?;
+    cert_version(py, raw.borrow_dependent().tbs_cert.version)?;
     // determine if the serial is negative and raise a warning if it is. We want to drop support
     // for this sort of invalid encoding eventually.
-    warn_if_negative_serial(py, raw.borrow_value().tbs_cert.serial.as_bytes())?;
+    warn_if_negative_serial(py, raw.borrow_dependent().tbs_cert.serial.as_bytes())?;
     // determine if the signature algorithm has incorrect parameters and raise a warning if it
     // does. this is a bug in JDK11 and we want to drop support for it eventually.
-    warn_if_invalid_ecdsa_params(py, raw.borrow_value().signature_alg.params.clone())?;
-    warn_if_invalid_ecdsa_params(py, raw.borrow_value().tbs_cert.signature_alg.params.clone())?;
+    warn_if_invalid_ecdsa_params(py, raw.borrow_dependent().signature_alg.params.clone())?;
+    warn_if_invalid_ecdsa_params(
+        py,
+        raw.borrow_dependent().tbs_cert.signature_alg.params.clone(),
+    )?;
 
     Ok(Certificate {
         raw,
