@@ -111,7 +111,7 @@ pub enum AlgorithmParameters<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
 pub struct SubjectPublicKeyInfo<'a> {
-    _algorithm: AlgorithmIdentifier<'a>,
+    pub algorithm: AlgorithmIdentifier<'a>,
     pub subject_public_key: asn1::BitString<'a>,
 }
 
