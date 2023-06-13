@@ -124,6 +124,7 @@ Thawte
 timestamp
 timestamps
 toolchain
+Trixie
 tunable
 Ubuntu
 unencrypted
