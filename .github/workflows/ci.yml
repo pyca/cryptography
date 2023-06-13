@@ -153,6 +153,7 @@ jobs:
           - {IMAGE: "buster", NOXSESSION: "tests-nocoverage", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bullseye", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bookworm", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "trixie", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "sid", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-focal", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-jammy", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}

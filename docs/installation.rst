@@ -23,8 +23,8 @@ operating systems.
 * ARM64 macOS 13 Ventura
 * x86-64 Ubuntu 20.04, 22.04, rolling
 * ARM64 Ubuntu 22.04
-* x86-64 Debian Buster (10.x), Bullseye (11.x), Bookworm (12.x)
-  and Sid (unstable)
+* x86-64 Debian Buster (10.x), Bullseye (11.x), Bookworm (12.x),
+  Trixie (13.x), and Sid (unstable)
 * x86-64 Alpine (latest)
 * ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2022
