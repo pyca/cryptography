@@ -109,7 +109,7 @@ pub enum AlgorithmParameters<'a> {
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct SubjectPublicKeyInfo<'a> {
     pub algorithm: AlgorithmIdentifier<'a>,
     pub subject_public_key: asn1::BitString<'a>,
@@ -157,7 +157,7 @@ impl<'a> asn1::Asn1Writable for RawTlv<'a> {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub enum Time {
     UtcTime(asn1::UtcTime),
     GeneralizedTime(asn1::GeneralizedTime),
@@ -172,7 +172,7 @@ impl Time {
     }
 }
 
-#[derive(Hash, PartialEq, Clone)]
+#[derive(Hash, PartialEq, Eq, Clone)]
 pub enum Asn1ReadableOrWritable<'a, T, U> {
     Read(T, PhantomData<&'a ()>),
     Write(U, PhantomData<&'a ()>),

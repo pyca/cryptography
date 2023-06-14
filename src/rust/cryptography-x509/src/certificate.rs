@@ -7,14 +7,14 @@ use crate::extensions;
 use crate::extensions::Extensions;
 use crate::name;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct Certificate<'a> {
     pub tbs_cert: TbsCertificate<'a>,
     pub signature_alg: common::AlgorithmIdentifier<'a>,
     pub signature: asn1::BitString<'a>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
@@ -41,7 +41,7 @@ impl<'a> TbsCertificate<'a> {
     }
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct Validity {
     pub not_before: common::Time,
     pub not_after: common::Time,
