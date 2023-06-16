@@ -56,6 +56,15 @@ impl<'a> Extensions<'a> {
     pub fn as_raw(&self) -> &Option<RawExtensions<'_>> {
         &self.0
     }
+
+    /// Returns an iterator over the underlying extensions.
+    pub fn iter(&self) -> impl Iterator<Item = Extension> {
+        self.as_raw()
+            .clone()
+            .map(|raw| raw.unwrap_read().clone())
+            .into_iter()
+            .flatten()
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
