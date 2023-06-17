@@ -56,6 +56,15 @@ impl<'a> Extensions<'a> {
     pub fn as_raw(&self) -> &Option<RawExtensions<'_>> {
         &self.0
     }
+
+    /// Returns an iterator over the underlying extensions.
+    pub fn iter(&self) -> impl Iterator<Item = Extension> {
+        self.as_raw()
+            .clone()
+            .map(|raw| raw.unwrap_read().clone())
+            .into_iter()
+            .flatten()
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
@@ -251,5 +260,27 @@ mod tests {
         assert!(&extensions
             .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
             .is_none());
+    }
+
+    #[test]
+    fn test_extensions_iter() {
+        let extension_value = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let extension = Extension {
+            extn_id: BASIC_CONSTRAINTS_OID,
+            critical: true,
+            extn_value: &asn1::write_single(&extension_value).unwrap(),
+        };
+        let extensions = SequenceOfWriter::new(vec![extension]);
+
+        let der = asn1::write_single(&extensions).unwrap();
+
+        let extensions: Extensions =
+            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
+
+        let extension_list: Vec<_> = extensions.iter().collect();
+        assert_eq!(extension_list.len(), 1);
     }
 }
