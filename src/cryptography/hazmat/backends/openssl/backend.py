@@ -29,7 +29,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
-    dsa,
     ec,
     ed448,
     ed25519,
@@ -686,43 +685,6 @@ class Backend:
         else:
             return self.rsa_padding_supported(padding)
 
-    def generate_dsa_parameters(self, key_size: int) -> dsa.DSAParameters:
-        if key_size not in (1024, 2048, 3072, 4096):
-            raise ValueError(
-                "Key size must be 1024, 2048, 3072, or 4096 bits."
-            )
-
-        return rust_openssl.dsa.generate_parameters(key_size)
-
-    def generate_dsa_private_key(
-        self, parameters: dsa.DSAParameters
-    ) -> dsa.DSAPrivateKey:
-        return parameters.generate_private_key()
-
-    def generate_dsa_private_key_and_parameters(
-        self, key_size: int
-    ) -> dsa.DSAPrivateKey:
-        parameters = self.generate_dsa_parameters(key_size)
-        return self.generate_dsa_private_key(parameters)
-
-    def load_dsa_private_numbers(
-        self, numbers: dsa.DSAPrivateNumbers
-    ) -> dsa.DSAPrivateKey:
-        dsa._check_dsa_private_numbers(numbers)
-        return rust_openssl.dsa.from_private_numbers(numbers)
-
-    def load_dsa_public_numbers(
-        self, numbers: dsa.DSAPublicNumbers
-    ) -> dsa.DSAPublicKey:
-        dsa._check_dsa_parameters(numbers.parameter_numbers)
-        return rust_openssl.dsa.from_public_numbers(numbers)
-
-    def load_dsa_parameter_numbers(
-        self, numbers: dsa.DSAParameterNumbers
-    ) -> dsa.DSAParameters:
-        dsa._check_dsa_parameters(numbers)
-        return rust_openssl.dsa.from_parameter_numbers(numbers)
-
     def dsa_supported(self) -> bool:
         return (
             not self._lib.CRYPTOGRAPHY_IS_BORINGSSL and not self._fips_enabled
@@ -796,9 +758,6 @@ class Backend:
             else:
                 self._handle_key_loading_error()
 
-    def load_pem_parameters(self, data: bytes) -> dh.DHParameters:
-        return rust_openssl.dh.from_pem_parameters(data)
-
     def load_der_private_key(
         self,
         data: bytes,
@@ -861,9 +820,6 @@ class Backend:
                 return _RSAPublicKey(self, rsa_cdata, evp_pkey)
             else:
                 self._handle_key_loading_error()
-
-    def load_der_parameters(self, data: bytes) -> dh.DHParameters:
-        return rust_openssl.dh.from_der_parameters(data)
 
     def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)
@@ -1454,38 +1410,6 @@ class Backend:
 
     def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-
-    def generate_dh_parameters(
-        self, generator: int, key_size: int
-    ) -> dh.DHParameters:
-        return rust_openssl.dh.generate_parameters(generator, key_size)
-
-    def generate_dh_private_key(
-        self, parameters: dh.DHParameters
-    ) -> dh.DHPrivateKey:
-        return parameters.generate_private_key()
-
-    def generate_dh_private_key_and_parameters(
-        self, generator: int, key_size: int
-    ) -> dh.DHPrivateKey:
-        return self.generate_dh_private_key(
-            self.generate_dh_parameters(generator, key_size)
-        )
-
-    def load_dh_private_numbers(
-        self, numbers: dh.DHPrivateNumbers
-    ) -> dh.DHPrivateKey:
-        return rust_openssl.dh.from_private_numbers(numbers)
-
-    def load_dh_public_numbers(
-        self, numbers: dh.DHPublicNumbers
-    ) -> dh.DHPublicKey:
-        return rust_openssl.dh.from_public_numbers(numbers)
-
-    def load_dh_parameter_numbers(
-        self, numbers: dh.DHParameterNumbers
-    ) -> dh.DHParameters:
-        return rust_openssl.dh.from_parameter_numbers(numbers)
 
     def dh_parameters_supported(
         self, p: int, g: int, q: typing.Optional[int] = None
