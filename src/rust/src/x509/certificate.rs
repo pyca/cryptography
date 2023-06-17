@@ -165,18 +165,12 @@ impl Certificate {
         // Remove the SCT list extension
         match val.tbs_cert.extensions() {
             Ok(extensions) => {
-                let readable_extensions = match extensions.as_raw() {
-                    Some(raw_exts) => raw_exts.unwrap_read().clone(),
-                    None => {
-                        return Err(CryptographyError::from(
-                            pyo3::exceptions::PyValueError::new_err(
-                                "Could not find any extensions in TBS certificate",
-                            ),
-                        ))
-                    }
-                };
-                let ext_count = readable_extensions.len();
-                let filtered_extensions: Vec<Extension<'_>> = readable_extensions
+                let ext_count = extensions
+                    .as_raw()
+                    .as_ref()
+                    .map_or(0, |raw| raw.unwrap_read().len());
+                let filtered_extensions: Vec<Extension<'_>> = extensions
+                    .iter()
                     .filter(|x| x.extn_id != oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID)
                     .collect();
                 if filtered_extensions.len() == ext_count {
