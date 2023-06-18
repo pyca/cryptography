@@ -1054,7 +1054,7 @@ class TestRSACertificate:
 
         with pytest.raises(
             ValueError,
-            match="Could not find any extensions in TBS certificate",
+            match="Could not find pre-certificate SCT list extension",
         ):
             cert.tbs_precertificate_bytes
 
