@@ -22,7 +22,7 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
 
-        return backend.x25519_load_public_bytes(data)
+        return rust_openssl.x25519.from_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(
@@ -63,7 +63,7 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
                 "X25519 is not supported by this version of OpenSSL.",
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
-        return backend.x25519_generate_key()
+        return rust_openssl.x25519.generate_key()
 
     @classmethod
     def from_private_bytes(cls, data: bytes) -> X25519PrivateKey:
@@ -75,7 +75,7 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
 
-        return backend.x25519_load_private_bytes(data)
+        return rust_openssl.x25519.from_private_bytes(data)
 
     @abc.abstractmethod
     def public_key(self) -> X25519PublicKey:
