@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import typing
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.asymmetric.types import (
     PrivateKeyTypes,
@@ -38,9 +39,7 @@ def load_pem_public_key(
 def load_pem_parameters(
     data: bytes, backend: typing.Any = None
 ) -> dh.DHParameters:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_pem_parameters(data)
+    return rust_openssl.dh.from_pem_parameters(data)
 
 
 def load_der_private_key(
@@ -68,6 +67,4 @@ def load_der_public_key(
 def load_der_parameters(
     data: bytes, backend: typing.Any = None
 ) -> dh.DHParameters:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_der_parameters(data)
+    return rust_openssl.dh.from_der_parameters(data)

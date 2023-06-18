@@ -14,9 +14,7 @@ from cryptography.hazmat.primitives import _serialization
 def generate_parameters(
     generator: int, key_size: int, backend: typing.Any = None
 ) -> DHParameters:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.generate_dh_parameters(generator, key_size)
+    return rust_openssl.dh.generate_parameters(generator, key_size)
 
 
 class DHParameterNumbers:
@@ -48,11 +46,7 @@ class DHParameterNumbers:
         )
 
     def parameters(self, backend: typing.Any = None) -> DHParameters:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dh_parameter_numbers(self)
+        return rust_openssl.dh.from_parameter_numbers(self)
 
     @property
     def p(self) -> int:
@@ -90,11 +84,7 @@ class DHPublicNumbers:
         )
 
     def public_key(self, backend: typing.Any = None) -> DHPublicKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dh_public_numbers(self)
+        return rust_openssl.dh.from_public_numbers(self)
 
     @property
     def y(self) -> int:
@@ -128,11 +118,7 @@ class DHPrivateNumbers:
         )
 
     def private_key(self, backend: typing.Any = None) -> DHPrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dh_private_numbers(self)
+        return rust_openssl.dh.from_private_numbers(self)
 
     @property
     def public_numbers(self) -> DHPublicNumbers:

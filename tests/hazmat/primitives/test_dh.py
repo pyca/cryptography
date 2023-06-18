@@ -224,7 +224,7 @@ class TestDH:
             g = int(vector["g"], 16)
             q: typing.Optional[int] = int(vector["q"], 16)
         else:
-            parameters = backend.generate_dh_private_key_and_parameters(2, 512)
+            parameters = dh.generate_parameters(2, 512).generate_private_key()
 
             private = parameters.private_numbers()
 

@@ -162,11 +162,8 @@ class DSAParameterNumbers:
         return self._g
 
     def parameters(self, backend: typing.Any = None) -> DSAParameters:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dsa_parameter_numbers(self)
+        _check_dsa_parameters(self)
+        return rust_openssl.dsa.from_parameter_numbers(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAParameterNumbers):
@@ -203,11 +200,8 @@ class DSAPublicNumbers:
         return self._parameter_numbers
 
     def public_key(self, backend: typing.Any = None) -> DSAPublicKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dsa_public_numbers(self)
+        _check_dsa_parameters(self.parameter_numbers)
+        return rust_openssl.dsa.from_public_numbers(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAPublicNumbers):
@@ -246,11 +240,8 @@ class DSAPrivateNumbers:
         return self._public_numbers
 
     def private_key(self, backend: typing.Any = None) -> DSAPrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_dsa_private_numbers(self)
+        _check_dsa_private_numbers(self)
+        return rust_openssl.dsa.from_private_numbers(self)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSAPrivateNumbers):
@@ -264,17 +255,17 @@ class DSAPrivateNumbers:
 def generate_parameters(
     key_size: int, backend: typing.Any = None
 ) -> DSAParameters:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
+    if key_size not in (1024, 2048, 3072, 4096):
+        raise ValueError("Key size must be 1024, 2048, 3072, or 4096 bits.")
 
-    return ossl.generate_dsa_parameters(key_size)
+    return rust_openssl.dsa.generate_parameters(key_size)
 
 
 def generate_private_key(
     key_size: int, backend: typing.Any = None
 ) -> DSAPrivateKey:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.generate_dsa_private_key_and_parameters(key_size)
+    parameters = generate_parameters(key_size)
+    return parameters.generate_private_key()
 
 
 def _check_dsa_parameters(parameters: DSAParameterNumbers) -> None:
