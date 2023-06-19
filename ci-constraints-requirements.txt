@@ -93,7 +93,7 @@ platformdirs==3.5.3
     # via
     #   black
     #   virtualenv
-pluggy==1.0.0
+pluggy==1.1.0
     # via pytest
 pretend==1.0.9
     # via cryptography (pyproject.toml)
