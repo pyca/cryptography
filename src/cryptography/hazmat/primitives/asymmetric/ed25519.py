@@ -22,7 +22,7 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return backend.ed25519_load_public_bytes(data)
+        return rust_openssl.ed25519.from_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(
@@ -69,7 +69,7 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return backend.ed25519_generate_key()
+        return rust_openssl.ed25519.generate_key()
 
     @classmethod
     def from_private_bytes(cls, data: bytes) -> Ed25519PrivateKey:
@@ -81,7 +81,7 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return backend.ed25519_load_private_bytes(data)
+        return rust_openssl.ed25519.from_private_bytes(data)
 
     @abc.abstractmethod
     def public_key(self) -> Ed25519PublicKey:

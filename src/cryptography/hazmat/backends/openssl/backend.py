@@ -27,18 +27,8 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import (
-    dh,
-    ec,
-    ed448,
-    ed25519,
-    rsa,
-    x448,
-    x25519,
-)
-from cryptography.hazmat.primitives.asymmetric import (
-    utils as asym_utils,
-)
+from cryptography.hazmat.primitives.asymmetric import dh, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
     OAEP,
@@ -1426,30 +1416,10 @@ class Backend:
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
-    def x25519_load_public_bytes(self, data: bytes) -> x25519.X25519PublicKey:
-        return rust_openssl.x25519.from_public_bytes(data)
-
-    def x25519_load_private_bytes(
-        self, data: bytes
-    ) -> x25519.X25519PrivateKey:
-        return rust_openssl.x25519.from_private_bytes(data)
-
-    def x25519_generate_key(self) -> x25519.X25519PrivateKey:
-        return rust_openssl.x25519.generate_key()
-
     def x25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
         return not self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
-
-    def x448_load_public_bytes(self, data: bytes) -> x448.X448PublicKey:
-        return rust_openssl.x448.from_public_bytes(data)
-
-    def x448_load_private_bytes(self, data: bytes) -> x448.X448PrivateKey:
-        return rust_openssl.x448.from_private_bytes(data)
-
-    def x448_generate_key(self) -> x448.X448PrivateKey:
-        return rust_openssl.x448.generate_key()
 
     def x448_supported(self) -> bool:
         if self._fips_enabled:
@@ -1464,19 +1434,6 @@ class Backend:
             return False
         return self._lib.CRYPTOGRAPHY_HAS_WORKING_ED25519
 
-    def ed25519_load_public_bytes(
-        self, data: bytes
-    ) -> ed25519.Ed25519PublicKey:
-        return rust_openssl.ed25519.from_public_bytes(data)
-
-    def ed25519_load_private_bytes(
-        self, data: bytes
-    ) -> ed25519.Ed25519PrivateKey:
-        return rust_openssl.ed25519.from_private_bytes(data)
-
-    def ed25519_generate_key(self) -> ed25519.Ed25519PrivateKey:
-        return rust_openssl.ed25519.generate_key()
-
     def ed448_supported(self) -> bool:
         if self._fips_enabled:
             return False
@@ -1484,15 +1441,6 @@ class Backend:
             not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
             and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
         )
-
-    def ed448_load_public_bytes(self, data: bytes) -> ed448.Ed448PublicKey:
-        return rust_openssl.ed448.from_public_bytes(data)
-
-    def ed448_load_private_bytes(self, data: bytes) -> ed448.Ed448PrivateKey:
-        return rust_openssl.ed448.from_private_bytes(data)
-
-    def ed448_generate_key(self) -> ed448.Ed448PrivateKey:
-        return rust_openssl.ed448.generate_key()
 
     def aead_cipher_supported(self, cipher) -> bool:
         return aead._aead_cipher_supported(self, cipher)

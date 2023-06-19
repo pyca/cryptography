@@ -22,7 +22,7 @@ class X448PublicKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
 
-        return backend.x448_load_public_bytes(data)
+        return rust_openssl.x448.from_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(
@@ -62,7 +62,8 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
                 "X448 is not supported by this version of OpenSSL.",
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
-        return backend.x448_generate_key()
+
+        return rust_openssl.x448.generate_key()
 
     @classmethod
     def from_private_bytes(cls, data: bytes) -> X448PrivateKey:
@@ -74,7 +75,7 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM,
             )
 
-        return backend.x448_load_private_bytes(data)
+        return rust_openssl.x448.from_private_bytes(data)
 
     @abc.abstractmethod
     def public_key(self) -> X448PublicKey:

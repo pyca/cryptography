@@ -22,7 +22,7 @@ class Ed448PublicKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return backend.ed448_load_public_bytes(data)
+        return rust_openssl.ed448.from_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(
@@ -68,7 +68,8 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
                 "ed448 is not supported by this version of OpenSSL.",
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
-        return backend.ed448_generate_key()
+
+        return rust_openssl.ed448.generate_key()
 
     @classmethod
     def from_private_bytes(cls, data: bytes) -> Ed448PrivateKey:
@@ -80,7 +81,7 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return backend.ed448_load_private_bytes(data)
+        return rust_openssl.ed448.from_private_bytes(data)
 
     @abc.abstractmethod
     def public_key(self) -> Ed448PublicKey:
