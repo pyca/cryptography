@@ -409,4 +409,4 @@ Key interfaces
 .. _`public-key`: https://en.wikipedia.org/wiki/Public-key_cryptography
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
 .. _`at least 2048`: https://www.cosic.esat.kuleuven.be/ecrypt/ecrypt2/documents/D.SPA.20.pdf
-.. _`ongoing protestations`: https://buttondown.email/cryptography-dispatches/archive/cryptography-dispatches-dsa-is-past-its-prime/
+.. _`ongoing protestations`: https://words.filippo.io/dispatches/dsa/
