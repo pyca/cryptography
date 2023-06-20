@@ -401,6 +401,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [linux, distros, macos, windows, linux-downstream]
     if: ${{ always() }}
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v3.5.3
         timeout-minutes: 3
