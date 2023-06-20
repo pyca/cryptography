@@ -70,7 +70,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - name: Setup rust
-        uses: dtolnay/rust-toolchain@52e69531e6f69a396bc9d1226284493a5db969ff
+        uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
         with:
           toolchain: ${{ matrix.PYTHON.RUST }}
           components: rustfmt,clippy
