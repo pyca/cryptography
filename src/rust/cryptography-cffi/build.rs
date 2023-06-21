@@ -49,7 +49,7 @@ fn main() {
     println!("cargo:rustc-cfg=python_implementation=\"{}\"", python_impl);
     let python_include = run_python_script(
         &python,
-        "import sysconfig; print(sysconfig.get_path('include'), end='')",
+        "import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'), end='')",
     )
     .unwrap();
     let openssl_include =
