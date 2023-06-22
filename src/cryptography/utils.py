@@ -85,7 +85,7 @@ class _ModuleWithDeprecations(types.ModuleType):
         delattr(self._module, attr)
 
     def __dir__(self) -> typing.Sequence[str]:
-        return ["_module"] + dir(self._module)
+        return ["_module", *dir(self._module)]
 
 
 def deprecated(

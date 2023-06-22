@@ -478,7 +478,7 @@ class OCSPRequestBuilder:
         _reject_duplicate_extension(extension, self._extensions)
 
         return OCSPRequestBuilder(
-            self._request, self._request_hash, self._extensions + [extension]
+            self._request, self._request_hash, [*self._extensions, extension]
         )
 
     def build(self) -> OCSPRequest:
@@ -583,7 +583,7 @@ class OCSPResponseBuilder:
             self._response,
             self._responder_id,
             self._certs,
-            self._extensions + [extension],
+            [*self._extensions, extension],
         )
 
     def sign(

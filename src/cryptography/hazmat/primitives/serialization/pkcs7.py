@@ -111,7 +111,7 @@ class PKCS7SignatureBuilder:
 
         return PKCS7SignatureBuilder(
             self._data,
-            self._signers + [(certificate, private_key, hash_algorithm)],
+            [*self._signers, (certificate, private_key, hash_algorithm)],
         )
 
     def add_certificate(
@@ -121,7 +121,7 @@ class PKCS7SignatureBuilder:
             raise TypeError("certificate must be a x509.Certificate")
 
         return PKCS7SignatureBuilder(
-            self._data, self._signers, self._additional_certs + [certificate]
+            self._data, self._signers, [*self._additional_certs, certificate]
         )
 
     def sign(

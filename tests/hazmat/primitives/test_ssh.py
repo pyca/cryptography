@@ -404,12 +404,12 @@ class TestOpenSSHSerialization:
             priv_type = pub_type
 
         pub = ssh._FragList()
-        for elem in (pub_type,) + pub_fields:
+        for elem in (pub_type, *pub_fields):
             pub.put_sshstr(elem)
 
         secret = ssh._FragList([checkval1, checkval2])
         for i in range(nkeys):
-            for elem in (priv_type,) + priv_fields + (comment,):
+            for elem in (priv_type, *priv_fields, comment):
                 secret.put_sshstr(elem)
 
         if pad is None:

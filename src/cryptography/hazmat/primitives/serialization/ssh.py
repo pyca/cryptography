@@ -1356,7 +1356,7 @@ class SSHCertificateBuilder:
             _valid_for_all_principals=self._valid_for_all_principals,
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
-            _critical_options=self._critical_options + [(name, value)],
+            _critical_options=[*self._critical_options, (name, value)],
             _extensions=self._extensions,
         )
 
@@ -1379,7 +1379,7 @@ class SSHCertificateBuilder:
             _valid_before=self._valid_before,
             _valid_after=self._valid_after,
             _critical_options=self._critical_options,
-            _extensions=self._extensions + [(name, value)],
+            _extensions=[*self._extensions, (name, value)],
         )
 
     def sign(self, private_key: SSHCertPrivateKeyTypes) -> SSHCertificate:
