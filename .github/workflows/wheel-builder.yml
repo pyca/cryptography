@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     name: sdists
     steps:
-      - uses: actions/checkout@v3.5.3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -40,11 +40,11 @@ jobs:
         run: .venv/bin/python -m build --sdist
       - name: Make sdist and wheel (vectors)
         run: cd vectors/ && ../.venv/bin/python -m build
-      - uses: actions/upload-artifact@v3.1.2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "cryptography-sdist"
           path: dist/cryptography*
-      - uses: actions/upload-artifact@v3.1.2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "vectors-sdist-wheel"
           path: vectors/dist/cryptography*
@@ -107,7 +107,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.MANYLINUX.NAME == 'musllinux_1_1_aarch64'
 
-      - uses: actions/download-artifact@v3.0.2
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
 
@@ -140,7 +140,7 @@ jobs:
           .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
       - run: mkdir cryptography-wheelhouse
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
-      - uses: actions/upload-artifact@v3.1.2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}"
           path: cryptography-wheelhouse/
@@ -191,7 +191,7 @@ jobs:
             ARCHFLAGS: '-arch x86_64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
-      - uses: actions/download-artifact@v3.0.2
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
 
@@ -203,7 +203,7 @@ jobs:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
         if: contains(matrix.PYTHON.VERSION, 'pypy') == false
       - name: Setup pypy
-        uses: actions/setup-python@v4.6.1
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
@@ -249,7 +249,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls cryptography-wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v3.1.2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: cryptography-wheelhouse/
@@ -278,12 +278,12 @@ jobs:
             PYTHON: {VERSION: "pypy-3.10"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
-      - uses: actions/download-artifact@v3.0.2
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
 
       - name: Setup python
-        uses: actions/setup-python@v4.6.1
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
@@ -324,7 +324,7 @@ jobs:
 
       - run: mkdir cryptography-wheelhouse
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
-      - uses: actions/upload-artifact@v3.1.2
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION}}"
           path: cryptography-wheelhouse\
