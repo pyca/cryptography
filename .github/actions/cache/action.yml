@@ -34,7 +34,7 @@ runs:
       id: normalized-key
       run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
       shell: bash
-    - uses: actions/cache@v3.3.1
+    - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
       id: cache
       with:
         path: |
@@ -50,4 +50,4 @@ runs:
       shell: bash
       if: ${{ steps.cache.outputs.cache-hit }}
     - name: Run sccache-cache
-      uses: mozilla-actions/sccache-action@8417cffc2ec64127ad83077aceaa8631f7cdc83e
+      uses: mozilla-actions/sccache-action@8417cffc2ec64127ad83077aceaa8631f7cdc83e # v0.0.3
