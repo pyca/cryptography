@@ -15,7 +15,6 @@ FUNCTIONS = """
 const char *OBJ_nid2ln(int);
 const char *OBJ_nid2sn(int);
 int OBJ_obj2nid(const ASN1_OBJECT *);
-int OBJ_sn2nid(const char *);
 int OBJ_txt2nid(const char *);
 """
 

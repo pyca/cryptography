@@ -28,13 +28,6 @@ void BN_clear_free(BIGNUM *);
 
 int BN_rand_range(BIGNUM *, const BIGNUM *);
 
-BN_CTX *BN_CTX_new(void);
-void BN_CTX_free(BN_CTX *);
-
-void BN_CTX_start(BN_CTX *);
-BIGNUM *BN_CTX_get(BN_CTX *);
-void BN_CTX_end(BN_CTX *);
-
 BN_MONT_CTX *BN_MONT_CTX_new(void);
 int BN_MONT_CTX_set(BN_MONT_CTX *, const BIGNUM *, BN_CTX *);
 void BN_MONT_CTX_free(BN_MONT_CTX *);
