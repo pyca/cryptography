@@ -258,10 +258,6 @@ def cryptography_has_get_extms_support() -> typing.List[str]:
     return ["SSL_get_extms_support"]
 
 
-def cryptography_has_evp_pkey_set_peer_ex() -> typing.List[str]:
-    return ["EVP_PKEY_derive_set_peer_ex"]
-
-
 def cryptography_has_evp_aead() -> typing.List[str]:
     return [
         "EVP_aead_chacha20_poly1305",
@@ -322,8 +318,5 @@ CONDITIONAL_NAMES = {
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
     "Cryptography_HAS_GET_EXTMS_SUPPORT": cryptography_has_get_extms_support,
-    "Cryptography_HAS_EVP_PKEY_SET_PEER_EX": (
-        cryptography_has_evp_pkey_set_peer_ex
-    ),
-    "Cryptography_HAS_EVP_AEAD": (cryptography_has_evp_aead),
+    "Cryptography_HAS_EVP_AEAD": cryptography_has_evp_aead,
 }
