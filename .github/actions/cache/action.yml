@@ -19,35 +19,5 @@ runs:
   using: "composite"
 
   steps:
-    - name: Get pip cache dir
-      id: pip-cache
-      run: |
-        # Determine the path to our Python. It's in venv for our containers
-        # but just standard $PATH for setup-python pythons.
-        if [[ -f "/venv/bin/python" ]]; then
-          echo "dir=$(/venv/bin/python -m pip cache dir)" >> $GITHUB_OUTPUT
-        elif which python >/dev/null; then
-          echo "dir=$(python -m pip cache dir)" >> $GITHUB_OUTPUT
-        fi
-      shell: bash
-    - name: Normalize key
-      id: normalized-key
-      run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
-      shell: bash
-    - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
-      id: cache
-      with:
-        path: |
-          ${{ steps.pip-cache.outputs.dir }}
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ${{ inputs.additional-paths }}
-        key: cargo-pip-${{ runner.os }}-${{ runner.arch }}-${{ steps.normalized-key.outputs.key }}-7
-    - name: Size of cache items
-      run: |
-        du -sh ~/.cargo/registry/index/
-        du -sh ~/.cargo/registry/cache/
-      shell: bash
-      if: ${{ steps.cache.outputs.cache-hit }}
     - name: Run sccache-cache
       uses: mozilla-actions/sccache-action@8417cffc2ec64127ad83077aceaa8631f7cdc83e # v0.0.3
