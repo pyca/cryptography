@@ -47,9 +47,14 @@ fn main() {
     )
     .unwrap();
     println!("cargo:rustc-cfg=python_implementation=\"{}\"", python_impl);
-    let python_include = run_python_script(
+    let python_includes = run_python_script(
         &python,
-        "import sysconfig; print(sysconfig.get_path('include'), end='')",
+        "import os; \
+         import setuptools.dist; \
+         import setuptools.command.build_ext; \
+         b = setuptools.command.build_ext.build_ext(setuptools.dist.Distribution()); \
+         b.finalize_options(); \
+         print(os.pathsep.join(b.include_dirs), end='')",
     )
     .unwrap();
     let openssl_include =
@@ -59,11 +64,14 @@ fn main() {
     let mut build = cc::Build::new();
     build
         .file(openssl_c)
-        .include(python_include)
         .include(openssl_include)
         .flag_if_supported("-Wconversion")
         .flag_if_supported("-Wno-error=sign-conversion")
         .flag_if_supported("-Wno-unused-parameter");
+
+    for python_include in env::split_paths(&python_includes) {
+        build.include(python_include);
+    }
 
     // Enable abi3 mode if we're not using PyPy.
     if python_impl != "PyPy" {
