@@ -54,6 +54,7 @@ jobs:
           # potential future MSRV:
           # 1.60 - pem 2.0.1, once_cell 1.18.0
           # 1.64 - maturin
+          # 1.65 - Generic associated types (GATs)
           - {VERSION: "3.11", NOXSESSION: "tests-nocoverage", RUST: "1.56.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.60.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "beta"}
