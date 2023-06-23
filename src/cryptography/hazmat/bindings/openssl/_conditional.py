@@ -222,10 +222,8 @@ def cryptography_has_pkcs7_funcs() -> typing.List[str]:
     ]
 
 
-def cryptography_has_bn_flags() -> typing.List[str]:
+def cryptography_has_prime_checks() -> typing.List[str]:
     return [
-        "BN_FLG_CONSTTIME",
-        "BN_set_flags",
         "BN_prime_checks_for_size",
     ]
 
@@ -307,7 +305,7 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
-    "Cryptography_HAS_BN_FLAGS": cryptography_has_bn_flags,
+    "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
     "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
     "Cryptography_HAS_300_EVP_CIPHER": cryptography_has_300_evp_cipher,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
