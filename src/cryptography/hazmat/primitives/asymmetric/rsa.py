@@ -8,6 +8,7 @@ import abc
 import typing
 from math import gcd
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -63,6 +64,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
 
 
 RSAPrivateKeyWithSerialization = RSAPrivateKey
+RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
 
 
 class RSAPublicKey(metaclass=abc.ABCMeta):
@@ -126,6 +128,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
 
 
 RSAPublicKeyWithSerialization = RSAPublicKey
+RSAPublicKey.register(rust_openssl.rsa.RSAPublicKey)
 
 
 def generate_private_key(
