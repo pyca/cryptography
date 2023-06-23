@@ -796,11 +796,11 @@ class TestPKCS12Objects:
         cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
         assert (
             repr(PKCS12Certificate(cert, None))
-            == f"<PKCS12Certificate({repr(cert)}, friendly_name=None)>"
+            == f"<PKCS12Certificate({cert!r}, friendly_name=None)>"
         )
         assert (
             repr(PKCS12Certificate(cert, b"a"))
-            == f"<PKCS12Certificate({repr(cert)}, friendly_name=b'a')>"
+            == f"<PKCS12Certificate({cert!r}, friendly_name=b'a')>"
         )
 
     def test_key_and_certificates_constructor(self, backend):

@@ -96,7 +96,7 @@ class Backend:
     # disallowed algorithms are still present in OpenSSL. They just error if
     # you try to use them. To avoid that we allowlist the algorithms in
     # FIPS 140-3. This isn't ideal, but FIPS 140-3 is trash so here we are.
-    _fips_aead = {
+    _fips_aead: typing.ClassVar[typing.Set[bytes]] = {
         b"aes-128-ccm",
         b"aes-192-ccm",
         b"aes-256-ccm",

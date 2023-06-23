@@ -172,11 +172,7 @@ def assert_no_memory_leaks(s, argv=[]):
     env.pop("COV_CORE_DATAFILE", None)
     env.pop("COV_CORE_SOURCE", None)
 
-    argv = [
-        sys.executable,
-        "-c",
-        f"{s}\n\n{MEMORY_LEAK_SCRIPT}",
-    ] + argv
+    argv = [sys.executable, "-c", f"{s}\n\n{MEMORY_LEAK_SCRIPT}", *argv]
     # Shell out to a fresh Python process because OpenSSL does not allow you to
     # install new memory hooks after the first malloc/free occurs.
     proc = subprocess.Popen(

@@ -664,7 +664,7 @@ class CertificateSigningRequestBuilder:
 
         return CertificateSigningRequestBuilder(
             self._subject_name,
-            self._extensions + [extension],
+            [*self._extensions, extension],
             self._attributes,
         )
 
@@ -697,7 +697,7 @@ class CertificateSigningRequestBuilder:
         return CertificateSigningRequestBuilder(
             self._subject_name,
             self._extensions,
-            self._attributes + [(oid, value, tag)],
+            [*self._attributes, (oid, value, tag)],
         )
 
     def sign(
@@ -916,7 +916,7 @@ class CertificateBuilder:
             self._serial_number,
             self._not_valid_before,
             self._not_valid_after,
-            self._extensions + [extension],
+            [*self._extensions, extension],
         )
 
     def sign(
@@ -1057,7 +1057,7 @@ class CertificateRevocationListBuilder:
             self._issuer_name,
             self._last_update,
             self._next_update,
-            self._extensions + [extension],
+            [*self._extensions, extension],
             self._revoked_certificates,
         )
 
@@ -1075,7 +1075,7 @@ class CertificateRevocationListBuilder:
             self._last_update,
             self._next_update,
             self._extensions,
-            self._revoked_certificates + [revoked_certificate],
+            [*self._revoked_certificates, revoked_certificate],
         )
 
     def sign(
@@ -1152,7 +1152,7 @@ class RevokedCertificateBuilder:
         return RevokedCertificateBuilder(
             self._serial_number,
             self._revocation_date,
-            self._extensions + [extension],
+            [*self._extensions, extension],
         )
 
     def build(self, backend: typing.Any = None) -> RevokedCertificate:
