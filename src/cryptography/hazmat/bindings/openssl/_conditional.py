@@ -69,12 +69,6 @@ def cryptography_has_poly1305() -> typing.List[str]:
     ]
 
 
-def cryptography_has_evp_digestfinal_xof() -> typing.List[str]:
-    return [
-        "EVP_DigestFinalXOF",
-    ]
-
-
 def cryptography_has_fips() -> typing.List[str]:
     return [
         "FIPS_mode_set",
@@ -127,15 +121,6 @@ def cryptography_has_tlsv13_functions() -> typing.List[str]:
         "SSL_write_early_data",
         "SSL_read_early_data",
         "SSL_CTX_set_max_early_data",
-    ]
-
-
-def cryptography_has_raw_key() -> typing.List[str]:
-    return [
-        "EVP_PKEY_new_raw_private_key",
-        "EVP_PKEY_new_raw_public_key",
-        "EVP_PKEY_get_raw_private_key",
-        "EVP_PKEY_get_raw_public_key",
     ]
 
 
@@ -228,12 +213,6 @@ def cryptography_has_prime_checks() -> typing.List[str]:
     ]
 
 
-def cryptography_has_evp_pkey_dh() -> typing.List[str]:
-    return [
-        "EVP_PKEY_set1_DH",
-    ]
-
-
 def cryptography_has_300_evp_cipher() -> typing.List[str]:
     return ["EVP_CIPHER_fetch", "EVP_CIPHER_free"]
 
@@ -290,10 +269,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
-    "Cryptography_HAS_RAW_KEY": cryptography_has_raw_key,
-    "Cryptography_HAS_EVP_DIGESTFINAL_XOF": (
-        cryptography_has_evp_digestfinal_xof
-    ),
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
@@ -306,7 +281,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
-    "Cryptography_HAS_EVP_PKEY_DH": cryptography_has_evp_pkey_dh,
     "Cryptography_HAS_300_EVP_CIPHER": cryptography_has_300_evp_cipher,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
