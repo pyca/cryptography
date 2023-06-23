@@ -11,7 +11,6 @@ import pytest
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
-from cryptography.hazmat.backends.openssl.ec import _sn_to_elliptic_curve
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -344,12 +343,6 @@ class TestOpenSSLSerializationWithOpenSSL:
                     )
                 ),
             )
-
-
-class TestOpenSSLEllipticCurve:
-    def test_sn_to_elliptic_curve_not_supported(self):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_ELLIPTIC_CURVE):
-            _sn_to_elliptic_curve(backend, "fake")
 
 
 class TestRSAPEMSerialization:
