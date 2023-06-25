@@ -70,6 +70,8 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - name: Setup rust
         uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
         with:
@@ -245,6 +247,8 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
@@ -302,6 +306,8 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
       - name: Cache rust and pip
         uses: ./.github/actions/cache
@@ -374,6 +380,8 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip install .
         env:
@@ -417,6 +425,8 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: '3.11'
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data
