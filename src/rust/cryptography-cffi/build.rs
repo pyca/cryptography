@@ -47,11 +47,6 @@ fn main() {
     )
     .unwrap();
     println!("cargo:rustc-cfg=python_implementation=\"{}\"", python_impl);
-    let python_include = run_python_script(
-        &python,
-        "import sysconfig; print(sysconfig.get_path('include'), end='')",
-    )
-    .unwrap();
     let openssl_include =
         std::env::var_os("DEP_OPENSSL_INCLUDE").expect("unable to find openssl include path");
     let openssl_c = Path::new(&out_dir).join("_openssl.c");
@@ -59,11 +54,27 @@ fn main() {
     let mut build = cc::Build::new();
     build
         .file(openssl_c)
-        .include(python_include)
         .include(openssl_include)
         .flag_if_supported("-Wconversion")
         .flag_if_supported("-Wno-error=sign-conversion")
         .flag_if_supported("-Wno-unused-parameter");
+
+    match env::var_os("SETUPTOOLS_RUST_INCLUDE_DIRS") {
+        Some(paths) => {
+            for include_path in env::split_paths(&paths) {
+                build.include(include_path);
+            }
+        }
+        None => {
+            let python_include = run_python_script(
+                &python,
+                "import sysconfig; print(sysconfig.get_path('include'), end='')",
+            )
+            .unwrap();
+            build.include(python_include);
+        }
+    }
+    println!("cargo:rerun-if-env-changed=SETUPTOOLS_RUST_INCLUDE_DIRS");
 
     // Enable abi3 mode if we're not using PyPy.
     if python_impl != "PyPy" {
