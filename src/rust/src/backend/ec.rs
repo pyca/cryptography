@@ -386,7 +386,10 @@ impl ECPrivateKey {
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
-        // XXX: single allocation
+        // TODO: This does an extra allocation and copy. This can't easily use
+        // `PyBytes::new_with` because the exact length of the signature isn't
+        // easily known a priori (if `r` or `s` has a leading 0, the signature
+        // will be a byte or two shorter than the maximum possible length).
         let mut sig = vec![];
         signer.sign_to_vec(data, &mut sig)?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
