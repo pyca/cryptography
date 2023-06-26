@@ -19,9 +19,6 @@ on:
       - pyproject.toml
       - vectors/pyproject.toml
 
-env:
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-
 jobs:
   sdist:
     runs-on: ubuntu-latest
