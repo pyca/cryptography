@@ -73,7 +73,7 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
       - name: Setup rust
-        uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
+        uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
         with:
           toolchain: ${{ matrix.PYTHON.RUST }}
           components: rustfmt,clippy
