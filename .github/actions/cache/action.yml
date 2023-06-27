@@ -1,23 +1,17 @@
-name: Cache rust and pip
-description: Caches rust and pip data to speed builds
+name: Cache
+description: Caches build data to speed builds
 inputs:
-  additional-paths:
-    description: 'Additional paths to add to the cache'
-    required: false
-    default: ''
   key:
     description: 'extra cache key components'
     required: false
     default: ''
-outputs:
-  cache-hit:
-    description: 'Was the cache hit?'
-    value: ${{ steps.cache.outputs.cache-hit }}
 
 
 runs:
   using: "composite"
 
   steps:
-    - name: Run sccache-cache
-      uses: mozilla-actions/sccache-action@8417cffc2ec64127ad83077aceaa8631f7cdc83e # v0.0.3
+    - uses: Swatinem/rust-cache@2656b87321093db1cb55fbd73183d195214fdfd1  # v2.5.0
+      with:
+        key: ${{ inputs.key }}
+        workspaces: "./src/rust/ -> target"
