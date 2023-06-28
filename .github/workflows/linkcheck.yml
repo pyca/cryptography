@@ -9,9 +9,6 @@ permissions:
   contents: read
 
 env:
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-  SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: "sccache"
   CARGO_INCREMENTAL: 0
 
 jobs:
