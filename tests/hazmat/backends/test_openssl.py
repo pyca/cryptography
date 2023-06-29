@@ -273,7 +273,7 @@ class TestOpenSSLRSA:
     def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self, rsa_key_2048):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
             rsa_key_2048.decrypt(
-                b"0" * 64,
+                b"0" * 256,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
                     algorithm=hashes.MD5(),
