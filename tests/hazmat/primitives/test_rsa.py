@@ -847,6 +847,21 @@ class TestRSASignature:
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_unsupported_hash_pss_mgf1(self, rsa_key_512: rsa.RSAPrivateKey):
+        private_key = rsa_key_512
+        message = b"my message"
+        pss = padding.PSS(
+            mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.sign(message, pss, hashes.SHA256())
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
         ),
         skip_message="Does not support PSS.",
@@ -1933,6 +1948,27 @@ class TestRSADecryption:
                 padding.OAEP(
                     algorithm=hashes.SHA1(),
                     mgf=padding.MGF1(hashes.SHA1()),
+                    label=None,
+                ),
+            )
+
+    def test_unsupported_oaep_hash(self, rsa_key_2048: rsa.RSAPrivateKey):
+        private_key = rsa_key_2048
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"0" * 256,
+                padding.OAEP(
+                    mgf=padding.MGF1(DummyHashAlgorithm()),
+                    algorithm=hashes.SHA256(),
+                    label=None,
+                ),
+            )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"0" * 256,
+                padding.OAEP(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    algorithm=DummyHashAlgorithm(),
                     label=None,
                 ),
             )
