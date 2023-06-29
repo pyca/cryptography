@@ -708,9 +708,9 @@ class TestRSASignature:
         skip_message="Does not support PSS.",
     )
     def test_unsupported_pss_mgf(
-        self, rsa_key_512: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
-        private_key = rsa_key_512
+        private_key = rsa_key_2048
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.sign(
                 b"msg",
