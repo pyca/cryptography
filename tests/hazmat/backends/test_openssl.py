@@ -24,7 +24,7 @@ from ...doubles import (
     DummyHashAlgorithm,
     DummyMode,
 )
-from ...hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
+from ...hazmat.primitives.test_rsa import rsa_key_2048
 from ...utils import (
     load_vectors_from_file,
     raises_unsupported_algorithm,
@@ -32,7 +32,7 @@ from ...utils import (
 
 # Make ruff happy since we're importing fixtures that pytest patches in as
 # func args
-__all__ = ["rsa_key_512", "rsa_key_2048"]
+__all__ = ["rsa_key_2048"]
 
 
 def skip_if_libre_ssl(openssl_version):
@@ -270,9 +270,9 @@ class TestOpenSSLRSA:
             is False
         )
 
-    def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self, rsa_key_512):
+    def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self, rsa_key_2048):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
-            rsa_key_512.decrypt(
+            rsa_key_2048.decrypt(
                 b"0" * 64,
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
