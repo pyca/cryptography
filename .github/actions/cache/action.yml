@@ -11,7 +11,11 @@ runs:
   using: "composite"
 
   steps:
+    - name: Normalize key
+      id: normalized-key
+      run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
+      shell: bash
     - uses: Swatinem/rust-cache@2656b87321093db1cb55fbd73183d195214fdfd1  # v2.5.0
       with:
-        key: ${{ inputs.key }}
+        key: ${{ steps.normalized-key.outputs.key }}
         workspaces: "./src/rust/ -> target"
