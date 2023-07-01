@@ -5,6 +5,7 @@
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
 };
+use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, x509};
@@ -177,16 +178,13 @@ impl CertificateRevocationList {
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
-        algorithm: pyo3::PyObject,
+        algorithm: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let hashes_mod = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-        let h = hashes_mod
-            .getattr(pyo3::intern!(py, "Hash"))?
-            .call1((algorithm,))?;
-
         let data = self.public_bytes_der()?;
-        h.call_method1(pyo3::intern!(py, "update"), (data.as_slice(),))?;
-        h.call_method0(pyo3::intern!(py, "finalize"))
+
+        let mut h = Hash::new(py, algorithm, None)?;
+        h.update_bytes(&data)?;
+        Ok(h.finalize(py)?)
     }
 
     #[getter]

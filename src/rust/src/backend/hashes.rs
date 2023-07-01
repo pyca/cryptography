@@ -8,7 +8,7 @@ use crate::exceptions;
 use std::borrow::Cow;
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
-struct Hash {
+pub(crate) struct Hash {
     #[pyo3(get)]
     algorithm: pyo3::Py<pyo3::PyAny>,
     ctx: Option<openssl::hash::Hasher>,
@@ -72,11 +72,18 @@ pub(crate) fn message_digest_from_algorithm(
     }
 }
 
+impl Hash {
+    pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
+        self.get_mut_ctx()?.update(data)?;
+        Ok(())
+    }
+}
+
 #[pyo3::pymethods]
 impl Hash {
     #[new]
     #[pyo3(signature = (algorithm, backend=None))]
-    fn new(
+    pub(crate) fn new(
         py: pyo3::Python<'_>,
         algorithm: &pyo3::PyAny,
         backend: Option<&pyo3::PyAny>,
@@ -93,11 +100,10 @@ impl Hash {
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.get_mut_ctx()?.update(data.as_bytes())?;
-        Ok(())
+        self.update_bytes(data.as_bytes())
     }
 
-    fn finalize<'p>(
+    pub(crate) fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
