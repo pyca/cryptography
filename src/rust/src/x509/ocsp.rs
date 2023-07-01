@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
 use crate::x509;
 use crate::x509::certificate::Certificate;
@@ -118,10 +119,7 @@ pub(crate) fn hash_data<'p>(
     py_hash_alg: &'p pyo3::PyAny,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
-    let hash = py
-        .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
-        .getattr(pyo3::intern!(py, "Hash"))?
-        .call1((py_hash_alg,))?;
-    hash.call_method1(pyo3::intern!(py, "update"), (data,))?;
-    hash.call_method0(pyo3::intern!(py, "finalize"))?.extract()
+    let mut h = Hash::new(py, py_hash_alg, None)?;
+    h.update_bytes(data)?;
+    Ok(h.finalize(py)?.as_bytes())
 }

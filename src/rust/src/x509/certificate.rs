@@ -5,6 +5,7 @@
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
 };
+use crate::backend::hashes;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
@@ -91,17 +92,13 @@ impl Certificate {
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
-        algorithm: pyo3::PyObject,
+        algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        let hasher = py
-            .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
-            .getattr(pyo3::intern!(py, "Hash"))?
-            .call1((algorithm,))?;
-        // This makes an unnecessary copy. It'd be nice to get rid of it.
-        let serialized =
-            pyo3::types::PyBytes::new(py, &asn1::write_single(&self.raw.borrow_dependent())?);
-        hasher.call_method1(pyo3::intern!(py, "update"), (serialized,))?;
-        Ok(hasher.call_method0(pyo3::intern!(py, "finalize"))?)
+        let serialized = asn1::write_single(&self.raw.borrow_dependent())?;
+
+        let mut h = hashes::Hash::new(py, algorithm, None)?;
+        h.update_bytes(&serialized)?;
+        Ok(h.finalize(py)?)
     }
 
     fn public_bytes<'p>(
