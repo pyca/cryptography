@@ -47,9 +47,7 @@ impl<'a> Extensions<'a> {
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
     pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
-        self.0
-            .as_ref()
-            .and_then(|exts| exts.unwrap_read().clone().find(|ext| &ext.extn_id == oid))
+        self.iter().find(|ext| &ext.extn_id == oid)
     }
 
     /// Returns a reference to the underlying extensions.
