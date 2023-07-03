@@ -932,9 +932,7 @@ class TestDHParameterSerialization:
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             ),
             (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
-        ]
-        + list(
-            itertools.product(
+            *itertools.product(
                 [
                     serialization.Encoding.Raw,
                     serialization.Encoding.X962,
@@ -946,8 +944,8 @@ class TestDHParameterSerialization:
                     serialization.PublicFormat.UncompressedPoint,
                     serialization.PublicFormat.CompressedPoint,
                 ],
-            )
-        ),
+            ),
+        ],
     )
     def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         parameters = FFDH3072_P.parameters(backend)

@@ -26,7 +26,6 @@ void RSA_free(RSA *);
 int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
 int RSA_check_key(const RSA *);
 RSA *RSAPublicKey_dup(RSA *);
-int RSA_blinding_on(RSA *, BN_CTX *);
 int RSA_print(BIO *, const RSA *, int);
 
 int RSA_set0_key(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);

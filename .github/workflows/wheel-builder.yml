@@ -19,9 +19,6 @@ on:
       - pyproject.toml
       - vectors/pyproject.toml
 
-env:
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-
 jobs:
   sdist:
     runs-on: ubuntu-latest
@@ -207,7 +204,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -216,7 +213,7 @@ jobs:
           name: openssl-macos-universal2
           path: "../openssl-macos-universal2/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
+      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
         with:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
@@ -287,12 +284,12 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
+      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
         with:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml

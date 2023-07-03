@@ -31,7 +31,6 @@ ffi = build_ffi_for_binding(
         "dh",
         "dsa",
         "ec",
-        "ecdsa",
         "engine",
         "err",
         "evp",

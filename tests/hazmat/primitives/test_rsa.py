@@ -451,45 +451,6 @@ class TestRSA:
                 ),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_encryption_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    def test_lazy_blinding(self, backend):
-        # We don't want to reuse the rsa_key_2048 fixture here because lazy
-        # blinding mutates the object to add the blinding factor on
-        # the first call to decrypt/sign. Since we reuse rsa_key_2048 in
-        # many tests we can't properly test blinding, which will (likely)
-        # already be set on the fixture.
-        private_key = RSA_KEY_2048.private_key(
-            unsafe_skip_rsa_key_validation=True
-        )
-        public_key = private_key.public_key()
-        msg = b"encrypt me!"
-        ct = public_key.encrypt(
-            msg,
-            padding.PKCS1v15(),
-        )
-        assert private_key._blinded is False  # type: ignore[attr-defined]
-        pt = private_key.decrypt(
-            ct,
-            padding.PKCS1v15(),
-        )
-        assert private_key._blinded is True  # type: ignore[attr-defined]
-        # Call a second time to cover the branch where blinding
-        # has already occurred and we don't want to do it again.
-        pt2 = private_key.decrypt(
-            ct,
-            padding.PKCS1v15(),
-        )
-        assert pt == pt2
-        assert private_key._blinded is True
-        # Private method call to cover the racy branch within the lock
-        private_key._non_threadsafe_enable_blinding()
-        assert private_key._blinded is True
-
 
 class TestRSASignature:
     @pytest.mark.supported(
@@ -747,9 +708,9 @@ class TestRSASignature:
         skip_message="Does not support PSS.",
     )
     def test_unsupported_pss_mgf(
-        self, rsa_key_512: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
-        private_key = rsa_key_512
+        private_key = rsa_key_2048
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MGF):
             private_key.sign(
                 b"msg",
@@ -2740,9 +2701,7 @@ class TestRSAPEMPublicKeySerialization:
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             ),
             (serialization.Encoding.Raw, serialization.PublicFormat.PKCS1),
-        ]
-        + list(
-            itertools.product(
+            *itertools.product(
                 [
                     serialization.Encoding.Raw,
                     serialization.Encoding.X962,
@@ -2754,8 +2713,8 @@ class TestRSAPEMPublicKeySerialization:
                     serialization.PublicFormat.UncompressedPoint,
                     serialization.PublicFormat.CompressedPoint,
                 ],
-            )
-        ),
+            ),
+        ],
     )
     def test_public_bytes_rejects_invalid(
         self, rsa_key_2048: rsa.RSAPrivateKey, encoding, fmt, backend

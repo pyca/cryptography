@@ -18,8 +18,6 @@ concurrency:
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-  SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: "sccache"
   CARGO_INCREMENTAL: 0
 
 jobs:
@@ -46,14 +44,15 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.0"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of Jun 21, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "9c30e5389c6878fc95d21e754df935a1d71f333d"}}
-          # Latest commit on the OpenSSL master branch, as of Jun 21, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "7197abddb891933f52ec84dafb41b685d4a1d122"}}
+          # Latest commit on the BoringSSL master branch, as of Jul 01, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "5eab868eaa5f7a975d50579182e26902441342be"}}
+          # Latest commit on the OpenSSL master branch, as of Jul 03, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "42926ca7f237126331a46cad159e6d31e2eafcc8"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.60 - pem 2.0.1, once_cell 1.18.0
           # 1.64 - maturin
+          # 1.65 - Generic associated types (GATs)
           - {VERSION: "3.11", NOXSESSION: "tests-nocoverage", RUST: "1.56.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.60.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "beta"}
@@ -69,8 +68,10 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - name: Setup rust
-        uses: dtolnay/rust-toolchain@1f5cdb56c8779e3efa22473ce181ff83143b172c
+        uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
         with:
           toolchain: ${{ matrix.PYTHON.RUST }}
           components: rustfmt,clippy
@@ -244,6 +245,8 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
@@ -252,7 +255,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
 
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -301,6 +304,8 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
       - name: Cache rust and pip
         uses: ./.github/actions/cache
@@ -309,7 +314,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox"
 
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
@@ -373,6 +378,8 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.PYTHON }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip install .
         env:
@@ -408,7 +415,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
         with:
           jobs: ${{ toJSON(needs) }}
       - name: Setup python
@@ -416,6 +423,8 @@ jobs:
         uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: '3.11'
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data

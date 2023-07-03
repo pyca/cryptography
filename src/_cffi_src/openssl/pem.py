@@ -55,9 +55,6 @@ int PEM_write_bio_RSAPublicKey(BIO *, const RSA *);
 
 EVP_PKEY *PEM_read_bio_PUBKEY(BIO *, EVP_PKEY **, pem_password_cb *, void *);
 int PEM_write_bio_PUBKEY(BIO *, EVP_PKEY *);
-int PEM_write_bio_ECPrivateKey(BIO *, EC_KEY *, const EVP_CIPHER *,
-                               unsigned char *, int, pem_password_cb *,
-                               void *);
 """
 
 CUSTOMIZATIONS = """

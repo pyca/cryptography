@@ -58,7 +58,7 @@ try:
             )
         ],
     )
-except:  # noqa: E722
+except:
     # Note: This is a bare exception that re-raises so that we don't interfere
     # with anything the installation machinery might want to do. Because we
     # print this for any exception this msg can appear (e.g. in verbose logs)

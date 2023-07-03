@@ -51,14 +51,14 @@ jobs:
           sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha-openssl.outputs.COMMIT_SHA
-      - uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92
+      - uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92 # v1.8.0
         id: generate-token
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
         if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
         with:
           commit-message: "Bump BoringSSL and/or OpenSSL in CI"
           title: "Bump BoringSSL and/or OpenSSL in CI"

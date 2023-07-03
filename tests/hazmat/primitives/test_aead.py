@@ -696,7 +696,7 @@ class TestAESSIV:
                     badkey = AESSIV(AESSIV.generate_key(256))
                     badkey.decrypt(ct, aad)
                 with pytest.raises(InvalidTag):
-                    aessiv.decrypt(ct, aad + [b""])
+                    aessiv.decrypt(ct, [*aad, b""])
                 with pytest.raises(InvalidTag):
                     aessiv.decrypt(ct, [b"nonsense"])
                 with pytest.raises(InvalidTag):
