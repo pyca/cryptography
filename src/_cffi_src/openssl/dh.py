@@ -10,8 +10,6 @@ INCLUDES = """
 
 TYPES = """
 typedef ... DH;
-
-const long DH_NOT_SUITABLE_GENERATOR;
 """
 
 FUNCTIONS = """

@@ -26,7 +26,6 @@ static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
 static const int EVP_PKEY_X448;
 static const int EVP_PKEY_ED448;
-static const int EVP_PKEY_POLY1305;
 static const int EVP_MAX_MD_SIZE;
 static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
@@ -109,7 +108,6 @@ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
 
 int EVP_PKEY_CTX_set_signature_md(EVP_PKEY_CTX *, const EVP_MD *);
 
-int EVP_default_properties_is_fips_enabled(OSSL_LIB_CTX *);
 int EVP_default_properties_enable_fips(OSSL_LIB_CTX *, int);
 """
 
@@ -145,19 +143,13 @@ static const long Cryptography_HAS_SCRYPT = 1;
 /* This is tied to ED25519 support so we reuse the Cryptography_HAS_ED25519
    conditional to remove it. */
 #ifndef EVP_PKEY_ED25519
-#define EVP_PKEY_ED25519 NID_ED25519
+#define EVP_PKEY_ED25519 0
 #endif
 
 /* This is tied to ED448 support so we reuse the Cryptography_HAS_ED448
    conditional to remove it. */
 #ifndef EVP_PKEY_ED448
-#define EVP_PKEY_ED448 NID_ED448
-#endif
-
-/* This is tied to poly1305 support so we reuse the Cryptography_HAS_POLY1305
-   conditional to remove it. */
-#ifndef EVP_PKEY_POLY1305
-#define EVP_PKEY_POLY1305 NID_poly1305
+#define EVP_PKEY_ED448 0
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
@@ -166,7 +158,6 @@ static const long Cryptography_HAS_300_EVP_CIPHER = 1;
 #else
 static const long Cryptography_HAS_300_FIPS = 0;
 static const long Cryptography_HAS_300_EVP_CIPHER = 0;
-int (*EVP_default_properties_is_fips_enabled)(OSSL_LIB_CTX *) = NULL;
 int (*EVP_default_properties_enable_fips)(OSSL_LIB_CTX *, int) = NULL;
 EVP_CIPHER * (*EVP_CIPHER_fetch)(OSSL_LIB_CTX *, const char *,
                                  const char *) = NULL;
