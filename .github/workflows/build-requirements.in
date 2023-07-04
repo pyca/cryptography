@@ -1,0 +1,4 @@
+pip
+wheel
+cffi
+setuptools-rust
