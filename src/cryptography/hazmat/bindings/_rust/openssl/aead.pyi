@@ -2,6 +2,23 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+class AESGCM:
+    def __init__(self, key: bytes) -> None: ...
+    @staticmethod
+    def generate_key(key_size: int) -> bytes: ...
+    def encrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+    def decrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+
 class ChaCha20Poly1305:
     def __init__(self, key: bytes) -> None: ...
     @staticmethod
