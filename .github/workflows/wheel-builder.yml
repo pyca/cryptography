@@ -104,20 +104,24 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.MANYLINUX.NAME == 'musllinux_1_1_aarch64'
 
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
-        with:
-          name: cryptography-sdist
-
-      - name: Dowload build-requirements.txt from repo
+      - name: Get build-requirements.txt from repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
           sparse-checkout: |
             .github/workflows/requirements/build-requirements.txt
           sparse-checkout-cone-mode: false
-      - run: ls
+      - run: mv .github/workflows/requirements/build-requirements.txt .
+
       - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
       - name: Install Python dependencies
-        run: .venv/bin/pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
+        run: .venv/bin/pip install --require-hashes -r build-requirements.txt
+
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: cryptography-sdist
       - run: mkdir tmpwheelhouse
       - name: Build the wheel
         run: |
@@ -195,9 +199,16 @@ jobs:
             ARCHFLAGS: '-arch x86_64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
-          name: cryptography-sdist
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/workflows/requirements/build-requirements.txt
+          sparse-checkout-cone-mode: false
+      - run: mv .github/workflows/requirements/build-requirements.txt .
 
       - name: Setup python
         run: |
@@ -225,16 +236,13 @@ jobs:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
-
-      - name: Dowload build-requirements.txt from repo
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-        with:
-          sparse-checkout: |
-            .github/workflows/requirements/build-requirements.txt
-          sparse-checkout-cone-mode: false
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
       - name: Install Python dependencies
-        run: venv/bin/pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
+        run: venv/bin/pip install --require-hashes -r build-requirements.txt
+
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: cryptography-sdist
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -289,6 +297,17 @@ jobs:
             PYTHON: {VERSION: "pypy-3.10"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/workflows/requirements/build-requirements.txt
+          sparse-checkout-cone-mode: false
+      - run: mv .github/workflows/requirements/build-requirements.txt .
+
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
@@ -317,14 +336,8 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
             echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
         shell: bash
-      - name: Dowload build-requirements.txt from repo
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-        with:
-          sparse-checkout: |
-            .github/workflows/requirements/build-requirements.txt
-          sparse-checkout-cone-mode: false
       - name: Install Python dependencies
-        run: python -m pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
+        run: python -m pip install --require-hashes -r build-requirements.txt
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then

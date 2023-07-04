@@ -25,19 +25,23 @@ jobs:
     permissions:
       id-token: "write"
     steps:
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
-        with:
-          path: dist/
-          run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
-
-      - name: Dowload publish-requirements.txt from repo
+      - name: Get publish-requirements.txt from repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
             .github/workflows/requirements/publish-requirements.txt
           sparse-checkout-cone-mode: false
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+      - run: mv .github/workflows/requirements/publish-requirements.txt .
       - name: Install Python dependencies
-        run: pip install --require-hashes -r .github/workflows/requirements/publish-requirements.txt
+        run: pip install --require-hashes -r publish-requirements.txt
+
+      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
+        with:
+          path: dist/
+          run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
