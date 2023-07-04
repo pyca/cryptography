@@ -37,7 +37,7 @@ jobs:
             .github/workflows/publish-requirements.txt
           sparse-checkout-cone-mode: false
       - name: Install Python dependencies
-        run: pip install --require-hashes -r publish-requirements.txt
+        run: pip install --require-hashes -r .github/workflows/publish-requirements.txt
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
