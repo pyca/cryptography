@@ -112,12 +112,12 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
-            .github/workflows/build-requirements.txt
+            .github/workflows/requirements/build-requirements.txt
           sparse-checkout-cone-mode: false
       - run: ls
       - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
       - name: Install Python dependencies
-        run: .venv/bin/pip install --require-hashes -r .github/workflows/build-requirements.txt
+        run: .venv/bin/pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
       - run: mkdir tmpwheelhouse
       - name: Build the wheel
         run: |
@@ -230,11 +230,11 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
-            .github/workflows/build-requirements.txt
+            .github/workflows/requirements/build-requirements.txt
           sparse-checkout-cone-mode: false
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
       - name: Install Python dependencies
-        run: venv/bin/pip install --require-hashes -r .github/workflows/build-requirements.txt
+        run: venv/bin/pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -321,10 +321,10 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
-            .github/workflows/build-requirements.txt
+            .github/workflows/requirements/build-requirements.txt
           sparse-checkout-cone-mode: false
       - name: Install Python dependencies
-        run: python -m pip install --require-hashes -r .github/workflows/build-requirements.txt
+        run: python -m pip install --require-hashes -r .github/workflows/requirements/build-requirements.txt
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then

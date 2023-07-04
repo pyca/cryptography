@@ -34,10 +34,10 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
-            .github/workflows/publish-requirements.txt
+            .github/workflows/requirements/publish-requirements.txt
           sparse-checkout-cone-mode: false
       - name: Install Python dependencies
-        run: pip install --require-hashes -r .github/workflows/publish-requirements.txt
+        run: pip install --require-hashes -r .github/workflows/requirements/publish-requirements.txt
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV
