@@ -108,9 +108,16 @@ jobs:
         with:
           name: cryptography-sdist
 
+      - name: Dowload build-requirements.txt from repo
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          sparse-checkout: |
+            .github/workflows/build-requirements.txt
+          sparse-checkout-cone-mode: false
+      - run: ls
       - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
       - name: Install Python dependencies
-        run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
+        run: .venv/bin/pip install --require-hashes -r .github/workflows/build-requirements.txt
       - run: mkdir tmpwheelhouse
       - name: Build the wheel
         run: |
@@ -219,8 +226,15 @@ jobs:
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
 
+      - name: Dowload build-requirements.txt from repo
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          sparse-checkout: |
+            .github/workflows/build-requirements.txt
+          sparse-checkout-cone-mode: false
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
-      - run: venv/bin/pip install -U pip wheel cffi setuptools-rust
+      - name: Install Python dependencies
+        run: venv/bin/pip install --require-hashes -r build-requirements.txt
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -303,9 +317,14 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
             echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
         shell: bash
-
-      - run: python -m pip install -U pip wheel
-      - run: python -m pip install cffi setuptools-rust
+      - name: Dowload build-requirements.txt from repo
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          sparse-checkout: |
+            .github/workflows/build-requirements.txt
+          sparse-checkout-cone-mode: false
+      - name: Install Python dependencies
+        run: python -m pip install --require-hashes -r build-requirements.txt
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
