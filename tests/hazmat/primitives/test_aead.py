@@ -4,7 +4,9 @@
 
 
 import binascii
+import mmap
 import os
+import sys
 
 import pytest
 
@@ -26,17 +28,16 @@ from ...utils import (
 from .utils import _load_all_params
 
 
-class FakeData(bytes):
-    def __len__(self):
-        return 2**31
-
-
 def _aead_supported(cls):
     try:
         cls(b"0" * 32)
         return True
     except UnsupportedAlgorithm:
         return False
+
+
+def large_mmap():
+    return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
 
 
 @pytest.mark.skipif(
@@ -53,16 +54,21 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
     reason="Does not support ChaCha20Poly1305",
 )
 class TestChaCha20Poly1305:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
     def test_data_too_large(self):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         nonce = b"0" * 12
 
-        with pytest.raises(OverflowError):
-            chacha.encrypt(nonce, FakeData(), b"")
+        large_data = large_mmap()
 
         with pytest.raises(OverflowError):
-            chacha.encrypt(nonce, b"", FakeData())
+            chacha.encrypt(nonce, large_data, b"")
+
+        with pytest.raises(OverflowError):
+            chacha.encrypt(nonce, b"", large_data)
 
     def test_generate_key(self):
         key = ChaCha20Poly1305.generate_key()
@@ -189,16 +195,21 @@ class TestChaCha20Poly1305:
     reason="Does not support AESCCM",
 )
 class TestAESCCM:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
         nonce = b"0" * 12
 
-        with pytest.raises(OverflowError):
-            aesccm.encrypt(nonce, FakeData(), b"")
+        large_data = large_mmap()
 
         with pytest.raises(OverflowError):
-            aesccm.encrypt(nonce, b"", FakeData())
+            aesccm.encrypt(nonce, large_data, b"")
+
+        with pytest.raises(OverflowError):
+            aesccm.encrypt(nonce, b"", large_data)
 
     def test_default_tag_length(self, backend):
         key = AESCCM.generate_key(128)
@@ -362,16 +373,21 @@ def _load_gcm_vectors():
 
 
 class TestAESGCM:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
     def test_data_too_large(self):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
         nonce = b"0" * 12
 
-        with pytest.raises(OverflowError):
-            aesgcm.encrypt(nonce, FakeData(), b"")
+        large_data = large_mmap()
 
         with pytest.raises(OverflowError):
-            aesgcm.encrypt(nonce, b"", FakeData())
+            aesgcm.encrypt(nonce, large_data, b"")
+
+        with pytest.raises(OverflowError):
+            aesgcm.encrypt(nonce, b"", large_data)
 
     def test_vectors(self, backend, subtests):
         vectors = _load_gcm_vectors()
@@ -496,16 +512,21 @@ def test_aesocb3_unsupported_on_older_openssl(backend):
     reason="Does not support AESOCB3",
 )
 class TestAESOCB3:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
     def test_data_too_large(self):
         key = AESOCB3.generate_key(128)
         aesocb3 = AESOCB3(key)
         nonce = b"0" * 12
 
-        with pytest.raises(OverflowError):
-            aesocb3.encrypt(nonce, FakeData(), b"")
+        large_data = large_mmap()
 
         with pytest.raises(OverflowError):
-            aesocb3.encrypt(nonce, b"", FakeData())
+            aesocb3.encrypt(nonce, large_data, b"")
+
+        with pytest.raises(OverflowError):
+            aesocb3.encrypt(nonce, b"", large_data)
 
     def test_vectors(self, backend, subtests):
         vectors = []
@@ -629,15 +650,20 @@ class TestAESOCB3:
     reason="Does not support AESSIV",
 )
 class TestAESSIV:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
     def test_data_too_large(self):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)
 
-        with pytest.raises(OverflowError):
-            aessiv.encrypt(FakeData(), None)
+        large_data = large_mmap()
 
         with pytest.raises(OverflowError):
-            aessiv.encrypt(b"irrelevant", [FakeData()])
+            aessiv.encrypt(large_data, None)
+
+        with pytest.raises(OverflowError):
+            aessiv.encrypt(b"irrelevant", [large_data])
 
     def test_no_empty_encryption(self):
         key = AESSIV.generate_key(256)
