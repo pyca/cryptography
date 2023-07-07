@@ -40,7 +40,7 @@ Changelog
   in favor of the new timezone-aware variants mentioned above.
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
-  on LibreSSL.
+  on LibreSSL and BoringSSL.
 
 .. _v41-0-4:
 

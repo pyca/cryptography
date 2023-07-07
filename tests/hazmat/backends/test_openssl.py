@@ -14,7 +14,7 @@ from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers.algorithms import AES
+from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...doubles import (
@@ -375,3 +375,25 @@ class TestOpenSSLDHSerialization:
         )
         with pytest.raises(ValueError):
             loader_func(key_bytes, backend)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        ChaCha20(b"\x00" * 32, b"\x00" * 16), None
+    )
+    and backend._lib.CRYPTOGRAPHY_IS_BORINGSSL,
+    skip_message="Does not support non-EVP ChaCha20 cipher",
+)
+class TestChaCha20CipherContext:
+    def test_unsupported_api(self):
+        from cryptography.hazmat.backends.openssl.ciphers import (
+            _CipherContextChaCha,
+        )
+
+        ctx = _CipherContextChaCha(
+            backend, ChaCha20(b"\x00" * 32, b"\x00" * 16)
+        )
+        with pytest.raises(NotImplementedError):
+            ctx.authenticate_additional_data(b"data")
+        with pytest.raises(NotImplementedError):
+            ctx.finalize_with_tag(b"tag")
