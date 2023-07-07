@@ -1,6 +1,9 @@
 name: linkcheck
 on:
-  pull_request: {}
+  pull_request:
+    paths:
+      - docs/conf.py
+      - .github/workflows/linkcheck.yml
   push:
     branches:
       - main
@@ -13,7 +16,6 @@ env:
 
 jobs:
   docs-linkcheck:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'linkcheck'))
     runs-on: ubuntu-latest
     name: "linkcheck"
     timeout-minutes: 10
