@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import abc
 import typing
 
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
@@ -14,7 +15,175 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-class _CipherContext:
+class _CipherContext(metaclass=abc.ABCMeta):
+    _mode: typing.Any
+    tag: typing.Any
+
+    @abc.abstractmethod
+    def update(self, data: bytes) -> bytes:
+        """
+        Processes the provided bytes through the cipher and returns the results
+        as bytes.
+        """
+
+    @abc.abstractmethod
+    def update_into(self, data: bytes, buf: bytes) -> int:
+        """
+        Processes the provided bytes and writes the resulting data into the
+        provided buffer. Returns the number of bytes written.
+        """
+
+    @abc.abstractmethod
+    def finalize(self) -> bytes:
+        """
+        Returns the results of processing the final block as bytes.
+        """
+
+    @abc.abstractmethod
+    def authenticate_additional_data(self, data: bytes) -> None:
+        ...
+
+    @abc.abstractmethod
+    def finalize_with_tag(self, tag: bytes) -> bytes:
+        ...
+
+
+def create_cipher_context(
+    backend: Backend, cipher, mode: modes.Mode, encrypt: bool
+) -> _CipherContext:
+    if (
+        isinstance(cipher, algorithms.ChaCha20)
+        and backend._lib.Cryptography_HAS_CHACHA20_API
+    ):
+        return _CipherContextChaCha(backend, cipher)
+    else:
+        operation = (
+            _CipherContextEVP._ENCRYPT
+            if encrypt
+            else _CipherContextEVP._DECRYPT
+        )
+        return _CipherContextEVP(backend, cipher, mode, operation)
+
+
+class _CipherContextChaCha(_CipherContext):
+    """
+    Cipher context specific to ChaCha20 under LibreSSL
+    """
+
+    _BLOCK_SIZE_BYTES = 64
+    _MAX_COUNTER_VALUE = 2**64 - 1
+
+    def __init__(self, backend: Backend, cipher) -> None:
+        assert isinstance(cipher, algorithms.ChaCha20)
+        assert backend._lib.Cryptography_HAS_CHACHA20_API
+        self._backend = backend
+        self._cipher = cipher
+
+        # The ChaCha20 stream cipher. The key length is 256 bits, the IV is
+        # 128 bits long. The first 64 bits consists of a counter in
+        # little-endian order followed by a 64 bit nonce.
+        self._counter = int.from_bytes(cipher.nonce[:8], byteorder="little")
+        self._iv_nonce = cipher.nonce[8:]
+
+        # We store the cleartext of the last partial block encrypted. For
+        # example, if `update()` is called with 96 bytes of data (1.5 blocks),
+        # it will return all 96 bytes of ciphertext, but the last 32 bytes
+        # (0.5 blocks) will also be stored in `_leftover_data`.
+        # See `update_into()` for more details.
+        self._leftover_data = bytearray()
+
+    def update(self, data: bytes) -> bytes:
+        buf = bytearray(len(data))
+        n = self.update_into(data, buf)
+        return bytes(buf[:n])
+
+    def update_into(self, data: bytes, buf: bytes) -> int:
+        data_len = len(data)
+        if len(buf) < data_len:
+            raise ValueError(
+                f"buffer must be at least {data_len} bytes for this payload"
+            )
+
+        previous_leftover_len = len(self._leftover_data)
+        if previous_leftover_len > 0:
+            # We prepend the last partial block from previous `update_into()`
+            # calls so that the resulting ciphertext is the same as if the
+            # data had been passed as a full block.
+            # This is needed because LibreSSL and BoringSSL's ChaCha20 API is
+            # stateless, as opposed to OpenSSL's.
+            data_with_leftover = b"".join((self._leftover_data, data))
+            buffer_with_leftover: bytes | bytearray = bytearray(
+                len(data_with_leftover)
+            )
+        else:
+            data_with_leftover = data
+            buffer_with_leftover = buf
+
+        baseoutbuf = self._backend._ffi.from_buffer(
+            buffer_with_leftover, require_writable=True
+        )
+        baseinbuf = self._backend._ffi.from_buffer(data_with_leftover)
+
+        self._backend._lib.Cryptography_CRYPTO_chacha_20(
+            baseoutbuf,
+            baseinbuf,
+            len(data_with_leftover),
+            self._backend._ffi.from_buffer(self._cipher.key),
+            self._backend._ffi.from_buffer(self._iv_nonce),
+            self._counter,
+        )
+
+        if previous_leftover_len > 0:
+            # Since we had to use a new buffer different that `buf` to fit
+            # the ciphertext, now we need to copy the ciphertext to `buf`.
+            # We copy the ciphertext but skipping the bytes corresponding
+            # to `_leftover_buf`, since those have already been returned by a
+            # previous call.
+            self._backend._ffi.memmove(
+                buf,
+                buffer_with_leftover[previous_leftover_len:],
+                data_len,
+            )
+
+        complete_blocks_written, leftover_len = divmod(
+            len(data_with_leftover), self._BLOCK_SIZE_BYTES
+        )
+        if leftover_len > 0:
+            # Store the last partial block of data to use in the next call
+            self._leftover_data = bytearray(
+                data_with_leftover[
+                    complete_blocks_written * self._BLOCK_SIZE_BYTES :
+                ]
+            )
+            assert len(self._leftover_data) < 64
+        else:
+            self._leftover_data = bytearray()
+
+        # Our implementation of ChaCha20 uses a 64-bit counter which wraps
+        # around on overflow
+        self._counter += complete_blocks_written
+        if self._counter > self._MAX_COUNTER_VALUE:
+            self._counter -= self._MAX_COUNTER_VALUE + 1
+
+        return data_len
+
+    def finalize(self) -> bytes:
+        self._counter = 0
+        self._leftover_data = bytearray()
+        return b""
+
+    def authenticate_additional_data(self, data: bytes) -> None:
+        raise NotImplementedError(
+            "ChaCha20 context cannot be used as AEAD context"
+        )
+
+    def finalize_with_tag(self, tag: bytes) -> bytes:
+        raise NotImplementedError(
+            "ChaCha20 context cannot be used as AEAD context"
+        )
+
+
+class _CipherContextEVP(_CipherContext):
     _ENCRYPT = 1
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2**30 - 1

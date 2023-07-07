@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     ARC4,
     Camellia,
+    ChaCha20,
     TripleDES,
     _BlowfishInternal,
     _CAST5Internal,
@@ -335,6 +336,22 @@ class TestCipherUpdateInto:
     def test_update_into_buffer_too_small_gcm(self, backend):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
+        encryptor = c.encryptor()
+        buf = bytearray(5)
+        with pytest.raises(ValueError):
+            encryptor.update_into(b"testing", buf)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            ChaCha20(b"\x00" * 32, b"\x00" * 16), None
+        )
+        and backend._lib.CRYPTOGRAPHY_IS_LIBRESSL,
+        skip_message="Does not support non-EVP ChaCha20 cipher",
+    )
+    def test_update_into_buffer_too_small_chacha20(self, backend):
+        key = b"\x00" * 32
+        nonce = b"\x00" * 16
+        c = ciphers.Cipher(ChaCha20(key, nonce), None)
         encryptor = c.encryptor()
         buf = bytearray(5)
         with pytest.raises(ValueError):
