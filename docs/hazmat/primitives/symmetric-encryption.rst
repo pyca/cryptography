@@ -140,38 +140,44 @@ Algorithms
         :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
         does this for you.
 
-    ChaCha20 is a stream cipher used in several IETF protocols. It is
-    standardized in :rfc:`7539`.
+    ChaCha20 is a stream cipher used in several IETF protocols. While it is
+    standardized in :rfc:`7539`, **this implementation is not RFC-compliant**.
+    This implementation uses a ``64`` :term:`bits` counter and a ``64``
+    :term:`bits` nonce as defined in the `original version`_ of the algorithm,
+    rather than the ``32/96`` counter/nonce split defined in :rfc:`7539`.
 
     :param key: The secret key. This must be kept secret. ``256``
         :term:`bits` (32 bytes) in length.
     :type key: :term:`bytes-like`
 
     :param nonce: Should be unique, a :term:`nonce`. It is
-        critical to never reuse a ``nonce`` with a given key.  Any reuse of a
+        critical to never reuse a ``nonce`` with a given key. Any reuse of a
         nonce with the same key compromises the security of every message
         encrypted with that key. The nonce does not need to be kept secret
         and may be included with the ciphertext. This must be ``128``
-        :term:`bits` in length. The 128-bit value is a concatenation of 4-byte
-        little-endian counter and the 12-byte nonce (as described in
-        :rfc:`7539`).
+        :term:`bits` in length. The 128-bit value is a concatenation of the
+        8-byte little-endian counter and the 8-byte nonce.
     :type nonce: :term:`bytes-like`
 
-        .. note::
+    .. note::
 
-            In :rfc:`7539` the nonce is defined as a 96-bit value that is later
-            concatenated with a block counter (encoded as a 32-bit
-            little-endian). If you have a separate nonce and block counter
-            you will need to concatenate it yourself before passing it. For
-            example, if you have an initial block counter of 2 and a 96-bit
-            nonce the concatenated nonce would be
-            ``struct.pack("<i", 2) + nonce``.
+        In the `original version`_ of the algorithm the nonce is defined as a
+        64-bit value that is later concatenated with a block counter (encoded
+        as a 64-bit little-endian). If you have a separate nonce and block
+        counter you will need to concatenate it yourself before passing it.
+        For example, if you have an initial block counter of 2 and a 64-bit
+        nonce the concatenated nonce would be
+        ``struct.pack("<Q", 2) + nonce``.
+
 
     .. doctest::
 
+        >>> import struct, os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        >>> nonce = os.urandom(16)
-        >>> algorithm = algorithms.ChaCha20(key, nonce)
+        >>> nonce = os.urandom(8)
+        >>> counter = 0
+        >>> full_nonce = struct.pack("<Q", counter) + nonce
+        >>> algorithm = algorithms.ChaCha20(key, full_nonce)
         >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
@@ -845,6 +851,7 @@ Exceptions
 .. _`Communications Security Establishment`: https://www.cse-cst.gc.ca
 .. _`encrypt`: https://ssd.eff.org/en/module/what-should-i-know-about-encryption
 .. _`CRYPTREC`: https://www.cryptrec.go.jp/english/
+.. _`original version`: https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant
 .. _`significant patterns in the output`: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_codebook_(ECB)
 .. _`International Data Encryption Algorithm`: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 .. _`OpenPGP`: https://www.openpgp.org/
