@@ -389,6 +389,12 @@ class TestAESGCM:
         with pytest.raises(OverflowError):
             aesgcm.encrypt(nonce, b"", large_data)
 
+    def test_decrypt_data_too_short(self):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        with pytest.raises(InvalidTag):
+            aesgcm.decrypt(b"0" * 12, b"0", None)
+
     def test_vectors(self, backend, subtests):
         vectors = _load_gcm_vectors()
         for vector in vectors:
