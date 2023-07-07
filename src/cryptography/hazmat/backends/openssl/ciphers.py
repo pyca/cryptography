@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import abc
 import typing
 
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
@@ -14,7 +15,93 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
 
 
-class _CipherContext:
+class _CipherContext(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def update(self, data: bytes) -> bytes:
+        """
+        Processes the provided bytes through the cipher and returns the results
+        as bytes.
+        """
+
+    @abc.abstractmethod
+    def update_into(self, data: bytes, buf: bytes) -> int:
+        """
+        Processes the provided bytes and writes the resulting data into the
+        provided buffer. Returns the number of bytes written.
+        """
+
+    @abc.abstractmethod
+    def finalize(self) -> bytes:
+        """
+        Returns the results of processing the final block as bytes.
+        """
+
+
+def create_cipher_context(
+    backend: Backend, cipher, mode, encrypt: bool
+) -> _CipherContext:
+    if (
+        isinstance(cipher, algorithms.ChaCha20)
+        and backend._lib.Cryptography_HAS_CHACHA20_API
+    ):
+        return _CipherContextChaCha(backend, cipher)
+    else:
+        operation = (
+            _CipherContextEVP._ENCRYPT
+            if encrypt
+            else _CipherContextEVP._DECRYPT
+        )
+        return _CipherContextEVP(backend, cipher, mode, operation)
+
+
+class _CipherContextChaCha(_CipherContext):
+    """
+    Cipher context specific to ChaCha20 under LibreSSL
+    """
+
+    def __init__(self, backend: Backend, cipher) -> None:
+        assert isinstance(cipher, algorithms.ChaCha20)
+        assert backend._lib.Cryptography_HAS_CHACHA20_API
+        self._backend = backend
+        self._cipher = cipher
+
+        # The ChaCha20 stream cipher. The key length is 256 bits, the IV is
+        # 128 bits long. The first 64 bits consists of a counter in
+        # little-endian order followed by a 64 bit nonce.
+        self._counter = int.from_bytes(cipher.nonce[:8], byteorder="little")
+        self._iv_nonce = cipher.nonce[8:]
+
+    def update(self, data: bytes) -> bytes:
+        buf = bytearray(len(data))
+        n = self.update_into(data, buf)
+        return bytes(buf[:n])
+
+    def update_into(self, data: bytes, buf: bytes) -> int:
+        total_data_len = len(data)
+        if len(buf) < total_data_len:
+            raise ValueError(
+                "buffer must be at least {} bytes for this "
+                "payload".format(len(data))
+            )
+
+        baseoutbuf = self._backend._ffi.from_buffer(buf, require_writable=True)
+        baseinbuf = self._backend._ffi.from_buffer(data)
+
+        self._backend._lib.Cryptography_CRYPTO_chacha_20(
+            baseoutbuf,
+            baseinbuf,
+            total_data_len,
+            self._backend._ffi.from_buffer(self._cipher.key),
+            self._backend._ffi.from_buffer(self._iv_nonce),
+            self._counter,
+        )
+        return total_data_len
+
+    def finalize(self) -> bytes:
+        return b""
+
+
+class _CipherContextEVP(_CipherContext):
     _ENCRYPT = 1
     _DECRYPT = 0
     _MAX_CHUNK_SIZE = 2**30 - 1

@@ -12,7 +12,11 @@ import typing
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.openssl import aead
-from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
+from cryptography.hazmat.backends.openssl.ciphers import (
+    _CipherContext,
+    algorithms,
+    create_cipher_context,
+)
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey,
@@ -226,6 +230,12 @@ class Backend:
         return self.hash_supported(algorithm)
 
     def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
+        # ChaCha20 is supported in LibreSSL by a different API than OpenSSL,
+        # so checking for the corresponding EVP_CIPHER is not useful
+        if (self._lib.CRYPTOGRAPHY_IS_LIBRESSL) and isinstance(
+            cipher, algorithms.ChaCha20
+        ):
+            return True
         if self._fips_enabled:
             # FIPS mode requires AES. TripleDES is disallowed/deprecated in
             # FIPS 140-3.
@@ -319,12 +329,12 @@ class Backend:
     def create_symmetric_encryption_ctx(
         self, cipher: CipherAlgorithm, mode: Mode
     ) -> _CipherContext:
-        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
+        return create_cipher_context(self, cipher, mode, encrypt=True)
 
     def create_symmetric_decryption_ctx(
         self, cipher: CipherAlgorithm, mode: Mode
     ) -> _CipherContext:
-        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        return create_cipher_context(self, cipher, mode, encrypt=False)
 
     def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hmac_supported(algorithm)
