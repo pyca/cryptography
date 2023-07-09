@@ -21,7 +21,7 @@ build==0.10.0
     #   cryptography (pyproject.toml)
 certifi==2023.5.7
     # via requests
-charset-normalizer==3.1.0
+charset-normalizer==3.2.0
     # via requests
 check-sdist==0.1.2
     # via cryptography (pyproject.toml)
