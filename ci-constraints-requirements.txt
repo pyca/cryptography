@@ -54,7 +54,7 @@ importlib-metadata==6.7.0
     #   twine
 iniconfig==2.0.0
     # via pytest
-jaraco-classes==3.2.3
+jaraco-classes==3.3.0
     # via keyring
 jinja2==3.1.2
     # via sphinx
