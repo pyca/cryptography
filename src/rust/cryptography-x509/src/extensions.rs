@@ -228,6 +228,9 @@ pub struct BasicConstraints {
     pub path_length: Option<u64>,
 }
 
+pub type SubjectAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
+pub type ExtendedKeyUsage<'a> = asn1::SequenceOf<'a, asn1::ObjectIdentifier>;
+
 #[cfg(test)]
 mod tests {
     use asn1::SequenceOfWriter;
