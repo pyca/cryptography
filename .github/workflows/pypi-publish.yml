@@ -15,6 +15,9 @@ on:
     workflows: ["Wheel Builder"]
     types: [completed]
 
+env:
+  PUBLISH_REQUIREMENTS_PATH: .github/workflows/requirements/publish-requirements.txt
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -29,13 +32,12 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           sparse-checkout: |
-            .github/workflows/requirements/publish-requirements.txt
+            $PUBLISH_REQUIREMENTS_PATH
           sparse-checkout-cone-mode: false
           ref: ${{ github.ref }}
           persist-credentials: false
-      - run: mv .github/workflows/requirements/publish-requirements.txt .
       - name: Install Python dependencies
-        run: pip install --require-hashes -r publish-requirements.txt
+        run: pip install --require-hashes -r $PUBLISH_REQUIREMENTS_PATH
 
       - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
