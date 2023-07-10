@@ -60,6 +60,7 @@ class NameOID:
     LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
     STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
     STREET_ADDRESS = ObjectIdentifier("2.5.4.9")
+    ORGANIZATION_IDENTIFIER = ObjectIdentifier("2.5.4.97")
     ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
     ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
     SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
