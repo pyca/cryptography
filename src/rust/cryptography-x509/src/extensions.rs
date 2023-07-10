@@ -236,7 +236,6 @@ pub struct BasicConstraints {
 pub type SubjectAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
 pub type ExtendedKeyUsage<'a> = asn1::SequenceOf<'a, asn1::ObjectIdentifier>;
 
-#[derive(Hash, PartialEq, Clone)]
 pub struct KeyUsage<'a>(asn1::BitString<'a>);
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage<'a> {
