@@ -31,7 +31,6 @@ jobs:
           sparse-checkout: |
             .github/workflows/requirements/publish-requirements.txt
           sparse-checkout-cone-mode: false
-          # The tag to build or the tag received by the tag event
           ref: ${{ github.ref }}
           persist-credentials: false
       - run: mv .github/workflows/requirements/publish-requirements.txt .
