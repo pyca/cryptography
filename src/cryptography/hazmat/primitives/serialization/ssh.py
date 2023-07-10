@@ -1064,9 +1064,19 @@ def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
             raise ValueError("Fields not lexically sorted")
         value, exts_opts = _get_sshstr(exts_opts)
         if len(value) > 0:
-            value, extra = _get_sshstr(value)
-            if len(extra) > 0:
-                raise ValueError("Unexpected extra data after value")
+            try:
+                value, extra = _get_sshstr(value)
+            except ValueError:
+                warnings.warn(
+                    "This certificate has an incorrect encoding for critical "
+                    "options or extensions. This will be an exception in "
+                    "cryptography 42",
+                    utils.DeprecatedIn41,
+                    stacklevel=4,
+                )
+            else:
+                if len(extra) > 0:
+                    raise ValueError("Unexpected extra data after value")
         result[bname] = bytes(value)
         last_name = bname
     return result

@@ -1159,6 +1159,31 @@ class TestSSHCertificate:
             b"permit-user-rc": b"",
         }
 
+    def test_loads_deprecated_invalid_encoding_cert(self, backend):
+        with pytest.warns(utils.DeprecatedIn41):
+            cert = load_ssh_public_identity(
+                b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYT"
+                b"ItbmlzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgXE7sJ+xDVVNCO"
+                b"cEvpZS+SXIbc0nJdny/KqVbnwHslMIAAAAIbmlzdHAyNTYAAABBBI/qcLq8"
+                b"iiErpAhOWRqdMkpFSCNv7TVUcXCIfAl01JXbe2MvS4V7lFtiyrBjLSV7Iyw"
+                b"3TrulrWLibjPzZvLwmQcAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA//"
+                b"////////8AAABUAAAADWZvcmNlLWNvbW1hbmQAAAAoZWNobyBhYWFhYWFhY"
+                b"WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQAAAA92ZXJpZnktcmVxdWly"
+                b"ZWQAAAAAAAAAEgAAAApwZXJtaXQtcHR5AAAAAAAAAAAAAABoAAAAE2VjZHN"
+                b"hLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBI/qcLq8iiErpAhOWR"
+                b"qdMkpFSCNv7TVUcXCIfAl01JXbe2MvS4V7lFtiyrBjLSV7Iyw3TrulrWLib"
+                b"jPzZvLwmQcAAABlAAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAABKAAAAIQCi"
+                b"eCsIhGKrZdkE1+zY5EBucrLzxFpwnm/onIT/6rapvQAAACEAuVQ1yQjlPKr"
+                b"kfsGfjeG+2umZrOS5Ycx85BQhYf0RgsA="
+            )
+        assert isinstance(cert, SSHCertificate)
+        cert.verify_cert_signature()
+        assert cert.extensions == {b"permit-pty": b""}
+        assert cert.critical_options == {
+            b"force-command": b"echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            b"verify-required": b"",
+        }
+
     @pytest.mark.parametrize(
         "filename",
         [
