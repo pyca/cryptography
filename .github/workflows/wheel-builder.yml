@@ -20,7 +20,7 @@ on:
       - vectors/pyproject.toml
 
 env:
-  BUILD_REQUIREMENTS_PATH: .github/workflows/requirements/build-requirements.txt
+  BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
 
 jobs:
   sdist:

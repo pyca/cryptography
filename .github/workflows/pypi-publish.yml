@@ -16,7 +16,7 @@ on:
     types: [completed]
 
 env:
-  PUBLISH_REQUIREMENTS_PATH: .github/workflows/requirements/publish-requirements.txt
+  PUBLISH_REQUIREMENTS_PATH: .github/requirements/publish-requirements.txt
 
 jobs:
   publish:
