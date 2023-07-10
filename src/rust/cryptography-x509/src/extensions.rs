@@ -335,9 +335,9 @@ mod tests {
         let extensions = SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
+        let parsed = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions =
-            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).unwrap();
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
