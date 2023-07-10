@@ -3076,6 +3076,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.9"``.
 
+    .. attribute:: ORGANIZATION_IDENTIFIER
+
+        .. versionadded:: 42.0.0
+
+        Corresponds to the dotted string ``"2.5.4.97"``.
+
     .. attribute:: ORGANIZATION_NAME
 
         Corresponds to the dotted string ``"2.5.4.10"``.
