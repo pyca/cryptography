@@ -1131,26 +1131,28 @@ class TestSSHCertificate:
         # secp256r1 public key, ed25519 signing key
         cert = load_ssh_public_identity(
             b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYTItbm"
-            b"lzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgtdU+dl9vD4xPi8afxERYo"
-            b"s0c0d9/3m7XGY6fGeSkqn0AAAAIbmlzdHAyNTYAAABBBAsuVFNNj/mMyFm2xB99"
-            b"G4xiaUJE1lZNjcp+S2tXYW5KorcHpusSlSqOkUPZ2l0644dgiNPDKR/R+BtYENC"
-            b"8aq8AAAAAAAAAAAAAAAEAAAAUdGVzdEBjcnlwdG9ncmFwaHkuaW8AAAAaAAAACm"
-            b"NyeXB0b3VzZXIAAAAIdGVzdHVzZXIAAAAAY7KyZAAAAAB2frXAAAAAAAAAAIIAA"
-            b"AAVcGVybWl0LVgxMS1mb3J3YXJkaW5nAAAAAAAAABdwZXJtaXQtYWdlbnQtZm9y"
-            b"d2FyZGluZwAAAAAAAAAWcGVybWl0LXBvcnQtZm9yd2FyZGluZwAAAAAAAAAKcGV"
-            b"ybWl0LXB0eQAAAAAAAAAOcGVybWl0LXVzZXItcmMAAAAAAAAAAAAAADMAAAALc3"
-            b"NoLWVkMjU1MTkAAAAg3P0eyGf2crKGwSlnChbLzTVOFKwQELE1Ve+EZ6rXF18AA"
-            b"ABTAAAAC3NzaC1lZDI1NTE5AAAAQKoij8BsPj/XLb45+wHmRWKNqXeZYXyDIj8J"
-            b"IE6dIymjEqq0TP6ntu5t59hTmWlDO85GnMXAVGBjFbeikBMfAQc= reaperhulk"
-            b"@despoina.local"
+            b"lzdHAyNTYtY2VydC12MDFAb3BlbnNzaC5jb20AAAAgLfsFv9Gbc6LZSiJFWdYQl"
+            b"IMNI50GExXW0fBpgGVf+Y4AAAAIbmlzdHAyNTYAAABBBIzVyRgVLR4F38bIOLBN"
+            b"8CNm8Nf+eBHCVkKDKb9WDyLLD61CEmzjK/ORwFuSE4N60eIGbFidBf0D0xh7G6o"
+            b"TNxsAAAAAAAAAAAAAAAEAAAAUdGVzdEBjcnlwdG9ncmFwaHkuaW8AAAAaAAAACm"
+            b"NyeXB0b3VzZXIAAAAIdGVzdHVzZXIAAAAAY7KyZAAAAAB2frXAAAAAWAAAAA1mb"
+            b"3JjZS1jb21tYW5kAAAALAAAAChlY2hvIGFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"
+            b"YWFhYWFhYWFhYWFhAAAAD3ZlcmlmeS1yZXF1aXJlZAAAAAAAAACCAAAAFXBlcm1"
+            b"pdC1YMTEtZm9yd2FyZGluZwAAAAAAAAAXcGVybWl0LWFnZW50LWZvcndhcmRpbm"
+            b"cAAAAAAAAAFnBlcm1pdC1wb3J0LWZvcndhcmRpbmcAAAAAAAAACnBlcm1pdC1wd"
+            b"HkAAAAAAAAADnBlcm1pdC11c2VyLXJjAAAAAAAAAAAAAAAzAAAAC3NzaC1lZDI1"
+            b"NTE5AAAAICH6csEOmGbOfT2B/S/FJg3uyPsaPSZUZk2SVYlfs0KLAAAAUwAAAAt"
+            b"zc2gtZWQyNTUxOQAAAEDz2u7X5/TFbN7Ms7DP4yArhz1oWWYKkdAk7FGFkHfjtY"
+            b"/YfNQ8Oky3dCZRi7PnSzScEEjos7723dhF8/y99WwH reaperhulk@despoina."
+            b"local"
         )
         assert isinstance(cert, SSHCertificate)
         cert.verify_cert_signature()
         signature_key = cert.signature_key()
         assert isinstance(signature_key, ed25519.Ed25519PublicKey)
         assert cert.nonce == (
-            b"\xb5\xd5>v_o\x0f\x8cO\x8b\xc6\x9f\xc4DX\xa2\xcd\x1c\xd1\xdf"
-            b"\x7f\xden\xd7\x19\x8e\x9f\x19\xe4\xa4\xaa}"
+            b'-\xfb\x05\xbf\xd1\x9bs\xa2\xd9J"EY\xd6\x10\x94\x83\r#\x9d'
+            b"\x06\x13\x15\xd6\xd1\xf0i\x80e_\xf9\x8e"
         )
         public_key = cert.public_key()
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
@@ -1161,7 +1163,10 @@ class TestSSHCertificate:
         assert cert.valid_principals == [b"cryptouser", b"testuser"]
         assert cert.valid_before == 1988015552
         assert cert.valid_after == 1672655460
-        assert cert.critical_options == {}
+        assert cert.critical_options == {
+            b"force-command": b"echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            b"verify-required": b"",
+        }
         assert cert.extensions == {
             b"permit-X11-forwarding": b"",
             b"permit-agent-forwarding": b"",
@@ -1709,6 +1714,11 @@ class TestSSHCertificateBuilder:
             .valid_after(1672531200)
             .valid_before(1672617600)
             .type(SSHCertificateType.USER)
+            .add_extension(b"permit-pty", b"")
+            .add_critical_option(
+                b"force-command", b"echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            )
+            .add_critical_option(b"verify-required", b"")
         )
         cert = builder.sign(private_key)
         sig_key = cert.signature_key()
@@ -1723,19 +1733,21 @@ class TestSSHCertificateBuilder:
             b"4kyHpbLEIVloBjzetoqXK6u8Hjz/APuagONypNDCySDR6M7jM85HDcLoFFrbBb8"
             b"pruHSTxQejMeEmJxYf8b7rNl58/IWPB1ymbNlvHL/4oSOlnrtHkjcxRWzpQ7U3g"
             b"T9BThGyhCiI7EMyEHMgP3r7kTzEUwT6IavWDAAAAAAAAAAAAAAABAAAAAAAAAAA"
-            b"AAAAAY7DNAAAAAABjsh6AAAAAAAAAAAAAAAAAAAABFwAAAAdzc2gtcnNhAAAAAw"
-            b"EAAQAAAQEAwXr8fndHTKpaqDA2FYo/+/e1IWhRuiIw5dar/MHGz+9Z6SPqEzC8W"
-            b"TtzgCq2CKbkozBlI6MRa6WqOWYUUXThO2xJ6beAYuRJ1y77EP1J6R+gi5bQUeeC"
-            b"6fWrxbWm95hIJ6245z2gDyKy79zbduq0btrZjtZWYnQ/3GwOM2pdDNuqfcKeU2N"
-            b"eJMh6WyxCFZaAY83raKlyurvB48/wD7moDjcqTQwskg0ejO4zPORw3C6BRa2wW/"
-            b"Ka7h0k8UHozHhJicWH/G+6zZefPyFjwdcpmzZbxy/+KEjpZ67R5I3MUVs6UO1N4"
-            b"E/QU4RsoQoiOxDMhBzID96+5E8xFME+iGr1gwAAARQAAAAMcnNhLXNoYTItNTEy"
-            b"AAABAKCRnfhn6MZs3jRgIDICUpUyWrDCbpStEbdzhmoxF8w2m8klR7owRH/rxOf"
-            b"nWhKMGnXnoERS+az3Zh9ckiQPujkuEToORKpzu6CEWlzHSzyK1o2X548KkW76HJ"
-            b"gqzwMas94HY7UOJUgKSFUI0S3jAgqXAKSa1DxvJBu5/n57aUqPq+BmAtoI8uNBo"
-            b"x4F1pNEop38+oD7rUt8bZ8K0VcrubJZz806K8UNiK0mOahaEIkvZXBfzPGvSNRj"
-            b"0OjDl1dLUZaP8C1o5lVRomEm7pLcgE9i+ZDq5iz+mvQrSBStlpQ5hPGuUOrZ/oY"
-            b"ZLZ1G30R5tWj212MHoNZjxFxM8+f2OT4="
+            b"AAAAAY7DNAAAAAABjsh6AAAAAWAAAAA1mb3JjZS1jb21tYW5kAAAALAAAAChlY2"
+            b"hvIGFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhAAAAD3Zlcmlme"
+            b"S1yZXF1aXJlZAAAAAAAAAASAAAACnBlcm1pdC1wdHkAAAAAAAAAAAAAARcAAAAH"
+            b"c3NoLXJzYQAAAAMBAAEAAAEBAMF6/H53R0yqWqgwNhWKP/v3tSFoUboiMOXWq/z"
+            b"Bxs/vWekj6hMwvFk7c4Aqtgim5KMwZSOjEWulqjlmFFF04TtsSem3gGLkSdcu+x"
+            b"D9SekfoIuW0FHngun1q8W1pveYSCetuOc9oA8isu/c23bqtG7a2Y7WVmJ0P9xsD"
+            b"jNqXQzbqn3CnlNjXiTIelssQhWWgGPN62ipcrq7wePP8A+5qA43Kk0MLJINHozu"
+            b"MzzkcNwugUWtsFvymu4dJPFB6Mx4SYnFh/xvus2Xnz8hY8HXKZs2W8cv/ihI6We"
+            b"u0eSNzFFbOlDtTeBP0FOEbKEKIjsQzIQcyA/evuRPMRTBPohq9YMAAAEUAAAADH"
+            b"JzYS1zaGEyLTUxMgAAAQCYbbNzhflDqZAxyBpdLIX0nLAdnTeFNBudMqgo3KGND"
+            b"WlU9N17hqBEmcvIOrtNi+JKuKZW89zZrbORHvdjv6NjGSKzJD/XA25YrX1KgMEO"
+            b"wt5pzMZX+100drwrjQo+vZqeIN3FJNmT3wssge73v+JsxQrdIAz7YM2OZrFr5HM"
+            b"qZEZ5tMvAf/s5YEMDttEU4zMtmjubQyDM5KyYnZdoDT4sKi2rB8gfaigc4IdI/K"
+            b"8oXL/3Y7rHuOtejl3lUK4v6DxeRl4aqGYWmhUJc++Rh0cbDgC2S6Cq7gAfG2tND"
+            b"zbwL217Q93R08bJn1hDWuiTiaHGauSy2gPUI+cnkvlEocHM"
         )
 
     @pytest.mark.supported(
@@ -1761,6 +1773,11 @@ class TestSSHCertificateBuilder:
             .valid_after(1672531200)
             .valid_before(1672617600)
             .type(SSHCertificateType.USER)
+            .add_extension(b"permit-pty", b"")
+            .add_critical_option(
+                b"force-command", b"echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            )
+            .add_critical_option(b"verify-required", b"")
         )
         cert = builder.sign(private_key)
         sig_key = cert.signature_key()
@@ -1770,8 +1787,11 @@ class TestSSHCertificateBuilder:
             b"ssh-ed25519-cert-v01@openssh.com AAAAIHNzaC1lZDI1NTE5LWNlcnQtdj"
             b"AxQG9wZW5zc2guY29tAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             b"AAAAAAAINdamAGCsQq31Uv+08lkBzoO4XLz2qYjJa8CGmj3B1EaAAAAAAAAAAAA"
-            b"AAABAAAAAAAAAAAAAAAAY7DNAAAAAABjsh6AAAAAAAAAAAAAAAAAAAAAMwAAAAt"
-            b"zc2gtZWQyNTUxOQAAACDXWpgBgrEKt9VL/tPJZAc6DuFy89qmIyWvAhpo9wdRGg"
-            b"AAAFMAAAALc3NoLWVkMjU1MTkAAABAAlF6Lxabxs+8fkOr7KjKYei9konIG13cQ"
-            b"gJ2tWf3yFcg3OuV5s/AkRmKdwHlQfTUrhRdOmDnGxeLEB0mvkVFCw=="
+            b"AAABAAAAAAAAAAAAAAAAY7DNAAAAAABjsh6AAAAAWAAAAA1mb3JjZS1jb21tYW5"
+            b"kAAAALAAAAChlY2hvIGFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYW"
+            b"FhAAAAD3ZlcmlmeS1yZXF1aXJlZAAAAAAAAAASAAAACnBlcm1pdC1wdHkAAAAAA"
+            b"AAAAAAAADMAAAALc3NoLWVkMjU1MTkAAAAg11qYAYKxCrfVS/7TyWQHOg7hcvPa"
+            b"piMlrwIaaPcHURoAAABTAAAAC3NzaC1lZDI1NTE5AAAAQL2aUjeD60C2FrbgHcN"
+            b"t8yRa8IRbxvOyA9TZYDGG1dRE3DiR0fuudU20v6vqfTd1gx0S5QyEdECXLl9ZI3"
+            b"AwZgc="
         )
