@@ -1288,6 +1288,8 @@ class TestSSHCertificate:
             "p256-p256-non-lexical-extensions.pub",
             "p256-p256-duplicate-crit-opts.pub",
             "p256-p256-non-lexical-crit-opts.pub",
+            "p256-ed25519-non-singular-crit-opt-val.pub",
+            "p256-ed25519-non-singular-ext-val.pub",
         ],
     )
     def test_invalid_encodings(self, filename):
