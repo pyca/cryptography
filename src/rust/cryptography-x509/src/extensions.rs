@@ -291,11 +291,9 @@ impl KeyUsage<'_> {
 
 #[cfg(test)]
 mod tests {
-    use asn1::SequenceOfWriter;
-
     use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
 
-    use super::{BasicConstraints, Extension, Extensions};
+    use super::{BasicConstraints, Extension, Extensions, KeyUsage};
 
     #[test]
     fn test_get_extension() {
@@ -308,7 +306,7 @@ mod tests {
             critical: true,
             extn_value: &asn1::write_single(&bc).unwrap(),
         };
-        let extensions = SequenceOfWriter::new(vec![extension]);
+        let extensions = asn1::SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
         let raw = asn1::parse_single(&der).unwrap();
@@ -332,7 +330,7 @@ mod tests {
             critical: true,
             extn_value: &asn1::write_single(&bc).unwrap(),
         };
-        let extensions = SequenceOfWriter::new(vec![extension]);
+        let extensions = asn1::SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
         let parsed = asn1::parse_single(&der).unwrap();
@@ -358,5 +356,25 @@ mod tests {
         let extracted: BasicConstraints = extension.value().unwrap();
         assert_eq!(bc.ca, extracted.ca);
         assert_eq!(bc.path_length, extracted.path_length);
+    }
+
+    #[test]
+    fn test_keyusage() {
+        // let ku: KeyUsage = asn1::parse_single(data)
+        let ku_bits = [0b1111_1111u8, 0b1000_0000u8];
+        let ku_bitstring = asn1::BitString::new(&ku_bits, 7).unwrap();
+        let asn1 = asn1::write_single(&ku_bitstring).unwrap();
+
+        let ku: KeyUsage = asn1::parse_single(&asn1).unwrap();
+        assert!(!ku.zeroed());
+        assert!(ku.digital_signature());
+        assert!(ku.content_comitment());
+        assert!(ku.key_encipherment());
+        assert!(ku.data_encipherment());
+        assert!(ku.key_agreement());
+        assert!(ku.key_cert_sign());
+        assert!(ku.crl_sign());
+        assert!(ku.encipher_only());
+        assert!(ku.decipher_only());
     }
 }
