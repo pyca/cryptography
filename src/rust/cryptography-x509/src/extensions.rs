@@ -231,6 +231,59 @@ pub struct BasicConstraints {
 pub type SubjectAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
 pub type ExtendedKeyUsage<'a> = asn1::SequenceOf<'a, asn1::ObjectIdentifier>;
 
+#[derive(Hash, PartialEq, Clone)]
+pub struct KeyUsage<'a>(asn1::BitString<'a>);
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage<'a> {
+    const TAG: asn1::Tag = asn1::BitString::TAG;
+
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        asn1::BitString::parse_data(data).map(Self)
+    }
+}
+
+impl KeyUsage<'_> {
+    pub fn zeroed(&self) -> bool {
+        self.0.as_bytes().iter().all(|&b| b == 0)
+    }
+
+    pub fn digital_signature(&self) -> bool {
+        self.0.has_bit_set(0)
+    }
+
+    pub fn content_comitment(&self) -> bool {
+        self.0.has_bit_set(1)
+    }
+
+    pub fn key_encipherment(&self) -> bool {
+        self.0.has_bit_set(2)
+    }
+
+    pub fn data_encipherment(&self) -> bool {
+        self.0.has_bit_set(3)
+    }
+
+    pub fn key_agreement(&self) -> bool {
+        self.0.has_bit_set(4)
+    }
+
+    pub fn key_cert_sign(&self) -> bool {
+        self.0.has_bit_set(5)
+    }
+
+    pub fn crl_sign(&self) -> bool {
+        self.0.has_bit_set(6)
+    }
+
+    pub fn encipher_only(&self) -> bool {
+        self.0.has_bit_set(7)
+    }
+
+    pub fn decipher_only(&self) -> bool {
+        self.0.has_bit_set(8)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use asn1::SequenceOfWriter;
