@@ -58,7 +58,6 @@ impl<'a, 'b> Extensions<'a, 'b> {
     /// Returns an iterator over the underlying extensions.
     pub fn iter(&self) -> impl Iterator<Item = Extension> {
         self.as_raw()
-            .clone()
             .map(|raw| raw.unwrap_read().clone())
             .into_iter()
             .flatten()
@@ -75,7 +74,7 @@ pub struct Extension<'a> {
 
 impl<'a> Extension<'a> {
     pub fn value<T: asn1::Asn1Readable<'a>>(&'a self) -> asn1::ParseResult<T> {
-        Ok(asn1::parse_single(self.extn_value)?)
+        asn1::parse_single(self.extn_value)
     }
 }
 
