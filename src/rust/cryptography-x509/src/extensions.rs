@@ -299,14 +299,14 @@ mod tests {
 
     #[test]
     fn test_get_extension() {
-        let extension_value = BasicConstraints {
+        let bc = BasicConstraints {
             ca: true,
             path_length: Some(3),
         };
         let extension = Extension {
             extn_id: BASIC_CONSTRAINTS_OID,
             critical: true,
-            extn_value: &asn1::write_single(&extension_value).unwrap(),
+            extn_value: &asn1::write_single(&bc).unwrap(),
         };
         let extensions = SequenceOfWriter::new(vec![extension]);
 
@@ -323,14 +323,14 @@ mod tests {
 
     #[test]
     fn test_extensions_iter() {
-        let extension_value = BasicConstraints {
+        let bc = BasicConstraints {
             ca: true,
             path_length: Some(3),
         };
         let extension = Extension {
             extn_id: BASIC_CONSTRAINTS_OID,
             critical: true,
-            extn_value: &asn1::write_single(&extension_value).unwrap(),
+            extn_value: &asn1::write_single(&bc).unwrap(),
         };
         let extensions = SequenceOfWriter::new(vec![extension]);
 
@@ -341,5 +341,22 @@ mod tests {
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
+    }
+
+    #[test]
+    fn test_extension_value() {
+        let bc = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let extension = Extension {
+            extn_id: BASIC_CONSTRAINTS_OID,
+            critical: true,
+            extn_value: &asn1::write_single(&bc).unwrap(),
+        };
+
+        let extracted: BasicConstraints = extension.value().unwrap();
+        assert_eq!(bc.ca, extracted.ca);
+        assert_eq!(bc.path_length, extracted.path_length);
     }
 }
