@@ -18,15 +18,15 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
 ///
 /// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
 /// that contains duplicated extensions (by OID).
-pub struct Extensions<'a>(Option<RawExtensions<'a>>);
+pub struct Extensions<'a, 'b>(Option<&'b RawExtensions<'a>>);
 
-impl<'a> Extensions<'a> {
+impl<'a, 'b> Extensions<'a, 'b> {
     /// Create an `Extensions` from the given `RawExtensions`.
     ///
     /// Returns an `Err` variant containing the first duplicated extension's
     /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
-        raw: Option<&RawExtensions<'a>>,
+        raw: Option<&'b RawExtensions<'a>>,
     ) -> Result<Self, asn1::ObjectIdentifier> {
         match raw {
             Some(raw_exts) => {
@@ -38,7 +38,7 @@ impl<'a> Extensions<'a> {
                     }
                 }
 
-                Ok(Self(Some(raw_exts.clone())))
+                Ok(Self(Some(raw_exts)))
             }
             None => Ok(Self(None)),
         }
@@ -51,8 +51,8 @@ impl<'a> Extensions<'a> {
     }
 
     /// Returns a reference to the underlying extensions.
-    pub fn as_raw(&self) -> &Option<RawExtensions<'_>> {
-        &self.0
+    pub fn as_raw(&self) -> Option<&RawExtensions<'_>> {
+        self.0
     }
 
     /// Returns an iterator over the underlying extensions.
@@ -250,9 +250,9 @@ mod tests {
         let extensions = SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
+        let raw = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions =
-            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions

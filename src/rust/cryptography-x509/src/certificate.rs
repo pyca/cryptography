@@ -35,8 +35,8 @@ pub struct TbsCertificate<'a> {
     pub raw_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-impl<'a> TbsCertificate<'a> {
-    pub fn extensions(&'a self) -> Result<Extensions<'a>, asn1::ObjectIdentifier> {
+impl TbsCertificate<'_> {
+    pub fn extensions(&self) -> Result<Extensions<'_, '_>, asn1::ObjectIdentifier> {
         Extensions::from_raw_extensions(self.raw_extensions.as_ref())
     }
 }
