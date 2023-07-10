@@ -1,4 +1,8 @@
+# Must be kept sync with build-system.requires at pyproject.toml
 pip
 wheel
 cffi
 setuptools-rust
+
+# WARN: changing the requirements here DOES NOT update the dependencies used for building at the github workflow, as the build process used build-requirements.txt
+# To update build-requirements.txt according to the dependencies here, run pip-compile --allow-unsafe --generate-hashes build-requirements.in
