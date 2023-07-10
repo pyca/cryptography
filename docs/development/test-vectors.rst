@@ -866,6 +866,10 @@ Custom OpenSSH Certificate Test Vectors
   critical option.
 * ``p256-p256-non-lexical-crit-opts.pub`` - A certificate with critical
   options in non-lexical order.
+* ``p256-ed25519-non-singular-crit-opt-val.pub`` - A certificate with
+  a critical option that contains more than one value.
+* ``p256-ed25519-non-singular-ext-val.pub`` - A certificate with
+  an extension that contains more than one value.
 * ``dsa-p256.pub`` - A certificate with a DSA public key signed by a P256
   CA.
 * ``p256-dsa.pub`` - A certificate with a P256 public key signed by a DSA
