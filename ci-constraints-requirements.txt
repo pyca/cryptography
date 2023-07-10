@@ -48,7 +48,7 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.7.0; python_version >= "3.8"
+importlib-metadata==6.8.0; python_version >= "3.8"
     # via
     #   keyring
     #   twine
