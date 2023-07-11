@@ -33,7 +33,7 @@ class TestChaCha20:
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        ibc = struct.pack("<i", int(vector["initial_block_counter"]))
+        ibc = struct.pack("<Q", int(vector["initial_block_counter"]))
         pt = binascii.unhexlify(vector["plaintext"])
         encryptor = Cipher(
             algorithms.ChaCha20(key, ibc + nonce), None, backend
