@@ -11,14 +11,14 @@ use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, x509};
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
-use cryptography_x509::extensions::Extension;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, MSCertificateTemplate, NameConstraints, PolicyConstraints,
-    PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
-    SequenceOfSubtrees, UserNotice,
+    DistributionPointName, IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints,
+    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions,
+    SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
 };
-use cryptography_x509::{common, name, oid};
+use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
+use cryptography_x509::{common, oid};
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -256,9 +256,9 @@ impl Certificate {
             py,
             &mut self.cached_extensions,
             &self.raw.borrow_dependent().tbs_cert.raw_extensions,
-            |oid, ext_data| match *oid {
+            |ext| match ext.extn_id {
                 oid::PRECERT_POISON_OID => {
-                    asn1::parse_single::<()>(ext_data)?;
+                    ext.value::<()>()?;
                     Ok(Some(
                         x509_module
                             .getattr(pyo3::intern!(py, "PrecertPoison"))?
@@ -266,7 +266,7 @@ impl Certificate {
                     ))
                 }
                 oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
-                    let contents = asn1::parse_single::<&[u8]>(ext_data)?;
+                    let contents = ext.value::<&[u8]>()?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
                         x509_module
@@ -277,7 +277,7 @@ impl Certificate {
                             .call1((scts,))?,
                     ))
                 }
-                _ => parse_cert_ext(py, oid.clone(), ext_data),
+                _ => parse_cert_ext(py, ext),
             },
         )
     }
@@ -525,8 +525,11 @@ fn parse_policy_qualifiers<'a>(
     Ok(py_pq.to_object(py))
 }
 
-fn parse_cp(py: pyo3::Python<'_>, ext_data: &[u8]) -> Result<pyo3::PyObject, CryptographyError> {
-    let cp = asn1::parse_single::<asn1::SequenceOf<'_, PolicyInformation<'_>>>(ext_data)?;
+fn parse_cp(
+    py: pyo3::Python<'_>,
+    ext: &Extension<'_>,
+) -> Result<pyo3::PyObject, CryptographyError> {
+    let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
@@ -594,9 +597,9 @@ fn parse_distribution_point(
 
 pub(crate) fn parse_distribution_points(
     py: pyo3::Python<'_>,
-    data: &[u8],
+    ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let dps = asn1::parse_single::<asn1::SequenceOf<'_, DistributionPoint<'_>>>(data)?;
+    let dps = ext.value::<asn1::SequenceOf<'_, DistributionPoint<'_>>>()?;
     let py_dps = pyo3::types::PyList::empty(py);
     for dp in dps {
         let py_dp = parse_distribution_point(py, dp)?;
@@ -650,10 +653,10 @@ pub(crate) fn encode_distribution_point_reasons(
 
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
-    ext_data: &[u8],
+    ext: &Extension<'_>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    let aki = asn1::parse_single::<AuthorityKeyIdentifier<'_>>(ext_data)?;
+    let aki = ext.value::<AuthorityKeyIdentifier<'_>>()?;
     let serial = match aki.authority_cert_serial_number {
         Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.to_object(py),
         None => py.None(),
@@ -669,11 +672,11 @@ pub(crate) fn parse_authority_key_identifier<'p>(
 
 pub(crate) fn parse_access_descriptions(
     py: pyo3::Python<'_>,
-    ext_data: &[u8],
+    ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let ads = pyo3::types::PyList::empty(py);
-    let parsed = asn1::parse_single::<SequenceOfAccessDescriptions<'_>>(ext_data)?;
+    let parsed = ext.value::<SequenceOfAccessDescriptions<'_>>()?;
     for access in parsed.unwrap_read().clone() {
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
@@ -688,14 +691,12 @@ pub(crate) fn parse_access_descriptions(
 
 pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
-    oid: asn1::ObjectIdentifier,
-    ext_data: &[u8],
+    ext: &Extension<'_>,
 ) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    match oid {
+    match ext.extn_id {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
-            let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
+            let gn_seq = ext.value::<SubjectAlternativeName<'_>>()?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -704,8 +705,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
-            let gn_seq =
-                asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(ext_data)?;
+            let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -719,7 +719,7 @@ pub fn parse_cert_ext<'p>(
                 .getattr(pyo3::intern!(py, "_TLS_FEATURE_TYPE_TO_ENUM"))?;
 
             let features = pyo3::types::PyList::empty(py);
-            for feature in asn1::parse_single::<asn1::SequenceOf<'_, u64>>(ext_data)? {
+            for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
                 let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
                 features.append(py_feature)?;
             }
@@ -730,7 +730,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::SUBJECT_KEY_IDENTIFIER_OID => {
-            let identifier = asn1::parse_single::<&[u8]>(ext_data)?;
+            let identifier = ext.value::<&[u8]>()?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "SubjectKeyIdentifier"))?
@@ -739,8 +739,7 @@ pub fn parse_cert_ext<'p>(
         }
         oid::EXTENDED_KEY_USAGE_OID => {
             let ekus = pyo3::types::PyList::empty(py);
-            for oid in asn1::parse_single::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>(ext_data)?
-            {
+            for oid in ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()? {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
             }
@@ -751,32 +750,24 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::KEY_USAGE_OID => {
-            let kus = asn1::parse_single::<asn1::BitString<'_>>(ext_data)?;
-            let digital_signature = kus.has_bit_set(0);
-            let content_comitment = kus.has_bit_set(1);
-            let key_encipherment = kus.has_bit_set(2);
-            let data_encipherment = kus.has_bit_set(3);
-            let key_agreement = kus.has_bit_set(4);
-            let key_cert_sign = kus.has_bit_set(5);
-            let crl_sign = kus.has_bit_set(6);
-            let encipher_only = kus.has_bit_set(7);
-            let decipher_only = kus.has_bit_set(8);
+            let kus = ext.value::<KeyUsage<'_>>()?;
+
             Ok(Some(
                 x509_module.getattr(pyo3::intern!(py, "KeyUsage"))?.call1((
-                    digital_signature,
-                    content_comitment,
-                    key_encipherment,
-                    data_encipherment,
-                    key_agreement,
-                    key_cert_sign,
-                    crl_sign,
-                    encipher_only,
-                    decipher_only,
+                    kus.digital_signature(),
+                    kus.content_comitment(),
+                    kus.key_encipherment(),
+                    kus.data_encipherment(),
+                    kus.key_agreement(),
+                    kus.key_cert_sign(),
+                    kus.crl_sign(),
+                    kus.encipher_only(),
+                    kus.decipher_only(),
                 ))?,
             ))
         }
         oid::AUTHORITY_INFORMATION_ACCESS_OID => {
-            let ads = parse_access_descriptions(py, ext_data)?;
+            let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "AuthorityInformationAccess"))?
@@ -784,7 +775,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::SUBJECT_INFORMATION_ACCESS_OID => {
-            let ads = parse_access_descriptions(py, ext_data)?;
+            let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "SubjectInformationAccess"))?
@@ -792,14 +783,14 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::CERTIFICATE_POLICIES_OID => {
-            let cp = parse_cp(py, ext_data)?;
+            let cp = parse_cp(py, ext)?;
             Ok(Some(x509_module.call_method1(
                 pyo3::intern!(py, "CertificatePolicies"),
                 (cp,),
             )?))
         }
         oid::POLICY_CONSTRAINTS_OID => {
-            let pc = asn1::parse_single::<PolicyConstraints>(ext_data)?;
+            let pc = ext.value::<PolicyConstraints>()?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "PolicyConstraints"))?
@@ -807,7 +798,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::OCSP_NO_CHECK_OID => {
-            asn1::parse_single::<()>(ext_data)?;
+            ext.value::<()>()?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "OCSPNoCheck"))?
@@ -815,7 +806,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::INHIBIT_ANY_POLICY_OID => {
-            let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
+            let bignum = ext.value::<asn1::BigUint<'_>>()?;
             let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
             Ok(Some(
                 x509_module
@@ -824,18 +815,16 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::BASIC_CONSTRAINTS_OID => {
-            let bc = asn1::parse_single::<BasicConstraints>(ext_data)?;
+            let bc = ext.value::<BasicConstraints>()?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "BasicConstraints"))?
                     .call1((bc.ca, bc.path_length))?,
             ))
         }
-        oid::AUTHORITY_KEY_IDENTIFIER_OID => {
-            Ok(Some(parse_authority_key_identifier(py, ext_data)?))
-        }
+        oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(parse_authority_key_identifier(py, ext)?)),
         oid::CRL_DISTRIBUTION_POINTS_OID => {
-            let dp = parse_distribution_points(py, ext_data)?;
+            let dp = parse_distribution_points(py, ext)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "CRLDistributionPoints"))?
@@ -843,7 +832,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::FRESHEST_CRL_OID => {
-            let dp = parse_distribution_points(py, ext_data)?;
+            let dp = parse_distribution_points(py, ext)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "FreshestCRL"))?
@@ -851,7 +840,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::NAME_CONSTRAINTS_OID => {
-            let nc = asn1::parse_single::<NameConstraints<'_>>(ext_data)?;
+            let nc = ext.value::<NameConstraints<'_>>()?;
             let permitted_subtrees = match nc.permitted_subtrees {
                 Some(data) => parse_general_subtrees(py, data)?,
                 None => py.None(),
@@ -867,7 +856,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::MS_CERTIFICATE_TEMPLATE => {
-            let ms_cert_tpl = asn1::parse_single::<MSCertificateTemplate>(ext_data)?;
+            let ms_cert_tpl = ext.value::<MSCertificateTemplate>()?;
             let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?;
             Ok(Some(
                 x509_module

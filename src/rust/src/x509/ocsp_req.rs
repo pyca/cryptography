@@ -119,8 +119,8 @@ impl OCSPRequest {
             py,
             &mut self.cached_extensions,
             &tbs_request.raw_request_extensions,
-            |oid, value| {
-                match *oid {
+            |ext| {
+                match ext.extn_id {
                     oid::NONCE_OID => {
                         // This is a disaster. RFC 2560 says that the contents of the nonce is
                         // just the raw extension value. This is nonsense, since they're always
@@ -128,15 +128,13 @@ impl OCSPRequest {
                         // nonce is an OCTET STRING, and so you should unwrap the TLV to get
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
-                        let nonce = asn1::parse_single::<&[u8]>(value).unwrap_or(value);
+                        let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
                         Ok(Some(
                             x509_module.call_method1(pyo3::intern!(py, "OCSPNonce"), (nonce,))?,
                         ))
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
-                        let oids = asn1::parse_single::<
-                            asn1::SequenceOf<'_, asn1::ObjectIdentifier>,
-                        >(value)?;
+                        let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
                         let py_oids = pyo3::types::PyList::empty(py);
                         for oid in oids {
                             py_oids.append(oid_to_py_oid(py, &oid)?)?;

@@ -223,12 +223,9 @@ impl CertificateSigningRequest {
                 )
             })?;
 
-        x509::parse_and_cache_extensions(
-            py,
-            &mut self.cached_extensions,
-            &raw_exts,
-            |oid, ext_data| certificate::parse_cert_ext(py, oid.clone(), ext_data),
-        )
+        x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &raw_exts, |ext| {
+            certificate::parse_cert_ext(py, ext)
+        })
     }
 
     #[getter]

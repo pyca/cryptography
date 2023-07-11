@@ -51,14 +51,13 @@ impl<'a> Extensions<'a> {
     }
 
     /// Returns a reference to the underlying extensions.
-    pub fn as_raw(&self) -> &Option<RawExtensions<'_>> {
-        &self.0
+    pub fn as_raw(&self) -> Option<&RawExtensions<'_>> {
+        self.0.as_ref()
     }
 
     /// Returns an iterator over the underlying extensions.
     pub fn iter(&self) -> impl Iterator<Item = Extension> {
         self.as_raw()
-            .clone()
             .map(|raw| raw.unwrap_read().clone())
             .into_iter()
             .flatten()
@@ -71,6 +70,12 @@ pub struct Extension<'a> {
     #[default(false)]
     pub critical: bool,
     pub extn_value: &'a [u8],
+}
+
+impl<'a> Extension<'a> {
+    pub fn value<T: asn1::Asn1Readable<'a>>(&'a self) -> asn1::ParseResult<T> {
+        asn1::parse_single(self.extn_value)
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -228,31 +233,85 @@ pub struct BasicConstraints {
     pub path_length: Option<u64>,
 }
 
+pub type SubjectAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
+pub type IssuerAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
+pub type ExtendedKeyUsage<'a> = asn1::SequenceOf<'a, asn1::ObjectIdentifier>;
+
+pub struct KeyUsage<'a>(asn1::BitString<'a>);
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage<'a> {
+    const TAG: asn1::Tag = asn1::BitString::TAG;
+
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        asn1::BitString::parse_data(data).map(Self)
+    }
+}
+
+impl KeyUsage<'_> {
+    pub fn is_zeroed(&self) -> bool {
+        self.0.as_bytes().iter().all(|&b| b == 0)
+    }
+
+    pub fn digital_signature(&self) -> bool {
+        self.0.has_bit_set(0)
+    }
+
+    pub fn content_comitment(&self) -> bool {
+        self.0.has_bit_set(1)
+    }
+
+    pub fn key_encipherment(&self) -> bool {
+        self.0.has_bit_set(2)
+    }
+
+    pub fn data_encipherment(&self) -> bool {
+        self.0.has_bit_set(3)
+    }
+
+    pub fn key_agreement(&self) -> bool {
+        self.0.has_bit_set(4)
+    }
+
+    pub fn key_cert_sign(&self) -> bool {
+        self.0.has_bit_set(5)
+    }
+
+    pub fn crl_sign(&self) -> bool {
+        self.0.has_bit_set(6)
+    }
+
+    pub fn encipher_only(&self) -> bool {
+        self.0.has_bit_set(7)
+    }
+
+    pub fn decipher_only(&self) -> bool {
+        self.0.has_bit_set(8)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use asn1::SequenceOfWriter;
-
     use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
 
-    use super::{BasicConstraints, Extension, Extensions};
+    use super::{BasicConstraints, Extension, Extensions, KeyUsage};
 
     #[test]
     fn test_get_extension() {
-        let extension_value = BasicConstraints {
+        let bc = BasicConstraints {
             ca: true,
             path_length: Some(3),
         };
         let extension = Extension {
             extn_id: BASIC_CONSTRAINTS_OID,
             critical: true,
-            extn_value: &asn1::write_single(&extension_value).unwrap(),
+            extn_value: &asn1::write_single(&bc).unwrap(),
         };
-        let extensions = SequenceOfWriter::new(vec![extension]);
+        let extensions = asn1::SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
+        let raw = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions =
-            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions
@@ -262,23 +321,60 @@ mod tests {
 
     #[test]
     fn test_extensions_iter() {
-        let extension_value = BasicConstraints {
+        let bc = BasicConstraints {
             ca: true,
             path_length: Some(3),
         };
         let extension = Extension {
             extn_id: BASIC_CONSTRAINTS_OID,
             critical: true,
-            extn_value: &asn1::write_single(&extension_value).unwrap(),
+            extn_value: &asn1::write_single(&bc).unwrap(),
         };
-        let extensions = SequenceOfWriter::new(vec![extension]);
+        let extensions = asn1::SequenceOfWriter::new(vec![extension]);
 
         let der = asn1::write_single(&extensions).unwrap();
+        let parsed = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions =
-            Extensions::from_raw_extensions(Some(&asn1::parse_single(&der).unwrap())).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).unwrap();
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
+    }
+
+    #[test]
+    fn test_extension_value() {
+        let bc = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let extension = Extension {
+            extn_id: BASIC_CONSTRAINTS_OID,
+            critical: true,
+            extn_value: &asn1::write_single(&bc).unwrap(),
+        };
+
+        let extracted: BasicConstraints = extension.value().unwrap();
+        assert_eq!(bc.ca, extracted.ca);
+        assert_eq!(bc.path_length, extracted.path_length);
+    }
+
+    #[test]
+    fn test_keyusage() {
+        // let ku: KeyUsage = asn1::parse_single(data)
+        let ku_bits = [0b1111_1111u8, 0b1000_0000u8];
+        let ku_bitstring = asn1::BitString::new(&ku_bits, 7).unwrap();
+        let asn1 = asn1::write_single(&ku_bitstring).unwrap();
+
+        let ku: KeyUsage = asn1::parse_single(&asn1).unwrap();
+        assert!(!ku.is_zeroed());
+        assert!(ku.digital_signature());
+        assert!(ku.content_comitment());
+        assert!(ku.key_encipherment());
+        assert!(ku.data_encipherment());
+        assert!(ku.key_agreement());
+        assert!(ku.key_cert_sign());
+        assert!(ku.crl_sign());
+        assert!(ku.encipher_only());
+        assert!(ku.decipher_only());
     }
 }
