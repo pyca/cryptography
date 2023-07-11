@@ -6075,7 +6075,9 @@ class TestSignatureRejection:
 
     def test_crl_signing_check(self, backend):
         private_key = self.load_key(backend)
-        last_time = datetime.datetime.utcnow().replace(microsecond=0)
+        last_time = (
+            datetime.datetime.now().replace(tzinfo=None).replace(microsecond=0)
+        )
         next_time = last_time
         builder = (
             x509.CertificateRevocationListBuilder()

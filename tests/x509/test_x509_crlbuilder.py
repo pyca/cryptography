@@ -402,7 +402,11 @@ class TestCertificateRevocationListBuilder:
             .add_revoked_certificate(
                 x509.RevokedCertificateBuilder()
                 .serial_number(1234)
-                .revocation_date(datetime.datetime.utcnow())
+                .revocation_date(
+                    datetime.datetime.now(datetime.timezone.utc).replace(
+                        tzinfo=None
+                    )
+                )
                 .add_extension(DummyExtension(), critical=False)
                 .build()
             )
