@@ -34,7 +34,6 @@ jobs:
           sparse-checkout: |
             ${{ env.PUBLISH_REQUIREMENTS_PATH }}
           sparse-checkout-cone-mode: false
-          ref: ${{ github.ref }}
           persist-credentials: false
       - name: Install Python dependencies
         run: pip install --require-hashes -r ${{ env.PUBLISH_REQUIREMENTS_PATH }}
