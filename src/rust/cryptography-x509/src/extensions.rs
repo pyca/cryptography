@@ -18,15 +18,15 @@ pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
 ///
 /// In particular, an `Extensions` cannot be constructed from a `RawExtensions`
 /// that contains duplicated extensions (by OID).
-pub struct Extensions<'a, 'b>(Option<&'b RawExtensions<'a>>);
+pub struct Extensions<'a>(Option<RawExtensions<'a>>);
 
-impl<'a, 'b> Extensions<'a, 'b> {
+impl<'a> Extensions<'a> {
     /// Create an `Extensions` from the given `RawExtensions`.
     ///
     /// Returns an `Err` variant containing the first duplicated extension's
     /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
-        raw: Option<&'b RawExtensions<'a>>,
+        raw: Option<&RawExtensions<'a>>,
     ) -> Result<Self, asn1::ObjectIdentifier> {
         match raw {
             Some(raw_exts) => {
@@ -38,7 +38,7 @@ impl<'a, 'b> Extensions<'a, 'b> {
                     }
                 }
 
-                Ok(Self(Some(raw_exts)))
+                Ok(Self(Some(raw_exts.clone())))
             }
             None => Ok(Self(None)),
         }
@@ -52,7 +52,7 @@ impl<'a, 'b> Extensions<'a, 'b> {
 
     /// Returns a reference to the underlying extensions.
     pub fn as_raw(&self) -> Option<&RawExtensions<'_>> {
-        self.0
+        self.0.as_ref()
     }
 
     /// Returns an iterator over the underlying extensions.
