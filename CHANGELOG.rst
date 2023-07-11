@@ -8,6 +8,18 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+
+.. _v41-0-2:
+
+41.0.2 - 2023-07-10
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed bugs in creating and parsing SSH certificates where critical options
+  with values were handled incorrectly. Certificates are now created correctly
+  and parsing accepts correct values as well as the previously generated
+  invalid forms with a warning. In the next release, support for parsing these
+  invalid forms will be removed.
+
 .. _v41-0-1:
 
 41.0.1 - 2023-06-01
