@@ -219,7 +219,7 @@ jobs:
       fail-fast: false
       matrix:
         RUNNER:
-          - {OS: 'macos-12', ARCH: 'x86_64'}
+          - {OS: 'macos-13', ARCH: 'x86_64'}
           - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
