@@ -26,7 +26,7 @@ class TestChaCha20:
         "vector",
         _load_all_params(
             os.path.join("ciphers", "ChaCha20"),
-            ["rfc7539.txt"],
+            ["counter-overflow.txt", "rfc7539.txt"],
             load_nist_vectors,
         ),
     )
