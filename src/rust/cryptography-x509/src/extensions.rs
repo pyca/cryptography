@@ -247,7 +247,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage<'a> {
 }
 
 impl KeyUsage<'_> {
-    pub fn zeroed(&self) -> bool {
+    pub fn is_zeroed(&self) -> bool {
         self.0.as_bytes().iter().all(|&b| b == 0)
     }
 
@@ -365,7 +365,7 @@ mod tests {
         let asn1 = asn1::write_single(&ku_bitstring).unwrap();
 
         let ku: KeyUsage = asn1::parse_single(&asn1).unwrap();
-        assert!(!ku.zeroed());
+        assert!(!ku.is_zeroed());
         assert!(ku.digital_signature());
         assert!(ku.content_comitment());
         assert!(ku.key_encipherment());
