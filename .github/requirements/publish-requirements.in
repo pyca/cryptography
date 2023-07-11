@@ -1,0 +1,6 @@
+twine
+requests
+sigstore
+
+# WARN: changing the requirements here DOES NOT update the dependencies used for publishing at the github workflow, as the process used publish-requirements.txt
+# To update publish-requirements.txt according to the dependencies here, run pip-compile --allow-unsafe --generate-hashes publish-requirements.in

@@ -15,6 +15,9 @@ on:
     workflows: ["Wheel Builder"]
     types: [completed]
 
+env:
+  PUBLISH_REQUIREMENTS_PATH: .github/requirements/publish-requirements.txt
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -25,11 +28,20 @@ jobs:
     permissions:
       id-token: "write"
     steps:
+      - name: Get publish-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          sparse-checkout: |
+            ${{ env.PUBLISH_REQUIREMENTS_PATH }}
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Install Python dependencies
+        run: pip install --require-hashes -r ${{ env.PUBLISH_REQUIREMENTS_PATH }}
+
       - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
-      - run: pip install twine requests sigstore
 
       - run: |
           echo "OIDC_AUDIENCE=pypi" >> $GITHUB_ENV

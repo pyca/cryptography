@@ -19,6 +19,9 @@ on:
       - pyproject.toml
       - vectors/pyproject.toml
 
+env:
+  BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
+
 jobs:
   sdist:
     runs-on: ubuntu-latest
@@ -104,13 +107,22 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.MANYLINUX.NAME == 'musllinux_1_1_aarch64'
 
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            ${{ env.BUILD_REQUIREMENTS_PATH }}
+          sparse-checkout-cone-mode: false
+      - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
+      - name: Install Python dependencies
+        run: .venv/bin/pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
+
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
-
-      - run: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python -m venv .venv
-      - name: Install Python dependencies
-        run: .venv/bin/pip install -U pip wheel cffi setuptools-rust
       - run: mkdir tmpwheelhouse
       - name: Build the wheel
         run: |
@@ -188,10 +200,15 @@ jobs:
             ARCHFLAGS: '-arch x86_64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
-          name: cryptography-sdist
-
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            ${{ env.BUILD_REQUIREMENTS_PATH }}
+          sparse-checkout-cone-mode: false
       - name: Setup python
         run: |
           curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
@@ -218,9 +235,13 @@ jobs:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
-
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
-      - run: venv/bin/pip install -U pip wheel cffi setuptools-rust
+      - name: Install Python dependencies
+        run: venv/bin/pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
+
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: cryptography-sdist
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -275,6 +296,16 @@ jobs:
             PYTHON: {VERSION: "pypy-3.10"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            ${{ env.BUILD_REQUIREMENTS_PATH }}
+          sparse-checkout-cone-mode: false
+
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: cryptography-sdist
@@ -303,9 +334,8 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
             echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
         shell: bash
-
-      - run: python -m pip install -U pip wheel
-      - run: python -m pip install cffi setuptools-rust
+      - name: Install Python dependencies
+        run: python -m pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then

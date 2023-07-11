@@ -1,0 +1,8 @@
+# Must be kept sync with build-system.requires at pyproject.toml
+setuptools>=61.0.0
+wheel
+cffi>=1.12; platform_python_implementation != 'PyPy'
+setuptools-rust>=0.11.4
+
+# WARN: changing the requirements here DOES NOT update the dependencies used for building at the github workflow, as the build process used build-requirements.txt
+# To update build-requirements.txt according to the dependencies here, run pip-compile --allow-unsafe --generate-hashes build-requirements.in
