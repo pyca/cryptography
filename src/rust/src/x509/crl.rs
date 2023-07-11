@@ -9,6 +9,7 @@ use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, x509};
+use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
 use cryptography_x509::{
     common,
     crl::{
@@ -272,9 +273,9 @@ impl CertificateRevocationList {
             py,
             &mut self.cached_extensions,
             &tbs_cert_list.raw_crl_extensions,
-            |oid, ext_data| match *oid {
+            |ext| match ext.extn_id {
                 oid::CRL_NUMBER_OID => {
-                    let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
+                    let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module
@@ -283,7 +284,7 @@ impl CertificateRevocationList {
                     ))
                 }
                 oid::DELTA_CRL_INDICATOR_OID => {
-                    let bignum = asn1::parse_single::<asn1::BigUint<'_>>(ext_data)?;
+                    let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
                     Ok(Some(
                         x509_module
@@ -292,9 +293,7 @@ impl CertificateRevocationList {
                     ))
                 }
                 oid::ISSUER_ALTERNATIVE_NAME_OID => {
-                    let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(
-                        ext_data,
-                    )?;
+                    let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
                     let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
                         x509_module
@@ -303,18 +302,18 @@ impl CertificateRevocationList {
                     ))
                 }
                 oid::AUTHORITY_INFORMATION_ACCESS_OID => {
-                    let ads = certificate::parse_access_descriptions(py, ext_data)?;
+                    let ads = certificate::parse_access_descriptions(py, ext)?;
                     Ok(Some(
                         x509_module
                             .getattr(pyo3::intern!(py, "AuthorityInformationAccess"))?
                             .call1((ads,))?,
                     ))
                 }
-                oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(
-                    certificate::parse_authority_key_identifier(py, ext_data)?,
-                )),
+                oid::AUTHORITY_KEY_IDENTIFIER_OID => {
+                    Ok(Some(certificate::parse_authority_key_identifier(py, ext)?))
+                }
                 oid::ISSUING_DISTRIBUTION_POINT_OID => {
-                    let idp = asn1::parse_single::<crl::IssuingDistributionPoint<'_>>(ext_data)?;
+                    let idp = ext.value::<crl::IssuingDistributionPoint<'_>>()?;
                     let (full_name, relative_name) = match idp.distribution_point {
                         Some(data) => certificate::parse_distribution_point_name(py, data)?,
                         None => (py.None(), py.None()),
@@ -342,7 +341,7 @@ impl CertificateRevocationList {
                     ))
                 }
                 oid::FRESHEST_CRL_OID => {
-                    let dp = certificate::parse_distribution_points(py, ext_data)?;
+                    let dp = certificate::parse_distribution_points(py, ext)?;
                     Ok(Some(
                         x509_module
                             .getattr(pyo3::intern!(py, "FreshestCRL"))?
@@ -517,7 +516,7 @@ impl RevokedCertificate {
             py,
             &mut self.cached_extensions,
             &self.owned.borrow_dependent().raw_crl_entry_extensions,
-            |oid, ext_data| parse_crl_entry_ext(py, oid.clone(), ext_data),
+            |ext| parse_crl_entry_ext(py, ext),
         )
     }
 }
@@ -554,13 +553,12 @@ pub(crate) fn parse_crl_reason_flags<'p>(
 
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
-    oid: asn1::ObjectIdentifier,
-    data: &[u8],
+    ext: &Extension<'_>,
 ) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    match oid {
+    match ext.extn_id {
         oid::CRL_REASON_OID => {
-            let flags = parse_crl_reason_flags(py, &asn1::parse_single::<crl::CRLReason>(data)?)?;
+            let flags = parse_crl_reason_flags(py, &ext.value::<crl::CRLReason>()?)?;
             Ok(Some(
                 x509_module
                     .getattr(pyo3::intern!(py, "CRLReason"))?
@@ -568,7 +566,7 @@ pub fn parse_crl_entry_ext<'p>(
             ))
         }
         oid::CERTIFICATE_ISSUER_OID => {
-            let gn_seq = asn1::parse_single::<asn1::SequenceOf<'_, name::GeneralName<'_>>>(data)?;
+            let gn_seq = ext.value::<asn1::SequenceOf<'_, name::GeneralName<'_>>>()?;
             let gns = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 x509_module
@@ -577,7 +575,7 @@ pub fn parse_crl_entry_ext<'p>(
             ))
         }
         oid::INVALIDITY_DATE_OID => {
-            let time = asn1::parse_single::<asn1::GeneralizedTime>(data)?;
+            let time = ext.value::<asn1::GeneralizedTime>()?;
             let py_dt = x509::datetime_to_py(py, time.as_datetime())?;
             Ok(Some(
                 x509_module

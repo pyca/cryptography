@@ -336,8 +336,8 @@ impl OCSPResponse {
             py,
             &mut self.cached_extensions,
             &response_data.raw_response_extensions,
-            |oid, ext_data| {
-                match oid {
+            |ext| {
+                match &ext.extn_id {
                     &oid::NONCE_OID => {
                         // This is a disaster. RFC 2560 says that the contents of the nonce is
                         // just the raw extension value. This is nonsense, since they're always
@@ -345,7 +345,7 @@ impl OCSPResponse {
                         // nonce is an OCTET STRING, and so you should unwrap the TLV to get
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
-                        let nonce = asn1::parse_single::<&[u8]>(ext_data).unwrap_or(ext_data);
+                        let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
                         Ok(Some(
                             x509_module.call_method1(pyo3::intern!(py, "OCSPNonce"), (nonce,))?,
                         ))
@@ -374,9 +374,9 @@ impl OCSPResponse {
             py,
             &mut self.cached_single_extensions,
             &single_resp.raw_single_extensions,
-            |oid, ext_data| match oid {
+            |ext| match &ext.extn_id {
                 &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
-                    let contents = asn1::parse_single::<&[u8]>(ext_data)?;
+                    let contents = ext.value::<&[u8]>()?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(
                         x509_module
@@ -384,7 +384,7 @@ impl OCSPResponse {
                             .call1((scts,))?,
                     ))
                 }
-                _ => crl::parse_crl_entry_ext(py, oid.clone(), ext_data),
+                _ => crl::parse_crl_entry_ext(py, ext),
             },
         )
     }

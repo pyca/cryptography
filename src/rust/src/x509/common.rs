@@ -382,7 +382,7 @@ fn ipv6_netmask(num: u128) -> Result<u32, CryptographyError> {
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
-    F: Fn(&asn1::ObjectIdentifier, &[u8]) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
+    F: Fn(&Extension<'_>) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &mut Option<pyo3::PyObject>,
@@ -409,7 +409,7 @@ pub(crate) fn parse_and_cache_extensions<
     for raw_ext in extensions.iter() {
         let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
-        let extn_value = match parse_ext(&raw_ext.extn_id, raw_ext.extn_value)? {
+        let extn_value = match parse_ext(&raw_ext)? {
             Some(e) => e,
             None => x509_module.call_method1(
                 pyo3::intern!(py, "UnrecognizedExtension"),
