@@ -104,9 +104,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
         Serializes the extension type to DER.
         """
         raise NotImplementedError(
-            "public_bytes is not implemented for extension type {!r}".format(
-                self
-            )
+            f"public_bytes is not implemented for extension type {self!r}"
         )
 
 
@@ -1795,9 +1793,7 @@ class InvalidityDate(ExtensionType):
         self._invalidity_date = invalidity_date
 
     def __repr__(self) -> str:
-        return "<InvalidityDate(invalidity_date={})>".format(
-            self._invalidity_date
-        )
+        return f"<InvalidityDate(invalidity_date={self._invalidity_date})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, InvalidityDate):
@@ -1841,9 +1837,7 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
     )
 
     def __repr__(self) -> str:
-        return "<PrecertificateSignedCertificateTimestamps({})>".format(
-            list(self)
-        )
+        return f"<PrecertificateSignedCertificateTimestamps({list(self)})>"
 
     def __hash__(self) -> int:
         return hash(tuple(self._signed_certificate_timestamps))

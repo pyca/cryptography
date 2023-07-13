@@ -242,9 +242,7 @@ class Backend:
     def register_cipher_adapter(self, cipher_cls, mode_cls, adapter) -> None:
         if (cipher_cls, mode_cls) in self._cipher_registry:
             raise ValueError(
-                "Duplicate registration for: {} {}.".format(
-                    cipher_cls, mode_cls
-                )
+                f"Duplicate registration for: {cipher_cls} {mode_cls}."
             )
         self._cipher_registry[cipher_cls, mode_cls] = adapter
 
