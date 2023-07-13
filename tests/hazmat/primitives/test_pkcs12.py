@@ -40,9 +40,7 @@ from ...utils import load_vectors_from_file
 def _skip_curve_unsupported(backend, curve):
     if not backend.elliptic_curve_supported(curve):
         pytest.skip(
-            "Curve {} is not supported by this backend {}".format(
-                curve.name, backend
-            )
+            f"Curve {curve.name} is not supported by this backend {backend}"
         )
 
 

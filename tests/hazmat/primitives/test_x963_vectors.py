@@ -19,9 +19,7 @@ from ...utils import load_vectors_from_file, load_x963_vectors
 def _skip_hashfn_unsupported(backend, hashfn):
     if not backend.hash_supported(hashfn):
         pytest.skip(
-            "Hash {} is not supported by this backend {}".format(
-                hashfn.name, backend
-            )
+            f"Hash {hashfn.name} is not supported by this backend {backend}"
         )
 
 

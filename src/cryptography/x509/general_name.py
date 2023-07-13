@@ -269,9 +269,7 @@ class OtherName(GeneralName):
         return self._value
 
     def __repr__(self) -> str:
-        return "<OtherName(type_id={}, value={!r})>".format(
-            self.type_id, self.value
-        )
+        return f"<OtherName(type_id={self.type_id}, value={self.value!r})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, OtherName):
