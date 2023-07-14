@@ -165,7 +165,7 @@ jobs:
           - {IMAGE: "centos-stream9-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
 
           - {IMAGE: "ubuntu-jammy:aarch64", NOXSESSION: "tests", RUNNER: [self-hosted, Linux, ARM64]}
-          - {IMAGE: "alpine:aarch64", NOXSESSION: "tests-nocoverage", RUNNER: [self-hosted, Linux, ARM64]}
+          - {IMAGE: "alpine:aarch64", NOXSESSION: "tests", RUNNER: [self-hosted, Linux, ARM64]}
     timeout-minutes: 15
     env:
       RUSTUP_HOME: /root/.rustup
