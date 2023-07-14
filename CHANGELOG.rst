@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Parsing SSH certificates no longer permits malformed critical options with
+  values, as documented in the 41.0.2 release notes.
 
 .. _v41-0-2:
 
