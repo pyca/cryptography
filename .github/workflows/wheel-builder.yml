@@ -15,7 +15,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/wheel-builder.yml
-      - .github/requirements/
+      - .github/requirements/**
       - setup.py
       - pyproject.toml
       - vectors/pyproject.toml
