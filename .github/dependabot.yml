@@ -38,7 +38,7 @@ updates:
     open-pull-requests-limit: 1024
   
   - package-ecosystem: pip
-    directory: ".github/requirements"
+    directory: "/.github/requirements/"
     schedule:
       interval: daily
     open-pull-requests-limit: 1024
