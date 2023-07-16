@@ -89,7 +89,7 @@ pathspec==0.11.1
     #   check-sdist
 pkginfo==1.9.6
     # via twine
-platformdirs==3.9.0
+platformdirs==3.9.1
     # via
     #   black
     #   virtualenv
