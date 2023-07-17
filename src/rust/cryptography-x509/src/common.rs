@@ -301,9 +301,72 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
     }
 }
 
+/// Like `UnvalidatedIA5String`, but preserves the invariant that the
+/// underlying string is ASCII only.
+#[derive(Debug, PartialEq)]
+pub struct IA5String(String);
+
+impl IA5String {
+    pub(crate) fn new(value: String) -> Option<Self> {
+        if value.is_ascii() {
+            Some(Self(value))
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+/// A `DNSString` is an `IA5String` with additional invariant preservations
+/// per RFC 5280 4.2.1.6.
+///
+/// In particular, a `DNSString` is normalized to lowercase ASCII internally
+/// and cannot contain `" "`.
+#[derive(Debug, PartialEq)]
+pub struct DNSString(IA5String);
+
+impl DNSString {
+    pub fn new(value: &str) -> Option<Self> {
+        if value.is_empty() || value == " " {
+            None
+        } else {
+            IA5String::new(value.to_lowercase()).map(Self)
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+
+    pub fn matches(&self, pattern: &Self) -> bool {
+        let hostname = self.as_str();
+        let pattern = pattern.as_str();
+
+        match (hostname.split_once('.'), pattern.split_once('.')) {
+            // If both hostname and pattern contain multiple labels, then
+            // we attempt to match using a subset of RFC 6125 6.4.3.
+            // In particular, we don't attempt to support anything
+            // except left-most wildcards.
+            (Some((subdomain, parent)), Some((pat_subdomain, pat_parent))) => {
+                // TODO: This is almost certainly insufficient: we also need
+                // to check for nonsense patterns like `*.`.
+                (pat_subdomain == "*" || pat_subdomain == subdomain) && pat_parent == parent
+            }
+            // If the hostname has multiple labels but the pattern is a single
+            // label, then a match is impossible.
+            (Some(_), None) => false,
+            // If the hostname is a single label, then we perform an exact match.
+            (None, _) => hostname == pattern,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString};
+    use super::{Asn1ReadableOrWritable, DNSString, RawTlv, UnvalidatedVisibleString};
     use asn1::Asn1Readable;
 
     #[test]
@@ -329,5 +392,59 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         let t = asn1::Tag::from_bytes(&[0]).unwrap().0;
         assert!(RawTlv::can_parse(t));
+    }
+
+    #[test]
+    fn test_dnsstring_constructs() {
+        assert_eq!(DNSString::new(""), None);
+        assert_eq!(DNSString::new(" "), None);
+        assert_eq!(DNSString::new("⚠️"), None);
+        assert_eq!(
+            DNSString::new("example.com").unwrap().as_str(),
+            "example.com"
+        );
+        assert_eq!(
+            DNSString::new("EXAMPLE.com").unwrap().as_str(),
+            "example.com"
+        );
+        assert_eq!(
+            DNSString::new("EXAMPLE.COM").unwrap().as_str(),
+            "example.com"
+        );
+    }
+
+    #[test]
+    fn test_dnsstring_matches() {
+        let localhost = DNSString::new("localhost").unwrap();
+        let example_com = DNSString::new("example.com").unwrap();
+        let foo_example_com = DNSString::new("foo.example.com").unwrap();
+        let bar_foo_example_com = DNSString::new("bar.foo.example.com").unwrap();
+
+        let pat_universal = DNSString::new("*").unwrap();
+        let any_com = DNSString::new("*.com").unwrap();
+        let any_example_com_domain = DNSString::new("*.example.com").unwrap();
+
+        // DNSNames match themselves.
+        assert!(localhost.matches(&localhost));
+        assert!(example_com.matches(&example_com));
+        assert!(foo_example_com.matches(&foo_example_com));
+        assert!(bar_foo_example_com.matches(&bar_foo_example_com));
+
+        // Universal wildcard always fails.
+        assert!(!localhost.matches(&pat_universal));
+        assert!(!example_com.matches(&pat_universal));
+        assert!(!foo_example_com.matches(&pat_universal));
+        assert!(!bar_foo_example_com.matches(&pat_universal));
+
+        // *.com matches example.com but not any subdomains.
+        assert!(example_com.matches(&any_com));
+        assert!(!foo_example_com.matches(&any_com));
+        assert!(!bar_foo_example_com.matches(&any_com));
+
+        // *.example.com matches foo.example.com but not any further
+        // subdomains or the parent domain.
+        assert!(foo_example_com.matches(&any_example_com_domain));
+        assert!(!bar_foo_example_com.matches(&any_example_com_domain));
+        assert!(!example_com.matches(&any_example_com_domain));
     }
 }
