@@ -69,9 +69,7 @@ def _build_vectors():
             for offset in _RFC6229_OFFSETS:
                 if offset % 16 != 0:
                     raise ValueError(
-                        "Offset {} is not evenly divisible by 16".format(
-                            offset
-                        )
+                        f"Offset {offset} is not evenly divisible by 16"
                     )
                 while current_offset < offset:
                     encryptor.update(plaintext)

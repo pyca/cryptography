@@ -283,7 +283,7 @@ _OID_NAMES = {
     ExtensionOID.EXTENDED_KEY_USAGE: "extendedKeyUsage",
     ExtensionOID.FRESHEST_CRL: "freshestCRL",
     ExtensionOID.INHIBIT_ANY_POLICY: "inhibitAnyPolicy",
-    ExtensionOID.ISSUING_DISTRIBUTION_POINT: ("issuingDistributionPoint"),
+    ExtensionOID.ISSUING_DISTRIBUTION_POINT: "issuingDistributionPoint",
     ExtensionOID.AUTHORITY_INFORMATION_ACCESS: "authorityInfoAccess",
     ExtensionOID.SUBJECT_INFORMATION_ACCESS: "subjectInfoAccess",
     ExtensionOID.OCSP_NO_CHECK: "OCSPNoCheck",

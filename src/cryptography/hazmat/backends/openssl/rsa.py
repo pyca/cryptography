@@ -242,9 +242,7 @@ def _rsa_sig_setup(
     if res <= 0:
         backend._consume_errors()
         raise UnsupportedAlgorithm(
-            "{} is not supported for the RSA signature operation.".format(
-                padding.name
-            ),
+            f"{padding.name} is not supported for the RSA signature operation",
             _Reasons.UNSUPPORTED_PADDING,
         )
     if isinstance(padding, PSS):

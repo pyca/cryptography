@@ -55,9 +55,7 @@ def _skip_ecdsa_vector(backend, curve_type, hash_type):
 def _skip_curve_unsupported(backend, curve):
     if not backend.elliptic_curve_supported(curve):
         pytest.skip(
-            "Curve {} is not supported by this backend {}".format(
-                curve.name, backend
-            )
+            f"Curve {curve.name} is not supported by this backend {backend}"
         )
 
 
@@ -66,9 +64,7 @@ def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
         algorithm, curve
     ):
         pytest.skip(
-            "Exchange with {} curve is not supported by {}".format(
-                curve.name, backend
-            )
+            f"Exchange with {curve.name} curve is not supported by {backend}"
         )
 
 

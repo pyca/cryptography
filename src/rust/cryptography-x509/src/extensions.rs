@@ -46,17 +46,17 @@ impl<'a> Extensions<'a> {
 
     /// Retrieves the extension identified by the given OID,
     /// or None if the extension is not present (or no extensions are present).
-    pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension> {
+    pub fn get_extension(&self, oid: &asn1::ObjectIdentifier) -> Option<Extension<'a>> {
         self.iter().find(|ext| &ext.extn_id == oid)
     }
 
     /// Returns a reference to the underlying extensions.
-    pub fn as_raw(&self) -> Option<&RawExtensions<'_>> {
+    pub fn as_raw(&self) -> Option<&RawExtensions<'a>> {
         self.0.as_ref()
     }
 
     /// Returns an iterator over the underlying extensions.
-    pub fn iter(&self) -> impl Iterator<Item = Extension> {
+    pub fn iter(&self) -> impl Iterator<Item = Extension<'a>> {
         self.as_raw()
             .map(|raw| raw.unwrap_read().clone())
             .into_iter()

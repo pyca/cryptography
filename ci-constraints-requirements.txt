@@ -31,7 +31,7 @@ colorlog==6.7.0
     # via nox
 coverage==7.2.7
     # via pytest-cov
-distlib==0.3.6
+distlib==0.3.7
     # via virtualenv
 docutils==0.18.1
     # via
@@ -89,7 +89,7 @@ pathspec==0.11.1
     #   check-sdist
 pkginfo==1.9.6
     # via twine
-platformdirs==3.8.1
+platformdirs==3.9.1
     # via
     #   black
     #   virtualenv
@@ -138,7 +138,7 @@ rfc3986==2.0.0
     # via twine
 rich==13.4.2
     # via twine
-ruff==0.0.277
+ruff==0.0.278
     # via cryptography (pyproject.toml)
 six==1.16.0
     # via bleach
@@ -185,11 +185,11 @@ urllib3==2.0.3
     # via
     #   requests
     #   twine
-virtualenv==20.23.1
+virtualenv==20.24.0
     # via nox
 webencodings==0.5.1
     # via bleach
-zipp==3.16.0; python_version >= "3.8"
+zipp==3.16.2; python_version >= "3.8"
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
