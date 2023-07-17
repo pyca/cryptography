@@ -31,7 +31,7 @@ colorlog==6.7.0
     # via nox
 coverage==7.2.7
     # via pytest-cov
-distlib==0.3.6
+distlib==0.3.7
     # via virtualenv
 docutils==0.18.1
     # via
