@@ -540,11 +540,16 @@ pub(crate) fn py_to_datetime(
 }
 
 pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
+    let datetime_module = py.import(pyo3::intern!(py, "datetime"))?;
+    let utc = datetime_module
+        .getattr(pyo3::intern!(py, "timezone"))?
+        .getattr(pyo3::intern!(py, "utc"))?;
+
     py_to_datetime(
         py,
-        py.import(pyo3::intern!(py, "datetime"))?
+        datetime_module
             .getattr(pyo3::intern!(py, "datetime"))?
-            .call_method0(pyo3::intern!(py, "utcnow"))?,
+            .call_method1(pyo3::intern!(py, "now"), (utc,))?,
     )
 }
 
