@@ -247,7 +247,7 @@ ConcatKDF
     .. versionadded:: 1.0
 
     ConcatKDFHash (Concatenation Key Derivation Function) is defined by the
-    NIST Special Publication `NIST SP 800-56Ar2`_ document, to be used to
+    NIST Special Publication `NIST SP 800-56Ar3`_ document, to be used to
     derive keys for use after a Key Exchange negotiation operation.
 
     .. warning::
@@ -1027,7 +1027,7 @@ Interface
 
 .. _`NIST SP 800-132`: https://csrc.nist.gov/publications/detail/sp/800-132/final
 .. _`NIST SP 800-108`: https://csrc.nist.gov/pubs/sp/800/108/r1/final
-.. _`NIST SP 800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
+.. _`NIST SP 800-56Ar3`: https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
 .. _`more detailed description`: https://security.stackexchange.com/a/3993/43116
