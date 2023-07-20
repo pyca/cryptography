@@ -220,8 +220,8 @@ Elliptic Curve Key Exchange algorithm
 
     .. versionadded:: 1.1
 
-    The Elliptic Curve Diffie-Hellman Key Exchange algorithm first standardized
-    in NIST publication `800-56A`_, and later in `800-56Ar2`_.
+    The Elliptic Curve Diffie-Hellman Key Exchange algorithm standardized
+    in NIST publication `800-56A`_.
 
     For most applications the ``shared_key`` should be passed to a key
     derivation function. This allows mixing of additional information into the
@@ -911,8 +911,7 @@ Elliptic Curve Object Identifiers
 
 .. _`FIPS 186-3`: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf
 .. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
-.. _`800-56A`: https://csrc.nist.gov/publications/detail/sp/800-56a/revised/archive/2007-03-14
-.. _`800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
+.. _`800-56A`: https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: https://www.cosic.esat.kuleuven.be/ecrypt/ecrypt2/documents/D.SPA.20.pdf
 .. _`elliptic curve diffie-hellman is faster than diffie-hellman`: https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1100&context=cseconfwork
