@@ -412,7 +412,9 @@ impl DNSPattern {
 
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, DNSName, DNSPattern, RawTlv, UnvalidatedVisibleString};
+    use super::{
+        Asn1ReadableOrWritable, DNSName, DNSPattern, IA5String, RawTlv, UnvalidatedVisibleString,
+    };
     use asn1::Asn1Readable;
 
     #[test]
@@ -438,6 +440,12 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         let t = asn1::Tag::from_bytes(&[0]).unwrap().0;
         assert!(RawTlv::can_parse(t));
+    }
+
+    #[test]
+    fn test_ia5string_constructs() {
+        assert_eq!(IA5String::new("⚠️".into()), None);
+        assert_eq!(IA5String::new("foo".into()).unwrap().as_str(), "foo");
     }
 
     #[test]
@@ -522,10 +530,13 @@ mod tests {
 
     #[test]
     fn test_dnspattern_matches() {
+        let exactly_localhost = DNSPattern::new("localhost").unwrap();
+        let any_localhost = DNSPattern::new("*.localhost").unwrap();
         let exactly_example_com = DNSPattern::new("example.com").unwrap();
         let any_example_com = DNSPattern::new("*.example.com").unwrap();
 
         // Exact patterns match only the exact name.
+        assert!(exactly_localhost.matches(&DNSName::new("localhost").unwrap()));
         assert!(exactly_example_com.matches(&DNSName::new("example.com").unwrap()));
         assert!(!exactly_example_com.matches(&DNSName::new("foo.example.com").unwrap()));
 
@@ -535,5 +546,6 @@ mod tests {
         assert!(!any_example_com.matches(&DNSName::new("example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.baz.example.com").unwrap()));
+        assert!(!any_localhost.matches(&DNSName::new("localhost").unwrap()));
     }
 }
