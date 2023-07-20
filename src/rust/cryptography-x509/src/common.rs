@@ -340,7 +340,7 @@ impl DNSName {
         if value.is_empty() || value.chars().any(char::is_whitespace) || value.len() > 253 {
             None
         } else {
-            for label in value.split(".") {
+            for label in value.split('.') {
                 // Individual labels cannot be empty; cannot exceed 63 characters;
                 // cannot start or end with `-`.
                 // NOTE: RFC 1034's grammar prohibits consecutive hyphens, but these
@@ -391,8 +391,8 @@ pub enum DNSPattern {
 
 impl DNSPattern {
     pub fn new(pat: &str) -> Option<Self> {
-        if pat.starts_with("*.") {
-            DNSName::new(&pat[2..]).map(Self::Wildcard)
+        if let Some(pat) = pat.strip_prefix("*.") {
+            DNSName::new(pat).map(Self::Wildcard)
         } else {
             DNSName::new(pat).map(Self::Exact)
         }
