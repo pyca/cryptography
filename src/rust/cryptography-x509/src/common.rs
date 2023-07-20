@@ -320,19 +320,44 @@ impl IA5String {
     }
 }
 
-/// A `DNSString` is an `IA5String` with additional invariant preservations
-/// per RFC 5280 4.2.1.6.
+/// A `DNSName` is an `IA5String` with additional invariant preservations
+/// per [RFC 5280 4.2.1.6], which in turn uses the preferred name syntax defined
+/// in [RFC 1034 3.5] and amended in [RFC 1123 2.1].
 ///
-/// In particular, a `DNSString` is normalized to lowercase ASCII internally
-/// and cannot contain `" "`.
+/// Internally, a `DNSName` is normalized to lowercase ASCII. Non-ASCII
+/// domain names (i.e., internationalized names) must be pre-encoded.
+///
+/// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
+/// [RFC 1034 3.5]: https://datatracker.ietf.org/doc/html/rfc1034#section-3.5
+/// [RFC 1123 2.1]: https://datatracker.ietf.org/doc/html/rfc1123#section-2.1
 #[derive(Debug, PartialEq)]
-pub struct DNSString(IA5String);
+pub struct DNSName(IA5String);
 
-impl DNSString {
+impl DNSName {
     pub fn new(value: &str) -> Option<Self> {
-        if value.is_empty() || value == " " {
+        // Domains cannot be empty; cannot contain whitespace; must (practically)
+        // be less than 253 characters (255 in RFC 1034's octet encoding).
+        if value.is_empty() || value.chars().any(char::is_whitespace) || value.len() > 253 {
             None
         } else {
+            for label in value.split(".") {
+                // Individual labels cannot be empty; cannot exceed 63 characters;
+                // cannot start or end with `-`.
+                // NOTE: RFC 1034's grammar prohibits consecutive hyphens, but these
+                // are used as part of the IDN prefix (e.g. `xn--`)'; we allow them here.
+                if label.is_empty()
+                    || label.len() > 63
+                    || label.starts_with('-')
+                    || label.ends_with('-')
+                {
+                    return None;
+                }
+
+                // Labels must only contain `a-zA-Z0-9-`.
+                if !label.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
+                    return None;
+                }
+            }
             IA5String::new(value.to_lowercase()).map(Self)
         }
     }
@@ -341,32 +366,53 @@ impl DNSString {
         self.0.as_str()
     }
 
-    pub fn matches(&self, pattern: &Self) -> bool {
-        let hostname = self.as_str();
-        let pattern = pattern.as_str();
+    /// Return this `DNSName`'s parent domain, if it has one.
+    pub fn parent(&self) -> Option<Self> {
+        match self.as_str().split_once('.') {
+            Some((_, parent)) => Self::new(parent),
+            None => None,
+        }
+    }
+}
 
-        match (hostname.split_once('.'), pattern.split_once('.')) {
-            // If both hostname and pattern contain multiple labels, then
-            // we attempt to match using a subset of RFC 6125 6.4.3.
-            // In particular, we don't attempt to support anything
-            // except left-most wildcards.
-            (Some((subdomain, parent)), Some((pat_subdomain, pat_parent))) => {
-                // TODO: This is almost certainly insufficient: we also need
-                // to check for nonsense patterns like `*.`.
-                (pat_subdomain == "*" || pat_subdomain == subdomain) && pat_parent == parent
-            }
-            // If the hostname has multiple labels but the pattern is a single
-            // label, then a match is impossible.
-            (Some(_), None) => false,
-            // If the hostname is a single label, then we perform an exact match.
-            (None, _) => hostname == pattern,
+/// A `DNSPattern` represents a subset of the domain name wildcard matching
+/// behavior defined in [RFC 6125 6.4.3]. In particular, all DNS patterns
+/// must either be exact matches (post-normalization) *or* a single wildcard
+/// matching a full label in the left-most label position. Partial label matching
+/// (e.g. `f*o.example.com`) is not supported, nor is non-left-most matching
+/// (e.g. `foo.*.example.com`).
+///
+/// [RFC 6125 6.4.3]: https://datatracker.ietf.org/doc/html/rfc6125#section-6.4.3
+#[derive(Debug, PartialEq)]
+pub enum DNSPattern {
+    Exact(DNSName),
+    Wildcard(DNSName),
+}
+
+impl DNSPattern {
+    pub fn new(pat: &str) -> Option<Self> {
+        if pat.starts_with("*.") {
+            DNSName::new(&pat[2..]).map(Self::Wildcard)
+        } else {
+            DNSName::new(pat).map(Self::Exact)
+        }
+    }
+
+    pub fn matches(&self, name: &DNSName) -> bool {
+        match self {
+            Self::Exact(pat) => pat == name,
+            Self::Wildcard(pat) => match name.parent() {
+                Some(ref parent) => pat == parent,
+                // No parent means we have a single label; wildcards cannot match single labels.
+                None => false,
+            },
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, DNSString, RawTlv, UnvalidatedVisibleString};
+    use super::{Asn1ReadableOrWritable, DNSName, DNSPattern, RawTlv, UnvalidatedVisibleString};
     use asn1::Asn1Readable;
 
     #[test]
@@ -395,56 +441,99 @@ mod tests {
     }
 
     #[test]
-    fn test_dnsstring_constructs() {
-        assert_eq!(DNSString::new(""), None);
-        assert_eq!(DNSString::new(" "), None);
-        assert_eq!(DNSString::new("⚠️"), None);
+    fn test_dnsname_constructs() {
+        assert_eq!(DNSName::new(""), None);
+        assert_eq!(DNSName::new("."), None);
+        assert_eq!(DNSName::new(".."), None);
+        assert_eq!(DNSName::new(".a."), None);
+        assert_eq!(DNSName::new("a.a."), None);
+        assert_eq!(DNSName::new(".a"), None);
+        assert_eq!(DNSName::new("a."), None);
+        assert_eq!(DNSName::new("a.."), None);
+        assert_eq!(DNSName::new(" "), None);
+        assert_eq!(DNSName::new("\t"), None);
+        assert_eq!(DNSName::new(" whitespace "), None);
+        assert_eq!(DNSName::new("!badlabel!"), None);
+        assert_eq!(DNSName::new("bad!label"), None);
+        assert_eq!(DNSName::new("goodlabel.!badlabel!"), None);
+        assert_eq!(DNSName::new("-foo.bar.example.com"), None);
+        assert_eq!(DNSName::new("foo-.bar.example.com"), None);
+        assert_eq!(DNSName::new("foo.-bar.example.com"), None);
+        assert_eq!(DNSName::new("foo.bar-.example.com"), None);
+        assert_eq!(DNSName::new(&"a".repeat(64)), None);
+        assert_eq!(DNSName::new("⚠️"), None);
+
+        let long_valid_label = "a".repeat(63);
+        let long_name = std::iter::repeat(long_valid_label)
+            .take(5)
+            .collect::<Vec<_>>()
+            .join(".");
+        assert_eq!(DNSName::new(&long_name), None);
+
         assert_eq!(
-            DNSString::new("example.com").unwrap().as_str(),
-            "example.com"
+            DNSName::new(&"a".repeat(63)).unwrap().as_str(),
+            "a".repeat(63)
         );
+        assert_eq!(DNSName::new("example.com").unwrap().as_str(), "example.com");
         assert_eq!(
-            DNSString::new("EXAMPLE.com").unwrap().as_str(),
-            "example.com"
+            DNSName::new("123.example.com").unwrap().as_str(),
+            "123.example.com"
         );
+        assert_eq!(DNSName::new("EXAMPLE.com").unwrap().as_str(), "example.com");
+        assert_eq!(DNSName::new("EXAMPLE.COM").unwrap().as_str(), "example.com");
         assert_eq!(
-            DNSString::new("EXAMPLE.COM").unwrap().as_str(),
-            "example.com"
+            DNSName::new("xn--bcher-kva.example").unwrap().as_str(),
+            "xn--bcher-kva.example"
         );
     }
 
     #[test]
-    fn test_dnsstring_matches() {
-        let localhost = DNSString::new("localhost").unwrap();
-        let example_com = DNSString::new("example.com").unwrap();
-        let foo_example_com = DNSString::new("foo.example.com").unwrap();
-        let bar_foo_example_com = DNSString::new("bar.foo.example.com").unwrap();
+    fn test_dnsname_parent() {
+        assert_eq!(DNSName::new("localhost").unwrap().parent(), None);
+        assert_eq!(
+            DNSName::new("example.com").unwrap().parent().unwrap(),
+            DNSName::new("com").unwrap()
+        );
+        assert_eq!(
+            DNSName::new("foo.example.com").unwrap().parent().unwrap(),
+            DNSName::new("example.com").unwrap()
+        );
+    }
 
-        let pat_universal = DNSString::new("*").unwrap();
-        let any_com = DNSString::new("*.com").unwrap();
-        let any_example_com_domain = DNSString::new("*.example.com").unwrap();
+    #[test]
+    fn test_dnspattern_constructs() {
+        assert_eq!(DNSPattern::new("*"), None);
+        assert_eq!(DNSPattern::new("*."), None);
+        assert_eq!(DNSPattern::new("f*o.example.com"), None);
+        assert_eq!(DNSPattern::new("*oo.example.com"), None);
+        assert_eq!(DNSPattern::new("fo*.example.com"), None);
+        assert_eq!(DNSPattern::new("foo.*.example.com"), None);
+        assert_eq!(DNSPattern::new("*.foo.*.example.com"), None);
 
-        // DNSNames match themselves.
-        assert!(localhost.matches(&localhost));
-        assert!(example_com.matches(&example_com));
-        assert!(foo_example_com.matches(&foo_example_com));
-        assert!(bar_foo_example_com.matches(&bar_foo_example_com));
+        assert_eq!(
+            DNSPattern::new("example.com").unwrap(),
+            DNSPattern::Exact(DNSName::new("example.com").unwrap())
+        );
+        assert_eq!(
+            DNSPattern::new("*.example.com").unwrap(),
+            DNSPattern::Wildcard(DNSName::new("example.com").unwrap())
+        );
+    }
 
-        // Universal wildcard always fails.
-        assert!(!localhost.matches(&pat_universal));
-        assert!(!example_com.matches(&pat_universal));
-        assert!(!foo_example_com.matches(&pat_universal));
-        assert!(!bar_foo_example_com.matches(&pat_universal));
+    #[test]
+    fn test_dnspattern_matches() {
+        let exactly_example_com = DNSPattern::new("example.com").unwrap();
+        let any_example_com = DNSPattern::new("*.example.com").unwrap();
 
-        // *.com matches example.com but not any subdomains.
-        assert!(example_com.matches(&any_com));
-        assert!(!foo_example_com.matches(&any_com));
-        assert!(!bar_foo_example_com.matches(&any_com));
+        // Exact patterns match only the exact name.
+        assert!(exactly_example_com.matches(&DNSName::new("example.com").unwrap()));
+        assert!(!exactly_example_com.matches(&DNSName::new("foo.example.com").unwrap()));
 
-        // *.example.com matches foo.example.com but not any further
-        // subdomains or the parent domain.
-        assert!(foo_example_com.matches(&any_example_com_domain));
-        assert!(!bar_foo_example_com.matches(&any_example_com_domain));
-        assert!(!example_com.matches(&any_example_com_domain));
+        // Wildcard patterns match any subdomain, but not the parent or nested subdomains.
+        assert!(any_example_com.matches(&DNSName::new("foo.example.com").unwrap()));
+        assert!(any_example_com.matches(&DNSName::new("bar.example.com").unwrap()));
+        assert!(!any_example_com.matches(&DNSName::new("example.com").unwrap()));
+        assert!(!any_example_com.matches(&DNSName::new("foo.bar.example.com").unwrap()));
+        assert!(!any_example_com.matches(&DNSName::new("foo.bar.baz.example.com").unwrap()));
     }
 }
