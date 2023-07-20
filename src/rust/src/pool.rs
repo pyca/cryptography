@@ -9,7 +9,7 @@ use std::cell::Cell;
 // use.
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust")]
 pub(crate) struct FixedPool {
-    create_fn: pyo3::PyObject,
+    create_fn: Option<pyo3::PyObject>,
 
     value: Cell<Option<pyo3::PyObject>>,
 }
@@ -29,7 +29,7 @@ impl FixedPool {
         let value = create.call0(py)?;
 
         Ok(FixedPool {
-            create_fn: create,
+            create_fn: Some(create),
 
             value: Cell::new(Some(value)),
         })
@@ -44,13 +44,30 @@ impl FixedPool {
                 fresh: false,
             })
         } else {
-            let value = slf.as_ref(py).borrow().create_fn.call0(py)?;
+            let value = slf
+                .as_ref(py)
+                .borrow()
+                .create_fn
+                .as_ref()
+                .unwrap()
+                .call0(py)?;
             Ok(PoolAcquisition {
                 pool: slf,
                 value,
                 fresh: true,
             })
         }
+    }
+
+    fn __traverse__(&self, visit: pyo3::PyVisit<'_>) -> Result<(), pyo3::PyTraverseError> {
+        if let Some(create_fn) = &self.create_fn {
+            visit.call(create_fn)?
+        }
+        Ok(())
+    }
+
+    fn __clear__(&mut self) {
+        self.create_fn = None;
     }
 }
 
