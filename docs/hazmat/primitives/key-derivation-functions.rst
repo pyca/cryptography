@@ -1026,7 +1026,7 @@ Interface
 .. [#nist] See `NIST SP 800-132`_.
 
 .. _`NIST SP 800-132`: https://csrc.nist.gov/publications/detail/sp/800-132/final
-.. _`NIST SP 800-108`: https://csrc.nist.gov/publications/detail/sp/800-108/final
+.. _`NIST SP 800-108`: https://csrc.nist.gov/pubs/sp/800/108/r1/final
 .. _`NIST SP 800-56Ar2`: https://csrc.nist.gov/publications/detail/sp/800-56a/rev-2/final
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
