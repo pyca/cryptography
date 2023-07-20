@@ -4982,6 +4982,21 @@ class TestDSACertificate:
             "822ff5d234e073b901cf5941f58e1f538e71d40d", 16
         )
 
+    def test_load_dsa_cert_null_alg_params(self, backend):
+        """
+        This test verifies that we successfully load certificates with encoded
+        null parameters in the signature AlgorithmIdentifier. This is invalid,
+        but all versions of Java less than 21 generate certificates with this
+        encoding so we need to tolerate it at the moment.
+        """
+        with pytest.warns(utils.DeprecatedIn41):
+            cert = _load_cert(
+                os.path.join("x509", "custom", "dsa_null_alg_params.pem"),
+                x509.load_pem_x509_certificate,
+            )
+            assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+            assert isinstance(cert.public_key(), dsa.DSAPublicKey)
+
     def test_signature(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),

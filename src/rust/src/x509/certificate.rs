@@ -378,9 +378,10 @@ fn load_der_x509_certificate(
     // for this sort of invalid encoding eventually.
     warn_if_negative_serial(py, raw.borrow_dependent().tbs_cert.serial.as_bytes())?;
     // determine if the signature algorithm has incorrect parameters and raise a warning if it
-    // does. this is a bug in JDK11 and we want to drop support for it eventually.
-    warn_if_invalid_ecdsa_params(py, raw.borrow_dependent().signature_alg.params.clone())?;
-    warn_if_invalid_ecdsa_params(
+    // does. this is a bug in the JDK and we want to drop support for it eventually.
+    // ECDSA was fixed in Java 16, DSA in Java 21.
+    warn_if_invalid_params(py, raw.borrow_dependent().signature_alg.params.clone())?;
+    warn_if_invalid_params(
         py,
         raw.borrow_dependent().tbs_cert.signature_alg.params.clone(),
     )?;
@@ -406,7 +407,7 @@ fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyRes
     Ok(())
 }
 
-fn warn_if_invalid_ecdsa_params(
+fn warn_if_invalid_params(
     py: pyo3::Python<'_>,
     params: AlgorithmParameters<'_>,
 ) -> pyo3::PyResult<()> {
@@ -414,14 +415,18 @@ fn warn_if_invalid_ecdsa_params(
         AlgorithmParameters::EcDsaWithSha224(Some(..))
         | AlgorithmParameters::EcDsaWithSha256(Some(..))
         | AlgorithmParameters::EcDsaWithSha384(Some(..))
-        | AlgorithmParameters::EcDsaWithSha512(Some(..)) => {
+        | AlgorithmParameters::EcDsaWithSha512(Some(..))
+        | AlgorithmParameters::DsaWithSha224(Some(..))
+        | AlgorithmParameters::DsaWithSha256(Some(..))
+        | AlgorithmParameters::DsaWithSha384(Some(..))
+        | AlgorithmParameters::DsaWithSha512(Some(..)) => {
             let cryptography_warning = py
                 .import(pyo3::intern!(py, "cryptography.utils"))?
                 .getattr(pyo3::intern!(py, "DeprecatedIn41"))?;
             pyo3::PyErr::warn(
                 py,
                 cryptography_warning,
-                "The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK16+ or the latest JDK11 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 for more details.",
+                "The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.",
                 2,
             )?;
         }

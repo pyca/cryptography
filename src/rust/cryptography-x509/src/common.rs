@@ -97,13 +97,13 @@ pub enum AlgorithmParameters<'a> {
     RsaPss(Option<Box<RsaPssParameters<'a>>>),
 
     #[defined_by(oid::DSA_WITH_SHA224_OID)]
-    DsaWithSha224,
+    DsaWithSha224(Option<asn1::Null>),
     #[defined_by(oid::DSA_WITH_SHA256_OID)]
-    DsaWithSha256,
+    DsaWithSha256(Option<asn1::Null>),
     #[defined_by(oid::DSA_WITH_SHA384_OID)]
-    DsaWithSha384,
+    DsaWithSha384(Option<asn1::Null>),
     #[defined_by(oid::DSA_WITH_SHA512_OID)]
-    DsaWithSha512,
+    DsaWithSha512(Option<asn1::Null>),
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
