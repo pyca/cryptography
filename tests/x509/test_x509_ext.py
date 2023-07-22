@@ -2670,7 +2670,7 @@ class TestRSASubjectAlternativeNameExtension:
             x509.ObjectIdentifier("1.2.3.4"), b"\x16\x0bHello World"
         )
         assert len(ext.value) == 1
-        assert list(ext.value)[0] == expected
+        assert next(iter(ext.value)) == expected
 
         othernames = ext.value.get_values_for_type(x509.OtherName)
         assert othernames == [expected]
