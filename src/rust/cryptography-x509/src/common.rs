@@ -301,12 +301,12 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
     }
 }
 
-/// A `DNSName` is an `IA5String` with additional invariant preservations
+/// A `DNSName` is an `asn1::IA5String` with additional invariant preservations
 /// per [RFC 5280 4.2.1.6], which in turn uses the preferred name syntax defined
 /// in [RFC 1034 3.5] and amended in [RFC 1123 2.1].
 ///
-/// Internally, a `DNSName` is normalized to lowercase ASCII. Non-ASCII
-/// domain names (i.e., internationalized names) must be pre-encoded.
+/// Non-ASCII domain names (i.e., internationalized names) must be pre-encoded;
+/// comparisons are case-insensitive.
 ///
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 /// [RFC 1034 3.5]: https://datatracker.ietf.org/doc/html/rfc1034#section-3.5
