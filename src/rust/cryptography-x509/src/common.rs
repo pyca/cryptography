@@ -301,25 +301,6 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
     }
 }
 
-/// Like `UnvalidatedIA5String`, but preserves the invariant that the
-/// underlying string is ASCII only.
-#[derive(Debug, PartialEq)]
-pub struct IA5String(String);
-
-impl IA5String {
-    pub(crate) fn new(value: String) -> Option<Self> {
-        if value.is_ascii() {
-            Some(Self(value))
-        } else {
-            None
-        }
-    }
-
-    pub(crate) fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
 /// A `DNSName` is an `IA5String` with additional invariant preservations
 /// per [RFC 5280 4.2.1.6], which in turn uses the preferred name syntax defined
 /// in [RFC 1034 3.5] and amended in [RFC 1123 2.1].
@@ -330,11 +311,11 @@ impl IA5String {
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 /// [RFC 1034 3.5]: https://datatracker.ietf.org/doc/html/rfc1034#section-3.5
 /// [RFC 1123 2.1]: https://datatracker.ietf.org/doc/html/rfc1123#section-2.1
-#[derive(Debug, PartialEq)]
-pub struct DNSName(IA5String);
+#[derive(Debug)]
+pub struct DNSName<'a>(asn1::IA5String<'a>);
 
-impl DNSName {
-    pub fn new(value: &str) -> Option<Self> {
+impl<'a> DNSName<'a> {
+    pub fn new(value: &'a str) -> Option<Self> {
         // Domains cannot be empty; cannot contain whitespace; must (practically)
         // be less than 253 characters (255 in RFC 1034's octet encoding).
         if value.is_empty() || value.chars().any(char::is_whitespace) || value.len() > 253 {
@@ -358,11 +339,11 @@ impl DNSName {
                     return None;
                 }
             }
-            IA5String::new(value.to_lowercase()).map(Self)
+            asn1::IA5String::new(value).map(Self)
         }
     }
 
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &'a str {
         self.0.as_str()
     }
 
@@ -375,6 +356,13 @@ impl DNSName {
     }
 }
 
+impl PartialEq for DNSName<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        // DNS names are always case-insensitive.
+        self.as_str().eq_ignore_ascii_case(other.as_str())
+    }
+}
+
 /// A `DNSPattern` represents a subset of the domain name wildcard matching
 /// behavior defined in [RFC 6125 6.4.3]. In particular, all DNS patterns
 /// must either be exact matches (post-normalization) *or* a single wildcard
@@ -384,13 +372,13 @@ impl DNSName {
 ///
 /// [RFC 6125 6.4.3]: https://datatracker.ietf.org/doc/html/rfc6125#section-6.4.3
 #[derive(Debug, PartialEq)]
-pub enum DNSPattern {
-    Exact(DNSName),
-    Wildcard(DNSName),
+pub enum DNSPattern<'a> {
+    Exact(DNSName<'a>),
+    Wildcard(DNSName<'a>),
 }
 
-impl DNSPattern {
-    pub fn new(pat: &str) -> Option<Self> {
+impl<'a> DNSPattern<'a> {
+    pub fn new(pat: &'a str) -> Option<Self> {
         if let Some(pat) = pat.strip_prefix("*.") {
             DNSName::new(pat).map(Self::Wildcard)
         } else {
@@ -412,9 +400,7 @@ impl DNSPattern {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Asn1ReadableOrWritable, DNSName, DNSPattern, IA5String, RawTlv, UnvalidatedVisibleString,
-    };
+    use super::{Asn1ReadableOrWritable, DNSName, DNSPattern, RawTlv, UnvalidatedVisibleString};
     use asn1::Asn1Readable;
 
     #[test]
@@ -440,12 +426,6 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         let t = asn1::Tag::from_bytes(&[0]).unwrap().0;
         assert!(RawTlv::can_parse(t));
-    }
-
-    #[test]
-    fn test_ia5string_constructs() {
-        assert_eq!(IA5String::new("⚠️".into()), None);
-        assert_eq!(IA5String::new("foo".into()).unwrap().as_str(), "foo");
     }
 
     #[test]
@@ -487,11 +467,29 @@ mod tests {
             DNSName::new("123.example.com").unwrap().as_str(),
             "123.example.com"
         );
-        assert_eq!(DNSName::new("EXAMPLE.com").unwrap().as_str(), "example.com");
-        assert_eq!(DNSName::new("EXAMPLE.COM").unwrap().as_str(), "example.com");
+        assert_eq!(DNSName::new("EXAMPLE.com").unwrap().as_str(), "EXAMPLE.com");
+        assert_eq!(DNSName::new("EXAMPLE.COM").unwrap().as_str(), "EXAMPLE.COM");
         assert_eq!(
             DNSName::new("xn--bcher-kva.example").unwrap().as_str(),
             "xn--bcher-kva.example"
+        );
+    }
+
+    #[test]
+    fn test_dnsname_equality() {
+        assert_ne!(
+            DNSName::new("foo.example.com").unwrap(),
+            DNSName::new("example.com").unwrap()
+        );
+
+        // DNS name comparisons are case insensitive.
+        assert_eq!(
+            DNSName::new("EXAMPLE.COM").unwrap(),
+            DNSName::new("example.com").unwrap()
+        );
+        assert_eq!(
+            DNSName::new("ExAmPLe.CoM").unwrap(),
+            DNSName::new("eXaMplE.cOm").unwrap()
         );
     }
 
@@ -537,12 +535,15 @@ mod tests {
 
         // Exact patterns match only the exact name.
         assert!(exactly_localhost.matches(&DNSName::new("localhost").unwrap()));
+        assert!(exactly_localhost.matches(&DNSName::new("LOCALHOST").unwrap()));
         assert!(exactly_example_com.matches(&DNSName::new("example.com").unwrap()));
+        assert!(exactly_example_com.matches(&DNSName::new("EXAMPLE.com").unwrap()));
         assert!(!exactly_example_com.matches(&DNSName::new("foo.example.com").unwrap()));
 
         // Wildcard patterns match any subdomain, but not the parent or nested subdomains.
         assert!(any_example_com.matches(&DNSName::new("foo.example.com").unwrap()));
         assert!(any_example_com.matches(&DNSName::new("bar.example.com").unwrap()));
+        assert!(any_example_com.matches(&DNSName::new("BAZ.example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.baz.example.com").unwrap()));
