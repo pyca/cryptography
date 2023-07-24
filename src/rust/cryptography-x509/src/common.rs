@@ -311,6 +311,11 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 /// [RFC 1034 3.5]: https://datatracker.ietf.org/doc/html/rfc1034#section-3.5
 /// [RFC 1123 2.1]: https://datatracker.ietf.org/doc/html/rfc1123#section-2.1
+///
+/// ```rust
+/// # use cryptography_x509::common::DNSName;
+/// assert_eq!(DNSName::new("foo.com").unwrap(), DNSName::new("FOO.com").unwrap());
+/// ```
 #[derive(Debug)]
 pub struct DNSName<'a>(asn1::IA5String<'a>);
 
@@ -348,6 +353,12 @@ impl<'a> DNSName<'a> {
     }
 
     /// Return this `DNSName`'s parent domain, if it has one.
+    ///
+    /// ```rust
+    /// # use cryptography_x509::common::DNSName;
+    /// let domain = DNSName::new("foo.example.com").unwrap();
+    /// assert_eq!(domain.parent().unwrap().as_str(), "example.com");
+    /// ```
     pub fn parent(&self) -> Option<Self> {
         match self.as_str().split_once('.') {
             Some((_, parent)) => Self::new(parent),
