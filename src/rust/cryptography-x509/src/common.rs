@@ -440,6 +440,15 @@ mod tests {
     }
 
     #[test]
+    fn test_dnsname_debug_trait() {
+        // Just to get coverage on the `Debug` derive.
+        assert_eq!(
+            "DNSName(IA5String(\"example.com\"))",
+            format!("{:?}", DNSName::new("example.com").unwrap())
+        );
+    }
+
+    #[test]
     fn test_dnsname_constructs() {
         assert_eq!(DNSName::new(""), None);
         assert_eq!(DNSName::new("."), None);
