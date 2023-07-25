@@ -185,7 +185,7 @@ urllib3==2.0.4
     # via
     #   requests
     #   twine
-virtualenv==20.24.1
+virtualenv==20.24.2
     # via nox
 webencodings==0.5.1
     # via bleach
