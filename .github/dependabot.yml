@@ -35,10 +35,16 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    allow:
+      # Also update indirect dependencies
+      - dependency-type: all
     open-pull-requests-limit: 1024
   
   - package-ecosystem: pip
     directory: "/.github/requirements/"
     schedule:
       interval: daily
+    allow:
+      # Also update indirect dependencies
+      - dependency-type: all
     open-pull-requests-limit: 1024
