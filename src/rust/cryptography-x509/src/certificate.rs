@@ -9,18 +9,6 @@ use crate::extensions::ExtensionsError;
 use crate::name;
 use crate::name::NameReadable;
 
-#[derive(Debug, PartialEq)]
-pub enum CertificateError {
-    DuplicateExtension(asn1::ObjectIdentifier),
-    Malformed(asn1::ParseError),
-}
-
-impl From<asn1::ParseError> for CertificateError {
-    fn from(value: asn1::ParseError) -> Self {
-        CertificateError::Malformed(value)
-    }
-}
-
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct Certificate<'a> {
     pub tbs_cert: TbsCertificate<'a>,
