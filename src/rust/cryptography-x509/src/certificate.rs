@@ -4,14 +4,64 @@
 
 use crate::common;
 use crate::extensions;
-use crate::extensions::Extensions;
+use crate::extensions::{Extension, Extensions};
 use crate::name;
+use crate::name::NameReadable;
+
+#[derive(Debug, PartialEq)]
+pub enum CertificateError {
+    DuplicateExtension(asn1::ObjectIdentifier),
+    Malformed(asn1::ParseError),
+}
+
+impl From<asn1::ParseError> for CertificateError {
+    fn from(value: asn1::ParseError) -> Self {
+        CertificateError::Malformed(value)
+    }
+}
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct Certificate<'a> {
     pub tbs_cert: TbsCertificate<'a>,
     pub signature_alg: common::AlgorithmIdentifier<'a>,
     pub signature: asn1::BitString<'a>,
+}
+
+impl Certificate<'_> {
+    pub fn issuer(&self) -> &NameReadable<'_> {
+        self.tbs_cert.issuer.unwrap_read()
+    }
+
+    pub fn subject(&self) -> &NameReadable<'_> {
+        self.tbs_cert.subject.unwrap_read()
+    }
+
+    pub fn is_self_issued(&self) -> bool {
+        self.issuer() == self.subject()
+    }
+
+    pub fn extensions(&self) -> Result<Extensions<'_>, CertificateError> {
+        self.tbs_cert
+            .extensions()
+            .map_err(CertificateError::DuplicateExtension)
+    }
+
+    pub fn extension_is_critical(&self, oid: &asn1::ObjectIdentifier) -> bool {
+        match self.extensions() {
+            Ok(exts) => exts
+                .get_extension(oid)
+                .map(|ext| ext.critical)
+                .unwrap_or(false),
+            Err(_) => false,
+        }
+    }
+
+    pub fn extension(
+        &self,
+        oid: &asn1::ObjectIdentifier,
+    ) -> Result<Option<Extension<'_>>, CertificateError> {
+        Ok(self.extensions()?.get_extension(oid))
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
