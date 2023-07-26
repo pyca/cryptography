@@ -395,10 +395,10 @@ pub(crate) fn parse_and_cache_extensions<
 
     let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {
         Ok(extensions) => extensions,
-        Err(oid) => {
-            let oid_obj = oid_to_py_oid(py, &oid)?;
+        Err(err) => {
+            let oid_obj = oid_to_py_oid(py, &err.0)?;
             return Err(exceptions::DuplicateExtension::new_err((
-                format!("Duplicate {} extension found", oid),
+                format!("Duplicate {} extension found", &err.0),
                 oid_obj.into_py(py),
             )));
         }

@@ -185,10 +185,10 @@ impl Certificate {
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            Err(oid) => {
-                let oid_obj = oid_to_py_oid(py, &oid)?;
+            Err(err) => {
+                let oid_obj = oid_to_py_oid(py, &err.0)?;
                 Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
+                    format!("Duplicate {} extension found", &err.0),
                     oid_obj.into_py(py),
                 ))
                 .into())
