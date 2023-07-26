@@ -97,6 +97,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cryptography-x509-validation"
+version = "0.1.0"
+dependencies = [
+ "asn1",
+ "cryptography-x509",
+ "pem",
+]
+
+[[package]]
 name = "foreign-types"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
