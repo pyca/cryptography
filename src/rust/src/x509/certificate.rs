@@ -161,7 +161,7 @@ impl Certificate {
         let val = self.raw.borrow_dependent();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
-        match val.tbs_cert.extensions() {
+        match val.extensions() {
             Ok(extensions) => {
                 let ext_count = extensions
                     .as_raw()
