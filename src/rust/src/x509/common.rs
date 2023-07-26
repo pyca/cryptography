@@ -9,7 +9,7 @@ use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawT
 use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
-use cryptography_x509::name::{GeneralName, Name, OtherName, UnvalidatedIA5String};
+use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
 use pyo3::{IntoPy, ToPyObject};
 
@@ -175,11 +175,11 @@ pub(crate) fn encode_access_descriptions<'a>(
 
 pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
-    name: &Name<'_>,
+    name: &NameReadable<'_>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
     let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let py_rdns = pyo3::types::PyList::empty(py);
-    for rdn in name.unwrap_read().clone() {
+    for rdn in name.clone() {
         let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
     }
@@ -274,7 +274,7 @@ pub(crate) fn parse_general_name(
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
-            let py_name = parse_name(py, &data)?;
+            let py_name = parse_name(py, &data.unwrap_read())?;
             x509_module
                 .call_method1(pyo3::intern!(py, "DirectoryName"), (py_name,))?
                 .to_object(py)
