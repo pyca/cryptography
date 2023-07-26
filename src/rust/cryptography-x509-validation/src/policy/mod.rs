@@ -5,24 +5,11 @@
 use asn1::ObjectIdentifier;
 use cryptography_x509::certificate::Certificate;
 
-use crate::{certificate::CertificateError, ops::CryptoOps};
+use crate::ops::CryptoOps;
 
 #[derive(Debug, PartialEq)]
 pub enum ProfileError {
-    Cert(CertificateError),
     Other(&'static str),
-}
-
-impl From<asn1::ParseError> for ProfileError {
-    fn from(value: asn1::ParseError) -> Self {
-        Self::Cert(CertificateError::Malformed(value))
-    }
-}
-
-impl From<CertificateError> for ProfileError {
-    fn from(value: CertificateError) -> Self {
-        Self::Cert(value)
-    }
 }
 
 impl From<&'static str> for ProfileError {
@@ -65,4 +52,14 @@ pub trait Profile<B: CryptoOps> {
     /// Returns a `Result` indicating whether the given certificate is
     /// considered a valid end entity certificate under this profile.
     fn permits_ee(&self, ops: &B, cert: &Certificate) -> Result<(), ProfileError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::policy::ProfileError;
+
+    #[test]
+    fn test_profileerror() {
+        assert_eq!(ProfileError::Other("foo"), "foo".into())
+    }
 }
