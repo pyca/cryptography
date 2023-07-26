@@ -130,13 +130,13 @@ impl Certificate {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        Ok(x509::parse_name(py, &self.raw.borrow_dependent().issuer())
+        Ok(x509::parse_name(py, self.raw.borrow_dependent().issuer())
             .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?)
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        Ok(x509::parse_name(py, &self.raw.borrow_dependent().subject())
+        Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
             .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
     }
 

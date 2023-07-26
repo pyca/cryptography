@@ -274,7 +274,7 @@ pub(crate) fn parse_general_name(
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
-            let py_name = parse_name(py, &data.unwrap_read())?;
+            let py_name = parse_name(py, data.unwrap_read())?;
             x509_module
                 .call_method1(pyo3::intern!(py, "DirectoryName"), (py_name,))?
                 .to_object(py)
