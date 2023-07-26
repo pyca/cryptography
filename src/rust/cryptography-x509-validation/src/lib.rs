@@ -4,4 +4,5 @@
 
 #![forbid(unsafe_code)]
 
+pub mod ops;
 pub mod types;
