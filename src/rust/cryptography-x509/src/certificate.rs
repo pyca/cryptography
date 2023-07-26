@@ -4,7 +4,7 @@
 
 use crate::common;
 use crate::extensions;
-use crate::extensions::{Extension, Extensions};
+use crate::extensions::Extensions;
 use crate::name;
 use crate::name::NameReadable;
 
