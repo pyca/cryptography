@@ -8,7 +8,6 @@ use crate::common;
 use crate::crl;
 use crate::name;
 
-#[derive(Debug)]
 pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
@@ -314,7 +313,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let raw = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).ok().unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions
@@ -338,7 +337,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let parsed = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).ok().unwrap();
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
