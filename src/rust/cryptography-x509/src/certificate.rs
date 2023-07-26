@@ -47,29 +47,7 @@ impl Certificate<'_> {
     /// Returns an iterable container over the certificate's extension, or
     /// an error if the extension set contains a duplicate extension.
     pub fn extensions(&self) -> Result<Extensions<'_>, CertificateError> {
-        self.tbs_cert
-            .extensions()
-            .map_err(CertificateError::DuplicateExtension)
-    }
-
-    /// Returns whether the given extension (by OID) is critical, or
-    /// false if the extension is not present.
-    pub fn extension_is_critical(&self, oid: &asn1::ObjectIdentifier) -> bool {
-        match self.extensions() {
-            Ok(exts) => exts
-                .get_extension(oid)
-                .map(|ext| ext.critical)
-                .unwrap_or(false),
-            Err(_) => false,
-        }
-    }
-
-    /// Returns a specific extension by OID.
-    pub fn extension(
-        &self,
-        oid: &asn1::ObjectIdentifier,
-    ) -> Result<Option<Extension<'_>>, CertificateError> {
-        Ok(self.extensions()?.get_extension(oid))
+        self.tbs_cert.extensions()
     }
 }
 
@@ -95,8 +73,9 @@ pub struct TbsCertificate<'a> {
 }
 
 impl TbsCertificate<'_> {
-    pub fn extensions(&self) -> Result<Extensions<'_>, asn1::ObjectIdentifier> {
+    pub fn extensions(&self) -> Result<Extensions<'_>, CertificateError> {
         Extensions::from_raw_extensions(self.raw_extensions.as_ref())
+            .map_err(CertificateError::DuplicateExtension)
     }
 }
 
