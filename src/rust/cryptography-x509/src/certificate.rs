@@ -27,12 +27,6 @@ impl Certificate<'_> {
         self.tbs_cert.subject.unwrap_read()
     }
 
-    /// Returns whether the certificate is "self-issued", whether its
-    /// issuer and subject are the same.
-    pub fn is_self_issued(&self) -> bool {
-        self.issuer() == self.subject()
-    }
-
     /// Returns an iterable container over the certificate's extension, or
     /// an error if the extension set contains a duplicate extension.
     pub fn extensions(&self) -> Result<Extensions<'_>, DuplicateExtensionsError> {
