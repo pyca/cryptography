@@ -28,24 +28,32 @@ pub struct Certificate<'a> {
 }
 
 impl Certificate<'_> {
+    /// Returns the certificate's issuer.
     pub fn issuer(&self) -> &NameReadable<'_> {
         self.tbs_cert.issuer.unwrap_read()
     }
 
+    /// Returns the certificate's subject.
     pub fn subject(&self) -> &NameReadable<'_> {
         self.tbs_cert.subject.unwrap_read()
     }
 
+    /// Returns whether the certificate is "self-issued", whether its
+    /// issuer and subject are the same.
     pub fn is_self_issued(&self) -> bool {
         self.issuer() == self.subject()
     }
 
+    /// Returns an iterable container over the certificate's extension, or
+    /// an error if the extension set contains a duplicate extension.
     pub fn extensions(&self) -> Result<Extensions<'_>, CertificateError> {
         self.tbs_cert
             .extensions()
             .map_err(CertificateError::DuplicateExtension)
     }
 
+    /// Returns whether the given extension (by OID) is critical, or
+    /// false if the extension is not present.
     pub fn extension_is_critical(&self, oid: &asn1::ObjectIdentifier) -> bool {
         match self.extensions() {
             Ok(exts) => exts
@@ -56,6 +64,7 @@ impl Certificate<'_> {
         }
     }
 
+    /// Returns a specific extension by OID.
     pub fn extension(
         &self,
         oid: &asn1::ObjectIdentifier,
