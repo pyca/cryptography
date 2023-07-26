@@ -13,9 +13,10 @@ use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints,
-    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions,
-    SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
+    DistributionPointName, DuplicateExtensionsError, IssuerAlternativeName, KeyUsage,
+    MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
+    PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
+    SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
@@ -129,18 +130,14 @@ impl Certificate {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        Ok(
-            x509::parse_name(py, &self.raw.borrow_dependent().tbs_cert.issuer)
-                .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?,
-        )
+        Ok(x509::parse_name(py, self.raw.borrow_dependent().issuer())
+            .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?)
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        Ok(
-            x509::parse_name(py, &self.raw.borrow_dependent().tbs_cert.subject)
-                .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?,
-        )
+        Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
+            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
     }
 
     #[getter]
@@ -160,7 +157,7 @@ impl Certificate {
         let val = self.raw.borrow_dependent();
         let mut tbs_precert = val.tbs_cert.clone();
         // Remove the SCT list extension
-        match val.tbs_cert.extensions() {
+        match val.extensions() {
             Ok(extensions) => {
                 let ext_count = extensions
                     .as_raw()
@@ -185,10 +182,10 @@ impl Certificate {
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            Err(oid) => {
+            Err(DuplicateExtensionsError(oid)) => {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", oid),
+                    format!("Duplicate {} extension found", &oid),
                     oid_obj.into_py(py),
                 ))
                 .into())

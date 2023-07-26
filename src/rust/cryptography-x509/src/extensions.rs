@@ -8,6 +8,8 @@ use crate::common;
 use crate::crl;
 use crate::name;
 
+pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
+
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     'a,
     asn1::SequenceOf<'a, Extension<'a>>,
@@ -27,14 +29,14 @@ impl<'a> Extensions<'a> {
     /// OID, if there are any duplicates.
     pub fn from_raw_extensions(
         raw: Option<&RawExtensions<'a>>,
-    ) -> Result<Self, asn1::ObjectIdentifier> {
+    ) -> Result<Self, DuplicateExtensionsError> {
         match raw {
             Some(raw_exts) => {
                 let mut seen_oids = HashSet::new();
 
                 for ext in raw_exts.unwrap_read().clone() {
                     if !seen_oids.insert(ext.extn_id.clone()) {
-                        return Err(ext.extn_id);
+                        return Err(DuplicateExtensionsError(ext.extn_id));
                     }
                 }
 
@@ -311,7 +313,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let raw = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).ok().unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions
@@ -335,7 +337,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let parsed = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).unwrap();
+        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).ok().unwrap();
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
