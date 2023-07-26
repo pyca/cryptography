@@ -13,9 +13,10 @@ use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints,
-    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, Qualifier, RawExtensions,
-    SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
+    DistributionPointName, DuplicateExtensionsError, IssuerAlternativeName, KeyUsage,
+    MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
+    PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
+    SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
@@ -185,10 +186,10 @@ impl Certificate {
                 let result = asn1::write_single(&tbs_precert)?;
                 Ok(pyo3::types::PyBytes::new(py, &result))
             }
-            Err(err) => {
-                let oid_obj = oid_to_py_oid(py, &err.0)?;
+            Err(DuplicateExtensionsError(oid)) => {
+                let oid_obj = oid_to_py_oid(py, &oid)?;
                 Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", &err.0),
+                    format!("Duplicate {} extension found", &oid),
                     oid_obj.into_py(py),
                 ))
                 .into())
