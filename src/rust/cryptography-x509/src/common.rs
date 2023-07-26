@@ -323,7 +323,7 @@ impl<'a> DNSName<'a> {
     pub fn new(value: &'a str) -> Option<Self> {
         // Domains cannot be empty; cannot contain whitespace; must (practically)
         // be less than 253 characters (255 in RFC 1034's octet encoding).
-        if value.is_empty() || value.chars().any(char::is_whitespace) || value.len() > 253 {
+        if value.is_empty() || value.len() > 253 {
             None
         } else {
             for label in value.split('.') {
