@@ -14,7 +14,7 @@ asn1 = { version = "0.15.4", default-features = false }
 cryptography-cffi = { path = "cryptography-cffi" }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-openssl = { path = "cryptography-openssl" }
-pem = "1.1"
+pem = "3.0"
 openssl = "0.10.55"
 openssl-sys = "0.9.90"
 foreign-types-shared = "0.1"
