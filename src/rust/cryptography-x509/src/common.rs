@@ -449,7 +449,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dnsname_constructs() {
+    fn test_dnsname_new() {
         assert_eq!(DNSName::new(""), None);
         assert_eq!(DNSName::new("."), None);
         assert_eq!(DNSName::new(".."), None);
