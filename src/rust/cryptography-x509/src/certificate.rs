@@ -4,8 +4,8 @@
 
 use crate::common;
 use crate::extensions;
+use crate::extensions::DuplicateExtensionsError;
 use crate::extensions::Extensions;
-use crate::extensions::ExtensionsError;
 use crate::name;
 use crate::name::NameReadable;
 
@@ -35,7 +35,7 @@ impl Certificate<'_> {
 
     /// Returns an iterable container over the certificate's extension, or
     /// an error if the extension set contains a duplicate extension.
-    pub fn extensions(&self) -> Result<Extensions<'_>, ExtensionsError> {
+    pub fn extensions(&self) -> Result<Extensions<'_>, DuplicateExtensionsError> {
         self.tbs_cert.extensions()
     }
 }
@@ -62,7 +62,7 @@ pub struct TbsCertificate<'a> {
 }
 
 impl TbsCertificate<'_> {
-    pub fn extensions(&self) -> Result<Extensions<'_>, ExtensionsError> {
+    pub fn extensions(&self) -> Result<Extensions<'_>, DuplicateExtensionsError> {
         Extensions::from_raw_extensions(self.raw_extensions.as_ref())
     }
 }

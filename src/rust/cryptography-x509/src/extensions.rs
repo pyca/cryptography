@@ -9,7 +9,7 @@ use crate::crl;
 use crate::name;
 
 #[derive(Debug)]
-pub struct ExtensionsError(pub asn1::ObjectIdentifier);
+pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
     'a,
@@ -28,14 +28,16 @@ impl<'a> Extensions<'a> {
     ///
     /// Returns an `Err` variant containing the first duplicated extension's
     /// OID, if there are any duplicates.
-    pub fn from_raw_extensions(raw: Option<&RawExtensions<'a>>) -> Result<Self, ExtensionsError> {
+    pub fn from_raw_extensions(
+        raw: Option<&RawExtensions<'a>>,
+    ) -> Result<Self, DuplicateExtensionsError> {
         match raw {
             Some(raw_exts) => {
                 let mut seen_oids = HashSet::new();
 
                 for ext in raw_exts.unwrap_read().clone() {
                     if !seen_oids.insert(ext.extn_id.clone()) {
-                        return Err(ExtensionsError(ext.extn_id));
+                        return Err(DuplicateExtensionsError(ext.extn_id));
                     }
                 }
 
