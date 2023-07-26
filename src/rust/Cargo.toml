@@ -35,4 +35,9 @@ crate-type = ["cdylib"]
 overflow-checks = true
 
 [workspace]
-members = ["cryptography-cffi", "cryptography-openssl", "cryptography-x509"]
+members = [
+    "cryptography-cffi",
+    "cryptography-openssl",
+    "cryptography-x509",
+    "cryptography-x509-validation",
+]
