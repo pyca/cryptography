@@ -2,16 +2,14 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-//! Behavioral typing for a "backend" that provides cryptographic operations.
-
 use cryptography_x509::certificate::Certificate;
 
 pub trait CryptoOps {
-    /// A public key type for this backend.
+    /// A public key type for this cryptographic backend.
     type Key;
 
     /// Extracts the public key from the given `Certificate` in
-    /// a `Key` format known by the backend.
+    /// a `Key` format known by the cryptographic backend.
     fn public_key(&self, cert: &Certificate) -> Self::Key;
 
     /// Verifies the signature on `Certificate` using the given
