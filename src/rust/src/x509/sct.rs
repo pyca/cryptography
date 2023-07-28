@@ -127,7 +127,7 @@ impl TryFrom<u8> for SignatureAlgorithm {
     }
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,

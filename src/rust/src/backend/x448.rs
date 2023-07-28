@@ -7,12 +7,12 @@ use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use foreign_types_shared::ForeignTypeRef;
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x448")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x448")]
 struct X448PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.x448")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x448")]
 struct X448PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }

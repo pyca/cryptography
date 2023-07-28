@@ -8,6 +8,7 @@ use crate::exceptions;
 use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(
+    frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPrivateKey"
 )]
@@ -16,6 +17,7 @@ struct DsaPrivateKey {
 }
 
 #[pyo3::prelude::pyclass(
+    frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPublicKey"
 )]
@@ -24,6 +26,7 @@ struct DsaPublicKey {
 }
 
 #[pyo3::prelude::pyclass(
+    frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAParameters"
 )]

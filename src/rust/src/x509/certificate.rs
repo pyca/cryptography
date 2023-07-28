@@ -33,6 +33,7 @@ self_cell::self_cell!(
     }
 );
 
+// TODO: can't be frozen because extensions takes `&mut self`
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
