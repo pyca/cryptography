@@ -52,6 +52,11 @@ impl FixedPool {
             })
         }
     }
+
+    fn __traverse__(&self, visit: pyo3::PyVisit<'_>) -> Result<(), pyo3::PyTraverseError> {
+        visit.call(&self.create_fn)?;
+        Ok(())
+    }
 }
 
 #[pyo3::pymethods]
