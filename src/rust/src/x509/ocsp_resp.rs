@@ -57,8 +57,8 @@ fn load_der_ocsp_response(
     };
     Ok(OCSPResponse {
         raw: Arc::new(raw),
-        cached_extensions: None,
-        cached_single_extensions: None,
+        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_single_extensions: pyo3::once_cell::GILOnceCell::new(),
     })
 }
 
@@ -70,13 +70,12 @@ self_cell::self_cell!(
     }
 );
 
-// TODO: can't be frozen extensions and single_extensions take `&mut self`
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
 
-    cached_extensions: Option<pyo3::PyObject>,
-    cached_single_extensions: Option<pyo3::PyObject>,
+    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_single_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 impl OCSPResponse {
@@ -247,7 +246,7 @@ impl OCSPResponse {
                 py,
                 x509::certificate::Certificate {
                     raw: raw_cert,
-                    cached_extensions: None,
+                    cached_extensions: pyo3::once_cell::GILOnceCell::new(),
                 },
             )?)?;
         }
@@ -321,7 +320,7 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         self.requires_successful_response()?;
 
         let response_data = &self
@@ -337,7 +336,7 @@ impl OCSPResponse {
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_extensions,
+            &self.cached_extensions,
             &response_data.raw_response_extensions,
             |ext| {
                 match &ext.extn_id {
@@ -360,7 +359,7 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn single_extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn single_extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         self.requires_successful_response()?;
         let single_resp = single_response(
             self.raw
@@ -375,7 +374,7 @@ impl OCSPResponse {
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_single_extensions,
+            &self.cached_single_extensions,
             &single_resp.raw_single_extensions,
             |ext| match &ext.extn_id {
                 &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {

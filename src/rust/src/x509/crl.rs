@@ -43,7 +43,7 @@ fn load_der_x509_crl(
     Ok(CertificateRevocationList {
         owned: Arc::new(owned),
         revoked_certs: pyo3::once_cell::GILOnceCell::new(),
-        cached_extensions: None,
+        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
     })
 }
 
@@ -71,13 +71,12 @@ self_cell::self_cell!(
     }
 );
 
-// TODO: can't be frozen because extensions required `&mut self`.
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
     revoked_certs: pyo3::once_cell::GILOnceCell<Vec<OwnedRevokedCertificate>>,
-    cached_extensions: Option<pyo3::PyObject>,
+    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 impl CertificateRevocationList {
@@ -88,7 +87,7 @@ impl CertificateRevocationList {
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
         RevokedCertificate {
             owned: self.revoked_certs.get(py).unwrap()[idx].clone(),
-            cached_extensions: None,
+            cached_extensions: pyo3::once_cell::GILOnceCell::new(),
         }
     }
 
@@ -270,13 +269,13 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let tbs_cert_list = &self.owned.borrow_dependent().tbs_cert_list;
 
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_extensions,
+            &self.cached_extensions,
             &tbs_cert_list.raw_crl_extensions,
             |ext| match ext.extn_id {
                 oid::CRL_NUMBER_OID => {
@@ -359,7 +358,7 @@ impl CertificateRevocationList {
     }
 
     fn get_revoked_certificate_by_serial_number(
-        &mut self,
+        &self,
         py: pyo3::Python<'_>,
         serial: &pyo3::types::PyLong,
     ) -> pyo3::PyResult<Option<RevokedCertificate>> {
@@ -381,7 +380,7 @@ impl CertificateRevocationList {
         match owned {
             Ok(o) => Ok(Some(RevokedCertificate {
                 owned: o,
-                cached_extensions: None,
+                cached_extensions: pyo3::once_cell::GILOnceCell::new(),
             })),
             Err(()) => Ok(None),
         }
@@ -466,7 +465,7 @@ impl CRLIterator {
         .ok()?;
         Some(RevokedCertificate {
             owned: revoked,
-            cached_extensions: None,
+            cached_extensions: pyo3::once_cell::GILOnceCell::new(),
         })
     }
 }
@@ -491,11 +490,10 @@ impl Clone for OwnedRevokedCertificate {
     }
 }
 
-// TODO: can't be frozen because extensions required `&mut self`.
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct RevokedCertificate {
     owned: OwnedRevokedCertificate,
-    cached_extensions: Option<pyo3::PyObject>,
+    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -517,10 +515,10 @@ impl RevokedCertificate {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_extensions,
+            &self.cached_extensions,
             &self.owned.borrow_dependent().raw_crl_entry_extensions,
             |ext| parse_crl_entry_ext(py, ext),
         )

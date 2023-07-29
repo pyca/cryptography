@@ -22,11 +22,10 @@ self_cell::self_cell!(
     }
 );
 
-// TODO: can't be frozen extensions take `&mut self`
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
     raw: OwnedCsr,
-    cached_extensions: Option<pyo3::PyObject>,
+    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -179,7 +178,7 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn attributes<'p>(&mut self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn attributes<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let pyattrs = pyo3::types::PyList::empty(py);
         for attribute in self
             .raw
@@ -212,7 +211,7 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let raw_exts = self
             .raw
             .borrow_dependent()
@@ -224,7 +223,7 @@ impl CertificateSigningRequest {
                 )
             })?;
 
-        x509::parse_and_cache_extensions(py, &mut self.cached_extensions, &raw_exts, |ext| {
+        x509::parse_and_cache_extensions(py, &self.cached_extensions, &raw_exts, |ext| {
             certificate::parse_cert_ext(py, ext)
         })
     }
@@ -283,7 +282,7 @@ fn load_der_x509_csr(
 
     Ok(CertificateSigningRequest {
         raw,
-        cached_extensions: None,
+        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
     })
 }
 

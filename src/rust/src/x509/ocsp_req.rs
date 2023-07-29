@@ -45,16 +45,15 @@ fn load_der_ocsp_request(
 
     Ok(OCSPRequest {
         raw,
-        cached_extensions: None,
+        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
     })
 }
 
-// TODO: can't be frozen because extensions takes `&mut self`
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
-    cached_extensions: Option<pyo3::PyObject>,
+    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 impl OCSPRequest {
@@ -112,13 +111,13 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let tbs_request = &self.raw.borrow_dependent().tbs_request;
 
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_extensions,
+            &self.cached_extensions,
             &tbs_request.raw_request_extensions,
             |ext| {
                 match ext.extn_id {

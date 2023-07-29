@@ -387,48 +387,46 @@ pub(crate) fn parse_and_cache_extensions<
     F: Fn(&Extension<'_>) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
-    cached_extensions: &mut Option<pyo3::PyObject>,
+    cached_extensions: &pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
     raw_extensions: &Option<RawExtensions<'_>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {
-    if let Some(cached) = cached_extensions {
-        return Ok(cached.clone_ref(py));
-    }
+    cached_extensions
+        .get_or_try_init(py, || {
+            let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {
+                Ok(extensions) => extensions,
+                Err(DuplicateExtensionsError(oid)) => {
+                    let oid_obj = oid_to_py_oid(py, &oid)?;
+                    return Err(exceptions::DuplicateExtension::new_err((
+                        format!("Duplicate {} extension found", &oid),
+                        oid_obj.into_py(py),
+                    )));
+                }
+            };
 
-    let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {
-        Ok(extensions) => extensions,
-        Err(DuplicateExtensionsError(oid)) => {
-            let oid_obj = oid_to_py_oid(py, &oid)?;
-            return Err(exceptions::DuplicateExtension::new_err((
-                format!("Duplicate {} extension found", &oid),
-                oid_obj.into_py(py),
-            )));
-        }
-    };
+            let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
+            let exts = pyo3::types::PyList::empty(py);
+            for raw_ext in extensions.iter() {
+                let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    let exts = pyo3::types::PyList::empty(py);
-    for raw_ext in extensions.iter() {
-        let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
-
-        let extn_value = match parse_ext(&raw_ext)? {
-            Some(e) => e,
-            None => x509_module.call_method1(
-                pyo3::intern!(py, "UnrecognizedExtension"),
-                (oid_obj, raw_ext.extn_value),
-            )?,
-        };
-        let ext_obj = x509_module.call_method1(
-            pyo3::intern!(py, "Extension"),
-            (oid_obj, raw_ext.critical, extn_value),
-        )?;
-        exts.append(ext_obj)?;
-    }
-    let extensions = x509_module
-        .call_method1(pyo3::intern!(py, "Extensions"), (exts,))?
-        .to_object(py);
-    *cached_extensions = Some(extensions.clone_ref(py));
-    Ok(extensions)
+                let extn_value = match parse_ext(&raw_ext)? {
+                    Some(e) => e,
+                    None => x509_module.call_method1(
+                        pyo3::intern!(py, "UnrecognizedExtension"),
+                        (oid_obj, raw_ext.extn_value),
+                    )?,
+                };
+                let ext_obj = x509_module.call_method1(
+                    pyo3::intern!(py, "Extension"),
+                    (oid_obj, raw_ext.critical, extn_value),
+                )?;
+                exts.append(ext_obj)?;
+            }
+            Ok(x509_module
+                .call_method1(pyo3::intern!(py, "Extensions"), (exts,))?
+                .to_object(py))
+        })
+        .map(|p| p.clone_ref(py))
 }
 
 pub(crate) fn encode_extensions<
