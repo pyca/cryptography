@@ -8,12 +8,12 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use foreign_types_shared::ForeignTypeRef;
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
 struct Ed448PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
 struct Ed448PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }

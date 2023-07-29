@@ -49,6 +49,7 @@ fn load_der_ocsp_request(
     })
 }
 
+// TODO: can't be frozen because extensions takes `&mut self`
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPRequest {
     raw: OwnedOCSPRequest,

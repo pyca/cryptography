@@ -71,6 +71,7 @@ self_cell::self_cell!(
     }
 );
 
+// TODO: can't be frozen because extensions required `&mut self`.
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
@@ -490,6 +491,7 @@ impl Clone for OwnedRevokedCertificate {
     }
 }
 
+// TODO: can't be frozen because extensions required `&mut self`.
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct RevokedCertificate {
     owned: OwnedRevokedCertificate,

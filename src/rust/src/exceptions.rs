@@ -3,6 +3,7 @@
 // for complete details.
 
 #[pyo3::prelude::pyclass(
+    frozen,
     module = "cryptography.hazmat.bindings._rust.exceptions",
     name = "_Reasons"
 )]

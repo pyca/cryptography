@@ -70,6 +70,7 @@ self_cell::self_cell!(
     }
 );
 
+// TODO: can't be frozen extensions and single_extensions take `&mut self`
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
@@ -790,7 +791,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPSingleResponse {
     raw: OwnedSingleResponse,
 }

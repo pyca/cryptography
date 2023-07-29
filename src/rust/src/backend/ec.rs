@@ -9,14 +9,14 @@ use foreign_types_shared::ForeignTypeRef;
 use pyo3::basic::CompareOp;
 use pyo3::ToPyObject;
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.ec")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 struct ECPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
     #[pyo3(get)]
     curve: pyo3::Py<pyo3::PyAny>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.ec")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 struct ECPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
     #[pyo3(get)]

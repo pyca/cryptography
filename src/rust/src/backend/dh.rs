@@ -11,17 +11,17 @@ use foreign_types_shared::ForeignTypeRef;
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.dh")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 struct DHPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.dh")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 struct DHPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.dh")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 struct DHParameters {
     dh: openssl::dh::Dh<openssl::pkey::Params>,
 }
