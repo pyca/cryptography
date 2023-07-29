@@ -33,11 +33,10 @@ self_cell::self_cell!(
     }
 );
 
-// TODO: can't be frozen because extensions takes `&mut self`
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
-    pub(crate) cached_extensions: Option<pyo3::PyObject>,
+    pub(crate) cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -248,11 +247,11 @@ impl Certificate {
     }
 
     #[getter]
-    fn extensions(&mut self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
-            &mut self.cached_extensions,
+            &self.cached_extensions,
             &self.raw.borrow_dependent().tbs_cert.raw_extensions,
             |ext| match ext.extn_id {
                 oid::PRECERT_POISON_OID => {
@@ -386,7 +385,7 @@ fn load_der_x509_certificate(
 
     Ok(Certificate {
         raw,
-        cached_extensions: None,
+        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
     })
 }
 
