@@ -148,7 +148,7 @@ struct TestCertificate {
     subject_value_tags: Vec<u8>,
 }
 
-fn parse_name_value_tags(rdns: &mut Name<'_>) -> Vec<u8> {
+fn parse_name_value_tags(rdns: &Name<'_>) -> Vec<u8> {
     let mut tags = vec![];
     for rdn in rdns.unwrap_read().clone() {
         let mut attributes = rdn.collect::<Vec<_>>();
@@ -168,13 +168,13 @@ fn time_tag(t: &Time) -> u8 {
 
 #[pyo3::prelude::pyfunction]
 fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyError> {
-    let mut cert = asn1::parse_single::<Certificate<'_>>(data)?;
+    let cert = asn1::parse_single::<Certificate<'_>>(data)?;
 
     Ok(TestCertificate {
         not_before_tag: time_tag(&cert.tbs_cert.validity.not_before),
         not_after_tag: time_tag(&cert.tbs_cert.validity.not_after),
-        issuer_value_tags: parse_name_value_tags(&mut cert.tbs_cert.issuer),
-        subject_value_tags: parse_name_value_tags(&mut cert.tbs_cert.subject),
+        issuer_value_tags: parse_name_value_tags(&cert.tbs_cert.issuer),
+        subject_value_tags: parse_name_value_tags(&cert.tbs_cert.subject),
     })
 }
 
