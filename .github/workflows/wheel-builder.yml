@@ -122,7 +122,7 @@ jobs:
           # then use a glibc nodejs, which works fine when gcompat
           # is installed in the container (which it is)
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
-        if: startsWith(matrix.MANYLINUX.NAME, 'musllinux')
+        if: startsWith(matrix.MANYLINUX.NAME, 'musllinux') && endsWith(matrix.MANYLINUX.NAME, 'aarch64')
 
       - name: Get build-requirements.txt from repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
