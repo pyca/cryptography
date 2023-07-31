@@ -13,7 +13,7 @@ single most common cause of installation problems.
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 3.7+ and PyPy3 7.3.10+ on these
+Currently we test ``cryptography`` on Python 3.7+ and PyPy3 7.3.11+ on these
 operating systems.
 
 * x86-64 RHEL 8.x
