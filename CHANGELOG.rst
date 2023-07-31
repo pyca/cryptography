@@ -1,6 +1,16 @@
 Changelog
 =========
 
+.. _v41-0-3:
+
+41.0.3 - 2023-08-01
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed performance regression loading DH public keys.
+* Fixed a memory leak when using
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.2.
+
 .. _v41-0-2:
 
 41.0.2 - 2023-07-10
