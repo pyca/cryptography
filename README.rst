@@ -15,7 +15,7 @@ pyca/cryptography
 
 ``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers. Our goal is for it to be your "cryptographic
-standard library". It supports Python 3.7+ and PyPy3 7.3.10+.
+standard library". It supports Python 3.7+ and PyPy3 7.3.11+.
 
 ``cryptography`` includes both high level recipes and low level interfaces to
 common cryptographic algorithms such as symmetric ciphers, message digests, and
