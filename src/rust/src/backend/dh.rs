@@ -102,16 +102,7 @@ fn dh_parameters_from_numbers(
         .transpose()?;
     let g = utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "g"))?)?;
 
-    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
-    if !dh.check_key()? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "DH private numbers did not pass safety checks.",
-            ),
-        ));
-    }
-
-    Ok(dh)
+    Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
 }
 
 #[pyo3::prelude::pyfunction]
@@ -127,7 +118,16 @@ fn from_private_numbers(
     let pub_key = utils::py_int_to_bn(py, public_numbers.getattr(pyo3::intern!(py, "y"))?)?;
     let priv_key = utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "x"))?)?;
 
-    let pkey = openssl::pkey::PKey::from_dh(dh.set_key(pub_key, priv_key)?)?;
+    let dh = dh.set_key(pub_key, priv_key)?;
+    if !dh.check_key()? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "DH private numbers did not pass safety checks.",
+            ),
+        ));
+    }
+
+    let pkey = openssl::pkey::PKey::from_dh(dh)?;
     Ok(DHPrivateKey { pkey })
 }
 
