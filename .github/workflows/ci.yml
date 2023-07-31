@@ -30,7 +30,6 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "flake"}
           - {VERSION: "3.11", NOXSESSION: "rust"}
           - {VERSION: "3.11", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.1"}}
-          - {VERSION: "pypy-3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1u"}}

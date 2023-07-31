@@ -59,7 +59,6 @@ jobs:
       matrix:
         PYTHON:
           - { VERSION: "cp37-cp37m", ABI_VERSION: 'cp37' }
-          - { VERSION: "pp38-pypy38_pp73" }
           - { VERSION: "pp39-pypy39_pp73" }
           - { VERSION: "pp310-pypy310_pp73" }
         MANYLINUX:
@@ -74,41 +73,29 @@ jobs:
           - { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
         exclude:
           # There are no readily available musllinux PyPy distributions
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "musllinux_1_1_x86_64", CONTAINER: "cryptography-musllinux_1_1:x86_64", RUNNER: "ubuntu-latest"}
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "musllinux_1_1_aarch64", CONTAINER: "cryptography-musllinux_1_1:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
 
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_2_x86_64", CONTAINER: "cryptography-musllinux_1_2:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_x86_64", CONTAINER: "cryptography-musllinux_1_2:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_x86_64", CONTAINER: "cryptography-musllinux_1_2:x86_64", RUNNER: "ubuntu-latest"}
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: [self-hosted, Linux, ARM64]}
 
             # We also don't build pypy wheels for anything except the latest manylinux
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
-          - PYTHON: { VERSION: "pp38-pypy38_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp39-pypy39_pp73" }
             MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
@@ -200,11 +187,6 @@ jobs:
             # requires a 21.x pip)
             ARCHFLAGS: '-arch x86_64'
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
-          - VERSION: 'pypy-3.8'
-            BIN_PATH: 'pypy3'
-            DEPLOYMENT_TARGET: '10.12'
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
-            ARCHFLAGS: '-arch x86_64'
           - VERSION: 'pypy-3.9'
             BIN_PATH: 'pypy3'
             DEPLOYMENT_TARGET: '10.12'
@@ -300,13 +282,10 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.11", "ABI_VERSION": "cp37"}
-          - {VERSION: "pypy-3.8"}
           - {VERSION: "pypy-3.9"}
           - {VERSION: "pypy-3.10"}
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
-          - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-            PYTHON: {VERSION: "pypy-3.8"}
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
             PYTHON: {VERSION: "pypy-3.9"}
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
