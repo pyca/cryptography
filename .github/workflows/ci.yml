@@ -43,10 +43,10 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.0"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of Jul 29, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "d95b03c315bac8c44d3ce062053d3a5817915d91"}}
-          # Latest commit on the OpenSSL master branch, as of Jul 29, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "fbd23b929609c0b2fe22da97ac349fae5a385027"}}
+          # Latest commit on the BoringSSL master branch, as of Aug 01, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "8dec463a609706480a6ae9057702ec662843acc2"}}
+          # Latest commit on the OpenSSL master branch, as of Aug 01, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "e3d897d3fa3b48bb835fab0665a435469beea7ae"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.60 - pem 2.0.1, once_cell 1.18.0
