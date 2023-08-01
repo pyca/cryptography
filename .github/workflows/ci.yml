@@ -239,6 +239,9 @@ jobs:
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}
 
+      # Attempted work around for https://github.com/actions/setup-python/issues/709
+      - run: brew install openssl@1.1
+
       - name: Setup python
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
