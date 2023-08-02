@@ -383,4 +383,18 @@ mod tests {
 
         assert!(range.matches(&IPAddress::from_str("192.168.0.50").unwrap()));
     }
+
+    #[test]
+    fn test_iprange_bad_masks() {
+        // 192.168.1.1, mask 255.254.255.0
+        let bad_mask_one_bit = b"\xc0\xa8\x01\x01\xff\xfe\xff\x00";
+        // 192.168.1.1, mask 255.252.255.0
+        let bad_mask_many_bits = b"\xc0\xa8\x01\x01\xff\xfc\xff\x00";
+        // 192.168.1.1, mask 0.255.255.0
+        let bad_mask_octet = b"\xc0\xa8\x01\x01\x00\xff\xff\xff";
+
+        assert_eq!(IPRange::from_bytes(bad_mask_one_bit), None);
+        assert_eq!(IPRange::from_bytes(bad_mask_many_bits), None);
+        assert_eq!(IPRange::from_bytes(bad_mask_octet), None);
+    }
 }
