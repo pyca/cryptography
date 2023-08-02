@@ -363,19 +363,6 @@ mod tests {
     }
 
     #[test]
-    fn test_ipaddress_from_std() {
-        let ipv4_addr = "192.0.2.1".parse().unwrap();
-        let ipv6_addr = "2001:db8::1".parse().unwrap();
-
-        if let IPAddress::V6(_) = IPAddress::from_std(ipv4_addr) {
-            panic!("expected IPAddress::V4, got IPAddress::V6");
-        }
-        if let IPAddress::V4(_) = IPAddress::from_std(ipv6_addr) {
-            panic!("expected IPAddress::V6, got IPAddress::V4");
-        }
-    }
-
-    #[test]
     fn test_ipaddress_from_str() {
         assert_ne!(IPAddress::from_str("192.168.1.1"), None)
     }
