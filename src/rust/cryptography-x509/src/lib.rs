@@ -3,8 +3,6 @@
 // for complete details.
 
 #![forbid(unsafe_code)]
-// These can be removed once our MSRV is >1.60
-#![allow(renamed_and_removed_lints, clippy::eval_order_dependence)]
 
 pub mod certificate;
 pub mod common;

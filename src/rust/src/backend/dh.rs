@@ -83,11 +83,11 @@ fn from_der_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
 fn from_pem_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
     let parsed = x509::find_in_pem(
         data,
-        |p| p.tag == "DH PARAMETERS" || p.tag == "X9.42 DH PARAMETERS",
+        |p| p.tag() == "DH PARAMETERS" || p.tag() == "X9.42 DH PARAMETERS",
         "Valid PEM but no BEGIN DH PARAMETERS/END DH PARAMETERS delimiters. Are you sure this is a DH parameters?",
     )?;
 
-    from_der_parameters(&parsed.contents)
+    from_der_parameters(parsed.contents())
 }
 
 fn dh_parameters_from_numbers(

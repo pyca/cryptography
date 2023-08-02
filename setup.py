@@ -54,7 +54,7 @@ try:
                 "cryptography.hazmat.bindings._rust",
                 "src/rust/Cargo.toml",
                 py_limited_api=True,
-                rust_version=">=1.56.0",
+                rust_version=">=1.63.0",
             )
         ],
     )

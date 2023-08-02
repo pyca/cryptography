@@ -54,12 +54,12 @@ fn load_pem_x509_crl(
 ) -> Result<CertificateRevocationList, CryptographyError> {
     let block = x509::find_in_pem(
         data,
-        |p| p.tag == "X509 CRL",
+        |p| p.tag() == "X509 CRL",
         "Valid PEM but no BEGIN X509 CRL/END X509 delimiters. Are you sure this is a CRL?",
     )?;
     load_der_x509_crl(
         py,
-        pyo3::types::PyBytes::new(py, &block.contents).into_py(py),
+        pyo3::types::PyBytes::new(py, block.contents()).into_py(py),
     )
 }
 

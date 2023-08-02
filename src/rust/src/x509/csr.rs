@@ -254,12 +254,12 @@ fn load_pem_x509_csr(
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L35-L36
     let parsed = x509::find_in_pem(
         data,
-        |p| p.tag == "CERTIFICATE REQUEST" || p.tag == "NEW CERTIFICATE REQUEST",
+        |p| p.tag() == "CERTIFICATE REQUEST" || p.tag() == "NEW CERTIFICATE REQUEST",
         "Valid PEM but no BEGIN CERTIFICATE REQUEST/END CERTIFICATE REQUEST delimiters. Are you sure this is a CSR?",
     )?;
     load_der_x509_csr(
         py,
-        pyo3::types::PyBytes::new(py, &parsed.contents).into_py(py),
+        pyo3::types::PyBytes::new(py, parsed.contents()).into_py(py),
     )
 }
 

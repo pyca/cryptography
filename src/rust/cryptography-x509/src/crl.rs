@@ -11,7 +11,7 @@ use crate::{
 pub type ReasonFlags<'a> =
     Option<common::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]
 pub struct CertificateRevocationList<'a> {
     pub tbs_cert_list: TBSCertList<'a>,
     pub signature_algorithm: common::AlgorithmIdentifier<'a>,
@@ -26,7 +26,7 @@ pub type RevokedCertificates<'a> = Option<
     >,
 >;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]
 pub struct TBSCertList<'a> {
     pub version: Option<u8>,
     pub signature: common::AlgorithmIdentifier<'a>,
@@ -38,7 +38,7 @@ pub struct TBSCertList<'a> {
     pub raw_crl_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
     pub user_certificate: asn1::BigUint<'a>,
     pub revocation_date: common::Time,
