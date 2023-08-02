@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::str::FromStr;
+
 /// A `DNSName` is an `asn1::IA5String` with additional invariant preservations
 /// per [RFC 5280 4.2.1.6], which in turn uses the preferred name syntax defined
 /// in [RFC 1034 3.5] and amended in [RFC 1123 2.1].
@@ -110,9 +112,117 @@ impl<'a> DNSPattern<'a> {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum IPAddress {
+    V4(std::net::Ipv4Addr),
+    V6(std::net::Ipv6Addr),
+}
+
+/// TODO
+impl IPAddress {
+    pub fn from_std(addr: std::net::IpAddr) -> Self {
+        match addr {
+            std::net::IpAddr::V4(a) => Self::V4(a),
+            std::net::IpAddr::V6(a) => Self::V6(a),
+        }
+    }
+
+    pub fn from_str(s: &str) -> Option<Self> {
+        std::net::IpAddr::from_str(s).ok().map(Self::from_std)
+    }
+
+    pub fn from_bytes(b: &[u8]) -> Option<Self> {
+        match b.len() {
+            4 => {
+                let b: Option<[u8; 4]> = b.try_into().ok();
+                b.map(std::net::IpAddr::from).map(Self::from_std)
+            }
+            16 => {
+                let b: Option<[u8; 16]> = b.try_into().ok();
+                b.map(std::net::IpAddr::from).map(Self::from_std)
+            }
+            _ => None,
+        }
+    }
+
+    /// Parses the octets of an IP address as a mask. If the mask is well-formed,
+    /// i.e. has only one contiguous block of 1 bits starting from the MSB, a prefix
+    /// is returned.
+    pub fn as_prefix(&self) -> Option<u8> {
+        match self {
+            Self::V4(a) => {
+                let data = u32::from_be_bytes(a.octets());
+                let (leading, total) = (data.leading_ones(), data.count_ones());
+                if leading != total {
+                    None
+                } else {
+                    Some(leading as u8)
+                }
+            }
+            Self::V6(a) => {
+                let data = u128::from_be_bytes(a.octets());
+                let (leading, total) = (data.leading_ones(), data.count_ones());
+                if leading != total {
+                    None
+                } else {
+                    Some(leading as u8)
+                }
+            }
+        }
+    }
+
+    /// TODO
+    pub fn mask(&self, prefix: u8) -> Self {
+        match self {
+            Self::V4(a) => {
+                let masked = u32::from_be_bytes(a.octets()) & !((1u32 << prefix) - 1);
+                Self::from_bytes(&masked.to_be_bytes()).unwrap()
+            }
+            Self::V6(a) => {
+                let masked = u128::from_be_bytes(a.octets()) & !((1u128 << prefix) - 1);
+                Self::from_bytes(&masked.to_be_bytes()).unwrap()
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct IPRange {
+    address: IPAddress,
+    prefix: u8,
+}
+
+/// TODO
+impl IPRange {
+    pub fn from_bytes(b: &[u8]) -> Option<Self> {
+        match b.len() {
+            8 => {
+                let prefix = IPAddress::from_bytes(&b[4..])?.as_prefix()?;
+                Some(IPRange {
+                    address: IPAddress::from_bytes(&b[..4])?.mask(prefix),
+                    prefix,
+                })
+            }
+            32 => {
+                let prefix = IPAddress::from_bytes(&b[16..])?.as_prefix()?;
+                Some(IPRange {
+                    address: IPAddress::from_bytes(&b[..16])?.mask(prefix),
+                    prefix,
+                })
+            }
+            _ => None,
+        }
+    }
+
+    /// TODO
+    pub fn matches(&self, addr: &IPAddress) -> bool {
+        self.address == addr.mask(self.prefix)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::types::{DNSName, DNSPattern};
+    use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
 
     #[test]
     fn test_dnsname_debug_trait() {
@@ -244,5 +354,33 @@ mod tests {
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.baz.example.com").unwrap()));
         assert!(!any_localhost.matches(&DNSName::new("localhost").unwrap()));
+    }
+
+    #[test]
+    fn test_ipaddress_from_str() {
+        assert_ne!(IPAddress::from_str("192.168.1.1"), None)
+    }
+
+    #[test]
+    fn test_iprange_from_bytes() {
+        // 192.168.1.1/16
+        let ipv4_with_extra = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
+        assert_ne!(IPRange::from_bytes(ipv4_with_extra), None);
+
+        // 192.168.0.0/16
+        let ipv4_masked = b"\xc0\xa8\x00\x00\xff\xff\x00\x00";
+        assert_eq!(
+            IPRange::from_bytes(ipv4_with_extra),
+            IPRange::from_bytes(ipv4_masked)
+        );
+    }
+
+    #[test]
+    fn test_iprange_matches() {
+        // 192.168.1.1/16
+        let data_ipv4 = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
+        let range = IPRange::from_bytes(data_ipv4).unwrap();
+
+        assert!(range.matches(&IPAddress::from_str("192.168.0.50").unwrap()));
     }
 }
