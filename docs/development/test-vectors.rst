@@ -33,7 +33,7 @@ Asymmetric ciphers
 * FIPS 186-2 and FIPS 186-3 DSA test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
 * DH and ECDH and ECDH+KDF(17.4) test vectors from `NIST CAVP`_.
-* Ed25519 test vectors from the `Ed25519 website_`.
+* Ed25519 test vectors from the `Ed25519 website`_.
 * OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
   `GnuTLS key parsing tests`_.
 * ``asymmetric/PEM_Serialization/rsa-bad-1025-q-is-2.pem`` from `badkeys`_.
