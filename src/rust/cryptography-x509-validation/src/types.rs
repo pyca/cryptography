@@ -175,11 +175,7 @@ impl IPAddress {
     pub fn mask(&self, prefix: u8) -> Self {
         match self {
             Self::V4(a) => {
-                if prefix >= 32 {
-                    return *self;
-                }
-
-                let prefix = (32 - prefix).into();
+                let prefix = 32u8.checked_sub(prefix).unwrap_or(0).into();
                 let masked = u32::from_be_bytes(a.octets())
                     & u32::MAX
                         .checked_shr(prefix)
@@ -189,11 +185,7 @@ impl IPAddress {
                 Self::from_bytes(&masked.to_be_bytes()).unwrap()
             }
             Self::V6(a) => {
-                if prefix >= 128 {
-                    return *self;
-                }
-
-                let prefix = (128 - prefix).into();
+                let prefix = 128u8.checked_sub(prefix).unwrap_or(0).into();
                 let masked = u128::from_be_bytes(a.octets())
                     & u128::MAX
                         .checked_shr(prefix)
