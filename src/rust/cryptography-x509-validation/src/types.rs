@@ -134,12 +134,12 @@ impl IPAddress {
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
         match b.len() {
             4 => {
-                let b: Option<[u8; 4]> = b.try_into().ok();
-                b.map(std::net::IpAddr::from).map(Self::from_std)
+                let b: [u8; 4] = b.try_into().ok()?;
+                Some(Self::from_std(std::net::IpAddr::from(b)))
             }
             16 => {
-                let b: Option<[u8; 16]> = b.try_into().ok();
-                b.map(std::net::IpAddr::from).map(Self::from_std)
+                let b: [u8; 16] = b.try_into().ok()?;
+                Some(Self::from_std(std::net::IpAddr::from(b)))
             }
             _ => None,
         }
