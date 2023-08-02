@@ -112,7 +112,7 @@ impl<'a> DNSPattern<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum IPAddress {
     V4(std::net::Ipv4Addr),
     V6(std::net::Ipv6Addr),
@@ -175,11 +175,31 @@ impl IPAddress {
     pub fn mask(&self, prefix: u8) -> Self {
         match self {
             Self::V4(a) => {
-                let masked = u32::from_be_bytes(a.octets()) & !((1u32 << prefix) - 1);
+                if prefix >= 32 {
+                    return *self;
+                }
+
+                let prefix = (32 - prefix).into();
+                let masked = u32::from_be_bytes(a.octets())
+                    & u32::MAX
+                        .checked_shr(prefix)
+                        .unwrap_or(0)
+                        .checked_shl(prefix)
+                        .unwrap_or(0);
                 Self::from_bytes(&masked.to_be_bytes()).unwrap()
             }
             Self::V6(a) => {
-                let masked = u128::from_be_bytes(a.octets()) & !((1u128 << prefix) - 1);
+                if prefix >= 128 {
+                    return *self;
+                }
+
+                let prefix = (128 - prefix).into();
+                let masked = u128::from_be_bytes(a.octets())
+                    & u128::MAX
+                        .checked_shr(prefix)
+                        .unwrap_or(0)
+                        .checked_shl(prefix)
+                        .unwrap_or(0);
                 Self::from_bytes(&masked.to_be_bytes()).unwrap()
             }
         }
@@ -351,12 +371,95 @@ mod tests {
     }
 
     #[test]
+    fn test_ipaddress_from_std() {
+        let ipv4_addr = "192.0.2.1".parse().unwrap();
+        let ipv6_addr = "2001:db8::1".parse().unwrap();
+
+        if let IPAddress::V6(_) = IPAddress::from_std(ipv4_addr) {
+            panic!("expected IPAddress::V4, got IPAddress::V6");
+        }
+        if let IPAddress::V4(_) = IPAddress::from_std(ipv6_addr) {
+            panic!("expected IPAddress::V6, got IPAddress::V4");
+        }
+    }
+
+    #[test]
     fn test_ipaddress_from_str() {
         assert_ne!(IPAddress::from_str("192.168.1.1"), None)
     }
 
     #[test]
+    fn test_ipaddress_from_bytes() {
+        let ipv4 = b"\xc0\x00\x02\x01";
+        let ipv6 = b"\x20\x01\x0d\xb8\x00\x00\x00\x00\
+                     \x00\x00\x00\x00\x00\x00\x00\x01";
+        let bad = b"\xde\xad";
+
+        assert_eq!(
+            IPAddress::from_bytes(ipv4).unwrap(),
+            IPAddress::from_str("192.0.2.1").unwrap(),
+        );
+        assert_eq!(
+            IPAddress::from_bytes(ipv6).unwrap(),
+            IPAddress::from_str("2001:db8::1").unwrap(),
+        );
+        assert_eq!(IPAddress::from_bytes(bad), None);
+    }
+
+    #[test]
+    fn test_ipaddress_as_prefix() {
+        let ipv4 = IPAddress::from_str("255.255.255.0").unwrap();
+        let ipv6 = IPAddress::from_str("ffff:ffff:ffff:ffff::").unwrap();
+        let ipv4_nonmask = IPAddress::from_str("192.0.2.1").unwrap();
+        let ipv6_nonmask = IPAddress::from_str("2001:db8::1").unwrap();
+
+        assert_eq!(ipv4.as_prefix(), Some(24));
+        assert_eq!(ipv6.as_prefix(), Some(64));
+        assert_eq!(ipv4_nonmask.as_prefix(), None);
+        assert_eq!(ipv6_nonmask.as_prefix(), None);
+    }
+
+    #[test]
+    fn test_ipaddress_mask() {
+        let ipv4 = IPAddress::from_str("192.0.2.252").unwrap();
+        let ipv6 = IPAddress::from_str("2001:db8::f00:01ba").unwrap();
+
+        assert_eq!(ipv4.mask(0), IPAddress::from_str("0.0.0.0").unwrap());
+        assert_eq!(ipv4.mask(64), ipv4);
+        assert_eq!(ipv4.mask(32), ipv4);
+        assert_eq!(ipv4.mask(24), IPAddress::from_str("192.0.2.0").unwrap());
+        assert_eq!(ipv6.mask(0), IPAddress::from_str("::0").unwrap());
+        assert_eq!(ipv6.mask(130), ipv6);
+        assert_eq!(ipv6.mask(128), ipv6);
+        assert_eq!(ipv6.mask(64), IPAddress::from_str("2001:db8::").unwrap());
+        assert_eq!(
+            ipv6.mask(103),
+            IPAddress::from_str("2001:db8::e00:0").unwrap()
+        );
+    }
+
+    #[test]
     fn test_iprange_from_bytes() {
+        let ipv4_bad = b"\xc0\xa8\x01\x01\xff\xfe\xff\x00";
+        let ipv4_bad_many_bits = b"\xc0\xa8\x01\x01\xff\xfc\xff\x00";
+        let ipv4_bad_octet = b"\xc0\xa8\x01\x01\x00\xff\xff\xff";
+        let ipv6_bad = b"\
+            \x26\x01\x00\x00\x00\x00\x00\x01\
+            \x00\x00\x00\x00\x00\x00\x00\x00\
+            \x00\x00\x00\x00\x00\x00\x00\x01\
+            \x00\x00\x00\x00\x00\x00\x00\x00";
+        let ipv6_good = b"\
+            \x20\x01\x0d\xb8\x00\x00\x00\x00\
+            \x00\x00\x00\x00\x00\x00\x00\x01\
+            \xf0\x00\x00\x00\x00\x00\x00\x00\
+            \x00\x00\x00\x00\x00\x00\x00\x00";
+
+        assert_eq!(IPRange::from_bytes(ipv4_bad), None);
+        assert_eq!(IPRange::from_bytes(ipv4_bad_many_bits), None);
+        assert_eq!(IPRange::from_bytes(ipv4_bad_octet), None);
+        assert_eq!(IPRange::from_bytes(ipv6_bad), None);
+        assert_ne!(IPRange::from_bytes(ipv6_good), None);
+
         // 192.168.1.1/16
         let ipv4_with_extra = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
         assert_ne!(IPRange::from_bytes(ipv4_with_extra), None);
@@ -372,23 +475,31 @@ mod tests {
     #[test]
     fn test_iprange_matches() {
         // 192.168.1.1/16
-        let data_ipv4 = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
-        let range = IPRange::from_bytes(data_ipv4).unwrap();
+        let ipv4 = IPRange::from_bytes(b"\xc0\xa8\x01\x01\xff\xff\x00\x00").unwrap();
+        let ipv4_32 = IPRange::from_bytes(b"\xc0\x00\x02\xde\xff\xff\xff\xff").unwrap();
+        let ipv6 = IPRange::from_bytes(
+            b"\x26\x00\x0d\xb8\x00\x00\x00\x00\
+              \x00\x00\x00\x00\x00\x00\x00\x01\
+              \xff\xff\xff\xff\x00\x00\x00\x00\
+              \x00\x00\x00\x00\x00\x00\x00\x00",
+        )
+        .unwrap();
+        let ipv6_128 = IPRange::from_bytes(
+            b"\x26\x00\x0d\xb8\x00\x00\x00\x00\
+              \x00\x00\x00\x00\xff\x00\xde\xde\
+              \xff\xff\xff\xff\xff\xff\xff\xff\
+              \xff\xff\xff\xff\xff\xff\xff\xff",
+        )
+        .unwrap();
 
-        assert!(range.matches(&IPAddress::from_str("192.168.0.50").unwrap()));
-    }
-
-    #[test]
-    fn test_iprange_bad_masks() {
-        // 192.168.1.1, mask 255.254.255.0
-        let bad_mask_one_bit = b"\xc0\xa8\x01\x01\xff\xfe\xff\x00";
-        // 192.168.1.1, mask 255.252.255.0
-        let bad_mask_many_bits = b"\xc0\xa8\x01\x01\xff\xfc\xff\x00";
-        // 192.168.1.1, mask 0.255.255.0
-        let bad_mask_octet = b"\xc0\xa8\x01\x01\x00\xff\xff\xff";
-
-        assert_eq!(IPRange::from_bytes(bad_mask_one_bit), None);
-        assert_eq!(IPRange::from_bytes(bad_mask_many_bits), None);
-        assert_eq!(IPRange::from_bytes(bad_mask_octet), None);
+        assert!(ipv4.matches(&IPAddress::from_str("192.168.0.50").unwrap()));
+        assert!(!ipv4.matches(&IPAddress::from_str("192.160.0.50").unwrap()));
+        assert!(ipv4_32.matches(&IPAddress::from_str("192.0.2.222").unwrap()));
+        assert!(!ipv4_32.matches(&IPAddress::from_str("192.5.2.222").unwrap()));
+        assert!(!ipv4_32.matches(&IPAddress::from_str("192.0.2.1").unwrap()));
+        assert!(ipv6.matches(&IPAddress::from_str("2600:db8::abba").unwrap()));
+        assert!(ipv6_128.matches(&IPAddress::from_str("2600:db8::ff00:dede").unwrap()));
+        assert!(!ipv6_128.matches(&IPAddress::from_str("2600::ff00:dede").unwrap()));
+        assert!(!ipv6_128.matches(&IPAddress::from_str("2600:db8::ff00:0").unwrap()));
     }
 }
