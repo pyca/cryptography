@@ -195,23 +195,17 @@ pub struct IPRange {
 /// TODO
 impl IPRange {
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
-        match b.len() {
-            8 => {
-                let prefix = IPAddress::from_bytes(&b[4..])?.as_prefix()?;
-                Some(IPRange {
-                    address: IPAddress::from_bytes(&b[..4])?.mask(prefix),
-                    prefix,
-                })
-            }
-            32 => {
-                let prefix = IPAddress::from_bytes(&b[16..])?.as_prefix()?;
-                Some(IPRange {
-                    address: IPAddress::from_bytes(&b[..16])?.mask(prefix),
-                    prefix,
-                })
-            }
-            _ => None,
-        }
+        let slice_idx = match b.len() {
+            8 => 4,
+            32 => 16,
+            _ => return None,
+        };
+
+        let prefix = IPAddress::from_bytes(&b[slice_idx..])?.as_prefix()?;
+        Some(IPRange {
+            address: IPAddress::from_bytes(&b[..slice_idx])?.mask(prefix),
+            prefix,
+        })
     }
 
     /// TODO
