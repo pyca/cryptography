@@ -453,12 +453,14 @@ mod tests {
             \x00\x00\x00\x00\x00\x00\x00\x01\
             \xf0\x00\x00\x00\x00\x00\x00\x00\
             \x00\x00\x00\x00\x00\x00\x00\x00";
+        let bad = b"\xff\xff\xff";
 
         assert_eq!(IPRange::from_bytes(ipv4_bad), None);
         assert_eq!(IPRange::from_bytes(ipv4_bad_many_bits), None);
         assert_eq!(IPRange::from_bytes(ipv4_bad_octet), None);
         assert_eq!(IPRange::from_bytes(ipv6_bad), None);
         assert_ne!(IPRange::from_bytes(ipv6_good), None);
+        assert_eq!(IPRange::from_bytes(bad), None);
 
         // 192.168.1.1/16
         let ipv4_with_extra = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
