@@ -122,15 +122,8 @@ pub enum IPAddress {
 ///
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 impl IPAddress {
-    pub fn from_std(addr: std::net::IpAddr) -> Self {
-        match addr {
-            std::net::IpAddr::V4(a) => Self::V4(a),
-            std::net::IpAddr::V6(a) => Self::V6(a),
-        }
-    }
-
     pub fn from_str(s: &str) -> Option<Self> {
-        std::net::IpAddr::from_str(s).ok().map(Self::from_std)
+        std::net::IpAddr::from_str(s).ok().map(Self::from)
     }
 
     /// Constructs an `IPAddress` from a slice. The provided data must be
@@ -142,11 +135,11 @@ impl IPAddress {
         match b.len() {
             4 => {
                 let b: [u8; 4] = b.try_into().ok()?;
-                Some(Self::from_std(std::net::IpAddr::from(b)))
+                Some(std::net::IpAddr::from(b).into())
             }
             16 => {
                 let b: [u8; 16] = b.try_into().ok()?;
-                Some(Self::from_std(std::net::IpAddr::from(b)))
+                Some(std::net::IpAddr::from(b).into())
             }
             _ => None,
         }
@@ -156,25 +149,21 @@ impl IPAddress {
     /// i.e., has only one contiguous block of set bits starting from the most
     /// significant bit, a prefix is returned.
     pub fn as_prefix(&self) -> Option<u8> {
-        match self {
+        let (leading, total) = match self {
             Self::V4(a) => {
                 let data = u32::from_be_bytes(a.octets());
-                let (leading, total) = (data.leading_ones(), data.count_ones());
-                if leading != total {
-                    None
-                } else {
-                    Some(leading as u8)
-                }
+                (data.leading_ones(), data.count_ones())
             }
             Self::V6(a) => {
                 let data = u128::from_be_bytes(a.octets());
-                let (leading, total) = (data.leading_ones(), data.count_ones());
-                if leading != total {
-                    None
-                } else {
-                    Some(leading as u8)
-                }
+                (data.leading_ones(), data.count_ones())
             }
+        };
+
+        if leading != total {
+            None
+        } else {
+            Some(leading as u8)
         }
     }
 
@@ -211,13 +200,25 @@ impl IPAddress {
     }
 }
 
+impl From<std::net::IpAddr> for IPAddress {
+    fn from(addr: std::net::IpAddr) -> Self {
+        match addr {
+            std::net::IpAddr::V4(a) => Self::V4(a),
+            std::net::IpAddr::V6(a) => Self::V6(a),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct IPRange {
     address: IPAddress,
     prefix: u8,
 }
 
-/// TODO
+/// An `IPRange` represents a CIDR-style address range used in a name constraints
+/// extension, as defined by [RFC 5280 4.2.1.10].
+///
+/// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
 impl IPRange {
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
         let slice_idx = match b.len() {
@@ -233,7 +234,14 @@ impl IPRange {
         })
     }
 
-    /// TODO
+    /// Determines if the `addr` is within the `IPRange`.
+    ///
+    /// ```rust
+    /// # use cryptography_x509_validation::types::{IPAddress,IPRange};
+    /// let range_bytes = b"\xc6\x33\x64\x00\xff\xff\xff\x00";
+    /// let range = IPRange::from_bytes(range_bytes).unwrap();
+    /// assert!(range.matches(&IPAddress::from_str("198.51.100.42").unwrap()));
+    /// ```
     pub fn matches(&self, addr: &IPAddress) -> bool {
         self.address == addr.mask(self.prefix)
     }
