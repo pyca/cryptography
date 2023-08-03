@@ -130,7 +130,7 @@ impl IPAddress {
     /// 4 (IPv4) or 16 (IPv6) bytes in "network byte order", as specified by
     /// [RFC 5280].
     ///
-    /// [https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6]
+    /// [RFC 5280]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
         match b.len() {
             4 => {
