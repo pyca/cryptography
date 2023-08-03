@@ -118,7 +118,9 @@ pub enum IPAddress {
     V6(std::net::Ipv6Addr),
 }
 
-/// TODO
+/// An `IPAddress` represents an IP address as defined in [RFC 5280 4.2.1.6].
+///
+/// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 impl IPAddress {
     pub fn from_std(addr: std::net::IpAddr) -> Self {
         match addr {
@@ -131,6 +133,11 @@ impl IPAddress {
         std::net::IpAddr::from_str(s).ok().map(Self::from_std)
     }
 
+    /// Constructs an `IPAddress` from a slice. The provided data must be
+    /// 4 (IPv4) or 16 (IPv6) bytes in "network byte order", as specified by
+    /// [RFC 5280].
+    ///
+    /// [https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6]
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
         match b.len() {
             4 => {
@@ -145,9 +152,9 @@ impl IPAddress {
         }
     }
 
-    /// Parses the octets of an IP address as a mask. If the mask is well-formed,
-    /// i.e. has only one contiguous block of 1 bits starting from the MSB, a prefix
-    /// is returned.
+    /// Parses the octets of the `IPAddress` as a mask. If it is well-formed,
+    /// i.e., has only one contiguous block of set bits starting from the most
+    /// significant bit, a prefix is returned.
     pub fn as_prefix(&self) -> Option<u8> {
         match self {
             Self::V4(a) => {
@@ -171,7 +178,13 @@ impl IPAddress {
         }
     }
 
-    /// TODO
+    /// Returns a new `IPAddress` with the first `prefix` bits of the `IPAddress`.
+    ///
+    /// ```rust
+    /// # use cryptography_x509_validation::types::IPAddress;
+    /// let ip = IPAddress::from_str("192.0.2.1").unwrap();
+    /// assert_eq!(ip.mask(24), IPAddress::from_str("192.0.2.0").unwrap());
+    /// ```
     pub fn mask(&self, prefix: u8) -> Self {
         match self {
             Self::V4(a) => {
