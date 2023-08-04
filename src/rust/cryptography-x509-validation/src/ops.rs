@@ -9,8 +9,9 @@ pub trait CryptoOps {
     type Key;
 
     /// Extracts the public key from the given `Certificate` in
-    /// a `Key` format known by the cryptographic backend.
-    fn public_key(&self, cert: &Certificate) -> Self::Key;
+    /// a `Key` format known by the cryptographic backend, or `None`
+    /// if the key is malformed.
+    fn public_key(&self, cert: &Certificate) -> Option<Self::Key>;
 
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
