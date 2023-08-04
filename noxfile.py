@@ -64,6 +64,11 @@ def tests(session: nox.Session) -> None:
     else:
         cov_args = []
 
+    if session.posargs:
+        tests = session.posargs
+    else:
+        tests = ["tests/"]
+
     session.run(
         "pytest",
         "-n",
@@ -71,8 +76,7 @@ def tests(session: nox.Session) -> None:
         "--dist=worksteal",
         *cov_args,
         "--durations=10",
-        *session.posargs,
-        "tests/",
+        *tests,
     )
 
     if session.name != "tests-nocoverage":
