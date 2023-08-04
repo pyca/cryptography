@@ -5,6 +5,7 @@
 use crate::{exceptions, OpenSSLError};
 use pyo3::ToPyObject;
 
+#[derive(Debug)]
 pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),
     Asn1Write(asn1::WriteError),

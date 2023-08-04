@@ -57,6 +57,7 @@ mod tests {
 
     #[test]
     fn test_pycryptoops() {
+        // pyo3::prepare_freethreaded_python();
         let pem = "
 -----BEGIN CERTIFICATE-----
 MIIFAzCCAuugAwIBAgIULk/1FzjhdjPggYD8EUdUtMKIXQIwDQYJKoZIhvcNAQEL

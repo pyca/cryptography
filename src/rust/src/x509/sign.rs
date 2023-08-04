@@ -530,7 +530,7 @@ fn hash_oid_py_hash(
         Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
-                "Signature algorithm OID: {} not recognized",
+                "Hash algorithm OID: {} not recognized",
                 &oid
             )),
         )),
@@ -541,6 +541,12 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
     py: pyo3::Python<'p>,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
 ) -> CryptographyResult<&'p pyo3::PyAny> {
+    let random_oid = py
+        .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
+        .getattr(pyo3::intern!(py, "SignatureAlgorithmOID"))?
+        .getattr(pyo3::intern!(py, "RSA_WITH_SHA256"))?;
+    println!("{:?}", random_oid.get_type().hash().unwrap());
+
     let sig_oids_to_hash = py
         .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
         .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
@@ -553,13 +559,15 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
         }
         _ => {
             let py_sig_alg_oid = oid_to_py_oid(py, signature_algorithm.oid())?;
+            println!("{:?}", py_sig_alg_oid.get_type().hash().unwrap());
             let hash_alg = sig_oids_to_hash.get_item(py_sig_alg_oid);
             match hash_alg {
                 Ok(data) => Ok(data),
-                Err(_) => Err(CryptographyError::from(
+                Err(e) => Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(format!(
-                        "Signature algorithm OID: {} not recognized",
-                        signature_algorithm.oid()
+                        "Signature algorithm OID: {} not recognized lol: {}",
+                        signature_algorithm.oid(),
+                        e
                     )),
                 )),
             }
