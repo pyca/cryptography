@@ -42,7 +42,7 @@ You can also specify a subset of tests to run as positional arguments:
 .. code-block:: console
 
     $ # run the whole x509 testsuite, plus the fernet tests
-    $ nox -e tests -p py310 -- tests/x509 tests/test_fernet.py
+    $ nox -e tests -p py310 -- tests/x509/ tests/test_fernet.py
 
 Building documentation
 ----------------------
