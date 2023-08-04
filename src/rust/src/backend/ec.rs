@@ -49,6 +49,8 @@ fn curve_from_py_curve(
         "sect283k1" => openssl::nid::Nid::SECT283K1,
         "sect409k1" => openssl::nid::Nid::SECT409K1,
         "sect571k1" => openssl::nid::Nid::SECT571K1,
+        "sm2" => openssl::nid::Nid::SM2,
+        
 
         #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
         "brainpoolP256r1" => openssl::nid::Nid::BRAINPOOL_P256R1,
