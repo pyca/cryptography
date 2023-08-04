@@ -12,34 +12,29 @@ use super::sign;
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
-    // NOTE: This "key" type also carries any error that might happen
-    // during key serialization/loading. This isn't ideal but also is
-    // not a significant issue, since its only use is in checking
-    // another certificate's signature (where an error means that the
-    // signature check fails trivially).
-    type Key = CryptographyResult<pyo3::Py<pyo3::PyAny>>;
+    type Key = pyo3::Py<pyo3::PyAny>;
 
-    fn public_key(&self, cert: &Certificate<'_>) -> Self::Key {
-        pyo3::Python::with_gil(|py| -> Self::Key {
+    fn public_key(&self, cert: &Certificate<'_>) -> Option<Self::Key> {
+        pyo3::Python::with_gil(|py| -> Option<Self::Key> {
             // This makes an unnecessary copy. It'd be nice to get rid of it.
-            let spki_der = pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki)?);
-            Ok(py
-                .import(pyo3::intern!(
+            let spki_der =
+                pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki).ok()?);
+            Some(
+                py.import(pyo3::intern!(
                     py,
                     "cryptography.hazmat.primitives.serialization"
-                ))?
-                .getattr(pyo3::intern!(py, "load_der_public_key"))?
-                .call1((spki_der,))?
-                .into())
+                ))
+                .ok()?
+                .getattr(pyo3::intern!(py, "load_der_public_key"))
+                .ok()?
+                .call1((spki_der,))
+                .ok()?
+                .into(),
+            )
         })
     }
 
     fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> bool {
-        let key = match key {
-            Ok(key) => key,
-            Err(_) => return false,
-        };
-
         pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
             sign::verify_signature_with_signature_algorithm(
                 py,
@@ -99,7 +94,7 @@ NlIpBxyLOUUx0e7+ooHYTUm9rNHmAYadjwNk3phoRzSQHhAQFjVQ
         let ops = PyCryptoOps {};
         let pk = ops.public_key(&cert);
 
-        assert!(pk.is_ok());
-        assert!(ops.is_signed_by(&cert, pk));
+        assert!(pk.is_some());
+        assert!(ops.is_signed_by(&cert, pk.unwrap()));
     }
 }
