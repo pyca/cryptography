@@ -198,8 +198,8 @@ impl IPAddress {
     }
 }
 
-impl From<std::net::IpAddr> for IPAddress {
-    fn from(addr: std::net::IpAddr) -> Self {
+impl From<IpAddr> for IPAddress {
+    fn from(addr: IpAddr) -> Self {
         Self(addr)
     }
 }
