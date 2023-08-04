@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::net::IpAddr;
 use std::str::FromStr;
 
 /// A `DNSName` is an `asn1::IA5String` with additional invariant preservations
@@ -113,17 +114,14 @@ impl<'a> DNSPattern<'a> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum IPAddress {
-    V4(std::net::Ipv4Addr),
-    V6(std::net::Ipv6Addr),
-}
+pub struct IPAddress(IpAddr);
 
 /// An `IPAddress` represents an IP address as defined in [RFC 5280 4.2.1.6].
 ///
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 impl IPAddress {
     pub fn from_str(s: &str) -> Option<Self> {
-        std::net::IpAddr::from_str(s).ok().map(Self::from)
+        IpAddr::from_str(s).ok().map(Self::from)
     }
 
     /// Constructs an `IPAddress` from a slice. The provided data must be
@@ -135,11 +133,11 @@ impl IPAddress {
         match b.len() {
             4 => {
                 let b: [u8; 4] = b.try_into().ok()?;
-                Some(std::net::IpAddr::from(b).into())
+                Some(IpAddr::from(b).into())
             }
             16 => {
                 let b: [u8; 16] = b.try_into().ok()?;
-                Some(std::net::IpAddr::from(b).into())
+                Some(IpAddr::from(b).into())
             }
             _ => None,
         }
@@ -149,12 +147,12 @@ impl IPAddress {
     /// i.e., has only one contiguous block of set bits starting from the most
     /// significant bit, a prefix is returned.
     pub fn as_prefix(&self) -> Option<u8> {
-        let (leading, total) = match self {
-            Self::V4(a) => {
+        let (leading, total) = match self.0 {
+            IpAddr::V4(a) => {
                 let data = u32::from_be_bytes(a.octets());
                 (data.leading_ones(), data.count_ones())
             }
-            Self::V6(a) => {
+            IpAddr::V6(a) => {
                 let data = u128::from_be_bytes(a.octets());
                 (data.leading_ones(), data.count_ones())
             }
@@ -175,8 +173,8 @@ impl IPAddress {
     /// assert_eq!(ip.mask(24), IPAddress::from_str("192.0.2.0").unwrap());
     /// ```
     pub fn mask(&self, prefix: u8) -> Self {
-        match self {
-            Self::V4(a) => {
+        match self.0 {
+            IpAddr::V4(a) => {
                 let prefix = 32u8.checked_sub(prefix).unwrap_or(0).into();
                 let masked = u32::from_be_bytes(a.octets())
                     & u32::MAX
@@ -186,7 +184,7 @@ impl IPAddress {
                         .unwrap_or(0);
                 Self::from_bytes(&masked.to_be_bytes()).unwrap()
             }
-            Self::V6(a) => {
+            IpAddr::V6(a) => {
                 let prefix = 128u8.checked_sub(prefix).unwrap_or(0).into();
                 let masked = u128::from_be_bytes(a.octets())
                     & u128::MAX
@@ -202,10 +200,7 @@ impl IPAddress {
 
 impl From<std::net::IpAddr> for IPAddress {
     fn from(addr: std::net::IpAddr) -> Self {
-        match addr {
-            std::net::IpAddr::V4(a) => Self::V4(a),
-            std::net::IpAddr::V6(a) => Self::V6(a),
-        }
+        Self(addr)
     }
 }
 
@@ -220,6 +215,13 @@ pub struct IPRange {
 ///
 /// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
 impl IPRange {
+    /// Constructs an `IPRange` from a slice. The input slice must be 8 (IPv4)
+    /// or 32 (IPv6) bytes long and contain two IP addresses, the first being
+    /// a subnet and the second defining the subnet's mask.
+    ///
+    /// The subnet mask must contain only one contiguous run of set bits starting
+    /// from the most significant bit. For example, a valid IPv4 subnet mask would
+    /// be FF FF 00 00, whereas an invalid IPv4 subnet mask would be FF EF 00 00.
     pub fn from_bytes(b: &[u8]) -> Option<Self> {
         let slice_idx = match b.len() {
             8 => 4,
