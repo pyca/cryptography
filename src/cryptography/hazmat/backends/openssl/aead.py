@@ -14,13 +14,10 @@ if typing.TYPE_CHECKING:
         AESCCM,
         AESGCM,
         AESOCB3,
-        AESSIV,
         ChaCha20Poly1305,
     )
 
-    _AEADTypes = typing.Union[
-        AESCCM, AESGCM, AESOCB3, AESSIV, ChaCha20Poly1305
-    ]
+    _AEADTypes = typing.Union[AESCCM, AESGCM, AESOCB3, ChaCha20Poly1305]
 
 
 def _is_evp_aead_supported_cipher(
@@ -44,16 +41,9 @@ def _aead_cipher_supported(backend: Backend, cipher: _AEADTypes) -> bool:
         cipher_name = _evp_cipher_cipher_name(cipher)
         if backend._fips_enabled and cipher_name not in backend._fips_aead:
             return False
-        # SIV isn't loaded through get_cipherbyname but instead a new fetch API
-        # only available in 3.0+. But if we know we're on 3.0+ then we know
-        # it's supported.
-        if cipher_name.endswith(b"-siv"):
-            return backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER == 1
-        else:
-            return (
-                backend._lib.EVP_get_cipherbyname(cipher_name)
-                != backend._ffi.NULL
-            )
+        return (
+            backend._lib.EVP_get_cipherbyname(cipher_name) != backend._ffi.NULL
+        )
 
 
 def _aead_create_ctx(
@@ -231,7 +221,6 @@ def _evp_cipher_cipher_name(cipher: _AEADTypes) -> bytes:
         AESCCM,
         AESGCM,
         AESOCB3,
-        AESSIV,
         ChaCha20Poly1305,
     )
 
@@ -241,26 +230,14 @@ def _evp_cipher_cipher_name(cipher: _AEADTypes) -> bytes:
         return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
     elif isinstance(cipher, AESOCB3):
         return f"aes-{len(cipher._key) * 8}-ocb".encode("ascii")
-    elif isinstance(cipher, AESSIV):
-        return f"aes-{len(cipher._key) * 8 // 2}-siv".encode("ascii")
     else:
         assert isinstance(cipher, AESGCM)
         return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
 
 
 def _evp_cipher(cipher_name: bytes, backend: Backend):
-    if cipher_name.endswith(b"-siv"):
-        evp_cipher = backend._lib.EVP_CIPHER_fetch(
-            backend._ffi.NULL,
-            cipher_name,
-            backend._ffi.NULL,
-        )
-        backend.openssl_assert(evp_cipher != backend._ffi.NULL)
-        evp_cipher = backend._ffi.gc(evp_cipher, backend._lib.EVP_CIPHER_free)
-    else:
-        evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
-        backend.openssl_assert(evp_cipher != backend._ffi.NULL)
-
+    evp_cipher = backend._lib.EVP_get_cipherbyname(cipher_name)
+    backend.openssl_assert(evp_cipher != backend._ffi.NULL)
     return evp_cipher
 
 
@@ -389,10 +366,7 @@ def _evp_cipher_process_data(backend: Backend, ctx, data: bytes) -> bytes:
     buf = backend._ffi.new("unsigned char[]", len(data))
     data_ptr = backend._ffi.from_buffer(data)
     res = backend._lib.EVP_CipherUpdate(ctx, buf, outlen, data_ptr, len(data))
-    if res == 0:
-        # AES SIV can error here if the data is invalid on decrypt
-        backend._consume_errors()
-        raise InvalidTag
+    backend.openssl_assert(res != 0)
     return backend._ffi.buffer(buf, outlen[0])[:]
 
 
@@ -405,7 +379,7 @@ def _evp_cipher_encrypt(
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
-    from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
     if ctx is None:
         cipher_name = _evp_cipher_cipher_name(cipher)
@@ -445,14 +419,7 @@ def _evp_cipher_encrypt(
     backend.openssl_assert(res != 0)
     tag = backend._ffi.buffer(tag_buf)[:]
 
-    if isinstance(cipher, AESSIV):
-        # RFC 5297 defines the output as IV || C, where the tag we generate
-        # is the "IV" and C is the ciphertext. This is the opposite of our
-        # other AEADs, which are Ciphertext || Tag
-        backend.openssl_assert(len(tag) == 16)
-        return tag + processed_data
-    else:
-        return processed_data + tag
+    return processed_data + tag
 
 
 def _evp_cipher_decrypt(
@@ -464,20 +431,13 @@ def _evp_cipher_decrypt(
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
-    from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESSIV
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
     if len(data) < tag_length:
         raise InvalidTag
 
-    if isinstance(cipher, AESSIV):
-        # RFC 5297 defines the output as IV || C, where the tag we generate
-        # is the "IV" and C is the ciphertext. This is the opposite of our
-        # other AEADs, which are Ciphertext || Tag
-        tag = data[:tag_length]
-        data = data[tag_length:]
-    else:
-        tag = data[-tag_length:]
-        data = data[:-tag_length]
+    tag = data[-tag_length:]
+    data = data[:-tag_length]
     if ctx is None:
         cipher_name = _evp_cipher_cipher_name(cipher)
         ctx = _evp_cipher_aead_setup(
