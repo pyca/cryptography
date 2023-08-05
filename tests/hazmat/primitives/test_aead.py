@@ -671,6 +671,9 @@ class TestAESSIV:
         with pytest.raises(OverflowError):
             aessiv.encrypt(b"irrelevant", [large_data])
 
+        with pytest.raises(OverflowError):
+            aessiv.decrypt(b"very very irrelevant", [large_data])
+
     def test_no_empty_encryption(self):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)
