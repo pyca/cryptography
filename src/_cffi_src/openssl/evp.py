@@ -22,6 +22,7 @@ static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
 static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
+static const int EVP_PKEY_SM2;
 static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
 static const int EVP_PKEY_X448;

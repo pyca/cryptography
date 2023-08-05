@@ -112,6 +112,7 @@ class SignatureAlgorithmOID:
     ECDSA_WITH_SHA3_256 = ObjectIdentifier("2.16.840.1.101.3.4.3.10")
     ECDSA_WITH_SHA3_384 = ObjectIdentifier("2.16.840.1.101.3.4.3.11")
     ECDSA_WITH_SHA3_512 = ObjectIdentifier("2.16.840.1.101.3.4.3.12")
+    SM2_WITH_SM3 = ObjectIdentifier("1.2.156.10197.1.501")
     DSA_WITH_SHA1 = ObjectIdentifier("1.2.840.10040.4.3")
     DSA_WITH_SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.3.1")
     DSA_WITH_SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.3.2")

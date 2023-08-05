@@ -319,11 +319,24 @@ _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
     "brainpoolP256r1": BrainpoolP256R1,
     "brainpoolP384r1": BrainpoolP384R1,
     "brainpoolP512r1": BrainpoolP512R1,
-    "sm2": SM2,
+    "SM2": SM2,
 }
 
 
 class ECDSA(EllipticCurveSignatureAlgorithm):
+    def __init__(
+        self,
+        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+    ):
+        self._algorithm = algorithm
+
+    @property
+    def algorithm(
+        self,
+    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+        return self._algorithm
+
+class SM2Sign(EllipticCurveSignatureAlgorithm):
     def __init__(
         self,
         algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],

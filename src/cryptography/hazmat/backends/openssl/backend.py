@@ -561,6 +561,11 @@ class Backend:
             return rust_openssl.ed448.private_key_from_ptr(
                 int(self._ffi.cast("uintptr_t", evp_pkey))
             )
+        elif key_type == self._lib.EVP_PKEY_SM2:
+            # Add sm2 support
+            return rust_openssl.ec.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
 
@@ -941,7 +946,8 @@ class Backend:
         curve: ec.EllipticCurve,
     ) -> bool:
         # We only support ECDSA right now.
-        if not isinstance(signature_algorithm, ec.ECDSA):
+        # add support with SM2sign
+        if not isinstance(signature_algorithm, ec.ECDSA) or not isinstance(signature_algorithm, ec.SM2Sign):
             return False
 
         return self.elliptic_curve_supported(curve) and (

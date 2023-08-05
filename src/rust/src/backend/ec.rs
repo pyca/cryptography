@@ -365,8 +365,16 @@ impl ECPrivateKey {
             ))?
             .getattr(pyo3::intern!(py, "ECDSA"))?
             .extract()?;
+        
+        let sm2sign_class: &pyo3::types::PyType = py
+            .import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.asymmetric.ec"
+            ))?
+            .getattr(pyo3::intern!(py, "SM2Sign"))?
+            .extract()?;
 
-        if !algorithm.is_instance(ecdsa_class)? {
+        if !algorithm.is_instance(ecdsa_class)? && !algorithm.is_instance(sm2sign_class)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -479,7 +487,15 @@ impl ECPublicKey {
             .getattr(pyo3::intern!(py, "ECDSA"))?
             .extract()?;
 
-        if !signature_algorithm.is_instance(ecdsa_class)? {
+        let sm2sign_class: &pyo3::types::PyType = py
+            .import(pyo3::intern!(
+                py,
+                "cryptography.hazmat.primitives.asymmetric.ec"
+            ))?
+            .getattr(pyo3::intern!(py, "SM2Sign"))?
+            .extract()?;
+
+        if !signature_algorithm.is_instance(ecdsa_class)? && !signature_algorithm.is_instance(sm2sign_class)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",

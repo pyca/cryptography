@@ -58,6 +58,9 @@ pub const ECDSA_WITH_SHA3_384_OID: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 11);
 pub const ECDSA_WITH_SHA3_512_OID: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 12);
+pub const SM2_WITH_SM3_OID: asn1::ObjectIdentifier =
+    asn1::oid!(1, 2, 156, 10197, 1, 501);
+
 
 pub const RSA_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 5);
 pub const RSA_WITH_SHA1_ALT_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 14, 3, 2, 29);
