@@ -78,4 +78,5 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
   popd
+  rm -rf boringssl/
 fi
