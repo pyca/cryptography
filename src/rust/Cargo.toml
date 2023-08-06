@@ -15,7 +15,7 @@ cryptography-cffi = { path = "cryptography-cffi" }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
-openssl = "0.10.55"
+openssl = "0.10.56"
 openssl-sys = "0.9.91"
 foreign-types-shared = "0.1"
 self_cell = "1"
