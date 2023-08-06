@@ -86,9 +86,9 @@ typing-extensions==4.7.1 \
     --hash=sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36 \
     --hash=sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2
     # via setuptools-rust
-wheel==0.41.0 \
-    --hash=sha256:55a0f0a5a84869bce5ba775abfd9c462e3a6b1b7b7ec69d72c0b83d673a5114d \
-    --hash=sha256:7e9be3bbd0078f6147d82ed9ed957e323e7708f57e134743d2edef3a7b7972a9
+wheel==0.41.1 \
+    --hash=sha256:12b911f083e876e10c595779709f8a88a59f45aacc646492a67fe9ef796c1b47 \
+    --hash=sha256:473219bd4cbedc62cea0cb309089b593e47c15c4a2531015f94e4e3b9a0f6981
     # via -r build-requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
