@@ -1256,7 +1256,13 @@ class Backend:
     def poly1305_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return self._lib.Cryptography_HAS_POLY1305 == 1
+        elif (
+            self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            or self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            return True
+        else:
+            return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
