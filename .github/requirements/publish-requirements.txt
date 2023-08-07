@@ -374,9 +374,9 @@ pydantic==1.10.12 \
     # via
     #   id
     #   sigstore
-pygments==2.16.0 \
-    --hash=sha256:4f6df32f21dca07a54a0a130bda9a25d2241e9e0a206841d061c85a60cc96145 \
-    --hash=sha256:90e046f72a58b65edd7e6bd99926ffa1b9d19e23db166905046bea0069c0894d
+pygments==2.16.1 \
+    --hash=sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692 \
+    --hash=sha256:1daff0494820c69bc8941e407aa20f577374ee88364ee10a98fdbe0aece96e29
     # via
     #   readme-renderer
     #   rich
