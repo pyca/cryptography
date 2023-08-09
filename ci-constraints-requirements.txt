@@ -164,7 +164,7 @@ sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-qthelp==1.0.4
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==1.1.7
     # via sphinx
 sphinxcontrib-spelling==8.0.0
     # via cryptography (pyproject.toml)
