@@ -172,10 +172,7 @@ class DSAParameterNumbers:
         return self.p == other.p and self.q == other.q and self.g == other.g
 
     def __repr__(self) -> str:
-        return (
-            "<DSAParameterNumbers(p={self.p}, q={self.q}, "
-            "g={self.g})>".format(self=self)
-        )
+        return f"<DSAParameterNumbers(p={self.p}, q={self.q}, " f"g={self.g})>"
 
 
 class DSAPublicNumbers:
@@ -214,8 +211,8 @@ class DSAPublicNumbers:
 
     def __repr__(self) -> str:
         return (
-            "<DSAPublicNumbers(y={self.y}, "
-            "parameter_numbers={self.parameter_numbers})>".format(self=self)
+            f"<DSAPublicNumbers(y={self.y}, "
+            f"parameter_numbers={self.parameter_numbers})>"
         )
 
 

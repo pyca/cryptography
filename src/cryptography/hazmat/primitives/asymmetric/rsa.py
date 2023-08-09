@@ -427,7 +427,7 @@ class RSAPublicNumbers:
         return ossl.load_rsa_public_numbers(self)
 
     def __repr__(self) -> str:
-        return "<RSAPublicNumbers(e={0.e}, n={0.n})>".format(self)
+        return f"<RSAPublicNumbers(e={self.e}, n={self.n})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RSAPublicNumbers):

@@ -182,9 +182,9 @@ class Backend:
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         if algorithm.name == "blake2b" or algorithm.name == "blake2s":
-            alg = "{}{}".format(
-                algorithm.name, algorithm.digest_size * 8
-            ).encode("ascii")
+            alg = f"{algorithm.name}{algorithm.digest_size * 8}".encode(
+                "ascii"
+            )
         else:
             alg = algorithm.name.encode("ascii")
 
@@ -1535,7 +1535,7 @@ class Backend:
         if nid != self._lib.NID_pkcs7_signed:
             raise UnsupportedAlgorithm(
                 "Only basic signed structures are currently supported. NID"
-                " for this data was {}".format(nid),
+                f" for this data was {nid}",
                 _Reasons.UNSUPPORTED_SERIALIZATION,
             )
 
