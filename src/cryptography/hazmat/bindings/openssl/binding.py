@@ -33,7 +33,7 @@ def _openssl_assert(
             "OpenSSL try disabling it before reporting a bug. Otherwise "
             "please file an issue at https://github.com/pyca/cryptography/"
             "issues with information on how to reproduce "
-            "this. ({!r})".format(errors),
+            f"this. ({errors!r})",
             errors,
         )
 

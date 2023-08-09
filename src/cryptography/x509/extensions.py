@@ -240,10 +240,10 @@ class AuthorityKeyIdentifier(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<AuthorityKeyIdentifier(key_identifier={0.key_identifier!r}, "
-            "authority_cert_issuer={0.authority_cert_issuer}, "
-            "authority_cert_serial_number={0.authority_cert_serial_number}"
-            ")>".format(self)
+            f"<AuthorityKeyIdentifier(key_identifier={self.key_identifier!r}, "
+            f"authority_cert_issuer={self.authority_cert_issuer}, "
+            f"authority_cert_serial_number={self.authority_cert_serial_number}"
+            ")>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -1211,14 +1211,14 @@ class KeyUsage(ExtensionType):
             decipher_only = False
 
         return (
-            "<KeyUsage(digital_signature={0.digital_signature}, "
-            "content_commitment={0.content_commitment}, "
-            "key_encipherment={0.key_encipherment}, "
-            "data_encipherment={0.data_encipherment}, "
-            "key_agreement={0.key_agreement}, "
-            "key_cert_sign={0.key_cert_sign}, crl_sign={0.crl_sign}, "
-            "encipher_only={1}, decipher_only={2})>"
-        ).format(self, encipher_only, decipher_only)
+            f"<KeyUsage(digital_signature={self.digital_signature}, "
+            f"content_commitment={self.content_commitment}, "
+            f"key_encipherment={self.key_encipherment}, "
+            f"data_encipherment={self.data_encipherment}, "
+            f"key_agreement={self.key_agreement}, "
+            f"key_cert_sign={self.key_cert_sign}, crl_sign={self.crl_sign}, "
+            f"encipher_only={encipher_only}, decipher_only={decipher_only})>"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, KeyUsage):
@@ -1337,8 +1337,8 @@ class NameConstraints(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<NameConstraints(permitted_subtrees={0.permitted_subtrees}, "
-            "excluded_subtrees={0.excluded_subtrees})>".format(self)
+            f"<NameConstraints(permitted_subtrees={self.permitted_subtrees}, "
+            f"excluded_subtrees={self.excluded_subtrees})>"
         )
 
     def __hash__(self) -> int:
@@ -1404,9 +1404,9 @@ class Extension(typing.Generic[ExtensionTypeVar]):
 
     def __repr__(self) -> str:
         return (
-            "<Extension(oid={0.oid}, critical={0.critical}, "
-            "value={0.value})>"
-        ).format(self)
+            f"<Extension(oid={self.oid}, critical={self.critical}, "
+            f"value={self.value})>"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Extension):
@@ -2044,14 +2044,14 @@ class IssuingDistributionPoint(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<IssuingDistributionPoint(full_name={0.full_name}, "
-            "relative_name={0.relative_name}, "
-            "only_contains_user_certs={0.only_contains_user_certs}, "
-            "only_contains_ca_certs={0.only_contains_ca_certs}, "
-            "only_some_reasons={0.only_some_reasons}, "
-            "indirect_crl={0.indirect_crl}, "
+            f"<IssuingDistributionPoint(full_name={self.full_name}, "
+            f"relative_name={self.relative_name}, "
+            f"only_contains_user_certs={self.only_contains_user_certs}, "
+            f"only_contains_ca_certs={self.only_contains_ca_certs}, "
+            f"only_some_reasons={self.only_some_reasons}, "
+            f"indirect_crl={self.indirect_crl}, "
             "only_contains_attribute_certs="
-            "{0.only_contains_attribute_certs})>".format(self)
+            f"{self.only_contains_attribute_certs})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -2192,8 +2192,8 @@ class UnrecognizedExtension(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<UnrecognizedExtension(oid={0.oid}, "
-            "value={0.value!r})>".format(self)
+            f"<UnrecognizedExtension(oid={self.oid}, "
+            f"value={self.value!r})>"
         )
 
     def __eq__(self, other: object) -> bool:

@@ -145,7 +145,7 @@ class NameAttribute:
             elif c_len != 2:
                 warnings.warn(
                     "Country names should be two characters, but the "
-                    "attribute is {} characters in length.".format(c_len),
+                    f"attribute is {c_len} characters in length.",
                     stacklevel=2,
                 )
 
@@ -208,7 +208,7 @@ class NameAttribute:
         return hash((self.oid, self.value))
 
     def __repr__(self) -> str:
-        return "<NameAttribute(oid={0.oid}, value={0.value!r})>".format(self)
+        return f"<NameAttribute(oid={self.oid}, value={self.value!r})>"
 
 
 class RelativeDistinguishedName:
