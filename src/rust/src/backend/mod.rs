@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+pub(crate) mod aead;
 pub(crate) mod dh;
 pub(crate) mod dsa;
 pub(crate) mod ec;
@@ -20,6 +21,7 @@ pub(crate) mod x25519;
 pub(crate) mod x448;
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_submodule(aead::create_module(module.py())?)?;
     module.add_submodule(dh::create_module(module.py())?)?;
     module.add_submodule(dsa::create_module(module.py())?)?;
     module.add_submodule(ec::create_module(module.py())?)?;

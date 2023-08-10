@@ -26,6 +26,7 @@ pub(crate) enum Reasons {
 pyo3::import_exception!(cryptography.exceptions, AlreadyFinalized);
 pyo3::import_exception!(cryptography.exceptions, InternalError);
 pyo3::import_exception!(cryptography.exceptions, InvalidSignature);
+pyo3::import_exception!(cryptography.exceptions, InvalidTag);
 pyo3::import_exception!(cryptography.exceptions, UnsupportedAlgorithm);
 pyo3::import_exception!(cryptography.x509, AttributeNotFound);
 pyo3::import_exception!(cryptography.x509, DuplicateExtension);
