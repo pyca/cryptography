@@ -4,6 +4,8 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+pub mod aead;
 pub mod cmac;
 pub mod fips;
 pub mod hmac;
