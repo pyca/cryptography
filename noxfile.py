@@ -188,7 +188,9 @@ def rust(session: nox.Session) -> None:
 
     with session.chdir("src/rust/"):
         session.run("cargo", "fmt", "--all", "--", "--check", external=True)
-        session.run("cargo", "clippy", "--", "-D", "warnings", external=True)
+        session.run(
+            "cargo", "clippy", "--all", "--", "-D", "warnings", external=True
+        )
 
         build_output = session.run(
             "cargo",

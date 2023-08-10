@@ -113,13 +113,14 @@ impl<'a> DNSPattern<'a> {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct IPAddress(IpAddr);
 
 /// An `IPAddress` represents an IP address as defined in [RFC 5280 4.2.1.6].
 ///
 /// [RFC 5280 4.2.1.6]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 impl IPAddress {
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         IpAddr::from_str(s).ok().map(Self::from)
     }
@@ -175,7 +176,7 @@ impl IPAddress {
     pub fn mask(&self, prefix: u8) -> Self {
         match self.0 {
             IpAddr::V4(a) => {
-                let prefix = 32u8.checked_sub(prefix).unwrap_or(0).into();
+                let prefix = 32u8.saturating_sub(prefix).into();
                 let masked = u32::from_be_bytes(a.octets())
                     & u32::MAX
                         .checked_shr(prefix)
@@ -185,7 +186,7 @@ impl IPAddress {
                 Self::from_bytes(&masked.to_be_bytes()).unwrap()
             }
             IpAddr::V6(a) => {
-                let prefix = 128u8.checked_sub(prefix).unwrap_or(0).into();
+                let prefix = 128u8.saturating_sub(prefix).into();
                 let masked = u128::from_be_bytes(a.octets())
                     & u128::MAX
                         .checked_shr(prefix)
@@ -204,7 +205,7 @@ impl From<IpAddr> for IPAddress {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct IPRange {
     address: IPAddress,
     prefix: u8,
