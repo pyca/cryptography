@@ -10,11 +10,11 @@ class AESSIV:
     def generate_key(key_size: int) -> bytes: ...
     def encrypt(
         self,
-        nonce: bytes,
+        data: bytes,
         associated_data: typing.Optional[typing.List[bytes]],
     ) -> bytes: ...
     def decrypt(
         self,
-        nonce: bytes,
+        data: bytes,
         associated_data: typing.Optional[typing.List[bytes]],
     ) -> bytes: ...
