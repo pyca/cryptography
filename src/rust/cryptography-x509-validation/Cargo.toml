@@ -10,3 +10,7 @@ rust-version = "1.63.0"
 [dependencies]
 asn1 = { version = "0.15.5", default-features = false }
 cryptography-x509 = { path = "../cryptography-x509" }
+once_cell = "1"
+
+[dev-dependencies]
+pem = "1.1"

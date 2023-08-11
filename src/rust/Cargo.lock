@@ -30,6 +30,12 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "base64"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
+
+[[package]]
+name = "base64"
 version = "0.21.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "604178f6c5c21f02dc555784810edfb88d34ac2c73b2eae109655649ee73ce3d"
@@ -83,11 +89,12 @@ dependencies = [
  "cryptography-cffi",
  "cryptography-openssl",
  "cryptography-x509",
+ "cryptography-x509-validation",
  "foreign-types-shared",
  "once_cell",
  "openssl",
  "openssl-sys",
- "pem",
+ "pem 3.0.1",
  "pyo3",
  "self_cell",
 ]
@@ -105,6 +112,8 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "cryptography-x509",
+ "once_cell",
+ "pem 1.1.1",
 ]
 
 [[package]]
@@ -222,11 +231,20 @@ dependencies = [
 
 [[package]]
 name = "pem"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8835c273a76a90455d7344889b0964598e3316e2a79ede8e36f16bdcf2228b8"
+dependencies = [
+ "base64 0.13.1",
+]
+
+[[package]]
+name = "pem"
 version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed3127afbfc30b4cad60c34aeb741fb562a808642b81142bcf4afb73142da960"
 dependencies = [
- "base64",
+ "base64 0.21.2",
 ]
 
 [[package]]

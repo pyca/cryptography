@@ -4,5 +4,8 @@
 
 #![forbid(unsafe_code)]
 
+pub mod certificate;
 pub mod ops;
+pub mod policy;
+pub mod trust_store;
 pub mod types;

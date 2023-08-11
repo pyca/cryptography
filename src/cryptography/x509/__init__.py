@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from cryptography.x509 import certificate_transparency
+from cryptography.x509 import certificate_transparency, verification
 from cryptography.x509.base import (
     Attribute,
     AttributeNotFound,
@@ -171,6 +171,7 @@ OID_OCSP = AuthorityInformationAccessOID.OCSP
 
 __all__ = [
     "certificate_transparency",
+    "verification",
     "load_pem_x509_certificate",
     "load_pem_x509_certificates",
     "load_der_x509_certificate",

@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import datetime
 import typing
 
 from cryptography import x509
@@ -36,9 +37,21 @@ def create_x509_crl(
     private_key: PrivateKeyTypes,
     hash_algorithm: typing.Optional[hashes.HashAlgorithm],
 ) -> x509.CertificateRevocationList: ...
+def create_policy(
+    profile: x509.verification.Profile,
+    name: typing.Optional[x509.verification.Subject],
+    time: typing.Optional[datetime.datetime],
+) -> x509.verification.Policy: ...
+def verify(
+    leaf: x509.Certificate,
+    policy: Policy,
+    intermediates: typing.List[x509.Certificate],
+    store: x509.verification.Store,
+) -> list[x509.Certificate]: ...
 
 class Sct: ...
 class Certificate: ...
 class RevokedCertificate: ...
 class CertificateRevocationList: ...
 class CertificateSigningRequest: ...
+class Policy: ...
