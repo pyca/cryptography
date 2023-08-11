@@ -4,15 +4,13 @@
 
 from __future__ import annotations
 
-import typing
-
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 
 
 def _calculate_digest_and_algorithm(
     data: bytes,
-    algorithm: typing.Union[Prehashed, hashes.HashAlgorithm],
+    algorithm: Prehashed | hashes.HashAlgorithm,
 ) -> tuple[bytes, hashes.HashAlgorithm]:
     if not isinstance(algorithm, Prehashed):
         hash_ctx = hashes.Hash(algorithm)

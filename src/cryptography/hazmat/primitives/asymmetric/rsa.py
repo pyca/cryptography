@@ -38,7 +38,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         self,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> bytes:
         """
         Signs the data.
@@ -101,7 +101,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         signature: bytes,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> None:
         """
         Verifies the signature of the data.
@@ -112,7 +112,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: hashes.HashAlgorithm | None,
     ) -> bytes:
         """
         Recovers the original data from the signature.

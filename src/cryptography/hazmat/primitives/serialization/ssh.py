@@ -89,14 +89,10 @@ _PADDING = memoryview(bytearray(range(1, 1 + 16)))
 class _SSHCipher:
     alg: type[algorithms.AES]
     key_len: int
-    mode: typing.Union[
-        type[modes.CTR],
-        type[modes.CBC],
-        type[modes.GCM],
-    ]
+    mode: type[modes.CTR] | type[modes.CBC] | type[modes.GCM]
     block_len: int
     iv_len: int
-    tag_len: typing.Optional[int]
+    tag_len: int | None
     is_aead: bool
 
 
@@ -139,9 +135,7 @@ _ECDSA_KEY_TYPE = {
 }
 
 
-def _get_ssh_key_type(
-    key: typing.Union[SSHPrivateKeyTypes, SSHPublicKeyTypes]
-) -> bytes:
+def _get_ssh_key_type(key: SSHPrivateKeyTypes | SSHPublicKeyTypes) -> bytes:
     if isinstance(key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(key.public_key())
     elif isinstance(key, ec.EllipticCurvePublicKey):
@@ -192,10 +186,10 @@ def _check_empty(data: bytes) -> None:
 
 def _init_cipher(
     ciphername: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     salt: bytes,
     rounds: int,
-) -> Cipher[typing.Union[modes.CBC, modes.CTR, modes.GCM]]:
+) -> Cipher[modes.CBC | modes.CTR | modes.GCM]:
     """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
@@ -255,7 +249,7 @@ class _FragList:
 
     flist: list[bytes]
 
-    def __init__(self, init: typing.Optional[list[bytes]] = None) -> None:
+    def __init__(self, init: list[bytes] | None = None) -> None:
         self.flist = []
         if init:
             self.flist.extend(init)
@@ -272,7 +266,7 @@ class _FragList:
         """Big-endian uint64"""
         self.flist.append(val.to_bytes(length=8, byteorder="big"))
 
-    def put_sshstr(self, val: typing.Union[bytes, _FragList]) -> None:
+    def put_sshstr(self, val: bytes | _FragList) -> None:
         """Bytes prefixed with u32 length"""
         if isinstance(val, (bytes, memoryview, bytearray)):
             self.put_u32(len(val))
@@ -607,7 +601,7 @@ SSHPrivateKeyTypes = typing.Union[
 
 def load_ssh_private_key(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
@@ -946,7 +940,7 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
 def _load_ssh_public_identity(
     data: bytes,
     _legacy_dsa_allowed=False,
-) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
+) -> SSHCertificate | SSHPublicKeyTypes:
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)
@@ -1040,7 +1034,7 @@ def _load_ssh_public_identity(
 
 def load_ssh_public_identity(
     data: bytes,
-) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
+) -> SSHCertificate | SSHPublicKeyTypes:
     return _load_ssh_public_identity(data)
 
 
@@ -1119,14 +1113,14 @@ _SSHKEY_CERT_MAX_PRINCIPALS = 256
 class SSHCertificateBuilder:
     def __init__(
         self,
-        _public_key: typing.Optional[SSHCertPublicKeyTypes] = None,
-        _serial: typing.Optional[int] = None,
-        _type: typing.Optional[SSHCertificateType] = None,
-        _key_id: typing.Optional[bytes] = None,
+        _public_key: SSHCertPublicKeyTypes | None = None,
+        _serial: int | None = None,
+        _type: SSHCertificateType | None = None,
+        _key_id: bytes | None = None,
         _valid_principals: list[bytes] = [],
         _valid_for_all_principals: bool = False,
-        _valid_before: typing.Optional[int] = None,
-        _valid_after: typing.Optional[int] = None,
+        _valid_before: int | None = None,
+        _valid_after: int | None = None,
         _critical_options: list[tuple[bytes, bytes]] = [],
         _extensions: list[tuple[bytes, bytes]] = [],
     ):
@@ -1286,9 +1280,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def valid_before(
-        self, valid_before: typing.Union[int, float]
-    ) -> SSHCertificateBuilder:
+    def valid_before(self, valid_before: int | float) -> SSHCertificateBuilder:
         if not isinstance(valid_before, (int, float)):
             raise TypeError("valid_before must be an int or float")
         valid_before = int(valid_before)
@@ -1310,9 +1302,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def valid_after(
-        self, valid_after: typing.Union[int, float]
-    ) -> SSHCertificateBuilder:
+    def valid_after(self, valid_after: int | float) -> SSHCertificateBuilder:
         if not isinstance(valid_after, (int, float)):
             raise TypeError("valid_after must be an int or float")
         valid_after = int(valid_after)

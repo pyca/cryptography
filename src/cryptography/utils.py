@@ -38,7 +38,7 @@ def _check_byteslike(name: str, value: bytes) -> None:
         raise TypeError(f"{name} must be bytes-like")
 
 
-def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
+def int_to_bytes(integer: int, length: int | None = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"
     )
@@ -93,7 +93,7 @@ def deprecated(
     module_name: str,
     message: str,
     warning_class: type[Warning],
-    name: typing.Optional[str] = None,
+    name: str | None = None,
 ) -> _DeprecatedValue:
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):

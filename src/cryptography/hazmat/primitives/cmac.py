@@ -15,14 +15,14 @@ if typing.TYPE_CHECKING:
 
 
 class CMAC:
-    _ctx: typing.Optional[_CMACContext]
+    _ctx: _CMACContext | None
     _algorithm: ciphers.BlockCipherAlgorithm
 
     def __init__(
         self,
         algorithm: ciphers.BlockCipherAlgorithm,
         backend: typing.Any = None,
-        ctx: typing.Optional[_CMACContext] = None,
+        ctx: _CMACContext | None = None,
     ) -> None:
         if not isinstance(algorithm, ciphers.BlockCipherAlgorithm):
             raise TypeError("Expected instance of BlockCipherAlgorithm.")

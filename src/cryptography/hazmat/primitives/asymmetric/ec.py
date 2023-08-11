@@ -57,7 +57,7 @@ class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def algorithm(
         self,
-    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+    ) -> asym_utils.Prehashed | hashes.HashAlgorithm:
         """
         The digest algorithm used with this signature.
         """
@@ -320,14 +320,14 @@ _CURVE_TYPES: dict[str, type[EllipticCurve]] = {
 class ECDSA(EllipticCurveSignatureAlgorithm):
     def __init__(
         self,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ):
         self._algorithm = algorithm
 
     @property
     def algorithm(
         self,
-    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+    ) -> asym_utils.Prehashed | hashes.HashAlgorithm:
         return self._algorithm
 
 

@@ -155,7 +155,7 @@ class Backend:
     def openssl_assert(
         self,
         ok: bool,
-        errors: typing.Optional[list[rust_openssl.OpenSSLError]] = None,
+        errors: list[rust_openssl.OpenSSLError] | None = None,
     ) -> None:
         return binding._openssl_assert(self._lib, ok, errors=errors)
 
@@ -685,7 +685,7 @@ class Backend:
     def load_pem_private_key(
         self,
         data: bytes,
-        password: typing.Optional[bytes],
+        password: bytes | None,
         unsafe_skip_rsa_key_validation: bool,
     ) -> PrivateKeyTypes:
         return self._load_key(
@@ -740,7 +740,7 @@ class Backend:
     def load_der_private_key(
         self,
         data: bytes,
-        password: typing.Optional[bytes],
+        password: bytes | None,
         unsafe_skip_rsa_key_validation: bool,
     ) -> PrivateKeyTypes:
         # OpenSSL has a function called d2i_AutoPrivateKey that in theory
@@ -1173,7 +1173,7 @@ class Backend:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_parameters_supported(
-        self, p: int, g: int, q: typing.Optional[int] = None
+        self, p: int, g: int, q: int | None = None
     ) -> bool:
         try:
             rust_openssl.dh.from_parameter_numbers(
@@ -1247,10 +1247,10 @@ class Backend:
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
     def load_key_and_certificates_from_pkcs12(
-        self, data: bytes, password: typing.Optional[bytes]
+        self, data: bytes, password: bytes | None
     ) -> tuple[
-        typing.Optional[PrivateKeyTypes],
-        typing.Optional[x509.Certificate],
+        PrivateKeyTypes | None,
+        x509.Certificate | None,
         list[x509.Certificate],
     ]:
         pkcs12 = self.load_pkcs12(data, password)
@@ -1261,7 +1261,7 @@ class Backend:
         )
 
     def load_pkcs12(
-        self, data: bytes, password: typing.Optional[bytes]
+        self, data: bytes, password: bytes | None
     ) -> PKCS12KeyAndCertificates:
         if password is not None:
             utils._check_byteslike("password", password)
@@ -1337,10 +1337,10 @@ class Backend:
 
     def serialize_key_and_certificates_to_pkcs12(
         self,
-        name: typing.Optional[bytes],
-        key: typing.Optional[PKCS12PrivateKeyTypes],
-        cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[list[_PKCS12CATypes]],
+        name: bytes | None,
+        key: PKCS12PrivateKeyTypes | None,
+        cert: x509.Certificate | None,
+        cas: list[_PKCS12CATypes] | None,
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None

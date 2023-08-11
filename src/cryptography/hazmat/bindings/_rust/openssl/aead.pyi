@@ -2,8 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
-
 class AESSIV:
     def __init__(self, key: bytes) -> None: ...
     @staticmethod
@@ -11,10 +9,10 @@ class AESSIV:
     def encrypt(
         self,
         data: bytes,
-        associated_data: typing.Optional[list[bytes]],
+        associated_data: list[bytes] | None,
     ) -> bytes: ...
     def decrypt(
         self,
         data: bytes,
-        associated_data: typing.Optional[list[bytes]],
+        associated_data: list[bytes] | None,
     ) -> bytes: ...

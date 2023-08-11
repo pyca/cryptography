@@ -60,7 +60,7 @@ _NAMEOID_TO_NAME: _OidNameMap = {
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
 
-def _escape_dn_value(val: typing.Union[str, bytes]) -> str:
+def _escape_dn_value(val: str | bytes) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
 
     if not val:
@@ -112,8 +112,8 @@ class NameAttribute:
     def __init__(
         self,
         oid: ObjectIdentifier,
-        value: typing.Union[str, bytes],
-        _type: typing.Optional[_ASN1Type] = None,
+        value: str | bytes,
+        _type: _ASN1Type | None = None,
         *,
         _validate: bool = True,
     ) -> None:
@@ -170,7 +170,7 @@ class NameAttribute:
         return self._oid
 
     @property
-    def value(self) -> typing.Union[str, bytes]:
+    def value(self) -> str | bytes:
         return self._value
 
     @property
@@ -182,7 +182,7 @@ class NameAttribute:
         return _NAMEOID_TO_NAME.get(self.oid, self.oid.dotted_string)
 
     def rfc4514_string(
-        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+        self, attr_name_overrides: _OidNameMap | None = None
     ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
@@ -232,7 +232,7 @@ class RelativeDistinguishedName:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(
-        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+        self, attr_name_overrides: _OidNameMap | None = None
     ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
@@ -277,9 +277,7 @@ class Name:
 
     def __init__(
         self,
-        attributes: typing.Iterable[
-            typing.Union[NameAttribute, RelativeDistinguishedName]
-        ],
+        attributes: typing.Iterable[NameAttribute | RelativeDistinguishedName],
     ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
@@ -301,12 +299,12 @@ class Name:
     def from_rfc4514_string(
         cls,
         data: str,
-        attr_name_overrides: typing.Optional[_NameOidMap] = None,
+        attr_name_overrides: _NameOidMap | None = None,
     ) -> Name:
         return _RFC4514NameParser(data, attr_name_overrides or {}).parse()
 
     def rfc4514_string(
-        self, attr_name_overrides: typing.Optional[_OidNameMap] = None
+        self, attr_name_overrides: _OidNameMap | None = None
     ) -> str:
         """
         Format as RFC4514 Distinguished Name string.
@@ -395,7 +393,7 @@ class _RFC4514NameParser:
     def _has_data(self) -> bool:
         return self._idx < len(self._data)
 
-    def _peek(self) -> typing.Optional[str]:
+    def _peek(self) -> str | None:
         if self._has_data():
             return self._data[self._idx]
         return None

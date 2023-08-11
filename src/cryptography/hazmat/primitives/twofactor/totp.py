@@ -30,7 +30,7 @@ class TOTP:
             key, length, algorithm, enforce_key_length=enforce_key_length
         )
 
-    def generate(self, time: typing.Union[int, float]) -> bytes:
+    def generate(self, time: int | float) -> bytes:
         counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 
@@ -39,7 +39,7 @@ class TOTP:
             raise InvalidToken("Supplied TOTP value does not match.")
 
     def get_provisioning_uri(
-        self, account_name: str, issuer: typing.Optional[str]
+        self, account_name: str, issuer: str | None
     ) -> str:
         return _generate_uri(
             self._hotp,

@@ -70,7 +70,7 @@ def _reject_duplicate_extension(
 
 def _reject_duplicate_attribute(
     oid: ObjectIdentifier,
-    attributes: list[tuple[ObjectIdentifier, bytes, typing.Optional[int]]],
+    attributes: list[tuple[ObjectIdentifier, bytes, int | None]],
 ) -> None:
     # This is quadratic in the number of attributes
     for attr_oid, _, _ in attributes:
@@ -218,7 +218,7 @@ class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signature_hash_algorithm(
         self,
-    ) -> typing.Optional[hashes.HashAlgorithm]:
+    ) -> hashes.HashAlgorithm | None:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -235,7 +235,7 @@ class Certificate(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signature_algorithm_parameters(
         self,
-    ) -> typing.Union[None, padding.PSS, padding.PKCS1v15, ec.ECDSA]:
+    ) -> None | padding.PSS | padding.PKCS1v15 | ec.ECDSA:
         """
         Returns the signature algorithm parameters.
         """
@@ -367,7 +367,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_revoked_certificate_by_serial_number(
         self, serial_number: int
-    ) -> typing.Optional[RevokedCertificate]:
+    ) -> RevokedCertificate | None:
         """
         Returns an instance of RevokedCertificate or None if the serial_number
         is not in the CRL.
@@ -377,7 +377,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signature_hash_algorithm(
         self,
-    ) -> typing.Optional[hashes.HashAlgorithm]:
+    ) -> hashes.HashAlgorithm | None:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -399,7 +399,7 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def next_update(self) -> typing.Optional[datetime.datetime]:
+    def next_update(self) -> datetime.datetime | None:
         """
         Returns the date of next update for this CRL.
         """
@@ -454,8 +454,8 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __getitem__(
-        self, idx: typing.Union[int, slice]
-    ) -> typing.Union[RevokedCertificate, list[RevokedCertificate]]:
+        self, idx: int | slice
+    ) -> RevokedCertificate | list[RevokedCertificate]:
         """
         Returns a revoked certificate (or slice of revoked certificates).
         """
@@ -508,7 +508,7 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def signature_hash_algorithm(
         self,
-    ) -> typing.Optional[hashes.HashAlgorithm]:
+    ) -> hashes.HashAlgorithm | None:
         """
         Returns a HashAlgorithm corresponding to the type of the digest signed
         in the certificate.
@@ -623,11 +623,9 @@ def load_der_x509_crl(
 class CertificateSigningRequestBuilder:
     def __init__(
         self,
-        subject_name: typing.Optional[Name] = None,
+        subject_name: Name | None = None,
         extensions: list[Extension[ExtensionType]] = [],
-        attributes: list[
-            tuple[ObjectIdentifier, bytes, typing.Optional[int]]
-        ] = [],
+        attributes: list[tuple[ObjectIdentifier, bytes, int | None]] = [],
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -671,7 +669,7 @@ class CertificateSigningRequestBuilder:
         oid: ObjectIdentifier,
         value: bytes,
         *,
-        _tag: typing.Optional[_ASN1Type] = None,
+        _tag: _ASN1Type | None = None,
     ) -> CertificateSigningRequestBuilder:
         """
         Adds an X.509 attribute with an OID and associated value.
@@ -701,7 +699,7 @@ class CertificateSigningRequestBuilder:
     def sign(
         self,
         private_key: CertificateIssuerPrivateKeyTypes,
-        algorithm: typing.Optional[_AllowedHashTypes],
+        algorithm: _AllowedHashTypes | None,
         backend: typing.Any = None,
     ) -> CertificateSigningRequest:
         """
@@ -717,12 +715,12 @@ class CertificateBuilder:
 
     def __init__(
         self,
-        issuer_name: typing.Optional[Name] = None,
-        subject_name: typing.Optional[Name] = None,
-        public_key: typing.Optional[CertificatePublicKeyTypes] = None,
-        serial_number: typing.Optional[int] = None,
-        not_valid_before: typing.Optional[datetime.datetime] = None,
-        not_valid_after: typing.Optional[datetime.datetime] = None,
+        issuer_name: Name | None = None,
+        subject_name: Name | None = None,
+        public_key: CertificatePublicKeyTypes | None = None,
+        serial_number: int | None = None,
+        not_valid_before: datetime.datetime | None = None,
+        not_valid_after: datetime.datetime | None = None,
         extensions: list[Extension[ExtensionType]] = [],
     ) -> None:
         self._version = Version.v3
@@ -920,12 +918,10 @@ class CertificateBuilder:
     def sign(
         self,
         private_key: CertificateIssuerPrivateKeyTypes,
-        algorithm: typing.Optional[_AllowedHashTypes],
+        algorithm: _AllowedHashTypes | None,
         backend: typing.Any = None,
         *,
-        rsa_padding: typing.Optional[
-            typing.Union[padding.PSS, padding.PKCS1v15]
-        ] = None,
+        rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
@@ -965,9 +961,9 @@ class CertificateRevocationListBuilder:
 
     def __init__(
         self,
-        issuer_name: typing.Optional[Name] = None,
-        last_update: typing.Optional[datetime.datetime] = None,
-        next_update: typing.Optional[datetime.datetime] = None,
+        issuer_name: Name | None = None,
+        last_update: datetime.datetime | None = None,
+        next_update: datetime.datetime | None = None,
         extensions: list[Extension[ExtensionType]] = [],
         revoked_certificates: list[RevokedCertificate] = [],
     ):
@@ -1079,7 +1075,7 @@ class CertificateRevocationListBuilder:
     def sign(
         self,
         private_key: CertificateIssuerPrivateKeyTypes,
-        algorithm: typing.Optional[_AllowedHashTypes],
+        algorithm: _AllowedHashTypes | None,
         backend: typing.Any = None,
     ) -> CertificateRevocationList:
         if self._issuer_name is None:
@@ -1097,8 +1093,8 @@ class CertificateRevocationListBuilder:
 class RevokedCertificateBuilder:
     def __init__(
         self,
-        serial_number: typing.Optional[int] = None,
-        revocation_date: typing.Optional[datetime.datetime] = None,
+        serial_number: int | None = None,
+        revocation_date: datetime.datetime | None = None,
         extensions: list[Extension[ExtensionType]] = [],
     ):
         self._serial_number = serial_number

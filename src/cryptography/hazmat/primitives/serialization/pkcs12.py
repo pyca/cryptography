@@ -41,7 +41,7 @@ class PKCS12Certificate:
     def __init__(
         self,
         cert: x509.Certificate,
-        friendly_name: typing.Optional[bytes],
+        friendly_name: bytes | None,
     ):
         if not isinstance(cert, x509.Certificate):
             raise TypeError("Expecting x509.Certificate object")
@@ -51,7 +51,7 @@ class PKCS12Certificate:
         self._friendly_name = friendly_name
 
     @property
-    def friendly_name(self) -> typing.Optional[bytes]:
+    def friendly_name(self) -> bytes | None:
         return self._friendly_name
 
     @property
@@ -79,8 +79,8 @@ class PKCS12Certificate:
 class PKCS12KeyAndCertificates:
     def __init__(
         self,
-        key: typing.Optional[PrivateKeyTypes],
-        cert: typing.Optional[PKCS12Certificate],
+        key: PrivateKeyTypes | None,
+        cert: PKCS12Certificate | None,
         additional_certs: list[PKCS12Certificate],
     ):
         if key is not None and not isinstance(
@@ -112,11 +112,11 @@ class PKCS12KeyAndCertificates:
         self._additional_certs = additional_certs
 
     @property
-    def key(self) -> typing.Optional[PrivateKeyTypes]:
+    def key(self) -> PrivateKeyTypes | None:
         return self._key
 
     @property
-    def cert(self) -> typing.Optional[PKCS12Certificate]:
+    def cert(self) -> PKCS12Certificate | None:
         return self._cert
 
     @property
@@ -145,11 +145,11 @@ class PKCS12KeyAndCertificates:
 
 def load_key_and_certificates(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
 ) -> tuple[
-    typing.Optional[PrivateKeyTypes],
-    typing.Optional[x509.Certificate],
+    PrivateKeyTypes | None,
+    x509.Certificate | None,
     list[x509.Certificate],
 ]:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
@@ -159,7 +159,7 @@ def load_key_and_certificates(
 
 def load_pkcs12(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
 ) -> PKCS12KeyAndCertificates:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
@@ -174,10 +174,10 @@ _PKCS12CATypes = typing.Union[
 
 
 def serialize_key_and_certificates(
-    name: typing.Optional[bytes],
-    key: typing.Optional[PKCS12PrivateKeyTypes],
-    cert: typing.Optional[x509.Certificate],
-    cas: typing.Optional[typing.Iterable[_PKCS12CATypes]],
+    name: bytes | None,
+    key: PKCS12PrivateKeyTypes | None,
+    cert: x509.Certificate | None,
+    cas: typing.Iterable[_PKCS12CATypes] | None,
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
     if key is not None and not isinstance(

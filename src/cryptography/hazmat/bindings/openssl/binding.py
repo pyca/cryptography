@@ -20,7 +20,7 @@ from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 def _openssl_assert(
     lib,
     ok: bool,
-    errors: typing.Optional[list[openssl.OpenSSLError]] = None,
+    errors: list[openssl.OpenSSLError] | None = None,
 ) -> None:
     if not ok:
         if errors is None:

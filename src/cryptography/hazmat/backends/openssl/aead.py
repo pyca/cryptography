@@ -99,7 +99,7 @@ def _evp_aead_create_ctx(
     backend: Backend,
     cipher: _AEADTypes,
     key: bytes,
-    tag_len: typing.Optional[int] = None,
+    tag_len: int | None = None,
 ):
     aead_cipher = _evp_aead_get_cipher(backend, cipher)
     assert aead_cipher is not None
@@ -269,7 +269,7 @@ def _evp_cipher_aead_setup(
     cipher_name: bytes,
     key: bytes,
     nonce: bytes,
-    tag: typing.Optional[bytes],
+    tag: bytes | None,
     tag_len: int,
     operation: int,
 ):

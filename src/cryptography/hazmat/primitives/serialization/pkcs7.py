@@ -61,7 +61,7 @@ class PKCS7Options(utils.Enum):
 class PKCS7SignatureBuilder:
     def __init__(
         self,
-        data: typing.Optional[bytes] = None,
+        data: bytes | None = None,
         signers: list[
             tuple[
                 x509.Certificate,
