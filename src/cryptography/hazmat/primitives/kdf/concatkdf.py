@@ -19,7 +19,7 @@ def _int_to_u32be(n: int) -> bytes:
 def _common_args_checks(
     algorithm: hashes.HashAlgorithm,
     length: int,
-    otherinfo: typing.Optional[bytes],
+    otherinfo: bytes | None,
 ) -> None:
     max_length = algorithm.digest_size * (2**32 - 1)
     if length > max_length:
@@ -56,7 +56,7 @@ class ConcatKDFHash(KeyDerivationFunction):
         self,
         algorithm: hashes.HashAlgorithm,
         length: int,
-        otherinfo: typing.Optional[bytes],
+        otherinfo: bytes | None,
         backend: typing.Any = None,
     ):
         _common_args_checks(algorithm, length, otherinfo)
@@ -87,8 +87,8 @@ class ConcatKDFHMAC(KeyDerivationFunction):
         self,
         algorithm: hashes.HashAlgorithm,
         length: int,
-        salt: typing.Optional[bytes],
-        otherinfo: typing.Optional[bytes],
+        salt: bytes | None,
+        otherinfo: bytes | None,
         backend: typing.Any = None,
     ):
         _common_args_checks(algorithm, length, otherinfo)

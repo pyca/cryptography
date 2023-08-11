@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import abc
-import typing
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives._asymmetric import (
@@ -35,12 +34,12 @@ class PSS(AsymmetricPadding):
     AUTO = _Auto()
     DIGEST_LENGTH = _DigestLength()
     name = "EMSA-PSS"
-    _salt_length: typing.Union[int, _MaxLength, _Auto, _DigestLength]
+    _salt_length: int | _MaxLength | _Auto | _DigestLength
 
     def __init__(
         self,
         mgf: MGF,
-        salt_length: typing.Union[int, _MaxLength, _Auto, _DigestLength],
+        salt_length: int | _MaxLength | _Auto | _DigestLength,
     ) -> None:
         self._mgf = mgf
 
@@ -65,7 +64,7 @@ class OAEP(AsymmetricPadding):
         self,
         mgf: MGF,
         algorithm: hashes.HashAlgorithm,
-        label: typing.Optional[bytes],
+        label: bytes | None,
     ):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
@@ -90,7 +89,7 @@ class MGF1(MGF):
 
 
 def calculate_max_pss_salt_length(
-    key: typing.Union[rsa.RSAPrivateKey, rsa.RSAPublicKey],
+    key: rsa.RSAPrivateKey | rsa.RSAPublicKey,
     hash_algorithm: hashes.HashAlgorithm,
 ) -> int:
     if not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):

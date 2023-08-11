@@ -4,8 +4,6 @@
 
 from __future__ import annotations
 
-import typing
-
 from cryptography.hazmat.bindings._rust import (
     ObjectIdentifier as ObjectIdentifier,
 )
@@ -124,9 +122,7 @@ class SignatureAlgorithmOID:
     GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
 
 
-_SIG_OIDS_TO_HASH: typing.Dict[
-    ObjectIdentifier, typing.Optional[hashes.HashAlgorithm]
-] = {
+_SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),
     SignatureAlgorithmOID.RSA_WITH_SHA1: hashes.SHA1(),
     SignatureAlgorithmOID._RSA_WITH_SHA1: hashes.SHA1(),

@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.constant_time import bytes_eq
 def _wrap_core(
     wrapping_key: bytes,
     a: bytes,
-    r: typing.List[bytes],
+    r: list[bytes],
 ) -> bytes:
     # RFC 3394 Key Wrap - 2.2.1 (index method)
     encryptor = Cipher(AES(wrapping_key), ECB()).encryptor()
@@ -58,8 +58,8 @@ def aes_key_wrap(
 def _unwrap_core(
     wrapping_key: bytes,
     a: bytes,
-    r: typing.List[bytes],
-) -> typing.Tuple[bytes, typing.List[bytes]]:
+    r: list[bytes],
+) -> tuple[bytes, list[bytes]]:
     # Implement RFC 3394 Key Unwrap - 2.2.2 (index method)
     decryptor = Cipher(AES(wrapping_key), ECB()).decryptor()
     n = len(r)

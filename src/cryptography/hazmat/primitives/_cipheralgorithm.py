@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import abc
-import typing
 
 # This exists to break an import cycle. It is normally accessible from the
 # ciphers module.
@@ -21,7 +20,7 @@ class CipherAlgorithm(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def key_sizes(self) -> typing.FrozenSet[int]:
+    def key_sizes(self) -> frozenset[int]:
         """
         Valid key sizes for this algorithm in bits
         """

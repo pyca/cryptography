@@ -87,21 +87,17 @@ _PADDING = memoryview(bytearray(range(1, 1 + 16)))
 
 @dataclass
 class _SSHCipher:
-    alg: typing.Type[algorithms.AES]
+    alg: type[algorithms.AES]
     key_len: int
-    mode: typing.Union[
-        typing.Type[modes.CTR],
-        typing.Type[modes.CBC],
-        typing.Type[modes.GCM],
-    ]
+    mode: type[modes.CTR] | type[modes.CBC] | type[modes.GCM]
     block_len: int
     iv_len: int
-    tag_len: typing.Optional[int]
+    tag_len: int | None
     is_aead: bool
 
 
 # ciphers that are actually used in key wrapping
-_SSH_CIPHERS: typing.Dict[bytes, _SSHCipher] = {
+_SSH_CIPHERS: dict[bytes, _SSHCipher] = {
     b"aes256-ctr": _SSHCipher(
         alg=algorithms.AES,
         key_len=32,
@@ -139,9 +135,7 @@ _ECDSA_KEY_TYPE = {
 }
 
 
-def _get_ssh_key_type(
-    key: typing.Union[SSHPrivateKeyTypes, SSHPublicKeyTypes]
-) -> bytes:
+def _get_ssh_key_type(key: SSHPrivateKeyTypes | SSHPublicKeyTypes) -> bytes:
     if isinstance(key, ec.EllipticCurvePrivateKey):
         key_type = _ecdsa_key_type(key.public_key())
     elif isinstance(key, ec.EllipticCurvePublicKey):
@@ -192,10 +186,10 @@ def _check_empty(data: bytes) -> None:
 
 def _init_cipher(
     ciphername: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     salt: bytes,
     rounds: int,
-) -> Cipher[typing.Union[modes.CBC, modes.CTR, modes.GCM]]:
+) -> Cipher[modes.CBC | modes.CTR | modes.GCM]:
     """Generate key + iv and return cipher."""
     if not password:
         raise ValueError("Key is password-protected.")
@@ -210,21 +204,21 @@ def _init_cipher(
     )
 
 
-def _get_u32(data: memoryview) -> typing.Tuple[int, memoryview]:
+def _get_u32(data: memoryview) -> tuple[int, memoryview]:
     """Uint32"""
     if len(data) < 4:
         raise ValueError("Invalid data")
     return int.from_bytes(data[:4], byteorder="big"), data[4:]
 
 
-def _get_u64(data: memoryview) -> typing.Tuple[int, memoryview]:
+def _get_u64(data: memoryview) -> tuple[int, memoryview]:
     """Uint64"""
     if len(data) < 8:
         raise ValueError("Invalid data")
     return int.from_bytes(data[:8], byteorder="big"), data[8:]
 
 
-def _get_sshstr(data: memoryview) -> typing.Tuple[memoryview, memoryview]:
+def _get_sshstr(data: memoryview) -> tuple[memoryview, memoryview]:
     """Bytes with u32 length prefix"""
     n, data = _get_u32(data)
     if n > len(data):
@@ -232,7 +226,7 @@ def _get_sshstr(data: memoryview) -> typing.Tuple[memoryview, memoryview]:
     return data[:n], data[n:]
 
 
-def _get_mpint(data: memoryview) -> typing.Tuple[int, memoryview]:
+def _get_mpint(data: memoryview) -> tuple[int, memoryview]:
     """Big integer."""
     val, data = _get_sshstr(data)
     if val and val[0] > 0x7F:
@@ -253,11 +247,9 @@ def _to_mpint(val: int) -> bytes:
 class _FragList:
     """Build recursive structure without data copy."""
 
-    flist: typing.List[bytes]
+    flist: list[bytes]
 
-    def __init__(
-        self, init: typing.Optional[typing.List[bytes]] = None
-    ) -> None:
+    def __init__(self, init: list[bytes] | None = None) -> None:
         self.flist = []
         if init:
             self.flist.extend(init)
@@ -274,7 +266,7 @@ class _FragList:
         """Big-endian uint64"""
         self.flist.append(val.to_bytes(length=8, byteorder="big"))
 
-    def put_sshstr(self, val: typing.Union[bytes, _FragList]) -> None:
+    def put_sshstr(self, val: bytes | _FragList) -> None:
         """Bytes prefixed with u32 length"""
         if isinstance(val, (bytes, memoryview, bytearray)):
             self.put_u32(len(val))
@@ -323,7 +315,7 @@ class _SSHFormatRSA:
 
     def load_public(
         self, data: memoryview
-    ) -> typing.Tuple[rsa.RSAPublicKey, memoryview]:
+    ) -> tuple[rsa.RSAPublicKey, memoryview]:
         """Make RSA public key from data."""
         (e, n), data = self.get_public(data)
         public_numbers = rsa.RSAPublicNumbers(e, n)
@@ -332,7 +324,7 @@ class _SSHFormatRSA:
 
     def load_private(
         self, data: memoryview, pubfields
-    ) -> typing.Tuple[rsa.RSAPrivateKey, memoryview]:
+    ) -> tuple[rsa.RSAPrivateKey, memoryview]:
         """Make RSA private key from data."""
         n, data = _get_mpint(data)
         e, data = _get_mpint(data)
@@ -385,9 +377,7 @@ class _SSHFormatDSA:
         mpint p, q, g, y, x
     """
 
-    def get_public(
-        self, data: memoryview
-    ) -> typing.Tuple[typing.Tuple, memoryview]:
+    def get_public(self, data: memoryview) -> tuple[tuple, memoryview]:
         """DSA public fields"""
         p, data = _get_mpint(data)
         q, data = _get_mpint(data)
@@ -397,7 +387,7 @@ class _SSHFormatDSA:
 
     def load_public(
         self, data: memoryview
-    ) -> typing.Tuple[dsa.DSAPublicKey, memoryview]:
+    ) -> tuple[dsa.DSAPublicKey, memoryview]:
         """Make DSA public key from data."""
         (p, q, g, y), data = self.get_public(data)
         parameter_numbers = dsa.DSAParameterNumbers(p, q, g)
@@ -408,7 +398,7 @@ class _SSHFormatDSA:
 
     def load_private(
         self, data: memoryview, pubfields
-    ) -> typing.Tuple[dsa.DSAPrivateKey, memoryview]:
+    ) -> tuple[dsa.DSAPrivateKey, memoryview]:
         """Make DSA private key from data."""
         (p, q, g, y), data = self.get_public(data)
         x, data = _get_mpint(data)
@@ -464,9 +454,7 @@ class _SSHFormatECDSA:
         self.ssh_curve_name = ssh_curve_name
         self.curve = curve
 
-    def get_public(
-        self, data: memoryview
-    ) -> typing.Tuple[typing.Tuple, memoryview]:
+    def get_public(self, data: memoryview) -> tuple[tuple, memoryview]:
         """ECDSA public fields"""
         curve, data = _get_sshstr(data)
         point, data = _get_sshstr(data)
@@ -478,7 +466,7 @@ class _SSHFormatECDSA:
 
     def load_public(
         self, data: memoryview
-    ) -> typing.Tuple[ec.EllipticCurvePublicKey, memoryview]:
+    ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make ECDSA public key from data."""
         (curve_name, point), data = self.get_public(data)
         public_key = ec.EllipticCurvePublicKey.from_encoded_point(
@@ -488,7 +476,7 @@ class _SSHFormatECDSA:
 
     def load_private(
         self, data: memoryview, pubfields
-    ) -> typing.Tuple[ec.EllipticCurvePrivateKey, memoryview]:
+    ) -> tuple[ec.EllipticCurvePrivateKey, memoryview]:
         """Make ECDSA private key from data."""
         (curve_name, point), data = self.get_public(data)
         secret, data = _get_mpint(data)
@@ -529,16 +517,14 @@ class _SSHFormatEd25519:
         bytes secret_and_point
     """
 
-    def get_public(
-        self, data: memoryview
-    ) -> typing.Tuple[typing.Tuple, memoryview]:
+    def get_public(self, data: memoryview) -> tuple[tuple, memoryview]:
         """Ed25519 public fields"""
         point, data = _get_sshstr(data)
         return (point,), data
 
     def load_public(
         self, data: memoryview
-    ) -> typing.Tuple[ed25519.Ed25519PublicKey, memoryview]:
+    ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
         (point,), data = self.get_public(data)
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(
@@ -548,7 +534,7 @@ class _SSHFormatEd25519:
 
     def load_private(
         self, data: memoryview, pubfields
-    ) -> typing.Tuple[ed25519.Ed25519PrivateKey, memoryview]:
+    ) -> tuple[ed25519.Ed25519PrivateKey, memoryview]:
         """Make Ed25519 private key from data."""
         (point,), data = self.get_public(data)
         keypair, data = _get_sshstr(data)
@@ -615,7 +601,7 @@ SSHPrivateKeyTypes = typing.Union[
 
 def load_ssh_private_key(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
@@ -820,11 +806,11 @@ class SSHCertificate:
         _serial: int,
         _cctype: int,
         _key_id: memoryview,
-        _valid_principals: typing.List[bytes],
+        _valid_principals: list[bytes],
         _valid_after: int,
         _valid_before: int,
-        _critical_options: typing.Dict[bytes, bytes],
-        _extensions: typing.Dict[bytes, bytes],
+        _critical_options: dict[bytes, bytes],
+        _extensions: dict[bytes, bytes],
         _sig_type: memoryview,
         _sig_key: memoryview,
         _inner_sig_type: memoryview,
@@ -876,7 +862,7 @@ class SSHCertificate:
         return bytes(self._key_id)
 
     @property
-    def valid_principals(self) -> typing.List[bytes]:
+    def valid_principals(self) -> list[bytes]:
         return self._valid_principals
 
     @property
@@ -888,11 +874,11 @@ class SSHCertificate:
         return self._valid_after
 
     @property
-    def critical_options(self) -> typing.Dict[bytes, bytes]:
+    def critical_options(self) -> dict[bytes, bytes]:
         return self._critical_options
 
     @property
-    def extensions(self) -> typing.Dict[bytes, bytes]:
+    def extensions(self) -> dict[bytes, bytes]:
         return self._extensions
 
     def signature_key(self) -> SSHCertPublicKeyTypes:
@@ -954,7 +940,7 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
 def _load_ssh_public_identity(
     data: bytes,
     _legacy_dsa_allowed=False,
-) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
+) -> SSHCertificate | SSHPublicKeyTypes:
     utils._check_byteslike("data", data)
 
     m = _SSH_PUBKEY_RC.match(data)
@@ -1048,12 +1034,12 @@ def _load_ssh_public_identity(
 
 def load_ssh_public_identity(
     data: bytes,
-) -> typing.Union[SSHCertificate, SSHPublicKeyTypes]:
+) -> SSHCertificate | SSHPublicKeyTypes:
     return _load_ssh_public_identity(data)
 
 
-def _parse_exts_opts(exts_opts: memoryview) -> typing.Dict[bytes, bytes]:
-    result: typing.Dict[bytes, bytes] = {}
+def _parse_exts_opts(exts_opts: memoryview) -> dict[bytes, bytes]:
+    result: dict[bytes, bytes] = {}
     last_name = None
     while exts_opts:
         name, exts_opts = _get_sshstr(exts_opts)
@@ -1127,16 +1113,16 @@ _SSHKEY_CERT_MAX_PRINCIPALS = 256
 class SSHCertificateBuilder:
     def __init__(
         self,
-        _public_key: typing.Optional[SSHCertPublicKeyTypes] = None,
-        _serial: typing.Optional[int] = None,
-        _type: typing.Optional[SSHCertificateType] = None,
-        _key_id: typing.Optional[bytes] = None,
-        _valid_principals: typing.List[bytes] = [],
+        _public_key: SSHCertPublicKeyTypes | None = None,
+        _serial: int | None = None,
+        _type: SSHCertificateType | None = None,
+        _key_id: bytes | None = None,
+        _valid_principals: list[bytes] = [],
         _valid_for_all_principals: bool = False,
-        _valid_before: typing.Optional[int] = None,
-        _valid_after: typing.Optional[int] = None,
-        _critical_options: typing.List[typing.Tuple[bytes, bytes]] = [],
-        _extensions: typing.List[typing.Tuple[bytes, bytes]] = [],
+        _valid_before: int | None = None,
+        _valid_after: int | None = None,
+        _critical_options: list[tuple[bytes, bytes]] = [],
+        _extensions: list[tuple[bytes, bytes]] = [],
     ):
         self._public_key = _public_key
         self._serial = _serial
@@ -1237,7 +1223,7 @@ class SSHCertificateBuilder:
         )
 
     def valid_principals(
-        self, valid_principals: typing.List[bytes]
+        self, valid_principals: list[bytes]
     ) -> SSHCertificateBuilder:
         if self._valid_for_all_principals:
             raise ValueError(
@@ -1294,9 +1280,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def valid_before(
-        self, valid_before: typing.Union[int, float]
-    ) -> SSHCertificateBuilder:
+    def valid_before(self, valid_before: int | float) -> SSHCertificateBuilder:
         if not isinstance(valid_before, (int, float)):
             raise TypeError("valid_before must be an int or float")
         valid_before = int(valid_before)
@@ -1318,9 +1302,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def valid_after(
-        self, valid_after: typing.Union[int, float]
-    ) -> SSHCertificateBuilder:
+    def valid_after(self, valid_after: int | float) -> SSHCertificateBuilder:
         if not isinstance(valid_after, (int, float)):
             raise TypeError("valid_after must be an int or float")
         valid_after = int(valid_after)

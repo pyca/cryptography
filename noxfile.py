@@ -10,7 +10,6 @@ import json
 import pathlib
 import re
 import sys
-import typing
 import uuid
 
 import nox
@@ -227,7 +226,7 @@ BIN_EXT = ".exe" if sys.platform == "win32" else ""
 
 def process_rust_coverage(
     session: nox.Session,
-    rust_binaries: typing.List[str],
+    rust_binaries: list[str],
     prof_raw_location: pathlib.Path,
 ) -> None:
     # Hitting weird issues merging Windows and Linux Rust coverage, so just

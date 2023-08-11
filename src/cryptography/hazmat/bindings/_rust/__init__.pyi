@@ -28,7 +28,7 @@ class PoolAcquisition(typing.Generic[T]):
     def __enter__(self) -> T: ...
     def __exit__(
         self,
-        exc_type: typing.Optional[typing.Type[BaseException]],
-        exc_value: typing.Optional[BaseException],
-        exc_tb: typing.Optional[types.TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_tb: types.TracebackType | None,
     ) -> None: ...
