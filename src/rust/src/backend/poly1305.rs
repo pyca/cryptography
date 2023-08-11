@@ -9,7 +9,7 @@ use crate::exceptions;
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
 struct Poly1305Boring {
-    context: Option<Box<openssl_sys::poly1305_state>>,
+    context: Option<cryptography_openssl::poly1305::Poly1305State>,
 }
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -20,21 +20,13 @@ impl Poly1305Boring {
                 pyo3::exceptions::PyValueError::new_err("A poly1305 key is 32 bytes long"),
             ));
         }
-        #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-        let mut ctx: Box<openssl_sys::poly1305_state> = Box::new([0; 512usize]);
-        #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)]
-        let mut ctx: Box<openssl_sys::poly1305_state> = Box::new(openssl_sys::poly1305_state {
-            aligner: 0,
-            opaque: [0; 136usize],
-        });
-
-        unsafe {
-            openssl_sys::CRYPTO_poly1305_init(ctx.as_mut(), key.as_bytes().as_ptr());
-        }
+        let ctx = cryptography_openssl::poly1305::Poly1305State::new(key.as_bytes());
         Ok(Poly1305Boring { context: Some(ctx) })
     }
 
-    fn get_mut_context(&mut self) -> CryptographyResult<&mut openssl_sys::poly1305_state> {
+    fn get_mut_context(
+        &mut self,
+    ) -> CryptographyResult<&mut cryptography_openssl::poly1305::Poly1305State> {
         if let Some(ctx) = self.context.as_mut() {
             return Ok(ctx);
         };
@@ -42,11 +34,8 @@ impl Poly1305Boring {
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        let buf = data.as_bytes();
         let ctx = self.get_mut_context()?;
-        unsafe {
-            openssl_sys::CRYPTO_poly1305_update(ctx, buf.as_ptr(), buf.len());
-        };
+        ctx.update(data.as_bytes());
         Ok(())
     }
     fn finalize<'p>(
@@ -55,7 +44,7 @@ impl Poly1305Boring {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let ctx = self.get_mut_context()?;
         let result = pyo3::types::PyBytes::new_with(py, 16usize, |b| {
-            unsafe { openssl_sys::CRYPTO_poly1305_finish(ctx, b.as_mut_ptr()) };
+            ctx.finalize(b.as_mut());
             Ok(())
         })?;
         self.context = None;
