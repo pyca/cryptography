@@ -31,7 +31,7 @@ class _ASN1Type(utils.Enum):
 
 
 _ASN1_TYPE_TO_ENUM = {i.value: i for i in _ASN1Type}
-_NAMEOID_DEFAULT_TYPE: typing.Dict[ObjectIdentifier, _ASN1Type] = {
+_NAMEOID_DEFAULT_TYPE: dict[ObjectIdentifier, _ASN1Type] = {
     NameOID.COUNTRY_NAME: _ASN1Type.PrintableString,
     NameOID.JURISDICTION_COUNTRY_NAME: _ASN1Type.PrintableString,
     NameOID.SERIAL_NUMBER: _ASN1Type.PrintableString,
@@ -228,7 +228,7 @@ class RelativeDistinguishedName:
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
-    ) -> typing.List[NameAttribute]:
+    ) -> list[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(
@@ -325,11 +325,11 @@ class Name:
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
-    ) -> typing.List[NameAttribute]:
+    ) -> list[NameAttribute]:
         return [i for i in self if i.oid == oid]
 
     @property
-    def rdns(self) -> typing.List[RelativeDistinguishedName]:
+    def rdns(self) -> list[RelativeDistinguishedName]:
         return self._attributes
 
     def public_bytes(self, backend: typing.Any = None) -> bytes:

@@ -109,7 +109,7 @@ class Fernet:
     @staticmethod
     def _get_unverified_token_data(
         token: typing.Union[bytes, str]
-    ) -> typing.Tuple[int, bytes]:
+    ) -> tuple[int, bytes]:
         if not isinstance(token, (str, bytes)):
             raise TypeError("token must be bytes or str")
 
@@ -139,7 +139,7 @@ class Fernet:
         self,
         data: bytes,
         timestamp: int,
-        time_info: typing.Optional[typing.Tuple[int, int]],
+        time_info: typing.Optional[tuple[int, int]],
     ) -> bytes:
         if time_info is not None:
             ttl, current_time = time_info

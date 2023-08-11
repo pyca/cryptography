@@ -60,7 +60,7 @@ class AttributeNotFound(Exception):
 
 def _reject_duplicate_extension(
     extension: Extension[ExtensionType],
-    extensions: typing.List[Extension[ExtensionType]],
+    extensions: list[Extension[ExtensionType]],
 ) -> None:
     # This is quadratic in the number of extensions
     for e in extensions:
@@ -70,9 +70,7 @@ def _reject_duplicate_extension(
 
 def _reject_duplicate_attribute(
     oid: ObjectIdentifier,
-    attributes: typing.List[
-        typing.Tuple[ObjectIdentifier, bytes, typing.Optional[int]]
-    ],
+    attributes: list[tuple[ObjectIdentifier, bytes, typing.Optional[int]]],
 ) -> None:
     # This is quadratic in the number of attributes
     for attr_oid, _, _ in attributes:
@@ -451,13 +449,13 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         ...
 
     @typing.overload
-    def __getitem__(self, idx: slice) -> typing.List[RevokedCertificate]:
+    def __getitem__(self, idx: slice) -> list[RevokedCertificate]:
         ...
 
     @abc.abstractmethod
     def __getitem__(
         self, idx: typing.Union[int, slice]
-    ) -> typing.Union[RevokedCertificate, typing.List[RevokedCertificate]]:
+    ) -> typing.Union[RevokedCertificate, list[RevokedCertificate]]:
         """
         Returns a revoked certificate (or slice of revoked certificates).
         """
@@ -583,7 +581,7 @@ def load_pem_x509_certificate(
     return rust_x509.load_pem_x509_certificate(data)
 
 
-def load_pem_x509_certificates(data: bytes) -> typing.List[Certificate]:
+def load_pem_x509_certificates(data: bytes) -> list[Certificate]:
     return rust_x509.load_pem_x509_certificates(data)
 
 
@@ -626,9 +624,9 @@ class CertificateSigningRequestBuilder:
     def __init__(
         self,
         subject_name: typing.Optional[Name] = None,
-        extensions: typing.List[Extension[ExtensionType]] = [],
-        attributes: typing.List[
-            typing.Tuple[ObjectIdentifier, bytes, typing.Optional[int]]
+        extensions: list[Extension[ExtensionType]] = [],
+        attributes: list[
+            tuple[ObjectIdentifier, bytes, typing.Optional[int]]
         ] = [],
     ):
         """
@@ -715,7 +713,7 @@ class CertificateSigningRequestBuilder:
 
 
 class CertificateBuilder:
-    _extensions: typing.List[Extension[ExtensionType]]
+    _extensions: list[Extension[ExtensionType]]
 
     def __init__(
         self,
@@ -725,7 +723,7 @@ class CertificateBuilder:
         serial_number: typing.Optional[int] = None,
         not_valid_before: typing.Optional[datetime.datetime] = None,
         not_valid_after: typing.Optional[datetime.datetime] = None,
-        extensions: typing.List[Extension[ExtensionType]] = [],
+        extensions: list[Extension[ExtensionType]] = [],
     ) -> None:
         self._version = Version.v3
         self._issuer_name = issuer_name
@@ -962,16 +960,16 @@ class CertificateBuilder:
 
 
 class CertificateRevocationListBuilder:
-    _extensions: typing.List[Extension[ExtensionType]]
-    _revoked_certificates: typing.List[RevokedCertificate]
+    _extensions: list[Extension[ExtensionType]]
+    _revoked_certificates: list[RevokedCertificate]
 
     def __init__(
         self,
         issuer_name: typing.Optional[Name] = None,
         last_update: typing.Optional[datetime.datetime] = None,
         next_update: typing.Optional[datetime.datetime] = None,
-        extensions: typing.List[Extension[ExtensionType]] = [],
-        revoked_certificates: typing.List[RevokedCertificate] = [],
+        extensions: list[Extension[ExtensionType]] = [],
+        revoked_certificates: list[RevokedCertificate] = [],
     ):
         self._issuer_name = issuer_name
         self._last_update = last_update
@@ -1101,7 +1099,7 @@ class RevokedCertificateBuilder:
         self,
         serial_number: typing.Optional[int] = None,
         revocation_date: typing.Optional[datetime.datetime] = None,
-        extensions: typing.List[Extension[ExtensionType]] = [],
+        extensions: list[Extension[ExtensionType]] = [],
     ):
         self._serial_number = serial_number
         self._revocation_date = revocation_date

@@ -20,7 +20,7 @@ def _generate_uri(
     type_name: str,
     account_name: str,
     issuer: typing.Optional[str],
-    extra_parameters: typing.List[typing.Tuple[str, int]],
+    extra_parameters: list[tuple[str, int]],
 ) -> str:
     parameters = [
         ("digits", hotp._length),

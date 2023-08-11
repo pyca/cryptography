@@ -4,17 +4,15 @@
 
 from __future__ import annotations
 
-import typing
 
-
-def cryptography_has_set_cert_cb() -> typing.List[str]:
+def cryptography_has_set_cert_cb() -> list[str]:
     return [
         "SSL_CTX_set_cert_cb",
         "SSL_set_cert_cb",
     ]
 
 
-def cryptography_has_ssl_st() -> typing.List[str]:
+def cryptography_has_ssl_st() -> list[str]:
     return [
         "SSL_ST_BEFORE",
         "SSL_ST_OK",
@@ -23,57 +21,57 @@ def cryptography_has_ssl_st() -> typing.List[str]:
     ]
 
 
-def cryptography_has_tls_st() -> typing.List[str]:
+def cryptography_has_tls_st() -> list[str]:
     return [
         "TLS_ST_BEFORE",
         "TLS_ST_OK",
     ]
 
 
-def cryptography_has_evp_pkey_dhx() -> typing.List[str]:
+def cryptography_has_evp_pkey_dhx() -> list[str]:
     return [
         "EVP_PKEY_DHX",
     ]
 
 
-def cryptography_has_mem_functions() -> typing.List[str]:
+def cryptography_has_mem_functions() -> list[str]:
     return [
         "Cryptography_CRYPTO_set_mem_functions",
     ]
 
 
-def cryptography_has_x509_store_ctx_get_issuer() -> typing.List[str]:
+def cryptography_has_x509_store_ctx_get_issuer() -> list[str]:
     return [
         "X509_STORE_set_get_issuer",
     ]
 
 
-def cryptography_has_ed448() -> typing.List[str]:
+def cryptography_has_ed448() -> list[str]:
     return [
         "EVP_PKEY_ED448",
     ]
 
 
-def cryptography_has_ed25519() -> typing.List[str]:
+def cryptography_has_ed25519() -> list[str]:
     return [
         "EVP_PKEY_ED25519",
     ]
 
 
-def cryptography_has_fips() -> typing.List[str]:
+def cryptography_has_fips() -> list[str]:
     return [
         "FIPS_mode_set",
         "FIPS_mode",
     ]
 
 
-def cryptography_has_ssl_sigalgs() -> typing.List[str]:
+def cryptography_has_ssl_sigalgs() -> list[str]:
     return [
         "SSL_CTX_set1_sigalgs_list",
     ]
 
 
-def cryptography_has_psk() -> typing.List[str]:
+def cryptography_has_psk() -> list[str]:
     return [
         "SSL_CTX_use_psk_identity_hint",
         "SSL_CTX_set_psk_server_callback",
@@ -81,7 +79,7 @@ def cryptography_has_psk() -> typing.List[str]:
     ]
 
 
-def cryptography_has_psk_tlsv13() -> typing.List[str]:
+def cryptography_has_psk_tlsv13() -> list[str]:
     return [
         "SSL_CTX_set_psk_find_session_callback",
         "SSL_CTX_set_psk_use_session_callback",
@@ -93,7 +91,7 @@ def cryptography_has_psk_tlsv13() -> typing.List[str]:
     ]
 
 
-def cryptography_has_custom_ext() -> typing.List[str]:
+def cryptography_has_custom_ext() -> list[str]:
     return [
         "SSL_CTX_add_client_custom_ext",
         "SSL_CTX_add_server_custom_ext",
@@ -101,7 +99,7 @@ def cryptography_has_custom_ext() -> typing.List[str]:
     ]
 
 
-def cryptography_has_tlsv13_functions() -> typing.List[str]:
+def cryptography_has_tlsv13_functions() -> list[str]:
     return [
         "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
@@ -115,7 +113,7 @@ def cryptography_has_tlsv13_functions() -> typing.List[str]:
     ]
 
 
-def cryptography_has_engine() -> typing.List[str]:
+def cryptography_has_engine() -> list[str]:
     return [
         "ENGINE_by_id",
         "ENGINE_init",
@@ -134,13 +132,13 @@ def cryptography_has_engine() -> typing.List[str]:
     ]
 
 
-def cryptography_has_verified_chain() -> typing.List[str]:
+def cryptography_has_verified_chain() -> list[str]:
     return [
         "SSL_get0_verified_chain",
     ]
 
 
-def cryptography_has_srtp() -> typing.List[str]:
+def cryptography_has_srtp() -> list[str]:
     return [
         "SSL_CTX_set_tlsext_use_srtp",
         "SSL_set_tlsext_use_srtp",
@@ -148,7 +146,7 @@ def cryptography_has_srtp() -> typing.List[str]:
     ]
 
 
-def cryptography_has_providers() -> typing.List[str]:
+def cryptography_has_providers() -> list[str]:
     return [
         "OSSL_PROVIDER_load",
         "OSSL_PROVIDER_unload",
@@ -158,25 +156,25 @@ def cryptography_has_providers() -> typing.List[str]:
     ]
 
 
-def cryptography_has_op_no_renegotiation() -> typing.List[str]:
+def cryptography_has_op_no_renegotiation() -> list[str]:
     return [
         "SSL_OP_NO_RENEGOTIATION",
     ]
 
 
-def cryptography_has_dtls_get_data_mtu() -> typing.List[str]:
+def cryptography_has_dtls_get_data_mtu() -> list[str]:
     return [
         "DTLS_get_data_mtu",
     ]
 
 
-def cryptography_has_300_fips() -> typing.List[str]:
+def cryptography_has_300_fips() -> list[str]:
     return [
         "EVP_default_properties_enable_fips",
     ]
 
 
-def cryptography_has_ssl_cookie() -> typing.List[str]:
+def cryptography_has_ssl_cookie() -> list[str]:
     return [
         "SSL_OP_COOKIE_EXCHANGE",
         "DTLSv1_listen",
@@ -185,7 +183,7 @@ def cryptography_has_ssl_cookie() -> typing.List[str]:
     ]
 
 
-def cryptography_has_pkcs7_funcs() -> typing.List[str]:
+def cryptography_has_pkcs7_funcs() -> list[str]:
     return [
         "SMIME_write_PKCS7",
         "PEM_write_bio_PKCS7_stream",
@@ -197,35 +195,35 @@ def cryptography_has_pkcs7_funcs() -> typing.List[str]:
     ]
 
 
-def cryptography_has_prime_checks() -> typing.List[str]:
+def cryptography_has_prime_checks() -> list[str]:
     return [
         "BN_prime_checks_for_size",
     ]
 
 
-def cryptography_has_300_evp_cipher() -> typing.List[str]:
+def cryptography_has_300_evp_cipher() -> list[str]:
     return ["EVP_CIPHER_fetch", "EVP_CIPHER_free"]
 
 
-def cryptography_has_unexpected_eof_while_reading() -> typing.List[str]:
+def cryptography_has_unexpected_eof_while_reading() -> list[str]:
     return ["SSL_R_UNEXPECTED_EOF_WHILE_READING"]
 
 
-def cryptography_has_pkcs12_set_mac() -> typing.List[str]:
+def cryptography_has_pkcs12_set_mac() -> list[str]:
     return ["PKCS12_set_mac"]
 
 
-def cryptography_has_ssl_op_ignore_unexpected_eof() -> typing.List[str]:
+def cryptography_has_ssl_op_ignore_unexpected_eof() -> list[str]:
     return [
         "SSL_OP_IGNORE_UNEXPECTED_EOF",
     ]
 
 
-def cryptography_has_get_extms_support() -> typing.List[str]:
+def cryptography_has_get_extms_support() -> list[str]:
     return ["SSL_get_extms_support"]
 
 
-def cryptography_has_evp_aead() -> typing.List[str]:
+def cryptography_has_evp_aead() -> list[str]:
     return [
         "EVP_aead_chacha20_poly1305",
         "EVP_AEAD_CTX_free",

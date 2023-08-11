@@ -124,7 +124,7 @@ class Extensions:
         raise ExtensionNotFound(f"No {oid} extension was found", oid)
 
     def get_extension_for_class(
-        self, extclass: typing.Type[ExtensionTypeVar]
+        self, extclass: type[ExtensionTypeVar]
     ) -> Extension[ExtensionTypeVar]:
         if extclass is UnrecognizedExtension:
             raise TypeError(
@@ -273,7 +273,7 @@ class AuthorityKeyIdentifier(ExtensionType):
     @property
     def authority_cert_issuer(
         self,
-    ) -> typing.Optional[typing.List[GeneralName]]:
+    ) -> typing.Optional[list[GeneralName]]:
         return self._authority_cert_issuer
 
     @property
@@ -580,7 +580,7 @@ class DistributionPoint:
         self,
         full_name: typing.Optional[typing.Iterable[GeneralName]],
         relative_name: typing.Optional[RelativeDistinguishedName],
-        reasons: typing.Optional[typing.FrozenSet[ReasonFlags]],
+        reasons: typing.Optional[frozenset[ReasonFlags]],
         crl_issuer: typing.Optional[typing.Iterable[GeneralName]],
     ) -> None:
         if full_name and relative_name:
@@ -654,23 +654,23 @@ class DistributionPoint:
 
     def __hash__(self) -> int:
         if self.full_name is not None:
-            fn: typing.Optional[typing.Tuple[GeneralName, ...]] = tuple(
+            fn: typing.Optional[tuple[GeneralName, ...]] = tuple(
                 self.full_name
             )
         else:
             fn = None
 
         if self.crl_issuer is not None:
-            crl_issuer: typing.Optional[
-                typing.Tuple[GeneralName, ...]
-            ] = tuple(self.crl_issuer)
+            crl_issuer: typing.Optional[tuple[GeneralName, ...]] = tuple(
+                self.crl_issuer
+            )
         else:
             crl_issuer = None
 
         return hash((fn, self.relative_name, self.reasons, crl_issuer))
 
     @property
-    def full_name(self) -> typing.Optional[typing.List[GeneralName]]:
+    def full_name(self) -> typing.Optional[list[GeneralName]]:
         return self._full_name
 
     @property
@@ -678,11 +678,11 @@ class DistributionPoint:
         return self._relative_name
 
     @property
-    def reasons(self) -> typing.Optional[typing.FrozenSet[ReasonFlags]]:
+    def reasons(self) -> typing.Optional[frozenset[ReasonFlags]]:
         return self._reasons
 
     @property
-    def crl_issuer(self) -> typing.Optional[typing.List[GeneralName]]:
+    def crl_issuer(self) -> typing.Optional[list[GeneralName]]:
         return self._crl_issuer
 
 
@@ -873,7 +873,7 @@ class PolicyInformation:
     def __hash__(self) -> int:
         if self.policy_qualifiers is not None:
             pq: typing.Optional[
-                typing.Tuple[typing.Union[str, UserNotice], ...]
+                tuple[typing.Union[str, UserNotice], ...]
             ] = tuple(self.policy_qualifiers)
         else:
             pq = None
@@ -887,7 +887,7 @@ class PolicyInformation:
     @property
     def policy_qualifiers(
         self,
-    ) -> typing.Optional[typing.List[typing.Union[str, UserNotice]]]:
+    ) -> typing.Optional[list[typing.Union[str, UserNotice]]]:
         return self._policy_qualifiers
 
 
@@ -970,7 +970,7 @@ class NoticeReference:
         return self._organization
 
     @property
-    def notice_numbers(self) -> typing.List[int]:
+    def notice_numbers(self) -> list[int]:
         return self._notice_numbers
 
 
@@ -1343,14 +1343,14 @@ class NameConstraints(ExtensionType):
 
     def __hash__(self) -> int:
         if self.permitted_subtrees is not None:
-            ps: typing.Optional[typing.Tuple[GeneralName, ...]] = tuple(
+            ps: typing.Optional[tuple[GeneralName, ...]] = tuple(
                 self.permitted_subtrees
             )
         else:
             ps = None
 
         if self.excluded_subtrees is not None:
-            es: typing.Optional[typing.Tuple[GeneralName, ...]] = tuple(
+            es: typing.Optional[tuple[GeneralName, ...]] = tuple(
                 self.excluded_subtrees
             )
         else:
@@ -1361,13 +1361,13 @@ class NameConstraints(ExtensionType):
     @property
     def permitted_subtrees(
         self,
-    ) -> typing.Optional[typing.List[GeneralName]]:
+    ) -> typing.Optional[list[GeneralName]]:
         return self._permitted_subtrees
 
     @property
     def excluded_subtrees(
         self,
-    ) -> typing.Optional[typing.List[GeneralName]]:
+    ) -> typing.Optional[list[GeneralName]]:
         return self._excluded_subtrees
 
     def public_bytes(self) -> bytes:
@@ -1439,56 +1439,54 @@ class GeneralNames:
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[UniformResourceIdentifier],
-            typing.Type[RFC822Name],
+            type[DNSName],
+            type[UniformResourceIdentifier],
+            type[RFC822Name],
         ],
-    ) -> typing.List[str]:
+    ) -> list[str]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[DirectoryName],
-    ) -> typing.List[Name]:
+        type: type[DirectoryName],
+    ) -> list[Name]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[RegisteredID],
-    ) -> typing.List[ObjectIdentifier]:
+        type: type[RegisteredID],
+    ) -> list[ObjectIdentifier]:
         ...
 
     @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPAddressTypes]:
+        self, type: type[IPAddress]
+    ) -> list[_IPAddressTypes]:
         ...
 
     @typing.overload
-    def get_values_for_type(
-        self, type: typing.Type[OtherName]
-    ) -> typing.List[OtherName]:
+    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
         ...
 
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[DirectoryName],
-            typing.Type[IPAddress],
-            typing.Type[OtherName],
-            typing.Type[RFC822Name],
-            typing.Type[RegisteredID],
-            typing.Type[UniformResourceIdentifier],
+            type[DNSName],
+            type[DirectoryName],
+            type[IPAddress],
+            type[OtherName],
+            type[RFC822Name],
+            type[RegisteredID],
+            type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPAddressTypes],
-        typing.List[str],
-        typing.List[OtherName],
-        typing.List[Name],
-        typing.List[ObjectIdentifier],
+        list[_IPAddressTypes],
+        list[str],
+        list[OtherName],
+        list[Name],
+        list[ObjectIdentifier],
     ]:
         # Return the value of each GeneralName, except for OtherName instances
         # which we return directly because it has two important properties not
@@ -1523,56 +1521,54 @@ class SubjectAlternativeName(ExtensionType):
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[UniformResourceIdentifier],
-            typing.Type[RFC822Name],
+            type[DNSName],
+            type[UniformResourceIdentifier],
+            type[RFC822Name],
         ],
-    ) -> typing.List[str]:
+    ) -> list[str]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[DirectoryName],
-    ) -> typing.List[Name]:
+        type: type[DirectoryName],
+    ) -> list[Name]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[RegisteredID],
-    ) -> typing.List[ObjectIdentifier]:
+        type: type[RegisteredID],
+    ) -> list[ObjectIdentifier]:
         ...
 
     @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPAddressTypes]:
+        self, type: type[IPAddress]
+    ) -> list[_IPAddressTypes]:
         ...
 
     @typing.overload
-    def get_values_for_type(
-        self, type: typing.Type[OtherName]
-    ) -> typing.List[OtherName]:
+    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
         ...
 
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[DirectoryName],
-            typing.Type[IPAddress],
-            typing.Type[OtherName],
-            typing.Type[RFC822Name],
-            typing.Type[RegisteredID],
-            typing.Type[UniformResourceIdentifier],
+            type[DNSName],
+            type[DirectoryName],
+            type[IPAddress],
+            type[OtherName],
+            type[RFC822Name],
+            type[RegisteredID],
+            type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPAddressTypes],
-        typing.List[str],
-        typing.List[OtherName],
-        typing.List[Name],
-        typing.List[ObjectIdentifier],
+        list[_IPAddressTypes],
+        list[str],
+        list[OtherName],
+        list[Name],
+        list[ObjectIdentifier],
     ]:
         return self._general_names.get_values_for_type(type)
 
@@ -1604,56 +1600,54 @@ class IssuerAlternativeName(ExtensionType):
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[UniformResourceIdentifier],
-            typing.Type[RFC822Name],
+            type[DNSName],
+            type[UniformResourceIdentifier],
+            type[RFC822Name],
         ],
-    ) -> typing.List[str]:
+    ) -> list[str]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[DirectoryName],
-    ) -> typing.List[Name]:
+        type: type[DirectoryName],
+    ) -> list[Name]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[RegisteredID],
-    ) -> typing.List[ObjectIdentifier]:
+        type: type[RegisteredID],
+    ) -> list[ObjectIdentifier]:
         ...
 
     @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPAddressTypes]:
+        self, type: type[IPAddress]
+    ) -> list[_IPAddressTypes]:
         ...
 
     @typing.overload
-    def get_values_for_type(
-        self, type: typing.Type[OtherName]
-    ) -> typing.List[OtherName]:
+    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
         ...
 
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[DirectoryName],
-            typing.Type[IPAddress],
-            typing.Type[OtherName],
-            typing.Type[RFC822Name],
-            typing.Type[RegisteredID],
-            typing.Type[UniformResourceIdentifier],
+            type[DNSName],
+            type[DirectoryName],
+            type[IPAddress],
+            type[OtherName],
+            type[RFC822Name],
+            type[RegisteredID],
+            type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPAddressTypes],
-        typing.List[str],
-        typing.List[OtherName],
-        typing.List[Name],
-        typing.List[ObjectIdentifier],
+        list[_IPAddressTypes],
+        list[str],
+        list[OtherName],
+        list[Name],
+        list[ObjectIdentifier],
     ]:
         return self._general_names.get_values_for_type(type)
 
@@ -1685,56 +1679,54 @@ class CertificateIssuer(ExtensionType):
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[UniformResourceIdentifier],
-            typing.Type[RFC822Name],
+            type[DNSName],
+            type[UniformResourceIdentifier],
+            type[RFC822Name],
         ],
-    ) -> typing.List[str]:
+    ) -> list[str]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[DirectoryName],
-    ) -> typing.List[Name]:
+        type: type[DirectoryName],
+    ) -> list[Name]:
         ...
 
     @typing.overload
     def get_values_for_type(
         self,
-        type: typing.Type[RegisteredID],
-    ) -> typing.List[ObjectIdentifier]:
+        type: type[RegisteredID],
+    ) -> list[ObjectIdentifier]:
         ...
 
     @typing.overload
     def get_values_for_type(
-        self, type: typing.Type[IPAddress]
-    ) -> typing.List[_IPAddressTypes]:
+        self, type: type[IPAddress]
+    ) -> list[_IPAddressTypes]:
         ...
 
     @typing.overload
-    def get_values_for_type(
-        self, type: typing.Type[OtherName]
-    ) -> typing.List[OtherName]:
+    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
         ...
 
     def get_values_for_type(
         self,
         type: typing.Union[
-            typing.Type[DNSName],
-            typing.Type[DirectoryName],
-            typing.Type[IPAddress],
-            typing.Type[OtherName],
-            typing.Type[RFC822Name],
-            typing.Type[RegisteredID],
-            typing.Type[UniformResourceIdentifier],
+            type[DNSName],
+            type[DirectoryName],
+            type[IPAddress],
+            type[OtherName],
+            type[RFC822Name],
+            type[RegisteredID],
+            type[UniformResourceIdentifier],
         ],
     ) -> typing.Union[
-        typing.List[_IPAddressTypes],
-        typing.List[str],
-        typing.List[OtherName],
-        typing.List[Name],
-        typing.List[ObjectIdentifier],
+        list[_IPAddressTypes],
+        list[str],
+        list[OtherName],
+        list[Name],
+        list[ObjectIdentifier],
     ]:
         return self._general_names.get_values_for_type(type)
 
@@ -1965,7 +1957,7 @@ class IssuingDistributionPoint(ExtensionType):
         relative_name: typing.Optional[RelativeDistinguishedName],
         only_contains_user_certs: bool,
         only_contains_ca_certs: bool,
-        only_some_reasons: typing.Optional[typing.FrozenSet[ReasonFlags]],
+        only_some_reasons: typing.Optional[frozenset[ReasonFlags]],
         indirect_crl: bool,
         only_contains_attribute_certs: bool,
     ) -> None:
@@ -2083,7 +2075,7 @@ class IssuingDistributionPoint(ExtensionType):
         )
 
     @property
-    def full_name(self) -> typing.Optional[typing.List[GeneralName]]:
+    def full_name(self) -> typing.Optional[list[GeneralName]]:
         return self._full_name
 
     @property
@@ -2101,7 +2093,7 @@ class IssuingDistributionPoint(ExtensionType):
     @property
     def only_some_reasons(
         self,
-    ) -> typing.Optional[typing.FrozenSet[ReasonFlags]]:
+    ) -> typing.Optional[frozenset[ReasonFlags]]:
         return self._only_some_reasons
 
     @property

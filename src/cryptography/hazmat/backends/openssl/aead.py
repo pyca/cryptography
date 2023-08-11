@@ -62,7 +62,7 @@ def _encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -81,7 +81,7 @@ def _decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -132,7 +132,7 @@ def _evp_aead_encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any,
 ) -> bytes:
@@ -173,7 +173,7 @@ def _evp_aead_decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any,
 ) -> bytes:
@@ -375,7 +375,7 @@ def _evp_cipher_encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -427,7 +427,7 @@ def _evp_cipher_decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:

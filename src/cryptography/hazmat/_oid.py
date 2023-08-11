@@ -124,7 +124,7 @@ class SignatureAlgorithmOID:
     GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
 
 
-_SIG_OIDS_TO_HASH: typing.Dict[
+_SIG_OIDS_TO_HASH: dict[
     ObjectIdentifier, typing.Optional[hashes.HashAlgorithm]
 ] = {
     SignatureAlgorithmOID.RSA_WITH_MD5: hashes.MD5(),

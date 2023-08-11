@@ -292,7 +292,7 @@ class BrainpoolP512R1(EllipticCurve):
     key_size = 512
 
 
-_CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
+_CURVE_TYPES: dict[str, type[EllipticCurve]] = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
     "secp192r1": SECP192R1,
@@ -483,7 +483,7 @@ _OID_TO_CURVE = {
 }
 
 
-def get_curve_for_oid(oid: ObjectIdentifier) -> typing.Type[EllipticCurve]:
+def get_curve_for_oid(oid: ObjectIdentifier) -> type[EllipticCurve]:
     try:
         return _OID_TO_CURVE[oid]
     except KeyError:

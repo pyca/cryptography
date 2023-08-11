@@ -91,7 +91,7 @@ class Backend:
     # disallowed algorithms are still present in OpenSSL. They just error if
     # you try to use them. To avoid that we allowlist the algorithms in
     # FIPS 140-3. This isn't ideal, but FIPS 140-3 is trash so here we are.
-    _fips_aead: typing.ClassVar[typing.Set[bytes]] = {
+    _fips_aead: typing.ClassVar[set[bytes]] = {
         b"aes-128-ccm",
         b"aes-192-ccm",
         b"aes-256-ccm",
@@ -136,8 +136,8 @@ class Backend:
         self._lib = self._binding.lib
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
-        self._cipher_registry: typing.Dict[
-            typing.Tuple[typing.Type[CipherAlgorithm], typing.Type[Mode]],
+        self._cipher_registry: dict[
+            tuple[type[CipherAlgorithm], type[Mode]],
             typing.Callable,
         ] = {}
         self._register_default_ciphers()
@@ -155,7 +155,7 @@ class Backend:
     def openssl_assert(
         self,
         ok: bool,
-        errors: typing.Optional[typing.List[rust_openssl.OpenSSLError]] = None,
+        errors: typing.Optional[list[rust_openssl.OpenSSLError]] = None,
     ) -> None:
         return binding._openssl_assert(self._lib, ok, errors=errors)
 
@@ -327,7 +327,7 @@ class Backend:
     def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hmac_supported(algorithm)
 
-    def _consume_errors(self) -> typing.List[rust_openssl.OpenSSLError]:
+    def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 
     def _bn_to_int(self, bn) -> int:
@@ -1248,10 +1248,10 @@ class Backend:
 
     def load_key_and_certificates_from_pkcs12(
         self, data: bytes, password: typing.Optional[bytes]
-    ) -> typing.Tuple[
+    ) -> tuple[
         typing.Optional[PrivateKeyTypes],
         typing.Optional[x509.Certificate],
-        typing.List[x509.Certificate],
+        list[x509.Certificate],
     ]:
         pkcs12 = self.load_pkcs12(data, password)
         return (
@@ -1340,7 +1340,7 @@ class Backend:
         name: typing.Optional[bytes],
         key: typing.Optional[PKCS12PrivateKeyTypes],
         cert: typing.Optional[x509.Certificate],
-        cas: typing.Optional[typing.List[_PKCS12CATypes]],
+        cas: typing.Optional[list[_PKCS12CATypes]],
         encryption_algorithm: serialization.KeySerializationEncryption,
     ) -> bytes:
         password = None
@@ -1503,7 +1503,7 @@ class Backend:
 
     def load_pem_pkcs7_certificates(
         self, data: bytes
-    ) -> typing.List[x509.Certificate]:
+    ) -> list[x509.Certificate]:
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.PEM_read_bio_PKCS7(
@@ -1518,7 +1518,7 @@ class Backend:
 
     def load_der_pkcs7_certificates(
         self, data: bytes
-    ) -> typing.List[x509.Certificate]:
+    ) -> list[x509.Certificate]:
         utils._check_bytes("data", data)
         bio = self._bytes_to_bio(data)
         p7 = self._lib.d2i_PKCS7_bio(bio.bio, self._ffi.NULL)
@@ -1529,7 +1529,7 @@ class Backend:
         p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
         return self._load_pkcs7_certificates(p7)
 
-    def _load_pkcs7_certificates(self, p7) -> typing.List[x509.Certificate]:
+    def _load_pkcs7_certificates(self, p7) -> list[x509.Certificate]:
         nid = self._lib.OBJ_obj2nid(p7.type)
         self.openssl_assert(nid != self._lib.NID_undef)
         if nid != self._lib.NID_pkcs7_signed:

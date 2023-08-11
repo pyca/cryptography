@@ -18,20 +18,20 @@ from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.utils import _check_byteslike
 
 
-def load_pem_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
+def load_pem_pkcs7_certificates(data: bytes) -> list[x509.Certificate]:
     from cryptography.hazmat.backends.openssl.backend import backend
 
     return backend.load_pem_pkcs7_certificates(data)
 
 
-def load_der_pkcs7_certificates(data: bytes) -> typing.List[x509.Certificate]:
+def load_der_pkcs7_certificates(data: bytes) -> list[x509.Certificate]:
     from cryptography.hazmat.backends.openssl.backend import backend
 
     return backend.load_der_pkcs7_certificates(data)
 
 
 def serialize_certificates(
-    certs: typing.List[x509.Certificate],
+    certs: list[x509.Certificate],
     encoding: serialization.Encoding,
 ) -> bytes:
     return rust_pkcs7.serialize_certificates(certs, encoding)
@@ -62,14 +62,14 @@ class PKCS7SignatureBuilder:
     def __init__(
         self,
         data: typing.Optional[bytes] = None,
-        signers: typing.List[
-            typing.Tuple[
+        signers: list[
+            tuple[
                 x509.Certificate,
                 PKCS7PrivateKeyTypes,
                 PKCS7HashTypes,
             ]
         ] = [],
-        additional_certs: typing.List[x509.Certificate] = [],
+        additional_certs: list[x509.Certificate] = [],
     ):
         self._data = data
         self._signers = signers

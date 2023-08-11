@@ -11,10 +11,10 @@ class AESSIV:
     def encrypt(
         self,
         data: bytes,
-        associated_data: typing.Optional[typing.List[bytes]],
+        associated_data: typing.Optional[list[bytes]],
     ) -> bytes: ...
     def decrypt(
         self,
         data: bytes,
-        associated_data: typing.Optional[typing.List[bytes]],
+        associated_data: typing.Optional[list[bytes]],
     ) -> bytes: ...

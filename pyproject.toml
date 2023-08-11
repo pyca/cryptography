@@ -136,9 +136,8 @@ exclude_lines = [
 ]
 
 [tool.ruff]
-# UP006: Minimum Python 3.9
 # UP007, UP038: Minimum Python 3.10
-ignore = ['N818', 'UP006', 'UP007', 'UP038']
+ignore = ['N818', 'UP007', 'UP038']
 select = ['E', 'F', 'I', 'N', 'W', 'UP', 'RUF']
 line-length = 79
 

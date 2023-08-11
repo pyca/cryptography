@@ -81,7 +81,7 @@ class PKCS12KeyAndCertificates:
         self,
         key: typing.Optional[PrivateKeyTypes],
         cert: typing.Optional[PKCS12Certificate],
-        additional_certs: typing.List[PKCS12Certificate],
+        additional_certs: list[PKCS12Certificate],
     ):
         if key is not None and not isinstance(
             key,
@@ -120,7 +120,7 @@ class PKCS12KeyAndCertificates:
         return self._cert
 
     @property
-    def additional_certs(self) -> typing.List[PKCS12Certificate]:
+    def additional_certs(self) -> list[PKCS12Certificate]:
         return self._additional_certs
 
     def __eq__(self, other: object) -> bool:
@@ -147,10 +147,10 @@ def load_key_and_certificates(
     data: bytes,
     password: typing.Optional[bytes],
     backend: typing.Any = None,
-) -> typing.Tuple[
+) -> tuple[
     typing.Optional[PrivateKeyTypes],
     typing.Optional[x509.Certificate],
-    typing.List[x509.Certificate],
+    list[x509.Certificate],
 ]:
     from cryptography.hazmat.backends.openssl.backend import backend as ossl
 

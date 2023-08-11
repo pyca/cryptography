@@ -287,7 +287,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def certificates(self) -> typing.List[x509.Certificate]:
+    def certificates(self) -> list[x509.Certificate]:
         """
         A list of certificates used to help build a chain to verify the OCSP
         response. This situation occurs when the OCSP responder uses a delegate
@@ -406,14 +406,12 @@ class OCSPRequestBuilder:
     def __init__(
         self,
         request: typing.Optional[
-            typing.Tuple[
-                x509.Certificate, x509.Certificate, hashes.HashAlgorithm
-            ]
+            tuple[x509.Certificate, x509.Certificate, hashes.HashAlgorithm]
         ] = None,
         request_hash: typing.Optional[
-            typing.Tuple[bytes, bytes, int, hashes.HashAlgorithm]
+            tuple[bytes, bytes, int, hashes.HashAlgorithm]
         ] = None,
-        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+        extensions: list[x509.Extension[x509.ExtensionType]] = [],
     ) -> None:
         self._request = request
         self._request_hash = request_hash
@@ -493,10 +491,10 @@ class OCSPResponseBuilder:
         self,
         response: typing.Optional[_SingleResponse] = None,
         responder_id: typing.Optional[
-            typing.Tuple[x509.Certificate, OCSPResponderEncoding]
+            tuple[x509.Certificate, OCSPResponderEncoding]
         ] = None,
-        certs: typing.Optional[typing.List[x509.Certificate]] = None,
-        extensions: typing.List[x509.Extension[x509.ExtensionType]] = [],
+        certs: typing.Optional[list[x509.Certificate]] = None,
+        extensions: list[x509.Extension[x509.ExtensionType]] = [],
     ):
         self._response = response
         self._responder_id = responder_id

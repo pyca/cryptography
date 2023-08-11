@@ -250,9 +250,7 @@ def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
 _MAX_RECOVERY_ATTEMPTS = 1000
 
 
-def rsa_recover_prime_factors(
-    n: int, e: int, d: int
-) -> typing.Tuple[int, int]:
+def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     """
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.

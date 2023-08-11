@@ -44,7 +44,7 @@ def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
     )
 
 
-def _extract_buffer_length(obj: typing.Any) -> typing.Tuple[typing.Any, int]:
+def _extract_buffer_length(obj: typing.Any) -> tuple[typing.Any, int]:
     from cryptography.hazmat.bindings._rust import _openssl
 
     buf = _openssl.ffi.from_buffer(obj)
@@ -92,7 +92,7 @@ def deprecated(
     value: object,
     module_name: str,
     message: str,
-    warning_class: typing.Type[Warning],
+    warning_class: type[Warning],
     name: typing.Optional[str] = None,
 ) -> _DeprecatedValue:
     module = sys.modules[module_name]
