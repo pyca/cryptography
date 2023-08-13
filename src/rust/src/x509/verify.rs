@@ -90,12 +90,6 @@ self_cell::self_cell!(
 #[pyo3::pyclass(name = "Policy", module = "cryptography.hazmat.bindings._rust.x509")]
 struct PyPolicy(OwnedPolicy);
 
-impl PyPolicy {
-    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.0.borrow_dependent().0
-    }
-}
-
 #[pyo3::pymethods]
 impl PyPolicy {
     #[getter]
@@ -134,7 +128,8 @@ fn build_subject_owner<'p>(
         )))
     } else if subject.is_instance(ip_address_class)? {
         let value = subject
-            .getattr(pyo3::intern!(py, "packed"))?
+            .getattr(pyo3::intern!(py, "_packed"))?
+            .call0()?
             .downcast::<pyo3::types::PyBytes>()?;
 
         Ok(SubjectOwner::IPAddress((subject.into_py(py), value.into())))
