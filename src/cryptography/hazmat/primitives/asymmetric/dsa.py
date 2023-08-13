@@ -54,7 +54,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
     def sign(
         self,
         data: bytes,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> bytes:
         """
         Signs the data
@@ -117,7 +117,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         data: bytes,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> None:
         """
         Verifies the signature of the data.

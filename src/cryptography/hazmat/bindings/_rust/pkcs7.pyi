@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 def serialize_certificates(
-    certs: typing.List[x509.Certificate],
+    certs: list[x509.Certificate],
     encoding: serialization.Encoding,
 ) -> bytes: ...
 def sign_and_serialize(

@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import os
-import typing
 
 from cryptography import exceptions, utils
 from cryptography.hazmat.backends.openssl import aead
@@ -52,7 +51,7 @@ class ChaCha20Poly1305:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -73,7 +72,7 @@ class ChaCha20Poly1305:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -134,7 +133,7 @@ class AESCCM:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -155,7 +154,7 @@ class AESCCM:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -206,7 +205,7 @@ class AESGCM:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -224,7 +223,7 @@ class AESGCM:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -275,7 +274,7 @@ class AESOCB3:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""
@@ -293,7 +292,7 @@ class AESOCB3:
         self,
         nonce: bytes,
         data: bytes,
-        associated_data: typing.Optional[bytes],
+        associated_data: bytes | None,
     ) -> bytes:
         if associated_data is None:
             associated_data = b""

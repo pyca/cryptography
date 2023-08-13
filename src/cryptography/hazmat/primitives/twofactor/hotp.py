@@ -19,8 +19,8 @@ def _generate_uri(
     hotp: HOTP,
     type_name: str,
     account_name: str,
-    issuer: typing.Optional[str],
-    extra_parameters: typing.List[typing.Tuple[str, int]],
+    issuer: str | None,
+    extra_parameters: list[tuple[str, int]],
 ) -> str:
     parameters = [
         ("digits", hotp._length),
@@ -85,7 +85,7 @@ class HOTP:
         return int.from_bytes(p, byteorder="big") & 0x7FFFFFFF
 
     def get_provisioning_uri(
-        self, account_name: str, counter: int, issuer: typing.Optional[str]
+        self, account_name: str, counter: int, issuer: str | None
     ) -> str:
         return _generate_uri(
             self, "hotp", account_name, issuer, [("counter", int(counter))]

@@ -24,7 +24,7 @@ class _CipherContext:
         self._cipher = cipher
         self._mode = mode
         self._operation = operation
-        self._tag: typing.Optional[bytes] = None
+        self._tag: bytes | None = None
 
         if isinstance(self._cipher, ciphers.BlockCipherAlgorithm):
             self._block_size_bytes = self._cipher.block_size // 8
@@ -277,5 +277,5 @@ class _CipherContext:
         self._backend.openssl_assert(res != 0)
 
     @property
-    def tag(self) -> typing.Optional[bytes]:
+    def tag(self) -> bytes | None:
         return self._tag

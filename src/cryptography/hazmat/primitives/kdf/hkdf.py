@@ -17,8 +17,8 @@ class HKDF(KeyDerivationFunction):
         self,
         algorithm: hashes.HashAlgorithm,
         length: int,
-        salt: typing.Optional[bytes],
-        info: typing.Optional[bytes],
+        salt: bytes | None,
+        info: bytes | None,
         backend: typing.Any = None,
     ):
         self._algorithm = algorithm
@@ -51,7 +51,7 @@ class HKDFExpand(KeyDerivationFunction):
         self,
         algorithm: hashes.HashAlgorithm,
         length: int,
-        info: typing.Optional[bytes],
+        info: bytes | None,
         backend: typing.Any = None,
     ):
         self._algorithm = algorithm

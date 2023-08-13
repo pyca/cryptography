@@ -20,7 +20,7 @@ from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 def _openssl_assert(
     lib,
     ok: bool,
-    errors: typing.Optional[typing.List[openssl.OpenSSLError]] = None,
+    errors: list[openssl.OpenSSLError] | None = None,
 ) -> None:
     if not ok:
         if errors is None:
@@ -51,7 +51,7 @@ def _legacy_provider_error(loaded: bool) -> None:
 
 def build_conditional_library(
     lib: typing.Any,
-    conditional_names: typing.Dict[str, typing.Callable[[], typing.List[str]]],
+    conditional_names: dict[str, typing.Callable[[], list[str]]],
 ) -> typing.Any:
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib  # type: ignore[attr-defined]
