@@ -27,8 +27,8 @@ class PolicyBuilder:
     def __init__(
         self,
         *,
-        subject: typing.Optional[Subject] = None,
-        time: typing.Optional[datetime.datetime] = None,
+        subject: Subject | None = None,
+        time: datetime.datetime | None = None,
         profile: Profile = Profile.WebPKI,
     ):
         self._subject = subject
@@ -74,7 +74,7 @@ class PolicyBuilder:
 # having a dedicated type makes it harder for users to mix up
 # their trusted and untrusted certificate sets.
 class Store:
-    def __init__(self, certs: typing.List[Certificate]):
+    def __init__(self, certs: list[Certificate]):
         self._certs = certs
 
 

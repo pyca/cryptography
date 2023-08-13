@@ -8,6 +8,7 @@ use cryptography_x509_validation::{
     policy::{Policy, Subject},
     types::{DNSName, IPAddress},
 };
+use pyo3::IntoPy;
 
 use crate::error::CryptographyResult;
 
@@ -73,8 +74,8 @@ enum SubjectOwner {
     // reference in all limited API builds. PyO3 can't currently do that in
     // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
     // so, which was only stabilized with 3.10.
-    DNSName(String),
-    IPAddress(pyo3::Py<pyo3::types::PyBytes>),
+    DNSName((pyo3::Py<pyo3::PyAny>, String)),
+    IPAddress((pyo3::Py<pyo3::PyAny>, pyo3::Py<pyo3::types::PyBytes>)),
 }
 
 self_cell::self_cell!(
@@ -92,6 +93,18 @@ struct PyPolicy(OwnedPolicy);
 impl PyPolicy {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
         &self.0.borrow_dependent().0
+    }
+}
+
+#[pyo3::pymethods]
+impl PyPolicy {
+    #[getter]
+    fn subject<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<Option<&'p pyo3::PyAny>> {
+        match self.0.borrow_owner() {
+            SubjectOwner::None => Ok(None),
+            SubjectOwner::DNSName((subject, _)) => Ok(Some(subject.as_ref(py))),
+            SubjectOwner::IPAddress((subject, _)) => Ok(Some(subject.as_ref(py))),
+        }
     }
 }
 
@@ -115,13 +128,16 @@ fn build_subject_owner<'p>(
             .getattr(pyo3::intern!(py, "value"))?
             .downcast::<pyo3::types::PyString>()?;
 
-        Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
+        Ok(SubjectOwner::DNSName((
+            subject.into_py(py),
+            value.to_str()?.to_owned(),
+        )))
     } else if subject.is_instance(ip_address_class)? {
         let value = subject
             .getattr(pyo3::intern!(py, "packed"))?
             .downcast::<pyo3::types::PyBytes>()?;
 
-        Ok(SubjectOwner::IPAddress(value.into()))
+        Ok(SubjectOwner::IPAddress((subject.into_py(py), value.into())))
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
             "unsupported subject type",
@@ -135,13 +151,13 @@ fn build_subject<'a, 'p>(
 ) -> pyo3::PyResult<Option<Subject<'a>>> {
     match subject {
         SubjectOwner::None => Ok(None),
-        SubjectOwner::DNSName(dns_name) => {
+        SubjectOwner::DNSName((_, dns_name)) => {
             let dns_name = DNSName::new(dns_name)
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
 
             Ok(Some(Subject::DNS(dns_name)))
         }
-        SubjectOwner::IPAddress(ip_addr) => {
+        SubjectOwner::IPAddress((_, ip_addr)) => {
             let ip_addr = IPAddress::from_bytes(ip_addr.as_bytes(py))
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid IP address"))?;
 

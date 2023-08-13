@@ -3,7 +3,6 @@
 # for complete details.
 
 import datetime
-import typing
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
@@ -39,15 +38,9 @@ def create_x509_crl(
 ) -> x509.CertificateRevocationList: ...
 def create_policy(
     profile: x509.verification.Profile,
-    name: typing.Optional[x509.verification.Subject],
-    time: typing.Optional[datetime.datetime],
+    name: x509.verification.Subject | None,
+    time: datetime.datetime | None,
 ) -> x509.verification.Policy: ...
-def verify(
-    leaf: x509.Certificate,
-    policy: Policy,
-    intermediates: typing.List[x509.Certificate],
-    store: x509.verification.Store,
-) -> list[x509.Certificate]: ...
 
 class Sct: ...
 class Certificate: ...
