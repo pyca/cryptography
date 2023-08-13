@@ -11,11 +11,7 @@ use cryptography_x509_validation::{
 
 use crate::error::CryptographyResult;
 
-use super::{
-    certificate::{Certificate as PyCertificate, OwnedCertificate},
-    common::datetime_now,
-    py_to_datetime, sign,
-};
+use super::{common::datetime_now, py_to_datetime, sign};
 
 pub(crate) struct PyCryptoOps {}
 
