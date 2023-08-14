@@ -27,7 +27,7 @@ _MAX_CLOCK_SKEW = 60
 class Fernet:
     def __init__(
         self,
-        key: typing.Union[bytes, str],
+        key: bytes | str,
         backend: typing.Any = None,
     ) -> None:
         try:
@@ -80,9 +80,7 @@ class Fernet:
         hmac = h.finalize()
         return base64.urlsafe_b64encode(basic_parts + hmac)
 
-    def decrypt(
-        self, token: typing.Union[bytes, str], ttl: typing.Optional[int] = None
-    ) -> bytes:
+    def decrypt(self, token: bytes | str, ttl: int | None = None) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(token)
         if ttl is None:
             time_info = None
@@ -91,7 +89,7 @@ class Fernet:
         return self._decrypt_data(data, timestamp, time_info)
 
     def decrypt_at_time(
-        self, token: typing.Union[bytes, str], ttl: int, current_time: int
+        self, token: bytes | str, ttl: int, current_time: int
     ) -> bytes:
         if ttl is None:
             raise ValueError(
@@ -100,16 +98,14 @@ class Fernet:
         timestamp, data = Fernet._get_unverified_token_data(token)
         return self._decrypt_data(data, timestamp, (ttl, current_time))
 
-    def extract_timestamp(self, token: typing.Union[bytes, str]) -> int:
+    def extract_timestamp(self, token: bytes | str) -> int:
         timestamp, data = Fernet._get_unverified_token_data(token)
         # Verify the token was not tampered with.
         self._verify_signature(data)
         return timestamp
 
     @staticmethod
-    def _get_unverified_token_data(
-        token: typing.Union[bytes, str]
-    ) -> typing.Tuple[int, bytes]:
+    def _get_unverified_token_data(token: bytes | str) -> tuple[int, bytes]:
         if not isinstance(token, (str, bytes)):
             raise TypeError("token must be bytes or str")
 
@@ -139,7 +135,7 @@ class Fernet:
         self,
         data: bytes,
         timestamp: int,
-        time_info: typing.Optional[typing.Tuple[int, int]],
+        time_info: tuple[int, int] | None,
     ) -> bytes:
         if time_info is not None:
             ttl, current_time = time_info
@@ -186,7 +182,7 @@ class MultiFernet:
     def encrypt_at_time(self, msg: bytes, current_time: int) -> bytes:
         return self._fernets[0].encrypt_at_time(msg, current_time)
 
-    def rotate(self, msg: typing.Union[bytes, str]) -> bytes:
+    def rotate(self, msg: bytes | str) -> bytes:
         timestamp, data = Fernet._get_unverified_token_data(msg)
         for f in self._fernets:
             try:
@@ -200,9 +196,7 @@ class MultiFernet:
         iv = os.urandom(16)
         return self._fernets[0]._encrypt_from_parts(p, timestamp, iv)
 
-    def decrypt(
-        self, msg: typing.Union[bytes, str], ttl: typing.Optional[int] = None
-    ) -> bytes:
+    def decrypt(self, msg: bytes | str, ttl: int | None = None) -> bytes:
         for f in self._fernets:
             try:
                 return f.decrypt(msg, ttl)
@@ -211,7 +205,7 @@ class MultiFernet:
         raise InvalidToken
 
     def decrypt_at_time(
-        self, msg: typing.Union[bytes, str], ttl: int, current_time: int
+        self, msg: bytes | str, ttl: int, current_time: int
     ) -> bytes:
         for f in self._fernets:
             try:

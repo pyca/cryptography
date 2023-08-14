@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import abc
-import typing
 
 from cryptography import utils
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
@@ -78,9 +77,9 @@ class KeySerializationEncryptionBuilder:
         self,
         format: PrivateFormat,
         *,
-        _kdf_rounds: typing.Optional[int] = None,
-        _hmac_hash: typing.Optional[HashAlgorithm] = None,
-        _key_cert_algorithm: typing.Optional[PBES] = None,
+        _kdf_rounds: int | None = None,
+        _hmac_hash: HashAlgorithm | None = None,
+        _key_cert_algorithm: PBES | None = None,
     ) -> None:
         self._format = format
 
@@ -158,9 +157,9 @@ class _KeySerializationEncryption(KeySerializationEncryption):
         format: PrivateFormat,
         password: bytes,
         *,
-        kdf_rounds: typing.Optional[int],
-        hmac_hash: typing.Optional[HashAlgorithm],
-        key_cert_algorithm: typing.Optional[PBES],
+        kdf_rounds: int | None,
+        hmac_hash: HashAlgorithm | None,
+        key_cert_algorithm: PBES | None,
     ):
         self._format = format
         self.password = password

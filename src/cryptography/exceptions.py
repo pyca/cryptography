@@ -15,9 +15,7 @@ _Reasons = rust_exceptions._Reasons
 
 
 class UnsupportedAlgorithm(Exception):
-    def __init__(
-        self, message: str, reason: typing.Optional[_Reasons] = None
-    ) -> None:
+    def __init__(self, message: str, reason: _Reasons | None = None) -> None:
         super().__init__(message)
         self._reason = reason
 
@@ -44,7 +42,7 @@ class InvalidSignature(Exception):
 
 class InternalError(Exception):
     def __init__(
-        self, msg: str, err_code: typing.List[rust_openssl.OpenSSLError]
+        self, msg: str, err_code: list[rust_openssl.OpenSSLError]
     ) -> None:
         super().__init__(msg)
         self.err_code = err_code

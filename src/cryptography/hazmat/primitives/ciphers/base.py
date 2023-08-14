@@ -141,9 +141,7 @@ class Cipher(typing.Generic[Mode]):
 
     def _wrap_ctx(
         self, ctx: _BackendCipherContext, encrypt: bool
-    ) -> typing.Union[
-        AEADEncryptionContext, AEADDecryptionContext, CipherContext
-    ]:
+    ) -> AEADEncryptionContext | AEADDecryptionContext | CipherContext:
         if isinstance(self.mode, modes.ModeWithAuthenticationTag):
             if encrypt:
                 return _AEADEncryptionContext(ctx)
@@ -165,7 +163,7 @@ _CIPHER_TYPE = Cipher[
 
 
 class _CipherContext(CipherContext):
-    _ctx: typing.Optional[_BackendCipherContext]
+    _ctx: _BackendCipherContext | None
 
     def __init__(self, ctx: _BackendCipherContext) -> None:
         self._ctx = ctx
@@ -189,8 +187,8 @@ class _CipherContext(CipherContext):
 
 
 class _AEADCipherContext(AEADCipherContext):
-    _ctx: typing.Optional[_BackendCipherContext]
-    _tag: typing.Optional[bytes]
+    _ctx: _BackendCipherContext | None
+    _tag: bytes | None
 
     def __init__(self, ctx: _BackendCipherContext) -> None:
         self._ctx = ctx

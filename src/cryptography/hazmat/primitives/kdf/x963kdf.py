@@ -21,7 +21,7 @@ class X963KDF(KeyDerivationFunction):
         self,
         algorithm: hashes.HashAlgorithm,
         length: int,
-        sharedinfo: typing.Optional[bytes],
+        sharedinfo: bytes | None,
         backend: typing.Any = None,
     ):
         max_len = algorithm.digest_size * (2**32 - 1)

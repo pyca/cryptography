@@ -57,7 +57,7 @@ class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def algorithm(
         self,
-    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+    ) -> asym_utils.Prehashed | hashes.HashAlgorithm:
         """
         The digest algorithm used with this signature.
         """
@@ -292,7 +292,7 @@ class BrainpoolP512R1(EllipticCurve):
     key_size = 512
 
 
-_CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
+_CURVE_TYPES: dict[str, type[EllipticCurve]] = {
     "prime192v1": SECP192R1,
     "prime256v1": SECP256R1,
     "secp192r1": SECP192R1,
@@ -320,14 +320,14 @@ _CURVE_TYPES: typing.Dict[str, typing.Type[EllipticCurve]] = {
 class ECDSA(EllipticCurveSignatureAlgorithm):
     def __init__(
         self,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ):
         self._algorithm = algorithm
 
     @property
     def algorithm(
         self,
-    ) -> typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm]:
+    ) -> asym_utils.Prehashed | hashes.HashAlgorithm:
         return self._algorithm
 
 
@@ -483,7 +483,7 @@ _OID_TO_CURVE = {
 }
 
 
-def get_curve_for_oid(oid: ObjectIdentifier) -> typing.Type[EllipticCurve]:
+def get_curve_for_oid(oid: ObjectIdentifier) -> type[EllipticCurve]:
     try:
         return _OID_TO_CURVE[oid]
     except KeyError:

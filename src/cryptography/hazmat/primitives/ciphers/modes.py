@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import abc
-import typing
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
@@ -62,7 +61,7 @@ class ModeWithNonce(Mode, metaclass=abc.ABCMeta):
 class ModeWithAuthenticationTag(Mode, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def tag(self) -> typing.Optional[bytes]:
+    def tag(self) -> bytes | None:
         """
         The value of the tag supplied to the constructor of this mode.
         """
@@ -225,7 +224,7 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
     def __init__(
         self,
         initialization_vector: bytes,
-        tag: typing.Optional[bytes] = None,
+        tag: bytes | None = None,
         min_tag_length: int = 16,
     ):
         # OpenSSL 3.0.0 constrains GCM IVs to [64, 1024] bits inclusive
@@ -251,7 +250,7 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
         self._min_tag_length = min_tag_length
 
     @property
-    def tag(self) -> typing.Optional[bytes]:
+    def tag(self) -> bytes | None:
         return self._tag
 
     @property

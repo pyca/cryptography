@@ -38,13 +38,13 @@ def _check_byteslike(name: str, value: bytes) -> None:
         raise TypeError(f"{name} must be bytes-like")
 
 
-def int_to_bytes(integer: int, length: typing.Optional[int] = None) -> bytes:
+def int_to_bytes(integer: int, length: int | None = None) -> bytes:
     return integer.to_bytes(
         length or (integer.bit_length() + 7) // 8 or 1, "big"
     )
 
 
-def _extract_buffer_length(obj: typing.Any) -> typing.Tuple[typing.Any, int]:
+def _extract_buffer_length(obj: typing.Any) -> tuple[typing.Any, int]:
     from cryptography.hazmat.bindings._rust import _openssl
 
     buf = _openssl.ffi.from_buffer(obj)
@@ -92,8 +92,8 @@ def deprecated(
     value: object,
     module_name: str,
     message: str,
-    warning_class: typing.Type[Warning],
-    name: typing.Optional[str] = None,
+    warning_class: type[Warning],
+    name: str | None = None,
 ) -> _DeprecatedValue:
     module = sys.modules[module_name]
     if not isinstance(module, _ModuleWithDeprecations):

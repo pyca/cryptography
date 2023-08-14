@@ -38,7 +38,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         self,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> bytes:
         """
         Signs the data.
@@ -101,7 +101,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         signature: bytes,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> None:
         """
         Verifies the signature of the data.
@@ -112,7 +112,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: hashes.HashAlgorithm | None,
     ) -> bytes:
         """
         Recovers the original data from the signature.
@@ -250,9 +250,7 @@ def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
 _MAX_RECOVERY_ATTEMPTS = 1000
 
 
-def rsa_recover_prime_factors(
-    n: int, e: int, d: int
-) -> typing.Tuple[int, int]:
+def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     """
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.

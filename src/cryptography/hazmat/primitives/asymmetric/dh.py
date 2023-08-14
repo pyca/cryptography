@@ -18,7 +18,7 @@ def generate_parameters(
 
 
 class DHParameterNumbers:
-    def __init__(self, p: int, g: int, q: typing.Optional[int] = None) -> None:
+    def __init__(self, p: int, g: int, q: int | None = None) -> None:
         if not isinstance(p, int) or not isinstance(g, int):
             raise TypeError("p and g must be integers")
         if q is not None and not isinstance(q, int):
@@ -57,7 +57,7 @@ class DHParameterNumbers:
         return self._g
 
     @property
-    def q(self) -> typing.Optional[int]:
+    def q(self) -> int | None:
         return self._q
 
 

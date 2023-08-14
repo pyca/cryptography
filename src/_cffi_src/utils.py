@@ -7,7 +7,6 @@ from __future__ import annotations
 import os
 import platform
 import sys
-import typing
 
 from cffi import FFI
 
@@ -21,7 +20,7 @@ with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
 def build_ffi_for_binding(
     module_name: str,
     module_prefix: str,
-    modules: typing.List[str],
+    modules: list[str],
 ):
     """
     Modules listed in ``modules`` should have the following attributes:

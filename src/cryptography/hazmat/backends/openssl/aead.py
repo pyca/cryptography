@@ -62,7 +62,7 @@ def _encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -81,7 +81,7 @@ def _decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -99,7 +99,7 @@ def _evp_aead_create_ctx(
     backend: Backend,
     cipher: _AEADTypes,
     key: bytes,
-    tag_len: typing.Optional[int] = None,
+    tag_len: int | None = None,
 ):
     aead_cipher = _evp_aead_get_cipher(backend, cipher)
     assert aead_cipher is not None
@@ -132,7 +132,7 @@ def _evp_aead_encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any,
 ) -> bytes:
@@ -173,7 +173,7 @@ def _evp_aead_decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any,
 ) -> bytes:
@@ -269,7 +269,7 @@ def _evp_cipher_aead_setup(
     cipher_name: bytes,
     key: bytes,
     nonce: bytes,
-    tag: typing.Optional[bytes],
+    tag: bytes | None,
     tag_len: int,
     operation: int,
 ):
@@ -375,7 +375,7 @@ def _evp_cipher_encrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:
@@ -427,7 +427,7 @@ def _evp_cipher_decrypt(
     cipher: _AEADTypes,
     nonce: bytes,
     data: bytes,
-    associated_data: typing.List[bytes],
+    associated_data: list[bytes],
     tag_length: int,
     ctx: typing.Any = None,
 ) -> bytes:

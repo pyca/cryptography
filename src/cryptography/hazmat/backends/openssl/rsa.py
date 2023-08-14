@@ -41,7 +41,7 @@ if typing.TYPE_CHECKING:
 def _get_rsa_pss_salt_length(
     backend: Backend,
     pss: PSS,
-    key: typing.Union[RSAPrivateKey, RSAPublicKey],
+    key: RSAPrivateKey | RSAPublicKey,
     hash_algorithm: hashes.HashAlgorithm,
 ) -> int:
     salt = pss._salt_length
@@ -62,7 +62,7 @@ def _get_rsa_pss_salt_length(
 
 def _enc_dec_rsa(
     backend: Backend,
-    key: typing.Union[_RSAPrivateKey, _RSAPublicKey],
+    key: _RSAPrivateKey | _RSAPublicKey,
     data: bytes,
     padding: AsymmetricPadding,
 ) -> bytes:
@@ -98,7 +98,7 @@ def _enc_dec_rsa(
 
 def _enc_dec_rsa_pkey_ctx(
     backend: Backend,
-    key: typing.Union[_RSAPrivateKey, _RSAPublicKey],
+    key: _RSAPrivateKey | _RSAPublicKey,
     data: bytes,
     padding_enum: int,
     padding: AsymmetricPadding,
@@ -165,9 +165,9 @@ def _enc_dec_rsa_pkey_ctx(
 
 def _rsa_sig_determine_padding(
     backend: Backend,
-    key: typing.Union[_RSAPrivateKey, _RSAPublicKey],
+    key: _RSAPrivateKey | _RSAPublicKey,
     padding: AsymmetricPadding,
-    algorithm: typing.Optional[hashes.HashAlgorithm],
+    algorithm: hashes.HashAlgorithm | None,
 ) -> int:
     if not isinstance(padding, AsymmetricPadding):
         raise TypeError("Expected provider of AsymmetricPadding.")
@@ -214,8 +214,8 @@ def _rsa_sig_determine_padding(
 def _rsa_sig_setup(
     backend: Backend,
     padding: AsymmetricPadding,
-    algorithm: typing.Optional[hashes.HashAlgorithm],
-    key: typing.Union[_RSAPublicKey, _RSAPrivateKey],
+    algorithm: hashes.HashAlgorithm | None,
+    key: _RSAPublicKey | _RSAPrivateKey,
     init_func: typing.Callable[[typing.Any], int],
 ):
     padding_enum = _rsa_sig_determine_padding(backend, key, padding, algorithm)
@@ -324,7 +324,7 @@ def _rsa_sig_verify(
 def _rsa_sig_recover(
     backend: Backend,
     padding: AsymmetricPadding,
-    algorithm: typing.Optional[hashes.HashAlgorithm],
+    algorithm: hashes.HashAlgorithm | None,
     public_key: _RSAPublicKey,
     signature: bytes,
 ) -> bytes:
@@ -480,7 +480,7 @@ class _RSAPrivateKey(RSAPrivateKey):
         self,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> bytes:
         data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
         return _rsa_sig_sign(self._backend, padding, algorithm, self, data)
@@ -549,7 +549,7 @@ class _RSAPublicKey(RSAPublicKey):
         signature: bytes,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Union[asym_utils.Prehashed, hashes.HashAlgorithm],
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> None:
         data, algorithm = _calculate_digest_and_algorithm(data, algorithm)
         _rsa_sig_verify(
@@ -560,7 +560,7 @@ class _RSAPublicKey(RSAPublicKey):
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: typing.Optional[hashes.HashAlgorithm],
+        algorithm: hashes.HashAlgorithm | None,
     ) -> bytes:
         if isinstance(algorithm, asym_utils.Prehashed):
             raise TypeError(

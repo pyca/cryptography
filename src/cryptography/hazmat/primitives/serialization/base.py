@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric.types import (
 
 def load_pem_private_key(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
     *,
     unsafe_skip_rsa_key_validation: bool = False,
@@ -44,7 +44,7 @@ def load_pem_parameters(
 
 def load_der_private_key(
     data: bytes,
-    password: typing.Optional[bytes],
+    password: bytes | None,
     backend: typing.Any = None,
     *,
     unsafe_skip_rsa_key_validation: bool = False,
