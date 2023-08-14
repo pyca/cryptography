@@ -6,7 +6,7 @@ X.509 verification
 Support for X.509 certificate verification, also known as path validation,
 chain building, etc.
 
-.. NOTE::
+.. note::
     This module is a work in progress, and does not yet contain a fully usable
     X.509 path validation implementation.
 
