@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from cryptography.x509 import certificate_transparency
+from cryptography.x509 import certificate_transparency, verification
 from cryptography.x509.base import (
     Attribute,
     AttributeNotFound,
@@ -179,6 +179,7 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "verification",
     "Attribute",
     "AttributeNotFound",
     "Attributes",

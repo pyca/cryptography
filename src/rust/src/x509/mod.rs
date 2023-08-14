@@ -12,6 +12,7 @@ pub(crate) mod ocsp_req;
 pub(crate) mod ocsp_resp;
 pub(crate) mod sct;
 pub(crate) mod sign;
+pub(crate) mod verify;
 
 pub(crate) use common::{
     datetime_to_py, find_in_pem, parse_and_cache_extensions, parse_general_name,
