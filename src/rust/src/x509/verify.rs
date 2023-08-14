@@ -6,7 +6,11 @@ use pyo3::IntoPy;
 
 use crate::x509::certificate::Certificate as PyCertificate;
 
-#[pyo3::pyclass(name = "Store", module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(
+    frozen,
+    name = "Store",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
 struct PyStore(pyo3::Py<pyo3::types::PyList>);
 
 #[pyo3::pymethods]
