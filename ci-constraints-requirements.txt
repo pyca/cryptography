@@ -29,7 +29,7 @@ click==8.1.6
     # via black
 colorlog==6.7.0
     # via nox
-coverage==7.2.7
+coverage==7.3.0; python_version >= "3.8"
     # via pytest-cov
 distlib==0.3.7
     # via virtualenv
@@ -185,7 +185,7 @@ urllib3==2.0.4
     # via
     #   requests
     #   twine
-virtualenv==20.24.2
+virtualenv==20.24.3
     # via nox
 webencodings==0.5.1
     # via bleach
