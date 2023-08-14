@@ -2,12 +2,14 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from ipaddress import IPv4Address
 import os
+from ipaddress import IPv4Address
+
+import pytest
+
+from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import PolicyBuilder, Store
-from cryptography import x509
-import pytest
 from tests.x509.test_x509 import _load_cert
 
 
