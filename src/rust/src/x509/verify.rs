@@ -12,7 +12,7 @@ use pyo3::IntoPy;
 
 use crate::error::CryptographyResult;
 
-use super::{common::datetime_now, py_to_datetime, sign};
+use super::{common::datetime_now, datetime_to_py, py_to_datetime, sign};
 
 pub(crate) struct PyCryptoOps {}
 
@@ -90,6 +90,12 @@ self_cell::self_cell!(
 #[pyo3::pyclass(name = "Policy", module = "cryptography.hazmat.bindings._rust.x509")]
 struct PyPolicy(OwnedPolicy);
 
+impl PyPolicy {
+    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
+        &self.0.borrow_dependent().0
+    }
+}
+
 #[pyo3::pymethods]
 impl PyPolicy {
     #[getter]
@@ -99,6 +105,11 @@ impl PyPolicy {
             SubjectOwner::DNSName((subject, _)) => Ok(Some(subject.as_ref(py))),
             SubjectOwner::IPAddress((subject, _)) => Ok(Some(subject.as_ref(py))),
         }
+    }
+
+    #[getter]
+    fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        datetime_to_py(py, &self.as_policy().validation_time)
     }
 }
 
