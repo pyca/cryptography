@@ -14,15 +14,7 @@ struct PyStore(Vec<pyo3::Py<PyCertificate>>);
 #[pyo3::pymethods]
 impl PyStore {
     #[new]
-    fn new(certs: &pyo3::types::PyList) -> pyo3::PyResult<Self> {
-        let certs: Vec<pyo3::Py<PyCertificate>> = certs
-            .iter()
-            .map(|o| {
-                o.extract::<pyo3::PyRef<'_, PyCertificate>>()
-                    .map(Into::into)
-            })
-            .collect::<Result<_, _>>()?;
-
+    fn new(certs: Vec<pyo3::Py<PyCertificate>>) -> pyo3::PyResult<Self> {
         Ok(Self(certs))
     }
 }
