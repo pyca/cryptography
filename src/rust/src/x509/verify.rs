@@ -11,6 +11,7 @@ use cryptography_x509_validation::{
 use pyo3::IntoPy;
 
 use crate::error::CryptographyResult;
+use crate::x509::certificate::Certificate as PyCertificate;
 
 use super::{common::datetime_now, datetime_to_py, py_to_datetime, sign};
 
@@ -220,8 +221,27 @@ fn create_policy<'p>(
     Ok(PyPolicy(policy))
 }
 
+#[pyo3::pyclass]
+struct PyStore(pyo3::Py<pyo3::types::PyList>);
+
+#[pyo3::pymethods]
+impl PyStore {
+    #[new]
+    fn new<'p>(py: pyo3::Python<'p>, certs: &'p pyo3::types::PyList) -> pyo3::PyResult<Self> {
+        for cert in certs.iter() {
+            if !cert.is_instance_of::<PyCertificate>() {
+                return Err(pyo3::exceptions::PyTypeError::new_err(
+                    "cannot initialize store with non-certificate member",
+                ));
+            }
+        }
+        Ok(Self(certs.into_py(py)))
+    }
+}
+
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_class::<PyPolicy>()?;
+    module.add_class::<PyCertificate>()?;
     module.add_function(pyo3::wrap_pyfunction!(create_policy, module)?)?;
 
     Ok(())

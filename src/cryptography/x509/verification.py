@@ -22,6 +22,8 @@ class Profile(utils.Enum):
 
 Policy = rust_x509.Policy
 
+Store = rust_x509.Store
+
 
 class PolicyBuilder:
     def __init__(
@@ -67,15 +69,6 @@ class PolicyBuilder:
         return rust_x509.create_policy(
             self._profile, self._subject, self._time
         )
-
-
-# NOTE: At the Python level, this is just a thin wrapper around a list
-# of certificates. This is done solely for API misuse prevention reasons:
-# having a dedicated type makes it harder for users to mix up
-# their trusted and untrusted certificate sets.
-class Store:
-    def __init__(self, certs: list[Certificate]):
-        self._certs = certs
 
 
 __all__ = [
