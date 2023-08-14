@@ -3,9 +3,12 @@
 # for complete details.
 
 from ipaddress import IPv4Address
+import os
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import PolicyBuilder
+from cryptography.x509.verification import PolicyBuilder, Store
+from cryptography import x509
 import pytest
+from tests.x509.test_x509 import _load_cert
 
 
 class TestPolicyBuilder:
@@ -31,3 +34,20 @@ class TestPolicyBuilder:
             PolicyBuilder(subject="0.0.0.0").build()
         with pytest.raises(TypeError):
             PolicyBuilder(subject=IPv4Address("0.0.0.0")).build()
+
+
+class TestStore:
+    def test_store_rejects_empty_list(self):
+        with pytest.raises(ValueError):
+            Store([])
+
+    def test_store_rejects_non_certificates(self):
+        with pytest.raises(TypeError):
+            Store(["not a cert"])  # type: ignore[list-item]
+
+    def test_store_initializes(self):
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        assert Store([cert]) is not None

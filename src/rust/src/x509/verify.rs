@@ -221,21 +221,23 @@ fn create_policy<'p>(
     Ok(PyPolicy(policy))
 }
 
-#[pyo3::pyclass(name = "Store", module = "cryptography.hazmat.bindings._rust.x509")]
-struct PyStore(pyo3::Py<pyo3::types::PyList>);
+#[pyo3::pyclass(
+    frozen,
+    name = "Store",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyStore(Vec<pyo3::Py<PyCertificate>>);
 
 #[pyo3::pymethods]
 impl PyStore {
     #[new]
-    fn new<'p>(py: pyo3::Python<'p>, certs: &'p pyo3::types::PyList) -> pyo3::PyResult<Self> {
-        for cert in certs.iter() {
-            if !cert.is_instance_of::<PyCertificate>() {
-                return Err(pyo3::exceptions::PyTypeError::new_err(
-                    "cannot initialize store with non-certificate member",
-                ));
-            }
+    fn new(certs: Vec<pyo3::Py<PyCertificate>>) -> pyo3::PyResult<Self> {
+        if certs.is_empty() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "can't create an empty store",
+            ));
         }
-        Ok(Self(certs.into_py(py)))
+        Ok(Self(certs))
     }
 }
 

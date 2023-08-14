@@ -180,6 +180,7 @@ __all__ = [
     "load_pem_x509_crl",
     "load_der_x509_crl",
     "random_serial_number",
+    "verification",
     "Attribute",
     "AttributeNotFound",
     "Attributes",

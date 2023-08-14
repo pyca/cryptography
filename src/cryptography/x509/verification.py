@@ -11,6 +11,14 @@ from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.x509.general_name import DNSName, IPAddress
 
+__all__ = [
+    "Policy",
+    "PolicyBuilder",
+    "Profile",
+    "Store",
+]
+
+
 Subject = typing.Union[DNSName, IPAddress]
 
 
@@ -68,11 +76,3 @@ class PolicyBuilder:
         return rust_x509.create_policy(
             self._profile, self._subject, self._time
         )
-
-
-__all__ = [
-    "Policy",
-    "PolicyBuilder",
-    "Profile",
-    "Store",
-]
