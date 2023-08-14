@@ -234,6 +234,22 @@ pub const PSS_SHA1_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     params: AlgorithmParameters::Sha1(Some(())),
 };
 
+// RSA-PSS ASN.1 hash algorithm definitions specified under the CA/B Forum BRs.
+pub const PSS_SHA256_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Sha256(Some(())),
+};
+
+pub const PSS_SHA384_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Sha384(Some(())),
+};
+
+pub const PSS_SHA512_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Sha512(Some(())),
+};
+
 // This is defined as an AlgorithmIdentifier in RFC 4055,
 // but the mask generation algorithm **must** contain an AlgorithmIdentifier
 // in its params, so we define it this way.
@@ -247,6 +263,22 @@ pub struct MaskGenAlgorithm<'a> {
 pub const PSS_SHA1_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
     oid: oid::MGF1_OID,
     params: PSS_SHA1_HASH_ALG,
+};
+
+// RSA-PSS ASN.1 mask gen algorithms defined under the CA/B Forum BRs.
+pub const PSS_SHA256_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
+    oid: oid::MGF1_OID,
+    params: PSS_SHA256_HASH_ALG,
+};
+
+pub const PSS_SHA384_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
+    oid: oid::MGF1_OID,
+    params: PSS_SHA384_HASH_ALG,
+};
+
+pub const PSS_SHA512_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
+    oid: oid::MGF1_OID,
+    params: PSS_SHA512_HASH_ALG,
 };
 
 // From RFC 4055 section 3.1:
