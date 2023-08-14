@@ -15,6 +15,11 @@ struct PyStore(Vec<pyo3::Py<PyCertificate>>);
 impl PyStore {
     #[new]
     fn new(certs: Vec<pyo3::Py<PyCertificate>>) -> pyo3::PyResult<Self> {
+        if certs.is_empty() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "can't create an empty store",
+            ));
+        }
         Ok(Self(certs))
     }
 }

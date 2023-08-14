@@ -12,6 +12,10 @@ from tests.x509.test_x509 import _load_cert
 
 
 class TestStore:
+    def test_store_rejects_empty_list(self):
+        with pytest.raises(ValueError):
+            Store([])
+
     def test_store_rejects_non_certificates(self):
         with pytest.raises(TypeError):
             Store(["not a cert"])  # type: ignore[list-item]
