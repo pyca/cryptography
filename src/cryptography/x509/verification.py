@@ -9,7 +9,6 @@ import typing
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.x509.base import Certificate
 from cryptography.x509.general_name import DNSName, IPAddress
 
 Subject = typing.Union[DNSName, IPAddress]
