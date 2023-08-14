@@ -13,12 +13,10 @@ struct PyStore(pyo3::Py<pyo3::types::PyList>);
 impl PyStore {
     #[new]
     fn new<'p>(py: pyo3::Python<'p>, certs: &'p pyo3::types::PyList) -> pyo3::PyResult<Self> {
-        for cert in certs.iter() {
-            if !cert.is_instance_of::<PyCertificate>() {
-                return Err(pyo3::exceptions::PyTypeError::new_err(
-                    "cannot initialize store with non-certificate member",
-                ));
-            }
+        if certs.iter().any(|c| !c.is_instance_of::<PyCertificate>()) {
+            return Err(pyo3::exceptions::PyTypeError::new_err(
+                "cannot initialize store with non-certificate member",
+            ));
         }
         Ok(Self(certs.into_py(py)))
     }
