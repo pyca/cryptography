@@ -27,9 +27,9 @@ use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
 
-const RFC5280_CRITICAL_CA_EXTENSIONS: &'static [asn1::ObjectIdentifier] =
+const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
-const RFC5280_CRITICAL_EE_EXTENSIONS: &'static [asn1::ObjectIdentifier] =
+const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
 
 static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<AlgorithmIdentifier<'_>>> = Lazy::new(|| {
@@ -659,7 +659,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         let pk = self
             .ops
             .public_key(issuer)
-            .ok_or_else(|| PolicyError::Other("issuer has malformed public key"))?;
+            .ok_or(PolicyError::Other("issuer has malformed public key"))?;
         if !self.ops.is_signed_by(child, pk) {
             return Err(PolicyError::Other("signature does not match"));
         }
