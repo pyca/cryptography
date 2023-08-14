@@ -2,8 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::IntoPy;
-
 use crate::x509::certificate::Certificate as PyCertificate;
 
 #[pyo3::pyclass(
@@ -11,18 +9,21 @@ use crate::x509::certificate::Certificate as PyCertificate;
     name = "Store",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyStore(pyo3::Py<pyo3::types::PyList>);
+struct PyStore(Vec<pyo3::Py<PyCertificate>>);
 
 #[pyo3::pymethods]
 impl PyStore {
     #[new]
-    fn new<'p>(py: pyo3::Python<'p>, certs: &'p pyo3::types::PyList) -> pyo3::PyResult<Self> {
-        if certs.iter().any(|c| !c.is_instance_of::<PyCertificate>()) {
-            return Err(pyo3::exceptions::PyTypeError::new_err(
-                "cannot initialize store with non-certificate member",
-            ));
-        }
-        Ok(Self(certs.into_py(py)))
+    fn new(certs: &pyo3::types::PyList) -> pyo3::PyResult<Self> {
+        let certs: Vec<pyo3::Py<PyCertificate>> = certs
+            .iter()
+            .map(|o| {
+                o.extract::<pyo3::PyRef<'_, PyCertificate>>()
+                    .map(Into::into)
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(Self(certs))
     }
 }
 
