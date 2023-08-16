@@ -558,7 +558,12 @@ impl ECPublicKey {
             _ => Err(pyo3::exceptions::PyTypeError::new_err("Cannot be ordered")),
         }
     }
+
+    fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
+        slf
+    }
 }
+
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "ec")?;
     m.add_function(pyo3::wrap_pyfunction!(curve_supported, m)?)?;
