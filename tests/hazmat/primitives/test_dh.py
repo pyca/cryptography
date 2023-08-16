@@ -4,6 +4,7 @@
 
 
 import binascii
+import copy
 import itertools
 import os
 import typing
@@ -488,6 +489,21 @@ class TestDH:
 
         with pytest.raises(TypeError):
             key1 < key2  # type: ignore[operator]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_x942_serialization_supported(),
+        skip_message="DH X9.42 not supported",
+    )
+    def test_public_key_copy(self):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key1 = serialization.load_pem_public_key(key_bytes)
+        key2 = copy.copy(key1)
+
+        assert key1 == key2
 
 
 @pytest.mark.supported(

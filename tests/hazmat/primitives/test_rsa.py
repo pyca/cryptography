@@ -4,6 +4,7 @@
 
 
 import binascii
+import copy
 import itertools
 import os
 
@@ -2734,3 +2735,9 @@ class TestRSAPEMPublicKeySerialization:
         assert key1 == key2
         assert key1 != key3
         assert key1 != object()
+
+    def test_public_key_copy(self, rsa_key_2048: rsa.RSAPrivateKey):
+        key1 = rsa_key_2048.public_key()
+        key2 = copy.copy(key1)
+
+        assert key1 == key2

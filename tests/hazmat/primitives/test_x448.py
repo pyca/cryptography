@@ -4,6 +4,7 @@
 
 
 import binascii
+import copy
 import os
 
 import pytest
@@ -280,3 +281,19 @@ def test_public_key_equality(backend):
     assert key1 != object()
     with pytest.raises(TypeError):
         key1 < key2  # type: ignore[operator]
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x448_supported(),
+    skip_message="Requires OpenSSL with X448 support",
+)
+def test_public_key_copy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key2 = copy.copy(key1)
+
+    assert key1 == key2

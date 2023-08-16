@@ -4,6 +4,7 @@
 
 
 import binascii
+import copy
 import os
 
 import pytest
@@ -351,3 +352,19 @@ def test_public_key_equality(backend):
     assert key1 != object()
     with pytest.raises(TypeError):
         key1 < key2  # type: ignore[operator]
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x25519_supported(),
+    skip_message="Requires OpenSSL with X25519 support",
+)
+def test_public_key_copy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key2 = copy.copy(key1)
+
+    assert key1 == key2

@@ -295,6 +295,10 @@ impl DsaPublicKey {
             _ => Err(pyo3::exceptions::PyTypeError::new_err("Cannot be ordered")),
         }
     }
+
+    fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
+        slf
+    }
 }
 
 #[pyo3::prelude::pymethods]
