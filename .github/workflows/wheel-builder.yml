@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - { VERSION: "cp37-cp37m", ABI_VERSION: 'cp37' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'cp37' }
           - { VERSION: "pp39-pypy39_pp73" }
           - { VERSION: "pp310-pypy310_pp73" }
         MANYLINUX:
