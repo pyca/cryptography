@@ -26,14 +26,14 @@ class TestChaCha20:
         "vector",
         _load_all_params(
             os.path.join("ciphers", "ChaCha20"),
-            ["rfc7539.txt"],
+            ["counter-overflow.txt", "rfc7539.txt"],
             load_nist_vectors,
         ),
     )
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        ibc = struct.pack("<i", int(vector["initial_block_counter"]))
+        ibc = struct.pack("<Q", int(vector["initial_block_counter"]))
         pt = binascii.unhexlify(vector["plaintext"])
         encryptor = Cipher(
             algorithms.ChaCha20(key, ibc + nonce), None, backend

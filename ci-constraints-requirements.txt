@@ -68,7 +68,7 @@ mdurl==0.1.2
     # via markdown-it-py
 more-itertools==10.1.0
     # via jaraco-classes
-mypy==1.5.0
+mypy==1.5.1
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -121,7 +121,7 @@ pytest-benchmark==4.0.0
     # via cryptography (pyproject.toml)
 pytest-cov==4.1.0
     # via cryptography (pyproject.toml)
-pytest-randomly==3.13.0
+pytest-randomly==3.15.0
     # via cryptography (pyproject.toml)
 pytest-xdist==3.3.1
     # via cryptography (pyproject.toml)
@@ -152,19 +152,19 @@ sphinx==6.2.1
     #   sphinxcontrib-spelling
 sphinx-rtd-theme==1.2.2
     # via cryptography (pyproject.toml)
-sphinxcontrib-applehelp==1.0.6
+sphinxcontrib-applehelp==1.0.7
     # via sphinx
-sphinxcontrib-devhelp==1.0.4
+sphinxcontrib-devhelp==1.0.5
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.3
+sphinxcontrib-htmlhelp==2.0.4
     # via sphinx
 sphinxcontrib-jquery==4.1
     # via sphinx-rtd-theme
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
-sphinxcontrib-qthelp==1.0.5
+sphinxcontrib-qthelp==1.0.6
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.7
+sphinxcontrib-serializinghtml==1.1.8
     # via sphinx
 sphinxcontrib-spelling==8.0.0
     # via cryptography (pyproject.toml)
