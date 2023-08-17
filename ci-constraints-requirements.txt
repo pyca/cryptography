@@ -25,7 +25,7 @@ charset-normalizer==3.2.0
     # via requests
 check-sdist==0.1.2
     # via cryptography (pyproject.toml)
-click==8.1.6
+click==8.1.7
     # via black
 colorlog==6.7.0
     # via nox
