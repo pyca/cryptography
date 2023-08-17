@@ -403,9 +403,9 @@ dependencies = [
 
 [[package]]
 name = "windows_aarch64_gnullvm"
-version = "0.48.2"
+version = "0.48.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b10d0c968ba7f6166195e13d593af609ec2e3d24f916f081690695cf5eaffb2f"
+checksum = "fde1bb55ae4ce76a597a8566d82c57432bc69c039449d61572a7a353da28f68c"
 
 [[package]]
 name = "windows_aarch64_msvc"
