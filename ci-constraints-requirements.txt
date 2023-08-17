@@ -68,7 +68,7 @@ mdurl==0.1.2
     # via markdown-it-py
 more-itertools==10.1.0
     # via jaraco-classes
-mypy==1.5.0
+mypy==1.5.1
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via
