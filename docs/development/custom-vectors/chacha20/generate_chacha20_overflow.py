@@ -33,9 +33,7 @@ def _build_vectors():
             output.append(f"INITIAL_BLOCK_COUNTER = {counter}")
             output.append(f"PLAINTEXT = {binascii.hexlify(plaintext)}")
             output.append(
-                "CIPHERTEXT = {}".format(
-                    binascii.hexlify(encryptor.update(plaintext))
-                )
+                f"CIPHERTEXT = {binascii.hexlify(encryptor.update(plaintext))}"
             )
     return "\n".join(output)
 
