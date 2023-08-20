@@ -163,7 +163,30 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     if format.is(private_format_class.getattr(pyo3::intern!(py, "TraditionalOpenSSL"))?) {
-        if let Ok(dsa) = pkey.dsa() {
+        if let Ok(rsa) = pkey.rsa() {
+            if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
+                let pem_bytes = if password.is_empty() {
+                    rsa.private_key_to_pem()?
+                } else {
+                    rsa.private_key_to_pem_passphrase(
+                        openssl::symm::Cipher::aes_256_cbc(),
+                        password,
+                    )?
+                };
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
+            } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
+                if !password.is_empty() {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Encryption is not supported for DER encoded traditional OpenSSL keys",
+                        ),
+                    ));
+                }
+
+                let der_bytes = rsa.private_key_to_der()?;
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
+            }
+        } else if let Ok(dsa) = pkey.dsa() {
             if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
                 let pem_bytes = if password.is_empty() {
                     dsa.private_key_to_pem()?
@@ -329,6 +352,23 @@ pub(crate) fn pkey_public_bytes<'p>(
                 .public_key()
                 .to_bytes(ec.group(), point_form, &mut bn_ctx)?;
             return Ok(pyo3::types::PyBytes::new(py, &data));
+        }
+    }
+
+    if let Ok(rsa) = pkey.rsa() {
+        if format.is(public_format_class.getattr(pyo3::intern!(py, "PKCS1"))?) {
+            if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
+                let pem_bytes = rsa.public_key_to_pem_pkcs1()?;
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
+            } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
+                let der_bytes = rsa.public_key_to_der_pkcs1()?;
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
+            }
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "PKCS1 works only with PEM or DER encoding",
+                ),
+            ));
         }
     }
 
