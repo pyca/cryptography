@@ -503,10 +503,6 @@ impl ECPublicKey {
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
         let valid = verifier.verify(data, signature).unwrap_or(false);
-        // TODO: Empty the error stack. BoringSSL leaves one in the event of
-        // signature validation failure. Upstream to rust-openssl?
-        #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-        openssl::error::ErrorStack::get();
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
