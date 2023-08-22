@@ -78,9 +78,9 @@ semantic-version==2.10.0 \
     --hash=sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c \
     --hash=sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177
     # via setuptools-rust
-setuptools-rust==1.6.0 \
-    --hash=sha256:c86e734deac330597998bfbc08da45187e6b27837e23bd91eadb320732392262 \
-    --hash=sha256:e28ae09fb7167c44ab34434eb49279307d611547cb56cb9789955cdb54a1aed9
+setuptools-rust==1.7.0 \
+    --hash=sha256:071099885949132a2180d16abf907b60837e74b4085047ba7e9c0f5b365310c1 \
+    --hash=sha256:c7100999948235a38ae7e555fe199aa66c253dc384b125f5d85473bf81eae3a3
     # via -r build-requirements.in
 typing-extensions==4.7.1 \
     --hash=sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36 \
