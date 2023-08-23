@@ -16,7 +16,6 @@ on:
     paths:
       - .github/workflows/wheel-builder.yml
       - .github/requirements/**
-      - setup.py
       - pyproject.toml
       - vectors/pyproject.toml
 
