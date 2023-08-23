@@ -6,7 +6,7 @@ requires = [
     "wheel",
     # Must be kept in sync with `project.dependencies`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
-    "setuptools-rust>=0.11.4",
+    "setuptools-rust>=1.7.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -80,6 +80,13 @@ docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=1.1.1"]
 docstest =  ["pyenchant >=1.6.11", "twine >=1.12.0", "sphinxcontrib-spelling >=4.0.1"]
 sdist = ["build"]
 pep8test = ["black", "ruff", "mypy", "check-sdist"]
+
+[[tool.setuptools-rust.ext-modules]]
+target = "cryptography.hazmat.bindings._rust"
+path = "src/rust/Cargo.toml"
+py-limited-api = true
+rust-version = ">=1.63.0"
+
 
 [tool.black]
 line-length = 79
