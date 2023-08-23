@@ -14,23 +14,6 @@ import warnings
 
 from setuptools import setup
 
-try:
-    from setuptools_rust import RustExtension
-except ImportError:
-    print(
-        """
-        =============================DEBUG ASSISTANCE==========================
-        If you are seeing an error here please try the following to
-        successfully install cryptography:
-
-        Upgrade to the latest pip and try again. This will fix errors for most
-        users. See: https://pip.pypa.io/en/stable/installing/#upgrading-pip
-        =============================DEBUG ASSISTANCE==========================
-        """
-    )
-    raise
-
-
 # distutils emits this warning if you pass `setup()` an unknown option. This
 # is what happens if you somehow run this file without `cffi` installed:
 # `cffi_modules` is an unknown option.
@@ -47,17 +30,8 @@ if hasattr(sys, "pypy_version_info") and sys.pypy_version_info < (7, 3, 10):
     raise RuntimeError("cryptography is not compatible with PyPy3 < 7.3.10")
 
 try:
-    # See pyproject.toml for most of the config metadata.
-    setup(
-        rust_extensions=[
-            RustExtension(
-                "cryptography.hazmat.bindings._rust",
-                "src/rust/Cargo.toml",
-                py_limited_api=True,
-                rust_version=">=1.63.0",
-            )
-        ],
-    )
+    # See pyproject.toml for the config metadata.
+    setup()
 except:
     # Note: This is a bare exception that re-raises so that we don't interfere
     # with anything the installation machinery might want to do. Because we
