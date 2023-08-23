@@ -83,6 +83,7 @@ dependencies = [
  "cryptography-cffi",
  "cryptography-openssl",
  "cryptography-x509",
+ "cryptography-x509-validation",
  "foreign-types-shared",
  "once_cell",
  "openssl",
@@ -105,6 +106,7 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "cryptography-x509",
+ "once_cell",
 ]
 
 [[package]]
