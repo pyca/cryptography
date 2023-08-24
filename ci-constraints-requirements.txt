@@ -144,7 +144,7 @@ six==1.16.0
     # via bleach
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.2.2
+sphinx==7.2.3
     # via
     #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme
