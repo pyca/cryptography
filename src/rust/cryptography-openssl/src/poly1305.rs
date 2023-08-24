@@ -14,18 +14,22 @@ pub struct Poly1305State {
 
 impl Poly1305State {
     pub fn new(key: &[u8]) -> Poly1305State {
-        #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-        let mut ctx: Box<ffi::poly1305_state> = Box::new([0; 512usize]);
-        #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)]
-        let mut ctx: Box<ffi::poly1305_state> = Box::new(ffi::poly1305_state {
-            aligner: 0,
-            opaque: [0; 136usize],
-        });
+        assert_eq!(key.len(), 32);
+        let mut ctx: Box<MaybeUninit<ffi::poly1305_state>> =
+            Box::new(MaybeUninit::<ffi::poly1305_state>::uninit());
 
-        unsafe {
-            ffi::CRYPTO_poly1305_init(ctx.as_mut(), key.as_ptr());
+        // After initializing the context, unwrap the Box<MaybeUninit<poly1305_state>> into
+        // a Box<poly1305_state> while keeping the same memory address. See the docstring of the
+        // Poly1305State struct above for the rationale.
+        let initialized_ctx: Box<ffi::poly1305_state> = unsafe {
+            ffi::CRYPTO_poly1305_init(ctx.as_mut().as_mut_ptr(), key.as_ptr());
+            let raw_ctx_ptr = (*Box::into_raw(ctx)).as_mut_ptr();
+            Box::from_raw(raw_ctx_ptr)
+        };
+
+        Poly1305State {
+            context: initialized_ctx,
         }
-        Poly1305State { context: ctx }
     }
 
     pub fn update(&mut self, data: &[u8]) -> () {
@@ -35,6 +39,7 @@ impl Poly1305State {
     }
 
     pub fn finalize(&mut self, output: &mut [u8]) -> () {
+        assert_eq!(output.len(), 16);
         unsafe { ffi::CRYPTO_poly1305_finish(self.context.as_mut(), output.as_mut_ptr()) };
     }
 }
