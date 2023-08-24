@@ -9,7 +9,7 @@ use crate::exceptions;
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
 struct Poly1305Boring {
-    context: Option<cryptography_openssl::poly1305::Poly1305State>,
+    context: cryptography_openssl::poly1305::Poly1305State,
 }
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -21,51 +21,32 @@ impl Poly1305Boring {
             ));
         }
         let ctx = cryptography_openssl::poly1305::Poly1305State::new(key.as_bytes());
-        Ok(Poly1305Boring { context: Some(ctx) })
-    }
-
-    fn get_mut_context(
-        &mut self,
-    ) -> CryptographyResult<&mut cryptography_openssl::poly1305::Poly1305State> {
-        if let Some(ctx) = self.context.as_mut() {
-            return Ok(ctx);
-        };
-        Err(already_finalized_error())
+        Ok(Poly1305Boring { context: ctx })
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        let ctx = self.get_mut_context()?;
-        ctx.update(data.as_bytes());
+        self.context.update(data.as_bytes());
         Ok(())
     }
     fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let ctx = self.get_mut_context()?;
         let result = pyo3::types::PyBytes::new_with(py, 16usize, |b| {
-            ctx.finalize(b.as_mut());
+            self.context.finalize(b.as_mut());
             Ok(())
         })?;
-        self.context = None;
         Ok(result)
     }
 }
 
 #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
 struct Poly1305Open {
-    signer: Option<openssl::sign::Signer<'static>>,
+    signer: openssl::sign::Signer<'static>,
 }
 
 #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
 impl Poly1305Open {
-    fn get_mut_signer(&mut self) -> CryptographyResult<&mut openssl::sign::Signer<'static>> {
-        if let Some(signer) = self.signer.as_mut() {
-            return Ok(signer);
-        };
-        Err(already_finalized_error())
-    }
-
     fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305Open> {
         if cryptography_openssl::fips::is_enabled() {
             return Err(CryptographyError::from(
@@ -83,29 +64,25 @@ impl Poly1305Open {
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("A poly1305 key is 32 bytes long"))?;
 
         Ok(Poly1305Open {
-            signer: Some(
-                openssl::sign::Signer::new_without_digest(&pkey).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err("A poly1305 key is 32 bytes long")
-                })?,
-            ),
+            signer: openssl::sign::Signer::new_without_digest(&pkey).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("A poly1305 key is 32 bytes long")
+            })?,
         })
     }
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let buf = data.as_bytes();
-        self.get_mut_signer()?.update(buf)?;
+        self.signer.update(buf)?;
         Ok(())
     }
     fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let signer = self.get_mut_signer()?;
-        let result = pyo3::types::PyBytes::new_with(py, signer.len()?, |b| {
-            let n = signer.sign(b).unwrap();
+        let result = pyo3::types::PyBytes::new_with(py, self.signer.len()?, |b| {
+            let n = self.signer.sign(b).unwrap();
             assert_eq!(n, b.len());
             Ok(())
         })?;
-        self.signer = None;
         Ok(result)
     }
 }
@@ -113,9 +90,9 @@ impl Poly1305Open {
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
 struct Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
-    backend: Poly1305Boring,
+    backend: Option<Poly1305Boring>,
     #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
-    backend: Poly1305Open,
+    backend: Option<Poly1305Open>,
 }
 
 #[pyo3::pymethods]
@@ -124,11 +101,11 @@ impl Poly1305 {
     fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305> {
         #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
         return Ok(Poly1305 {
-            backend: Poly1305Boring::new(key)?,
+            backend: Some(Poly1305Boring::new(key)?),
         });
         #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
         return Ok(Poly1305 {
-            backend: Poly1305Open::new(key)?,
+            backend: Some(Poly1305Open::new(key)?),
         });
     }
 
@@ -156,14 +133,22 @@ impl Poly1305 {
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.backend.update(data)
+        self.backend
+            .as_mut()
+            .map_or(Err(already_finalized_error()), |b| b.update(data))
     }
 
     fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        self.backend.finalize(py)
+        let res = self
+            .backend
+            .as_mut()
+            .map_or(Err(already_finalized_error()), |b| b.finalize(py));
+        self.backend = None;
+
+        res
     }
 
     fn verify(&mut self, py: pyo3::Python<'_>, signature: &[u8]) -> CryptographyResult<()> {
