@@ -681,7 +681,7 @@ class TestAESSIV:
         with pytest.raises(ValueError):
             aessiv.encrypt(b"", None)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(InvalidTag):
             aessiv.decrypt(b"", None)
 
     def test_vectors(self, backend, subtests):
