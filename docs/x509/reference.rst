@@ -975,7 +975,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. versionadded:: 42.0.0
 
         Returns the parameters of the signature algorithm used to sign the
-        certificate. For RSA signatures it will return either a
+        certificate signing request. For RSA signatures it will return either a
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15` or
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` object.
 
