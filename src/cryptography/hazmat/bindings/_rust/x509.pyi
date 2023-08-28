@@ -28,6 +28,7 @@ def create_x509_csr(
     builder: x509.CertificateSigningRequestBuilder,
     private_key: PrivateKeyTypes,
     hash_algorithm: hashes.HashAlgorithm | None,
+    padding: PKCS1v15 | PSS | None,
 ) -> x509.CertificateSigningRequest: ...
 def create_x509_crl(
     builder: x509.CertificateRevocationListBuilder,
