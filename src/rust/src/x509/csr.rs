@@ -97,24 +97,23 @@ impl CertificateSigningRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let sig_oids_to_hash = py
-            .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
-            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
-        let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
-        match hash_alg {
-            Ok(data) => Ok(data),
-            Err(_) => Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err(format!(
-                    "Signature algorithm OID: {} not recognized",
-                    self.raw.borrow_dependent().signature_alg.oid()
-                )),
-            )),
-        }
+        sign::identify_signature_hash_algorithm(py, &self.raw.borrow_dependent().signature_alg)
     }
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
+    }
+
+    #[getter]
+    fn signature_algorithm_parameters<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
+        sign::identify_signature_algorithm_parameters(
+            py,
+            &self.raw.borrow_dependent().signature_alg,
+        )
     }
 
     fn public_bytes<'p>(
@@ -292,13 +291,10 @@ fn create_x509_csr(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
+    rsa_padding: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateSigningRequest> {
-    let sigalg = x509::sign::compute_signature_algorithm(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-    )?;
+    let sigalg =
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
     let serialization_mod = py.import(pyo3::intern!(
         py,
         "cryptography.hazmat.primitives.serialization"
@@ -368,13 +364,8 @@ fn create_x509_csr(
     };
 
     let tbs_bytes = asn1::write_single(&csr_info)?;
-    let signature = x509::sign::sign_data(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-        &tbs_bytes,
-    )?;
+    let signature =
+        x509::sign::sign_data(py, private_key, hash_algorithm, rsa_padding, &tbs_bytes)?;
     let data = asn1::write_single(&Csr {
         csr_info,
         signature_alg: sigalg,
