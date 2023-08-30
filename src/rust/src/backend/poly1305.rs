@@ -90,9 +90,9 @@ impl Poly1305Open {
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
 struct Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
-    backend: Option<Poly1305Boring>,
+    inner: Option<Poly1305Boring>,
     #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
-    backend: Option<Poly1305Open>,
+    inner: Option<Poly1305Open>,
 }
 
 #[pyo3::pymethods]
@@ -101,11 +101,11 @@ impl Poly1305 {
     fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305> {
         #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
         return Ok(Poly1305 {
-            backend: Some(Poly1305Boring::new(key)?),
+            inner: Some(Poly1305Boring::new(key)?),
         });
         #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
         return Ok(Poly1305 {
-            backend: Some(Poly1305Open::new(key)?),
+            inner: Some(Poly1305Open::new(key)?),
         });
     }
 
@@ -133,7 +133,7 @@ impl Poly1305 {
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.backend
+        self.inner
             .as_mut()
             .map_or(Err(already_finalized_error()), |b| b.update(data))
     }
@@ -143,10 +143,10 @@ impl Poly1305 {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let res = self
-            .backend
+            .inner
             .as_mut()
             .map_or(Err(already_finalized_error()), |b| b.finalize(py));
-        self.backend = None;
+        self.inner = None;
 
         res
     }
