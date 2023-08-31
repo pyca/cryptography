@@ -307,6 +307,9 @@ long SSL_total_renegotiations(SSL *);
 long SSL_CTX_set_min_proto_version(SSL_CTX *, int);
 long SSL_CTX_set_max_proto_version(SSL_CTX *, int);
 
+void SSL_CTX_set_security_level(SSL_CTX *, int);
+int SSL_CTX_get_security_level(SSL_CTX *);
+
 long SSL_CTX_set_tmp_ecdh(SSL_CTX *, EC_KEY *);
 long SSL_CTX_set_tmp_dh(SSL_CTX *, DH *);
 long SSL_CTX_set_session_cache_mode(SSL_CTX *, long);
