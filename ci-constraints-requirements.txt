@@ -15,7 +15,7 @@ black==23.7.0
     # via cryptography (pyproject.toml)
 bleach==6.0.0
     # via readme-renderer
-build==0.10.0
+build==1.0.0
     # via
     #   check-sdist
     #   cryptography (pyproject.toml)
