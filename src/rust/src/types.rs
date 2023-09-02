@@ -20,8 +20,8 @@ impl LazyPyImport {
     pub fn get<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         self.value
             .get_or_try_init(py, || {
-                let mut obj = py.import(self.module)?.getattr(self.names[0])?;
-                for name in &self.names[1..] {
+                let mut obj = py.import(self.module)?.as_ref();
+                for name in self.names {
                     obj = obj.getattr(*name)?;
                 }
                 obj.extract()
@@ -30,6 +30,10 @@ impl LazyPyImport {
     }
 }
 
+pub static ENCODING_DER: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding", "DER"],
+);
 pub static ENCODING_SMIME: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "SMIME"],
@@ -70,6 +74,9 @@ pub static CERTIFICATE_ISSUER: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["CertificateIssuer"]);
 pub static INVALIDITY_DATE: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["InvalidityDate"]);
+pub static OCSP_NONCE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OCSPNonce"]);
+pub static OCSP_ACCEPTABLE_RESPONSES: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["OCSPAcceptableResponses"]);
 
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
@@ -101,6 +108,8 @@ pub static SMIME_ENCODE: LazyPyImport = LazyPyImport::new(
     &["_smime_encode"],
 );
 
+pub static HASHES_MODULE: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.hashes", &[]);
 pub static HASH_ALGORITHM: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["HashAlgorithm"]);
 
