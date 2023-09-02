@@ -35,6 +35,21 @@ pub static ENCODING_SMIME: LazyPyImport = LazyPyImport::new(
     &["Encoding", "SMIME"],
 );
 
+pub static PRIVATE_FORMAT_PKCS8: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat", "PKCS8"],
+);
+
+pub static PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "SubjectPublicKeyInfo"],
+);
+
+pub static PARAMETER_FORMAT_PKCS3: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["ParameterFormat", "PKCS3"],
+);
+
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options", "Binary"],
@@ -63,6 +78,19 @@ pub static PKCS7_DETACHED_SIGNATURE: LazyPyImport = LazyPyImport::new(
 pub static SMIME_ENCODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["_smime_encode"],
+);
+
+pub static DH_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.dh",
+    &["DHParameterNumbers"],
+);
+pub static DH_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.dh",
+    &["DHPublicNumbers"],
+);
+pub static DH_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.dh",
+    &["DHPrivateNumbers"],
 );
 
 #[cfg(test)]
