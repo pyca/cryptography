@@ -13,6 +13,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs7;
 mod pool;
+pub(crate) mod types;
 mod x509;
 
 #[pyo3::prelude::pyfunction]
