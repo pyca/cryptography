@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{exceptions, OpenSSLError};
+use crate::exceptions;
 use pyo3::ToPyObject;
 
 pub enum CryptographyError {
@@ -106,6 +106,57 @@ impl CryptographyError {
 // to a single-line as a work around for coverage issues. See
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type CryptographyResult<T = pyo3::PyObject> = Result<T, CryptographyError>;
+
+#[pyo3::prelude::pyfunction]
+pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
+    Err(openssl::error::ErrorStack::get().into())
+}
+
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
+pub(crate) struct OpenSSLError {
+    e: openssl::error::Error,
+}
+
+#[pyo3::pymethods]
+impl OpenSSLError {
+    #[getter]
+    fn lib(&self) -> i32 {
+        self.e.library_code()
+    }
+
+    #[getter]
+    fn reason(&self) -> i32 {
+        self.e.reason_code()
+    }
+
+    #[getter]
+    fn reason_text(&self) -> &[u8] {
+        self.e.reason().unwrap_or("").as_bytes()
+    }
+
+    fn _lib_reason_match(&self, lib: i32, reason: i32) -> bool {
+        self.e.library_code() == lib && self.e.reason_code() == reason
+    }
+
+    fn __repr__(&self) -> pyo3::PyResult<String> {
+        Ok(format!(
+            "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",
+            self.e.code(),
+            self.e.library_code(),
+            self.e.reason_code(),
+            self.e.reason().unwrap_or("")
+        ))
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+pub(crate) fn capture_error_stack(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::types::PyList> {
+    let errs = pyo3::types::PyList::empty(py);
+    for e in openssl::error::ErrorStack::get().errors() {
+        errs.append(pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })?)?;
+    }
+    Ok(errs)
+}
 
 #[cfg(test)]
 mod tests {
