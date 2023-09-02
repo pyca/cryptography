@@ -101,6 +101,60 @@ pub static SMIME_ENCODE: LazyPyImport = LazyPyImport::new(
     &["_smime_encode"],
 );
 
+pub static HASH_ALGORITHM: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["HashAlgorithm"]);
+
+pub static PREHASHED: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.utils",
+    &["Prehashed"],
+);
+pub static ASYMMETRIC_PADDING: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["AsymmetricPadding"],
+);
+pub static PADDING_AUTO: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["_Auto"],
+);
+pub static PADDING_MAX_LENGTH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["_MaxLength"],
+);
+pub static PADDING_DIGEST_LENGTH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["_DigestLength"],
+);
+pub static PKCS1V15: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["PKCS1v15"],
+);
+pub static PSS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["PSS"],
+);
+pub static OAEP: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["OAEP"],
+);
+pub static MGF1: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["MGF1"],
+);
+
+pub static CALCULATE_DIGEST_AND_ALGORITHM: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.backends.openssl.utils",
+    &["_calculate_digest_and_algorithm"],
+);
+
+pub static RSA_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.rsa",
+    &["RSAPublicNumbers"],
+);
+pub static RSA_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.rsa",
+    &["RSAPrivateNumbers"],
+);
+
 pub static DH_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dh",
     &["DHParameterNumbers"],
