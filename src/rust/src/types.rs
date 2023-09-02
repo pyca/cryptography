@@ -93,6 +93,9 @@ pub static DH_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
     &["DHPrivateNumbers"],
 );
 
+pub static EXTRACT_BUFFER_LENGTH: LazyPyImport =
+    LazyPyImport::new("cryptography.utils", &["_extract_buffer_length"]);
+
 #[cfg(test)]
 mod tests {
     use super::LazyPyImport;
