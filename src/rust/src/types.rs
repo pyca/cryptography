@@ -44,6 +44,10 @@ pub static ENCODING_DER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "DER"],
 );
+pub static ENCODING_PEM: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding", "PEM"],
+);
 pub static ENCODING_SMIME: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "SMIME"],
