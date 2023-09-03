@@ -66,6 +66,7 @@ pub static PARAMETER_FORMAT_PKCS3: LazyPyImport = LazyPyImport::new(
 
 pub static SIG_OIDS_TO_HASH: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat._oid", &["_SIG_OIDS_TO_HASH"]);
+pub static OID_NAMES: LazyPyImport = LazyPyImport::new("cryptography.hazmat._oid", &["_OID_NAMES"]);
 
 pub static REASON_FLAGS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["ReasonFlags"]);
 pub static ATTRIBUTE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Attribute"]);
