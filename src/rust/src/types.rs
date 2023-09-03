@@ -30,6 +30,8 @@ impl LazyPyImport {
     }
 }
 
+pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
+
 pub static DEPRECATED_IN_36: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn36"]);
 
@@ -100,6 +102,23 @@ pub static OCSP_CERT_STATUS_UNKNOWN: LazyPyImport =
     LazyPyImport::new("cryptography.x509.ocsp", &["OCSPCertStatus", "UNKNOWN"]);
 pub static OCSP_RESPONDER_ENCODING_HASH: LazyPyImport =
     LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponderEncoding", "HASH"]);
+
+pub static CERTIFICATE_TRANSPARENCY_VERSION_V1: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509.certificate_transparency",
+    &["Version", "v1"],
+);
+pub static SIGNATURE_ALGORITHM: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509.certificate_transparency",
+    &["SignatureAlgorithm"],
+);
+pub static LOG_ENTRY_TYPE_X509_CERTIFICATE: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509.certificate_transparency",
+    &["LogEntryType", "X509_CERTIFICATE"],
+);
+pub static LOG_ENTRY_TYPE_PRE_CERTIFICATE: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509.certificate_transparency",
+    &["LogEntryType", "PRE_CERTIFICATE"],
+);
 
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
