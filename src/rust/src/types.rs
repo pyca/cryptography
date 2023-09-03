@@ -30,6 +30,14 @@ impl LazyPyImport {
     }
 }
 
+pub static DEPRECATED_IN_36: LazyPyImport =
+    LazyPyImport::new("cryptography.utils", &["DeprecatedIn36"]);
+
+pub static LOAD_DER_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["load_der_public_key"],
+);
+
 pub static ENCODING_DER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "DER"],
@@ -58,6 +66,8 @@ pub static SIG_OIDS_TO_HASH: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat._oid", &["_SIG_OIDS_TO_HASH"]);
 
 pub static REASON_FLAGS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["ReasonFlags"]);
+pub static ATTRIBUTE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Attribute"]);
+pub static ATTRIBUTES: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Attributes"]);
 
 pub static CRL_NUMBER: LazyPyImport = LazyPyImport::new("cryptography.x509", &["CRLNumber"]);
 pub static DELTA_CRL_INDICATOR: LazyPyImport =
