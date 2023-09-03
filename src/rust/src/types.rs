@@ -34,6 +34,8 @@ pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["da
 
 pub static DEPRECATED_IN_36: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn36"]);
+pub static DEPRECATED_IN_41: LazyPyImport =
+    LazyPyImport::new("cryptography.utils", &["DeprecatedIn41"]);
 
 pub static LOAD_DER_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",

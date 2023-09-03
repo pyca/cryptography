@@ -8,7 +8,7 @@ use crate::asn1::{
 use crate::backend::hashes;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, sct, sign};
-use crate::{exceptions, x509};
+use crate::{exceptions, types, x509};
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
@@ -81,13 +81,7 @@ impl Certificate {
             py,
             &asn1::write_single(&self.raw.borrow_dependent().tbs_cert.spki)?,
         );
-        Ok(py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "load_der_public_key"))?
-            .call1((serialized,))?)
+        Ok(types::LOAD_DER_PUBLIC_KEY.get(py)?.call1((serialized,))?)
     }
 
     fn fingerprint<'p>(
@@ -391,12 +385,10 @@ fn load_der_x509_certificate(
 
 fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
-        let cryptography_warning = py
-            .import(pyo3::intern!(py, "cryptography.utils"))?
-            .getattr(pyo3::intern!(py, "DeprecatedIn36"))?;
+        let warning_cls = types::DEPRECATED_IN_36.get(py)?;
         pyo3::PyErr::warn(
             py,
-            cryptography_warning,
+            warning_cls,
             "Parsed a negative serial number, which is disallowed by RFC 5280.",
             1,
         )?;
@@ -417,12 +409,10 @@ fn warn_if_invalid_params(
         | AlgorithmParameters::DsaWithSha256(Some(..))
         | AlgorithmParameters::DsaWithSha384(Some(..))
         | AlgorithmParameters::DsaWithSha512(Some(..)) => {
-            let cryptography_warning = py
-                .import(pyo3::intern!(py, "cryptography.utils"))?
-                .getattr(pyo3::intern!(py, "DeprecatedIn41"))?;
+            let warning_cls = types::DEPRECATED_IN_41.get(py)?;
             pyo3::PyErr::warn(
                 py,
-                cryptography_warning,
+                warning_cls,
                 "The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.",
                 2,
             )?;
@@ -441,12 +431,10 @@ fn parse_display_text(
         DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).to_object(py)),
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
-                let cryptography_warning = py
-                    .import(pyo3::intern!(py, "cryptography.utils"))?
-                    .getattr(pyo3::intern!(py, "DeprecatedIn41"))?;
+                let warning_cls = types::DEPRECATED_IN_41.get(py)?;
                 pyo3::PyErr::warn(
                     py,
-                    cryptography_warning,
+                    warning_cls,
                     "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.",
                     1,
                 )?;
@@ -898,23 +886,12 @@ fn create_x509_certificate(
 ) -> CryptographyResult<Certificate> {
     let sigalg =
         x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
-    let serialization_mod = py.import(pyo3::intern!(
-        py,
-        "cryptography.hazmat.primitives.serialization"
-    ))?;
-    let der_encoding = serialization_mod
-        .getattr(pyo3::intern!(py, "Encoding"))?
-        .getattr(pyo3::intern!(py, "DER"))?;
-    let spki_format = serialization_mod
-        .getattr(pyo3::intern!(py, "PublicFormat"))?
-        .getattr(pyo3::intern!(py, "SubjectPublicKeyInfo"))?;
 
+    let der = types::ENCODING_DER.get(py)?;
+    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
-        .call_method1(
-            pyo3::intern!(py, "public_bytes"),
-            (der_encoding, spki_format),
-        )?
+        .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
         .extract::<&[u8]>()?;
 
     let py_serial = builder
