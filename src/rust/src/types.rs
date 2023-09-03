@@ -135,6 +135,10 @@ pub static HASHES_MODULE: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &[]);
 pub static HASH_ALGORITHM: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["HashAlgorithm"]);
+pub static EXTENDABLE_OUTPUT_FUNCTION: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.hashes",
+    &["ExtendableOutputFunction"],
+);
 pub static SHA1: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA1"]);
 
