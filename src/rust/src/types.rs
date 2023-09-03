@@ -77,6 +77,19 @@ pub static INVALIDITY_DATE: LazyPyImport =
 pub static OCSP_NONCE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OCSPNonce"]);
 pub static OCSP_ACCEPTABLE_RESPONSES: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["OCSPAcceptableResponses"]);
+pub static SIGNED_CERTIFICATE_TIMESTAMPS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["SignedCertificateTimestamps"]);
+
+pub static OCSP_RESPONSE_STATUS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponseStatus"]);
+pub static OCSP_CERT_STATUS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.ocsp", &["OCSPCertStatus"]);
+pub static OCSP_CERT_STATUS_GOOD: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.ocsp", &["OCSPCertStatus", "GOOD"]);
+pub static OCSP_CERT_STATUS_UNKNOWN: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.ocsp", &["OCSPCertStatus", "UNKNOWN"]);
+pub static OCSP_RESPONDER_ENCODING_HASH: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponderEncoding", "HASH"]);
 
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
@@ -112,6 +125,8 @@ pub static HASHES_MODULE: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &[]);
 pub static HASH_ALGORITHM: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["HashAlgorithm"]);
+pub static SHA1: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA1"]);
 
 pub static PREHASHED: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.utils",
@@ -150,6 +165,10 @@ pub static MGF1: LazyPyImport = LazyPyImport::new(
     &["MGF1"],
 );
 
+pub static CRL_ENTRY_REASON_ENUM_TO_CODE: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.backends.openssl.decode_asn1",
+    &["_CRL_ENTRY_REASON_ENUM_TO_CODE"],
+);
 pub static CALCULATE_DIGEST_AND_ALGORITHM: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.backends.openssl.utils",
     &["_calculate_digest_and_algorithm"],
