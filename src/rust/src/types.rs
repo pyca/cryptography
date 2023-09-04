@@ -204,6 +204,10 @@ pub static MGF1: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.padding",
     &["MGF1"],
 );
+pub static CALCULATE_MAX_PSS_SALT_LENGTH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.padding",
+    &["calculate_max_pss_salt_length"],
+);
 
 pub static CRL_ENTRY_REASON_ENUM_TO_CODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.backends.openssl.decode_asn1",
@@ -214,6 +218,14 @@ pub static CALCULATE_DIGEST_AND_ALGORITHM: LazyPyImport = LazyPyImport::new(
     &["_calculate_digest_and_algorithm"],
 );
 
+pub static RSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.rsa",
+    &["RSAPrivateKey"],
+);
+pub static RSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.rsa",
+    &["RSAPublicKey"],
+);
 pub static RSA_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.rsa",
     &["RSAPublicNumbers"],
@@ -223,6 +235,14 @@ pub static RSA_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
     &["RSAPrivateNumbers"],
 );
 
+pub static ELLIPTIC_CURVE_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ec",
+    &["EllipticCurvePrivateKey"],
+);
+pub static ELLIPTIC_CURVE_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ec",
+    &["EllipticCurvePublicKey"],
+);
 pub static CURVE_TYPES: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.ec",
     &["_CURVE_TYPES"],
@@ -240,6 +260,24 @@ pub static ELLIPTIC_CURVE_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
     &["EllipticCurvePrivateNumbers"],
 );
 
+pub static ED25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ed25519",
+    &["Ed25519PrivateKey"],
+);
+pub static ED25519_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ed25519",
+    &["Ed25519PublicKey"],
+);
+
+pub static ED448_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ed448",
+    &["Ed448PrivateKey"],
+);
+pub static ED448_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ed448",
+    &["Ed448PublicKey"],
+);
+
 pub static DH_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dh",
     &["DHParameterNumbers"],
@@ -253,6 +291,14 @@ pub static DH_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
     &["DHPrivateNumbers"],
 );
 
+pub static DSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.dsa",
+    &["DSAPrivateKey"],
+);
+pub static DSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.dsa",
+    &["DSAPublicKey"],
+);
 pub static DSA_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
     &["DSAParameterNumbers"],
