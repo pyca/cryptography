@@ -31,6 +31,8 @@ impl LazyPyImport {
 }
 
 pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
+pub static DATETIME_TIMEZONE_UTC: LazyPyImport =
+    LazyPyImport::new("datetime", &["timezone", "utc"]);
 pub static OS_URANDOM: LazyPyImport = LazyPyImport::new("os", &["urandom"]);
 
 pub static DEPRECATED_IN_36: LazyPyImport =
@@ -193,6 +195,14 @@ pub static ACCESS_DESCRIPTION: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["AccessDescription"]);
 pub static AUTHORITY_KEY_IDENTIFIER: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["AuthorityKeyIdentifier"]);
+pub static UNRECOGNIZED_EXTENSION: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["UnrecognizedExtension"]);
+pub static EXTENSION: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extension"]);
+pub static EXTENSIONS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extensions"]);
+pub static IPADDRESS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["IPAddress"]);
+pub static NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Name"]);
+pub static RELATIVE_DISTINGUISHED_NAME: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["RelativeDistinguishedName"]);
 
 pub static CRL_REASON_FLAGS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.extensions", &["_CRLREASONFLAGS"]);
