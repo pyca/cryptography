@@ -42,32 +42,114 @@ pub static LOAD_DER_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["load_der_public_key"],
 );
 
+pub static ENCODING: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding"],
+);
 pub static ENCODING_DER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "DER"],
+);
+pub static ENCODING_OPENSSH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding", "OpenSSH"],
 );
 pub static ENCODING_PEM: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "PEM"],
 );
+pub static ENCODING_RAW: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding", "Raw"],
+);
 pub static ENCODING_SMIME: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding", "SMIME"],
 );
+pub static ENCODING_X962: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["Encoding", "X962"],
+);
 
+pub static PRIVATE_FORMAT: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat"],
+);
+pub static PRIVATE_FORMAT_OPENSSH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat", "OpenSSH"],
+);
 pub static PRIVATE_FORMAT_PKCS8: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["PrivateFormat", "PKCS8"],
 );
+pub static PRIVATE_FORMAT_RAW: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat", "Raw"],
+);
+pub static PRIVATE_FORMAT_TRADITIONAL_OPENSSL: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat", "TraditionalOpenSSL"],
+);
 
+pub static PUBLIC_FORMAT: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat"],
+);
+pub static PUBLIC_FORMAT_COMPRESSED_POINT: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "CompressedPoint"],
+);
+pub static PUBLIC_FORMAT_OPENSSH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "OpenSSH"],
+);
+pub static PUBLIC_FORMAT_PKCS1: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "PKCS1"],
+);
+pub static PUBLIC_FORMAT_RAW: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "Raw"],
+);
 pub static PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["PublicFormat", "SubjectPublicKeyInfo"],
+);
+pub static PUBLIC_FORMAT_UNCOMPRESSED_POINT: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PublicFormat", "UncompressedPoint"],
 );
 
 pub static PARAMETER_FORMAT_PKCS3: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["ParameterFormat", "PKCS3"],
+);
+
+pub static KEY_SERIALIZATION_ENCRYPTION: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["KeySerializationEncryption"],
+);
+pub static NO_ENCRYPTION: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["NoEncryption"],
+);
+pub static BEST_AVAILABLE_ENCRYPTION: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["BestAvailableEncryption"],
+);
+pub static ENCRYPTION_BUILDER: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["_KeySerializationEncryption"],
+);
+
+pub static SERIALIZE_SSH_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.ssh",
+    &["_serialize_ssh_private_key"],
+);
+pub static SERIALIZE_SSH_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.ssh",
+    &["serialize_ssh_public_key"],
 );
 
 pub static SIG_OIDS_TO_HASH: LazyPyImport =
