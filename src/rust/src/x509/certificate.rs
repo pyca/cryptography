@@ -242,7 +242,6 @@ impl Certificate {
 
     #[getter]
     fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &self.cached_extensions,
@@ -250,21 +249,14 @@ impl Certificate {
             |ext| match ext.extn_id {
                 oid::PRECERT_POISON_OID => {
                     ext.value::<()>()?;
-                    Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "PrecertPoison"))?
-                            .call0()?,
-                    ))
+                    Ok(Some(types::PRECERT_POISON.get(py)?.call0()?))
                 }
                 oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = ext.value::<&[u8]>()?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(
-                                py,
-                                "PrecertificateSignedCertificateTimestamps"
-                            ))?
+                        types::PRECERTIFICATE_SIGNED_CERTIFICATE_TIMESTAMPS
+                            .get(py)?
                             .call1((scts,))?,
                     ))
                 }
@@ -578,9 +570,8 @@ fn parse_distribution_point(
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
-    Ok(x509_module
-        .getattr(pyo3::intern!(py, "DistributionPoint"))?
+    Ok(types::DISTRIBUTION_POINT
+        .get(py)?
         .call1((full_name, relative_name, reasons, crl_issuer))?
         .to_object(py))
 }
@@ -602,9 +593,8 @@ pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
     reasons: Option<&asn1::BitString<'_>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let reason_bit_mapping = py
-        .import(pyo3::intern!(py, "cryptography.x509.extensions"))?
-        .getattr(pyo3::intern!(py, "_REASON_BIT_MAPPING"))?;
+    let reason_bit_mapping = types::REASON_BIT_MAPPING.get(py)?;
+
     Ok(match reasons {
         Some(bs) => {
             let mut vec = Vec::new();
@@ -623,9 +613,7 @@ pub(crate) fn encode_distribution_point_reasons(
     py: pyo3::Python<'_>,
     py_reasons: &pyo3::PyAny,
 ) -> pyo3::PyResult<asn1::OwnedBitString> {
-    let reason_flag_mapping = py
-        .import(pyo3::intern!(py, "cryptography.x509.extensions"))?
-        .getattr(pyo3::intern!(py, "_CRLREASONFLAGS"))?;
+    let reason_flag_mapping = types::CRL_REASON_FLAGS.get(py)?;
 
     let mut bits = vec![0, 0];
     for py_reason in py_reasons.iter()? {
@@ -645,7 +633,6 @@ pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
 ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let aki = ext.value::<AuthorityKeyIdentifier<'_>>()?;
     let serial = match aki.authority_cert_serial_number {
         Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.to_object(py),
@@ -655,8 +642,8 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
-    Ok(x509_module
-        .getattr(pyo3::intern!(py, "AuthorityKeyIdentifier"))?
+    Ok(types::AUTHORITY_KEY_IDENTIFIER
+        .get(py)?
         .call1((aki.key_identifier, issuer, serial))?)
 }
 
@@ -664,14 +651,13 @@ pub(crate) fn parse_access_descriptions(
     py: pyo3::Python<'_>,
     ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let ads = pyo3::types::PyList::empty(py);
     let parsed = ext.value::<SequenceOfAccessDescriptions<'_>>()?;
     for access in parsed.unwrap_read().clone() {
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
-        let ad = x509_module
-            .getattr(pyo3::intern!(py, "AccessDescription"))?
+        let ad = types::ACCESS_DESCRIPTION
+            .get(py)?
             .call1((py_oid, gn))?
             .to_object(py);
         ads.append(ad)?;
@@ -704,9 +690,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::TLS_FEATURE_OID => {
-            let tls_feature_type_to_enum = py
-                .import(pyo3::intern!(py, "cryptography.x509.extensions"))?
-                .getattr(pyo3::intern!(py, "_TLS_FEATURE_TYPE_TO_ENUM"))?;
+            let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get(py)?;
 
             let features = pyo3::types::PyList::empty(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {

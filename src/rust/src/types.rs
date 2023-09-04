@@ -181,6 +181,27 @@ pub static OCSP_ACCEPTABLE_RESPONSES: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["OCSPAcceptableResponses"]);
 pub static SIGNED_CERTIFICATE_TIMESTAMPS: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["SignedCertificateTimestamps"]);
+pub static PRECERT_POISON: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["PrecertPoison"]);
+pub static PRECERTIFICATE_SIGNED_CERTIFICATE_TIMESTAMPS: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509",
+    &["PrecertificateSignedCertificateTimestamps"],
+);
+pub static DISTRIBUTION_POINT: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["DistributionPoint"]);
+pub static ACCESS_DESCRIPTION: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["AccessDescription"]);
+pub static AUTHORITY_KEY_IDENTIFIER: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["AuthorityKeyIdentifier"]);
+
+pub static CRL_REASON_FLAGS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.extensions", &["_CRLREASONFLAGS"]);
+pub static REASON_BIT_MAPPING: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.extensions", &["_REASON_BIT_MAPPING"]);
+pub static TLS_FEATURE_TYPE_TO_ENUM: LazyPyImport = LazyPyImport::new(
+    "cryptography.x509.extensions",
+    &["_TLS_FEATURE_TYPE_TO_ENUM"],
+);
 
 pub static OCSP_RESPONSE_STATUS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponseStatus"]);
