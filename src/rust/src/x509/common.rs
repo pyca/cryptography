@@ -53,18 +53,14 @@ pub(crate) fn encode_name_entry<'p>(
     py: pyo3::Python<'p>,
     py_name_entry: &'p pyo3::PyAny,
 ) -> CryptographyResult<AttributeTypeValue<'p>> {
-    let asn1_type = py
-        .import(pyo3::intern!(py, "cryptography.x509.name"))?
-        .getattr(pyo3::intern!(py, "_ASN1Type"))?;
-
     let attr_type = py_name_entry.getattr(pyo3::intern!(py, "_type"))?;
     let tag = attr_type
         .getattr(pyo3::intern!(py, "value"))?
         .extract::<u8>()?;
-    let value: &[u8] = if !attr_type.is(asn1_type.getattr(pyo3::intern!(py, "BitString"))?) {
-        let encoding = if attr_type.is(asn1_type.getattr(pyo3::intern!(py, "BMPString"))?) {
+    let value: &[u8] = if !attr_type.is(types::ASN1_TYPE_BIT_STRING.get(py)?) {
+        let encoding = if attr_type.is(types::ASN1_TYPE_BMP_STRING.get(py)?) {
             "utf_16_be"
-        } else if attr_type.is(asn1_type.getattr(pyo3::intern!(py, "UniversalString"))?) {
+        } else if attr_type.is(types::ASN1_TYPE_UNIVERSAL_STRING.get(py)?) {
             "utf_32_be"
         } else {
             "utf8"
@@ -330,7 +326,6 @@ fn create_ip_network(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let ip_module = py.import(pyo3::intern!(py, "ipaddress"))?;
     let prefix = match data.len() {
         8 => {
             let num = u32::from_be_bytes(data[4..].try_into().unwrap());
@@ -344,19 +339,16 @@ fn create_ip_network(
             format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
         ))),
     };
-    let base = ip_module.call_method1(
-        "ip_address",
-        (pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),),
-    )?;
+    let base = types::IPADDRESS_IPADDRESS
+        .get(py)?
+        .call1((pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),))?;
     let net = format!(
         "{}/{}",
         base.getattr(pyo3::intern!(py, "exploded"))?
             .extract::<&str>()?,
         prefix?
     );
-    let addr = ip_module
-        .call_method1(pyo3::intern!(py, "ip_network"), (net,))?
-        .to_object(py);
+    let addr = types::IPADDRESS_IPNETWORK.get(py)?.call1((net,))?;
     Ok(types::IPADDRESS.get(py)?.call1((addr,))?.to_object(py))
 }
 

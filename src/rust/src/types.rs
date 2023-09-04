@@ -33,6 +33,8 @@ impl LazyPyImport {
 pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
 pub static DATETIME_TIMEZONE_UTC: LazyPyImport =
     LazyPyImport::new("datetime", &["timezone", "utc"]);
+pub static IPADDRESS_IPADDRESS: LazyPyImport = LazyPyImport::new("ipaddress", &["ip_address"]);
+pub static IPADDRESS_IPNETWORK: LazyPyImport = LazyPyImport::new("ipaddress", &["ip_network"]);
 pub static OS_URANDOM: LazyPyImport = LazyPyImport::new("os", &["urandom"]);
 
 pub static DEPRECATED_IN_36: LazyPyImport =
@@ -240,6 +242,13 @@ pub static LOG_ENTRY_TYPE_PRE_CERTIFICATE: LazyPyImport = LazyPyImport::new(
     "cryptography.x509.certificate_transparency",
     &["LogEntryType", "PRE_CERTIFICATE"],
 );
+
+pub static ASN1_TYPE_BIT_STRING: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "BitString"]);
+pub static ASN1_TYPE_BMP_STRING: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "BMPString"]);
+pub static ASN1_TYPE_UNIVERSAL_STRING: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "UniversalString"]);
 
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
