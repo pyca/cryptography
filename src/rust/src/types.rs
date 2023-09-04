@@ -31,6 +31,7 @@ impl LazyPyImport {
 }
 
 pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
+pub static OS_URANDOM: LazyPyImport = LazyPyImport::new("os", &["urandom"]);
 
 pub static DEPRECATED_IN_36: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn36"]);
