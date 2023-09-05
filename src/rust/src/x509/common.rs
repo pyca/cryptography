@@ -279,11 +279,8 @@ pub(crate) fn parse_general_name(
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::IPAddress(data) => {
-            let ip_module = py.import(pyo3::intern!(py, "ipaddress"))?;
             if data.len() == 4 || data.len() == 16 {
-                let addr = ip_module
-                    .call_method1(pyo3::intern!(py, "ip_address"), (data,))?
-                    .to_object(py);
+                let addr = types::IPADDRESS_IPADDRESS.get(py)?.call1((data,))?;
                 x509_module
                     .call_method1(pyo3::intern!(py, "IPAddress"), (addr,))?
                     .to_object(py)
