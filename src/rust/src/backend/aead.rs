@@ -4,7 +4,7 @@
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{exceptions, types};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -205,9 +205,7 @@ impl AesSiv {
             ));
         }
 
-        Ok(py
-            .import(pyo3::intern!(py, "os"))?
-            .call_method1(pyo3::intern!(py, "urandom"), (bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(

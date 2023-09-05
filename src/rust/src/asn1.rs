@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::types;
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
@@ -91,16 +92,9 @@ pub(crate) fn encode_der_data<'p>(
     data: Vec<u8>,
     encoding: &'p pyo3::PyAny,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    let encoding_class = py
-        .import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.serialization"
-        ))?
-        .getattr(pyo3::intern!(py, "Encoding"))?;
-
-    if encoding.is(encoding_class.getattr(pyo3::intern!(py, "DER"))?) {
+    if encoding.is(types::ENCODING_DER.get(py)?) {
         Ok(pyo3::types::PyBytes::new(py, &data))
-    } else if encoding.is(encoding_class.getattr(pyo3::intern!(py, "PEM"))?) {
+    } else if encoding.is(types::ENCODING_PEM.get(py)?) {
         Ok(pyo3::types::PyBytes::new(
             py,
             &pem::encode_config(

@@ -4,7 +4,7 @@
 
 use crate::backend::{hashes, utils};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{exceptions, types};
 use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(
@@ -120,20 +120,7 @@ fn setup_encryption_ctx(
     ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
     padding: &pyo3::PyAny,
 ) -> CryptographyResult<()> {
-    let padding_mod = py.import(pyo3::intern!(
-        py,
-        "cryptography.hazmat.primitives.asymmetric.padding"
-    ))?;
-    let asymmetric_padding_class = padding_mod
-        .getattr(pyo3::intern!(py, "AsymmetricPadding"))?
-        .extract()?;
-    let pkcs1_class = padding_mod
-        .getattr(pyo3::intern!(py, "PKCS1v15"))?
-        .extract()?;
-    let oaep_class = padding_mod.getattr(pyo3::intern!(py, "OAEP"))?.extract()?;
-    let mgf1_class = padding_mod.getattr(pyo3::intern!(py, "MGF1"))?.extract()?;
-
-    if !padding.is_instance(asymmetric_padding_class)? {
+    if !padding.is_instance(types::ASYMMETRIC_PADDING.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -141,12 +128,12 @@ fn setup_encryption_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(pkcs1_class)? {
+    let padding_enum = if padding.is_instance(types::PKCS1V15.get(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(oaep_class)? {
+    } else if padding.is_instance(types::OAEP.get(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(mgf1_class)?
+            .is_instance(types::MGF1.get(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -216,22 +203,7 @@ fn setup_signature_ctx(
     key_size: usize,
     is_signing: bool,
 ) -> CryptographyResult<()> {
-    let padding_mod = py.import(pyo3::intern!(
-        py,
-        "cryptography.hazmat.primitives.asymmetric.padding"
-    ))?;
-    let asymmetric_padding_class = padding_mod.getattr(pyo3::intern!(py, "AsymmetricPadding"))?;
-    let pkcs1_class = padding_mod.getattr(pyo3::intern!(py, "PKCS1v15"))?;
-    let pss_class = padding_mod.getattr(pyo3::intern!(py, "PSS"))?.extract()?;
-    let max_length_class = padding_mod.getattr(pyo3::intern!(py, "_MaxLength"))?;
-    let digest_length_class = padding_mod.getattr(pyo3::intern!(py, "_DigestLength"))?;
-    let auto_class = padding_mod.getattr(pyo3::intern!(py, "_Auto"))?;
-    let mgf1_class = padding_mod.getattr(pyo3::intern!(py, "MGF1"))?;
-    let hash_algorithm_class = py
-        .import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?
-        .getattr(pyo3::intern!(py, "HashAlgorithm"))?;
-
-    if !padding.is_instance(asymmetric_padding_class)? {
+    if !padding.is_instance(types::ASYMMETRIC_PADDING.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -239,12 +211,12 @@ fn setup_signature_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(pkcs1_class)? {
+    let padding_enum = if padding.is_instance(types::PKCS1V15.get(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(pss_class)? {
+    } else if padding.is_instance(types::PSS.get(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(mgf1_class)?
+            .is_instance(types::MGF1.get(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -255,7 +227,7 @@ fn setup_signature_ctx(
         }
 
         // PSS padding requires a hash algorithm
-        if !algorithm.is_instance(hash_algorithm_class)? {
+        if !algorithm.is_instance(types::HASH_ALGORITHM.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Expected instance of hashes.HashAlgorithm.",
@@ -316,11 +288,11 @@ fn setup_signature_ctx(
 
     if padding_enum == openssl::rsa::Padding::PKCS1_PSS {
         let salt = padding.getattr(pyo3::intern!(py, "_salt_length"))?;
-        if salt.is_instance(max_length_class)? {
+        if salt.is_instance(types::PADDING_MAX_LENGTH.get(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
-        } else if salt.is_instance(digest_length_class)? {
+        } else if salt.is_instance(types::PADDING_DIGEST_LENGTH.get(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::DIGEST_LENGTH)?;
-        } else if salt.is_instance(auto_class)? {
+        } else if salt.is_instance(types::PADDING_AUTO.get(py)?)? {
             if is_signing {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -353,15 +325,9 @@ impl RsaPrivateKey {
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        let (data, algorithm): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
-            ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (data, algorithm),
-            )?
+        let (data, algorithm): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((data, algorithm))?
             .extract()?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -456,17 +422,16 @@ impl RsaPrivateKey {
         let py_e = utils::bn_to_py_int(py, rsa.e())?;
         let py_n = utils::bn_to_py_int(py, rsa.n())?;
 
-        let rsa_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.rsa"
-        ))?;
-
-        let public_numbers =
-            rsa_mod.call_method1(pyo3::intern!(py, "RSAPublicNumbers"), (py_e, py_n))?;
-        Ok(rsa_mod.call_method1(
-            pyo3::intern!(py, "RSAPrivateNumbers"),
-            (py_p, py_q, py_d, py_dmp1, py_dmq1, py_iqmp, public_numbers),
-        )?)
+        let public_numbers = types::RSA_PUBLIC_NUMBERS.get(py)?.call1((py_e, py_n))?;
+        Ok(types::RSA_PRIVATE_NUMBERS.get(py)?.call1((
+            py_p,
+            py_q,
+            py_d,
+            py_dmp1,
+            py_dmq1,
+            py_iqmp,
+            public_numbers,
+        ))?)
     }
 
     fn private_bytes<'p>(
@@ -499,15 +464,9 @@ impl RsaPublicKey {
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, algorithm): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
-            ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (data, algorithm),
-            )?
+        let (data, algorithm): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((data, algorithm))?
             .extract()?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -552,14 +511,7 @@ impl RsaPublicKey {
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let prehashed_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.utils"
-            ))?
-            .getattr(pyo3::intern!(py, "Prehashed"))?;
-
-        if algorithm.is_instance(prehashed_class)? {
+        if algorithm.is_instance(types::PREHASHED.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Prehashed is only supported in the sign and verify methods. It cannot be used with recover_data_from_signature.",
@@ -591,12 +543,7 @@ impl RsaPublicKey {
         let py_e = utils::bn_to_py_int(py, rsa.e())?;
         let py_n = utils::bn_to_py_int(py, rsa.n())?;
 
-        let rsa_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.rsa"
-        ))?;
-
-        Ok(rsa_mod.call_method1(pyo3::intern!(py, "RSAPublicNumbers"), (py_e, py_n))?)
+        Ok(types::RSA_PUBLIC_NUMBERS.get(py)?.call1((py_e, py_n))?)
     }
 
     fn public_bytes<'p>(
