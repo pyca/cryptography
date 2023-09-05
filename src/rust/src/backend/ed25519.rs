@@ -121,7 +121,8 @@ impl Ed25519PrivateKey {
 impl Ed25519PublicKey {
     fn verify(&self, signature: &[u8], data: &[u8]) -> CryptographyResult<()> {
         let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
-            .verify_oneshot(signature, data)?;
+            .verify_oneshot(signature, data)
+            .unwrap_or(false);
 
         if !valid {
             return Err(CryptographyError::from(
