@@ -185,11 +185,7 @@ fn parse_name_attribute(
     py: pyo3::Python<'_>,
     attribute: AttributeTypeValue<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
-    let tag_enum = py
-        .import(pyo3::intern!(py, "cryptography.x509.name"))?
-        .getattr(pyo3::intern!(py, "_ASN1_TYPE_TO_ENUM"))?;
     let tag_val = attribute
         .value
         .tag()
@@ -200,7 +196,7 @@ fn parse_name_attribute(
             ))
         })?
         .to_object(py);
-    let py_tag = tag_enum.get_item(tag_val)?;
+    let py_tag = types::ASN1_TYPE_TO_ENUM.get(py)?.get_item(tag_val)?;
     let py_data = match attribute.value.tag().as_u8() {
         // BitString tag value
         Some(3) => pyo3::types::PyBytes::new(py, attribute.value.data()),
@@ -221,12 +217,9 @@ fn parse_name_attribute(
         }
     };
     let kwargs = [("_validate", false)].into_py_dict(py);
-    Ok(x509_module
-        .call_method(
-            pyo3::intern!(py, "NameAttribute"),
-            (oid, py_data, py_tag),
-            Some(kwargs),
-        )?
+    Ok(types::NAME_ATTRIBUTE
+        .get(py)?
+        .call((oid, py_data, py_tag), Some(kwargs))?
         .to_object(py))
 }
 

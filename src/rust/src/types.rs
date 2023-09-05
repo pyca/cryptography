@@ -205,6 +205,8 @@ pub static IPADDRESS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["I
 pub static NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Name"]);
 pub static RELATIVE_DISTINGUISHED_NAME: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["RelativeDistinguishedName"]);
+pub static NAME_ATTRIBUTE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["NameAttribute"]);
 
 pub static CRL_REASON_FLAGS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.extensions", &["_CRLREASONFLAGS"]);
@@ -243,6 +245,8 @@ pub static LOG_ENTRY_TYPE_PRE_CERTIFICATE: LazyPyImport = LazyPyImport::new(
     &["LogEntryType", "PRE_CERTIFICATE"],
 );
 
+pub static ASN1_TYPE_TO_ENUM: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.name", &["_ASN1_TYPE_TO_ENUM"]);
 pub static ASN1_TYPE_BIT_STRING: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "BitString"]);
 pub static ASN1_TYPE_BMP_STRING: LazyPyImport =
