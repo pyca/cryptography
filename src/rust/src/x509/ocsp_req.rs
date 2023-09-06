@@ -5,7 +5,7 @@
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, ocsp};
-use crate::{exceptions, x509};
+use crate::{exceptions, types, x509};
 use cryptography_x509::{
     common,
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
@@ -89,9 +89,8 @@ impl OCSPRequest {
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
         let cert_id = self.cert_id();
 
-        let hashes = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
         match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
-            Some(alg_name) => Ok(hashes.getattr(*alg_name)?.call0()?),
+            Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
             None => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
                     "Signature algorithm OID: {} not recognized",
@@ -114,7 +113,6 @@ impl OCSPRequest {
     fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let tbs_request = &self.raw.borrow_dependent().tbs_request;
 
-        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &self.cached_extensions,
@@ -129,9 +127,7 @@ impl OCSPRequest {
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
                         let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
-                        Ok(Some(
-                            x509_module.call_method1(pyo3::intern!(py, "OCSPNonce"), (nonce,))?,
-                        ))
+                        Ok(Some(types::OCSP_NONCE.get(py)?.call1((nonce,))?))
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
                         let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
@@ -140,10 +136,11 @@ impl OCSPRequest {
                             py_oids.append(oid_to_py_oid(py, &oid)?)?;
                         }
 
-                        Ok(Some(x509_module.call_method1(
-                            pyo3::intern!(py, "OCSPAcceptableResponses"),
-                            (py_oids,),
-                        )?))
+                        Ok(Some(
+                            types::OCSP_ACCEPTABLE_RESPONSES
+                                .get(py)?
+                                .call1((py_oids,))?,
+                        ))
                     }
                     _ => Ok(None),
                 }
@@ -156,14 +153,7 @@ impl OCSPRequest {
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let der = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "Encoding"))?
-            .getattr(pyo3::intern!(py, "DER"))?;
-        if !encoding.is(der) {
+        if !encoding.is(types::ENCODING_DER.get(py)?) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )

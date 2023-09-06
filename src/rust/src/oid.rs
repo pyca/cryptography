@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::error::CryptographyResult;
+use crate::types;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -30,10 +31,9 @@ impl ObjectIdentifier {
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let oid_names = py
-            .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
-            .getattr(pyo3::intern!(py, "_OID_NAMES"))?;
-        oid_names.call_method1(pyo3::intern!(py, "get"), (slf, "Unknown OID"))
+        types::OID_NAMES
+            .get(py)?
+            .call_method1(pyo3::intern!(py, "get"), (slf, "Unknown OID"))
     }
 
     fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {

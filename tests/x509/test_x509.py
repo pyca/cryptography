@@ -4920,6 +4920,104 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA512(), backend)
 
+    @pytest.mark.parametrize(
+        ("alg", "mgf_alg"),
+        [
+            (hashes.SHA512(), hashes.SHA256()),
+            (hashes.SHA3_512(), hashes.SHA3_256()),
+        ],
+    )
+    def test_sign_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey, alg, mgf_alg, backend
+    ):
+        if not backend.signature_hash_supported(alg):
+            pytest.skip(f"{alg} signature not supported")
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(mgf_alg), salt_length=alg.digest_size
+        )
+        csr = builder.sign(rsa_key_2048, alg, rsa_padding=pss)
+        pk = csr.public_key()
+        assert isinstance(pk, rsa.RSAPublicKey)
+        assert isinstance(csr.signature_hash_algorithm, type(alg))
+        cert_params = csr.signature_algorithm_parameters
+        assert isinstance(cert_params, padding.PSS)
+        assert cert_params._salt_length == pss._salt_length
+        assert isinstance(cert_params._mgf, padding.MGF1)
+        assert isinstance(cert_params._mgf._algorithm, type(mgf_alg))
+        pk.verify(
+            csr.signature,
+            csr.tbs_certrequest_bytes,
+            cert_params,
+            alg,
+        )
+
+    @pytest.mark.parametrize(
+        ("padding_len", "computed_len"),
+        [
+            (padding.PSS.MAX_LENGTH, 222),
+            (padding.PSS.DIGEST_LENGTH, 32),
+        ],
+    )
+    def test_sign_pss_length_options(
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        padding_len,
+        computed_len,
+        backend,
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
+        )
+        csr = builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+        assert isinstance(csr.signature_algorithm_parameters, padding.PSS)
+        assert csr.signature_algorithm_parameters._salt_length == computed_len
+
+    def test_sign_pss_auto_unsupported(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.AUTO
+        )
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+
+    def test_sign_invalid_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+            )
+        eckey = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            builder.sign(
+                eckey, hashes.SHA256(), rsa_padding=padding.PKCS1v15()
+            )
+
+    def test_sign_pss_hash_none(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32)
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, None, rsa_padding=pss)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dsa_supported(),

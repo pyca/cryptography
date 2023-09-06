@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::types;
 use std::{ptr, slice};
 
 pub(crate) struct CffiBuf<'p> {
@@ -20,9 +21,9 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
     fn extract(pyobj: &'a pyo3::PyAny) -> pyo3::PyResult<Self> {
         let py = pyobj.py();
 
-        let (bufobj, ptrval): (&pyo3::PyAny, usize) = py
-            .import(pyo3::intern!(py, "cryptography.utils"))?
-            .call_method1(pyo3::intern!(py, "_extract_buffer_length"), (pyobj,))?
+        let (bufobj, ptrval): (&pyo3::PyAny, usize) = types::EXTRACT_BUFFER_LENGTH
+            .get(py)?
+            .call1((pyobj,))?
             .extract()?;
 
         let len = bufobj.len()?;

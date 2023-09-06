@@ -5,7 +5,7 @@
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
-use crate::x509;
+use crate::{types, x509};
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
@@ -77,17 +77,10 @@ fn sign_and_serialize<'p>(
     encoding: &'p pyo3::PyAny,
     options: &'p pyo3::types::PyList,
 ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    let pkcs7_options = py
-        .import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.serialization.pkcs7"
-        ))?
-        .getattr(pyo3::intern!(py, "PKCS7Options"))?;
-
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
-    let text_mode = options.contains(pkcs7_options.getattr(pyo3::intern!(py, "Text"))?)?;
+    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
     let (data_with_header, data_without_header) =
-        if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "Binary"))?)? {
+        if options.contains(types::PKCS7_BINARY.get(py)?)? {
             (
                 Cow::Borrowed(raw_data.as_bytes()),
                 Cow::Borrowed(raw_data.as_bytes()),
@@ -126,7 +119,7 @@ fn sign_and_serialize<'p>(
         .collect::<Vec<_>>();
     for (cert, py_private_key, py_hash_alg) in &py_signers {
         let (authenticated_attrs, signature) = if options
-            .contains(pkcs7_options.getattr(pyo3::intern!(py, "NoAttributes"))?)?
+            .contains(types::PKCS7_NO_ATTRIBUTES.get(py)?)?
         {
             (
                 None,
@@ -165,7 +158,7 @@ fn sign_and_serialize<'p>(
                 ])),
             });
 
-            if !options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCapabilities"))?)? {
+            if !options.contains(types::PKCS7_NO_CAPABILITIES.get(py)?)? {
                 authenticated_attrs.push(Attribute {
                     type_id: PKCS7_SMIME_CAP_OID,
                     values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
@@ -221,13 +214,12 @@ fn sign_and_serialize<'p>(
     }
 
     let data_tlv_bytes;
-    let content =
-        if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "DetachedSignature"))?)? {
-            None
-        } else {
-            data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
-            Some(asn1::parse_single(&data_tlv_bytes).unwrap())
-        };
+    let content = if options.contains(types::PKCS7_DETACHED_SIGNATURE.get(py)?)? {
+        None
+    } else {
+        data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
+        Some(asn1::parse_single(&data_tlv_bytes).unwrap())
+    };
 
     let signed_data = pkcs7::SignedData {
         version: 1,
@@ -236,7 +228,7 @@ fn sign_and_serialize<'p>(
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
-        certificates: if options.contains(pkcs7_options.getattr(pyo3::intern!(py, "NoCerts"))?)? {
+        certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
             Some(asn1::SetOfWriter::new(&certs))
@@ -251,26 +243,14 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    let encoding_class = py
-        .import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.serialization"
-        ))?
-        .getattr(pyo3::intern!(py, "Encoding"))?;
-
-    if encoding.is(encoding_class.getattr(pyo3::intern!(py, "SMIME"))?) {
+    if encoding.is(types::ENCODING_SMIME.get(py)?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
             .collect::<Vec<_>>()
             .join(",");
-        let smime_encode = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization.pkcs7"
-            ))?
-            .getattr(pyo3::intern!(py, "_smime_encode"))?;
-        Ok(smime_encode
+        Ok(types::SMIME_ENCODE
+            .get(py)?
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
     } else {
