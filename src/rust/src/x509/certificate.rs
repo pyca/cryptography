@@ -297,14 +297,9 @@ impl Certificate {
 }
 
 fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     match version {
-        0 => Ok(x509_module
-            .getattr(pyo3::intern!(py, "Version"))?
-            .get_item(pyo3::intern!(py, "v1"))?),
-        2 => Ok(x509_module
-            .getattr(pyo3::intern!(py, "Version"))?
-            .get_item(pyo3::intern!(py, "v3"))?),
+        0 => Ok(types::CERTIFICATE_VERSION_V1.get(py)?),
+        2 => Ok(types::CERTIFICATE_VERSION_V3.get(py)?),
         _ => Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
                 format!("{} is not a valid X509 version", version),
@@ -450,7 +445,6 @@ fn parse_user_notice(
     py: pyo3::Python<'_>,
     un: UserNotice<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let et = match un.explicit_text {
         Some(data) => parse_display_text(py, data)?,
         None => py.None(),
@@ -462,15 +456,14 @@ fn parse_user_notice(
             for num in data.notice_numbers.unwrap_read().clone() {
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?.to_object(py))?;
             }
-            x509_module
-                .call_method1(pyo3::intern!(py, "NoticeReference"), (org, numbers))?
+            types::NOTICE_REFERENCE
+                .get(py)?
+                .call1((org, numbers))?
                 .to_object(py)
         }
         None => py.None(),
     };
-    Ok(x509_module
-        .call_method1(pyo3::intern!(py, "UserNotice"), (nr, et))?
-        .to_object(py))
+    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.to_object(py))
 }
 
 fn parse_policy_qualifiers<'a>(
@@ -512,7 +505,6 @@ fn parse_cp(
     ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
         let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?.to_object(py);
@@ -522,8 +514,9 @@ fn parse_cp(
             }
             None => py.None(),
         };
-        let pi = x509_module
-            .call_method1(pyo3::intern!(py, "PolicyInformation"), (pi_oid, py_pqis))?
+        let pi = types::POLICY_INFORMATION
+            .get(py)?
+            .call1((pi_oid, py_pqis))?
             .to_object(py);
         certificate_policies.append(pi)?;
     }
@@ -669,24 +662,19 @@ pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
 ) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     match ext.extn_id {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
             let gn_seq = ext.value::<SubjectAlternativeName<'_>>()?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "SubjectAlternativeName"))?
-                    .call1((sans,))?,
+                types::SUBJECT_ALTERNATIVE_NAME.get(py)?.call1((sans,))?,
             ))
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
             let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "IssuerAlternativeName"))?
-                    .call1((ians,))?,
+                types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
             ))
         }
         oid::TLS_FEATURE_OID => {
@@ -697,17 +685,13 @@ pub fn parse_cert_ext<'p>(
                 let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
                 features.append(py_feature)?;
             }
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "TLSFeature"))?
-                    .call1((features,))?,
-            ))
+            Ok(Some(types::TLS_FEATURE.get(py)?.call1((features,))?))
         }
         oid::SUBJECT_KEY_IDENTIFIER_OID => {
             let identifier = ext.value::<&[u8]>()?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "SubjectKeyIdentifier"))?
+                types::SUBJECT_KEY_IDENTIFIER
+                    .get(py)?
                     .call1((identifier,))?,
             ))
         }
@@ -717,101 +701,71 @@ pub fn parse_cert_ext<'p>(
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
             }
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "ExtendedKeyUsage"))?
-                    .call1((ekus,))?,
-            ))
+            Ok(Some(types::EXTENDED_KEY_USAGE.get(py)?.call1((ekus,))?))
         }
         oid::KEY_USAGE_OID => {
             let kus = ext.value::<KeyUsage<'_>>()?;
 
-            Ok(Some(
-                x509_module.getattr(pyo3::intern!(py, "KeyUsage"))?.call1((
-                    kus.digital_signature(),
-                    kus.content_comitment(),
-                    kus.key_encipherment(),
-                    kus.data_encipherment(),
-                    kus.key_agreement(),
-                    kus.key_cert_sign(),
-                    kus.crl_sign(),
-                    kus.encipher_only(),
-                    kus.decipher_only(),
-                ))?,
-            ))
+            Ok(Some(types::KEY_USAGE.get(py)?.call1((
+                kus.digital_signature(),
+                kus.content_comitment(),
+                kus.key_encipherment(),
+                kus.data_encipherment(),
+                kus.key_agreement(),
+                kus.key_cert_sign(),
+                kus.crl_sign(),
+                kus.encipher_only(),
+                kus.decipher_only(),
+            ))?))
         }
         oid::AUTHORITY_INFORMATION_ACCESS_OID => {
             let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "AuthorityInformationAccess"))?
-                    .call1((ads,))?,
+                types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
             ))
         }
         oid::SUBJECT_INFORMATION_ACCESS_OID => {
             let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "SubjectInformationAccess"))?
-                    .call1((ads,))?,
+                types::SUBJECT_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
             ))
         }
         oid::CERTIFICATE_POLICIES_OID => {
             let cp = parse_cp(py, ext)?;
-            Ok(Some(x509_module.call_method1(
-                pyo3::intern!(py, "CertificatePolicies"),
-                (cp,),
-            )?))
+            Ok(Some(types::CERTIFICATE_POLICIES.get(py)?.call1((cp,))?))
         }
         oid::POLICY_CONSTRAINTS_OID => {
             let pc = ext.value::<PolicyConstraints>()?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "PolicyConstraints"))?
-                    .call1((pc.require_explicit_policy, pc.inhibit_policy_mapping))?,
-            ))
+            Ok(Some(types::POLICY_CONSTRAINTS.get(py)?.call1((
+                pc.require_explicit_policy,
+                pc.inhibit_policy_mapping,
+            ))?))
         }
         oid::OCSP_NO_CHECK_OID => {
             ext.value::<()>()?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "OCSPNoCheck"))?
-                    .call0()?,
-            ))
+            Ok(Some(types::OCSP_NO_CHECK.get(py)?.call0()?))
         }
         oid::INHIBIT_ANY_POLICY_OID => {
             let bignum = ext.value::<asn1::BigUint<'_>>()?;
             let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "InhibitAnyPolicy"))?
-                    .call1((pynum,))?,
-            ))
+            Ok(Some(types::INHIBIT_ANY_POLICY.get(py)?.call1((pynum,))?))
         }
         oid::BASIC_CONSTRAINTS_OID => {
             let bc = ext.value::<BasicConstraints>()?;
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "BasicConstraints"))?
+                types::BASIC_CONSTRAINTS
+                    .get(py)?
                     .call1((bc.ca, bc.path_length))?,
             ))
         }
         oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(parse_authority_key_identifier(py, ext)?)),
         oid::CRL_DISTRIBUTION_POINTS_OID => {
             let dp = parse_distribution_points(py, ext)?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "CRLDistributionPoints"))?
-                    .call1((dp,))?,
-            ))
+            Ok(Some(types::CRL_DISTRIBUTION_POINTS.get(py)?.call1((dp,))?))
         }
         oid::FRESHEST_CRL_OID => {
             let dp = parse_distribution_points(py, ext)?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "FreshestCRL"))?
-                    .call1((dp,))?,
-            ))
+            Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
         }
         oid::NAME_CONSTRAINTS_OID => {
             let nc = ext.value::<NameConstraints<'_>>()?;
@@ -824,19 +778,19 @@ pub fn parse_cert_ext<'p>(
                 None => py.None(),
             };
             Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "NameConstraints"))?
+                types::NAME_CONSTRAINTS
+                    .get(py)?
                     .call1((permitted_subtrees, excluded_subtrees))?,
             ))
         }
         oid::MS_CERTIFICATE_TEMPLATE => {
             let ms_cert_tpl = ext.value::<MSCertificateTemplate>()?;
             let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "MSCertificateTemplate"))?
-                    .call1((py_oid, ms_cert_tpl.major_version, ms_cert_tpl.minor_version))?,
-            ))
+            Ok(Some(types::MS_CERTIFICATE_TEMPLATE.get(py)?.call1((
+                py_oid,
+                ms_cert_tpl.major_version,
+                ms_cert_tpl.minor_version,
+            ))?))
         }
         _ => Ok(None),
     }
