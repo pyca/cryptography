@@ -108,21 +108,21 @@ pub(crate) fn encode_general_name<'a>(
     py: pyo3::Python<'a>,
     gn: &'a pyo3::PyAny,
 ) -> Result<GeneralName<'a>, CryptographyError> {
-    let gn_module = py.import(pyo3::intern!(py, "cryptography.x509.general_name"))?;
     let gn_type = gn.get_type().as_ref();
     let gn_value = gn.getattr(pyo3::intern!(py, "value"))?;
-    if gn_type.is(gn_module.getattr(pyo3::intern!(py, "DNSName"))?) {
+
+    if gn_type.is(types::DNS_NAME.get(py)?) {
         Ok(GeneralName::DNSName(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "RFC822Name"))?) {
+    } else if gn_type.is(types::RFC822_NAME.get(py)?) {
         Ok(GeneralName::RFC822Name(UnvalidatedIA5String(
             gn_value.extract::<&str>()?,
         )))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "DirectoryName"))?) {
+    } else if gn_type.is(types::DIRECTORY_NAME.get(py)?) {
         let name = encode_name(py, gn_value)?;
         Ok(GeneralName::DirectoryName(name))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "OtherName"))?) {
+    } else if gn_type.is(types::OTHER_NAME.get(py)?) {
         Ok(GeneralName::OtherName(OtherName {
             type_id: py_oid_to_oid(gn.getattr(pyo3::intern!(py, "type_id"))?)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
@@ -132,16 +132,16 @@ pub(crate) fn encode_general_name<'a>(
                 ))
             })?,
         }))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "UniformResourceIdentifier"))?) {
+    } else if gn_type.is(types::UNIFORM_RESOURCE_IDENTIFIER.get(py)?) {
         Ok(GeneralName::UniformResourceIdentifier(
             UnvalidatedIA5String(gn_value.extract::<&str>()?),
         ))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "IPAddress"))?) {
+    } else if gn_type.is(types::IPADDRESS.get(py)?) {
         Ok(GeneralName::IPAddress(
             gn.call_method0(pyo3::intern!(py, "_packed"))?
                 .extract::<&[u8]>()?,
         ))
-    } else if gn_type.is(gn_module.getattr(pyo3::intern!(py, "RegisteredID"))?) {
+    } else if gn_type.is(types::REGISTERED_ID.get(py)?) {
         let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
@@ -242,41 +242,37 @@ pub(crate) fn parse_general_name(
     py: pyo3::Python<'_>,
     gn: GeneralName<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let py_gn = match gn {
         GeneralName::OtherName(data) => {
             let oid = oid_to_py_oid(py, &data.type_id)?.to_object(py);
-            x509_module
-                .call_method1(
-                    pyo3::intern!(py, "OtherName"),
-                    (oid, data.value.full_data()),
-                )?
+            types::OTHER_NAME
+                .get(py)?
+                .call1((oid, data.value.full_data()))?
                 .to_object(py)
         }
-        GeneralName::RFC822Name(data) => x509_module
-            .getattr(pyo3::intern!(py, "RFC822Name"))?
+        GeneralName::RFC822Name(data) => types::RFC822_NAME
+            .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
-        GeneralName::DNSName(data) => x509_module
-            .getattr(pyo3::intern!(py, "DNSName"))?
+        GeneralName::DNSName(data) => types::DNS_NAME
+            .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
             let py_name = parse_name(py, data.unwrap_read())?;
-            x509_module
-                .call_method1(pyo3::intern!(py, "DirectoryName"), (py_name,))?
+            types::DIRECTORY_NAME
+                .get(py)?
+                .call1((py_name,))?
                 .to_object(py)
         }
-        GeneralName::UniformResourceIdentifier(data) => x509_module
-            .getattr(pyo3::intern!(py, "UniformResourceIdentifier"))?
+        GeneralName::UniformResourceIdentifier(data) => types::UNIFORM_RESOURCE_IDENTIFIER
+            .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::IPAddress(data) => {
             if data.len() == 4 || data.len() == 16 {
                 let addr = types::IPADDRESS_IPADDRESS.get(py)?.call1((data,))?;
-                x509_module
-                    .call_method1(pyo3::intern!(py, "IPAddress"), (addr,))?
-                    .to_object(py)
+                types::IPADDRESS.get(py)?.call1((addr,))?.to_object(py)
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
                 // verify length in this function.
@@ -285,9 +281,7 @@ pub(crate) fn parse_general_name(
         }
         GeneralName::RegisteredID(data) => {
             let oid = oid_to_py_oid(py, &data)?.to_object(py);
-            x509_module
-                .call_method1(pyo3::intern!(py, "RegisteredID"), (oid,))?
-                .to_object(py)
+            types::REGISTERED_ID.get(py)?.call1((oid,))?.to_object(py)
         }
         _ => {
             return Err(CryptographyError::from(

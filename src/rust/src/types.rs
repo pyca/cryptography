@@ -216,6 +216,14 @@ pub static TLS_FEATURE_TYPE_TO_ENUM: LazyPyImport = LazyPyImport::new(
     "cryptography.x509.extensions",
     &["_TLS_FEATURE_TYPE_TO_ENUM"],
 );
+pub static REGISTERED_ID: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RegisteredID"]);
+pub static DIRECTORY_NAME: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["DirectoryName"]);
+pub static UNIFORM_RESOURCE_IDENTIFIER: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["UniformResourceIdentifier"]);
+pub static DNS_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["DNSName"]);
+pub static RFC822_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RFC822Name"]);
+pub static OTHER_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OtherName"]);
 
 pub static OCSP_RESPONSE_STATUS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponseStatus"]);
