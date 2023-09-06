@@ -207,6 +207,48 @@ pub static RELATIVE_DISTINGUISHED_NAME: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["RelativeDistinguishedName"]);
 pub static NAME_ATTRIBUTE: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["NameAttribute"]);
+pub static NAME_CONSTRAINTS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["NameConstraints"]);
+pub static MS_CERTIFICATE_TEMPLATE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["MSCertificateTemplate"]);
+pub static CRL_DISTRIBUTION_POINTS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["CRLDistributionPoints"]);
+pub static BASIC_CONSTRAINTS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["BasicConstraints"]);
+pub static INHIBIT_ANY_POLICY: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["InhibitAnyPolicy"]);
+pub static OCSP_NO_CHECK: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OCSPNoCheck"]);
+pub static POLICY_CONSTRAINTS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["PolicyConstraints"]);
+pub static CERTIFICATE_POLICIES: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["CertificatePolicies"]);
+pub static SUBJECT_INFORMATION_ACCESS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["SubjectInformationAccess"]);
+pub static KEY_USAGE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["KeyUsage"]);
+pub static EXTENDED_KEY_USAGE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["ExtendedKeyUsage"]);
+pub static SUBJECT_KEY_IDENTIFIER: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["SubjectKeyIdentifier"]);
+pub static TLS_FEATURE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["TLSFeature"]);
+pub static SUBJECT_ALTERNATIVE_NAME: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["SubjectAlternativeName"]);
+pub static POLICY_INFORMATION: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["PolicyInformation"]);
+pub static USER_NOTICE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["UserNotice"]);
+pub static NOTICE_REFERENCE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["NoticeReference"]);
+pub static REGISTERED_ID: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RegisteredID"]);
+pub static DIRECTORY_NAME: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["DirectoryName"]);
+pub static UNIFORM_RESOURCE_IDENTIFIER: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["UniformResourceIdentifier"]);
+pub static DNS_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["DNSName"]);
+pub static RFC822_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RFC822Name"]);
+pub static OTHER_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OtherName"]);
+pub static CERTIFICATE_VERSION_V1: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["Version", "v1"]);
+pub static CERTIFICATE_VERSION_V3: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["Version", "v3"]);
 
 pub static CRL_REASON_FLAGS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.extensions", &["_CRLREASONFLAGS"]);
@@ -216,14 +258,6 @@ pub static TLS_FEATURE_TYPE_TO_ENUM: LazyPyImport = LazyPyImport::new(
     "cryptography.x509.extensions",
     &["_TLS_FEATURE_TYPE_TO_ENUM"],
 );
-pub static REGISTERED_ID: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RegisteredID"]);
-pub static DIRECTORY_NAME: LazyPyImport =
-    LazyPyImport::new("cryptography.x509", &["DirectoryName"]);
-pub static UNIFORM_RESOURCE_IDENTIFIER: LazyPyImport =
-    LazyPyImport::new("cryptography.x509", &["UniformResourceIdentifier"]);
-pub static DNS_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["DNSName"]);
-pub static RFC822_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RFC822Name"]);
-pub static OTHER_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OtherName"]);
 
 pub static OCSP_RESPONSE_STATUS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.ocsp", &["OCSPResponseStatus"]);
