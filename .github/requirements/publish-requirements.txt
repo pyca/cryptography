@@ -422,9 +422,9 @@ secretstorage==3.3.3 \
     --hash=sha256:2403533ef369eca6d2ba81718576c5e0f564d5cca1b58f73a8b23e7d4eeebd77 \
     --hash=sha256:f356e6628222568e3af06f2eba8df495efa13b3b63081dafd4f7d9a7b7bc9f99
     # via keyring
-securesystemslib==0.28.0 \
-    --hash=sha256:9e6b9abe36a511d4f52c759069db8f6f650362ba82d6efc7bc7466a458b3f499 \
-    --hash=sha256:a27e519247576f2a77b97fb03267d8eeb88eba715d12da64109e845616f919c6
+securesystemslib==0.29.0 \
+    --hash=sha256:658ea4d41bbe6bc574758f91ba809812e08a22fddebb6ee4ea837f72591f136a \
+    --hash=sha256:dcfcb70562ad76069f71da9916a3cb7bc85fbf6cd51216c741a00096cf58dc6c
     # via
     #   sigstore
     #   tuf
