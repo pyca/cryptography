@@ -4,7 +4,7 @@
 
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{exceptions, types};
 use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(
@@ -122,15 +122,9 @@ impl DsaPrivateKey {
         data: &pyo3::types::PyBytes,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let (data, _): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
-            ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (data, algorithm),
-            )?
+        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((data, algorithm))?
             .extract()?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -173,22 +167,16 @@ impl DsaPrivateKey {
         let py_pub_key = utils::bn_to_py_int(py, dsa.pub_key())?;
         let py_private_key = utils::bn_to_py_int(py, dsa.priv_key())?;
 
-        let dsa_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.dsa"
-        ))?;
+        let parameter_numbers = types::DSA_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_q, py_g))?;
+        let public_numbers = types::DSA_PUBLIC_NUMBERS
+            .get(py)?
+            .call1((py_pub_key, parameter_numbers))?;
 
-        let parameter_numbers =
-            dsa_mod.call_method1(pyo3::intern!(py, "DSAParameterNumbers"), (py_p, py_q, py_g))?;
-        let public_numbers = dsa_mod.call_method1(
-            pyo3::intern!(py, "DSAPublicNumbers"),
-            (py_pub_key, parameter_numbers),
-        )?;
-
-        Ok(dsa_mod.call_method1(
-            pyo3::intern!(py, "DSAPrivateNumbers"),
-            (py_private_key, public_numbers),
-        )?)
+        Ok(types::DSA_PRIVATE_NUMBERS
+            .get(py)?
+            .call1((py_private_key, public_numbers))?)
     }
 
     fn private_bytes<'p>(
@@ -220,15 +208,9 @@ impl DsaPublicKey {
         data: &pyo3::types::PyBytes,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, _): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
-            ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (data, algorithm),
-            )?
+        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((data, algorithm))?
             .extract()?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -262,17 +244,12 @@ impl DsaPublicKey {
 
         let py_pub_key = utils::bn_to_py_int(py, dsa.pub_key())?;
 
-        let dsa_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.dsa"
-        ))?;
-
-        let parameter_numbers =
-            dsa_mod.call_method1(pyo3::intern!(py, "DSAParameterNumbers"), (py_p, py_q, py_g))?;
-        Ok(dsa_mod.call_method1(
-            pyo3::intern!(py, "DSAPublicNumbers"),
-            (py_pub_key, parameter_numbers),
-        )?)
+        let parameter_numbers = types::DSA_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_q, py_g))?;
+        Ok(types::DSA_PUBLIC_NUMBERS
+            .get(py)?
+            .call1((py_pub_key, parameter_numbers))?)
     }
 
     fn public_bytes<'p>(
@@ -314,12 +291,9 @@ impl DsaParameters {
         let py_q = utils::bn_to_py_int(py, self.dsa.q())?;
         let py_g = utils::bn_to_py_int(py, self.dsa.g())?;
 
-        let dsa_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.dsa"
-        ))?;
-
-        Ok(dsa_mod.call_method1(pyo3::intern!(py, "DSAParameterNumbers"), (py_p, py_q, py_g))?)
+        Ok(types::DSA_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_q, py_g))?)
     }
 }
 

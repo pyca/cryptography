@@ -16,13 +16,13 @@ cryptography-x509 = { path = "cryptography-x509" }
 cryptography-x509-validation = { path = "cryptography-x509-validation" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
-openssl = "0.10.56"
-openssl-sys = "0.9.91"
+openssl = "0.10.57"
+openssl-sys = "0.9.93"
 foreign-types-shared = "0.1"
 self_cell = "1"
 
 [build-dependencies]
-cc = "1.0.82"
+cc = "1.0.83"
 
 [features]
 extension-module = ["pyo3/extension-module"]

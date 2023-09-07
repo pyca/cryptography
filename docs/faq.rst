@@ -97,17 +97,6 @@ as secure as possible while retaining the advantages of OpenSSL, so we've
 chosen to rewrite non-cryptographic operations (such as ASN.1 parsing) in a
 high performance memory safe language: Rust.
 
-Installing ``cryptography`` produces a ``fatal error: 'openssl/opensslv.h' file not found`` error
--------------------------------------------------------------------------------------------------
-
-``cryptography`` provides wheels which include a statically linked copy of
-OpenSSL. If you see this error it is likely because your copy of ``pip`` is too
-old to find our wheel files. Upgrade your ``pip`` with ``pip install -U pip``
-and then try to install ``cryptography`` again.
-
-Users on unusual CPU architectures will need to compile ``cryptography``
-themselves. Please view our :doc:`/installation` documentation.
-
 ``cryptography`` raised an ``InternalError`` and I'm not sure what to do?
 -------------------------------------------------------------------------
 

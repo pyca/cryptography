@@ -41,6 +41,8 @@ typedef struct {
     } d;
     ...;
 } GENERAL_NAME;
+
+static const long X509V3_EXT_ERROR_UNKNOWN;
 """
 
 

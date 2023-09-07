@@ -4,7 +4,7 @@
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{exceptions, types};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -19,61 +19,126 @@ fn check_length(data: &[u8]) -> CryptographyResult<()> {
     Ok(())
 }
 
-fn encrypt_value<'p>(
-    py: pyo3::Python<'p>,
-    mut ctx: openssl::cipher_ctx::CipherCtx,
-    plaintext: &[u8],
+enum Aad<'a> {
+    List(&'a pyo3::types::PyList),
+}
+
+struct EvpCipherAead {
+    base_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
     tag_first: bool,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    Ok(pyo3::types::PyBytes::new_with(
-        py,
-        plaintext.len() + tag_len,
-        |b| {
-            let ciphertext;
-            let tag;
-            // TODO: remove once we have a second AEAD implemented here.
-            assert!(tag_first);
-            (tag, ciphertext) = b.split_at_mut(tag_len);
+}
 
+impl EvpCipherAead {
+    fn new(
+        base_ctx: openssl::cipher_ctx::CipherCtx,
+        tag_len: usize,
+        tag_first: bool,
+    ) -> EvpCipherAead {
+        EvpCipherAead {
+            base_ctx,
+            tag_len,
+            tag_first,
+        }
+    }
+
+    fn process_aad(
+        &self,
+        ctx: &mut openssl::cipher_ctx::CipherCtx,
+        aad: Option<Aad<'_>>,
+    ) -> CryptographyResult<()> {
+        if let Some(Aad::List(ads)) = aad {
+            for ad in ads.iter() {
+                let ad = ad.extract::<CffiBuf<'_>>()?;
+                check_length(ad.as_bytes())?;
+                ctx.cipher_update(ad.as_bytes(), None)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        check_length(plaintext)?;
+
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_ctx)?;
+        ctx.encrypt_init(None, None, None)?;
+
+        self.process_aad(&mut ctx, aad)?;
+
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            plaintext.len() + self.tag_len,
+            |b| {
+                let ciphertext;
+                let tag;
+                // TODO: remove once we have a second AEAD implemented here.
+                assert!(self.tag_first);
+                (tag, ciphertext) = b.split_at_mut(self.tag_len);
+
+                let n = ctx
+                    .cipher_update(plaintext, Some(ciphertext))
+                    .map_err(CryptographyError::from)?;
+                assert_eq!(n, ciphertext.len());
+
+                let mut final_block = [0];
+                let n = ctx
+                    .cipher_final(&mut final_block)
+                    .map_err(CryptographyError::from)?;
+                assert_eq!(n, 0);
+
+                ctx.tag(tag).map_err(CryptographyError::from)?;
+
+                Ok(())
+            },
+        )?)
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        if ciphertext.len() < self.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_ctx)?;
+        ctx.decrypt_init(None, None, None)?;
+
+        assert!(self.tag_first);
+        // RFC 5297 defines the output as IV || C, where the tag we generate
+        // is the "IV" and C is the ciphertext. This is the opposite of our
+        // other AEADs, which are Ciphertext || Tag.
+        let (tag, ciphertext) = ciphertext.split_at(self.tag_len);
+        ctx.set_tag(tag)?;
+
+        self.process_aad(&mut ctx, aad)?;
+
+        Ok(pyo3::types::PyBytes::new_with(py, ciphertext.len(), |b| {
+            // AES SIV can error here if the data is invalid on decrypt
             let n = ctx
-                .cipher_update(plaintext, Some(ciphertext))
-                .map_err(CryptographyError::from)?;
-            assert_eq!(n, ciphertext.len());
+                .cipher_update(ciphertext, Some(b))
+                .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+            assert_eq!(n, b.len());
 
             let mut final_block = [0];
             let n = ctx
                 .cipher_final(&mut final_block)
-                .map_err(CryptographyError::from)?;
+                .map_err(|_| exceptions::InvalidTag::new_err(()))?;
             assert_eq!(n, 0);
 
-            ctx.tag(tag).map_err(CryptographyError::from)?;
-
             Ok(())
-        },
-    )?)
-}
-
-fn decrypt_value<'p>(
-    py: pyo3::Python<'p>,
-    mut ctx: openssl::cipher_ctx::CipherCtx,
-    ciphertext: &[u8],
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    Ok(pyo3::types::PyBytes::new_with(py, ciphertext.len(), |b| {
-        // AES SIV can error here if the data is invalid on decrypt
-        let n = ctx
-            .cipher_update(ciphertext, Some(b))
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-        assert_eq!(n, b.len());
-
-        let mut final_block = [0];
-        let n = ctx
-            .cipher_final(&mut final_block)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-        assert_eq!(n, 0);
-
-        Ok(())
-    })?)
+        })?)
+    }
 }
 
 #[pyo3::prelude::pyclass(
@@ -82,8 +147,7 @@ fn decrypt_value<'p>(
     name = "AESSIV"
 )]
 struct AesSiv {
-    key: pyo3::Py<pyo3::PyAny>,
-    cipher: openssl::cipher::Cipher,
+    ctx: EvpCipherAead,
 }
 
 #[pyo3::prelude::pymethods]
@@ -125,7 +189,11 @@ impl AesSiv {
             }
 
             let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
-            Ok(AesSiv { key, cipher })
+            let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+            ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+            Ok(AesSiv {
+                ctx: EvpCipherAead::new(ctx, 16, true),
+            })
         }
     }
 
@@ -137,9 +205,7 @@ impl AesSiv {
             ));
         }
 
-        Ok(py
-            .import(pyo3::intern!(py, "os"))?
-            .call_method1(pyo3::intern!(py, "urandom"), (bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(
@@ -148,28 +214,15 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<&pyo3::types::PyList>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let key_buf = self.key.extract::<CffiBuf<'_>>(py)?;
         let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::List);
 
         if data_bytes.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
             ));
         };
-        check_length(data_bytes)?;
-
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.encrypt_init(Some(&self.cipher), Some(key_buf.as_bytes()), None)?;
-
-        if let Some(ads) = associated_data {
-            for ad in ads.iter() {
-                let ad = ad.extract::<CffiBuf<'_>>()?;
-                check_length(ad.as_bytes())?;
-                ctx.cipher_update(ad.as_bytes(), None)?;
-            }
-        }
-
-        encrypt_value(py, ctx, data_bytes, 16, true)
+        self.ctx.encrypt(py, data_bytes, aad)
     }
 
     fn decrypt<'p>(
@@ -178,37 +231,8 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<&pyo3::types::PyList>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let key_buf = self.key.extract::<CffiBuf<'_>>(py)?;
-        let data_bytes = data.as_bytes();
-
-        if data_bytes.is_empty() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
-            ));
-        }
-
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.decrypt_init(Some(&self.cipher), Some(key_buf.as_bytes()), None)?;
-
-        if data_bytes.len() < 16 {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
-        // RFC 5297 defines the output as IV || C, where the tag we generate
-        // is the "IV" and C is the ciphertext. This is the opposite of our
-        // other AEADs, which are Ciphertext || Tag.
-        let (tag, ciphertext) = data_bytes.split_at(16);
-        ctx.set_tag(tag)?;
-
-        if let Some(ads) = associated_data {
-            for ad in ads.iter() {
-                let ad = ad.extract::<CffiBuf<'_>>()?;
-                check_length(ad.as_bytes())?;
-
-                ctx.cipher_update(ad.as_bytes(), None)?;
-            }
-        }
-
-        decrypt_value(py, ctx, ciphertext)
+        let aad = associated_data.map(Aad::List);
+        self.ctx.decrypt(py, data.as_bytes(), aad)
     }
 }
 

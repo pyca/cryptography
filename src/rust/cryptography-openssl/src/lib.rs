@@ -4,6 +4,8 @@
 
 pub mod fips;
 pub mod hmac;
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
+pub mod poly1305;
 
 pub type OpenSSLResult<T> = Result<T, openssl::error::ErrorStack>;
 

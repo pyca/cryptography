@@ -15,6 +15,7 @@ from cryptography.hazmat.bindings._rust.openssl import (
     hmac,
     kdf,
     poly1305,
+    rsa,
     x448,
     x25519,
 )
@@ -31,6 +32,7 @@ __all__ = [
     "kdf",
     "ed448",
     "ed25519",
+    "rsa",
     "poly1305",
     "x448",
     "x25519",

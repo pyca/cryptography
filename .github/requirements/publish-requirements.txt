@@ -210,9 +210,9 @@ hyperframe==6.0.1 \
     --hash=sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15 \
     --hash=sha256:ae510046231dc8e9ecb1a6586f63d2347bf4c8905914aa84ba585ae85f28a914
     # via h2
-id==1.0.0 \
-    --hash=sha256:8822ba0454bb8660c4fff439eadbf06236cc354dcabd7ae00d907143d92215f5 \
-    --hash=sha256:d4b3e75ce0d5f38c9e467826436babe8b9bc5f78e22bae716a22a6a0add570ea
+id==1.1.0 \
+    --hash=sha256:726b995ffea6954ecbe3f2bb9e9d52b8502b2683b8470b13c58a429cd8e701e8 \
+    --hash=sha256:a15f919fa1e847f57572748d37cf40192913a861a2669059b4cb5079bbbbbdbd
     # via sigstore
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
@@ -392,9 +392,9 @@ python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
     # via betterproto
-readme-renderer==40.0 \
-    --hash=sha256:9f77b519d96d03d7d7dce44977ba543090a14397c4f60de5b6eb5b8048110aa4 \
-    --hash=sha256:e18feb2a1e7706f2865b81ebb460056d93fb29d69daa10b223c00faa7bd9a00a
+readme-renderer==41.0 \
+    --hash=sha256:4f4b11e5893f5a5d725f592c5a343e0dc74f5f273cb3dcf8c42d9703a27073f7 \
+    --hash=sha256:a38243d5b6741b700a850026e62da4bd739edc7422071e95fd5c4bb60171df86
     # via twine
 requests==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
@@ -422,9 +422,9 @@ secretstorage==3.3.3 \
     --hash=sha256:2403533ef369eca6d2ba81718576c5e0f564d5cca1b58f73a8b23e7d4eeebd77 \
     --hash=sha256:f356e6628222568e3af06f2eba8df495efa13b3b63081dafd4f7d9a7b7bc9f99
     # via keyring
-securesystemslib==0.28.0 \
-    --hash=sha256:9e6b9abe36a511d4f52c759069db8f6f650362ba82d6efc7bc7466a458b3f499 \
-    --hash=sha256:a27e519247576f2a77b97fb03267d8eeb88eba715d12da64109e845616f919c6
+securesystemslib==0.29.0 \
+    --hash=sha256:658ea4d41bbe6bc574758f91ba809812e08a22fddebb6ee4ea837f72591f136a \
+    --hash=sha256:dcfcb70562ad76069f71da9916a3cb7bc85fbf6cd51216c741a00096cf58dc6c
     # via
     #   sigstore
     #   tuf

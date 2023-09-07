@@ -5,7 +5,7 @@
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sign};
-use crate::{exceptions, x509};
+use crate::{exceptions, types, x509};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
@@ -61,13 +61,7 @@ impl CertificateSigningRequest {
             py,
             &asn1::write_single(&self.raw.borrow_dependent().csr_info.spki)?,
         );
-        Ok(py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "load_der_public_key"))?
-            .call1((serialized,))?)
+        Ok(types::LOAD_DER_PUBLIC_KEY.get(py)?.call1((serialized,))?)
     }
 
     #[getter]
@@ -97,24 +91,23 @@ impl CertificateSigningRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<&'p pyo3::PyAny, CryptographyError> {
-        let sig_oids_to_hash = py
-            .import(pyo3::intern!(py, "cryptography.hazmat._oid"))?
-            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?;
-        let hash_alg = sig_oids_to_hash.get_item(self.signature_algorithm_oid(py)?);
-        match hash_alg {
-            Ok(data) => Ok(data),
-            Err(_) => Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err(format!(
-                    "Signature algorithm OID: {} not recognized",
-                    self.raw.borrow_dependent().signature_alg.oid()
-                )),
-            )),
-        }
+        sign::identify_signature_hash_algorithm(py, &self.raw.borrow_dependent().signature_alg)
     }
 
     #[getter]
     fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
+    }
+
+    #[getter]
+    fn signature_algorithm_parameters<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
+        sign::identify_signature_algorithm_parameters(
+            py,
+            &self.raw.borrow_dependent().signature_alg,
+        )
     }
 
     fn public_bytes<'p>(
@@ -132,15 +125,10 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: &pyo3::PyAny,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let cryptography_warning = py
-            .import(pyo3::intern!(py, "cryptography.utils"))?
-            .getattr(pyo3::intern!(py, "DeprecatedIn36"))?;
-        pyo3::PyErr::warn(
-            py,
-            cryptography_warning,
-            "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.",
-            1,
-        )?;
+        let warning_cls = types::DEPRECATED_IN_36.get(py)?;
+        let warning_msg = "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.";
+        pyo3::PyErr::warn(py, warning_cls, warning_msg, 1)?;
+
         let rust_oid = py_oid_to_oid(oid)?;
         for attribute in self
             .raw
@@ -201,13 +189,10 @@ impl CertificateSigningRequest {
                     "Long-form tags are not supported in CSR attribute values",
                 ))
             })?;
-            let pyattr = py
-                .import(pyo3::intern!(py, "cryptography.x509"))?
-                .call_method1(pyo3::intern!(py, "Attribute"), (oid, serialized, tag))?;
+            let pyattr = types::ATTRIBUTE.get(py)?.call1((oid, serialized, tag))?;
             pyattrs.append(pyattr)?;
         }
-        py.import(pyo3::intern!(py, "cryptography.x509"))?
-            .call_method1(pyo3::intern!(py, "Attributes"), (pyattrs,))
+        types::ATTRIBUTES.get(py)?.call1((pyattrs,))
     }
 
     #[getter]
@@ -292,30 +277,16 @@ fn create_x509_csr(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
+    rsa_padding: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateSigningRequest> {
-    let sigalg = x509::sign::compute_signature_algorithm(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-    )?;
-    let serialization_mod = py.import(pyo3::intern!(
-        py,
-        "cryptography.hazmat.primitives.serialization"
-    ))?;
-    let der_encoding = serialization_mod
-        .getattr(pyo3::intern!(py, "Encoding"))?
-        .getattr(pyo3::intern!(py, "DER"))?;
-    let spki_format = serialization_mod
-        .getattr(pyo3::intern!(py, "PublicFormat"))?
-        .getattr(pyo3::intern!(py, "SubjectPublicKeyInfo"))?;
+    let sigalg =
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
 
+    let der = types::ENCODING_DER.get(py)?;
+    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = private_key
         .call_method0(pyo3::intern!(py, "public_key"))?
-        .call_method1(
-            pyo3::intern!(py, "public_bytes"),
-            (der_encoding, spki_format),
-        )?
+        .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
         .extract::<&[u8]>()?;
 
     let mut attrs = vec![];
@@ -368,13 +339,8 @@ fn create_x509_csr(
     };
 
     let tbs_bytes = asn1::write_single(&csr_info)?;
-    let signature = x509::sign::sign_data(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-        &tbs_bytes,
-    )?;
+    let signature =
+        x509::sign::sign_data(py, private_key, hash_algorithm, rsa_padding, &tbs_bytes)?;
     let data = asn1::write_single(&Csr {
         csr_info,
         signature_alg: sigalg,
