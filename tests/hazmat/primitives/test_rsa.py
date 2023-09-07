@@ -83,15 +83,6 @@ def _check_fips_key_length(backend, private_key):
         pytest.skip(f"Key size not FIPS compliant: {private_key.key_size}")
 
 
-def _check_rsa_private_numbers_if_serializable(key):
-    if isinstance(key, rsa.RSAPrivateKey):
-        _check_rsa_private_numbers(key.private_numbers())
-
-
-def test_check_rsa_private_numbers_if_serializable():
-    _check_rsa_private_numbers_if_serializable("notserializable")
-
-
 def _flatten_pkcs1_examples(vectors):
     flattened_vectors = []
     for vector in vectors:
@@ -192,7 +183,7 @@ class TestRSA:
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        _check_rsa_private_numbers_if_serializable(skey)
+        _check_rsa_private_numbers(skey.private_numbers())
         pkey = skey.public_key()
         assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
