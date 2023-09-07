@@ -472,6 +472,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
     }
 
+    /// Checks whether the given "leaf" certificate is compatible with this policy.
+    ///
+    /// A "leaf" certificate is just the certificate in the leaf position during
+    /// path validation, whether it be a CA or EE. As such, `permits_leaf`
+    /// is logically equivalent to `permits_ee(leaf) || permits_ca(leaf)`.
+    pub(crate) fn permits_leaf(&self, leaf: &Certificate) -> Result<(), PolicyError> {
+        // NOTE: Perform `permits_ee` first, since 99% of path validations should have
+        // an EE certificate in the leaf position.
+        self.permits_ee(leaf).or_else(|_| self.permits_ca(leaf))
+    }
+
     /// Checks whether the given CA certificate is compatible with this policy.
     pub(crate) fn permits_ca(&self, cert: &Certificate) -> Result<(), PolicyError> {
         self.permits_basic(cert)?;
@@ -571,7 +582,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         let extensions = cert.extensions()?;
 
-        // 4.1.2.6 / 4.2.1.6: Subject / Subject Alternative Name
+        // 5280 4.2.1.3: Key Usage
+        // It isn't stated explicitly, but an EE is defined to be not a CA,
+        // so it MUST NOT assert keyCertSign.
+        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
+            let key_usage: KeyUsage = key_usage.value()?;
+
+            if key_usage.key_cert_sign() {
+                return Err(PolicyError::Other(
+                    "EE is marked as a CA certificate (keyUsage.keyCertSign)",
+                ));
+            }
+        }
+
+        // 5280 4.1.2.6 / 4.2.1.6: Subject / Subject Alternative Name
         // EE certificates MAY have their subject in either the subject or subjectAltName.
         // If the subject is empty, then the subjectAltName MUST be marked critical.
         if cert.subject().is_empty() {
@@ -594,6 +618,19 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         // 5280 4.2.1.5: Policy Mappings
         // The RFC is not clear on whether these may appear in EE certificates.
+
+        // 5280 4.2.1.9: Basic Constraints
+        // We refute `KeyUsage.keyCertSign` above, so `BasicConstraints.cA` MUST NOT
+        // be asserted.
+        if let Some(basic_constraints) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
+            let basic_constraints: BasicConstraints = basic_constraints.value()?;
+
+            if basic_constraints.ca {
+                return Err(PolicyError::Other(
+                    "EE is marked as a CA certificate (basicConstraints.cA)",
+                ));
+            }
+        }
 
         // 5280 4.2.1.10: Name Constraints
         // NameConstraints MUST NOT appear in EE certificates.
