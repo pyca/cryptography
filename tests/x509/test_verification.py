@@ -29,7 +29,8 @@ class TestPolicyBuilder:
         assert policy.subject == DNSName("cryptography.io")
 
     def test_subject_bad_types(self):
-        # Subject must be none or a GeneralName type; nothing else is supported.
+        # Subject must be none or a GeneralName type; nothing else is
+        # supported.
         with pytest.raises(TypeError):
             PolicyBuilder(subject="cryptography.io").build()
         with pytest.raises(TypeError):
