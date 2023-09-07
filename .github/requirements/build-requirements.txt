@@ -81,11 +81,7 @@ semantic-version==2.10.0 \
 setuptools-rust==1.7.0 \
     --hash=sha256:071099885949132a2180d16abf907b60837e74b4085047ba7e9c0f5b365310c1 \
     --hash=sha256:c7100999948235a38ae7e555fe199aa66c253dc384b125f5d85473bf81eae3a3
-     # via -r build-requirements.in
-tomli==2.0.1 \
-    --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
-    --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
-    # via setuptools-rust
+    # via -r build-requirements.in
 typing-extensions==4.7.1 \
     --hash=sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36 \
     --hash=sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2
@@ -96,9 +92,9 @@ wheel==0.41.2 \
     # via -r build-requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==68.1.2 \
-    --hash=sha256:3d4dfa6d95f1b101d695a6160a7626e15583af71a5f52176efa5d39a054d475d \
-    --hash=sha256:3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b
+setuptools==68.2.0 \
+    --hash=sha256:00478ca80aeebeecb2f288d3206b0de568df5cd2b8fada1209843cc9a8d88a48 \
+    --hash=sha256:af3d5949030c3f493f550876b2fd1dd5ec66689c4ee5d5344f009746f71fd5a8
     # via
     #   -r build-requirements.in
     #   setuptools-rust
