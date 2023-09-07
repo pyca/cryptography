@@ -12,7 +12,7 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 
-static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<AlgorithmIdentifier<'_>>> = Lazy::new(|| {
+pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<AlgorithmIdentifier<'_>>> = Lazy::new(|| {
     HashSet::from([
         // RSASSA‐PKCS1‐v1_5 with SHA‐256
         AlgorithmIdentifier {
