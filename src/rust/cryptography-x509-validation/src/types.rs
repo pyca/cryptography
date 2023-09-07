@@ -20,7 +20,7 @@ use std::str::FromStr;
 /// # use cryptography_x509_validation::types::DNSName;
 /// assert_eq!(DNSName::new("foo.com").unwrap(), DNSName::new("FOO.com").unwrap());
 /// ```
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DNSName<'a>(asn1::IA5String<'a>);
 
 impl<'a> DNSName<'a> {
