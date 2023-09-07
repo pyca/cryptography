@@ -12,6 +12,8 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 
+/// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
+/// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
 pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<AlgorithmIdentifier<'_>>> = Lazy::new(|| {
     HashSet::from([
         // RSASSA‐PKCS1‐v1_5 with SHA‐256
@@ -91,6 +93,8 @@ mod tests {
 
     #[test]
     fn test_webpki_permitted_algorithms_canonical_encodings() {
+        // Expected encodings, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
+        // https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
         let mut expected_encodings: Vec<_> = vec![
             // RSASSA‐PKCS1‐v1_5 with SHA‐256
             decode_hex("300d06092a864886f70d01010b0500"),
