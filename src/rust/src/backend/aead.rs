@@ -58,6 +58,26 @@ impl EvpCipherAead {
         Ok(())
     }
 
+    fn process_data(
+        &self,
+        ctx: &mut openssl::cipher_ctx::CipherCtx,
+        data: &[u8],
+        out: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let n = ctx
+            .cipher_update(data, Some(out))
+            .map_err(CryptographyError::from)?;
+        assert_eq!(n, data.len());
+
+        let mut final_block = [0];
+        let n = ctx
+            .cipher_final(&mut final_block)
+            .map_err(CryptographyError::from)?;
+        assert_eq!(n, 0);
+
+        Ok(())
+    }
+
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -82,16 +102,7 @@ impl EvpCipherAead {
                 assert!(self.tag_first);
                 (tag, ciphertext) = b.split_at_mut(self.tag_len);
 
-                let n = ctx
-                    .cipher_update(plaintext, Some(ciphertext))
-                    .map_err(CryptographyError::from)?;
-                assert_eq!(n, ciphertext.len());
-
-                let mut final_block = [0];
-                let n = ctx
-                    .cipher_final(&mut final_block)
-                    .map_err(CryptographyError::from)?;
-                assert_eq!(n, 0);
+                self.process_data(&mut ctx, plaintext, ciphertext)?;
 
                 ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -125,16 +136,8 @@ impl EvpCipherAead {
 
         Ok(pyo3::types::PyBytes::new_with(py, ciphertext.len(), |b| {
             // AES SIV can error here if the data is invalid on decrypt
-            let n = ctx
-                .cipher_update(ciphertext, Some(b))
+            self.process_data(&mut ctx, ciphertext, b)
                 .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-            assert_eq!(n, b.len());
-
-            let mut final_block = [0];
-            let n = ctx
-                .cipher_final(&mut final_block)
-                .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-            assert_eq!(n, 0);
 
             Ok(())
         })?)
