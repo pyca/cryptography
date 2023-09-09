@@ -13,11 +13,10 @@ if typing.TYPE_CHECKING:
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
-        AESOCB3,
         ChaCha20Poly1305,
     )
 
-    _AEADTypes = typing.Union[AESCCM, AESGCM, AESOCB3, ChaCha20Poly1305]
+    _AEADTypes = typing.Union[AESCCM, AESGCM, ChaCha20Poly1305]
 
 
 def _is_evp_aead_supported_cipher(
@@ -220,7 +219,6 @@ def _evp_cipher_cipher_name(cipher: _AEADTypes) -> bytes:
     from cryptography.hazmat.primitives.ciphers.aead import (
         AESCCM,
         AESGCM,
-        AESOCB3,
         ChaCha20Poly1305,
     )
 
@@ -228,8 +226,6 @@ def _evp_cipher_cipher_name(cipher: _AEADTypes) -> bytes:
         return b"chacha20-poly1305"
     elif isinstance(cipher, AESCCM):
         return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
-    elif isinstance(cipher, AESOCB3):
-        return f"aes-{len(cipher._key) * 8}-ocb".encode("ascii")
     else:
         assert isinstance(cipher, AESGCM)
         return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
