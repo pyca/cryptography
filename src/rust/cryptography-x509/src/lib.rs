@@ -3,6 +3,7 @@
 // for complete details.
 
 #![forbid(unsafe_code)]
+#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
 pub mod certificate;
 pub mod common;

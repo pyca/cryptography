@@ -14,11 +14,14 @@ foreign_types::foreign_type! {
     pub struct HmacRef;
 }
 
+// SAFETY: It's safe to have `&` references from multiple threads.
 unsafe impl Sync for Hmac {}
+// SAFETY: It's safe to move the `Hmac` from one thread to another.
 unsafe impl Send for Hmac {}
 
 impl Hmac {
     pub fn new(key: &[u8], md: openssl::hash::MessageDigest) -> OpenSSLResult<Hmac> {
+        // SAFETY: All FFI conditions are handled.
         unsafe {
             let h = Hmac::from_ptr(cvt_p(ffi::HMAC_CTX_new())?);
             cvt(ffi::HMAC_Init_ex(
@@ -37,6 +40,7 @@ impl Hmac {
 
 impl HmacRef {
     pub fn update(&mut self, data: &[u8]) -> OpenSSLResult<()> {
+        // SAFETY: All FFI conditions are handled.
         unsafe {
             cvt(ffi::HMAC_Update(self.as_ptr(), data.as_ptr(), data.len()))?;
         }
@@ -46,6 +50,7 @@ impl HmacRef {
     pub fn finish(&mut self) -> OpenSSLResult<DigestBytes> {
         let mut buf = [0; ffi::EVP_MAX_MD_SIZE as usize];
         let mut len = ffi::EVP_MAX_MD_SIZE as std::os::raw::c_uint;
+        // SAFETY: All FFI conditions are handled.
         unsafe {
             cvt(ffi::HMAC_Final(self.as_ptr(), buf.as_mut_ptr(), &mut len))?;
         }
@@ -56,6 +61,7 @@ impl HmacRef {
     }
 
     pub fn copy(&self) -> OpenSSLResult<Hmac> {
+        // SAFETY: All FFI conditions are handled.
         unsafe {
             let h = Hmac::from_ptr(cvt_p(ffi::HMAC_CTX_new())?);
             cvt(ffi::HMAC_CTX_copy(h.as_ptr(), self.as_ptr()))?;

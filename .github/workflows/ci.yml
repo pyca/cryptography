@@ -52,7 +52,7 @@ jobs:
           # potential future MSRV:
           # 1.64 - maturin
           # 1.65 - Generic associated types (GATs)
-          - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.63.0"}
+          - {VERSION: "3.11", NOXSESSION: "rust-noclippy,tests", RUST: "1.63.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.64.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "nightly"}
