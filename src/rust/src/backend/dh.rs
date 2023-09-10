@@ -49,6 +49,7 @@ fn generate_parameters(generator: u32, key_size: u32) -> CryptographyResult<DHPa
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(ptr: usize) -> DHPrivateKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     DHPrivateKey {
         pkey: pkey.to_owned(),
@@ -57,6 +58,7 @@ fn private_key_from_ptr(ptr: usize) -> DHPrivateKey {
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(ptr: usize) -> DHPublicKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     DHPublicKey {
         pkey: pkey.to_owned(),

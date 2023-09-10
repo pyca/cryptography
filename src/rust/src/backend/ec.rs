@@ -124,6 +124,7 @@ fn curve_supported(py: pyo3::Python<'_>, py_curve: &pyo3::PyAny) -> bool {
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPrivateKey> {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     let curve = py_curve_from_curve(py, pkey.ec_key().unwrap().group())?;
     check_key_infinity(&pkey.ec_key().unwrap())?;
@@ -135,6 +136,7 @@ fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPublicKey> {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     let ec = pkey.ec_key().map_err(|e| {
         pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {}", e))

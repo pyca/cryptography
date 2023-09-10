@@ -101,7 +101,7 @@ impl<'a> DNSPattern<'a> {
         }
     }
 
-    pub fn matches(&self, name: &DNSName) -> bool {
+    pub fn matches(&self, name: &DNSName<'_>) -> bool {
         match self {
             Self::Exact(pat) => pat == name,
             Self::Wildcard(pat) => match name.parent() {

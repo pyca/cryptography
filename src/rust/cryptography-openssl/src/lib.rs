@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
+
 pub mod fips;
 pub mod hmac;
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]

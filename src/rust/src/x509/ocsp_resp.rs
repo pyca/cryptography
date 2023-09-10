@@ -412,6 +412,10 @@ fn map_arc_data_ocsp_response(
 ) -> certificate::OwnedCertificate {
     certificate::OwnedCertificate::new(it.borrow_owner().clone_ref(py), |inner_it| {
         it.with_dependent(|_, value| {
+            // SAFETY: This is safe because `Arc::clone` ensures the data is
+            // alive, but Rust doesn't understand the lifetime relationship it
+            // produces. Open-coded implementation of the API discussed in
+            // https://github.com/joshua-maros/ouroboros/issues/38
             f(inner_it.as_bytes(py), unsafe { std::mem::transmute(value) })
         })
     })
@@ -424,6 +428,10 @@ fn try_map_arc_data_mut_ocsp_response_iterator<E>(
     ) -> Result<ocsp_resp::SingleResponse<'this>, E>,
 ) -> Result<OwnedSingleResponse, E> {
     OwnedSingleResponse::try_new(Arc::clone(it.borrow_owner()), |inner_it| {
+        // SAFETY: This is safe because `Arc::clone` ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces. Open-coded implementation of the API discussed in
+        // https://github.com/joshua-maros/ouroboros/issues/38
         it.with_dependent_mut(|_, value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }

@@ -26,6 +26,7 @@ fn generate_key() -> CryptographyResult<X448PrivateKey> {
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(ptr: usize) -> X448PrivateKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     X448PrivateKey {
         pkey: pkey.to_owned(),
@@ -34,6 +35,7 @@ fn private_key_from_ptr(ptr: usize) -> X448PrivateKey {
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(ptr: usize) -> X448PublicKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     X448PublicKey {
         pkey: pkey.to_owned(),

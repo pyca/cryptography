@@ -42,6 +42,7 @@ fn private_key_from_ptr(
     ptr: usize,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<RsaPrivateKey> {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     if !unsafe_skip_rsa_key_validation {
         check_rsa_private_key(&pkey.rsa().unwrap())?;
@@ -53,6 +54,7 @@ fn private_key_from_ptr(
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(ptr: usize) -> RsaPublicKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     RsaPublicKey {
         pkey: pkey.to_owned(),

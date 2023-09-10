@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
+
 #[cfg(not(python_implementation = "PyPy"))]
 use pyo3::FromPyPointer;
 
@@ -22,6 +24,7 @@ pub fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::types::PyMod
         pyo3::types::PyModule::import(py, "_openssl")?
     };
     #[cfg(not(python_implementation = "PyPy"))]
+    // SAFETY: `PyInit__openssl` returns an owned reference.
     let openssl_mod = unsafe {
         let ptr = PyInit__openssl();
         pyo3::types::PyModule::from_owned_ptr(py, ptr)
