@@ -44,10 +44,10 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.1"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of Sep 09, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "3aecf1d00bf62fa40bee0c93525df52204f48d4a"}}
-          # Latest commit on the OpenSSL master branch, as of Sep 09, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "aff99225f946d8f538b5e0cb95fc65d5cd36b99b"}}
+          # Latest commit on the BoringSSL master branch, as of Sep 10, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "1e3da32f3754b1b9136247ee26308cfd959cbeba"}}
+          # Latest commit on the OpenSSL master branch, as of Sep 10, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "d2873946dfaff5537ea3d1adf3890e33a3f276ff"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin
