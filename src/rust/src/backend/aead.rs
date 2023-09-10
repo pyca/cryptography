@@ -63,12 +63,13 @@ impl EvpCipherAead {
         py: pyo3::Python<'p>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         check_length(plaintext)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_ctx)?;
-        ctx.encrypt_init(None, None, None)?;
+        ctx.encrypt_init(None, None, nonce)?;
 
         self.process_aad(&mut ctx, aad)?;
 
@@ -105,6 +106,7 @@ impl EvpCipherAead {
         py: pyo3::Python<'p>,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if ciphertext.len() < self.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
@@ -112,7 +114,7 @@ impl EvpCipherAead {
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_ctx)?;
-        ctx.decrypt_init(None, None, None)?;
+        ctx.decrypt_init(None, None, nonce)?;
 
         assert!(self.tag_first);
         // RFC 5297 defines the output as IV || C, where the tag we generate
@@ -222,7 +224,7 @@ impl AesSiv {
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
             ));
         };
-        self.ctx.encrypt(py, data_bytes, aad)
+        self.ctx.encrypt(py, data_bytes, aad, None)
     }
 
     fn decrypt<'p>(
@@ -232,7 +234,7 @@ impl AesSiv {
         associated_data: Option<&pyo3::types::PyList>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let aad = associated_data.map(Aad::List);
-        self.ctx.decrypt(py, data.as_bytes(), aad)
+        self.ctx.decrypt(py, data.as_bytes(), aad, None)
     }
 }
 
