@@ -1717,14 +1717,18 @@ class TestOAEP:
     def test_algorithm_property(self):
         algorithm = hashes.SHA1()
         mgf = padding.MGF1(algorithm)
-        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)  # type:ignore[arg-type]
+        oaep = padding.OAEP(
+            mgf=mgf, algorithm=algorithm, label=None
+        )  # type:ignore[arg-type]
         assert oaep.algorithm == algorithm
         assert oaep.algorithm == oaep._algorithm
 
     def test_mgf_property(self):
         algorithm = hashes.SHA1()
         mgf = padding.MGF1(algorithm)
-        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)  # type:ignore[arg-type]
+        oaep = padding.OAEP(
+            mgf=mgf, algorithm=algorithm, label=None
+        )  # type:ignore[arg-type]
         assert oaep.mgf == mgf
         assert oaep.mgf == oaep._mgf
 

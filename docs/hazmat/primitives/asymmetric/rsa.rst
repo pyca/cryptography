@@ -393,6 +393,11 @@ Padding
 Mask generation functions
 -------------------------
 
+.. class:: MGF
+
+    .. versionadded:: 37.0.0
+
+
 .. class:: MGF1(algorithm)
 
     .. versionadded:: 0.3
