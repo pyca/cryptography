@@ -317,6 +317,14 @@ Padding
         Pass this attribute to ``salt_length`` to automatically determine the
         salt length when verifying. Raises ``ValueError`` if used when signing.
 
+    .. attribute:: mgf
+
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF`
+
+        .. versionadded:: 42.0.0
+
+        The padding's mask generation function (MGF).
+
 .. class:: OAEP(mgf, algorithm, label)
 
     .. versionadded:: 0.4
@@ -334,6 +342,22 @@ Padding
 
     :param bytes label: A label to apply. This is a rarely used field and
         should typically be set to ``None`` or ``b""``, which are equivalent.
+
+    .. attribute:: algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        .. versionadded:: 42.0.0
+
+        The padding's hash algorithm.
+
+    .. attribute:: mgf
+
+        :type: :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF`
+
+        .. versionadded:: 42.0.0
+
+        The padding's mask generation function (MGF).
 
 .. class:: PKCS1v15()
 

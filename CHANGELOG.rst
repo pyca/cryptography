@@ -18,6 +18,10 @@ Changelog
 * Added support for obtaining X.509 certificate signing request signature
   algorithm parameters (including PSS) via
   :meth:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_parameters`.
+* Added `mgf` property to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
+* Added `algorithm` and `mgf` properties to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
 
 .. _v41-0-3:
 
