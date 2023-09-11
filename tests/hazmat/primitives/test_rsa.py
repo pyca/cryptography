@@ -1687,6 +1687,13 @@ class TestPSS:
         assert pss._mgf == mgf
         assert pss._salt_length == padding.PSS.MAX_LENGTH
 
+    def test_mgf_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        pss = padding.PSS(mgf=mgf, salt_length=padding.PSS.MAX_LENGTH)
+        assert pss.mgf == mgf
+        assert pss.mgf == pss._mgf
+
 
 class TestMGF1:
     def test_invalid_hash_algorithm(self):
@@ -1706,6 +1713,20 @@ class TestOAEP:
             padding.OAEP(
                 mgf=mgf, algorithm=b"", label=None  # type:ignore[arg-type]
             )
+
+    def test_algorithm_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)  # type:ignore[arg-type]
+        assert oaep.algorithm == algorithm
+        assert oaep.algorithm == oaep._algorithm
+
+    def test_mgf_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)  # type:ignore[arg-type]
+        assert oaep.mgf == mgf
+        assert oaep.mgf == oaep._mgf
 
 
 class TestRSADecryption:
