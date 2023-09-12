@@ -111,7 +111,6 @@ const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
 const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
 
-#[derive(Debug, PartialEq)]
 pub enum PolicyError {
     Malformed(asn1::ParseError),
     DuplicateExtension(DuplicateExtensionsError),
