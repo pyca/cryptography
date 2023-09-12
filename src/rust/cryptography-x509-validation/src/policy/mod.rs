@@ -427,6 +427,19 @@ mod tests {
     }
 
     #[test]
+    fn test_policy_validation_time() {
+        let old_time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
+        let policy = Policy::rfc5280(NullOps {}, None, old_time.clone());
+
+        assert_eq!(policy.validation_time, old_time);
+
+        let new_time = asn1::DateTime::new(2024, 9, 12, 1, 1, 1).unwrap();
+        let policy = policy.with_validation_time(new_time.clone());
+
+        assert_eq!(policy.validation_time, new_time);
+    }
+
+    #[test]
     fn test_policy_max_chain_depth() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
         let policy = Policy::rfc5280(NullOps {}, None, time);
