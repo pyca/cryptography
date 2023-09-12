@@ -5,7 +5,6 @@
 use std::collections::HashSet;
 
 use asn1::ObjectIdentifier;
-use cryptography_x509::certificate::Certificate;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
@@ -13,18 +12,12 @@ use cryptography_x509::common::{
     PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
     PSS_SHA512_MASK_GEN_ALG,
 };
-use cryptography_x509::extensions::{
-    AuthorityKeyIdentifier, BasicConstraints, DuplicateExtensionsError, ExtendedKeyUsage,
-    Extension, KeyUsage, SubjectAlternativeName,
-};
+use cryptography_x509::extensions::{DuplicateExtensionsError, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
+    BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
 
-use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
 
@@ -200,7 +193,7 @@ impl From<IPAddress> for Subject<'_> {
 /// 2. Additional user-specified constraints, such as restrictions on
 ///    signature and algorithm types.
 pub struct Policy<'a, B: CryptoOps> {
-    ops: B,
+    _ops: B,
 
     /// The X.509 profile to use in this policy.
     // pub profile: P,
@@ -246,7 +239,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// RFC 5280.
     pub fn rfc5280(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
-            ops,
+            _ops: ops,
             max_chain_depth: 8,
             subject,
             validation_time: time,
@@ -262,7 +255,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// the CA/B Forum's Basic Requirements.
     pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
-            ops,
+            _ops: ops,
             max_chain_depth: 8,
             subject,
             validation_time: time,
@@ -313,427 +306,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub fn with_max_chain_depth(mut self, depth: u8) -> Self {
         self.max_chain_depth = depth;
         self
-    }
-
-    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        let extensions = cert.extensions()?;
-
-        // 5280 4.1.1.1: tbsCertificate
-        // No checks required.
-
-        // 5280 4.1.1.2 / 4.1.2.3: signatureAlgorithm / TBS Certificate Signature
-        // The top-level signatureAlgorithm and TBSCert signature algorithm
-        // MUST match.
-        if cert.signature_alg != cert.tbs_cert.signature_alg {
-            return Err("mismatch between signatureAlgorithm and SPKI algorithm".into());
-        }
-
-        // 5280 4.1.1.3: signatureValue
-        // No checks required.
-
-        // 5280 4.1.2.1: Version
-        // No checks required; implementations SHOULD be prepared to accept
-        // any version certificate.
-
-        // 5280 4.1.2.2: Serial Number
-        // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
-        // NOTE: In practice, this requires us to check for an encoding of
-        // 21 octets, since some CAs generate 20 bytes of randomness and
-        // then forget to check whether that number would be negative, resulting
-        // in a 21-byte encoding.
-        if !(1..=21).contains(&cert.tbs_cert.serial.as_bytes().len()) {
-            return Err("certificate must have a serial between 1 and 20 octets".into());
-        }
-
-        // 5280 4.1.2.3: Signature
-        // See check under 4.1.1.2.
-
-        // 5280 4.1.2.4: Issuer
-        // The issuer MUST be a non-empty distinguished name.
-        if cert.issuer().is_empty() {
-            return Err("certificate must have a non-empty Issuer".into());
-        }
-
-        // 5280 4.1.2.5: Validity
-        // Validity dates before 2050 MUST be encoded as UTCTime;
-        // dates in or after 2050 MUST be encoded as GeneralizedTime.
-        // TODO: The existing `tbs_cert.validity` types don't expose this
-        // underlying detail. This check has no practical effect on the
-        // correctness of the certificate, so it's pretty low priority.
-        if &self.validation_time < cert.tbs_cert.validity.not_before.as_datetime()
-            || &self.validation_time > cert.tbs_cert.validity.not_after.as_datetime()
-        {
-            return Err(PolicyError::Other("cert is not valid at validation time"));
-        }
-
-        // 5280 4.1.2.6: Subject
-        // Devolved to `permits_ca` and `permits_ee`.
-
-        // 5280 4.1.2.7: Subject Public Key Info
-        // No checks required.
-
-        // 5280 4.1.2.8: Unique Identifiers
-        // These fields MUST only appear if the certificate version is 2 or 3.
-        // TODO: Check this.
-
-        // 5280 4.1.2.9: Extensions
-        // This field must MUST only appear if the certificate version is 3,
-        // and it MUST be non-empty if present.
-        // TODO: Check this.
-
-        // 5280 4.2.1.1: Authority Key Identifier
-        // Certificates MUST have an AuthorityKeyIdentifier, it MUST contain
-        // the keyIdentifier field, and it MUST NOT be critical.
-        // The exception to this is self-signed certificates, which MAY
-        // omit the AuthorityKeyIdentifier.
-        if let Some(aki) = extensions.get_extension(&AUTHORITY_KEY_IDENTIFIER_OID) {
-            if aki.critical {
-                return Err("AuthorityKeyIdentifier must not be marked critical".into());
-            }
-
-            let aki: AuthorityKeyIdentifier<'_> = aki.value()?;
-            if aki.key_identifier.is_none() {
-                return Err("AuthorityKeyIdentifier.keyIdentifier must be present".into());
-            }
-        } else if !cert_is_self_signed(cert, &self.ops) {
-            return Err(
-                "certificates must have a AuthorityKeyIdentifier unless self-signed".into(),
-            );
-        }
-
-        // 5280 4.2.1.2: Subject Key Identifier
-        // Devolved to `permits_ca`.
-
-        // 5280 4.2.1.3: Key Usage
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            // KeyUsage must have at least one bit asserted, if present.
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-            if key_usage.is_zeroed() {
-                return Err("KeyUsage must have at least one usage asserted, when present".into());
-            }
-
-            // encipherOnly or decipherOnly without keyAgreement is not well defined.
-            // TODO: Check on a policy basis instead?
-            if !key_usage.key_agreement()
-                && (key_usage.encipher_only() || key_usage.decipher_only())
-            {
-                return Err(
-                    "KeyUsage encipherOnly and decipherOnly can only be true when keyAgreement is true"
-                        .into(),
-                );
-            }
-        }
-
-        // 5280 4.2.1.4: Certificate Policies
-        // No checks required.
-
-        // 5280 4.2.1.5: Policy Mappings
-        // No checks required.
-
-        // 5280 4.2.1.8: Subject Directory Attributes
-        // Conforming CAs MUST mark this extension as non-critical.
-        if extensions
-            .get_extension(&SUBJECT_DIRECTORY_ATTRIBUTES_OID)
-            .map_or(false, |e| e.critical)
-        {
-            return Err("SubjectDirectoryAttributes must not be marked critical".into());
-        }
-
-        // Non-profile checks follow.
-
-        if let Some(permitted_algorithms) = &self.permitted_algorithms {
-            if !permitted_algorithms.contains(&cert.signature_alg) {
-                // TODO: Should probably include the OID here.
-                return Err("Forbidden signature algorithm".into());
-            }
-        }
-
-        Ok(())
-    }
-
-    fn permits_san(&self, san_ext: Option<Extension<'_>>) -> Result<(), PolicyError> {
-        // TODO: Check if the underlying profile requires a SAN here;
-        // if it does and `name` is `None`, then fail.
-
-        match (&self.subject, san_ext) {
-            // If we're given both an expected name and the cert has a SAN,
-            // then we attempt to match them.
-            (Some(sub), Some(san)) => {
-                let san: SubjectAlternativeName<'_> = san.value()?;
-                match sub.matches(san) {
-                    true => Ok(()),
-                    false => Err(PolicyError::Other("EE cert has no matching SAN")),
-                }
-            }
-            // If we aren't given a name but the cert contains a SAN,
-            // we complain loudly (under the theory that the user has misused
-            // our API and actually intended to match against the SAN).
-            (None, Some(_)) => Err(PolicyError::Other(
-                "EE cert has subjectAltName but no expected name given to match against",
-            )),
-            // If we're given an expected name but the cert doesn't contain a
-            // SAN, we error.
-            (Some(_), None) => Err(PolicyError::Other(
-                "EE cert has no subjectAltName but expected name given",
-            )),
-            // No expected name and no SAN, no problem.
-            (None, None) => Ok(()),
-        }
-    }
-
-    fn permits_eku(&self, eku_ext: Option<Extension<'_>>) -> Result<(), PolicyError> {
-        if let Some(ext) = eku_ext {
-            let mut ekus: ExtendedKeyUsage<'_> = ext.value()?;
-
-            if ekus.any(|eku| eku == self.extended_key_usage) {
-                Ok(())
-            } else {
-                Err(PolicyError::Other("required EKU not found"))
-            }
-        } else {
-            // If our cert doesn't specify an EKU, then we have nothing to check.
-            // This is consistent with the CA/B BRs: a root CA MUST NOT contain
-            // an EKU extension.
-            // See: CA/B Baseline Requirements v2.0.0: 7.1.2.1.2
-            Ok(())
-        }
-    }
-
-    /// Checks whether the given "leaf" certificate is compatible with this policy.
-    ///
-    /// A "leaf" certificate is just the certificate in the leaf position during
-    /// path validation, whether it be a CA or EE. As such, `permits_leaf`
-    /// is logically equivalent to `permits_ee(leaf) || permits_ca(leaf)`.
-    pub(crate) fn permits_leaf(&self, leaf: &Certificate<'_>) -> Result<(), PolicyError> {
-        // NOTE: Perform `permits_ee` first, since 99% of path validations should have
-        // an EE certificate in the leaf position.
-        self.permits_ee(leaf).or_else(|_| self.permits_ca(leaf))
-    }
-
-    /// Checks whether the given CA certificate is compatible with this policy.
-    pub(crate) fn permits_ca(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        self.permits_basic(cert)?;
-
-        let extensions = cert.extensions()?;
-
-        // 5280 4.1.2.6: Subject
-        // CA certificates MUST have a subject populated with a non-empty distinguished name.
-        if cert.subject().is_empty() {
-            return Err("CA certificate must have a non-empty Subject".into());
-        }
-
-        // 5280 4.2:
-        // CA certificates must contain a few core extensions. This implies
-        // that the CA certificate must be a v3 certificate, since earlier
-        // versions lack extensions entirely.
-        if cert.tbs_cert.version != 2 {
-            return Err("CA certificate must be an X509v3 certificate".into());
-        }
-
-        // 5280 4.2.1.2:
-        // CA certificates MUST have a SubjectKeyIdentifier and it MUST NOT be
-        // critical.
-        if let Some(ski) = extensions.get_extension(&SUBJECT_KEY_IDENTIFIER_OID) {
-            if ski.critical {
-                return Err(
-                    "SubjectKeyIdentifier must not be marked critical in a CA Certificate".into(),
-                );
-            }
-        } else {
-            return Err("store certificates must have a SubjectKeyIdentifier extension".into());
-        }
-
-        // 5280 4.2.1.3:
-        // CA certificates MUST have a KeyUsage, it SHOULD be critical,
-        // and it MUST have `keyCertSign` asserted.
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            // TODO: Check `key_usage.critical` on a policy basis here?
-
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-
-            if !key_usage.key_cert_sign() {
-                return Err("KeyUsage.keyCertSign must be asserted in a CA certificate".into());
-            }
-        } else {
-            return Err("CA certificates must have a KeyUsage extension".into());
-        }
-
-        // 5280 4.2.1.9: Basic Constraints
-        // CA certificates MUST have a BasicConstraints, it MUST be critical,
-        // and it MUST have `cA` asserted.
-        if let Some(basic_constraints) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            if !basic_constraints.critical {
-                return Err("BasicConstraints must be marked critical in a CA certificate".into());
-            }
-
-            let basic_constraints: BasicConstraints = basic_constraints.value()?;
-            if !basic_constraints.ca {
-                return Err("BasicConstraints.cA must be asserted in a CA certificate".into());
-            }
-        } else {
-            return Err("CA certificates must have a BasicConstraints extension".into());
-        }
-
-        // 5280 4.2.1.10: Name Constraints
-        // If present, NameConstraints MUST be critical.
-
-        // 5280 4.2.1.11: Policy Constraints
-        // If present, PolicyConstraints MUST be critical.
-
-        // CA certificates must also adhere to the expected EKU.
-        self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
-
-        // TODO: Policy-level checks for EKUs, algorthms, etc.
-
-        // Finally, check whether every critical extension in this CA
-        // certificate is accounted for.
-        for ext in extensions.iter() {
-            if ext.critical && !self.critical_ca_extensions.contains(&ext.extn_id) {
-                return Err(PolicyError::Other(
-                    "CA certificate contains unaccounted critical extension",
-                ));
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Checks whether the given EE certificate is compatible with this policy.
-    pub(crate) fn permits_ee(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        // An end entity cert is considered "permitted" under a policy if:
-        // 1. It satisfies the basic (both EE and CA) requirements of the underlying profile;
-        // 2. It satisfies the EE-specific requirements of the profile;
-        // 3. It satisfies the policy's own requirements (e.g. the cert's SANs
-        //    match the policy's name).
-        self.permits_basic(cert)?;
-
-        let extensions = cert.extensions()?;
-
-        // 5280 4.2.1.3: Key Usage
-        // It isn't stated explicitly, but an EE is defined to be not a CA,
-        // so it MUST NOT assert keyCertSign.
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-
-            if key_usage.key_cert_sign() {
-                return Err(PolicyError::Other(
-                    "EE is marked as a CA certificate (keyUsage.keyCertSign)",
-                ));
-            }
-        }
-
-        // 5280 4.1.2.6 / 4.2.1.6: Subject / Subject Alternative Name
-        // EE certificates MAY have their subject in either the subject or subjectAltName.
-        // If the subject is empty, then the subjectAltName MUST be marked critical.
-        if cert.subject().is_empty() {
-            match extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-                Some(san) => {
-                    if !san.critical {
-                        return Err(
-                            "EE without a subject must have a critical subjectAltName".into()
-                        );
-                    }
-
-                    // TODO: There must be at least one SAN, and no SAN may be empty.
-                }
-                None => return Err("EE without a subject must have a subjectAltName".into()),
-            }
-        }
-
-        // TODO: Pedantic: When the subject is non-empty, subjectAltName SHOULD
-        // be marked as non-critical.
-
-        // 5280 4.2.1.5: Policy Mappings
-        // The RFC is not clear on whether these may appear in EE certificates.
-
-        // 5280 4.2.1.9: Basic Constraints
-        // We refute `KeyUsage.keyCertSign` above, so `BasicConstraints.cA` MUST NOT
-        // be asserted.
-        if let Some(basic_constraints) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let basic_constraints: BasicConstraints = basic_constraints.value()?;
-
-            if basic_constraints.ca {
-                return Err(PolicyError::Other(
-                    "EE is marked as a CA certificate (basicConstraints.cA)",
-                ));
-            }
-        }
-
-        // 5280 4.2.1.10: Name Constraints
-        // NameConstraints MUST NOT appear in EE certificates.
-
-        // 5280 4.2.1.11: Policy Constraints
-        // The RFC is not clear on whether these may appear in EE certificates.
-
-        self.permits_san(extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID))?;
-        self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
-
-        // TODO: Policy-level checks here for KUs, algorithms, etc.
-
-        // Finally, check whether every critical extension in this EE certificate
-        // is accounted for.
-        for ext in extensions.iter() {
-            if ext.critical && !self.critical_ee_extensions.contains(&ext.extn_id) {
-                return Err(PolicyError::Other(
-                    "EE certificate contains unaccounted critical extensions",
-                ));
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Checks whether `issuer` is a valid issuing CA for `child` at a
-    /// path-building depth of `current_depth`.
-    ///
-    /// This checks that `issuer` is permitted under this policy and that
-    /// it was used to sign for `child`.
-    ///
-    /// On success, this function returns the new path-building depth. This
-    /// may or may not be a higher number than the original depth, depending
-    /// on the kind of validation performed (e.g., whether the issuer was
-    /// self-issued).
-    pub(crate) fn valid_issuer(
-        &self,
-        issuer: &Certificate<'_>,
-        child: &Certificate<'_>,
-        current_depth: u8,
-    ) -> Result<u8, PolicyError> {
-        // The issuer needs to be a valid CA.
-        self.permits_ca(issuer)?;
-
-        let issuer_extensions = issuer.extensions()?;
-
-        if let Some(bc) = issuer_extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let bc: BasicConstraints = bc
-                .value()
-                .map_err(|_| PolicyError::Other("issuer has malformed basicConstraints"))?;
-
-            // NOTE: `current_depth` starts at 1, indicating the EE cert in the chain.
-            // Path length constraints only concern the intermediate portion of a chain,
-            // so we have to adjust by 1.
-            if bc
-                .path_length
-                .map_or(false, |len| (current_depth as u64) - 1 > len)
-            {
-                return Err(PolicyError::Other("path length constraint violated"));
-            }
-        }
-
-        let pk = self
-            .ops
-            .public_key(issuer)
-            .ok_or(PolicyError::Other("issuer has malformed public key"))?;
-        if !self.ops.is_signed_by(child, pk) {
-            return Err(PolicyError::Other("signature does not match"));
-        }
-
-        // Self-issued issuers don't increase the working depth.
-        // NOTE: This is technically part of the profile's semantics.
-        match cert_is_self_issued(issuer) {
-            true => Ok(current_depth),
-            false => Ok(current_depth + 1),
-        }
     }
 }
 
