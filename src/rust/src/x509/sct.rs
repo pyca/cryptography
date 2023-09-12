@@ -4,7 +4,6 @@
 
 use crate::error::CryptographyError;
 use crate::types;
-use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -175,17 +174,19 @@ impl Sct {
 
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+
+        let kwargs = pyo3::types::PyDict::new(py);
+        kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;
+        kwargs.set_item("tzinfo", None::<Option<pyo3::PyAny>>)?;
+
         types::DATETIME_DATETIME
             .get(py)?
             .call_method1(
-                pyo3::intern!(py, "utcfromtimestamp"),
-                (self.timestamp / 1000,),
+                pyo3::intern!(py, "fromtimestamp"),
+                (self.timestamp / 1000, utc),
             )?
-            .call_method(
-                "replace",
-                (),
-                Some(vec![("microsecond", self.timestamp % 1000 * 1000)].into_py_dict(py)),
-            )
+            .call_method("replace", (), Some(kwargs))
     }
 
     #[getter]
