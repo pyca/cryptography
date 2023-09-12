@@ -18,6 +18,7 @@ pub fn is_enabled() -> bool {
         CRYPTOGRAPHY_OPENSSL_300_OR_GREATER,
         not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL))
     ))]
+    // SAFETY: No pre-conditions
     unsafe {
         ffi::EVP_default_properties_is_fips_enabled(ptr::null_mut()) == 1
     }

@@ -58,17 +58,38 @@ impl EvpCipherAead {
         Ok(())
     }
 
+    fn process_data(
+        &self,
+        ctx: &mut openssl::cipher_ctx::CipherCtx,
+        data: &[u8],
+        out: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let n = ctx
+            .cipher_update(data, Some(out))
+            .map_err(CryptographyError::from)?;
+        assert_eq!(n, data.len());
+
+        let mut final_block = [0];
+        let n = ctx
+            .cipher_final(&mut final_block)
+            .map_err(CryptographyError::from)?;
+        assert_eq!(n, 0);
+
+        Ok(())
+    }
+
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         check_length(plaintext)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_ctx)?;
-        ctx.encrypt_init(None, None, None)?;
+        ctx.encrypt_init(None, None, nonce)?;
 
         self.process_aad(&mut ctx, aad)?;
 
@@ -82,16 +103,7 @@ impl EvpCipherAead {
                 assert!(self.tag_first);
                 (tag, ciphertext) = b.split_at_mut(self.tag_len);
 
-                let n = ctx
-                    .cipher_update(plaintext, Some(ciphertext))
-                    .map_err(CryptographyError::from)?;
-                assert_eq!(n, ciphertext.len());
-
-                let mut final_block = [0];
-                let n = ctx
-                    .cipher_final(&mut final_block)
-                    .map_err(CryptographyError::from)?;
-                assert_eq!(n, 0);
+                self.process_data(&mut ctx, plaintext, ciphertext)?;
 
                 ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -105,6 +117,7 @@ impl EvpCipherAead {
         py: pyo3::Python<'p>,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if ciphertext.len() < self.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
@@ -112,7 +125,7 @@ impl EvpCipherAead {
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_ctx)?;
-        ctx.decrypt_init(None, None, None)?;
+        ctx.decrypt_init(None, None, nonce)?;
 
         assert!(self.tag_first);
         // RFC 5297 defines the output as IV || C, where the tag we generate
@@ -125,16 +138,8 @@ impl EvpCipherAead {
 
         Ok(pyo3::types::PyBytes::new_with(py, ciphertext.len(), |b| {
             // AES SIV can error here if the data is invalid on decrypt
-            let n = ctx
-                .cipher_update(ciphertext, Some(b))
+            self.process_data(&mut ctx, ciphertext, b)
                 .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-            assert_eq!(n, b.len());
-
-            let mut final_block = [0];
-            let n = ctx
-                .cipher_final(&mut final_block)
-                .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-            assert_eq!(n, 0);
 
             Ok(())
         })?)
@@ -222,7 +227,7 @@ impl AesSiv {
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
             ));
         };
-        self.ctx.encrypt(py, data_bytes, aad)
+        self.ctx.encrypt(py, data_bytes, aad, None)
     }
 
     fn decrypt<'p>(
@@ -232,7 +237,7 @@ impl AesSiv {
         associated_data: Option<&pyo3::types::PyList>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let aad = associated_data.map(Aad::List);
-        self.ctx.decrypt(py, data.as_bytes(), aad)
+        self.ctx.decrypt(py, data.as_bytes(), aad, None)
     }
 }
 

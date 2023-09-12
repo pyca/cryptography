@@ -32,7 +32,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.2"}}
           - {VERSION: "pypy-3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1v"}}
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1w"}}
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.10"}}
           - {VERSION: "3.11", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.1.2"}}
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.2", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
@@ -44,15 +44,15 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.1"}}
           - {VERSION: "3.11", NOXSESSION: "tests-randomorder"}
           - {VERSION: "3.12-dev", NOXSESSION: "tests"}
-          # Latest commit on the BoringSSL master branch, as of Sep 07, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "be84aeed7d21f5e5be37dee3c827175acebb6dda"}}
-          # Latest commit on the OpenSSL master branch, as of Sep 07, 2023.
-          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "025535ecd11bdebd8eb28ed4f0f6b509b1b54577"}}
+          # Latest commit on the BoringSSL master branch, as of Sep 10, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "1e3da32f3754b1b9136247ee26308cfd959cbeba"}}
+          # Latest commit on the OpenSSL master branch, as of Sep 12, 2023.
+          - {VERSION: "3.11", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4ee8c1fb51687ea811fc2abf87e173c70d018bc2"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin
           # 1.65 - Generic associated types (GATs)
-          - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.63.0"}
+          - {VERSION: "3.11", NOXSESSION: "rust-noclippy,tests", RUST: "1.63.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "1.64.0"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "nightly"}
@@ -93,7 +93,7 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load OpenSSL cache
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
         id: ossl-cache
         timeout-minutes: 2
         with:

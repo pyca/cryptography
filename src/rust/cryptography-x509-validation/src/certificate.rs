@@ -8,11 +8,11 @@ use cryptography_x509::certificate::Certificate;
 
 use crate::ops::CryptoOps;
 
-pub(crate) fn cert_is_self_issued(cert: &Certificate) -> bool {
+pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
     cert.issuer() == cert.subject()
 }
 
-pub(crate) fn cert_is_self_signed<B: CryptoOps>(cert: &Certificate, ops: &B) -> bool {
+pub(crate) fn cert_is_self_signed<B: CryptoOps>(cert: &Certificate<'_>, ops: &B) -> bool {
     match ops.public_key(cert) {
         Some(pk) => cert_is_self_issued(cert) && ops.is_signed_by(cert, pk),
         None => false,

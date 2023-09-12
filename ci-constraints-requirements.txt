@@ -11,7 +11,7 @@ argcomplete==3.1.1
     # via nox
 babel==2.12.1
     # via sphinx
-black==23.7.0
+black==23.9.1
     # via cryptography (pyproject.toml)
 bleach==6.0.0
     # via readme-renderer
@@ -110,7 +110,7 @@ pygments==2.16.1
     #   sphinx
 pyproject-hooks==1.0.0
     # via build
-pytest==7.4.1
+pytest==7.4.2
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
@@ -125,7 +125,7 @@ pytest-randomly==3.15.0
     # via cryptography (pyproject.toml)
 pytest-xdist==3.3.1
     # via cryptography (pyproject.toml)
-readme-renderer==41.0
+readme-renderer==42.0
     # via twine
 requests==2.31.0
     # via
@@ -185,7 +185,7 @@ urllib3==2.0.4
     # via
     #   requests
     #   twine
-virtualenv==20.24.4
+virtualenv==20.24.5
     # via nox
 webencodings==0.5.1
     # via bleach

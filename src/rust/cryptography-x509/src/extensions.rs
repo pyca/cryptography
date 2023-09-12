@@ -314,7 +314,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let raw = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&raw)).ok().unwrap();
+        let extensions = Extensions::from_raw_extensions(Some(&raw)).ok().unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
         assert!(&extensions
@@ -338,7 +338,7 @@ mod tests {
         let der = asn1::write_single(&extensions).unwrap();
         let parsed = asn1::parse_single(&der).unwrap();
 
-        let extensions: Extensions = Extensions::from_raw_extensions(Some(&parsed)).ok().unwrap();
+        let extensions = Extensions::from_raw_extensions(Some(&parsed)).ok().unwrap();
 
         let extension_list: Vec<_> = extensions.iter().collect();
         assert_eq!(extension_list.len(), 1);
@@ -368,7 +368,7 @@ mod tests {
         let ku_bitstring = asn1::BitString::new(&ku_bits, 7).unwrap();
         let asn1 = asn1::write_single(&ku_bitstring).unwrap();
 
-        let ku: KeyUsage = asn1::parse_single(&asn1).unwrap();
+        let ku: KeyUsage<'_> = asn1::parse_single(&asn1).unwrap();
         assert!(!ku.is_zeroed());
         assert!(ku.digital_signature());
         assert!(ku.content_comitment());

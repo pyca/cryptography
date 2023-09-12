@@ -412,6 +412,10 @@ fn try_map_arc_data_mut_crl_iterator<E>(
     ) -> Result<crl::RevokedCertificate<'this>, E>,
 ) -> Result<OwnedRevokedCertificate, E> {
     OwnedRevokedCertificate::try_new(Arc::clone(it.borrow_owner()), |inner_it| {
+        // SAFETY: This is safe because `Arc::clone` ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces. Open-coded implementation of the API discussed in
+        // https://github.com/joshua-maros/ouroboros/issues/38
         it.with_dependent_mut(|_, value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }
@@ -455,9 +459,9 @@ self_cell::self_cell!(
 
 impl Clone for OwnedRevokedCertificate {
     fn clone(&self) -> OwnedRevokedCertificate {
-        // This is safe because `Arc::clone` ensures the data is alive, but
-        // Rust doesn't understand the lifetime relationship it produces.
-        // Open-coded implementation of the API discussed in
+        // SAFETY: This is safe because `Arc::clone` ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces. Open-coded implementation of the API discussed in
         // https://github.com/joshua-maros/ouroboros/issues/38
         OwnedRevokedCertificate::new(Arc::clone(self.borrow_owner()), |_| unsafe {
             std::mem::transmute(self.borrow_dependent().clone())
