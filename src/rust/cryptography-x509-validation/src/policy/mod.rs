@@ -229,8 +229,8 @@ pub struct Policy<'a, B: CryptoOps> {
     /// If `None`, all signature algorithms are permitted.
     pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
 
-    critical_ca_extensions: HashSet<ObjectIdentifier>,
-    critical_ee_extensions: HashSet<ObjectIdentifier>,
+    pub(crate) critical_ca_extensions: HashSet<ObjectIdentifier>,
+    pub(crate) critical_ee_extensions: HashSet<ObjectIdentifier>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -312,10 +312,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 mod tests {
     use std::ops::Deref;
 
+    use cryptography_x509::oid::EXTENDED_KEY_USAGE_OID;
+
+    use crate::{
+        ops::tests::NullOps,
+        policy::{RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+    };
+
     use super::{
-        ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256, RSASSA_PKCS1V15_SHA384,
-        RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384, RSASSA_PSS_SHA512,
-        WEBPKI_PERMITTED_ALGORITHMS,
+        Policy, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
+        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
     };
 
     #[test]
@@ -391,5 +398,43 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
+    }
+
+    #[test]
+    fn test_policy_critical_extensions() {
+        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
+        let policy = Policy::rfc5280(NullOps {}, None, time);
+
+        assert_eq!(
+            policy.critical_ca_extensions,
+            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
+        );
+        assert_eq!(
+            policy.critical_ee_extensions,
+            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
+        );
+
+        let policy = policy.assert_critical_ca_extension(EXTENDED_KEY_USAGE_OID);
+        let policy = policy.assert_critical_ee_extension(EXTENDED_KEY_USAGE_OID);
+        assert_ne!(
+            policy.critical_ca_extensions,
+            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
+        );
+        assert_ne!(
+            policy.critical_ee_extensions,
+            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
+        );
+    }
+
+    #[test]
+    fn test_policy_max_chain_depth() {
+        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
+        let policy = Policy::rfc5280(NullOps {}, None, time);
+
+        assert_eq!(policy.max_chain_depth, 8);
+
+        let policy = policy.with_max_chain_depth(12);
+
+        assert_eq!(policy.max_chain_depth, 12);
     }
 }

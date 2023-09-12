@@ -17,3 +17,23 @@ pub trait CryptoOps {
     /// `Key`.
     fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> bool;
 }
+
+#[cfg(test)]
+pub(crate) mod tests {
+    use cryptography_x509::certificate::Certificate;
+
+    use super::CryptoOps;
+
+    pub(crate) struct NullOps {}
+    impl CryptoOps for NullOps {
+        type Key = ();
+
+        fn public_key(&self, _cert: &Certificate<'_>) -> Option<Self::Key> {
+            Some(())
+        }
+
+        fn is_signed_by(&self, _cert: &Certificate<'_>, _key: Self::Key) -> bool {
+            true
+        }
+    }
+}
