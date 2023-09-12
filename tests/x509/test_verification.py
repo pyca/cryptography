@@ -32,11 +32,15 @@ class TestPolicyBuilder:
         # Subject must be none or a GeneralName type; nothing else is
         # supported.
         with pytest.raises(TypeError):
-            PolicyBuilder(subject="cryptography.io").build()
+            PolicyBuilder(
+                subject="cryptography.io"  # type: ignore[arg-type]
+            ).build()
         with pytest.raises(TypeError):
-            PolicyBuilder(subject="0.0.0.0").build()
+            PolicyBuilder(subject="0.0.0.0").build()  # type: ignore[arg-type]
         with pytest.raises(TypeError):
-            PolicyBuilder(subject=IPv4Address("0.0.0.0")).build()
+            PolicyBuilder(
+                subject=IPv4Address("0.0.0.0")  # type: ignore[arg-type]
+            ).build()
 
 
 class TestStore:
