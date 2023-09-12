@@ -610,6 +610,11 @@ class TestAESOCB3:
         with pytest.raises(ValueError):
             aesocb3.encrypt(b"\x00" * 16, b"hi", None)
 
+        with pytest.raises(ValueError):
+            aesocb3.decrypt(b"\x00" * 11, b"hi", None)
+        with pytest.raises(ValueError):
+            aesocb3.decrypt(b"\x00" * 16, b"hi", None)
+
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
             AESOCB3(object())  # type:ignore[arg-type]
