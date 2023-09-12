@@ -96,9 +96,9 @@ wheel==0.41.2 \
     # via -r build-requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==68.2.0 \
-    --hash=sha256:00478ca80aeebeecb2f288d3206b0de568df5cd2b8fada1209843cc9a8d88a48 \
-    --hash=sha256:af3d5949030c3f493f550876b2fd1dd5ec66689c4ee5d5344f009746f71fd5a8
+setuptools==68.2.1 \
+    --hash=sha256:56ee14884fd8d0cd015411f4a13f40b4356775a0aefd9ebc1d3bfb9a1acb32f1 \
+    --hash=sha256:eff96148eb336377ab11beee0c73ed84f1709a40c0b870298b0d058828761bae
     # via
     #   -r build-requirements.in
     #   setuptools-rust
