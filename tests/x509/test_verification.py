@@ -49,7 +49,7 @@ class TestPolicyBuilder:
         builder = PolicyBuilder()
         builder = builder.subject(DNSName("cryptography.io"))
         builder = builder.time(now)
-        builder = builder.profile(Profile.WebPKI)
+        builder = builder.profile(Profile.RFC5280)
 
         policy = builder.build()
         assert policy.subject == DNSName("cryptography.io")
