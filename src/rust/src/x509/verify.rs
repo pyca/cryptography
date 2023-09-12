@@ -114,8 +114,8 @@ impl PyPolicy {
     }
 }
 
-fn build_subject_owner<'p>(
-    py: pyo3::Python<'p>,
+fn build_subject_owner(
+    py: pyo3::Python<'_>,
     subject: pyo3::Py<pyo3::PyAny>,
 ) -> pyo3::PyResult<SubjectOwner> {
     let subject = subject.as_ref(py);
@@ -152,8 +152,8 @@ fn build_subject_owner<'p>(
     }
 }
 
-fn build_subject<'a, 'p>(
-    py: pyo3::Python<'p>,
+fn build_subject<'a>(
+    py: pyo3::Python<'_>,
     subject: &'a SubjectOwner,
 ) -> pyo3::PyResult<Option<Subject<'a>>> {
     match subject {
@@ -174,8 +174,8 @@ fn build_subject<'a, 'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn create_policy<'p>(
-    py: pyo3::Python<'p>,
+fn create_policy(
+    py: pyo3::Python<'_>,
     profile: &pyo3::PyAny,
     subject: pyo3::Py<pyo3::PyAny>,
     time: Option<&pyo3::PyAny>,
