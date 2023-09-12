@@ -95,6 +95,7 @@ dependencies = [
  "cryptography-cffi",
  "cryptography-openssl",
  "cryptography-x509",
+ "cryptography-x509-validation",
  "foreign-types-shared",
  "once_cell",
  "openssl",
