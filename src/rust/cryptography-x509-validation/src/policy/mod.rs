@@ -165,9 +165,8 @@ impl Subject<'_> {
 
     /// Returns true if any of the names in the given `SubjectAlternativeName`
     /// match this `Subject`.
-    pub fn matches(&self, san: SubjectAlternativeName<'_>) -> bool {
-        let mut san = san;
-        san.any(|gn| self.general_name_matches(&gn))
+    pub fn matches(&self, san: &SubjectAlternativeName<'_>) -> bool {
+        san.clone().any(|gn| self.general_name_matches(&gn))
     }
 }
 
@@ -312,11 +311,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 mod tests {
     use std::ops::Deref;
 
-    use cryptography_x509::oid::EXTENDED_KEY_USAGE_OID;
+    use asn1::SequenceOfWriter;
+    use cryptography_x509::{
+        extensions::SubjectAlternativeName,
+        name::{GeneralName, UnvalidatedIA5String},
+        oid::EXTENDED_KEY_USAGE_OID,
+    };
 
     use crate::{
         ops::tests::NullOps,
-        policy::{RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        policy::{Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        types::{DNSName, IPAddress},
     };
 
     use super::{
@@ -449,5 +454,56 @@ mod tests {
         let policy = policy.with_max_chain_depth(12);
 
         assert_eq!(policy.max_chain_depth, 12);
+    }
+
+    #[test]
+    fn test_subject_from_impls() {
+        assert!(matches!(
+            Subject::from(DNSName::new("cryptography.io").unwrap()),
+            Subject::DNS(_)
+        ));
+
+        assert!(matches!(
+            Subject::from(IPAddress::from_str("1.1.1.1").unwrap()),
+            Subject::IP(_)
+        ));
+    }
+
+    #[test]
+    fn test_subject_matches() {
+        let domain_sub = Subject::from(DNSName::new("test.cryptography.io").unwrap());
+        let ip_sub = Subject::from(IPAddress::from_str("127.0.0.1").unwrap());
+
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn])).unwrap();
+            let any_cryptography_io =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(domain_sub.matches(&any_cryptography_io));
+            assert!(!ip_sub.matches(&any_cryptography_io));
+        }
+
+        {
+            // 127.0.0.1/24
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
+            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(ip_sub.matches(&local_24));
+            assert!(!domain_sub.matches(&local_24));
+        }
+
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn, ip_gn])).unwrap();
+
+            let any_cryptography_io_or_local_24 =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(domain_sub.matches(&any_cryptography_io_or_local_24));
+            assert!(ip_sub.matches(&any_cryptography_io_or_local_24));
+        }
     }
 }
