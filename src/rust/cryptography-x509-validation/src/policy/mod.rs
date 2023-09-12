@@ -402,7 +402,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         // 5280 4.2.1.2: Subject Key Identifier
-        // Developed to `permits_ca`.
+        // Devolved to `permits_ca`.
 
         // 5280 4.2.1.3: Key Usage
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
