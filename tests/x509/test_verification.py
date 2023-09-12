@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import datetime
 import os
 from ipaddress import IPv4Address
 
@@ -9,7 +10,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import PolicyBuilder, Store
+from cryptography.x509.verification import PolicyBuilder, Profile, Store
 from tests.x509.test_x509 import _load_cert
 
 
@@ -41,6 +42,18 @@ class TestPolicyBuilder:
             PolicyBuilder(
                 subject=IPv4Address("0.0.0.0")  # type: ignore[arg-type]
             ).build()
+
+    def test_builder_pattern(self):
+        now = datetime.datetime.now().replace(microsecond=0)
+
+        builder = PolicyBuilder()
+        builder = builder.subject(DNSName("cryptography.io"))
+        builder = builder.time(now)
+        builder = builder.profile(Profile.WebPKI)
+
+        policy = builder.build()
+        assert policy.subject == DNSName("cryptography.io")
+        assert policy.validation_time == now
 
 
 class TestStore:
