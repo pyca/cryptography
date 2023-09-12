@@ -64,15 +64,11 @@ impl EvpCipherAead {
         data: &[u8],
         out: &mut [u8],
     ) -> CryptographyResult<()> {
-        let n = ctx
-            .cipher_update(data, Some(out))
-            .map_err(CryptographyError::from)?;
+        let n = ctx.cipher_update(data, Some(out))?;
         assert_eq!(n, data.len());
 
         let mut final_block = [0];
-        let n = ctx
-            .cipher_final(&mut final_block)
-            .map_err(CryptographyError::from)?;
+        let n = ctx.cipher_final(&mut final_block)?;
         assert_eq!(n, 0);
 
         Ok(())
