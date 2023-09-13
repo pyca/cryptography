@@ -313,9 +313,9 @@ mod tests {
 
     use asn1::SequenceOfWriter;
     use cryptography_x509::{
-        extensions::SubjectAlternativeName,
+        extensions::{DuplicateExtensionsError, SubjectAlternativeName},
         name::{GeneralName, UnvalidatedIA5String},
-        oid::EXTENDED_KEY_USAGE_OID,
+        oid::{EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID},
     };
 
     use crate::{
@@ -325,7 +325,7 @@ mod tests {
     };
 
     use super::{
-        Policy, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        Policy, PolicyError, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
     };
@@ -528,5 +528,12 @@ mod tests {
 
             assert!(!ip_sub.matches(&local_24));
         }
+    }
+
+    #[test]
+    fn test_policyerror_from_impls() {
+        let _ = PolicyError::from(asn1::ParseError::new(asn1::ParseErrorKind::InvalidLength));
+        let _ = PolicyError::from(DuplicateExtensionsError(KEY_USAGE_OID));
+        let _ = PolicyError::from("oops");
     }
 }
