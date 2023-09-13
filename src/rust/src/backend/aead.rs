@@ -24,22 +24,30 @@ enum Aad<'a> {
 }
 
 struct EvpCipherAead {
-    base_ctx: openssl::cipher_ctx::CipherCtx,
+    base_encryption_ctx: openssl::cipher_ctx::CipherCtx,
+    base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
     tag_first: bool,
 }
 
 impl EvpCipherAead {
     fn new(
-        base_ctx: openssl::cipher_ctx::CipherCtx,
+        cipher: &openssl::cipher::CipherRef,
+        key: &[u8],
         tag_len: usize,
         tag_first: bool,
-    ) -> EvpCipherAead {
-        EvpCipherAead {
-            base_ctx,
+    ) -> CryptographyResult<EvpCipherAead> {
+        let mut base_encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        base_encryption_ctx.encrypt_init(Some(cipher), Some(key), None)?;
+        let mut base_decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        base_decryption_ctx.decrypt_init(Some(cipher), Some(key), None)?;
+
+        Ok(EvpCipherAead {
+            base_encryption_ctx,
+            base_decryption_ctx,
             tag_len,
             tag_first,
-        }
+        })
     }
 
     fn process_aad(
@@ -64,15 +72,11 @@ impl EvpCipherAead {
         data: &[u8],
         out: &mut [u8],
     ) -> CryptographyResult<()> {
-        let n = ctx
-            .cipher_update(data, Some(out))
-            .map_err(CryptographyError::from)?;
+        let n = ctx.cipher_update(data, Some(out))?;
         assert_eq!(n, data.len());
 
         let mut final_block = [0];
-        let n = ctx
-            .cipher_final(&mut final_block)
-            .map_err(CryptographyError::from)?;
+        let n = ctx.cipher_final(&mut final_block)?;
         assert_eq!(n, 0);
 
         Ok(())
@@ -88,7 +92,7 @@ impl EvpCipherAead {
         check_length(plaintext)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_ctx)?;
+        ctx.copy(&self.base_encryption_ctx)?;
         ctx.encrypt_init(None, None, nonce)?;
 
         self.process_aad(&mut ctx, aad)?;
@@ -124,7 +128,7 @@ impl EvpCipherAead {
         }
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_ctx)?;
+        ctx.copy(&self.base_decryption_ctx)?;
         ctx.decrypt_init(None, None, nonce)?;
 
         assert!(self.tag_first);
@@ -194,10 +198,8 @@ impl AesSiv {
             }
 
             let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
-            let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-            ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
             Ok(AesSiv {
-                ctx: EvpCipherAead::new(ctx, 16, true),
+                ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, true)?,
             })
         }
     }
