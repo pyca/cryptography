@@ -206,7 +206,7 @@ fn create_policy(
             )))
         })?
     } else {
-        return Err(pyo3::exceptions::PyValueError::new_err(
+        return Err(pyo3::exceptions::PyTypeError::new_err(
             "invalid profile specified; expected a Profile variant",
         ));
     };

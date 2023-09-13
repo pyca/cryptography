@@ -43,6 +43,13 @@ class TestPolicyBuilder:
                 subject=IPv4Address("0.0.0.0")  # type: ignore[arg-type]
             ).build()
 
+    def test_profile_bad_type(self):
+        # Profile must be a `Profile` variant.
+        with pytest.raises(TypeError):
+            PolicyBuilder(
+                subject=DNSName("cryptography.io"), profile="webpki"
+            ).build()
+
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
 
