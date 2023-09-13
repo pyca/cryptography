@@ -47,7 +47,8 @@ class TestPolicyBuilder:
         # Profile must be a `Profile` variant.
         with pytest.raises(TypeError):
             PolicyBuilder(
-                subject=DNSName("cryptography.io"), profile="webpki"
+                subject=DNSName("cryptography.io"),
+                profile="webpki",  # type: ignore[arg-type]
             ).build()
 
     def test_builder_pattern(self):
