@@ -474,6 +474,7 @@ mod tests {
         let domain_sub = Subject::from(DNSName::new("test.cryptography.io").unwrap());
         let ip_sub = Subject::from(IPAddress::from_str("127.0.0.1").unwrap());
 
+        // Single SAN, domain wildcard.
         {
             let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
             let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn])).unwrap();
@@ -484,6 +485,7 @@ mod tests {
             assert!(!ip_sub.matches(&any_cryptography_io));
         }
 
+        // Single SAN, IP range.
         {
             // 127.0.0.1/24
             let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
@@ -494,6 +496,7 @@ mod tests {
             assert!(!domain_sub.matches(&local_24));
         }
 
+        // Multiple SANs, both domain wildcard and IP range.
         {
             let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
             let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
@@ -504,6 +507,26 @@ mod tests {
 
             assert!(domain_sub.matches(&any_cryptography_io_or_local_24));
             assert!(ip_sub.matches(&any_cryptography_io_or_local_24));
+        }
+
+        // Single SAN, invalid domain pattern.
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*es*.cryptography.io"));
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn])).unwrap();
+            let any_cryptography_io =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(!domain_sub.matches(&any_cryptography_io));
+        }
+
+        // Single SAN, invalid IP range.
+        {
+            // 127.0.0.1/24
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 1, 255, 1, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
+            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(!ip_sub.matches(&local_24));
         }
     }
 }
