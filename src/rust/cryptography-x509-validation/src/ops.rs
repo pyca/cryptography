@@ -30,13 +30,14 @@ pub(crate) mod tests {
     pub(crate) struct NullOps {}
     impl CryptoOps for NullOps {
         type Key = ();
+        type Err = ();
 
-        fn public_key(&self, _cert: &Certificate<'_>) -> Option<Self::Key> {
-            Some(())
+        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+            Ok(())
         }
 
-        fn is_signed_by(&self, _cert: &Certificate<'_>, _key: Self::Key) -> bool {
-            true
+        fn is_signed_by(&self, _cert: &Certificate<'_>, _key: Self::Key) -> Result<(), Self::Err> {
+            Ok(())
         }
     }
 
@@ -59,7 +60,9 @@ zl9HYIMxATFyqSiD9jsx
         let cert = asn1::parse_single::<Certificate<'_>>(&cert_der).unwrap();
 
         let ops = NullOps {};
-        assert_eq!(ops.public_key(&cert), Some(()));
-        assert!(ops.is_signed_by(&cert, ops.public_key(&cert).unwrap()));
+        assert_eq!(ops.public_key(&cert), Ok(()));
+        assert!(ops
+            .is_signed_by(&cert, ops.public_key(&cert).unwrap())
+            .is_ok());
     }
 }

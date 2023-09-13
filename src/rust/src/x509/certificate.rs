@@ -290,18 +290,8 @@ impl Certificate {
         };
 
         let ops = PyCryptoOps {};
-        let issuer_key = ops
-            .public_key(issuer.raw.borrow_dependent())
-            .ok_or_else(|| {
-                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "Issuer certificate has invalid public key",
-                ))
-            })?;
+        let issuer_key = ops.public_key(issuer.raw.borrow_dependent())?;
         ops.is_signed_by(self.raw.borrow_dependent(), issuer_key)
-            .then_some(())
-            .ok_or(CryptographyError::from(
-                exceptions::InvalidSignature::new_err(()),
-            ))
     }
 }
 

@@ -10,7 +10,7 @@ use cryptography_x509_validation::{
 };
 use pyo3::IntoPy;
 
-use crate::error::CryptographyResult;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 
@@ -25,25 +25,21 @@ impl CryptoOps for PyCryptoOps {
     // another certificate's signature (where an error means that the
     // signature check fails trivially).
     type Key = pyo3::Py<pyo3::PyAny>;
+    type Err = CryptographyError;
 
-    fn public_key(&self, cert: &Certificate<'_>) -> Option<Self::Key> {
-        pyo3::Python::with_gil(|py| -> Option<Self::Key> {
+    fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+        pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
             // This makes an unnecessary copy. It'd be nice to get rid of it.
-            let spki_der =
-                pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki).ok()?);
+            let spki_der = pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki)?);
 
-            Some(
-                types::LOAD_DER_PUBLIC_KEY
-                    .get(py)
-                    .ok()?
-                    .call1((spki_der,))
-                    .ok()?
-                    .into(),
-            )
+            Ok(types::LOAD_DER_PUBLIC_KEY
+                .get(py)?
+                .call1((spki_der,))?
+                .into())
         })
     }
 
-    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> bool {
+    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err> {
         pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
             sign::verify_signature_with_signature_algorithm(
                 py,
@@ -53,7 +49,6 @@ impl CryptoOps for PyCryptoOps {
                 &asn1::write_single(&cert.tbs_cert)?,
             )
         })
-        .is_ok()
     }
 }
 
