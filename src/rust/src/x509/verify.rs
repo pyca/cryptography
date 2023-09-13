@@ -11,6 +11,7 @@ use cryptography_x509_validation::{
 use pyo3::IntoPy;
 
 use crate::error::CryptographyResult;
+use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 
 use super::{common::datetime_now, datetime_to_py, py_to_datetime, sign};
@@ -30,17 +31,14 @@ impl CryptoOps for PyCryptoOps {
             // This makes an unnecessary copy. It'd be nice to get rid of it.
             let spki_der =
                 pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki).ok()?);
+
             Some(
-                py.import(pyo3::intern!(
-                    py,
-                    "cryptography.hazmat.primitives.serialization"
-                ))
-                .ok()?
-                .getattr(pyo3::intern!(py, "load_der_public_key"))
-                .ok()?
-                .call1((spki_der,))
-                .ok()?
-                .into(),
+                types::LOAD_DER_PUBLIC_KEY
+                    .get(py)
+                    .ok()?
+                    .call1((spki_der,))
+                    .ok()?
+                    .into(),
             )
         })
     }

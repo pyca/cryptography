@@ -20,9 +20,12 @@ use cryptography_x509::extensions::{
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
+use cryptography_x509_validation::ops::CryptoOps;
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+
+use super::verify::PyCryptoOps;
 
 self_cell::self_cell!(
     pub(crate) struct OwnedCertificate {
@@ -267,7 +270,6 @@ impl Certificate {
 
     fn verify_directly_issued_by(
         &self,
-        py: pyo3::Python<'_>,
         issuer: pyo3::PyRef<'_, Certificate>,
     ) -> CryptographyResult<()> {
         if self.raw.borrow_dependent().tbs_cert.signature_alg
@@ -286,13 +288,20 @@ impl Certificate {
                 ),
             ));
         };
-        sign::verify_signature_with_signature_algorithm(
-            py,
-            issuer.public_key(py)?,
-            &self.raw.borrow_dependent().signature_alg,
-            self.raw.borrow_dependent().signature.as_bytes(),
-            &asn1::write_single(&self.raw.borrow_dependent().tbs_cert)?,
-        )
+
+        let ops = PyCryptoOps {};
+        let issuer_key = ops
+            .public_key(issuer.raw.borrow_dependent())
+            .ok_or_else(|| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Issuer certificate has invalid public key",
+                ))
+            })?;
+        ops.is_signed_by(self.raw.borrow_dependent(), issuer_key)
+            .then_some(())
+            .ok_or(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(()),
+            ))
     }
 }
 
