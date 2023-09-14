@@ -290,7 +290,7 @@ impl Certificate {
 
         let ops = PyCryptoOps {};
         let issuer_key = ops.public_key(issuer.raw.borrow_dependent())?;
-        ops.is_signed_by(self.raw.borrow_dependent(), issuer_key)
+        ops.verify_signed_by(self.raw.borrow_dependent(), issuer_key)
     }
 }
 
