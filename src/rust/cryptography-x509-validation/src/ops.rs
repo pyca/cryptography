@@ -18,5 +18,5 @@ pub trait CryptoOps {
 
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
-    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err>;
+    fn verify_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err>;
 }
