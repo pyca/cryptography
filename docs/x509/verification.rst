@@ -36,7 +36,7 @@ chain building, etc.
     .. versionadded:: 42.0.0
 
     A PolicyBuilder provides a builder-style interface for constructing a
-    Policy.
+    Verifier.
 
     .. method:: time(new_time)
 
