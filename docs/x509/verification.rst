@@ -50,6 +50,6 @@ chain building, etc.
 
         Builds a verifier for verifying server certificates.
 
-        :param subject: An optional :class:`Subject` to use in the policy
+        :param subject: A :class:`Subject` to use in the policy
 
         :raises NotImplementedError: This API is not implemented yet.
