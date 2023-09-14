@@ -39,6 +39,6 @@ class TestPolicyBuilder:
 
     def test_build_not_implemented(self):
         with pytest.raises(NotImplementedError):
-            PolicyBuilder.webpki().time(
+            PolicyBuilder().time(
                 datetime.datetime.now()
             ).build_server_verifier(DNSName("cryptography.io"))
