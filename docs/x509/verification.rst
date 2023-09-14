@@ -36,7 +36,7 @@ chain building, etc.
     .. versionadded:: 42.0.0
 
     A PolicyBuilder provides a builder-style interface for constructing a
-    :class:`Policy`.
+    Policy.
 
     .. classmethod:: webpki
 
@@ -61,8 +61,4 @@ chain building, etc.
 
     .. method:: build
 
-        Constructs a :class:`Policy` from this :class:`PolicyBuilder`.
-
-        :returns: An instance of :class:`Policy`.
-
-        :raises ValueError: If any component of the policy is malformed.
+        :raises NotImplementedError: This API is not implemented yet.
