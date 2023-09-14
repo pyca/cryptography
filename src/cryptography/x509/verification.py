@@ -25,10 +25,6 @@ class PolicyBuilder:
     ):
         self._time = time
 
-    @classmethod
-    def webpki(cls) -> PolicyBuilder:
-        return PolicyBuilder()
-
     def time(self, new_time: datetime.datetime) -> PolicyBuilder:
         """
         Sets the validation time.
@@ -40,11 +36,9 @@ class PolicyBuilder:
             time=new_time,
         )
 
-    def build_server_verifier(
-        self, subject: Subject | None = None
-    ) -> typing.NoReturn:
+    def build_server_verifier(self, subject: Subject) -> typing.NoReturn:
         """
-        Construct a server validation `Policy` from this `PolicyBuilder`.
+        Builds a verifier for verifying server certificates.
         """
 
         raise NotImplementedError
