@@ -30,6 +30,12 @@ class TestStore:
 
 
 class TestPolicyBuilder:
+    def test_time_already_set(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().time(datetime.datetime.now()).time(
+                datetime.datetime.now()
+            )
+
     def test_build_not_implemented(self):
         with pytest.raises(NotImplementedError):
             PolicyBuilder.webpki().time(
