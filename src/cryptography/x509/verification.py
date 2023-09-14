@@ -40,7 +40,7 @@ class PolicyBuilder:
             time=new_time,
         )
 
-    def build_server_policy(
+    def build_server_verifier(
         self, subject: Subject | None = None
     ) -> typing.NoReturn:
         """

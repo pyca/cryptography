@@ -40,4 +40,4 @@ class TestPolicyBuilder:
         with pytest.raises(NotImplementedError):
             PolicyBuilder.webpki().time(
                 datetime.datetime.now()
-            ).build_server_policy()
+            ).build_server_verifier()

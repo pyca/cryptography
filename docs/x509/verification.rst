@@ -46,9 +46,9 @@ chain building, etc.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: build_server_policy(subject)
+    .. method:: build_server_verifier(subject)
 
-        Builds a server validation policy from this builder.
+        Builds a server verifier from this builder.
 
         :param subject: An optional :class:`Subject` to use in the policy
 
