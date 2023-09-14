@@ -2,7 +2,46 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::x509::certificate::Certificate as PyCertificate;
+use cryptography_x509::certificate::Certificate;
+use cryptography_x509_validation::ops::CryptoOps;
+
+use crate::x509::sign;
+use crate::{
+    error::{CryptographyError, CryptographyResult},
+    types,
+    x509::certificate::Certificate as PyCertificate,
+};
+
+pub(crate) struct PyCryptoOps {}
+
+impl CryptoOps for PyCryptoOps {
+    type Key = pyo3::Py<pyo3::PyAny>;
+    type Err = CryptographyError;
+
+    fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+        pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
+            // This makes an unnecessary copy. It'd be nice to get rid of it.
+            let spki_der = pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki)?);
+
+            Ok(types::LOAD_DER_PUBLIC_KEY
+                .get(py)?
+                .call1((spki_der,))?
+                .into())
+        })
+    }
+
+    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err> {
+        pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
+            sign::verify_signature_with_signature_algorithm(
+                py,
+                key.as_ref(py),
+                &cert.signature_alg,
+                cert.signature.as_bytes(),
+                &asn1::write_single(&cert.tbs_cert)?,
+            )
+        })
+    }
+}
 
 #[pyo3::pyclass(
     frozen,
