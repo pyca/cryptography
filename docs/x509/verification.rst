@@ -38,11 +38,6 @@ chain building, etc.
     A PolicyBuilder provides a builder-style interface for constructing a
     Policy.
 
-    .. classmethod:: webpki
-
-        Creates a new :class:`PolicyBuilder` with defaults for the Web PKI,
-        i.e. client verification of web server TLS certificates.
-
     .. method:: subject(new_subject)
 
         Sets the policy's subject name.
