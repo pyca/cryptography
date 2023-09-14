@@ -48,7 +48,7 @@ chain building, etc.
 
     .. method:: build_server_verifier(subject)
 
-        Builds a server verifier from this builder.
+        Builds a verifier for verifying server certificates.
 
         :param subject: An optional :class:`Subject` to use in the policy
 
