@@ -21,3 +21,35 @@ chain building, etc.
 
     :param certs: A list of one or more :class:`~cryptography.x509.Certificate`
         instances.
+
+.. class:: Subject
+
+    .. versionadded:: 42.0.0
+
+    Type alias: A union of all subject types supported:
+    :class:`cryptography.x509.general_name.DNSName`,
+    :class:`cryptography.x509.general_name.IPAddress`.
+
+
+.. class:: PolicyBuilder
+
+    .. versionadded:: 42.0.0
+
+    A PolicyBuilder provides a builder-style interface for constructing a
+    Verifier.
+
+    .. method:: time(new_time)
+
+        Sets the policy's verification time.
+
+        :param new_time: The :class:`datetime.datetime` to use in the policy
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: build_server_verifier(subject)
+
+        Builds a verifier for verifying server certificates.
+
+        :param subject: A :class:`Subject` to use in the policy
+
+        :raises NotImplementedError: This API is not implemented yet.
