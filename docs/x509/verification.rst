@@ -38,14 +38,6 @@ chain building, etc.
     A PolicyBuilder provides a builder-style interface for constructing a
     Policy.
 
-    .. method:: subject(new_subject)
-
-        Sets the policy's subject name.
-
-        :param new_subject: The :class:`Subject` to use in the policy
-
-        :returns: A new instance of :class:`PolicyBuilder`
-
     .. method:: time(new_time)
 
         Sets the policy's verification time.
@@ -54,6 +46,10 @@ chain building, etc.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: build
+    .. method:: build_server_policy(subject)
+
+        Builds a server validation policy from this builder.
+
+        :param subject: An optional :class:`Subject` to use in the policy
 
         :raises NotImplementedError: This API is not implemented yet.

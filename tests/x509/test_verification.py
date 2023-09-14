@@ -8,7 +8,6 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.x509.general_name import DNSName
 from cryptography.x509.verification import PolicyBuilder, Store
 from tests.x509.test_x509 import _load_cert
 
@@ -33,6 +32,6 @@ class TestStore:
 class TestPolicyBuilder:
     def test_build_not_implemented(self):
         with pytest.raises(NotImplementedError):
-            PolicyBuilder.webpki().subject(DNSName("cryptography.io")).time(
+            PolicyBuilder.webpki().time(
                 datetime.datetime.now()
-            ).build()
+            ).build_server_policy()

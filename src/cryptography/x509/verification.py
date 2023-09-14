@@ -21,37 +21,30 @@ class PolicyBuilder:
     def __init__(
         self,
         *,
-        subject: Subject | None = None,
         time: datetime.datetime | None = None,
     ):
-        self._subject = subject
         self._time = time
 
     @classmethod
     def webpki(cls) -> PolicyBuilder:
-        return PolicyBuilder(time=datetime.datetime.now())
-
-    def subject(self, new_subject: Subject) -> PolicyBuilder:
-        """
-        Sets the expected certificate subject.
-        """
-        return PolicyBuilder(
-            subject=new_subject,
-            time=self._time,
-        )
+        return PolicyBuilder()
 
     def time(self, new_time: datetime.datetime) -> PolicyBuilder:
         """
         Sets the validation time.
         """
+        if self._time is not None:
+            raise ValueError("The validation time may only be set once.")
+
         return PolicyBuilder(
-            subject=self._subject,
             time=new_time,
         )
 
-    def build(self) -> typing.NoReturn:
+    def build_server_policy(
+        self, subject: Subject | None = None
+    ) -> typing.NoReturn:
         """
-        Construct a `Policy` from this `PolicyBuilder`.
+        Construct a server validation `Policy` from this `PolicyBuilder`.
         """
 
         raise NotImplementedError
