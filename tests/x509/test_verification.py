@@ -15,10 +15,6 @@ from tests.x509.test_x509 import _load_cert
 
 
 class TestPolicyBuilder:
-    def test_none_subject(self):
-        policy = PolicyBuilder(subject=None).build()
-        assert policy.subject is None
-
     def test_ipaddress_subject(self):
         policy = PolicyBuilder(
             subject=IPAddress(IPv4Address("0.0.0.0"))
@@ -79,3 +75,17 @@ class TestStore:
             x509.load_pem_x509_certificate,
         )
         assert Store([cert]) is not None
+
+
+class TestPolicyBuilder:
+    def test_time_already_set(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().time(datetime.datetime.now()).time(
+                datetime.datetime.now()
+            )
+
+    def test_build_not_implemented(self):
+        with pytest.raises(NotImplementedError):
+            PolicyBuilder().time(
+                datetime.datetime.now()
+            ).build_server_verifier(DNSName("cryptography.io"))

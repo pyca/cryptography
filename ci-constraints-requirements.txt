@@ -42,7 +42,7 @@ exceptiongroup==1.1.3
     # via pytest
 execnet==2.0.2
     # via pytest-xdist
-filelock==3.12.3; python_version >= "3.8"
+filelock==3.12.4; python_version >= "3.8"
     # via virtualenv
 idna==3.4
     # via requests
@@ -144,7 +144,7 @@ six==1.16.0
     # via bleach
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.2.5
+sphinx==7.2.6
     # via
     #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme

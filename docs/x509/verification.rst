@@ -18,7 +18,6 @@ chain building, etc.
     :class:`cryptography.x509.general_name.DNSName`,
     :class:`cryptography.x509.general_name.IPAddress`.
 
-
 .. class:: Profile
 
     .. versionadded:: 42.0.0
@@ -67,23 +66,7 @@ chain building, etc.
     .. versionadded:: 42.0.0
 
     A PolicyBuilder provides a builder-style interface for constructing a
-    :class:`Policy`.
-
-    .. doctest::
-
-        >>> from cryptography.x509.general_name import DNSName
-        >>> from cryptography.x509.verification import PolicyBuilder
-        >>> policy = PolicyBuilder().subject(DNSName("cryptography.io")).build()
-        >>> policy.subject
-        <DNSName(value='cryptography.io')>
-
-    .. method:: subject(new_subject)
-
-        Sets the policy's subject name.
-
-        :param new_subject: The :class:`Subject` to use in the policy
-
-        :returns: A new instance of :class:`PolicyBuilder`
+    Verifier.
 
     .. method:: time(new_time)
 
@@ -93,21 +76,13 @@ chain building, etc.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: profile(new_profile)
+    .. method:: build_server_verifier(subject)
 
-        Sets the underlying "profile" configuration for this policy.
+        Builds a verifier for verifying server certificates.
 
-        :param new_profile: The :class:`Profile` to use in this policy
+        :param subject: A :class:`Subject` to use in the policy
 
-        :returns: A new instance of :class:`PolicyBuilder`
-
-    .. method:: build
-
-        Constructs a :class:`Policy` from this :class:`PolicyBuilder`.
-
-        :returns: An instance of :class:`Policy`.
-
-        :raises ValueError: If any component of the policy is malformed.
+        :raises NotImplementedError: This API is not implemented yet.
 
 .. class:: Store(certs)
 
@@ -120,6 +95,3 @@ chain building, etc.
 
     :param certs: A list of one or more :class:`cryptography.x509.Certificate`
         instances.
-
-.. _`RFC 5280`: https://tools.ietf.org/html/rfc5280
-.. _`CA/B Forum's Basic Requirements`: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
