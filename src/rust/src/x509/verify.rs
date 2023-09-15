@@ -47,10 +47,6 @@ impl CryptoOps for PyCryptoOps {
     }
 }
 
-// NOTE: pyO3 classes can't be generic over a trait, which our profile API requires.
-// Our workaround is to unfold each profile variant in this enum, which produces
-// a small amount of (internal) duplication in exchange for the monomorphism that
-// pyO3 needs.
 struct FixedPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
