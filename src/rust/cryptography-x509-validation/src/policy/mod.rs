@@ -134,18 +134,6 @@ pub enum Subject<'a> {
     IP(IPAddress),
 }
 
-impl<'a> From<DNSName<'a>> for Subject<'a> {
-    fn from(value: DNSName<'a>) -> Self {
-        Self::DNS(value)
-    }
-}
-
-impl From<IPAddress> for Subject<'_> {
-    fn from(value: IPAddress) -> Self {
-        Self::IP(value)
-    }
-}
-
 /// A `Policy` describes user-configurable aspects of X.509 path validation.
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
@@ -306,19 +294,6 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
-    }
-
-    #[test]
-    fn test_subject_from_impls() {
-        assert!(matches!(
-            Subject::from(DNSName::new("cryptography.io").unwrap()),
-            Subject::DNS(_)
-        ));
-
-        assert!(matches!(
-            Subject::from(IPAddress::from_str("1.1.1.1").unwrap()),
-            Subject::IP(_)
-        ));
     }
 
     #[test]
