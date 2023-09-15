@@ -4,7 +4,6 @@
 
 use std::collections::HashSet;
 
-use asn1::ObjectIdentifier;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
@@ -13,7 +12,6 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::DuplicateExtensionsError;
-use cryptography_x509::oid::EKU_SERVER_AUTH_OID;
 
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, IPAddress};
@@ -138,14 +136,6 @@ pub enum Subject<'a> {
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
 
-    /// A top-level constraint on the length of paths constructed under
-    /// this policy.
-    ///
-    /// Note that this has different semantics from `pathLenConstraint`:
-    /// it controls the *overall* non-self-issued chain length, not the number
-    /// of non-self-issued intermediates in the chain.
-    pub max_chain_depth: u8,
-
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
     /// If `None`, the EE certificate must not contain a SAN.
@@ -155,18 +145,6 @@ pub struct Policy<'a, B: CryptoOps> {
     /// The validation time. All certificates validated by this policy must
     /// be valid at this time.
     pub validation_time: asn1::DateTime,
-
-    /// An extended key usage that must appear in EEs validated by this policy.
-    pub extended_key_usage: ObjectIdentifier,
-
-    /// The set of permitted signature algorithms, identified by their
-    /// algorithm identifiers.
-    ///
-    /// If not `None`, all certificates validated by this policy MUST
-    /// have a signature algorithm in this set.
-    ///
-    /// If `None`, all signature algorithms are permitted.
-    pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -175,17 +153,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
             _ops: ops,
-            max_chain_depth: 8,
             subject,
             validation_time: time,
-            extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            permitted_algorithms: Some(
-                WEBPKI_PERMITTED_ALGORITHMS
-                    .clone()
-                    .into_iter()
-                    .cloned()
-                    .collect(),
-            ),
         }
     }
 }
@@ -195,11 +164,6 @@ mod tests {
     use std::ops::Deref;
 
     use cryptography_x509::{extensions::DuplicateExtensionsError, oid::KEY_USAGE_OID};
-
-    use crate::{
-        policy::Subject,
-        types::{DNSName, IPAddress},
-    };
 
     use super::{
         PolicyError, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
