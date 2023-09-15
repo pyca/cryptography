@@ -11,7 +11,6 @@ use cryptography_x509::common::{
     PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
     PSS_SHA512_MASK_GEN_ALG,
 };
-use cryptography_x509::extensions::DuplicateExtensionsError;
 
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, IPAddress};
@@ -101,30 +100,6 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
     ])
 });
 
-pub enum PolicyError {
-    Malformed(asn1::ParseError),
-    DuplicateExtension(DuplicateExtensionsError),
-    Other(&'static str),
-}
-
-impl From<asn1::ParseError> for PolicyError {
-    fn from(value: asn1::ParseError) -> Self {
-        Self::Malformed(value)
-    }
-}
-
-impl From<DuplicateExtensionsError> for PolicyError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
-    }
-}
-
-impl From<&'static str> for PolicyError {
-    fn from(value: &'static str) -> Self {
-        Self::Other(value)
-    }
-}
-
 /// Represents a logical certificate "subject," i.e. a principal matching
 /// one of the names listed in a certificate's `subjectAltNames` extension.
 pub enum Subject<'a> {
@@ -162,12 +137,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 mod tests {
     use std::ops::Deref;
 
-    use cryptography_x509::{extensions::DuplicateExtensionsError, oid::KEY_USAGE_OID};
-
     use super::{
-        PolicyError, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
-        RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
-        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
+        ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256, RSASSA_PKCS1V15_SHA384,
+        RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384, RSASSA_PSS_SHA512,
+        WEBPKI_PERMITTED_ALGORITHMS,
     };
 
     #[test]
@@ -243,12 +216,5 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
-    }
-
-    #[test]
-    fn test_policyerror_from_impls() {
-        let _ = PolicyError::from(asn1::ParseError::new(asn1::ParseErrorKind::InvalidLength));
-        let _ = PolicyError::from(DuplicateExtensionsError(KEY_USAGE_OID));
-        let _ = PolicyError::from("oops");
     }
 }
