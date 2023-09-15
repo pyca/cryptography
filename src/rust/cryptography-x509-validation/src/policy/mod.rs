@@ -171,20 +171,6 @@ pub struct Policy<'a, B: CryptoOps> {
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Create a new policy with defaults for the certificate profile defined in
-    /// RFC 5280.
-    pub fn rfc5280(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
-        Self {
-            _ops: ops,
-            max_chain_depth: 8,
-            subject,
-            validation_time: time,
-            extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            // NOTE: RFC 5280 imposes no signature algorithm restrictions.
-            permitted_algorithms: None,
-        }
-    }
-
-    /// Create a new policy with defaults for the certificate profile defined in
     /// the CA/B Forum's Basic Requirements.
     pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
