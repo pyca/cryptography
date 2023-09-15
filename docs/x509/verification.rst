@@ -18,48 +18,31 @@ chain building, etc.
     :class:`cryptography.x509.general_name.DNSName`,
     :class:`cryptography.x509.general_name.IPAddress`.
 
-.. class:: Profile
+.. class:: ServerVerifier
 
     .. versionadded:: 42.0.0
 
-    An enumeration of different X.509 certificate "profiles."
+    A ServerVerifier verifies server certificates.
 
-    A profile is essentially a set of X.509 extension, algorithm, etc.
-    policies that are enforced during path validation.
-
-    .. attribute:: RFC5280
-
-        The certificate profile defined in `RFC 5280`_.
-
-    .. attribute:: WebPKI
-
-        The certificate profile defined in the
-        `CA/B Forum's Basic Requirements`_.
-
-
-.. class:: Policy
-
-    .. versionadded:: 42.0.0
-
-    A Policy contains and describes various pieces of configurable path
+    It contains and describes various pieces of configurable path
     validation logic, such as which subject to expect, how deep prospective
     validation chains may go, which signature algorithms are allowed, and
-    so forth.
+    so forth. It can be used to verify
 
-    Policies cannot be constructed directly; :class:`PolicyBuilder` must be
-    used.
+    ServerVerifier instances cannot be constructed directly;
+    :class:`PolicyBuilder` must be used.
 
     .. attribute:: subject
 
         :type: :class:`Subject`
 
-        The policy's subject.
+        The verifier's subject.
 
     .. attribute:: validation_time
 
         :type: :class:`datetime.datetime`
 
-        The policy's validation time.
+        The verifier's validation time.
 
 .. class:: PolicyBuilder
 
@@ -70,9 +53,9 @@ chain building, etc.
 
     .. method:: time(new_time)
 
-        Sets the policy's verification time.
+        Sets the verifier's verification time.
 
-        :param new_time: The :class:`datetime.datetime` to use in the policy
+        :param new_time: The :class:`datetime.datetime` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
@@ -80,9 +63,9 @@ chain building, etc.
 
         Builds a verifier for verifying server certificates.
 
-        :param subject: A :class:`Subject` to use in the policy
+        :param subject: A :class:`Subject` to use in the verifier
 
-        :raises NotImplementedError: This API is not implemented yet.
+        :returns: An instance of :class:`ServerVerifier`
 
 .. class:: Store(certs)
 
