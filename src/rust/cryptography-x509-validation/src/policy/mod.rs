@@ -139,7 +139,6 @@ pub struct Policy<'a, B: CryptoOps> {
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
     /// If `None`, the EE certificate must not contain a SAN.
-    // TODO: Make this an enum with supported SAN variants.
     pub subject: Option<Subject<'a>>,
 
     /// The validation time. All certificates validated by this policy must
