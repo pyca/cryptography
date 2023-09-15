@@ -183,18 +183,8 @@ impl From<IPAddress> for Subject<'_> {
 }
 
 /// A `Policy` describes user-configurable aspects of X.509 path validation.
-///
-/// A policy contains multiple moving parts:
-///
-/// 1. An inner `Profile`, which specifies the valid "shape" of certificates
-///    in this policy (e.g., certificates that must conform to RFC 5280);
-/// 2. Additional user-specified constraints, such as restrictions on
-///    signature and algorithm types.
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
-
-    /// The X.509 profile to use in this policy.
-    // pub profile: P,
 
     /// A top-level constraint on the length of paths constructed under
     /// this policy.
@@ -214,8 +204,6 @@ pub struct Policy<'a, B: CryptoOps> {
     /// be valid at this time.
     pub validation_time: asn1::DateTime,
 
-    // NOTE: Like the validation time, this conceptually belongs
-    // in the underlying profile.
     /// An extended key usage that must appear in EEs validated by this policy.
     pub extended_key_usage: ObjectIdentifier,
 
@@ -274,7 +262,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Inform this policy of an expected critical extension in CA certificates.
     ///
-    /// This allows the policy to accept critical extensions that the underlying
+    /// This allows the policy to accept critical extensions that the baseline
     /// profile does not cover. The user is responsible for separately validating
     /// these extensions.
     pub fn assert_critical_ca_extension(mut self, oid: ObjectIdentifier) -> Self {
@@ -284,7 +272,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
     /// Inform this policy of an expected critical extension in EE certificates.
     ///
-    /// This allows the policy to accept critical extensions that the underlying
+    /// This allows the policy to accept critical extensions that the baseline
     /// profile does not cover. The user is responsible for separately validating
     /// these extensions.
     pub fn assert_critical_ee_extension(mut self, oid: ObjectIdentifier) -> Self {
