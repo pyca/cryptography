@@ -81,17 +81,20 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::pyclass(name = "Policy", module = "cryptography.hazmat.bindings._rust.x509")]
-struct PyPolicy(OwnedPolicy);
+#[pyo3::pyclass(
+    name = "ServerVerifier",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyServerVerifier(OwnedPolicy);
 
-impl PyPolicy {
+impl PyServerVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
         &self.0.borrow_dependent().0
     }
 }
 
 #[pyo3::pymethods]
-impl PyPolicy {
+impl PyServerVerifier {
     #[getter]
     fn subject<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<Option<&'p pyo3::PyAny>> {
         match self.0.borrow_owner() {
@@ -167,51 +170,27 @@ fn build_subject<'a>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn create_policy(
+fn create_server_verifier(
     py: pyo3::Python<'_>,
-    profile: &pyo3::PyAny,
     subject: pyo3::Py<pyo3::PyAny>,
     time: Option<&pyo3::PyAny>,
-) -> pyo3::PyResult<PyPolicy> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509.verification"))?;
-    let rfc5280 = x509_module
-        .getattr(pyo3::intern!(py, "Profile"))?
-        .get_item(pyo3::intern!(py, "RFC5280"))?;
-    let webpki = x509_module
-        .getattr(pyo3::intern!(py, "Profile"))?
-        .get_item(pyo3::intern!(py, "WebPKI"))?;
-
+) -> pyo3::PyResult<PyServerVerifier> {
     let time = match time {
         Some(time) => py_to_datetime(py, time)?,
         None => datetime_now(py)?,
     };
 
     let subject_owner = build_subject_owner(py, subject)?;
-    let policy = if profile.eq(rfc5280)? {
-        OwnedPolicy::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
-            Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::rfc5280(
-                PyCryptoOps {},
-                subject,
-                time,
-            )))
-        })?
-    } else if profile.eq(webpki)? {
-        OwnedPolicy::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
-            Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::webpki(
-                PyCryptoOps {},
-                subject,
-                time,
-            )))
-        })?
-    } else {
-        return Err(pyo3::exceptions::PyTypeError::new_err(
-            "invalid profile specified; expected a Profile variant",
-        ));
-    };
+    let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
+        let subject = build_subject(py, subject_owner)?;
+        Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::webpki(
+            PyCryptoOps {},
+            subject,
+            time,
+        )))
+    })?;
 
-    Ok(PyPolicy(policy))
+    Ok(PyServerVerifier(policy))
 }
 
 #[pyo3::pyclass(
@@ -235,9 +214,9 @@ impl PyStore {
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_class::<PyPolicy>()?;
+    module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;
-    module.add_function(pyo3::wrap_pyfunction!(create_policy, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_server_verifier, module)?)?;
 
     Ok(())
 }
