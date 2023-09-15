@@ -34,8 +34,7 @@ class TestPolicyBuilder:
         assert policy.subject == DNSName("cryptography.io")
 
     def test_subject_bad_types(self):
-        # Subject must be none or a GeneralName type; nothing else is
-        # supported.
+        # Subject must be a supported GeneralName type
         with pytest.raises(TypeError):
             PolicyBuilder().build_server_verifier(
                 "cryptography.io"  # type: ignore[arg-type]
@@ -47,6 +46,10 @@ class TestPolicyBuilder:
         with pytest.raises(TypeError):
             PolicyBuilder().build_server_verifier(
                 IPv4Address("0.0.0.0")  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            PolicyBuilder().build_server_verifier(
+                None  # type: ignore[arg-type]
             )
 
     def test_builder_pattern(self):

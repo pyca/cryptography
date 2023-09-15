@@ -51,9 +51,6 @@ struct FixedPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
-    // NOTE: This is ugly, but is effectively the easiest way to use a uniform
-    // `OwnedPolicy` API when policies aren't strictly required to contain a subject.
-    None,
     // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
     // lifetime relationship between an a `PyString` and its borrowed `&str`
     // reference in all limited API builds. PyO3 can't currently do that in
@@ -89,7 +86,6 @@ impl PyServerVerifier {
     #[getter]
     fn subject<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<Option<&'p pyo3::PyAny>> {
         match self.0.borrow_owner() {
-            SubjectOwner::None => Ok(None),
             SubjectOwner::DNSName((subject, _)) => Ok(Some(subject.as_ref(py))),
             SubjectOwner::IPAddress((subject, _)) => Ok(Some(subject.as_ref(py))),
         }
@@ -106,10 +102,6 @@ fn build_subject_owner(
     subject: pyo3::Py<pyo3::PyAny>,
 ) -> pyo3::PyResult<SubjectOwner> {
     let subject = subject.as_ref(py);
-
-    if subject.is_none() {
-        return Ok(SubjectOwner::None);
-    }
 
     let x509_general_name_module =
         py.import(pyo3::intern!(py, "cryptography.x509.general_name"))?;
@@ -144,7 +136,6 @@ fn build_subject<'a>(
     subject: &'a SubjectOwner,
 ) -> pyo3::PyResult<Option<Subject<'a>>> {
     match subject {
-        SubjectOwner::None => Ok(None),
         SubjectOwner::DNSName((_, dns_name)) => {
             let dns_name = DNSName::new(dns_name)
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
