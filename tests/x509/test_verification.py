@@ -10,7 +10,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import PolicyBuilder, Profile, Store
+from cryptography.x509.verification import PolicyBuilder, Store
 from tests.x509.test_x509 import _load_cert
 
 
@@ -21,55 +21,43 @@ class TestPolicyBuilder:
                 datetime.datetime.now()
             )
 
-    def test_build_not_implemented(self):
-        with pytest.raises(NotImplementedError):
-            PolicyBuilder().time(
-                datetime.datetime.now()
-            ).build_server_verifier(DNSName("cryptography.io"))
-
     def test_ipaddress_subject(self):
-        policy = PolicyBuilder(
-            subject=IPAddress(IPv4Address("0.0.0.0"))
-        ).build()
+        policy = PolicyBuilder().build_server_verifier(
+            IPAddress(IPv4Address("0.0.0.0"))
+        )
         assert policy.subject == IPAddress(IPv4Address("0.0.0.0"))
 
     def test_dnsname_subject(self):
-        policy = PolicyBuilder(subject=DNSName("cryptography.io")).build()
+        policy = PolicyBuilder().build_server_verifier(
+            DNSName("cryptography.io")
+        )
         assert policy.subject == DNSName("cryptography.io")
 
     def test_subject_bad_types(self):
         # Subject must be none or a GeneralName type; nothing else is
         # supported.
         with pytest.raises(TypeError):
-            PolicyBuilder(
-                subject="cryptography.io"  # type: ignore[arg-type]
-            ).build()
+            PolicyBuilder().build_server_verifier(
+                "cryptography.io"  # type: ignore[arg-type]
+            )
         with pytest.raises(TypeError):
-            PolicyBuilder(subject="0.0.0.0").build()  # type: ignore[arg-type]
+            PolicyBuilder().build_server_verifier(
+                "0.0.0.0"  # type: ignore[arg-type]
+            )
         with pytest.raises(TypeError):
-            PolicyBuilder(
-                subject=IPv4Address("0.0.0.0")  # type: ignore[arg-type]
-            ).build()
-
-    def test_profile_bad_type(self):
-        # Profile must be a `Profile` variant.
-        with pytest.raises(TypeError):
-            PolicyBuilder(
-                subject=DNSName("cryptography.io"),
-                profile="webpki",  # type: ignore[arg-type]
-            ).build()
+            PolicyBuilder().build_server_verifier(
+                IPv4Address("0.0.0.0")  # type: ignore[arg-type]
+            )
 
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
 
         builder = PolicyBuilder()
-        builder = builder.subject(DNSName("cryptography.io"))
         builder = builder.time(now)
-        builder = builder.profile(Profile.RFC5280)
 
-        policy = builder.build()
-        assert policy.subject == DNSName("cryptography.io")
-        assert policy.validation_time == now
+        verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+        assert verifier.subject == DNSName("cryptography.io")
+        assert verifier.validation_time == now
 
 
 class TestStore:

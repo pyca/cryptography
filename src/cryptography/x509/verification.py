@@ -38,9 +38,9 @@ class PolicyBuilder:
             time=new_time,
         )
 
-    def build_server_verifier(self, subject: Subject) -> typing.NoReturn:
+    def build_server_verifier(self, subject: Subject) -> ServerVerifier:
         """
         Builds a verifier for verifying server certificates.
         """
 
-        raise NotImplementedError
+        return rust_x509.create_server_verifier(subject, self._time)
