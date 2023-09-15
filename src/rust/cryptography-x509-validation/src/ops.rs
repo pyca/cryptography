@@ -18,7 +18,7 @@ pub trait CryptoOps {
 
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
-    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err>;
+    fn verify_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err>;
 }
 
 #[cfg(test)]
@@ -36,7 +36,11 @@ pub(crate) mod tests {
             Ok(())
         }
 
-        fn is_signed_by(&self, _cert: &Certificate<'_>, _key: Self::Key) -> Result<(), Self::Err> {
+        fn verify_signed_by(
+            &self,
+            _cert: &Certificate<'_>,
+            _key: Self::Key,
+        ) -> Result<(), Self::Err> {
             Ok(())
         }
     }
@@ -62,7 +66,7 @@ zl9HYIMxATFyqSiD9jsx
         let ops = NullOps {};
         assert_eq!(ops.public_key(&cert), Ok(()));
         assert!(ops
-            .is_signed_by(&cert, ops.public_key(&cert).unwrap())
+            .verify_signed_by(&cert, ops.public_key(&cert).unwrap())
             .is_ok());
     }
 }

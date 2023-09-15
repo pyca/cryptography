@@ -7,6 +7,7 @@ use crate::asn1::{
 };
 use crate::backend::hashes;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::verify::PyCryptoOps;
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, types, x509};
 use cryptography_x509::certificate::Certificate as RawCertificate;
@@ -24,8 +25,6 @@ use cryptography_x509_validation::ops::CryptoOps;
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-
-use super::verify::PyCryptoOps;
 
 self_cell::self_cell!(
     pub(crate) struct OwnedCertificate {
@@ -291,7 +290,7 @@ impl Certificate {
 
         let ops = PyCryptoOps {};
         let issuer_key = ops.public_key(issuer.raw.borrow_dependent())?;
-        ops.is_signed_by(self.raw.borrow_dependent(), issuer_key)
+        ops.verify_signed_by(self.raw.borrow_dependent(), issuer_key)
     }
 }
 
