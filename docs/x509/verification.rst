@@ -8,7 +8,8 @@ chain building, etc.
 
 .. note::
     This module is a work in progress, and does not yet contain a fully usable
-    X.509 path validation implementation.
+    X.509 path validation implementation. These APIs should be considered
+    expiremental and not yet subject to our backwards compatibility policy.
 
 .. class:: Store(certs)
 
