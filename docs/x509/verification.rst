@@ -39,7 +39,7 @@ chain building, etc.
     It contains and describes various pieces of configurable path
     validation logic, such as which subject to expect, how deep prospective
     validation chains may go, which signature algorithms are allowed, and
-    so forth. It can be used to verify
+    so forth.
 
     ServerVerifier instances cannot be constructed directly;
     :class:`PolicyBuilder` must be used.
