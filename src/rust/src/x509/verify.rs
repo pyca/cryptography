@@ -19,11 +19,6 @@ use crate::x509::sign;
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
-    // NOTE: This "key" type also carries any error that might happen
-    // during key serialization/loading. This isn't ideal but also is
-    // not a significant issue, since its only use is in checking
-    // another certificate's signature (where an error means that the
-    // signature check fails trivially).
     type Key = pyo3::Py<pyo3::PyAny>;
     type Err = CryptographyError;
 
