@@ -14,9 +14,7 @@ use cryptography_x509::common::{
 };
 use cryptography_x509::extensions::{DuplicateExtensionsError, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
-use cryptography_x509::oid::{
-    BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-};
+use cryptography_x509::oid::EKU_SERVER_AUTH_OID;
 
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
@@ -105,11 +103,6 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
         &ECDSA_SHA512,
     ])
 });
-
-const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
-const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
 
 pub enum PolicyError {
     Malformed(asn1::ParseError),
@@ -215,9 +208,6 @@ pub struct Policy<'a, B: CryptoOps> {
     ///
     /// If `None`, all signature algorithms are permitted.
     pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
-
-    pub(crate) critical_ca_extensions: HashSet<ObjectIdentifier>,
-    pub(crate) critical_ee_extensions: HashSet<ObjectIdentifier>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -232,8 +222,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
             // NOTE: RFC 5280 imposes no signature algorithm restrictions.
             permitted_algorithms: None,
-            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
-            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
     }
 
@@ -253,45 +241,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     .cloned()
                     .collect(),
             ),
-            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
-            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
-    }
-}
-
-impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Inform this policy of an expected critical extension in CA certificates.
-    ///
-    /// This allows the policy to accept critical extensions that the baseline
-    /// profile does not cover. The user is responsible for separately validating
-    /// these extensions.
-    pub fn assert_critical_ca_extension(mut self, oid: ObjectIdentifier) -> Self {
-        self.critical_ca_extensions.insert(oid);
-        self
-    }
-
-    /// Inform this policy of an expected critical extension in EE certificates.
-    ///
-    /// This allows the policy to accept critical extensions that the baseline
-    /// profile does not cover. The user is responsible for separately validating
-    /// these extensions.
-    pub fn assert_critical_ee_extension(mut self, oid: ObjectIdentifier) -> Self {
-        self.critical_ee_extensions.insert(oid);
-        self
-    }
-
-    /// Configure this policy's validation time, i.e. the time referenced
-    /// for certificate validity period checks.
-    pub fn with_validation_time(mut self, time: asn1::DateTime) -> Self {
-        self.validation_time = time;
-        self
-    }
-
-    /// Configure this policy's maximum chain building depth, i.e. the
-    /// longest chain that path construction will attempt before giving up.
-    pub fn with_max_chain_depth(mut self, depth: u8) -> Self {
-        self.max_chain_depth = depth;
-        self
     }
 }
 
@@ -303,17 +253,16 @@ mod tests {
     use cryptography_x509::{
         extensions::{DuplicateExtensionsError, SubjectAlternativeName},
         name::{GeneralName, UnvalidatedIA5String},
-        oid::{EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID},
+        oid::KEY_USAGE_OID,
     };
 
     use crate::{
-        ops::tests::NullOps,
-        policy::{Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        policy::Subject,
         types::{DNSName, IPAddress},
     };
 
     use super::{
-        Policy, PolicyError, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        PolicyError, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
     };
@@ -391,57 +340,6 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
-    }
-
-    #[test]
-    fn test_policy_critical_extensions() {
-        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, time);
-
-        assert_eq!(
-            policy.critical_ca_extensions,
-            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
-        );
-        assert_eq!(
-            policy.critical_ee_extensions,
-            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
-        );
-
-        let policy = policy.assert_critical_ca_extension(EXTENDED_KEY_USAGE_OID);
-        let policy = policy.assert_critical_ee_extension(EXTENDED_KEY_USAGE_OID);
-        assert_ne!(
-            policy.critical_ca_extensions,
-            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
-        );
-        assert_ne!(
-            policy.critical_ee_extensions,
-            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
-        );
-    }
-
-    #[test]
-    fn test_policy_validation_time() {
-        let old_time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, old_time.clone());
-
-        assert_eq!(policy.validation_time, old_time);
-
-        let new_time = asn1::DateTime::new(2024, 9, 12, 1, 1, 1).unwrap();
-        let policy = policy.with_validation_time(new_time.clone());
-
-        assert_eq!(policy.validation_time, new_time);
-    }
-
-    #[test]
-    fn test_policy_max_chain_depth() {
-        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, time);
-
-        assert_eq!(policy.max_chain_depth, 8);
-
-        let policy = policy.with_max_chain_depth(12);
-
-        assert_eq!(policy.max_chain_depth, 12);
     }
 
     #[test]
