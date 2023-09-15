@@ -13,8 +13,8 @@ use pyo3::IntoPy;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
-
-use super::{common::datetime_now, datetime_to_py, py_to_datetime, sign};
+use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
+use crate::x509::sign;
 
 pub(crate) struct PyCryptoOps {}
 
