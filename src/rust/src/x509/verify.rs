@@ -47,7 +47,7 @@ impl CryptoOps for PyCryptoOps {
     }
 }
 
-struct FixedPolicy<'a>(Policy<'a, PyCryptoOps>);
+struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
@@ -65,7 +65,7 @@ self_cell::self_cell!(
         owner: SubjectOwner,
 
         #[covariant]
-        dependent: FixedPolicy,
+        dependent: PyCryptoPolicy,
     }
 );
 
@@ -160,7 +160,11 @@ fn create_server_verifier(
     let subject_owner = build_subject_owner(py, subject)?;
     let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
         let subject = build_subject(py, subject_owner)?;
-        Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::new(PyCryptoOps {}, subject, time)))
+        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
+            PyCryptoOps {},
+            subject,
+            time,
+        )))
     })?;
 
     Ok(PyServerVerifier(policy))
