@@ -54,9 +54,7 @@ chain building, etc.
 
         :type: :class:`datetime.datetime`
 
-        The verifier's validation time. If not specified during construction
-        (see :class:`PolicyBuilder`), this is set to
-        :meth:`datetime.datetime.now`.
+        The verifier's validation time.
 
 .. class:: PolicyBuilder
 
@@ -68,6 +66,9 @@ chain building, etc.
     .. method:: time(new_time)
 
         Sets the verifier's verification time.
+
+        If not called explicitly, this is set to :meth:`datetime.datetime.now`
+        when :meth:`build_server_verifier` is called.
 
         :param new_time: The :class:`datetime.datetime` to use in the verifier
 
