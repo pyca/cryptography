@@ -12,6 +12,9 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 
+use crate::ops::CryptoOps;
+use crate::types::{DNSName, IPAddress};
+
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
 static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
@@ -96,6 +99,39 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
         &ECDSA_SHA512,
     ])
 });
+
+/// Represents a logical certificate "subject," i.e. a principal matching
+/// one of the names listed in a certificate's `subjectAltNames` extension.
+pub enum Subject<'a> {
+    DNS(DNSName<'a>),
+    IP(IPAddress),
+}
+
+/// A `Policy` describes user-configurable aspects of X.509 path validation.
+pub struct Policy<'a, B: CryptoOps> {
+    _ops: B,
+
+    /// A subject (i.e. DNS name or other name format) that any EE certificates
+    /// validated by this policy must match.
+    /// If `None`, the EE certificate must not contain a SAN.
+    pub subject: Option<Subject<'a>>,
+
+    /// The validation time. All certificates validated by this policy must
+    /// be valid at this time.
+    pub validation_time: asn1::DateTime,
+}
+
+impl<'a, B: CryptoOps> Policy<'a, B> {
+    /// Creates a new policy with the given `CryptoOps`, an optional subject,
+    /// and a validation time.
+    pub fn new(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
+        Self {
+            _ops: ops,
+            subject,
+            validation_time: time,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

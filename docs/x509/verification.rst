@@ -20,7 +20,7 @@ chain building, etc.
     OS's root of trust, from a well-known source such as a browser CA bundle,
     or from a small set of manually pre-trusted entities.
 
-    :param certs: A list of one or more :class:`~cryptography.x509.Certificate`
+    :param certs: A list of one or more :class:`cryptography.x509.Certificate`
         instances.
 
 .. class:: Subject
@@ -31,6 +31,31 @@ chain building, etc.
     :class:`cryptography.x509.general_name.DNSName`,
     :class:`cryptography.x509.general_name.IPAddress`.
 
+.. class:: ServerVerifier
+
+    .. versionadded:: 42.0.0
+
+    A ServerVerifier verifies server certificates.
+
+    It contains and describes various pieces of configurable path
+    validation logic, such as which subject to expect, how deep prospective
+    validation chains may go, which signature algorithms are allowed, and
+    so forth.
+
+    ServerVerifier instances cannot be constructed directly;
+    :class:`PolicyBuilder` must be used.
+
+    .. attribute:: subject
+
+        :type: :class:`Subject`
+
+        The verifier's subject.
+
+    .. attribute:: validation_time
+
+        :type: :class:`datetime.datetime`
+
+        The verifier's validation time.
 
 .. class:: PolicyBuilder
 
@@ -41,9 +66,12 @@ chain building, etc.
 
     .. method:: time(new_time)
 
-        Sets the policy's verification time.
+        Sets the verifier's verification time.
 
-        :param new_time: The :class:`datetime.datetime` to use in the policy
+        If not called explicitly, this is set to :meth:`datetime.datetime.now`
+        when :meth:`build_server_verifier` is called.
+
+        :param new_time: The :class:`datetime.datetime` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
@@ -51,6 +79,6 @@ chain building, etc.
 
         Builds a verifier for verifying server certificates.
 
-        :param subject: A :class:`Subject` to use in the policy
+        :param subject: A :class:`Subject` to use in the verifier
 
-        :raises NotImplementedError: This API is not implemented yet.
+        :returns: An instance of :class:`ServerVerifier`

@@ -171,6 +171,7 @@ OID_OCSP = AuthorityInformationAccessOID.OCSP
 
 __all__ = [
     "certificate_transparency",
+    "verification",
     "load_pem_x509_certificate",
     "load_pem_x509_certificates",
     "load_der_x509_certificate",
