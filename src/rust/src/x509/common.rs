@@ -136,7 +136,7 @@ pub(crate) fn encode_general_name<'a>(
         Ok(GeneralName::UniformResourceIdentifier(
             UnvalidatedIA5String(gn_value.extract::<&str>()?),
         ))
-    } else if gn_type.is(types::IPADDRESS.get(py)?) {
+    } else if gn_type.is(types::IP_ADDRESS.get(py)?) {
         Ok(GeneralName::IPAddress(
             gn.call_method0(pyo3::intern!(py, "_packed"))?
                 .extract::<&[u8]>()?,
@@ -272,7 +272,7 @@ pub(crate) fn parse_general_name(
         GeneralName::IPAddress(data) => {
             if data.len() == 4 || data.len() == 16 {
                 let addr = types::IPADDRESS_IPADDRESS.get(py)?.call1((data,))?;
-                types::IPADDRESS.get(py)?.call1((addr,))?.to_object(py)
+                types::IP_ADDRESS.get(py)?.call1((addr,))?.to_object(py)
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
                 // verify length in this function.
@@ -333,7 +333,7 @@ fn create_ip_network(
         prefix?
     );
     let addr = types::IPADDRESS_IPNETWORK.get(py)?.call1((net,))?;
-    Ok(types::IPADDRESS.get(py)?.call1((addr,))?.to_object(py))
+    Ok(types::IP_ADDRESS.get(py)?.call1((addr,))?.to_object(py))
 }
 
 fn ipv4_netmask(num: u32) -> Result<u32, CryptographyError> {

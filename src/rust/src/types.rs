@@ -242,6 +242,7 @@ pub static DIRECTORY_NAME: LazyPyImport =
 pub static UNIFORM_RESOURCE_IDENTIFIER: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["UniformResourceIdentifier"]);
 pub static DNS_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["DNSName"]);
+pub static IP_ADDRESS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["IPAddress"]);
 pub static RFC822_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["RFC822Name"]);
 pub static OTHER_NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OtherName"]);
 pub static CERTIFICATE_VERSION_V1: LazyPyImport =
