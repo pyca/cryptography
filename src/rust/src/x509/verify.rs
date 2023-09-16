@@ -73,6 +73,7 @@ struct PyServerVerifier {
     // reference in all limited API builds. PyO3 can't currently do that in
     // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
     // so, which was only stabilized with 3.10.
+    #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
     policy: OwnedPolicy,
 }
@@ -85,11 +86,6 @@ impl PyServerVerifier {
 
 #[pyo3::pymethods]
 impl PyServerVerifier {
-    #[getter]
-    fn subject<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<Option<&'p pyo3::PyAny>> {
-        Ok(Some(self.py_subject.as_ref(py)))
-    }
-
     #[getter]
     fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         datetime_to_py(py, &self.as_policy().validation_time)
