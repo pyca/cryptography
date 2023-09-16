@@ -50,6 +50,11 @@ struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
+    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
+    // lifetime relationship between an a `PyString` and its borrowed `&str`
+    // reference in all limited API builds. PyO3 can't currently do that in
+    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
+    // so, which was only stabilized with 3.10.
     DNSName(String),
     IPAddress(pyo3::Py<pyo3::types::PyBytes>),
 }
@@ -68,11 +73,6 @@ self_cell::self_cell!(
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
 struct PyServerVerifier {
-    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
-    // lifetime relationship between an a `PyString` and its borrowed `&str`
-    // reference in all limited API builds. PyO3 can't currently do that in
-    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
-    // so, which was only stabilized with 3.10.
     #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
     policy: OwnedPolicy,
