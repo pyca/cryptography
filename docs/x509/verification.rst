@@ -54,7 +54,9 @@ chain building, etc.
 
         :type: :class:`datetime.datetime`
 
-        The verifier's validation time.
+        The verifier's validation time. If not specified during construction
+        (see :class:`PolicyBuilder`), this is set to
+        :meth:`datetime.datetime.now`.
 
 .. class:: PolicyBuilder
 
