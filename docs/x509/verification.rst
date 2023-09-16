@@ -8,7 +8,20 @@ chain building, etc.
 
 .. note::
     This module is a work in progress, and does not yet contain a fully usable
-    X.509 path validation implementation.
+    X.509 path validation implementation. These APIs should be considered
+    experimental and not yet subject to our backwards compatibility policy.
+
+.. class:: Store(certs)
+
+    .. versionadded:: 42.0.0
+
+    A Store is an opaque set of public keys and subject identifiers that are
+    considered trusted *a priori*. Stores are typically created from the host
+    OS's root of trust, from a well-known source such as a browser CA bundle,
+    or from a small set of manually pre-trusted entities.
+
+    :param certs: A list of one or more :class:`cryptography.x509.Certificate`
+        instances.
 
 .. class:: Subject
 
@@ -27,7 +40,11 @@ chain building, etc.
     It contains and describes various pieces of configurable path
     validation logic, such as which subject to expect, how deep prospective
     validation chains may go, which signature algorithms are allowed, and
+<<<<<<< HEAD
     so forth. It can be used to verify
+=======
+    so forth.
+>>>>>>> main
 
     ServerVerifier instances cannot be constructed directly;
     :class:`PolicyBuilder` must be used.
@@ -55,6 +72,9 @@ chain building, etc.
 
         Sets the verifier's verification time.
 
+        If not called explicitly, this is set to :meth:`datetime.datetime.now`
+        when :meth:`build_server_verifier` is called.
+
         :param new_time: The :class:`datetime.datetime` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
@@ -66,15 +86,3 @@ chain building, etc.
         :param subject: A :class:`Subject` to use in the verifier
 
         :returns: An instance of :class:`ServerVerifier`
-
-.. class:: Store(certs)
-
-    .. versionadded:: 42.0.0
-
-    A Store is an opaque set of public keys and subject identifiers that are
-    considered trusted *a priori*. Stores are typically created from the host
-    OS's root of trust, from a well-known source such as a browser CA bundle,
-    or from a small set of manually pre-trusted entities.
-
-    :param certs: A list of one or more :class:`cryptography.x509.Certificate`
-        instances.
