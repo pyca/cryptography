@@ -8,7 +8,6 @@ use cryptography_x509_validation::{
     policy::{Policy, Subject},
     types::{DNSName, IPAddress},
 };
-use pyo3::IntoPy;
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
@@ -51,13 +50,8 @@ struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
-    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
-    // lifetime relationship between an a `PyString` and its borrowed `&str`
-    // reference in all limited API builds. PyO3 can't currently do that in
-    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
-    // so, which was only stabilized with 3.10.
-    DNSName((pyo3::Py<pyo3::PyAny>, String)),
-    IPAddress((pyo3::Py<pyo3::PyAny>, pyo3::Py<pyo3::types::PyBytes>)),
+    DNSName(String),
+    IPAddress(pyo3::Py<pyo3::types::PyBytes>),
 }
 
 self_cell::self_cell!(
@@ -73,11 +67,19 @@ self_cell::self_cell!(
     name = "ServerVerifier",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyServerVerifier(OwnedPolicy);
+struct PyServerVerifier {
+    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
+    // lifetime relationship between an a `PyString` and its borrowed `&str`
+    // reference in all limited API builds. PyO3 can't currently do that in
+    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
+    // so, which was only stabilized with 3.10.
+    py_subject: pyo3::Py<pyo3::PyAny>,
+    policy: OwnedPolicy,
+}
 
 impl PyServerVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.0.borrow_dependent().0
+        &self.policy.borrow_dependent().0
     }
 }
 
@@ -85,10 +87,7 @@ impl PyServerVerifier {
 impl PyServerVerifier {
     #[getter]
     fn subject<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<Option<&'p pyo3::PyAny>> {
-        match self.0.borrow_owner() {
-            SubjectOwner::DNSName((subject, _)) => Ok(Some(subject.as_ref(py))),
-            SubjectOwner::IPAddress((subject, _)) => Ok(Some(subject.as_ref(py))),
-        }
+        Ok(Some(self.py_subject.as_ref(py)))
     }
 
     #[getter]
@@ -99,7 +98,7 @@ impl PyServerVerifier {
 
 fn build_subject_owner(
     py: pyo3::Python<'_>,
-    subject: pyo3::Py<pyo3::PyAny>,
+    subject: &pyo3::Py<pyo3::PyAny>,
 ) -> pyo3::PyResult<SubjectOwner> {
     let subject = subject.as_ref(py);
 
@@ -108,17 +107,14 @@ fn build_subject_owner(
             .getattr(pyo3::intern!(py, "value"))?
             .downcast::<pyo3::types::PyString>()?;
 
-        Ok(SubjectOwner::DNSName((
-            subject.into_py(py),
-            value.to_str()?.to_owned(),
-        )))
+        Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
     } else if subject.is_instance(types::IP_ADDRESS.get(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "_packed"))?
             .call0()?
             .downcast::<pyo3::types::PyBytes>()?;
 
-        Ok(SubjectOwner::IPAddress((subject.into_py(py), value.into())))
+        Ok(SubjectOwner::IPAddress(value.into()))
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
             "unsupported subject type",
@@ -131,13 +127,13 @@ fn build_subject<'a>(
     subject: &'a SubjectOwner,
 ) -> pyo3::PyResult<Option<Subject<'a>>> {
     match subject {
-        SubjectOwner::DNSName((_, dns_name)) => {
+        SubjectOwner::DNSName(dns_name) => {
             let dns_name = DNSName::new(dns_name)
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
 
             Ok(Some(Subject::DNS(dns_name)))
         }
-        SubjectOwner::IPAddress((_, ip_addr)) => {
+        SubjectOwner::IPAddress(ip_addr) => {
             let ip_addr = IPAddress::from_bytes(ip_addr.as_bytes(py))
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid IP address"))?;
 
@@ -157,7 +153,7 @@ fn create_server_verifier(
         None => datetime_now(py)?,
     };
 
-    let subject_owner = build_subject_owner(py, subject)?;
+    let subject_owner = build_subject_owner(py, &subject)?;
     let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
         let subject = build_subject(py, subject_owner)?;
         Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
@@ -167,7 +163,10 @@ fn create_server_verifier(
         )))
     })?;
 
-    Ok(PyServerVerifier(policy))
+    Ok(PyServerVerifier {
+        py_subject: subject,
+        policy,
+    })
 }
 
 #[pyo3::pyclass(
