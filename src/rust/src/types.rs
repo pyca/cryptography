@@ -201,7 +201,6 @@ pub static UNRECOGNIZED_EXTENSION: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["UnrecognizedExtension"]);
 pub static EXTENSION: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extension"]);
 pub static EXTENSIONS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extensions"]);
-pub static IPADDRESS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["IPAddress"]);
 pub static NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Name"]);
 pub static RELATIVE_DISTINGUISHED_NAME: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["RelativeDistinguishedName"]);

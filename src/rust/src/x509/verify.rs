@@ -103,12 +103,7 @@ fn build_subject_owner(
 ) -> pyo3::PyResult<SubjectOwner> {
     let subject = subject.as_ref(py);
 
-    let x509_general_name_module =
-        py.import(pyo3::intern!(py, "cryptography.x509.general_name"))?;
-    let dns_name_class = x509_general_name_module.getattr(pyo3::intern!(py, "DNSName"))?;
-    let ip_address_class = x509_general_name_module.getattr(pyo3::intern!(py, "IPAddress"))?;
-
-    if subject.is_instance(dns_name_class)? {
+    if subject.is_instance(types::DNS_NAME.get(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "value"))?
             .downcast::<pyo3::types::PyString>()?;
@@ -117,7 +112,7 @@ fn build_subject_owner(
             subject.into_py(py),
             value.to_str()?.to_owned(),
         )))
-    } else if subject.is_instance(ip_address_class)? {
+    } else if subject.is_instance(types::IP_ADDRESS.get(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "_packed"))?
             .call0()?
