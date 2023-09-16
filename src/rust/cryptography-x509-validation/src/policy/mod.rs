@@ -122,9 +122,9 @@ pub struct Policy<'a, B: CryptoOps> {
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Create a new policy with defaults for the certificate profile defined in
-    /// the CA/B Forum's Basic Requirements.
-    pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
+    /// Creates a new policy with the given `CryptoOps`, an optional subject,
+    /// and a validation time.
+    pub fn new(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
             _ops: ops,
             subject,
