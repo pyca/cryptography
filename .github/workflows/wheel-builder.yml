@@ -228,7 +228,7 @@ jobs:
           name: openssl-macos-universal2
           path: "../openssl-macos-universal2/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
+      - uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
@@ -310,7 +310,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e
+      - uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
