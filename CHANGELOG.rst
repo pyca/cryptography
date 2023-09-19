@@ -23,6 +23,13 @@ Changelog
 * Added `algorithm` and `mgf` properties to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
 
+.. _v41-0-4:
+
+41.0.4 - 2023-09-19
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.3.
+
 .. _v41-0-3:
 
 41.0.3 - 2023-08-01
