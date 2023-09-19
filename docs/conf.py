@@ -201,6 +201,9 @@ linkcheck_ignore = [
     r"https://www.oscca.gov.cn",
     # Cloudflare returns 403s for all non-browser requests
     r"https://speakerdeck.com",
+    r"https://\w+.stackexchange.com",
+    r"https://stackoverflow.com",
+
     # GitHub changed how they do page renders so anchor detection
     # no longer works in source view
     r"https://github.com/.*/blob/.*#L\d+",
