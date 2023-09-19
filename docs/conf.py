@@ -197,10 +197,10 @@ linkcheck_ignore = [
     r"https://info.isl.ntt.co.jp/crypt/eng/camellia/",
     # Inconsistent small DH params they seem incapable of fixing
     r"https://www.secg.org/sec1-v2.pdf",
-    # Incomplete cert chain
-    r"https://www.oscca.gov.cn",
     # Cloudflare returns 403s for all non-browser requests
     r"https://speakerdeck.com",
+    r"https://\w+.stackexchange.com",
+    r"https://stackoverflow.com",
     # GitHub changed how they do page renders so anchor detection
     # no longer works in source view
     r"https://github.com/.*/blob/.*#L\d+",
