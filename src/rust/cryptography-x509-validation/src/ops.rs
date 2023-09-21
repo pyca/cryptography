@@ -60,8 +60,8 @@ Wc7EcF8po2/ZO6kNCwK/ICH6DobgLekA5lSLr5EvuioZniZp5lFzAw4+YzPQ7XKJ
 zl9HYIMxATFyqSiD9jsx
 -----END CERTIFICATE-----";
 
-        let cert_der = pem::parse(v1_cert.as_bytes()).unwrap().contents;
-        let cert = asn1::parse_single::<Certificate<'_>>(&cert_der).unwrap();
+        let pem = pem::parse(v1_cert.as_bytes()).unwrap();
+        let cert = asn1::parse_single::<Certificate<'_>>(pem.contents()).unwrap();
 
         let ops = NullOps {};
         assert_eq!(ops.public_key(&cert), Ok(()));
