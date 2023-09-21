@@ -197,22 +197,6 @@ pub struct Policy<'a, B: CryptoOps> {
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Create a new policy with defaults for the certificate profile defined in
-    /// RFC 5280.
-    pub fn rfc5280(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
-        Self {
-            _ops: ops,
-            max_chain_depth: 8,
-            subject,
-            validation_time: time,
-            extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            // NOTE: RFC 5280 imposes no signature algorithm restrictions.
-            permitted_algorithms: None,
-            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
-            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
-        }
-    }
-
-    /// Create a new policy with defaults for the certificate profile defined in
     /// the CA/B Forum's Basic Requirements.
     pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
@@ -278,7 +262,7 @@ mod tests {
     use cryptography_x509::{
         extensions::SubjectAlternativeName,
         name::{GeneralName, UnvalidatedIA5String},
-        oid::{EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID},
+        oid::EXTENDED_KEY_USAGE_OID,
     };
 
     use crate::{
@@ -371,7 +355,7 @@ mod tests {
     #[test]
     fn test_policy_critical_extensions() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, time);
+        let policy = Policy::webpki(NullOps {}, None, time);
 
         assert_eq!(
             policy.critical_ca_extensions,
@@ -397,7 +381,7 @@ mod tests {
     #[test]
     fn test_policy_validation_time() {
         let old_time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, old_time.clone());
+        let policy = Policy::webpki(NullOps {}, None, old_time.clone());
 
         assert_eq!(policy.validation_time, old_time);
 
@@ -410,7 +394,7 @@ mod tests {
     #[test]
     fn test_policy_max_chain_depth() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::rfc5280(NullOps {}, None, time);
+        let policy = Policy::webpki(NullOps {}, None, time);
 
         assert_eq!(policy.max_chain_depth, 8);
 
