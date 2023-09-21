@@ -7,7 +7,7 @@
 
 alabaster==0.7.13
     # via sphinx
-argcomplete==3.1.1
+argcomplete==3.1.2
     # via nox
 babel==2.12.1
     # via sphinx
@@ -136,9 +136,9 @@ requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.5.2
+rich==13.5.3
     # via twine
-ruff==0.0.289
+ruff==0.0.290
     # via cryptography (pyproject.toml)
 six==1.16.0
     # via bleach
@@ -179,9 +179,9 @@ tomli==2.0.1
     #   pytest
 twine==4.0.2
     # via cryptography (pyproject.toml)
-typing-extensions==4.7.1
+typing-extensions==4.8.0; python_version >= "3.8"
     # via mypy
-urllib3==2.0.4
+urllib3==2.0.5
     # via
     #   requests
     #   twine
@@ -189,7 +189,7 @@ virtualenv==20.24.5
     # via nox
 webencodings==0.5.1
     # via bleach
-zipp==3.16.2; python_version >= "3.8"
+zipp==3.17.0; python_version >= "3.8"
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
