@@ -58,7 +58,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -179,7 +179,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -230,7 +230,7 @@ jobs:
             RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -294,7 +294,7 @@ jobs:
           - {VERSION: "3.11", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -367,7 +367,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -410,7 +410,7 @@ jobs:
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         timeout-minutes: 3
         with:
           persist-credentials: false
