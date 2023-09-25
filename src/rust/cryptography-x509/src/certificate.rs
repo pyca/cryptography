@@ -16,7 +16,7 @@ pub struct Certificate<'a> {
     pub signature: asn1::BitString<'a>,
 }
 
-impl Certificate<'_> {
+impl<'a> Certificate<'a> {
     /// Returns the certificate's issuer.
     pub fn issuer(&self) -> &NameReadable<'_> {
         self.tbs_cert.issuer.unwrap_read()
@@ -29,7 +29,7 @@ impl Certificate<'_> {
 
     /// Returns an iterable container over the certificate's extension, or
     /// an error if the extension set contains a duplicate extension.
-    pub fn extensions(&self) -> Result<Extensions<'_>, DuplicateExtensionsError> {
+    pub fn extensions(&self) -> Result<Extensions<'a>, DuplicateExtensionsError> {
         self.tbs_cert.extensions()
     }
 }
@@ -55,8 +55,8 @@ pub struct TbsCertificate<'a> {
     pub raw_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
-impl TbsCertificate<'_> {
-    pub fn extensions(&self) -> Result<Extensions<'_>, DuplicateExtensionsError> {
+impl<'a> TbsCertificate<'a> {
+    pub fn extensions(&self) -> Result<Extensions<'a>, DuplicateExtensionsError> {
         Extensions::from_raw_extensions(self.raw_extensions.as_ref())
     }
 }

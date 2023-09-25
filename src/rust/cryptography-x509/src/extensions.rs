@@ -75,7 +75,7 @@ pub struct Extension<'a> {
 }
 
 impl<'a> Extension<'a> {
-    pub fn value<T: asn1::Asn1Readable<'a>>(&'a self) -> asn1::ParseResult<T> {
+    pub fn value<T: asn1::Asn1Readable<'a>>(&self) -> asn1::ParseResult<T> {
         asn1::parse_single(self.extn_value)
     }
 }
