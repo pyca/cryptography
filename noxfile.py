@@ -184,7 +184,7 @@ def rust(session: nox.Session) -> None:
     # Just install the dependencies needed for the Rust build.rs
     # TODO: Ideally there'd be a pip flag to install just our dependencies,
     # but not install us.
-    install(session, "cffi")
+    install(session, "cffi==1.16.0rc1")
 
     with session.chdir("src/rust/"):
         session.run("cargo", "fmt", "--all", "--", "--check", external=True)
