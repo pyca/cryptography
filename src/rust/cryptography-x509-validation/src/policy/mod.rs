@@ -4,6 +4,8 @@
 
 use std::collections::HashSet;
 
+use cryptography_x509::extensions::SubjectAlternativeName;
+use cryptography_x509::name::GeneralName;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
@@ -13,7 +15,7 @@ use cryptography_x509::common::{
 };
 
 use crate::ops::CryptoOps;
-use crate::types::{DNSName, IPAddress};
+use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
 static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
@@ -107,6 +109,38 @@ pub enum Subject<'a> {
     IP(IPAddress),
 }
 
+impl Subject<'_> {
+    fn subject_alt_name_matches(&self, general_name: &GeneralName<'_>) -> bool {
+        match (general_name, self) {
+            (GeneralName::DNSName(pattern), Self::DNS(name)) => {
+                DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
+            }
+            (GeneralName::IPAddress(pattern), Self::IP(name)) => {
+                IPRange::from_bytes(pattern).map_or(false, |p| p.matches(name))
+            }
+            _ => false,
+        }
+    }
+
+    /// Returns true if any of the names in the given `SubjectAlternativeName`
+    /// match this `Subject`.
+    pub fn matches(&self, san: &SubjectAlternativeName<'_>) -> bool {
+        san.clone().any(|gn| self.subject_alt_name_matches(&gn))
+    }
+}
+
+impl<'a> From<DNSName<'a>> for Subject<'a> {
+    fn from(value: DNSName<'a>) -> Self {
+        Self::DNS(value)
+    }
+}
+
+impl From<IPAddress> for Subject<'_> {
+    fn from(value: IPAddress) -> Self {
+        Self::IP(value)
+    }
+}
+
 /// A `Policy` describes user-configurable aspects of X.509 path validation.
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
@@ -137,10 +171,18 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 mod tests {
     use std::ops::Deref;
 
+    use asn1::SequenceOfWriter;
+    use cryptography_x509::{
+        extensions::SubjectAlternativeName,
+        name::{GeneralName, UnvalidatedIA5String},
+    };
+
+    use crate::types::{DNSName, IPAddress};
+
     use super::{
-        ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256, RSASSA_PKCS1V15_SHA384,
-        RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384, RSASSA_PSS_SHA512,
-        WEBPKI_PERMITTED_ALGORITHMS,
+        Subject, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
+        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
     };
 
     #[test]
@@ -215,6 +257,80 @@ mod tests {
             assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&ECDSA_SHA512));
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
+        }
+    }
+
+    #[test]
+    fn test_subject_from_impls() {
+        assert!(matches!(
+            Subject::from(DNSName::new("cryptography.io").unwrap()),
+            Subject::DNS(_)
+        ));
+
+        assert!(matches!(
+            Subject::from(IPAddress::from_str("1.1.1.1").unwrap()),
+            Subject::IP(_)
+        ));
+    }
+
+    #[test]
+    fn test_subject_matches() {
+        let domain_sub = Subject::from(DNSName::new("test.cryptography.io").unwrap());
+        let ip_sub = Subject::from(IPAddress::from_str("127.0.0.1").unwrap());
+
+        // Single SAN, domain wildcard.
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn])).unwrap();
+            let any_cryptography_io =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(domain_sub.matches(&any_cryptography_io));
+            assert!(!ip_sub.matches(&any_cryptography_io));
+        }
+
+        // Single SAN, IP range.
+        {
+            // 127.0.0.1/24
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
+            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(ip_sub.matches(&local_24));
+            assert!(!domain_sub.matches(&local_24));
+        }
+
+        // Multiple SANs, both domain wildcard and IP range.
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn, ip_gn])).unwrap();
+
+            let any_cryptography_io_or_local_24 =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(domain_sub.matches(&any_cryptography_io_or_local_24));
+            assert!(ip_sub.matches(&any_cryptography_io_or_local_24));
+        }
+
+        // Single SAN, invalid domain pattern.
+        {
+            let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*es*.cryptography.io"));
+            let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn])).unwrap();
+            let any_cryptography_io =
+                asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(!domain_sub.matches(&any_cryptography_io));
+        }
+
+        // Single SAN, invalid IP range.
+        {
+            // 127.0.0.1/24
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 1, 255, 1, 0]);
+            let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
+            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+
+            assert!(!ip_sub.matches(&local_24));
         }
     }
 }
