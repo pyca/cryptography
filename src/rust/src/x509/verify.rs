@@ -152,7 +152,7 @@ fn create_server_verifier(
     let subject_owner = build_subject_owner(py, &subject)?;
     let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
         let subject = build_subject(py, subject_owner)?;
-        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::webpki(
+        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
             PyCryptoOps {},
             subject,
             time,

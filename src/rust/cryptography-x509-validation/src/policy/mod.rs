@@ -198,7 +198,7 @@ pub struct Policy<'a, B: CryptoOps> {
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Create a new policy with defaults for the certificate profile defined in
     /// the CA/B Forum's Basic Requirements.
-    pub fn webpki(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
+    pub fn new(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
             _ops: ops,
             max_chain_depth: 8,
@@ -355,7 +355,7 @@ mod tests {
     #[test]
     fn test_policy_critical_extensions() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::webpki(NullOps {}, None, time);
+        let policy = Policy::new(NullOps {}, None, time);
 
         assert_eq!(
             policy.critical_ca_extensions,
@@ -381,7 +381,7 @@ mod tests {
     #[test]
     fn test_policy_validation_time() {
         let old_time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::webpki(NullOps {}, None, old_time.clone());
+        let policy = Policy::new(NullOps {}, None, old_time.clone());
 
         assert_eq!(policy.validation_time, old_time);
 
@@ -394,7 +394,7 @@ mod tests {
     #[test]
     fn test_policy_max_chain_depth() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::webpki(NullOps {}, None, time);
+        let policy = Policy::new(NullOps {}, None, time);
 
         assert_eq!(policy.max_chain_depth, 8);
 
