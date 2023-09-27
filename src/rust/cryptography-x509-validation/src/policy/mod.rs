@@ -110,7 +110,7 @@ pub enum Subject<'a> {
 }
 
 impl Subject<'_> {
-    fn general_name_matches(&self, general_name: &GeneralName<'_>) -> bool {
+    fn subject_alt_name_matches(&self, general_name: &GeneralName<'_>) -> bool {
         match (general_name, self) {
             (GeneralName::DNSName(pattern), Self::DNS(name)) => {
                 DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
@@ -125,7 +125,7 @@ impl Subject<'_> {
     /// Returns true if any of the names in the given `SubjectAlternativeName`
     /// match this `Subject`.
     pub fn matches(&self, san: &SubjectAlternativeName<'_>) -> bool {
-        san.clone().any(|gn| self.general_name_matches(&gn))
+        san.clone().any(|gn| self.subject_alt_name_matches(&gn))
     }
 }
 
