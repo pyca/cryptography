@@ -196,6 +196,13 @@ impl Certificate {
 
     #[getter]
     fn not_valid_before<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_before_utc.",
+                1,
+            )?;
         let dt = &self
             .raw
             .borrow_dependent()
@@ -220,6 +227,13 @@ impl Certificate {
 
     #[getter]
     fn not_valid_after<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.",
+                1,
+            )?;
         let dt = &self
             .raw
             .borrow_dependent()

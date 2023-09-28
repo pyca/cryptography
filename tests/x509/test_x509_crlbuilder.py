@@ -7,7 +7,7 @@ import datetime
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, rsa
@@ -65,7 +65,8 @@ class TestCertificateRevocationListBuilder:
         )
 
         crl = builder.sign(private_key, hashes.SHA256(), backend)
-        assert crl.last_update == utc_last
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.last_update == utc_last
 
     def test_last_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -106,7 +107,8 @@ class TestCertificateRevocationListBuilder:
         )
 
         crl = builder.sign(private_key, hashes.SHA256(), backend)
-        assert crl.next_update == utc_next
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.next_update == utc_next
 
     def test_next_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -217,8 +219,9 @@ class TestCertificateRevocationListBuilder:
 
         crl = builder.sign(private_key, hashes.SHA256(), backend)
         assert len(crl) == 0
-        assert crl.last_update == last_update
-        assert crl.next_update == next_update
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.last_update == last_update
+            assert crl.next_update == next_update
 
     @pytest.mark.parametrize(
         "extension",
@@ -574,7 +577,8 @@ class TestCertificateRevocationListBuilder:
             == ian
         )
         assert crl[0].serial_number == revoked_cert0.serial_number
-        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[0].revocation_date == revoked_cert0.revocation_date
         assert len(crl[0].extensions) == 1
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
@@ -623,7 +627,8 @@ class TestCertificateRevocationListBuilder:
             == ian
         )
         assert crl[0].serial_number == revoked_cert0.serial_number
-        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[0].revocation_date == revoked_cert0.revocation_date
         assert len(crl[0].extensions) == 1
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
@@ -677,7 +682,8 @@ class TestCertificateRevocationListBuilder:
             == ian
         )
         assert crl[0].serial_number == revoked_cert0.serial_number
-        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[0].revocation_date == revoked_cert0.revocation_date
         assert len(crl[0].extensions) == 1
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
@@ -731,7 +737,8 @@ class TestCertificateRevocationListBuilder:
             == ian
         )
         assert crl[0].serial_number == revoked_cert0.serial_number
-        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[0].revocation_date == revoked_cert0.revocation_date
         assert len(crl[0].extensions) == 1
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
@@ -839,13 +846,16 @@ class TestCertificateRevocationListBuilder:
 
         crl = builder.sign(private_key, hashes.SHA256(), backend)
         assert len(crl) == 3
-        assert crl.last_update == last_update
-        assert crl.next_update == next_update
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.last_update == last_update
+            assert crl.next_update == next_update
         assert crl[0].serial_number == revoked_cert0.serial_number
-        assert crl[0].revocation_date == revoked_cert0.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[0].revocation_date == revoked_cert0.revocation_date
         assert len(crl[0].extensions) == 0
         assert crl[1].serial_number == revoked_cert1.serial_number
-        assert crl[1].revocation_date == revoked_cert1.revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl[1].revocation_date == revoked_cert1.revocation_date
         assert len(crl[1].extensions) == 2
         ext = crl[1].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False

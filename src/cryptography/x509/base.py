@@ -8,6 +8,7 @@ import abc
 import datetime
 import os
 import typing
+import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
@@ -366,6 +367,12 @@ class _RawRevokedCertificate(RevokedCertificate):
 
     @property
     def revocation_date(self) -> datetime.datetime:
+        warnings.warn(
+            "Properties that return a naïve datetime object have been "
+            "deprecated. Please switch to revocation_date_utc.",
+            utils.DeprecatedIn42,
+            stacklevel=2,
+        )
         return self._revocation_date
 
     @property

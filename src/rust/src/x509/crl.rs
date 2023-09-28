@@ -246,6 +246,13 @@ impl CertificateRevocationList {
 
     #[getter]
     fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.",
+                1,
+            )?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
             Some(t) => x509::datetime_to_py(py, t.as_datetime()),
             None => Ok(py.None().into_ref(py)),
@@ -262,6 +269,13 @@ impl CertificateRevocationList {
 
     #[getter]
     fn last_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.",
+                1,
+            )?;
         x509::datetime_to_py(
             py,
             self.owned
@@ -507,6 +521,13 @@ impl RevokedCertificate {
 
     #[getter]
     fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.",
+                1,
+            )?;
         x509::datetime_to_py(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
@@ -604,7 +625,8 @@ fn create_x509_crl(
         let serial_number = py_revoked_cert
             .getattr(pyo3::intern!(py, "serial_number"))?
             .extract()?;
-        let py_revocation_date = py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date"))?;
+        let py_revocation_date =
+            py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date_utc"))?;
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),

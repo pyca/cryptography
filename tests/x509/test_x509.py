@@ -141,12 +141,14 @@ def _check_cert_times(
     not_valid_after: typing.Optional[datetime.datetime],
 ) -> None:
     if not_valid_before:
-        assert cert.not_valid_before == not_valid_before
+        with pytest.warns(utils.DeprecatedIn42):
+            assert cert.not_valid_before == not_valid_before
         assert cert.not_valid_before_utc == not_valid_before.replace(
             tzinfo=datetime.timezone.utc
         )
     if not_valid_after:
-        assert cert.not_valid_after == not_valid_after
+        with pytest.warns(utils.DeprecatedIn42):
+            assert cert.not_valid_after == not_valid_after
         assert cert.not_valid_after_utc == not_valid_after.replace(
             tzinfo=datetime.timezone.utc
         )
@@ -157,11 +159,13 @@ def _check_crl_times(
     last_update: datetime.datetime,
     next_update: datetime.datetime,
 ) -> None:
-    assert crl.last_update == last_update
+    with pytest.warns(utils.DeprecatedIn42):
+        assert crl.last_update == last_update
+        assert crl.next_update == next_update
+
     assert crl.last_update_utc == last_update.replace(
         tzinfo=datetime.timezone.utc
     )
-    assert crl.next_update == next_update
     assert crl.next_update_utc == next_update.replace(
         tzinfo=datetime.timezone.utc
     )
@@ -307,14 +311,15 @@ class TestCertificateRevocationList:
             x509.load_pem_x509_crl,
         )
 
-        assert isinstance(crl.next_update, datetime.datetime)
-        assert isinstance(crl.next_update_utc, datetime.datetime)
-        assert isinstance(crl.last_update, datetime.datetime)
-        assert isinstance(crl.last_update_utc, datetime.datetime)
+        with pytest.warns(utils.DeprecatedIn42):
+            assert isinstance(crl.next_update, datetime.datetime)
+            assert isinstance(crl.last_update, datetime.datetime)
+            assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
+            assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
 
-        assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
+        assert isinstance(crl.next_update_utc, datetime.datetime)
+        assert isinstance(crl.last_update_utc, datetime.datetime)
         assert crl.next_update_utc.isoformat() == "2016-01-01T00:00:00+00:00"
-        assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
         assert crl.last_update_utc.isoformat() == "2015-01-01T00:00:00+00:00"
 
     def test_no_next_update(self, backend):
@@ -322,7 +327,9 @@ class TestCertificateRevocationList:
             os.path.join("x509", "custom", "crl_no_next_update.pem"),
             x509.load_pem_x509_crl,
         )
-        assert crl.next_update is None
+
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.next_update is None
         assert crl.next_update_utc is None
 
     def test_unrecognized_extension(self, backend):
@@ -376,7 +383,10 @@ class TestCertificateRevocationList:
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
         )[11]
-        assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        with pytest.warns(utils.DeprecatedIn42):
+            assert revoked.revocation_date == datetime.datetime(
+                2015, 1, 1, 0, 0
+            )
         assert revoked.revocation_date_utc == datetime.datetime(
             2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc
         )
@@ -603,12 +613,14 @@ class TestRevokedCertificate:
         for i, rev in enumerate(crl):
             assert isinstance(rev, x509.RevokedCertificate)
             assert isinstance(rev.serial_number, int)
-            assert isinstance(rev.revocation_date, datetime.datetime)
+            with pytest.warns(utils.DeprecatedIn42):
+                assert isinstance(rev.revocation_date, datetime.datetime)
             assert isinstance(rev.revocation_date_utc, datetime.datetime)
             assert isinstance(rev.extensions, x509.Extensions)
 
             assert rev.serial_number == i
-            assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
+            with pytest.warns(utils.DeprecatedIn42):
+                assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
             assert (
                 rev.revocation_date_utc.isoformat()
                 == "2015-01-01T00:00:00+00:00"
