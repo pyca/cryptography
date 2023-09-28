@@ -69,6 +69,9 @@ class TestRevokedCertificateBuilder:
 
         revoked_certificate = builder.build(backend)
         assert revoked_certificate.revocation_date == utc_time
+        assert revoked_certificate.revocation_date_utc == utc_time.replace(
+            tzinfo=datetime.timezone.utc
+        )
 
     def test_revocation_date_invalid(self):
         with pytest.raises(TypeError):

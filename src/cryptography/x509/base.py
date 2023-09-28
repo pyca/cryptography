@@ -195,9 +195,23 @@ class Certificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def not_valid_before_utc(self) -> datetime.datetime:
+        """
+        Not before time (represented as a non-naive UTC datetime)
+        """
+
+    @property
+    @abc.abstractmethod
     def not_valid_after(self) -> datetime.datetime:
         """
         Not after time (represented as UTC datetime)
+        """
+
+    @property
+    @abc.abstractmethod
+    def not_valid_after_utc(self) -> datetime.datetime:
+        """
+        Not after time (represented as a non-naive UTC datetime)
         """
 
     @property
@@ -317,6 +331,14 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def revocation_date_utc(self) -> datetime.datetime:
+        """
+        Returns the date of when this certificate was revoked as a non-naive
+        UTC datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def extensions(self) -> Extensions:
         """
         Returns an Extensions object containing a list of Revoked extensions.
@@ -345,6 +367,10 @@ class _RawRevokedCertificate(RevokedCertificate):
     @property
     def revocation_date(self) -> datetime.datetime:
         return self._revocation_date
+
+    @property
+    def revocation_date_utc(self) -> datetime.datetime:
+        return self._revocation_date.replace(tzinfo=datetime.timezone.utc)
 
     @property
     def extensions(self) -> Extensions:
@@ -406,9 +432,25 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        Returns the date of next update for this CRL as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def last_update(self) -> datetime.datetime:
         """
         Returns the date of last update for this CRL.
+        """
+
+    @property
+    @abc.abstractmethod
+    def last_update_utc(self) -> datetime.datetime:
+        """
+        Returns the date of last update for this CRL as a non-naive UTC
+        datetime.
         """
 
     @property

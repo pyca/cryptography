@@ -376,6 +376,20 @@ X.509 Certificate Object
             >>> cert.not_valid_before
             datetime.datetime(2010, 1, 1, 8, 30)
 
+    .. attribute:: not_valid_before_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the beginning of the validity
+        period for the certificate in UTC. This value is inclusive.
+
+        .. doctest::
+
+            >>> cert.not_valid_before_utc
+            datetime.datetime(2010, 1, 1, 8, 30, tzinfo=datetime.timezone.utc)
+
     .. attribute:: not_valid_after
 
         :type: :class:`datetime.datetime`
@@ -387,6 +401,20 @@ X.509 Certificate Object
 
             >>> cert.not_valid_after
             datetime.datetime(2030, 12, 31, 8, 30)
+
+    .. attribute:: not_valid_after_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the end of the validity period
+        for the certificate in UTC. This value is inclusive.
+
+        .. doctest::
+
+            >>> cert.not_valid_after_utc
+            datetime.datetime(2030, 12, 31, 8, 30, tzinfo=datetime.timezone.utc)
 
     .. attribute:: issuer
 
@@ -698,6 +726,20 @@ X.509 CRL (Certificate Revocation List) Object
             >>> crl.next_update
             datetime.datetime(2016, 1, 1, 0, 0)
 
+    .. attribute:: next_update_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing when the next update to this
+        CRL is expected.
+
+        .. doctest::
+
+            >>> crl.next_update_utc
+            datetime.datetime(2016, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
+
     .. attribute:: last_update
 
         :type: :class:`datetime.datetime`
@@ -708,6 +750,19 @@ X.509 CRL (Certificate Revocation List) Object
 
             >>> crl.last_update
             datetime.datetime(2015, 1, 1, 0, 0)
+
+    .. attribute:: last_update_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing when this CRL was last updated.
+
+        .. doctest::
+
+            >>> crl.last_update_utc
+            datetime.datetime(2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
 
     .. attribute:: extensions
 
@@ -1182,6 +1237,20 @@ X.509 Revoked Certificate Object
 
             >>> revoked_certificate.revocation_date
             datetime.datetime(2015, 1, 1, 0, 0)
+
+    .. attribute:: revocation_date_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the date this certificates was
+        revoked.
+
+        .. doctest::
+
+            >>> revoked_certificate.revocation_date_utc
+            datetime.datetime(2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
 
     .. attribute:: extensions
 

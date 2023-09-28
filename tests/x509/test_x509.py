@@ -135,6 +135,38 @@ def _break_cert_sig(cert: x509.Certificate) -> x509.Certificate:
     return x509.load_pem_x509_certificate(bytes(cert_bad_sig))
 
 
+def _check_cert_times(
+    cert: x509.Certificate,
+    not_valid_before: typing.Optional[datetime.datetime],
+    not_valid_after: typing.Optional[datetime.datetime],
+) -> None:
+    if not_valid_before:
+        assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_before_utc == not_valid_before.replace(
+            tzinfo=datetime.timezone.utc
+        )
+    if not_valid_after:
+        assert cert.not_valid_after == not_valid_after
+        assert cert.not_valid_after_utc == not_valid_after.replace(
+            tzinfo=datetime.timezone.utc
+        )
+
+
+def _check_crl_times(
+    crl: x509.CertificateRevocationList,
+    last_update: datetime.datetime,
+    next_update: datetime.datetime,
+) -> None:
+    assert crl.last_update == last_update
+    assert crl.last_update_utc == last_update.replace(
+        tzinfo=datetime.timezone.utc
+    )
+    assert crl.next_update == next_update
+    assert crl.next_update_utc == next_update.replace(
+        tzinfo=datetime.timezone.utc
+    )
+
+
 class TestCertificateRevocationList:
     def test_load_pem_crl(self, backend):
         crl = _load_cert(
@@ -276,10 +308,14 @@ class TestCertificateRevocationList:
         )
 
         assert isinstance(crl.next_update, datetime.datetime)
+        assert isinstance(crl.next_update_utc, datetime.datetime)
         assert isinstance(crl.last_update, datetime.datetime)
+        assert isinstance(crl.last_update_utc, datetime.datetime)
 
         assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
+        assert crl.next_update_utc.isoformat() == "2016-01-01T00:00:00+00:00"
         assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
+        assert crl.last_update_utc.isoformat() == "2015-01-01T00:00:00+00:00"
 
     def test_no_next_update(self, backend):
         crl = _load_cert(
@@ -287,6 +323,7 @@ class TestCertificateRevocationList:
             x509.load_pem_x509_crl,
         )
         assert crl.next_update is None
+        assert crl.next_update_utc is None
 
     def test_unrecognized_extension(self, backend):
         crl = _load_cert(
@@ -340,6 +377,9 @@ class TestCertificateRevocationList:
             x509.load_pem_x509_crl,
         )[11]
         assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        assert revoked.revocation_date_utc == datetime.datetime(
+            2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc
+        )
         assert revoked.serial_number == 11
 
     def test_extensions(self, backend):
@@ -444,8 +484,11 @@ class TestCertificateRevocationList:
         )
 
         assert len(crl) == 0
-        assert crl.last_update == datetime.datetime(2015, 12, 20, 23, 44, 47)
-        assert crl.next_update == datetime.datetime(2015, 12, 28, 0, 44, 47)
+        _check_crl_times(
+            crl,
+            last_update=datetime.datetime(2015, 12, 20, 23, 44, 47),
+            next_update=datetime.datetime(2015, 12, 28, 0, 44, 47),
+        )
 
     def test_public_bytes_der(self, backend):
         crl = _load_cert(
@@ -461,8 +504,11 @@ class TestCertificateRevocationList:
         )
 
         assert len(crl) == 12
-        assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
-        assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
+        _check_crl_times(
+            crl,
+            last_update=datetime.datetime(2015, 1, 1, 0, 0, 0),
+            next_update=datetime.datetime(2016, 1, 1, 0, 0, 0),
+        )
 
     @pytest.mark.parametrize(
         ("cert_path", "loader_func", "encoding"),
@@ -558,10 +604,15 @@ class TestRevokedCertificate:
             assert isinstance(rev, x509.RevokedCertificate)
             assert isinstance(rev.serial_number, int)
             assert isinstance(rev.revocation_date, datetime.datetime)
+            assert isinstance(rev.revocation_date_utc, datetime.datetime)
             assert isinstance(rev.extensions, x509.Extensions)
 
             assert rev.serial_number == i
             assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
+            assert (
+                rev.revocation_date_utc.isoformat()
+                == "2015-01-01T00:00:00+00:00"
+            )
 
     def test_revoked_extensions(self, backend):
         crl = _load_cert(
@@ -1274,8 +1325,11 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -1294,7 +1348,11 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_before == datetime.datetime(1950, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(1950, 1, 1, 12, 1),
+            not_valid_after=None,
+        )
 
     def test_pre_2000_utc_not_after_cert(self, backend):
         cert = _load_cert(
@@ -1307,18 +1365,21 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_after == datetime.datetime(1999, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=None,
+            not_valid_after=datetime.datetime(1999, 1, 1, 12, 1),
+        )
 
     def test_post_2000_utc_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(
-            2014, 11, 26, 21, 41, 20
-        )
-        assert cert.not_valid_after == datetime.datetime(
-            2014, 12, 26, 21, 41, 20
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2014, 11, 26, 21, 41, 20),
+            not_valid_after=datetime.datetime(2014, 12, 26, 21, 41, 20),
         )
 
     def test_generalized_time_not_before_cert(self, backend):
@@ -1331,8 +1392,11 @@ class TestRSACertificate:
             ),
             x509.load_der_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(2002, 1, 1, 12, 1)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2002, 1, 1, 12, 1),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.version is x509.Version.v3
 
     def test_generalized_time_not_after_cert(self, backend):
@@ -1345,8 +1409,11 @@ class TestRSACertificate:
             ),
             x509.load_der_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2050, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2050, 1, 1, 12, 1),
+        )
         assert cert.version is x509.Version.v3
 
     def test_invalid_version_cert(self, backend):
@@ -1486,8 +1553,11 @@ class TestRSACertificate:
         )
 
         # We should recover what we had to start with.
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -1510,8 +1580,11 @@ class TestRSACertificate:
         )
 
         # We should recover what we had to start with.
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -2175,8 +2248,11 @@ class TestRSACertificateRequest:
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -2470,8 +2546,11 @@ class TestCertificateBuilder:
             .not_valid_after(not_valid_after)
         )
         cert = builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         parsed = asn1.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
@@ -2923,7 +3002,9 @@ class TestCertificateBuilder:
         )
 
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_after == utc_time
+        _check_cert_times(
+            cert, not_valid_before=None, not_valid_after=utc_time
+        )
 
     def test_earliest_time(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         time = datetime.datetime(1950, 1, 1)
@@ -2942,8 +3023,7 @@ class TestCertificateBuilder:
             .not_valid_after(time)
         )
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == time
-        assert cert.not_valid_after == time
+        _check_cert_times(cert, not_valid_before=time, not_valid_after=time)
         parsed = asn1.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
@@ -2996,7 +3076,9 @@ class TestCertificateBuilder:
         )
 
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == utc_time
+        _check_cert_times(
+            cert, not_valid_before=utc_time, not_valid_after=None
+        )
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
@@ -3220,8 +3302,11 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3291,8 +3376,11 @@ class TestCertificateBuilder:
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3387,8 +3475,11 @@ class TestCertificateBuilder:
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
         assert cert.version is x509.Version.v3
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3487,8 +3578,11 @@ class TestCertificateBuilder:
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
         assert cert.version is x509.Version.v3
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
