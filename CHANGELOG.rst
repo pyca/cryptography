@@ -22,6 +22,14 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
 * Added `algorithm` and `mgf` properties to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
+* Added the following properties that return timezone-aware ``datetime`` objects:
+  :meth:`~cryptography.x509.Certificate.not_valid_before_utc`,
+  :meth:`~cryptography.x509.Certificate.not_valid_after_utc`,
+  :meth:`~cryptography.x509.RevokedCertificate.revocation_date_utc`,
+  :meth:`~cryptography.x509.CertificateRevocationList.next_update_utc`,
+  :meth:`~cryptography.x509.CertificateRevocationList.last_update_utc`.
+  These are timezone-aware variants of existing properties that return naïve
+  ``datetime`` objects.
 
 .. _v41-0-4:
 
