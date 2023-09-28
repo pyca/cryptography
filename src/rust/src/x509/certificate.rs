@@ -207,6 +207,18 @@ impl Certificate {
     }
 
     #[getter]
+    fn not_valid_before_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let dt = &self
+            .raw
+            .borrow_dependent()
+            .tbs_cert
+            .validity
+            .not_before
+            .as_datetime();
+        x509::datetime_to_py_utc(py, dt)
+    }
+
+    #[getter]
     fn not_valid_after<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let dt = &self
             .raw
@@ -216,6 +228,18 @@ impl Certificate {
             .not_after
             .as_datetime();
         x509::datetime_to_py(py, dt)
+    }
+
+    #[getter]
+    fn not_valid_after_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let dt = &self
+            .raw
+            .borrow_dependent()
+            .tbs_cert
+            .validity
+            .not_after
+            .as_datetime();
+        x509::datetime_to_py_utc(py, dt)
     }
 
     #[getter]

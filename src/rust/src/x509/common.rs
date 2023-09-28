@@ -484,6 +484,23 @@ pub(crate) fn datetime_to_py<'p>(
     ))
 }
 
+pub(crate) fn datetime_to_py_utc<'p>(
+    py: pyo3::Python<'p>,
+    dt: &asn1::DateTime,
+) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    let timezone = types::DATETIME_TIMEZONE_UTC.get(py)?;
+    types::DATETIME_DATETIME.get(py)?.call1((
+        dt.year(),
+        dt.month(),
+        dt.day(),
+        dt.hour(),
+        dt.minute(),
+        dt.second(),
+        0,
+        timezone,
+    ))
+}
+
 pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
