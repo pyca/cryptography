@@ -183,8 +183,8 @@ pub struct Policy<'a, B: CryptoOps> {
     /// If `None`, all signature algorithms are permitted.
     pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
 
-    pub(crate) critical_ca_extensions: HashSet<ObjectIdentifier>,
-    pub(crate) critical_ee_extensions: HashSet<ObjectIdentifier>,
+    pub critical_ca_extensions: HashSet<ObjectIdentifier>,
+    pub critical_ee_extensions: HashSet<ObjectIdentifier>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -207,42 +207,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
             critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
-    }
-}
-
-impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Inform this policy of an expected critical extension in CA certificates.
-    ///
-    /// This allows the policy to accept critical extensions that the baseline
-    /// profile does not cover. The user is responsible for separately validating
-    /// these extensions.
-    pub fn assert_critical_ca_extension(mut self, oid: ObjectIdentifier) -> Self {
-        self.critical_ca_extensions.insert(oid);
-        self
-    }
-
-    /// Inform this policy of an expected critical extension in EE certificates.
-    ///
-    /// This allows the policy to accept critical extensions that the baseline
-    /// profile does not cover. The user is responsible for separately validating
-    /// these extensions.
-    pub fn assert_critical_ee_extension(mut self, oid: ObjectIdentifier) -> Self {
-        self.critical_ee_extensions.insert(oid);
-        self
-    }
-
-    /// Configure this policy's validation time, i.e. the time referenced
-    /// for certificate validity period checks.
-    pub fn with_validation_time(mut self, time: asn1::DateTime) -> Self {
-        self.validation_time = time;
-        self
-    }
-
-    /// Configure this policy's maximum chain building depth, i.e. the
-    /// longest chain that path construction will attempt before giving up.
-    pub fn with_max_chain_depth(mut self, depth: u8) -> Self {
-        self.max_chain_depth = depth;
-        self
     }
 }
 
@@ -357,42 +321,6 @@ mod tests {
             policy.critical_ee_extensions,
             RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
         );
-
-        let policy = policy.assert_critical_ca_extension(EXTENDED_KEY_USAGE_OID);
-        let policy = policy.assert_critical_ee_extension(EXTENDED_KEY_USAGE_OID);
-        assert_ne!(
-            policy.critical_ca_extensions,
-            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
-        );
-        assert_ne!(
-            policy.critical_ee_extensions,
-            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
-        );
-    }
-
-    #[test]
-    fn test_policy_validation_time() {
-        let old_time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::new(NullOps {}, None, old_time.clone());
-
-        assert_eq!(policy.validation_time, old_time);
-
-        let new_time = asn1::DateTime::new(2024, 9, 12, 1, 1, 1).unwrap();
-        let policy = policy.with_validation_time(new_time.clone());
-
-        assert_eq!(policy.validation_time, new_time);
-    }
-
-    #[test]
-    fn test_policy_max_chain_depth() {
-        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::new(NullOps {}, None, time);
-
-        assert_eq!(policy.max_chain_depth, 8);
-
-        let policy = policy.with_max_chain_depth(12);
-
-        assert_eq!(policy.max_chain_depth, 12);
     }
 
     #[test]
