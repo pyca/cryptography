@@ -368,6 +368,13 @@ X.509 Certificate Object
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.Certificate.not_valid_before_utc`.
+
+
         A naïve datetime representing the beginning of the validity period for
         the certificate in UTC. This value is inclusive.
 
@@ -393,6 +400,12 @@ X.509 Certificate Object
     .. attribute:: not_valid_after
 
         :type: :class:`datetime.datetime`
+
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.Certificate.not_valid_after_utc`.
 
         A naïve datetime representing the end of the validity period for the
         certificate in UTC. This value is inclusive.
@@ -718,6 +731,12 @@ X.509 CRL (Certificate Revocation List) Object
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.CertificateRevocationList.next_update_utc`.
+
         A naïve datetime representing when the next update to this CRL is
         expected.
 
@@ -743,6 +762,12 @@ X.509 CRL (Certificate Revocation List) Object
     .. attribute:: last_update
 
         :type: :class:`datetime.datetime`
+
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.CertificateRevocationList.last_update_utc`.
 
         A naïve datetime representing when this CRL was last updated.
 
@@ -1230,6 +1255,12 @@ X.509 Revoked Certificate Object
     .. attribute:: revocation_date
 
         :type: :class:`datetime.datetime`
+
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.RevokedCertificate.revocation_date_utc`.
 
         A naïve datetime representing the date this certificates was revoked.
 
