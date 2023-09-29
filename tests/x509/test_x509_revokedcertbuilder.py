@@ -7,7 +7,7 @@ import datetime
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 
 
 class TestRevokedCertificateBuilder:
@@ -68,7 +68,8 @@ class TestRevokedCertificateBuilder:
         )
 
         revoked_certificate = builder.build(backend)
-        assert revoked_certificate.revocation_date == utc_time
+        with pytest.warns(utils.DeprecatedIn42):
+            assert revoked_certificate.revocation_date == utc_time
         assert revoked_certificate.revocation_date_utc == utc_time.replace(
             tzinfo=datetime.timezone.utc
         )
@@ -133,7 +134,12 @@ class TestRevokedCertificateBuilder:
 
         revoked_certificate = builder.build(backend)
         assert revoked_certificate.serial_number == serial_number
-        assert revoked_certificate.revocation_date == revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert revoked_certificate.revocation_date == revocation_date
+        assert (
+            revoked_certificate.revocation_date_utc
+            == revocation_date.replace(tzinfo=datetime.timezone.utc)
+        )
         assert len(revoked_certificate.extensions) == 0
 
     @pytest.mark.parametrize(
@@ -156,7 +162,12 @@ class TestRevokedCertificateBuilder:
 
         revoked_certificate = builder.build(backend)
         assert revoked_certificate.serial_number == serial_number
-        assert revoked_certificate.revocation_date == revocation_date
+        with pytest.warns(utils.DeprecatedIn42):
+            assert revoked_certificate.revocation_date == revocation_date
+        assert (
+            revoked_certificate.revocation_date_utc
+            == revocation_date.replace(tzinfo=datetime.timezone.utc)
+        )
         assert len(revoked_certificate.extensions) == 1
         ext = revoked_certificate.extensions.get_extension_for_class(
             type(extension)

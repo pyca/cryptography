@@ -30,6 +30,14 @@ Changelog
   :meth:`~cryptography.x509.CertificateRevocationList.last_update_utc`.
   These are timezone-aware variants of existing properties that return naïve
   ``datetime`` objects.
+* Deprecated the following properties that return naïve ``datetime`` objects:
+  :meth:`~cryptography.x509.Certificate.not_valid_before`,
+  :meth:`~cryptography.x509.Certificate.not_valid_after`,
+  :meth:`~cryptography.x509.RevokedCertificate.revocation_date`,
+  :meth:`~cryptography.x509.CertificateRevocationList.next_update`,
+  :meth:`~cryptography.x509.CertificateRevocationList.last_update`
+  in favor of the new timezone-aware variants mentioned above.
+
 
 .. _v41-0-4:
 
