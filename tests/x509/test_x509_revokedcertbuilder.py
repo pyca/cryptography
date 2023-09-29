@@ -136,6 +136,10 @@ class TestRevokedCertificateBuilder:
         assert revoked_certificate.serial_number == serial_number
         with pytest.warns(utils.DeprecatedIn42):
             assert revoked_certificate.revocation_date == revocation_date
+        assert (
+            revoked_certificate.revocation_date_utc
+            == revocation_date.replace(tzinfo=datetime.timezone.utc)
+        )
         assert len(revoked_certificate.extensions) == 0
 
     @pytest.mark.parametrize(
@@ -160,6 +164,10 @@ class TestRevokedCertificateBuilder:
         assert revoked_certificate.serial_number == serial_number
         with pytest.warns(utils.DeprecatedIn42):
             assert revoked_certificate.revocation_date == revocation_date
+        assert (
+            revoked_certificate.revocation_date_utc
+            == revocation_date.replace(tzinfo=datetime.timezone.utc)
+        )
         assert len(revoked_certificate.extensions) == 1
         ext = revoked_certificate.extensions.get_extension_for_class(
             type(extension)
