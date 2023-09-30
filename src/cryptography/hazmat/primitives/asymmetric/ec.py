@@ -182,9 +182,7 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         if data[0] not in [0x02, 0x03, 0x04]:
             raise ValueError("Unsupported elliptic curve point type")
 
-        from cryptography.hazmat.backends.openssl.backend import backend
-
-        return backend.load_elliptic_curve_public_bytes(curve, data)
+        return rust_openssl.ec.from_public_bytes(curve, data)
 
     @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
@@ -334,9 +332,7 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
 def generate_private_key(
     curve: EllipticCurve, backend: typing.Any = None
 ) -> EllipticCurvePrivateKey:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.generate_elliptic_curve_private_key(curve)
+    return rust_openssl.ec.generate_private_key(curve)
 
 
 def derive_private_key(
@@ -344,8 +340,6 @@ def derive_private_key(
     curve: EllipticCurve,
     backend: typing.Any = None,
 ) -> EllipticCurvePrivateKey:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
     if not isinstance(private_value, int):
         raise TypeError("private_value must be an integer type.")
 
@@ -355,7 +349,7 @@ def derive_private_key(
     if not isinstance(curve, EllipticCurve):
         raise TypeError("curve must provide the EllipticCurve interface.")
 
-    return ossl.derive_elliptic_curve_private_key(private_value, curve)
+    return rust_openssl.ec.derive_private_key(private_value, curve)
 
 
 class EllipticCurvePublicNumbers:
@@ -371,11 +365,7 @@ class EllipticCurvePublicNumbers:
         self._curve = curve
 
     def public_key(self, backend: typing.Any = None) -> EllipticCurvePublicKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_elliptic_curve_public_numbers(self)
+        return rust_openssl.ec.from_public_numbers(self)
 
     @property
     def curve(self) -> EllipticCurve:
@@ -429,11 +419,7 @@ class EllipticCurvePrivateNumbers:
     def private_key(
         self, backend: typing.Any = None
     ) -> EllipticCurvePrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_elliptic_curve_private_numbers(self)
+        return rust_openssl.ec.from_private_numbers(self)
 
     @property
     def private_value(self) -> int:
