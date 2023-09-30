@@ -114,6 +114,7 @@ dependencies = [
  "asn1",
  "cryptography-x509",
  "once_cell",
+ "pem",
 ]
 
 [[package]]

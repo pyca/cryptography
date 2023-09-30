@@ -4,14 +4,18 @@
 
 use std::collections::HashSet;
 
-use cryptography_x509::extensions::SubjectAlternativeName;
-use cryptography_x509::name::GeneralName;
+use asn1::ObjectIdentifier;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, RsaPssParameters, PSS_SHA256_HASH_ALG,
     PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
     PSS_SHA512_MASK_GEN_ALG,
+};
+use cryptography_x509::extensions::SubjectAlternativeName;
+use cryptography_x509::name::GeneralName;
+use cryptography_x509::oid::{
+    BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
 
 use crate::ops::CryptoOps;
@@ -102,6 +106,11 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
     ])
 });
 
+const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
+    &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
+const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
+    &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
+
 /// Represents a logical certificate "subject," i.e. a principal matching
 /// one of the names listed in a certificate's `subjectAltNames` extension.
 pub enum Subject<'a> {
@@ -145,6 +154,14 @@ impl From<IPAddress> for Subject<'_> {
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
 
+    /// A top-level constraint on the length of paths constructed under
+    /// this policy.
+    ///
+    /// Note that this has different semantics from `pathLenConstraint`:
+    /// it controls the *overall* non-self-issued chain length, not the number
+    /// of non-self-issued intermediates in the chain.
+    pub max_chain_depth: u8,
+
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
     /// If `None`, the EE certificate must not contain a SAN.
@@ -153,16 +170,42 @@ pub struct Policy<'a, B: CryptoOps> {
     /// The validation time. All certificates validated by this policy must
     /// be valid at this time.
     pub validation_time: asn1::DateTime,
+
+    /// An extended key usage that must appear in EEs validated by this policy.
+    pub extended_key_usage: ObjectIdentifier,
+
+    /// The set of permitted signature algorithms, identified by their
+    /// algorithm identifiers.
+    ///
+    /// If not `None`, all certificates validated by this policy MUST
+    /// have a signature algorithm in this set.
+    ///
+    /// If `None`, all signature algorithms are permitted.
+    pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+
+    pub critical_ca_extensions: HashSet<ObjectIdentifier>,
+    pub critical_ee_extensions: HashSet<ObjectIdentifier>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Creates a new policy with the given `CryptoOps`, an optional subject,
-    /// and a validation time.
+    /// Create a new policy with defaults for the certificate profile defined in
+    /// the CA/B Forum's Basic Requirements.
     pub fn new(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
         Self {
             _ops: ops,
+            max_chain_depth: 8,
             subject,
             validation_time: time,
+            extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
+            permitted_algorithms: Some(
+                WEBPKI_PERMITTED_ALGORITHMS
+                    .clone()
+                    .into_iter()
+                    .cloned()
+                    .collect(),
+            ),
+            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
+            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
     }
 }
@@ -175,12 +218,17 @@ mod tests {
     use cryptography_x509::{
         extensions::SubjectAlternativeName,
         name::{GeneralName, UnvalidatedIA5String},
+        oid::EXTENDED_KEY_USAGE_OID,
     };
 
-    use crate::types::{DNSName, IPAddress};
+    use crate::{
+        ops::tests::NullOps,
+        policy::{Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        types::{DNSName, IPAddress},
+    };
 
     use super::{
-        Subject, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        Policy, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
     };
@@ -258,6 +306,21 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
+    }
+
+    #[test]
+    fn test_policy_critical_extensions() {
+        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
+        let policy = Policy::new(NullOps {}, None, time);
+
+        assert_eq!(
+            policy.critical_ca_extensions,
+            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
+        );
+        assert_eq!(
+            policy.critical_ee_extensions,
+            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
+        );
     }
 
     #[test]
