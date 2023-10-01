@@ -158,24 +158,6 @@ class TestOpenSSLRSA:
         assert backend.generate_rsa_parameters_supported(3, 1024) is True
         assert backend.generate_rsa_parameters_supported(3, 511) is False
 
-    def test_generate_bad_public_exponent(self):
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=1, key_size=2048)
-
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=4, key_size=2048)
-
-    def test_cant_generate_insecure_tiny_key(self):
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(
-                public_exponent=65537, key_size=511
-            )
-
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(
-                public_exponent=65537, key_size=256
-            )
-
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert (
             backend.rsa_padding_supported(

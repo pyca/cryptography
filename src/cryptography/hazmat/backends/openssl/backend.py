@@ -18,7 +18,7 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import dh, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
@@ -325,12 +325,6 @@ class Backend:
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 
-    def generate_rsa_private_key(
-        self, public_exponent: int, key_size: int
-    ) -> rsa.RSAPrivateKey:
-        rsa._verify_rsa_parameters(public_exponent, key_size)
-        return rust_openssl.rsa.generate_private_key(public_exponent, key_size)
-
     def generate_rsa_parameters_supported(
         self, public_exponent: int, key_size: int
     ) -> bool:
@@ -339,31 +333,6 @@ class Backend:
             and public_exponent & 1 != 0
             and key_size >= 512
         )
-
-    def load_rsa_private_numbers(
-        self,
-        numbers: rsa.RSAPrivateNumbers,
-        unsafe_skip_rsa_key_validation: bool,
-    ) -> rsa.RSAPrivateKey:
-        rsa._check_private_key_components(
-            numbers.p,
-            numbers.q,
-            numbers.d,
-            numbers.dmp1,
-            numbers.dmq1,
-            numbers.iqmp,
-            numbers.public_numbers.e,
-            numbers.public_numbers.n,
-        )
-        return rust_openssl.rsa.from_private_numbers(
-            numbers, unsafe_skip_rsa_key_validation
-        )
-
-    def load_rsa_public_numbers(
-        self, numbers: rsa.RSAPublicNumbers
-    ) -> rsa.RSAPublicKey:
-        rsa._check_public_key_components(numbers.e, numbers.n)
-        return rust_openssl.rsa.from_public_numbers(numbers)
 
     def _create_evp_pkey_gc(self):
         evp_pkey = self._lib.EVP_PKEY_new()
@@ -869,34 +838,6 @@ class Backend:
             isinstance(signature_algorithm.algorithm, asym_utils.Prehashed)
             or self.hash_supported(signature_algorithm.algorithm)
         )
-
-    def generate_elliptic_curve_private_key(
-        self, curve: ec.EllipticCurve
-    ) -> ec.EllipticCurvePrivateKey:
-        """
-        Generate a new private key on the named curve.
-        """
-        return rust_openssl.ec.generate_private_key(curve)
-
-    def load_elliptic_curve_private_numbers(
-        self, numbers: ec.EllipticCurvePrivateNumbers
-    ) -> ec.EllipticCurvePrivateKey:
-        return rust_openssl.ec.from_private_numbers(numbers)
-
-    def load_elliptic_curve_public_numbers(
-        self, numbers: ec.EllipticCurvePublicNumbers
-    ) -> ec.EllipticCurvePublicKey:
-        return rust_openssl.ec.from_public_numbers(numbers)
-
-    def load_elliptic_curve_public_bytes(
-        self, curve: ec.EllipticCurve, point_bytes: bytes
-    ) -> ec.EllipticCurvePublicKey:
-        return rust_openssl.ec.from_public_bytes(curve, point_bytes)
-
-    def derive_elliptic_curve_private_key(
-        self, private_value: int, curve: ec.EllipticCurve
-    ) -> ec.EllipticCurvePrivateKey:
-        return rust_openssl.ec.derive_private_key(private_value, curve)
 
     def elliptic_curve_exchange_algorithm_supported(
         self, algorithm: ec.ECDH, curve: ec.EllipticCurve
