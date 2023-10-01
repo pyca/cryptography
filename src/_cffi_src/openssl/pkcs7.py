@@ -48,11 +48,6 @@ static const int PKCS7_TEXT;
 
 FUNCTIONS = """
 void PKCS7_free(PKCS7 *);
-int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
-int PEM_write_bio_PKCS7_stream(BIO *, PKCS7 *, BIO *, int);
-PKCS7_SIGNER_INFO *PKCS7_sign_add_signer(PKCS7 *, X509 *, EVP_PKEY *,
-                                         const EVP_MD *, int);
-int PKCS7_final(PKCS7 *, BIO *, int);
 /* Included verify due to external consumer, see
    https://github.com/pyca/cryptography/issues/5433 */
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
@@ -74,11 +69,6 @@ CUSTOMIZATIONS = """
 #if CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_PKCS7_FUNCS = 0;
 
-int (*SMIME_write_PKCS7)(BIO *, PKCS7 *, BIO *, int) = NULL;
-int (*PEM_write_bio_PKCS7_stream)(BIO *, PKCS7 *, BIO *, int) = NULL;
-PKCS7_SIGNER_INFO *(*PKCS7_sign_add_signer)(PKCS7 *, X509 *, EVP_PKEY *,
-                                            const EVP_MD *, int) = NULL;
-int (*PKCS7_final)(PKCS7 *, BIO *, int);
 int (*PKCS7_verify)(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                     BIO *, int) = NULL;
 PKCS7 *(*SMIME_read_PKCS7)(BIO *, BIO **) = NULL;
