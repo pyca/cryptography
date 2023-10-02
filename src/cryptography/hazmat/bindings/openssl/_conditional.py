@@ -58,13 +58,6 @@ def cryptography_has_ed25519() -> list[str]:
     ]
 
 
-def cryptography_has_fips() -> list[str]:
-    return [
-        "FIPS_mode_set",
-        "FIPS_mode",
-    ]
-
-
 def cryptography_has_ssl_sigalgs() -> list[str]:
     return [
         "SSL_CTX_set1_sigalgs_list",
@@ -185,10 +178,6 @@ def cryptography_has_ssl_cookie() -> list[str]:
 
 def cryptography_has_pkcs7_funcs() -> list[str]:
     return [
-        "SMIME_write_PKCS7",
-        "PEM_write_bio_PKCS7_stream",
-        "PKCS7_sign_add_signer",
-        "PKCS7_final",
         "PKCS7_verify",
         "SMIME_read_PKCS7",
         "PKCS7_get0_signers",
@@ -250,7 +239,6 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_ED25519": cryptography_has_ed25519,
-    "Cryptography_HAS_FIPS": cryptography_has_fips,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,

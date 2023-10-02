@@ -4,7 +4,7 @@
 
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{exceptions, types};
 use foreign_types_shared::ForeignTypeRef;
 use pyo3::basic::CompareOp;
 use pyo3::ToPyObject;
@@ -91,12 +91,8 @@ fn py_curve_from_curve<'p>(
         ));
     }
 
-    Ok(py
-        .import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.ec"
-        ))?
-        .getattr(pyo3::intern!(py, "_CURVE_TYPES"))?
+    Ok(types::CURVE_TYPES
+        .get(py)?
         .extract::<&pyo3::types::PyDict>()?
         .get_item(name)
         .ok_or_else(|| {
@@ -128,6 +124,7 @@ fn curve_supported(py: pyo3::Python<'_>, py_curve: &pyo3::PyAny) -> bool {
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPrivateKey> {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     let curve = py_curve_from_curve(py, pkey.ec_key().unwrap().group())?;
     check_key_infinity(&pkey.ec_key().unwrap())?;
@@ -139,6 +136,7 @@ fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPublicKey> {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     let ec = pkey.ec_key().map_err(|e| {
         pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {}", e))
@@ -310,15 +308,7 @@ impl ECPrivateKey {
         algorithm: &pyo3::PyAny,
         public_key: &ECPublicKey,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let ecdh_class: &pyo3::types::PyType = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.ec"
-            ))?
-            .getattr(pyo3::intern!(py, "ECDH"))?
-            .extract()?;
-
-        if !algorithm.is_instance(ecdh_class)? {
+        if !algorithm.is_instance(types::ECDH.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported EC exchange algorithm",
@@ -356,15 +346,7 @@ impl ECPrivateKey {
         data: &pyo3::types::PyBytes,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let ecdsa_class: &pyo3::types::PyType = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.ec"
-            ))?
-            .getattr(pyo3::intern!(py, "ECDSA"))?
-            .extract()?;
-
-        if !algorithm.is_instance(ecdsa_class)? {
+        if !algorithm.is_instance(types::ECDSA.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -373,15 +355,9 @@ impl ECPrivateKey {
             ));
         }
 
-        let (data, _): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
-            ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (data, algorithm.getattr(pyo3::intern!(py, "algorithm"))?),
-            )?
+        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((data, algorithm.getattr(pyo3::intern!(py, "algorithm"))?))?
             .extract()?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -419,20 +395,15 @@ impl ECPrivateKey {
 
         let py_private_key = utils::bn_to_py_int(py, ec.private_key())?;
 
-        let ec_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.ec"
+        let public_numbers = types::ELLIPTIC_CURVE_PUBLIC_NUMBERS.get(py)?.call1((
+            py_x,
+            py_y,
+            self.curve.clone_ref(py),
         ))?;
 
-        let public_numbers = ec_mod.call_method1(
-            pyo3::intern!(py, "EllipticCurvePublicNumbers"),
-            (py_x, py_y, self.curve.clone_ref(py)),
-        )?;
-
-        Ok(ec_mod.call_method1(
-            pyo3::intern!(py, "EllipticCurvePrivateNumbers"),
-            (py_private_key, public_numbers),
-        )?)
+        Ok(types::ELLIPTIC_CURVE_PRIVATE_NUMBERS
+            .get(py)?
+            .call1((py_private_key, public_numbers))?)
     }
 
     fn private_bytes<'p>(
@@ -469,15 +440,7 @@ impl ECPublicKey {
         data: &pyo3::types::PyBytes,
         signature_algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let ecdsa_class: &pyo3::types::PyType = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.ec"
-            ))?
-            .getattr(pyo3::intern!(py, "ECDSA"))?
-            .extract()?;
-
-        if !signature_algorithm.is_instance(ecdsa_class)? {
+        if !signature_algorithm.is_instance(types::ECDSA.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -486,27 +449,17 @@ impl ECPublicKey {
             ));
         }
 
-        let (data, _): (&[u8], &pyo3::PyAny) = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.backends.openssl.utils"
+        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
+            .get(py)?
+            .call1((
+                data,
+                signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
             ))?
-            .call_method1(
-                pyo3::intern!(py, "_calculate_digest_and_algorithm"),
-                (
-                    data,
-                    signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
-                ),
-            )?
             .extract()?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
         let valid = verifier.verify(data, signature).unwrap_or(false);
-        // TODO: Empty the error stack. BoringSSL leaves one in the event of
-        // signature validation failure. Upstream to rust-openssl?
-        #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-        openssl::error::ErrorStack::get();
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
@@ -527,15 +480,11 @@ impl ECPublicKey {
         let py_x = utils::bn_to_py_int(py, &x)?;
         let py_y = utils::bn_to_py_int(py, &y)?;
 
-        let ec_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.ec"
-        ))?;
-
-        Ok(ec_mod.call_method1(
-            pyo3::intern!(py, "EllipticCurvePublicNumbers"),
-            (py_x, py_y, self.curve.clone_ref(py)),
-        )?)
+        Ok(types::ELLIPTIC_CURVE_PUBLIC_NUMBERS.get(py)?.call1((
+            py_x,
+            py_y,
+            self.curve.clone_ref(py),
+        ))?)
     }
 
     fn public_bytes<'p>(

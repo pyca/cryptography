@@ -8,6 +8,7 @@ import abc
 import typing
 from math import gcd
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -63,6 +64,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
 
 
 RSAPrivateKeyWithSerialization = RSAPrivateKey
+RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
 
 
 class RSAPublicKey(metaclass=abc.ABCMeta):
@@ -126,6 +128,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
 
 
 RSAPublicKeyWithSerialization = RSAPublicKey
+RSAPublicKey.register(rust_openssl.rsa.RSAPublicKey)
 
 
 def generate_private_key(
@@ -133,10 +136,8 @@ def generate_private_key(
     key_size: int,
     backend: typing.Any = None,
 ) -> RSAPrivateKey:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
     _verify_rsa_parameters(public_exponent, key_size)
-    return ossl.generate_rsa_private_key(public_exponent, key_size)
+    return rust_openssl.rsa.generate_private_key(public_exponent, key_size)
 
 
 def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
@@ -365,11 +366,17 @@ class RSAPrivateNumbers:
         *,
         unsafe_skip_rsa_key_validation: bool = False,
     ) -> RSAPrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
+        _check_private_key_components(
+            self.p,
+            self.q,
+            self.d,
+            self.dmp1,
+            self.dmq1,
+            self.iqmp,
+            self.public_numbers.e,
+            self.public_numbers.n,
         )
-
-        return ossl.load_rsa_private_numbers(
+        return rust_openssl.rsa.from_private_numbers(
             self, unsafe_skip_rsa_key_validation
         )
 
@@ -418,11 +425,8 @@ class RSAPublicNumbers:
         return self._n
 
     def public_key(self, backend: typing.Any = None) -> RSAPublicKey:
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        return ossl.load_rsa_public_numbers(self)
+        _check_public_key_components(self.e, self.n)
+        return rust_openssl.rsa.from_public_numbers(self)
 
     def __repr__(self) -> str:
         return f"<RSAPublicNumbers(e={self.e}, n={self.n})>"

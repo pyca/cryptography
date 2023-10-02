@@ -4,8 +4,8 @@
 
 use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
 use crate::x509::{certificate, sct};
+use crate::{types, x509};
 use cryptography_x509::{common, crl, extensions, oid};
 
 fn encode_general_subtrees<'a>(
@@ -462,13 +462,8 @@ pub(crate) fn encode_extension(
             Ok(Some(der))
         }
         &oid::CRL_REASON_OID => {
-            let value = ext
-                .py()
-                .import(pyo3::intern!(
-                    py,
-                    "cryptography.hazmat.backends.openssl.decode_asn1"
-                ))?
-                .getattr(pyo3::intern!(py, "_CRL_ENTRY_REASON_ENUM_TO_CODE"))?
+            let value = types::CRL_ENTRY_REASON_ENUM_TO_CODE
+                .get(ext.py())?
                 .get_item(ext.getattr(pyo3::intern!(py, "reason"))?)?
                 .extract::<u32>()?;
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))

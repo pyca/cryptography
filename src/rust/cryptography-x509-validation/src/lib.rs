@@ -3,6 +3,7 @@
 // for complete details.
 
 #![forbid(unsafe_code)]
+#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
 pub mod certificate;
 pub mod ops;
@@ -33,7 +34,7 @@ pub type Chain<'c> = Vec<Certificate<'c>>;
 pub fn verify<'leaf: 'chain, 'inter: 'chain, 'store: 'chain, 'chain, B: CryptoOps>(
     leaf: &'chain Certificate<'leaf>,
     intermediates: impl IntoIterator<Item = Certificate<'inter>>,
-    policy: &Policy<B>,
+    policy: &Policy<'_, B>,
     store: &'chain Store<'store>,
 ) -> Result<Chain<'chain>, ValidationError> {
     let builder = ChainBuilder::new(HashSet::from_iter(intermediates), policy, store);
@@ -57,7 +58,7 @@ where
 {
     fn new(
         intermediates: HashSet<Certificate<'inter>>,
-        policy: &'a Policy<B>,
+        policy: &'a Policy<'a, B>,
         store: &'a Store<'store>,
     ) -> Self {
         Self {
@@ -142,26 +143,14 @@ where
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+    use crate::ops::tests::NullOps;
 
     #[macro_export]
     macro_rules! cert {
         ($pem:literal) => {{
             let parsed = Box::leak(Box::new(pem::parse($pem).unwrap()));
-            asn1::parse_single::<Certificate>(&parsed.contents).unwrap()
+            asn1::parse_single::<Certificate<'static>>(&parsed.contents()).unwrap()
         }};
-    }
-
-    pub(crate) struct NullBackend {}
-    impl CryptoOps for NullBackend {
-        type Key = ();
-
-        fn public_key(&self, _cert: &Certificate) -> Option<Self::Key> {
-            Some(())
-        }
-
-        fn is_signed_by(&self, _cert: &Certificate, _key: Self::Key) -> bool {
-            true
-        }
     }
 
     #[test]
@@ -256,9 +245,9 @@ NlIpBxyLOUUx0e7+ooHYTUm9rNHmAYadjwNk3phoRzSQHhAQFjVQ
         );
 
         let store = Store::new([root.clone()]);
-        let ops = NullBackend {};
+        let ops = NullOps {};
         let time = asn1::DateTime::new(2023, 1, 1, 0, 0, 0).unwrap();
-        let policy: Policy<_> = Policy::rfc5280(ops, None, time);
+        let policy: Policy<'_, _> = Policy::new(ops, None, time);
 
         let chain = verify(&ee, [intermediate.clone()], &policy, &store).unwrap();
         assert_eq!(chain.len(), 3);
@@ -325,9 +314,9 @@ iVjMQ19R8XwBE6n9t+BePjjvfF5ws+ahgpjx1AM=
         );
 
         let store = Store::new([]);
-        let ops = NullBackend {};
+        let ops = NullOps {};
         let time = asn1::DateTime::new(2023, 1, 1, 0, 0, 0).unwrap();
-        let policy: Policy<_> = Policy::rfc5280(ops, None, time);
+        let policy: Policy<'_, _> = Policy::new(ops, None, time);
         assert!(
             verify(&ee, [intermediate.clone()], &policy, &store)
                 == Err(PolicyError::Other("chain construction exhausted all candidates").into())
@@ -477,9 +466,9 @@ CPz+qQOJcoMt8w6dIMgADFNgoigKtKM1rX7D0UuuOUVYNfq9ERVf
         );
 
         let store = Store::new([root]);
-        let ops = NullBackend {};
+        let ops = NullOps {};
         let time = asn1::DateTime::new(2023, 1, 1, 0, 0, 0).unwrap();
-        let policy: Policy<_> = Policy::rfc5280(ops, None, time);
+        let policy: Policy<'_, _> = Policy::new(ops, None, time);
         assert!(
             verify(&ee, [ica1.clone(), ica2.clone()], &policy, &store)
                 == Err(PolicyError::Other("chain construction exhausted all candidates").into())

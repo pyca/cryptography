@@ -8,6 +8,7 @@ import abc
 import datetime
 import os
 import typing
+import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
@@ -195,9 +196,23 @@ class Certificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def not_valid_before_utc(self) -> datetime.datetime:
+        """
+        Not before time (represented as a non-naive UTC datetime)
+        """
+
+    @property
+    @abc.abstractmethod
     def not_valid_after(self) -> datetime.datetime:
         """
         Not after time (represented as UTC datetime)
+        """
+
+    @property
+    @abc.abstractmethod
+    def not_valid_after_utc(self) -> datetime.datetime:
+        """
+        Not after time (represented as a non-naive UTC datetime)
         """
 
     @property
@@ -317,6 +332,14 @@ class RevokedCertificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def revocation_date_utc(self) -> datetime.datetime:
+        """
+        Returns the date of when this certificate was revoked as a non-naive
+        UTC datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def extensions(self) -> Extensions:
         """
         Returns an Extensions object containing a list of Revoked extensions.
@@ -344,7 +367,17 @@ class _RawRevokedCertificate(RevokedCertificate):
 
     @property
     def revocation_date(self) -> datetime.datetime:
+        warnings.warn(
+            "Properties that return a naïve datetime object have been "
+            "deprecated. Please switch to revocation_date_utc.",
+            utils.DeprecatedIn42,
+            stacklevel=2,
+        )
         return self._revocation_date
+
+    @property
+    def revocation_date_utc(self) -> datetime.datetime:
+        return self._revocation_date.replace(tzinfo=datetime.timezone.utc)
 
     @property
     def extensions(self) -> Extensions:
@@ -406,9 +439,25 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        Returns the date of next update for this CRL as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def last_update(self) -> datetime.datetime:
         """
         Returns the date of last update for this CRL.
+        """
+
+    @property
+    @abc.abstractmethod
+    def last_update_utc(self) -> datetime.datetime:
+        """
+        Returns the date of last update for this CRL as a non-naive UTC
+        datetime.
         """
 
     @property
@@ -519,6 +568,15 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
     def signature_algorithm_oid(self) -> ObjectIdentifier:
         """
         Returns the ObjectIdentifier of the signature algorithm.
+        """
+
+    @property
+    @abc.abstractmethod
+    def signature_algorithm_parameters(
+        self,
+    ) -> None | padding.PSS | padding.PKCS1v15 | ec.ECDSA:
+        """
+        Returns the signature algorithm parameters.
         """
 
     @property
@@ -701,13 +759,24 @@ class CertificateSigningRequestBuilder:
         private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: _AllowedHashTypes | None,
         backend: typing.Any = None,
+        *,
+        rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
         """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
-        return rust_x509.create_x509_csr(self, private_key, algorithm)
+
+        if rsa_padding is not None:
+            if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
+                raise TypeError("Padding must be PSS or PKCS1v15")
+            if not isinstance(private_key, rsa.RSAPrivateKey):
+                raise TypeError("Padding is only supported for RSA keys")
+
+        return rust_x509.create_x509_csr(
+            self, private_key, algorithm, rsa_padding
+        )
 
 
 class CertificateBuilder:

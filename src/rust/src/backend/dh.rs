@@ -5,7 +5,7 @@
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
+use crate::{types, x509};
 use cryptography_x509::common;
 use foreign_types_shared::ForeignTypeRef;
 
@@ -49,6 +49,7 @@ fn generate_parameters(generator: u32, key_size: u32) -> CryptographyResult<DHPa
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(ptr: usize) -> DHPrivateKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     DHPrivateKey {
         pkey: pkey.to_owned(),
@@ -57,6 +58,7 @@ fn private_key_from_ptr(ptr: usize) -> DHPrivateKey {
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(ptr: usize) -> DHPublicKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     DHPublicKey {
         pkey: pkey.to_owned(),
@@ -210,22 +212,16 @@ impl DHPrivateKey {
         let py_pub_key = utils::bn_to_py_int(py, dh.public_key())?;
         let py_private_key = utils::bn_to_py_int(py, dh.private_key())?;
 
-        let dh_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.dh"
-        ))?;
+        let parameter_numbers = types::DH_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_g, py_q))?;
+        let public_numbers = types::DH_PUBLIC_NUMBERS
+            .get(py)?
+            .call1((py_pub_key, parameter_numbers))?;
 
-        let parameter_numbers =
-            dh_mod.call_method1(pyo3::intern!(py, "DHParameterNumbers"), (py_p, py_g, py_q))?;
-        let public_numbers = dh_mod.call_method1(
-            pyo3::intern!(py, "DHPublicNumbers"),
-            (py_pub_key, parameter_numbers),
-        )?;
-
-        Ok(dh_mod.call_method1(
-            pyo3::intern!(py, "DHPrivateNumbers"),
-            (py_private_key, public_numbers),
-        )?)
+        Ok(types::DH_PRIVATE_NUMBERS
+            .get(py)?
+            .call1((py_private_key, public_numbers))?)
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
@@ -252,13 +248,7 @@ impl DHPrivateKey {
         format: &pyo3::PyAny,
         encryption_algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let private_format_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "PrivateFormat"))?;
-        if !format.is(private_format_class.getattr(pyo3::intern!(py, "PKCS8"))?) {
+        if !format.is(types::PRIVATE_FORMAT_PKCS8.get(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH private keys support only PKCS8 serialization",
@@ -292,13 +282,7 @@ impl DHPublicKey {
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let public_format_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "PublicFormat"))?;
-        if !format.is(public_format_class.getattr(pyo3::intern!(py, "SubjectPublicKeyInfo"))?) {
+        if !format.is(types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH public keys support only SubjectPublicKeyInfo serialization",
@@ -327,18 +311,13 @@ impl DHPublicKey {
 
         let py_pub_key = utils::bn_to_py_int(py, dh.public_key())?;
 
-        let dh_mod = py.import(pyo3::intern!(
-            py,
-            "cryptography.hazmat.primitives.asymmetric.dh"
-        ))?;
+        let parameter_numbers = types::DH_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_g, py_q))?;
 
-        let parameter_numbers =
-            dh_mod.call_method1(pyo3::intern!(py, "DHParameterNumbers"), (py_p, py_g, py_q))?;
-
-        Ok(dh_mod.call_method1(
-            pyo3::intern!(py, "DHPublicNumbers"),
-            (py_pub_key, parameter_numbers),
-        )?)
+        Ok(types::DH_PUBLIC_NUMBERS
+            .get(py)?
+            .call1((py_pub_key, parameter_numbers))?)
     }
 
     fn __richcmp__(
@@ -377,12 +356,9 @@ impl DHParameters {
             .transpose()?;
         let py_g = utils::bn_to_py_int(py, self.dh.generator())?;
 
-        Ok(py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.asymmetric.dh"
-            ))?
-            .call_method1(pyo3::intern!(py, "DHParameterNumbers"), (py_p, py_g, py_q))?)
+        Ok(types::DH_PARAMETER_NUMBERS
+            .get(py)?
+            .call1((py_p, py_g, py_q))?)
     }
 
     fn parameter_bytes<'p>(
@@ -391,13 +367,7 @@ impl DHParameters {
         encoding: &'p pyo3::PyAny,
         format: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let parameter_format_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.hazmat.primitives.serialization"
-            ))?
-            .getattr(pyo3::intern!(py, "ParameterFormat"))?;
-        if !format.is(parameter_format_class.getattr(pyo3::intern!(py, "PKCS3"))?) {
+        if !format.is(types::PARAMETER_FORMAT_PKCS3.get(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
             ));

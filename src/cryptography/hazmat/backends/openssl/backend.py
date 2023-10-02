@@ -14,15 +14,11 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
-from cryptography.hazmat.backends.openssl.rsa import (
-    _RSAPrivateKey,
-    _RSAPublicKey,
-)
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import dh, ec, rsa
+from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
@@ -63,7 +59,6 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     XTS,
     Mode,
 )
-from cryptography.hazmat.primitives.serialization import ssh
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
     PKCS12Certificate,
@@ -330,53 +325,6 @@ class Backend:
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 
-    def _bn_to_int(self, bn) -> int:
-        assert bn != self._ffi.NULL
-        self.openssl_assert(not self._lib.BN_is_negative(bn))
-
-        bn_num_bytes = self._lib.BN_num_bytes(bn)
-        bin_ptr = self._ffi.new("unsigned char[]", bn_num_bytes)
-        bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
-        # A zero length means the BN has value 0
-        self.openssl_assert(bin_len >= 0)
-        val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
-        return val
-
-    def _int_to_bn(self, num: int):
-        """
-        Converts a python integer to a BIGNUM. The returned BIGNUM will not
-        be garbage collected (to support adding them to structs that take
-        ownership of the object). Be sure to register it for GC if it will
-        be discarded after use.
-        """
-        binary = num.to_bytes(int(num.bit_length() / 8.0 + 1), "big")
-        bn_ptr = self._lib.BN_bin2bn(binary, len(binary), self._ffi.NULL)
-        self.openssl_assert(bn_ptr != self._ffi.NULL)
-        return bn_ptr
-
-    def generate_rsa_private_key(
-        self, public_exponent: int, key_size: int
-    ) -> rsa.RSAPrivateKey:
-        rsa._verify_rsa_parameters(public_exponent, key_size)
-
-        rsa_cdata = self._lib.RSA_new()
-        self.openssl_assert(rsa_cdata != self._ffi.NULL)
-        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-
-        bn = self._int_to_bn(public_exponent)
-        bn = self._ffi.gc(bn, self._lib.BN_free)
-
-        res = self._lib.RSA_generate_key_ex(
-            rsa_cdata, key_size, bn, self._ffi.NULL
-        )
-        self.openssl_assert(res == 1)
-        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-
-        # We can skip RSA key validation here since we just generated the key
-        return _RSAPrivateKey(
-            self, rsa_cdata, evp_pkey, unsafe_skip_rsa_key_validation=True
-        )
-
     def generate_rsa_parameters_supported(
         self, public_exponent: int, key_size: int
     ) -> bool:
@@ -385,62 +333,6 @@ class Backend:
             and public_exponent & 1 != 0
             and key_size >= 512
         )
-
-    def load_rsa_private_numbers(
-        self,
-        numbers: rsa.RSAPrivateNumbers,
-        unsafe_skip_rsa_key_validation: bool,
-    ) -> rsa.RSAPrivateKey:
-        rsa._check_private_key_components(
-            numbers.p,
-            numbers.q,
-            numbers.d,
-            numbers.dmp1,
-            numbers.dmq1,
-            numbers.iqmp,
-            numbers.public_numbers.e,
-            numbers.public_numbers.n,
-        )
-        rsa_cdata = self._lib.RSA_new()
-        self.openssl_assert(rsa_cdata != self._ffi.NULL)
-        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        p = self._int_to_bn(numbers.p)
-        q = self._int_to_bn(numbers.q)
-        d = self._int_to_bn(numbers.d)
-        dmp1 = self._int_to_bn(numbers.dmp1)
-        dmq1 = self._int_to_bn(numbers.dmq1)
-        iqmp = self._int_to_bn(numbers.iqmp)
-        e = self._int_to_bn(numbers.public_numbers.e)
-        n = self._int_to_bn(numbers.public_numbers.n)
-        res = self._lib.RSA_set0_factors(rsa_cdata, p, q)
-        self.openssl_assert(res == 1)
-        res = self._lib.RSA_set0_key(rsa_cdata, n, e, d)
-        self.openssl_assert(res == 1)
-        res = self._lib.RSA_set0_crt_params(rsa_cdata, dmp1, dmq1, iqmp)
-        self.openssl_assert(res == 1)
-        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-
-        return _RSAPrivateKey(
-            self,
-            rsa_cdata,
-            evp_pkey,
-            unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
-        )
-
-    def load_rsa_public_numbers(
-        self, numbers: rsa.RSAPublicNumbers
-    ) -> rsa.RSAPublicKey:
-        rsa._check_public_key_components(numbers.e, numbers.n)
-        rsa_cdata = self._lib.RSA_new()
-        self.openssl_assert(rsa_cdata != self._ffi.NULL)
-        rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-        e = self._int_to_bn(numbers.e)
-        n = self._int_to_bn(numbers.n)
-        res = self._lib.RSA_set0_key(rsa_cdata, n, e, self._ffi.NULL)
-        self.openssl_assert(res == 1)
-        evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-
-        return _RSAPublicKey(self, rsa_cdata, evp_pkey)
 
     def _create_evp_pkey_gc(self):
         evp_pkey = self._lib.EVP_PKEY_new()
@@ -500,13 +392,8 @@ class Backend:
         key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
-            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
-            self.openssl_assert(rsa_cdata != self._ffi.NULL)
-            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            return _RSAPrivateKey(
-                self,
-                rsa_cdata,
-                evp_pkey,
+            return rust_openssl.rsa.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey)),
                 unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
             )
         elif (
@@ -573,10 +460,9 @@ class Backend:
         key_type = self._lib.EVP_PKEY_id(evp_pkey)
 
         if key_type == self._lib.EVP_PKEY_RSA:
-            rsa_cdata = self._lib.EVP_PKEY_get1_RSA(evp_pkey)
-            self.openssl_assert(rsa_cdata != self._ffi.NULL)
-            rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-            return _RSAPublicKey(self, rsa_cdata, evp_pkey)
+            return rust_openssl.rsa.public_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey))
+            )
         elif (
             key_type == self._lib.EVP_PKEY_RSA_PSS
             and not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
@@ -733,7 +619,9 @@ class Backend:
             if rsa_cdata != self._ffi.NULL:
                 rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
                 evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-                return _RSAPublicKey(self, rsa_cdata, evp_pkey)
+                return rust_openssl.rsa.public_key_from_ptr(
+                    int(self._ffi.cast("uintptr_t", evp_pkey))
+                )
             else:
                 self._handle_key_loading_error()
 
@@ -796,7 +684,9 @@ class Backend:
             if rsa_cdata != self._ffi.NULL:
                 rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
                 evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-                return _RSAPublicKey(self, rsa_cdata, evp_pkey)
+                return rust_openssl.rsa.public_key_from_ptr(
+                    int(self._ffi.cast("uintptr_t", evp_pkey))
+                )
             else:
                 self._handle_key_loading_error()
 
@@ -949,225 +839,12 @@ class Backend:
             or self.hash_supported(signature_algorithm.algorithm)
         )
 
-    def generate_elliptic_curve_private_key(
-        self, curve: ec.EllipticCurve
-    ) -> ec.EllipticCurvePrivateKey:
-        """
-        Generate a new private key on the named curve.
-        """
-        return rust_openssl.ec.generate_private_key(curve)
-
-    def load_elliptic_curve_private_numbers(
-        self, numbers: ec.EllipticCurvePrivateNumbers
-    ) -> ec.EllipticCurvePrivateKey:
-        return rust_openssl.ec.from_private_numbers(numbers)
-
-    def load_elliptic_curve_public_numbers(
-        self, numbers: ec.EllipticCurvePublicNumbers
-    ) -> ec.EllipticCurvePublicKey:
-        return rust_openssl.ec.from_public_numbers(numbers)
-
-    def load_elliptic_curve_public_bytes(
-        self, curve: ec.EllipticCurve, point_bytes: bytes
-    ) -> ec.EllipticCurvePublicKey:
-        return rust_openssl.ec.from_public_bytes(curve, point_bytes)
-
-    def derive_elliptic_curve_private_key(
-        self, private_value: int, curve: ec.EllipticCurve
-    ) -> ec.EllipticCurvePrivateKey:
-        return rust_openssl.ec.derive_private_key(private_value, curve)
-
     def elliptic_curve_exchange_algorithm_supported(
         self, algorithm: ec.ECDH, curve: ec.EllipticCurve
     ) -> bool:
         return self.elliptic_curve_supported(curve) and isinstance(
             algorithm, ec.ECDH
         )
-
-    def _private_key_bytes(
-        self,
-        encoding: serialization.Encoding,
-        format: serialization.PrivateFormat,
-        encryption_algorithm: serialization.KeySerializationEncryption,
-        key,
-        evp_pkey,
-        cdata,
-    ) -> bytes:
-        # validate argument types
-        if not isinstance(encoding, serialization.Encoding):
-            raise TypeError("encoding must be an item from the Encoding enum")
-        if not isinstance(format, serialization.PrivateFormat):
-            raise TypeError(
-                "format must be an item from the PrivateFormat enum"
-            )
-        if not isinstance(
-            encryption_algorithm, serialization.KeySerializationEncryption
-        ):
-            raise TypeError(
-                "Encryption algorithm must be a KeySerializationEncryption "
-                "instance"
-            )
-
-        # validate password
-        if isinstance(encryption_algorithm, serialization.NoEncryption):
-            password = b""
-        elif isinstance(
-            encryption_algorithm, serialization.BestAvailableEncryption
-        ):
-            password = encryption_algorithm.password
-            if len(password) > 1023:
-                raise ValueError(
-                    "Passwords longer than 1023 bytes are not supported by "
-                    "this backend"
-                )
-        elif (
-            isinstance(
-                encryption_algorithm, serialization._KeySerializationEncryption
-            )
-            and encryption_algorithm._format
-            is format
-            is serialization.PrivateFormat.OpenSSH
-        ):
-            password = encryption_algorithm.password
-        else:
-            raise ValueError("Unsupported encryption type")
-
-        # PKCS8 + PEM/DER
-        if format is serialization.PrivateFormat.PKCS8:
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_PKCS8PrivateKey
-            elif encoding is serialization.Encoding.DER:
-                write_bio = self._lib.i2d_PKCS8PrivateKey_bio
-            else:
-                raise ValueError("Unsupported encoding for PKCS8")
-            return self._private_key_bytes_via_bio(
-                write_bio, evp_pkey, password
-            )
-
-        # TraditionalOpenSSL + PEM/DER
-        if format is serialization.PrivateFormat.TraditionalOpenSSL:
-            if self._fips_enabled and not isinstance(
-                encryption_algorithm, serialization.NoEncryption
-            ):
-                raise ValueError(
-                    "Encrypted traditional OpenSSL format is not "
-                    "supported in FIPS mode."
-                )
-            key_type = self._lib.EVP_PKEY_id(evp_pkey)
-
-            if encoding is serialization.Encoding.PEM:
-                assert key_type == self._lib.EVP_PKEY_RSA
-                write_bio = self._lib.PEM_write_bio_RSAPrivateKey
-                return self._private_key_bytes_via_bio(
-                    write_bio, cdata, password
-                )
-
-            if encoding is serialization.Encoding.DER:
-                if password:
-                    raise ValueError(
-                        "Encryption is not supported for DER encoded "
-                        "traditional OpenSSL keys"
-                    )
-                assert key_type == self._lib.EVP_PKEY_RSA
-                write_bio = self._lib.i2d_RSAPrivateKey_bio
-                return self._bio_func_output(write_bio, cdata)
-
-            raise ValueError("Unsupported encoding for TraditionalOpenSSL")
-
-        # OpenSSH + PEM
-        if format is serialization.PrivateFormat.OpenSSH:
-            if encoding is serialization.Encoding.PEM:
-                return ssh._serialize_ssh_private_key(
-                    key, password, encryption_algorithm
-                )
-
-            raise ValueError(
-                "OpenSSH private key format can only be used"
-                " with PEM encoding"
-            )
-
-        # Anything that key-specific code was supposed to handle earlier,
-        # like Raw.
-        raise ValueError("format is invalid with this key")
-
-    def _private_key_bytes_via_bio(
-        self, write_bio, evp_pkey, password
-    ) -> bytes:
-        if not password:
-            evp_cipher = self._ffi.NULL
-        else:
-            # This is a curated value that we will update over time.
-            evp_cipher = self._lib.EVP_get_cipherbyname(b"aes-256-cbc")
-
-        return self._bio_func_output(
-            write_bio,
-            evp_pkey,
-            evp_cipher,
-            password,
-            len(password),
-            self._ffi.NULL,
-            self._ffi.NULL,
-        )
-
-    def _bio_func_output(self, write_bio, *args) -> bytes:
-        bio = self._create_mem_bio_gc()
-        res = write_bio(bio, *args)
-        self.openssl_assert(res == 1)
-        return self._read_mem_bio(bio)
-
-    def _public_key_bytes(
-        self,
-        encoding: serialization.Encoding,
-        format: serialization.PublicFormat,
-        key,
-        evp_pkey,
-        cdata,
-    ) -> bytes:
-        if not isinstance(encoding, serialization.Encoding):
-            raise TypeError("encoding must be an item from the Encoding enum")
-        if not isinstance(format, serialization.PublicFormat):
-            raise TypeError(
-                "format must be an item from the PublicFormat enum"
-            )
-
-        # SubjectPublicKeyInfo + PEM/DER
-        if format is serialization.PublicFormat.SubjectPublicKeyInfo:
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_PUBKEY
-            elif encoding is serialization.Encoding.DER:
-                write_bio = self._lib.i2d_PUBKEY_bio
-            else:
-                raise ValueError(
-                    "SubjectPublicKeyInfo works only with PEM or DER encoding"
-                )
-            return self._bio_func_output(write_bio, evp_pkey)
-
-        # PKCS1 + PEM/DER
-        if format is serialization.PublicFormat.PKCS1:
-            # Only RSA is supported here.
-            key_type = self._lib.EVP_PKEY_id(evp_pkey)
-            self.openssl_assert(key_type == self._lib.EVP_PKEY_RSA)
-
-            if encoding is serialization.Encoding.PEM:
-                write_bio = self._lib.PEM_write_bio_RSAPublicKey
-            elif encoding is serialization.Encoding.DER:
-                write_bio = self._lib.i2d_RSAPublicKey_bio
-            else:
-                raise ValueError("PKCS1 works only with PEM or DER encoding")
-            return self._bio_func_output(write_bio, cdata)
-
-        # OpenSSH + OpenSSH
-        if format is serialization.PublicFormat.OpenSSH:
-            if encoding is serialization.Encoding.OpenSSH:
-                return ssh.serialize_ssh_public_key(key)
-
-            raise ValueError(
-                "OpenSSH format must be used with OpenSSH encoding"
-            )
-
-        # Anything that key-specific code was supposed to handle earlier,
-        # like Raw, CompressedPoint, UncompressedPoint
-        raise ValueError("format is invalid with this key")
 
     def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
@@ -1496,7 +1173,13 @@ class Backend:
     def poly1305_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return self._lib.Cryptography_HAS_POLY1305 == 1
+        elif (
+            self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            or self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+        ):
+            return True
+        else:
+            return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL

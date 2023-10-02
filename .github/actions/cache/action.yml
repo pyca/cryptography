@@ -15,7 +15,7 @@ runs:
       id: normalized-key
       run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
       shell: bash
-    - uses: Swatinem/rust-cache@578b235f6e5f613f7727f1c17bd3305b4d4d4e1f  # v2.6.1
+    - uses: Swatinem/rust-cache@a95ba195448af2da9b00fb742d14ffaaf3c21f43  # v2.7.0
       with:
         key: ${{ steps.normalized-key.outputs.key }}
         workspaces: "./src/rust/ -> target"

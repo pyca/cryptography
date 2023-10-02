@@ -150,19 +150,6 @@ class TestOpenSSL:
         with pytest.raises(InternalError):
             enc.finalize()
 
-    def test_int_to_bn(self):
-        value = (2**4242) - 4242
-        bn = backend._int_to_bn(value)
-        assert bn != backend._ffi.NULL
-        bn = backend._ffi.gc(bn, backend._lib.BN_clear_free)
-
-        assert bn
-        assert backend._bn_to_int(bn) == value
-
-    def test_bn_to_int(self):
-        bn = backend._int_to_bn(0)
-        assert backend._bn_to_int(bn) == 0
-
 
 class TestOpenSSLRSA:
     def test_generate_rsa_parameters_supported(self):
@@ -170,24 +157,6 @@ class TestOpenSSLRSA:
         assert backend.generate_rsa_parameters_supported(4, 1024) is False
         assert backend.generate_rsa_parameters_supported(3, 1024) is True
         assert backend.generate_rsa_parameters_supported(3, 511) is False
-
-    def test_generate_bad_public_exponent(self):
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=1, key_size=2048)
-
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(public_exponent=4, key_size=2048)
-
-    def test_cant_generate_insecure_tiny_key(self):
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(
-                public_exponent=65537, key_size=511
-            )
-
-        with pytest.raises(ValueError):
-            backend.generate_rsa_private_key(
-                public_exponent=65537, key_size=256
-            )
 
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert (

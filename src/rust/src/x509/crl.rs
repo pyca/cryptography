@@ -8,7 +8,7 @@ use crate::asn1::{
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, extensions, sign};
-use crate::{exceptions, x509};
+use crate::{exceptions, types, x509};
 use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
 use cryptography_x509::{
     common,
@@ -199,11 +199,7 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let oid = self.signature_algorithm_oid(py)?;
-        let oid_module = py.import(pyo3::intern!(py, "cryptography.hazmat._oid"))?;
-        match oid_module
-            .getattr(pyo3::intern!(py, "_SIG_OIDS_TO_HASH"))?
-            .get_item(oid)
-        {
+        match types::SIG_OIDS_TO_HASH.get(py)?.get_item(oid) {
             Ok(v) => Ok(v),
             Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -250,6 +246,13 @@ impl CertificateRevocationList {
 
     #[getter]
     fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.",
+                1,
+            )?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
             Some(t) => x509::datetime_to_py(py, t.as_datetime()),
             None => Ok(py.None().into_ref(py)),
@@ -257,8 +260,35 @@ impl CertificateRevocationList {
     }
 
     #[getter]
+    fn next_update_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        match &self.owned.borrow_dependent().tbs_cert_list.next_update {
+            Some(t) => x509::datetime_to_py_utc(py, t.as_datetime()),
+            None => Ok(py.None().into_ref(py)),
+        }
+    }
+
+    #[getter]
     fn last_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.",
+                1,
+            )?;
         x509::datetime_to_py(
+            py,
+            self.owned
+                .borrow_dependent()
+                .tbs_cert_list
+                .this_update
+                .as_datetime(),
+        )
+    }
+
+    #[getter]
+    fn last_update_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        x509::datetime_to_py_utc(
             py,
             self.owned
                 .borrow_dependent()
@@ -272,7 +302,6 @@ impl CertificateRevocationList {
     fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let tbs_cert_list = &self.owned.borrow_dependent().tbs_cert_list;
 
-        let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
         x509::parse_and_cache_extensions(
             py,
             &self.cached_extensions,
@@ -281,36 +310,24 @@ impl CertificateRevocationList {
                 oid::CRL_NUMBER_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "CRLNumber"))?
-                            .call1((pynum,))?,
-                    ))
+                    Ok(Some(types::CRL_NUMBER.get(py)?.call1((pynum,))?))
                 }
                 oid::DELTA_CRL_INDICATOR_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "DeltaCRLIndicator"))?
-                            .call1((pynum,))?,
-                    ))
+                    Ok(Some(types::DELTA_CRL_INDICATOR.get(py)?.call1((pynum,))?))
                 }
                 oid::ISSUER_ALTERNATIVE_NAME_OID => {
                     let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
                     let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "IssuerAlternativeName"))?
-                            .call1((ians,))?,
+                        types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
                     ))
                 }
                 oid::AUTHORITY_INFORMATION_ACCESS_OID => {
                     let ads = certificate::parse_access_descriptions(py, ext)?;
                     Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "AuthorityInformationAccess"))?
-                            .call1((ads,))?,
+                        types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
                     ))
                 }
                 oid::AUTHORITY_KEY_IDENTIFIER_OID => {
@@ -330,27 +347,19 @@ impl CertificateRevocationList {
                     } else {
                         py.None()
                     };
-                    Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "IssuingDistributionPoint"))?
-                            .call1((
-                                full_name,
-                                relative_name,
-                                idp.only_contains_user_certs,
-                                idp.only_contains_ca_certs,
-                                py_reasons,
-                                idp.indirect_crl,
-                                idp.only_contains_attribute_certs,
-                            ))?,
-                    ))
+                    Ok(Some(types::ISSUING_DISTRIBUTION_POINT.get(py)?.call1((
+                        full_name,
+                        relative_name,
+                        idp.only_contains_user_certs,
+                        idp.only_contains_ca_certs,
+                        py_reasons,
+                        idp.indirect_crl,
+                        idp.only_contains_attribute_certs,
+                    ))?))
                 }
                 oid::FRESHEST_CRL_OID => {
                     let dp = certificate::parse_distribution_points(py, ext)?;
-                    Ok(Some(
-                        x509_module
-                            .getattr(pyo3::intern!(py, "FreshestCRL"))?
-                            .call1((dp,))?,
-                    ))
+                    Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
                 }
                 _ => Ok(None),
             },
@@ -437,6 +446,10 @@ fn try_map_arc_data_mut_crl_iterator<E>(
     ) -> Result<crl::RevokedCertificate<'this>, E>,
 ) -> Result<OwnedRevokedCertificate, E> {
     OwnedRevokedCertificate::try_new(Arc::clone(it.borrow_owner()), |inner_it| {
+        // SAFETY: This is safe because `Arc::clone` ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces. Open-coded implementation of the API discussed in
+        // https://github.com/joshua-maros/ouroboros/issues/38
         it.with_dependent_mut(|_, value| f(inner_it, unsafe { std::mem::transmute(value) }))
     })
 }
@@ -480,9 +493,9 @@ self_cell::self_cell!(
 
 impl Clone for OwnedRevokedCertificate {
     fn clone(&self) -> OwnedRevokedCertificate {
-        // This is safe because `Arc::clone` ensures the data is alive, but
-        // Rust doesn't understand the lifetime relationship it produces.
-        // Open-coded implementation of the API discussed in
+        // SAFETY: This is safe because `Arc::clone` ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces. Open-coded implementation of the API discussed in
         // https://github.com/joshua-maros/ouroboros/issues/38
         OwnedRevokedCertificate::new(Arc::clone(self.borrow_owner()), |_| unsafe {
             std::mem::transmute(self.borrow_dependent().clone())
@@ -508,7 +521,22 @@ impl RevokedCertificate {
 
     #[getter]
     fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
+        pyo3::PyErr::warn(
+                py,
+                warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.",
+                1,
+            )?;
         x509::datetime_to_py(
+            py,
+            self.owned.borrow_dependent().revocation_date.as_datetime(),
+        )
+    }
+
+    #[getter]
+    fn revocation_date_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        x509::datetime_to_py_utc(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
         )
@@ -529,7 +557,6 @@ pub(crate) fn parse_crl_reason_flags<'p>(
     py: pyo3::Python<'p>,
     reason: &crl::CRLReason,
 ) -> CryptographyResult<&'p pyo3::PyAny> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     let flag_name = match reason.value() {
         0 => "unspecified",
         1 => "key_compromise",
@@ -550,42 +577,27 @@ pub(crate) fn parse_crl_reason_flags<'p>(
             ))
         }
     };
-    Ok(x509_module
-        .getattr(pyo3::intern!(py, "ReasonFlags"))?
-        .getattr(flag_name)?)
+    Ok(types::REASON_FLAGS.get(py)?.getattr(flag_name)?)
 }
 
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
 ) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509"))?;
     match ext.extn_id {
         oid::CRL_REASON_OID => {
             let flags = parse_crl_reason_flags(py, &ext.value::<crl::CRLReason>()?)?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "CRLReason"))?
-                    .call1((flags,))?,
-            ))
+            Ok(Some(types::CRL_REASON.get(py)?.call1((flags,))?))
         }
         oid::CERTIFICATE_ISSUER_OID => {
             let gn_seq = ext.value::<asn1::SequenceOf<'_, name::GeneralName<'_>>>()?;
             let gns = x509::parse_general_names(py, &gn_seq)?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "CertificateIssuer"))?
-                    .call1((gns,))?,
-            ))
+            Ok(Some(types::CERTIFICATE_ISSUER.get(py)?.call1((gns,))?))
         }
         oid::INVALIDITY_DATE_OID => {
             let time = ext.value::<asn1::GeneralizedTime>()?;
             let py_dt = x509::datetime_to_py(py, time.as_datetime())?;
-            Ok(Some(
-                x509_module
-                    .getattr(pyo3::intern!(py, "InvalidityDate"))?
-                    .call1((py_dt,))?,
-            ))
+            Ok(Some(types::INVALIDITY_DATE.get(py)?.call1((py_dt,))?))
         }
         _ => Ok(None),
     }
@@ -613,7 +625,8 @@ fn create_x509_crl(
         let serial_number = py_revoked_cert
             .getattr(pyo3::intern!(py, "serial_number"))?
             .extract()?;
-        let py_revocation_date = py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date"))?;
+        let py_revocation_date =
+            py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date_utc"))?;
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),

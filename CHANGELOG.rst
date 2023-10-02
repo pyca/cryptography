@@ -11,6 +11,40 @@ Changelog
 * Parsing SSH certificates no longer permits malformed critical options with
   values, as documented in the 41.0.2 release notes.
 * Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
+* Support :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` for
+  X.509 certificate signing requests with the keyword-only argument
+  ``rsa_padding`` on
+  :meth:`~cryptography.x509.CertificateSigningRequestBuilder.sign`.
+* Added support for obtaining X.509 certificate signing request signature
+  algorithm parameters (including PSS) via
+  :meth:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_parameters`.
+* Added `mgf` property to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
+* Added `algorithm` and `mgf` properties to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
+* Added the following properties that return timezone-aware ``datetime`` objects:
+  :meth:`~cryptography.x509.Certificate.not_valid_before_utc`,
+  :meth:`~cryptography.x509.Certificate.not_valid_after_utc`,
+  :meth:`~cryptography.x509.RevokedCertificate.revocation_date_utc`,
+  :meth:`~cryptography.x509.CertificateRevocationList.next_update_utc`,
+  :meth:`~cryptography.x509.CertificateRevocationList.last_update_utc`.
+  These are timezone-aware variants of existing properties that return naïve
+  ``datetime`` objects.
+* Deprecated the following properties that return naïve ``datetime`` objects:
+  :meth:`~cryptography.x509.Certificate.not_valid_before`,
+  :meth:`~cryptography.x509.Certificate.not_valid_after`,
+  :meth:`~cryptography.x509.RevokedCertificate.revocation_date`,
+  :meth:`~cryptography.x509.CertificateRevocationList.next_update`,
+  :meth:`~cryptography.x509.CertificateRevocationList.last_update`
+  in favor of the new timezone-aware variants mentioned above.
+
+
+.. _v41-0-4:
+
+41.0.4 - 2023-09-19
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.3.
 
 .. _v41-0-3:
 

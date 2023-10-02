@@ -19,7 +19,6 @@ typedef int... BN_ULONG;
 FUNCTIONS = """
 BIGNUM *BN_new(void);
 void BN_free(BIGNUM *);
-void BN_clear_free(BIGNUM *);
 
 int BN_rand_range(BIGNUM *, const BIGNUM *);
 
@@ -27,16 +26,6 @@ int BN_set_word(BIGNUM *, BN_ULONG);
 
 char *BN_bn2hex(const BIGNUM *);
 int BN_hex2bn(BIGNUM **, const char *);
-
-int BN_bn2bin(const BIGNUM *, unsigned char *);
-BIGNUM *BN_bin2bn(const unsigned char *, int, BIGNUM *);
-
-int BN_num_bits(const BIGNUM *);
-
-int BN_is_negative(const BIGNUM *);
-int BN_is_odd(const BIGNUM *);
-
-int BN_num_bytes(const BIGNUM *);
 
 /* The following 3 prime methods are exposed for Tribler. */
 int BN_generate_prime_ex(BIGNUM *, int, int, const BIGNUM *,

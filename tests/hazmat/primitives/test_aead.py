@@ -586,6 +586,38 @@ class TestAESOCB3:
                     aesocb3.decrypt(nonce, ct, b"nonsense")
 
     @pytest.mark.parametrize(
+        ("key_len", "expected"),
+        [
+            (128, b"g\xe9D\xd22V\xc5\xe0\xb6\xc6\x1f\xa2/\xdf\x1e\xa2"),
+            (192, b"\xf6s\xf2\xc3\xe7\x17J\xae{\xae\x98l\xa9\xf2\x9e\x17"),
+            (256, b"\xd9\x0e\xb8\xe9\xc9w\xc8\x8by\xddy=\x7f\xfa\x16\x1c"),
+        ],
+    )
+    def test_rfc7253(self, backend, key_len, expected):
+        # This is derived from page 18 of RFC 7253, with a tag length of
+        # 128 bits.
+
+        k = AESOCB3(b"\x00" * ((key_len - 8) // 8) + b"\x80")
+
+        c = b""
+
+        for i in range(0, 128):
+            s = b"\x00" * i
+            n = (3 * i + 1).to_bytes(12, "big")
+            c += k.encrypt(n, s, s)
+            n = (3 * i + 2).to_bytes(12, "big")
+            c += k.encrypt(n, s, b"")
+            n = (3 * i + 3).to_bytes(12, "big")
+            c += k.encrypt(n, b"", s)
+
+        assert len(c) == 22400
+
+        n = (385).to_bytes(12, "big")
+        output = k.encrypt(n, b"", c)
+
+        assert output == expected
+
+    @pytest.mark.parametrize(
         ("nonce", "data", "associated_data"),
         [
             [object(), b"data", b""],
@@ -609,6 +641,11 @@ class TestAESOCB3:
             aesocb3.encrypt(b"\x00" * 11, b"hi", None)
         with pytest.raises(ValueError):
             aesocb3.encrypt(b"\x00" * 16, b"hi", None)
+
+        with pytest.raises(ValueError):
+            aesocb3.decrypt(b"\x00" * 11, b"hi", None)
+        with pytest.raises(ValueError):
+            aesocb3.decrypt(b"\x00" * 16, b"hi", None)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
@@ -681,7 +718,7 @@ class TestAESSIV:
         with pytest.raises(ValueError):
             aessiv.encrypt(b"", None)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(InvalidTag):
             aessiv.decrypt(b"", None)
 
     def test_vectors(self, backend, subtests):

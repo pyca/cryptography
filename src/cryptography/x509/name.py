@@ -346,8 +346,7 @@ class Name:
 
     def __iter__(self) -> typing.Iterator[NameAttribute]:
         for rdn in self._attributes:
-            for ava in rdn:
-                yield ava
+            yield from rdn
 
     def __len__(self) -> int:
         return sum(len(rdn) for rdn in self._attributes)

@@ -7,6 +7,7 @@ import re
 import subprocess
 
 import click
+import tomllib
 
 
 def run(*args: str) -> None:
@@ -25,6 +26,16 @@ def release(version: str) -> None:
     """
     ``version`` should be a string like '0.4' or '1.0'.
     """
+    base_dir = pathlib.Path(__file__).parent
+    with (base_dir / "pyproject.toml").open("rb") as f:
+        pyproject = tomllib.load(f)
+        pyproject_version = pyproject["project"]["version"]
+
+    if version != pyproject_version:
+        raise RuntimeError(
+            f"Version mismatch: pyproject.toml has {pyproject_version}"
+        )
+
     # Tag and push the tag (this will trigger the wheel builder in Actions)
     run("git", "tag", "-s", version, "-m", f"{version} release")
     run("git", "push", "--tags")

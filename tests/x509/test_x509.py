@@ -135,6 +135,42 @@ def _break_cert_sig(cert: x509.Certificate) -> x509.Certificate:
     return x509.load_pem_x509_certificate(bytes(cert_bad_sig))
 
 
+def _check_cert_times(
+    cert: x509.Certificate,
+    not_valid_before: typing.Optional[datetime.datetime],
+    not_valid_after: typing.Optional[datetime.datetime],
+) -> None:
+    if not_valid_before:
+        with pytest.warns(utils.DeprecatedIn42):
+            assert cert.not_valid_before == not_valid_before
+        assert cert.not_valid_before_utc == not_valid_before.replace(
+            tzinfo=datetime.timezone.utc
+        )
+    if not_valid_after:
+        with pytest.warns(utils.DeprecatedIn42):
+            assert cert.not_valid_after == not_valid_after
+        assert cert.not_valid_after_utc == not_valid_after.replace(
+            tzinfo=datetime.timezone.utc
+        )
+
+
+def _check_crl_times(
+    crl: x509.CertificateRevocationList,
+    last_update: datetime.datetime,
+    next_update: datetime.datetime,
+) -> None:
+    with pytest.warns(utils.DeprecatedIn42):
+        assert crl.last_update == last_update
+        assert crl.next_update == next_update
+
+    assert crl.last_update_utc == last_update.replace(
+        tzinfo=datetime.timezone.utc
+    )
+    assert crl.next_update_utc == next_update.replace(
+        tzinfo=datetime.timezone.utc
+    )
+
+
 class TestCertificateRevocationList:
     def test_load_pem_crl(self, backend):
         crl = _load_cert(
@@ -275,18 +311,26 @@ class TestCertificateRevocationList:
             x509.load_pem_x509_crl,
         )
 
-        assert isinstance(crl.next_update, datetime.datetime)
-        assert isinstance(crl.last_update, datetime.datetime)
+        with pytest.warns(utils.DeprecatedIn42):
+            assert isinstance(crl.next_update, datetime.datetime)
+            assert isinstance(crl.last_update, datetime.datetime)
+            assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
+            assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
 
-        assert crl.next_update.isoformat() == "2016-01-01T00:00:00"
-        assert crl.last_update.isoformat() == "2015-01-01T00:00:00"
+        assert isinstance(crl.next_update_utc, datetime.datetime)
+        assert isinstance(crl.last_update_utc, datetime.datetime)
+        assert crl.next_update_utc.isoformat() == "2016-01-01T00:00:00+00:00"
+        assert crl.last_update_utc.isoformat() == "2015-01-01T00:00:00+00:00"
 
     def test_no_next_update(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_no_next_update.pem"),
             x509.load_pem_x509_crl,
         )
-        assert crl.next_update is None
+
+        with pytest.warns(utils.DeprecatedIn42):
+            assert crl.next_update is None
+        assert crl.next_update_utc is None
 
     def test_unrecognized_extension(self, backend):
         crl = _load_cert(
@@ -339,7 +383,13 @@ class TestCertificateRevocationList:
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
             x509.load_pem_x509_crl,
         )[11]
-        assert revoked.revocation_date == datetime.datetime(2015, 1, 1, 0, 0)
+        with pytest.warns(utils.DeprecatedIn42):
+            assert revoked.revocation_date == datetime.datetime(
+                2015, 1, 1, 0, 0
+            )
+        assert revoked.revocation_date_utc == datetime.datetime(
+            2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc
+        )
         assert revoked.serial_number == 11
 
     def test_extensions(self, backend):
@@ -444,8 +494,11 @@ class TestCertificateRevocationList:
         )
 
         assert len(crl) == 0
-        assert crl.last_update == datetime.datetime(2015, 12, 20, 23, 44, 47)
-        assert crl.next_update == datetime.datetime(2015, 12, 28, 0, 44, 47)
+        _check_crl_times(
+            crl,
+            last_update=datetime.datetime(2015, 12, 20, 23, 44, 47),
+            next_update=datetime.datetime(2015, 12, 28, 0, 44, 47),
+        )
 
     def test_public_bytes_der(self, backend):
         crl = _load_cert(
@@ -461,8 +514,11 @@ class TestCertificateRevocationList:
         )
 
         assert len(crl) == 12
-        assert crl.last_update == datetime.datetime(2015, 1, 1, 0, 0, 0)
-        assert crl.next_update == datetime.datetime(2016, 1, 1, 0, 0, 0)
+        _check_crl_times(
+            crl,
+            last_update=datetime.datetime(2015, 1, 1, 0, 0, 0),
+            next_update=datetime.datetime(2016, 1, 1, 0, 0, 0),
+        )
 
     @pytest.mark.parametrize(
         ("cert_path", "loader_func", "encoding"),
@@ -557,11 +613,18 @@ class TestRevokedCertificate:
         for i, rev in enumerate(crl):
             assert isinstance(rev, x509.RevokedCertificate)
             assert isinstance(rev.serial_number, int)
-            assert isinstance(rev.revocation_date, datetime.datetime)
+            with pytest.warns(utils.DeprecatedIn42):
+                assert isinstance(rev.revocation_date, datetime.datetime)
+            assert isinstance(rev.revocation_date_utc, datetime.datetime)
             assert isinstance(rev.extensions, x509.Extensions)
 
             assert rev.serial_number == i
-            assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
+            with pytest.warns(utils.DeprecatedIn42):
+                assert rev.revocation_date.isoformat() == "2015-01-01T00:00:00"
+            assert (
+                rev.revocation_date_utc.isoformat()
+                == "2015-01-01T00:00:00+00:00"
+            )
 
     def test_revoked_extensions(self, backend):
         crl = _load_cert(
@@ -1274,8 +1337,11 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -1294,7 +1360,11 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_before == datetime.datetime(1950, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(1950, 1, 1, 12, 1),
+            not_valid_after=None,
+        )
 
     def test_pre_2000_utc_not_after_cert(self, backend):
         cert = _load_cert(
@@ -1307,18 +1377,21 @@ class TestRSACertificate:
             x509.load_der_x509_certificate,
         )
 
-        assert cert.not_valid_after == datetime.datetime(1999, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=None,
+            not_valid_after=datetime.datetime(1999, 1, 1, 12, 1),
+        )
 
     def test_post_2000_utc_cert(self, backend):
         cert = _load_cert(
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(
-            2014, 11, 26, 21, 41, 20
-        )
-        assert cert.not_valid_after == datetime.datetime(
-            2014, 12, 26, 21, 41, 20
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2014, 11, 26, 21, 41, 20),
+            not_valid_after=datetime.datetime(2014, 12, 26, 21, 41, 20),
         )
 
     def test_generalized_time_not_before_cert(self, backend):
@@ -1331,8 +1404,11 @@ class TestRSACertificate:
             ),
             x509.load_der_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(2002, 1, 1, 12, 1)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2002, 1, 1, 12, 1),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.version is x509.Version.v3
 
     def test_generalized_time_not_after_cert(self, backend):
@@ -1345,8 +1421,11 @@ class TestRSACertificate:
             ),
             x509.load_der_x509_certificate,
         )
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2050, 1, 1, 12, 1)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2050, 1, 1, 12, 1),
+        )
         assert cert.version is x509.Version.v3
 
     def test_invalid_version_cert(self, backend):
@@ -1486,8 +1565,11 @@ class TestRSACertificate:
         )
 
         # We should recover what we had to start with.
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -1510,8 +1592,11 @@ class TestRSACertificate:
         )
 
         # We should recover what we had to start with.
-        assert cert.not_valid_before == datetime.datetime(2010, 1, 1, 8, 30)
-        assert cert.not_valid_after == datetime.datetime(2030, 12, 31, 8, 30)
+        _check_cert_times(
+            cert,
+            not_valid_before=datetime.datetime(2010, 1, 1, 8, 30),
+            not_valid_after=datetime.datetime(2030, 12, 31, 8, 30),
+        )
         assert cert.serial_number == 2
         public_key = cert.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
@@ -2175,8 +2260,11 @@ class TestRSACertificateRequest:
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -2470,8 +2558,11 @@ class TestCertificateBuilder:
             .not_valid_after(not_valid_after)
         )
         cert = builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         parsed = asn1.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
@@ -2923,7 +3014,9 @@ class TestCertificateBuilder:
         )
 
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_after == utc_time
+        _check_cert_times(
+            cert, not_valid_before=None, not_valid_after=utc_time
+        )
 
     def test_earliest_time(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         time = datetime.datetime(1950, 1, 1)
@@ -2942,8 +3035,7 @@ class TestCertificateBuilder:
             .not_valid_after(time)
         )
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == time
-        assert cert.not_valid_after == time
+        _check_cert_times(cert, not_valid_before=time, not_valid_after=time)
         parsed = asn1.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
@@ -2996,7 +3088,9 @@ class TestCertificateBuilder:
         )
 
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
-        assert cert.not_valid_before == utc_time
+        _check_cert_times(
+            cert, not_valid_before=utc_time, not_valid_after=None
+        )
 
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
@@ -3220,8 +3314,11 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3291,8 +3388,11 @@ class TestCertificateBuilder:
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3387,8 +3487,11 @@ class TestCertificateBuilder:
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
         assert cert.version is x509.Version.v3
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -3487,8 +3590,11 @@ class TestCertificateBuilder:
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
         assert cert.version is x509.Version.v3
-        assert cert.not_valid_before == not_valid_before
-        assert cert.not_valid_after == not_valid_after
+        _check_cert_times(
+            cert,
+            not_valid_before=not_valid_before,
+            not_valid_after=not_valid_after,
+        )
         basic_constraints = cert.extensions.get_extension_for_oid(
             ExtensionOID.BASIC_CONSTRAINTS
         )
@@ -4919,6 +5025,104 @@ class TestCertificateSigningRequestBuilder:
 
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA512(), backend)
+
+    @pytest.mark.parametrize(
+        ("alg", "mgf_alg"),
+        [
+            (hashes.SHA512(), hashes.SHA256()),
+            (hashes.SHA3_512(), hashes.SHA3_256()),
+        ],
+    )
+    def test_sign_pss(
+        self, rsa_key_2048: rsa.RSAPrivateKey, alg, mgf_alg, backend
+    ):
+        if not backend.signature_hash_supported(alg):
+            pytest.skip(f"{alg} signature not supported")
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(mgf_alg), salt_length=alg.digest_size
+        )
+        csr = builder.sign(rsa_key_2048, alg, rsa_padding=pss)
+        pk = csr.public_key()
+        assert isinstance(pk, rsa.RSAPublicKey)
+        assert isinstance(csr.signature_hash_algorithm, type(alg))
+        cert_params = csr.signature_algorithm_parameters
+        assert isinstance(cert_params, padding.PSS)
+        assert cert_params._salt_length == pss._salt_length
+        assert isinstance(cert_params._mgf, padding.MGF1)
+        assert isinstance(cert_params._mgf._algorithm, type(mgf_alg))
+        pk.verify(
+            csr.signature,
+            csr.tbs_certrequest_bytes,
+            cert_params,
+            alg,
+        )
+
+    @pytest.mark.parametrize(
+        ("padding_len", "computed_len"),
+        [
+            (padding.PSS.MAX_LENGTH, 222),
+            (padding.PSS.DIGEST_LENGTH, 32),
+        ],
+    )
+    def test_sign_pss_length_options(
+        self,
+        rsa_key_2048: rsa.RSAPrivateKey,
+        padding_len,
+        computed_len,
+        backend,
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
+        )
+        csr = builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+        assert isinstance(csr.signature_algorithm_parameters, padding.PSS)
+        assert csr.signature_algorithm_parameters._salt_length == computed_len
+
+    def test_sign_pss_auto_unsupported(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.AUTO
+        )
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
+
+    def test_sign_invalid_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+            )
+        eckey = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            builder.sign(
+                eckey, hashes.SHA256(), rsa_padding=padding.PKCS1v15()
+            )
+
+    def test_sign_pss_hash_none(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+        )
+        pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32)
+        with pytest.raises(TypeError):
+            builder.sign(rsa_key_2048, None, rsa_padding=pss)
 
 
 @pytest.mark.supported(

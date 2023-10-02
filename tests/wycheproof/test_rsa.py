@@ -19,7 +19,8 @@ _DIGESTS = {
     "SHA-256": hashes.SHA256(),
     "SHA-384": hashes.SHA384(),
     "SHA-512": hashes.SHA512(),
-    # Not supported by OpenSSL for RSA signing
+    # Not supported by OpenSSL<3 for RSA signing.
+    # Enable these when we require CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
     "SHA-512/224": None,
     "SHA-512/256": None,
     "SHA3-224": hashes.SHA3_224(),

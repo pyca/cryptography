@@ -368,6 +368,13 @@ X.509 Certificate Object
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.Certificate.not_valid_before_utc`.
+
+
         A naïve datetime representing the beginning of the validity period for
         the certificate in UTC. This value is inclusive.
 
@@ -376,9 +383,29 @@ X.509 Certificate Object
             >>> cert.not_valid_before
             datetime.datetime(2010, 1, 1, 8, 30)
 
+    .. attribute:: not_valid_before_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the beginning of the validity
+        period for the certificate in UTC. This value is inclusive.
+
+        .. doctest::
+
+            >>> cert.not_valid_before_utc
+            datetime.datetime(2010, 1, 1, 8, 30, tzinfo=datetime.timezone.utc)
+
     .. attribute:: not_valid_after
 
         :type: :class:`datetime.datetime`
+
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.Certificate.not_valid_after_utc`.
 
         A naïve datetime representing the end of the validity period for the
         certificate in UTC. This value is inclusive.
@@ -387,6 +414,20 @@ X.509 Certificate Object
 
             >>> cert.not_valid_after
             datetime.datetime(2030, 12, 31, 8, 30)
+
+    .. attribute:: not_valid_after_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the end of the validity period
+        for the certificate in UTC. This value is inclusive.
+
+        .. doctest::
+
+            >>> cert.not_valid_after_utc
+            datetime.datetime(2030, 12, 31, 8, 30, tzinfo=datetime.timezone.utc)
 
     .. attribute:: issuer
 
@@ -690,6 +731,12 @@ X.509 CRL (Certificate Revocation List) Object
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.CertificateRevocationList.next_update_utc`.
+
         A naïve datetime representing when the next update to this CRL is
         expected.
 
@@ -698,9 +745,29 @@ X.509 CRL (Certificate Revocation List) Object
             >>> crl.next_update
             datetime.datetime(2016, 1, 1, 0, 0)
 
+    .. attribute:: next_update_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing when the next update to this
+        CRL is expected.
+
+        .. doctest::
+
+            >>> crl.next_update_utc
+            datetime.datetime(2016, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
+
     .. attribute:: last_update
 
         :type: :class:`datetime.datetime`
+
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.CertificateRevocationList.last_update_utc`.
 
         A naïve datetime representing when this CRL was last updated.
 
@@ -708,6 +775,19 @@ X.509 CRL (Certificate Revocation List) Object
 
             >>> crl.last_update
             datetime.datetime(2015, 1, 1, 0, 0)
+
+    .. attribute:: last_update_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing when this CRL was last updated.
+
+        .. doctest::
+
+            >>> crl.last_update_utc
+            datetime.datetime(2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
 
     .. attribute:: extensions
 
@@ -970,6 +1050,27 @@ X.509 CSR (Certificate Signing Request) Object
             >>> csr.signature_algorithm_oid
             <ObjectIdentifier(oid=1.2.840.113549.1.1.11, name=sha256WithRSAEncryption)>
 
+    .. attribute:: signature_algorithm_parameters
+
+        .. versionadded:: 42.0.0
+
+        Returns the parameters of the signature algorithm used to sign the
+        certificate signing request. For RSA signatures it will return either a
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15` or
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` object.
+
+        For ECDSA signatures it will
+        return an :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSA`.
+
+        For EdDSA and DSA signatures it will return ``None``.
+
+        These objects can be used to verify signatures on the signing request.
+
+        :returns: None,
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`, or
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSA`
+
     .. attribute:: extensions
 
         :type: :class:`Extensions`
@@ -1155,12 +1256,32 @@ X.509 Revoked Certificate Object
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.RevokedCertificate.revocation_date_utc`.
+
         A naïve datetime representing the date this certificates was revoked.
 
         .. doctest::
 
             >>> revoked_certificate.revocation_date
             datetime.datetime(2015, 1, 1, 0, 0)
+
+    .. attribute:: revocation_date_utc
+
+        .. versionadded:: 42.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the date this certificates was
+        revoked.
+
+        .. doctest::
+
+            >>> revoked_certificate.revocation_date_utc
+            datetime.datetime(2015, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
 
     .. attribute:: extensions
 
@@ -1288,7 +1409,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
 
         :param private_key: The private key
             that will be used to sign the request.  When the request is
@@ -1306,6 +1427,22 @@ X.509 CSR (Certificate Signing Request) Builder Object
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
+
+        :param rsa_padding:
+
+            .. versionadded:: 42.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``RSAPrivateKey`` then this can be set to either
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` to sign
+            with those respective paddings. If this is ``None`` then RSA
+            keys will default to ``PKCS1v15`` padding. All other key types **must**
+            not pass a value other than ``None``.
+
+        :type rsa_padding: ``None``,
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
+            or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
 
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.

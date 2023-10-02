@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Get publish-requirements.txt from repository
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           sparse-checkout: |
             ${{ env.PUBLISH_REQUIREMENTS_PATH }}
@@ -41,7 +41,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install --require-hashes -r ${{ env.PUBLISH_REQUIREMENTS_PATH }}
 
-      - uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615 # v2.27.0
+      - uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # v2.28.0
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}

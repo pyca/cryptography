@@ -10,13 +10,163 @@ use cryptography_x509_validation::{
     types::{DNSName, IPAddress},
 };
 
-use crate::error::CryptographyResult;
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::types;
+use crate::x509::certificate::Certificate as PyCertificate;
+use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
+use crate::x509::sign;
 
-use super::{
-    certificate::{Certificate as PyCertificate, OwnedCertificate},
-    common::datetime_now,
-    py_to_datetime, sign,
-};
+use super::certificate::OwnedCertificate;
+
+pub(crate) struct PyCryptoOps {}
+
+impl CryptoOps for PyCryptoOps {
+    type Key = pyo3::Py<pyo3::PyAny>;
+    type Err = CryptographyError;
+
+    fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+        pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
+            // This makes an unnecessary copy. It'd be nice to get rid of it.
+            let spki_der = pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki)?);
+
+            Ok(types::LOAD_DER_PUBLIC_KEY
+                .get(py)?
+                .call1((spki_der,))?
+                .into())
+        })
+    }
+
+    fn verify_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err> {
+        pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
+            sign::verify_signature_with_signature_algorithm(
+                py,
+                key.as_ref(py),
+                &cert.signature_alg,
+                cert.signature.as_bytes(),
+                &asn1::write_single(&cert.tbs_cert)?,
+            )
+        })
+    }
+}
+
+struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
+
+/// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
+enum SubjectOwner {
+    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
+    // lifetime relationship between an a `PyString` and its borrowed `&str`
+    // reference in all limited API builds. PyO3 can't currently do that in
+    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
+    // so, which was only stabilized with 3.10.
+    DNSName(String),
+    IPAddress(pyo3::Py<pyo3::types::PyBytes>),
+}
+
+self_cell::self_cell!(
+    struct OwnedPolicy {
+        owner: SubjectOwner,
+
+        #[covariant]
+        dependent: PyCryptoPolicy,
+    }
+);
+
+#[pyo3::pyclass(
+    name = "ServerVerifier",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyServerVerifier {
+    #[pyo3(get, name = "subject")]
+    py_subject: pyo3::Py<pyo3::PyAny>,
+    policy: OwnedPolicy,
+}
+
+impl PyServerVerifier {
+    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
+        &self.policy.borrow_dependent().0
+    }
+}
+
+#[pyo3::pymethods]
+impl PyServerVerifier {
+    #[getter]
+    fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        datetime_to_py(py, &self.as_policy().validation_time)
+    }
+}
+
+fn build_subject_owner(
+    py: pyo3::Python<'_>,
+    subject: &pyo3::Py<pyo3::PyAny>,
+) -> pyo3::PyResult<SubjectOwner> {
+    let subject = subject.as_ref(py);
+
+    if subject.is_instance(types::DNS_NAME.get(py)?)? {
+        let value = subject
+            .getattr(pyo3::intern!(py, "value"))?
+            .downcast::<pyo3::types::PyString>()?;
+
+        Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
+    } else if subject.is_instance(types::IP_ADDRESS.get(py)?)? {
+        let value = subject
+            .getattr(pyo3::intern!(py, "_packed"))?
+            .call0()?
+            .downcast::<pyo3::types::PyBytes>()?;
+
+        Ok(SubjectOwner::IPAddress(value.into()))
+    } else {
+        Err(pyo3::exceptions::PyTypeError::new_err(
+            "unsupported subject type",
+        ))
+    }
+}
+
+fn build_subject<'a>(
+    py: pyo3::Python<'_>,
+    subject: &'a SubjectOwner,
+) -> pyo3::PyResult<Option<Subject<'a>>> {
+    match subject {
+        SubjectOwner::DNSName(dns_name) => {
+            let dns_name = DNSName::new(dns_name)
+                .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
+
+            Ok(Some(Subject::DNS(dns_name)))
+        }
+        SubjectOwner::IPAddress(ip_addr) => {
+            let ip_addr = IPAddress::from_bytes(ip_addr.as_bytes(py))
+                .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid IP address"))?;
+
+            Ok(Some(Subject::IP(ip_addr)))
+        }
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn create_server_verifier(
+    py: pyo3::Python<'_>,
+    subject: pyo3::Py<pyo3::PyAny>,
+    time: Option<&pyo3::PyAny>,
+) -> pyo3::PyResult<PyServerVerifier> {
+    let time = match time {
+        Some(time) => py_to_datetime(py, time)?,
+        None => datetime_now(py)?,
+    };
+
+    let subject_owner = build_subject_owner(py, &subject)?;
+    let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
+        let subject = build_subject(py, subject_owner)?;
+        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
+            PyCryptoOps {},
+            subject,
+            time,
+        )))
+    })?;
+
+    Ok(PyServerVerifier {
+        py_subject: subject,
+        policy,
+    })
+}
 
 #[pyo3::pyclass(
     frozen,
@@ -38,79 +188,6 @@ impl PyStore {
     }
 }
 
-pub(crate) struct PyCryptoOps {}
-
-impl CryptoOps for PyCryptoOps {
-    // NOTE: This "key" type also carries any error that might happen
-    // during key serialization/loading. This isn't ideal but also is
-    // not a significant issue, since its only use is in checking
-    // another certificate's signature (where an error means that the
-    // signature check fails trivially).
-    type Key = pyo3::Py<pyo3::PyAny>;
-
-    fn public_key(&self, cert: &Certificate<'_>) -> Option<Self::Key> {
-        pyo3::Python::with_gil(|py| -> Option<Self::Key> {
-            // This makes an unnecessary copy. It'd be nice to get rid of it.
-            let spki_der =
-                pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki).ok()?);
-            Some(
-                py.import(pyo3::intern!(
-                    py,
-                    "cryptography.hazmat.primitives.serialization"
-                ))
-                .ok()?
-                .getattr(pyo3::intern!(py, "load_der_public_key"))
-                .ok()?
-                .call1((spki_der,))
-                .ok()?
-                .into(),
-            )
-        })
-    }
-
-    fn is_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> bool {
-        pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
-            sign::verify_signature_with_signature_algorithm(
-                py,
-                key.as_ref(py),
-                &cert.signature_alg,
-                cert.signature.as_bytes(),
-                &asn1::write_single(&cert.tbs_cert)?,
-            )
-        })
-        .is_ok()
-    }
-}
-
-// NOTE: pyO3 classes can't be generic over a trait, which our profile API requires.
-// Our workaround is to unfold each profile variant in this enum, which produces
-// a small amount of (internal) duplication in exchange for the monomorphism that
-// pyO3 needs.
-struct FixedPolicy<'a>(Policy<'a, PyCryptoOps>);
-
-/// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
-enum SubjectOwner {
-    // NOTE: This is ugly, but is effectively the easiest way to use a uniform
-    // `OwnedPolicy` API when policies aren't strictly required to contain a subject.
-    None,
-    // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
-    // lifetime relationship between an a `PyString` and its borrowed `&str`
-    // reference in all limited API builds. PyO3 can't currently do that in
-    // older limited API builds because it needs `PyUnicode_AsUTF8AndSize` to do
-    // so, which was only stabilized with 3.10.
-    DNSName(String),
-    IPAddress(pyo3::Py<pyo3::types::PyBytes>),
-}
-
-self_cell::self_cell!(
-    struct OwnedPolicy {
-        owner: SubjectOwner,
-
-        #[covariant]
-        dependent: FixedPolicy,
-    }
-);
-
 #[pyo3::pyclass(
     frozen,
     name = "Policy",
@@ -122,109 +199,6 @@ impl PyPolicy {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
         &self.0.borrow_dependent().0
     }
-}
-
-fn build_subject_owner(
-    py: pyo3::Python<'_>,
-    subject: pyo3::Py<pyo3::PyAny>,
-) -> pyo3::PyResult<SubjectOwner> {
-    let subject = subject.as_ref(py);
-
-    if subject.is_none() {
-        return Ok(SubjectOwner::None);
-    }
-
-    let x509_general_name_module =
-        py.import(pyo3::intern!(py, "cryptography.x509.general_name"))?;
-    let dns_name_class = x509_general_name_module.getattr(pyo3::intern!(py, "DNSName"))?;
-    let ip_address_class = x509_general_name_module.getattr(pyo3::intern!(py, "IPAddress"))?;
-
-    if subject.is_instance(dns_name_class)? {
-        let value = subject
-            .getattr(pyo3::intern!(py, "value"))?
-            .downcast::<pyo3::types::PyString>()?;
-
-        Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
-    } else if subject.is_instance(ip_address_class)? {
-        let value = subject
-            .getattr(pyo3::intern!(py, "packed"))?
-            .downcast::<pyo3::types::PyBytes>()?;
-
-        Ok(SubjectOwner::IPAddress(value.into()))
-    } else {
-        Err(pyo3::exceptions::PyTypeError::new_err(
-            "unsupported subject type",
-        ))
-    }
-}
-
-fn build_subject<'a>(
-    py: pyo3::Python<'_>,
-    subject: &'a SubjectOwner,
-) -> pyo3::PyResult<Option<Subject<'a>>> {
-    match subject {
-        SubjectOwner::None => Ok(None),
-        SubjectOwner::DNSName(dns_name) => {
-            let dns_name = DNSName::new(dns_name)
-                .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
-
-            Ok(Some(Subject::DNS(dns_name)))
-        }
-        SubjectOwner::IPAddress(ip_addr) => {
-            let ip_addr = IPAddress::from_bytes(ip_addr.as_bytes(py))
-                .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid IP address"))?;
-
-            Ok(Some(Subject::IP(ip_addr)))
-        }
-    }
-}
-
-#[pyo3::prelude::pyfunction]
-fn create_policy(
-    py: pyo3::Python<'_>,
-    profile: &pyo3::PyAny,
-    subject: pyo3::Py<pyo3::PyAny>,
-    time: Option<&pyo3::PyAny>,
-) -> pyo3::PyResult<PyPolicy> {
-    let x509_module = py.import(pyo3::intern!(py, "cryptography.x509.verification"))?;
-    let rfc5280 = x509_module
-        .getattr(pyo3::intern!(py, "Profile"))?
-        .get_item(pyo3::intern!(py, "RFC5280"))?;
-    let webpki = x509_module
-        .getattr(pyo3::intern!(py, "Profile"))?
-        .get_item(pyo3::intern!(py, "WebPKI"))?;
-
-    let time = match time {
-        Some(time) => py_to_datetime(py, time)?,
-        None => datetime_now(py)?,
-    };
-
-    let subject_owner = build_subject_owner(py, subject)?;
-    let policy = if profile.eq(rfc5280)? {
-        OwnedPolicy::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
-            Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::rfc5280(
-                PyCryptoOps {},
-                subject,
-                time,
-            )))
-        })?
-    } else if profile.eq(webpki)? {
-        OwnedPolicy::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
-            Ok::<FixedPolicy<'_>, pyo3::PyErr>(FixedPolicy(Policy::webpki(
-                PyCryptoOps {},
-                subject,
-                time,
-            )))
-        })?
-    } else {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "invalid profile specified; expected a Profile variant",
-        ));
-    };
-
-    Ok(PyPolicy(policy))
 }
 
 #[pyo3::prelude::pyfunction]
@@ -274,10 +248,10 @@ fn verify<'p>(
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;
-    module.add_class::<PyPolicy>()?;
     module.add_function(pyo3::wrap_pyfunction!(verify, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction!(create_policy, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction!(create_server_verifier, module)?)?;
 
     Ok(())
 }

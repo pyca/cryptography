@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::error::CryptographyError;
-use pyo3::types::IntoPyDict;
+use crate::types;
 use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -164,12 +164,7 @@ impl Sct {
 
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        py.import(pyo3::intern!(
-            py,
-            "cryptography.x509.certificate_transparency"
-        ))?
-        .getattr(pyo3::intern!(py, "Version"))?
-        .getattr(pyo3::intern!(py, "v1"))
+        types::CERTIFICATE_TRANSPARENCY_VERSION_V1.get(py)
     }
 
     #[getter]
@@ -179,34 +174,27 @@ impl Sct {
 
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let datetime_class = py
-            .import(pyo3::intern!(py, "datetime"))?
-            .getattr(pyo3::intern!(py, "datetime"))?;
-        datetime_class
+        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+
+        let kwargs = pyo3::types::PyDict::new(py);
+        kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;
+        kwargs.set_item("tzinfo", None::<Option<pyo3::PyAny>>)?;
+
+        types::DATETIME_DATETIME
+            .get(py)?
             .call_method1(
-                pyo3::intern!(py, "utcfromtimestamp"),
-                (self.timestamp / 1000,),
+                pyo3::intern!(py, "fromtimestamp"),
+                (self.timestamp / 1000, utc),
             )?
-            .call_method(
-                "replace",
-                (),
-                Some(vec![("microsecond", self.timestamp % 1000 * 1000)].into_py_dict(py)),
-            )
+            .call_method("replace", (), Some(kwargs))
     }
 
     #[getter]
     fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let et_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.x509.certificate_transparency"
-            ))?
-            .getattr(pyo3::intern!(py, "LogEntryType"))?;
-        let attr_name = match self.entry_type {
-            LogEntryType::Certificate => "X509_CERTIFICATE",
-            LogEntryType::PreCertificate => "PRE_CERTIFICATE",
-        };
-        et_class.getattr(attr_name)
+        Ok(match self.entry_type {
+            LogEntryType::Certificate => types::LOG_ENTRY_TYPE_X509_CERTIFICATE.get(py)?,
+            LogEntryType::PreCertificate => types::LOG_ENTRY_TYPE_PRE_CERTIFICATE.get(py)?,
+        })
     }
 
     #[getter]
@@ -214,19 +202,16 @@ impl Sct {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let hashes_mod = py.import(pyo3::intern!(py, "cryptography.hazmat.primitives.hashes"))?;
-        hashes_mod.call_method0(self.hash_algorithm.to_attr())
+        types::HASHES_MODULE
+            .get(py)?
+            .call_method0(self.hash_algorithm.to_attr())
     }
 
     #[getter]
     fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let sa_class = py
-            .import(pyo3::intern!(
-                py,
-                "cryptography.x509.certificate_transparency"
-            ))?
-            .getattr(pyo3::intern!(py, "SignatureAlgorithm"))?;
-        sa_class.getattr(self.signature_algorithm.to_attr())
+        types::SIGNATURE_ALGORITHM
+            .get(py)?
+            .getattr(self.signature_algorithm.to_attr())
     }
 
     #[getter]

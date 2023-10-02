@@ -56,6 +56,10 @@ class PSS(AsymmetricPadding):
 
         self._salt_length = salt_length
 
+    @property
+    def mgf(self) -> MGF:
+        return self._mgf
+
 
 class OAEP(AsymmetricPadding):
     name = "EME-OAEP"
@@ -72,6 +76,14 @@ class OAEP(AsymmetricPadding):
         self._mgf = mgf
         self._algorithm = algorithm
         self._label = label
+
+    @property
+    def algorithm(self) -> hashes.HashAlgorithm:
+        return self._algorithm
+
+    @property
+    def mgf(self) -> MGF:
+        return self._mgf
 
 
 class MGF(metaclass=abc.ABCMeta):

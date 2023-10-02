@@ -27,6 +27,7 @@ fn generate_key() -> CryptographyResult<Ed25519PrivateKey> {
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(ptr: usize) -> Ed25519PrivateKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     Ed25519PrivateKey {
         pkey: pkey.to_owned(),
@@ -35,6 +36,7 @@ fn private_key_from_ptr(ptr: usize) -> Ed25519PrivateKey {
 
 #[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(ptr: usize) -> Ed25519PublicKey {
+    // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     Ed25519PublicKey {
         pkey: pkey.to_owned(),
@@ -121,7 +123,8 @@ impl Ed25519PrivateKey {
 impl Ed25519PublicKey {
     fn verify(&self, signature: &[u8], data: &[u8]) -> CryptographyResult<()> {
         let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
-            .verify_oneshot(signature, data)?;
+            .verify_oneshot(signature, data)
+            .unwrap_or(false);
 
         if !valid {
             return Err(CryptographyError::from(

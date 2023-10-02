@@ -83,15 +83,6 @@ def _check_fips_key_length(backend, private_key):
         pytest.skip(f"Key size not FIPS compliant: {private_key.key_size}")
 
 
-def _check_rsa_private_numbers_if_serializable(key):
-    if isinstance(key, rsa.RSAPrivateKey):
-        _check_rsa_private_numbers(key.private_numbers())
-
-
-def test_check_rsa_private_numbers_if_serializable():
-    _check_rsa_private_numbers_if_serializable("notserializable")
-
-
 def _flatten_pkcs1_examples(vectors):
     flattened_vectors = []
     for vector in vectors:
@@ -192,7 +183,7 @@ class TestRSA:
         skey = rsa.generate_private_key(public_exponent, key_size, backend)
         assert skey.key_size == key_size
 
-        _check_rsa_private_numbers_if_serializable(skey)
+        _check_rsa_private_numbers(skey.private_numbers())
         pkey = skey.public_key()
         assert isinstance(pkey.public_numbers(), rsa.RSAPublicNumbers)
 
@@ -845,6 +836,21 @@ class TestRSASignature:
         pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             private_key.sign(message, pss, hashes.BLAKE2s(32))
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
+        ),
+        skip_message="Does not support PSS.",
+    )
+    def test_unsupported_hash_pss_mgf1(self, rsa_key_2048: rsa.RSAPrivateKey):
+        private_key = rsa_key_2048
+        message = b"my message"
+        pss = padding.PSS(
+            mgf=padding.MGF1(DummyHashAlgorithm()), salt_length=0
+        )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.sign(message, pss, hashes.SHA256())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -1681,6 +1687,13 @@ class TestPSS:
         assert pss._mgf == mgf
         assert pss._salt_length == padding.PSS.MAX_LENGTH
 
+    def test_mgf_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        pss = padding.PSS(mgf=mgf, salt_length=padding.PSS.MAX_LENGTH)
+        assert pss.mgf == mgf
+        assert pss.mgf == pss._mgf
+
 
 class TestMGF1:
     def test_invalid_hash_algorithm(self):
@@ -1700,6 +1713,20 @@ class TestOAEP:
             padding.OAEP(
                 mgf=mgf, algorithm=b"", label=None  # type:ignore[arg-type]
             )
+
+    def test_algorithm_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)
+        assert oaep.algorithm == algorithm
+        assert oaep.algorithm == oaep._algorithm
+
+    def test_mgf_property(self):
+        algorithm = hashes.SHA1()
+        mgf = padding.MGF1(algorithm)
+        oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)
+        assert oaep.mgf == mgf
+        assert oaep.mgf == oaep._mgf
 
 
 class TestRSADecryption:
@@ -1934,6 +1961,27 @@ class TestRSADecryption:
                 padding.OAEP(
                     algorithm=hashes.SHA1(),
                     mgf=padding.MGF1(hashes.SHA1()),
+                    label=None,
+                ),
+            )
+
+    def test_unsupported_oaep_hash(self, rsa_key_2048: rsa.RSAPrivateKey):
+        private_key = rsa_key_2048
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"0" * 256,
+                padding.OAEP(
+                    mgf=padding.MGF1(DummyHashAlgorithm()),
+                    algorithm=hashes.SHA256(),
+                    label=None,
+                ),
+            )
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            private_key.decrypt(
+                b"0" * 256,
+                padding.OAEP(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    algorithm=DummyHashAlgorithm(),
                     label=None,
                 ),
             )
@@ -2735,6 +2783,8 @@ class TestRSAPEMPublicKeySerialization:
         assert key1 == key2
         assert key1 != key3
         assert key1 != object()
+        with pytest.raises(TypeError):
+            key1 < key2  # type: ignore[operator]
 
     def test_public_key_copy(self, rsa_key_2048: rsa.RSAPrivateKey):
         key1 = rsa_key_2048.public_key()

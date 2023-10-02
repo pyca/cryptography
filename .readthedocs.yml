@@ -7,6 +7,9 @@ sphinx:
   # https://github.com/pyca/cryptography/issues/5863#issuecomment-817828152
   builder: dirhtml
 
+formats:
+  - pdf
+
 build:
   # readdocs master now includes a rust toolchain
   os: "ubuntu-22.04"
