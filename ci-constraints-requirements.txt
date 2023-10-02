@@ -76,7 +76,7 @@ mypy-extensions==1.0.0
     #   mypy
 nox==2023.4.22
     # via cryptography (pyproject.toml)
-packaging==23.1
+packaging==23.2
     # via
     #   black
     #   build
