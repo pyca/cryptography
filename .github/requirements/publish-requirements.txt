@@ -198,8 +198,8 @@ docutils==0.20.1 \
     --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6 \
     --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b
     # via readme-renderer
-grpclib==0.4.5 \
-    --hash=sha256:bf83ed55aca59497e168761d9555056efc54a8f865316c3b39becd007e9f9a73
+grpclib==0.4.6 \
+    --hash=sha256:595d05236ca8b8f8e433f5bf6095e6354c1d8777d003ddaf5288efa9611e3fd6
     # via betterproto
 h2==4.1.0 \
     --hash=sha256:03a46bcf682256c95b5fd9e9a99c1323584c3eec6440d379b9903d709476bc6d \
