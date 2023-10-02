@@ -181,7 +181,7 @@ twine==4.0.2
     # via cryptography (pyproject.toml)
 typing-extensions==4.8.0; python_version >= "3.8"
     # via mypy
-urllib3==2.0.5
+urllib3==2.0.6
     # via
     #   requests
     #   twine
