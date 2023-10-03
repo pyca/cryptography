@@ -98,7 +98,7 @@ static ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 };
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
-/// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
+/// <https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf>
 pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> = Lazy::new(|| {
     HashSet::from([
         &RSASSA_PKCS1V15_SHA256,
