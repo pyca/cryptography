@@ -238,7 +238,6 @@ impl PyStore {
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;
-    module.add_function(pyo3::wrap_pyfunction!(verify, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(create_server_verifier, module)?)?;
 
     Ok(())

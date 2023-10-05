@@ -115,8 +115,11 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
 
 const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
-const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
+const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] = &[
+    BASIC_CONSTRAINTS_OID,
+    SUBJECT_ALTERNATIVE_NAME_OID,
+    KEY_USAGE_OID,
+];
 
 #[derive(Debug, PartialEq)]
 pub enum PolicyError {
