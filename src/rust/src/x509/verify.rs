@@ -93,6 +93,53 @@ impl PyServerVerifier {
     fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         datetime_to_py(py, &self.as_policy().validation_time)
     }
+
+    fn verify<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        leaf: &PyCertificate,
+        intermediates: &'p pyo3::types::PyList,
+        store: &'p PyStore,
+    ) -> CryptographyResult<Vec<PyCertificate>> {
+        let intermediates = intermediates
+            .iter()
+            .map(|o| o.extract::<pyo3::PyRef<'p, PyCertificate>>())
+            .collect::<Result<Vec<_>, _>>()?;
+        let store = Store::new(
+            store
+                .0
+                .iter()
+                .map(|t| t.get().raw.borrow_dependent().clone()),
+        );
+
+        let policy = self.as_policy();
+        let chain = cryptography_x509_validation::verify(
+            leaf.raw.borrow_dependent(),
+            intermediates
+                .iter()
+                .map(|i| i.raw.borrow_dependent().clone()),
+            policy,
+            &store,
+        )
+        .map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err(format!("validation failed: {e:?}"))
+        })?;
+
+        // TODO: Optimize this? Turning a Certificate back into a PyCertificate
+        // involves a full round-trip back through DER, which isn't ideal.
+        chain
+            .iter()
+            .map(|c| {
+                let raw = pyo3::types::PyBytes::new(py, &asn1::write_single(c)?);
+                Ok(PyCertificate {
+                    raw: OwnedCertificate::try_new(raw.into(), |raw| {
+                        asn1::parse_single(raw.as_bytes(py))
+                    })?,
+                    cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+                })
+            })
+            .collect()
+    }
 }
 
 fn build_subject_owner(
@@ -186,65 +233,6 @@ impl PyStore {
         }
         Ok(Self(certs))
     }
-}
-
-#[pyo3::pyclass(
-    frozen,
-    name = "Policy",
-    module = "cryptography.hazmat.bindings._rust.x509"
-)]
-struct PyPolicy(OwnedPolicy);
-
-impl PyPolicy {
-    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.0.borrow_dependent().0
-    }
-}
-
-#[pyo3::prelude::pyfunction]
-fn verify<'p>(
-    py: pyo3::Python<'p>,
-    leaf: &PyCertificate,
-    policy: &PyPolicy,
-    intermediates: &'p pyo3::types::PyList,
-    store: &'p PyStore,
-) -> CryptographyResult<Vec<PyCertificate>> {
-    let intermediates = intermediates
-        .iter()
-        .map(|o| o.extract::<pyo3::PyRef<'p, PyCertificate>>())
-        .collect::<Result<Vec<_>, _>>()?;
-    let store = Store::new(
-        store
-            .0
-            .iter()
-            .map(|t| t.get().raw.borrow_dependent().clone()),
-    );
-
-    let policy = policy.as_policy();
-    let chain = cryptography_x509_validation::verify(
-        leaf.raw.borrow_dependent(),
-        intermediates
-            .iter()
-            .map(|i| i.raw.borrow_dependent().clone()),
-        policy,
-        &store,
-    )
-    .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("validation failed: {e:?}")))?;
-
-    // TODO: Optimize this? Turning a Certificate back into a PyCertificate
-    // involves a full round-trip back through DER, which isn't ideal.
-    chain
-        .iter()
-        .map(|c| {
-            let raw = pyo3::types::PyBytes::new(py, &asn1::write_single(c)?);
-            Ok(PyCertificate {
-                raw: OwnedCertificate::try_new(raw.into(), |raw| {
-                    asn1::parse_single(raw.as_bytes(py))
-                })?,
-                cached_extensions: pyo3::once_cell::GILOnceCell::new(),
-            })
-        })
-        .collect()
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
