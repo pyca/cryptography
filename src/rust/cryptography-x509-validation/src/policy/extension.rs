@@ -85,6 +85,20 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
         }
     }
 
+    pub(crate) fn maybe_present(
+        oid: ObjectIdentifier,
+        criticality: Criticality,
+        validator: Option<ExtensionValidatorCallback<B>>,
+    ) -> Self {
+        Self {
+            oid,
+            validator: ExtensionValidator::MaybePresent {
+                criticality,
+                validator,
+            },
+        }
+    }
+
     pub(crate) fn permits(
         &self,
         policy: &Policy<'_, B>,
@@ -142,12 +156,62 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
     }
 }
 
-pub(crate) mod ee {}
+pub(crate) mod ee {
+    use cryptography_x509::{
+        certificate::Certificate,
+        extensions::{BasicConstraints, Extension},
+    };
+
+    use crate::{
+        ops::CryptoOps,
+        policy::{Policy, PolicyError},
+    };
+
+    pub(crate) fn basic_constraints<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        let basic_constraints: BasicConstraints = extn.value()?;
+
+        if basic_constraints.ca {
+            return Err("basicConstraints.cA must not be asserted in an EE certificate".into());
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn subject_alternative_name<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        cert: &Certificate<'_>,
+        extn: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        match (cert.subject().is_empty(), extn.critical) {
+            // If the subject is empty, the SAN MUST be critical.
+            (true, false) => {
+                return Err("EE subjectAltName MUST be critical when subject is empty".into());
+            }
+            // If the subject is non-empty, the SAN MUST NOT be critical.
+            (false, true) => {
+                return Err(
+                    "EE subjectAltName MUST NOT be critical when subject is nonempty".into(),
+                )
+            }
+            _ => (),
+        };
+
+        // For Subscriber Certificates, the Subject Alternative Name MUST be present and MUST contain at
+        // least one dNSName or iPAddress GeneralName. See below for further requirements about the
+        // permitted fields and their validation requirements
+
+        Ok(())
+    }
+}
 
 pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{Extension, KeyUsage},
+        extensions::{BasicConstraints, Extension, KeyUsage},
     };
 
     use crate::{
@@ -164,6 +228,20 @@ pub(crate) mod ca {
 
         if !key_usage.key_cert_sign() {
             return Err("keyUsage.keyCertSign must be asserted in a CA certificate".into());
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn basic_constraints<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        let basic_constraints: BasicConstraints = extn.value()?;
+
+        if !basic_constraints.ca {
+            return Err("basicConstraints.cA must be asserted in a CA certificate".into());
         }
 
         Ok(())

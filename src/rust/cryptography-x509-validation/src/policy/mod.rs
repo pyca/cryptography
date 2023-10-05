@@ -22,11 +22,11 @@ use cryptography_x509::extensions::{
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
+    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, POLICY_CONSTRAINTS_OID,
+    SUBJECT_ALTERNATIVE_NAME_OID, SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
 };
 
-use self::extension::{ca, Criticality, ExtensionPolicy};
+use self::extension::{ca, ee, Criticality, ExtensionPolicy};
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
@@ -256,8 +256,35 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 ),
                 // 5280 4.2.1.3: Key Usage
                 ExtensionPolicy::present(KEY_USAGE_OID, Criticality::Agnostic, Some(ca::key_usage)),
+                // 5280 4.2.1.9: Basic Constraints
+                ExtensionPolicy::present(
+                    BASIC_CONSTRAINTS_OID,
+                    Criticality::Critical,
+                    Some(ca::basic_constraints),
+                ),
+                // 5280 4.2.1.10: Name Constraints
+                ExtensionPolicy::maybe_present(NAME_CONSTRAINTS_OID, Criticality::Critical, None),
+                // 5280 4.2.1.10: Policy Constraints
+                ExtensionPolicy::maybe_present(POLICY_CONSTRAINTS_OID, Criticality::Critical, None),
             ]),
-            ee_extension_policies: Vec::from([ExtensionPolicy::not_present(KEY_USAGE_OID)]),
+            ee_extension_policies: Vec::from([
+                // 5280 4.2.1.3: Key Usage
+                ExtensionPolicy::not_present(KEY_USAGE_OID),
+                // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+                ExtensionPolicy::present(
+                    SUBJECT_ALTERNATIVE_NAME_OID,
+                    Criticality::Agnostic,
+                    Some(ee::subject_alternative_name),
+                ),
+                // 5280 4.2.1.9: Basic Constraints
+                ExtensionPolicy::maybe_present(
+                    BASIC_CONSTRAINTS_OID,
+                    Criticality::Agnostic,
+                    Some(ee::basic_constraints),
+                ),
+                // 5280 4.2.1.10: Name Constraints
+                ExtensionPolicy::not_present(NAME_CONSTRAINTS_OID),
+            ]),
         }
     }
 
@@ -460,8 +487,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub(crate) fn permits_ca(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
         self.permits_basic(cert)?;
 
-        let extensions = cert.extensions()?;
-
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
         if cert.subject().is_empty() {
@@ -476,31 +501,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             return Err("CA certificate must be an X509v3 certificate".into());
         }
 
+        let extensions = cert.extensions()?;
         for ext_policy in self.ca_extension_policies.iter() {
             ext_policy.permits(self, cert, &extensions)?;
         }
-
-        // 5280 4.2.1.9: Basic Constraints
-        // CA certificates MUST have a BasicConstraints, it MUST be critical,
-        // and it MUST have `cA` asserted.
-        if let Some(basic_constraints) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            if !basic_constraints.critical {
-                return Err("BasicConstraints must be marked critical in a CA certificate".into());
-            }
-
-            let basic_constraints: BasicConstraints = basic_constraints.value()?;
-            if !basic_constraints.ca {
-                return Err("BasicConstraints.cA must be asserted in a CA certificate".into());
-            }
-        } else {
-            return Err("CA certificates must have a BasicConstraints extension".into());
-        }
-
-        // 5280 4.2.1.10: Name Constraints
-        // If present, NameConstraints MUST be critical.
-
-        // 5280 4.2.1.11: Policy Constraints
-        // If present, PolicyConstraints MUST be critical.
 
         // CA certificates must also adhere to the expected EKU.
         self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
@@ -535,45 +539,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // 5280 4.1.2.6 / 4.2.1.6: Subject / Subject Alternative Name
-        // EE certificates MAY have their subject in either the subject or subjectAltName.
-        // If the subject is empty, then the subjectAltName MUST be marked critical.
-        if cert.subject().is_empty() {
-            match extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-                Some(san) => {
-                    if !san.critical {
-                        return Err(
-                            "EE without a subject must have a critical subjectAltName".into()
-                        );
-                    }
-
-                    // TODO: There must be at least one SAN, and no SAN may be empty.
-                }
-                None => return Err("EE without a subject must have a subjectAltName".into()),
-            }
-        }
-
-        // TODO: Pedantic: When the subject is non-empty, subjectAltName SHOULD
-        // be marked as non-critical.
-
         // 5280 4.2.1.5: Policy Mappings
         // The RFC is not clear on whether these may appear in EE certificates.
-
-        // 5280 4.2.1.9: Basic Constraints
-        // We refute `KeyUsage.keyCertSign` above, so `BasicConstraints.cA` MUST NOT
-        // be asserted.
-        if let Some(basic_constraints) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let basic_constraints: BasicConstraints = basic_constraints.value()?;
-
-            if basic_constraints.ca {
-                return Err(PolicyError::Other(
-                    "EE is marked as a CA certificate (basicConstraints.cA)",
-                ));
-            }
-        }
-
-        // 5280 4.2.1.10: Name Constraints
-        // NameConstraints MUST NOT appear in EE certificates.
 
         // 5280 4.2.1.11: Policy Constraints
         // The RFC is not clear on whether these may appear in EE certificates.
