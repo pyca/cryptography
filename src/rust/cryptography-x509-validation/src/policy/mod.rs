@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+mod extension;
+
 use std::collections::HashSet;
 
 use asn1::ObjectIdentifier;
@@ -24,6 +26,7 @@ use cryptography_x509::oid::{
     SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
 };
 
+use self::extension::{ca, Criticality, ExtensionPolicy};
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
@@ -220,6 +223,9 @@ pub struct Policy<'a, B: CryptoOps> {
 
     pub critical_ca_extensions: HashSet<ObjectIdentifier>,
     pub critical_ee_extensions: HashSet<ObjectIdentifier>,
+
+    ca_extension_policies: Vec<ExtensionPolicy<B>>,
+    ee_extension_policies: Vec<ExtensionPolicy<B>>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -241,6 +247,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ),
             critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
             critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
+            ca_extension_policies: Vec::from([
+                // 5280 4.2.1.2: Subject Key Identifier
+                ExtensionPolicy::present(
+                    SUBJECT_KEY_IDENTIFIER_OID,
+                    Criticality::NonCritical,
+                    None,
+                ),
+                // 5280 4.2.1.3: Key Usage
+                ExtensionPolicy::present(KEY_USAGE_OID, Criticality::Agnostic, Some(ca::key_usage)),
+            ]),
+            ee_extension_policies: Vec::from([ExtensionPolicy::not_present(KEY_USAGE_OID)]),
         }
     }
 
@@ -459,32 +476,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             return Err("CA certificate must be an X509v3 certificate".into());
         }
 
-        // 5280 4.2.1.2:
-        // CA certificates MUST have a SubjectKeyIdentifier and it MUST NOT be
-        // critical.
-        if let Some(ski) = extensions.get_extension(&SUBJECT_KEY_IDENTIFIER_OID) {
-            if ski.critical {
-                return Err(
-                    "SubjectKeyIdentifier must not be marked critical in a CA Certificate".into(),
-                );
-            }
-        } else {
-            return Err("store certificates must have a SubjectKeyIdentifier extension".into());
-        }
-
-        // 5280 4.2.1.3:
-        // CA certificates MUST have a KeyUsage, it SHOULD be critical,
-        // and it MUST have `keyCertSign` asserted.
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            // TODO: Check `key_usage.critical` on a policy basis here?
-
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-
-            if !key_usage.key_cert_sign() {
-                return Err("KeyUsage.keyCertSign must be asserted in a CA certificate".into());
-            }
-        } else {
-            return Err("CA certificates must have a KeyUsage extension".into());
+        for ext_policy in self.ca_extension_policies.iter() {
+            ext_policy.permits(self, cert, &extensions)?;
         }
 
         // 5280 4.2.1.9: Basic Constraints
@@ -538,17 +531,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         let extensions = cert.extensions()?;
 
-        // 5280 4.2.1.3: Key Usage
-        // It isn't stated explicitly, but an EE is defined to be not a CA,
-        // so it MUST NOT assert keyCertSign.
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-
-            if key_usage.key_cert_sign() {
-                return Err(PolicyError::Other(
-                    "EE is marked as a CA certificate (keyUsage.keyCertSign)",
-                ));
-            }
+        for ext_policy in self.ee_extension_policies.iter() {
+            ext_policy.permits(self, cert, &extensions)?;
         }
 
         // 5280 4.1.2.6 / 4.2.1.6: Subject / Subject Alternative Name
