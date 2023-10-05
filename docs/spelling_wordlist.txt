@@ -114,6 +114,7 @@ Schneier
 scrypt
 serializer
 Serializers
+setuptools
 SHA
 Solaris
 Sur

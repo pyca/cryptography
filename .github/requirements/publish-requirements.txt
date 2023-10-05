@@ -198,8 +198,8 @@ docutils==0.20.1 \
     --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6 \
     --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b
     # via readme-renderer
-grpclib==0.4.5 \
-    --hash=sha256:bf83ed55aca59497e168761d9555056efc54a8f865316c3b39becd007e9f9a73
+grpclib==0.4.6 \
+    --hash=sha256:595d05236ca8b8f8e433f5bf6095e6354c1d8777d003ddaf5288efa9611e3fd6
     # via betterproto
 h2==4.1.0 \
     --hash=sha256:03a46bcf682256c95b5fd9e9a99c1323584c3eec6440d379b9903d709476bc6d \
@@ -517,9 +517,9 @@ secretstorage==3.3.3 \
     --hash=sha256:2403533ef369eca6d2ba81718576c5e0f564d5cca1b58f73a8b23e7d4eeebd77 \
     --hash=sha256:f356e6628222568e3af06f2eba8df495efa13b3b63081dafd4f7d9a7b7bc9f99
     # via keyring
-securesystemslib==0.29.0 \
-    --hash=sha256:658ea4d41bbe6bc574758f91ba809812e08a22fddebb6ee4ea837f72591f136a \
-    --hash=sha256:dcfcb70562ad76069f71da9916a3cb7bc85fbf6cd51216c741a00096cf58dc6c
+securesystemslib==0.30.0 \
+    --hash=sha256:6a769e4816921ac4059c8c149ab5f69ed7cd92859857f0e17b67a3dd7bbee866 \
+    --hash=sha256:8b290de294aa0972c4ac6ecb036da24ed86e312de980c57adf1b92ad37667e43
     # via
     #   sigstore
     #   tuf
@@ -549,9 +549,9 @@ typing-extensions==4.8.0 \
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.0.5 \
-    --hash=sha256:13abf37382ea2ce6fb744d4dad67838eec857c9f4f57009891805e0b5e123594 \
-    --hash=sha256:ef16afa8ba34a1f989db38e1dbbe0c302e4289a47856990d0682e374563ce35e
+urllib3==2.0.6 \
+    --hash=sha256:7a7c7003b000adf9e7ca2a377c9688bbc54ed41b985789ed576570342a375cd2 \
+    --hash=sha256:b19e1a85d206b56d7df1d5e683df4a7725252a964e3993648dd0fb5a1c157564
     # via
     #   requests
     #   twine
