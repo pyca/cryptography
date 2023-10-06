@@ -73,11 +73,7 @@ impl<'a> DNSName<'a> {
     /// Returns this DNS name's labels, in reversed order
     /// (from top-level domain to most-specific subdomain).
     fn rlabels(&self) -> impl Iterator<Item = &'_ str> {
-        self.as_str()
-            .split('.')
-            .collect::<Vec<_>>()
-            .into_iter()
-            .rev()
+        self.as_str().rsplit('.')
     }
 }
 
