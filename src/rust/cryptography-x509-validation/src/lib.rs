@@ -13,10 +13,22 @@ pub mod types;
 
 use std::collections::HashSet;
 
-use cryptography_x509::certificate::Certificate;
+use crate::certificate::cert_is_self_issued;
+use crate::types::{DNSConstraint, IPAddress, IPRange};
+use crate::ApplyNameConstraintStatus::{Applied, Skipped};
+use cryptography_x509::extensions::Extensions;
+use cryptography_x509::{
+    certificate::Certificate,
+    extensions::{
+        DuplicateExtensionsError, NameConstraints, SequenceOfSubtrees, SubjectAlternativeName,
+    },
+    name::GeneralName,
+    oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
+};
 use ops::CryptoOps;
 use policy::{Policy, PolicyError};
 use trust_store::Store;
+use types::DNSName;
 
 #[derive(Debug, PartialEq)]
 pub enum ValidationError {
@@ -29,7 +41,26 @@ impl From<PolicyError> for ValidationError {
     }
 }
 
+impl From<asn1::ParseError> for ValidationError {
+    fn from(value: asn1::ParseError) -> Self {
+        ValidationError::Policy(PolicyError::Malformed(value))
+    }
+}
+
+impl From<DuplicateExtensionsError> for ValidationError {
+    fn from(value: DuplicateExtensionsError) -> Self {
+        ValidationError::Policy(PolicyError::DuplicateExtension(value))
+    }
+}
+
+#[derive(Default)]
+pub struct AccumulatedNameConstraints<'a> {
+    pub permitted: Vec<GeneralName<'a>>,
+    pub excluded: Vec<GeneralName<'a>>,
+}
+
 pub type Chain<'c> = Vec<Certificate<'c>>;
+type IntermediateChain<'c> = (Chain<'c>, AccumulatedNameConstraints<'c>);
 
 pub fn verify<'leaf: 'chain, 'inter: 'chain, 'store: 'chain, 'chain, B: CryptoOps>(
     leaf: &'chain Certificate<'leaf>,
@@ -46,6 +77,28 @@ struct ChainBuilder<'a, 'inter, 'store, B: CryptoOps> {
     intermediates: HashSet<Certificate<'inter>>,
     policy: &'a Policy<'a, B>,
     store: &'a Store<'store>,
+}
+
+// When applying a name constraint, we need to distinguish between a few different scenarios:
+// * `Applied(true)`: The name constraint is the same type as the SAN and matches.
+// * `Applied(false)`: The name constraint is the same type as the SAN and does not match.
+// * `Skipped`: The name constraint is a different type to the SAN.
+enum ApplyNameConstraintStatus {
+    Applied(bool),
+    Skipped,
+}
+
+impl ApplyNameConstraintStatus {
+    fn is_applied(&self) -> bool {
+        matches!(self, Applied(_))
+    }
+
+    fn is_match(&self) -> bool {
+        match self {
+            Applied(a) => *a,
+            _ => false,
+        }
+    }
 }
 
 impl<'a, 'inter, 'store, 'leaf, 'chain, 'work, B: CryptoOps> ChainBuilder<'a, 'inter, 'store, B>
@@ -86,11 +139,104 @@ where
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
 
+    fn build_name_constraints_subtrees(
+        &self,
+        subtrees: SequenceOfSubtrees<'work>,
+    ) -> Vec<GeneralName<'work>> {
+        subtrees.unwrap_read().clone().map(|x| x.base).collect()
+    }
+
+    fn build_name_constraints(
+        &self,
+        constraints: &mut AccumulatedNameConstraints<'work>,
+        working_cert: &'a Certificate<'work>,
+    ) -> Result<(), ValidationError> {
+        let extensions: Extensions<'work> = working_cert.extensions()?;
+        if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
+            let nc: NameConstraints<'work> = nc.value()?;
+            if let Some(permitted_subtrees) = nc.permitted_subtrees {
+                constraints
+                    .permitted
+                    .extend(self.build_name_constraints_subtrees(permitted_subtrees));
+            }
+            if let Some(excluded_subtrees) = nc.excluded_subtrees {
+                constraints
+                    .excluded
+                    .extend(self.build_name_constraints_subtrees(excluded_subtrees));
+            }
+        }
+        Ok(())
+    }
+
+    fn apply_name_constraint(
+        &self,
+        constraint: &GeneralName<'work>,
+        san: &GeneralName<'_>,
+    ) -> Result<ApplyNameConstraintStatus, ValidationError> {
+        match (constraint, san) {
+            (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
+                if let Some(pattern) = DNSConstraint::new(pattern.0) {
+                    let name = DNSName::new(name.0).unwrap();
+                    Ok(Applied(pattern.matches(&name)))
+                } else {
+                    Err(PolicyError::Other("malformed DNS name constraint").into())
+                }
+            }
+            (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
+                if let Some(pattern) = IPRange::from_bytes(pattern) {
+                    let name = IPAddress::from_bytes(name).unwrap();
+                    Ok(Applied(pattern.matches(&name)))
+                } else {
+                    Err(PolicyError::Other("malformed IP name constraint").into())
+                }
+            }
+            _ => Ok(Skipped),
+        }
+    }
+
+    fn apply_name_constraints(
+        &self,
+        constraints: &AccumulatedNameConstraints<'work>,
+        working_cert: &Certificate<'work>,
+    ) -> Result<(), ValidationError> {
+        let extensions = working_cert.extensions()?;
+        if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
+            let sans: SubjectAlternativeName<'_> = sans.value()?;
+            for san in sans.clone() {
+                // If there are no applicable constraints, the SAN is considered valid so let's default to true.
+                let mut permit = true;
+                for c in constraints.permitted.iter() {
+                    let status = self.apply_name_constraint(c, &san)?;
+                    if status.is_applied() {
+                        permit = status.is_match();
+                        if permit {
+                            break;
+                        }
+                    }
+                }
+                if !permit {
+                    return Err(
+                        PolicyError::Other("no permitted name constraints matched SAN").into(),
+                    );
+                }
+                for c in constraints.excluded.iter() {
+                    let status = self.apply_name_constraint(c, &san)?;
+                    if status.is_match() {
+                        return Err(
+                            PolicyError::Other("excluded name constraint matched SAN").into()
+                        );
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn build_chain_inner(
         &self,
-        working_cert: &Certificate<'work>,
+        working_cert: &'a Certificate<'work>,
         current_depth: u8,
-    ) -> Result<Chain<'work>, ValidationError> {
+    ) -> Result<IntermediateChain<'work>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(PolicyError::Other("chain construction exceeds max depth").into());
         }
@@ -102,7 +248,9 @@ where
         // here: inclusion in the root set implies a trust relationship,
         // even if the working certificate is an EE or intermediate CA.
         if self.store.contains(working_cert) {
-            return Ok(vec![working_cert.clone()]);
+            let mut constraints = AccumulatedNameConstraints::default();
+            self.build_name_constraints(&mut constraints, working_cert)?;
+            return Ok((vec![working_cert.clone()], constraints));
         }
 
         // Otherwise, we collect a list of potential issuers for this cert,
@@ -115,9 +263,23 @@ where
                 self.policy
                     .valid_issuer(issuing_cert_candidate, working_cert, current_depth)
             {
-                let mut chain = vec![working_cert.clone()];
-                chain.extend(self.build_chain_inner(issuing_cert_candidate, next_depth)?);
-                return Ok(chain);
+                let result = self.build_chain_inner(issuing_cert_candidate, next_depth);
+                if let Ok(result) = result {
+                    let (remaining, mut constraints) = result;
+                    // Name constraints are not applied to self-issued certificates unless they're the leaf certificate in the chain.
+                    let skip_name_constraints =
+                        cert_is_self_issued(working_cert) && current_depth != 1;
+                    if skip_name_constraints
+                        || self
+                            .apply_name_constraints(&constraints, working_cert)
+                            .is_ok()
+                    {
+                        let mut chain: Vec<Certificate<'work>> = vec![working_cert.clone()];
+                        chain.extend(remaining);
+                        self.build_name_constraints(&mut constraints, working_cert)?;
+                        return Ok((chain, constraints));
+                    }
+                }
             }
         }
 
@@ -126,7 +288,10 @@ where
         Err(PolicyError::Other("chain construction exhausted all candidates").into())
     }
 
-    fn build_chain(&self, leaf: &Certificate<'leaf>) -> Result<Chain<'chain>, ValidationError> {
+    fn build_chain(
+        &self,
+        leaf: &'chain Certificate<'leaf>,
+    ) -> Result<Chain<'chain>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).
@@ -136,7 +301,14 @@ where
         self.policy.permits_leaf(leaf)?;
 
         // NOTE: We start the chain depth at 1, indicating the EE.
-        self.build_chain_inner(leaf, 1)
+        let result = self.build_chain_inner(leaf, 1);
+        match result {
+            Ok(result) => {
+                let (chain, _) = result;
+                Ok(chain)
+            }
+            Err(error) => Err(error),
+        }
     }
 }
 

@@ -29,7 +29,7 @@ use cryptography_x509::oid::{
 use self::extension::{ca, ee, Criticality, ExtensionPolicy};
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
-use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
+use crate::types::{DNSName, DNSPattern, IPAddress};
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
 static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
@@ -162,8 +162,8 @@ impl Subject<'_> {
             (GeneralName::DNSName(pattern), Self::DNS(name)) => {
                 DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
             }
-            (GeneralName::IPAddress(pattern), Self::IP(name)) => {
-                IPRange::from_bytes(pattern).map_or(false, |p| p.matches(name))
+            (GeneralName::IPAddress(addr), Self::IP(name)) => {
+                IPAddress::from_bytes(addr).map_or(false, |addr| addr == *name)
             }
             _ => false,
         }
@@ -478,9 +478,16 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// path validation, whether it be a CA or EE. As such, `permits_leaf`
     /// is logically equivalent to `permits_ee(leaf) || permits_ca(leaf)`.
     pub(crate) fn permits_leaf(&self, leaf: &Certificate<'_>) -> Result<(), PolicyError> {
-        // NOTE: Perform `permits_ee` first, since 99% of path validations should have
-        // an EE certificate in the leaf position.
-        self.permits_ee(leaf).or_else(|_| self.permits_ca(leaf))
+        // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
+        // Code like this will propagate irrelevant error messages out of the API.
+        let extensions = leaf.extensions()?;
+        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
+            let key_usage: KeyUsage<'_> = key_usage.value()?;
+            if key_usage.key_cert_sign() {
+                return self.permits_ca(leaf);
+            }
+        }
+        self.permits_ee(leaf)
     }
 
     /// Checks whether the given CA certificate is compatible with this policy.
@@ -758,28 +765,27 @@ mod tests {
             assert!(!ip_sub.matches(&any_cryptography_io));
         }
 
-        // Single SAN, IP range.
+        // Single SAN, IP address.
         {
-            // 127.0.0.1/24
-            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1]);
             let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
-            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
+            let localhost = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
 
-            assert!(ip_sub.matches(&local_24));
-            assert!(!domain_sub.matches(&local_24));
+            assert!(ip_sub.matches(&localhost));
+            assert!(!domain_sub.matches(&localhost));
         }
 
-        // Multiple SANs, both domain wildcard and IP range.
+        // Multiple SANs, both domain wildcard and IP address.
         {
             let domain_gn = GeneralName::DNSName(UnvalidatedIA5String("*.cryptography.io"));
-            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 255, 255, 255, 0]);
+            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1]);
             let san_der = asn1::write_single(&SequenceOfWriter::new([domain_gn, ip_gn])).unwrap();
 
-            let any_cryptography_io_or_local_24 =
+            let any_cryptography_io_or_localhost =
                 asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
 
-            assert!(domain_sub.matches(&any_cryptography_io_or_local_24));
-            assert!(ip_sub.matches(&any_cryptography_io_or_local_24));
+            assert!(domain_sub.matches(&any_cryptography_io_or_localhost));
+            assert!(ip_sub.matches(&any_cryptography_io_or_localhost));
         }
 
         // Single SAN, invalid domain pattern.
@@ -790,16 +796,6 @@ mod tests {
                 asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
 
             assert!(!domain_sub.matches(&any_cryptography_io));
-        }
-
-        // Single SAN, invalid IP range.
-        {
-            // 127.0.0.1/24
-            let ip_gn = GeneralName::IPAddress(&[127, 0, 0, 1, 1, 255, 1, 0]);
-            let san_der = asn1::write_single(&SequenceOfWriter::new([ip_gn])).unwrap();
-            let local_24 = asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
-
-            assert!(!ip_sub.matches(&local_24));
         }
     }
 }

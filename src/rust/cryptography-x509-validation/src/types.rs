@@ -69,6 +69,16 @@ impl<'a> DNSName<'a> {
             None => None,
         }
     }
+
+    /// Returns this DNS name's labels, in reversed order
+    /// (from top-level domain to most-specific subdomain).
+    fn rlabels(&self) -> impl Iterator<Item = &'_ str> {
+        self.as_str()
+            .split('.')
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+    }
 }
 
 impl PartialEq for DNSName<'_> {
@@ -110,6 +120,59 @@ impl<'a> DNSPattern<'a> {
                 None => false,
             },
         }
+    }
+}
+
+/// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
+///
+/// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
+#[derive(Debug, PartialEq)]
+pub struct DNSConstraint<'a>(DNSName<'a>);
+
+impl<'a> DNSConstraint<'a> {
+    pub fn new(pattern: &'a str) -> Option<Self> {
+        DNSName::new(pattern).map(Self)
+    }
+
+    /// Returns true if this `DNSConstraint` matches the given name.
+    ///
+    /// Constraint matching is defined by RFC 5280: any DNS name that can
+    /// be constructed by simply adding zero or more labels to the left-hand
+    /// side of the name satisfies the name constraint.
+    ///
+    /// ```rust
+    /// # use cryptography_x509_validation::types::{DNSConstraint, DNSName};
+    /// let example_com = DNSName::new("example.com").unwrap();
+    /// let badexample_com = DNSName::new("badexample.com").unwrap();
+    /// let foo_example_com = DNSName::new("foo.example.com").unwrap();
+    /// assert!(DNSConstraint::from(example_com.clone()).matches(&example_com));
+    /// assert!(DNSConstraint::from(example_com.clone()).matches(&foo_example_com));
+    /// assert!(!DNSConstraint::from(example_com.clone()).matches(&badexample_com));
+    /// ```
+    pub fn matches(&self, name: &DNSName<'_>) -> bool {
+        // NOTE: This may seem like an obtuse way to perform label matching,
+        // but it saves us a few allocations: we create an intermediate
+        // vector for each reversed label set, but the strings themselves
+        // are never cloned. By contrast, a substring check would require
+        // us to clone each string and do case normalization.
+        // Note also that we check the length in advance: Rust's zip
+        // implementation terminates with the shorter iterator, so we need
+        // to first check that the candidate name is at least as long as
+        // the constraint it's matching against.
+        name.as_str().len() >= self.0.as_str().len()
+            && self
+                .0
+                .rlabels()
+                .zip(name.rlabels())
+                .skip_while(|(a, o)| a.eq_ignore_ascii_case(o))
+                .next()
+                .is_none()
+    }
+}
+
+impl<'a> From<DNSName<'a>> for DNSConstraint<'a> {
+    fn from(value: DNSName<'a>) -> Self {
+        Self(value)
     }
 }
 
@@ -252,7 +315,7 @@ impl IPRange {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
+    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPRange};
 
     #[test]
     fn test_dnsname_debug_trait() {
@@ -286,6 +349,8 @@ mod tests {
         assert_eq!(DNSName::new("foo.bar-.example.com"), None);
         assert_eq!(DNSName::new(&"a".repeat(64)), None);
         assert_eq!(DNSName::new("⚠️"), None);
+        assert_eq!(DNSName::new(".foo.example"), None);
+        assert_eq!(DNSName::new(".example.com"), None);
 
         let long_valid_label = "a".repeat(63);
         let long_name = std::iter::repeat(long_valid_label)
@@ -384,6 +449,36 @@ mod tests {
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.example.com").unwrap()));
         assert!(!any_example_com.matches(&DNSName::new("foo.bar.baz.example.com").unwrap()));
         assert!(!any_localhost.matches(&DNSName::new("localhost").unwrap()));
+    }
+
+    #[test]
+    fn test_dnsconstraint_new() {
+        assert_eq!(DNSConstraint::new(""), None);
+        assert_eq!(DNSConstraint::new("."), None);
+        assert_eq!(DNSConstraint::new("*."), None);
+        assert_eq!(DNSConstraint::new("*"), None);
+        assert_eq!(DNSConstraint::new(".example"), None);
+        assert_eq!(DNSConstraint::new("*.example"), None);
+        assert_eq!(DNSConstraint::new("*.example.com"), None);
+
+        assert!(DNSConstraint::new("example").is_some());
+        assert!(DNSConstraint::new("example.com").is_some());
+        assert!(DNSConstraint::new("foo.example.com").is_some());
+    }
+
+    #[test]
+    fn test_dnsconstraint_matches() {
+        let example_com = DNSConstraint::new("example.com").unwrap();
+
+        // Exact domain and arbitrary subdomains match.
+        assert!(example_com.matches(&DNSName::new("example.com").unwrap()));
+        assert!(example_com.matches(&DNSName::new("foo.example.com").unwrap()));
+        assert!(example_com.matches(&DNSName::new("foo.bar.baz.quux.example.com").unwrap()));
+
+        // Parent domains, distinct domains, and substring domains do not match.
+        assert!(!example_com.matches(&DNSName::new("com").unwrap()));
+        assert!(!example_com.matches(&DNSName::new("badexample.com").unwrap()));
+        assert!(!example_com.matches(&DNSName::new("wrong.com").unwrap()));
     }
 
     #[test]
