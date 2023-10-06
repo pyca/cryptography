@@ -126,7 +126,6 @@ impl<'a> DNSPattern<'a> {
 /// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
 ///
 /// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
-#[derive(Debug, PartialEq)]
 pub struct DNSConstraint<'a>(DNSName<'a>);
 
 impl<'a> DNSConstraint<'a> {
@@ -451,13 +450,13 @@ mod tests {
 
     #[test]
     fn test_dnsconstraint_new() {
-        assert_eq!(DNSConstraint::new(""), None);
-        assert_eq!(DNSConstraint::new("."), None);
-        assert_eq!(DNSConstraint::new("*."), None);
-        assert_eq!(DNSConstraint::new("*"), None);
-        assert_eq!(DNSConstraint::new(".example"), None);
-        assert_eq!(DNSConstraint::new("*.example"), None);
-        assert_eq!(DNSConstraint::new("*.example.com"), None);
+        assert!(DNSConstraint::new("").is_none());
+        assert!(DNSConstraint::new(".").is_none());
+        assert!(DNSConstraint::new("*.").is_none());
+        assert!(DNSConstraint::new("*").is_none());
+        assert!(DNSConstraint::new(".example").is_none());
+        assert!(DNSConstraint::new("*.example").is_none());
+        assert!(DNSConstraint::new("*.example.com").is_none());
 
         assert!(DNSConstraint::new("example").is_some());
         assert!(DNSConstraint::new("example.com").is_some());
