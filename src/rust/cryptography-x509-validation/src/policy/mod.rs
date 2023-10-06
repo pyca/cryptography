@@ -269,7 +269,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ]),
             ee_extension_policies: Vec::from([
                 // 5280 4.2.1.3: Key Usage
-                ExtensionPolicy::not_present(KEY_USAGE_OID),
+                ExtensionPolicy::maybe_present(KEY_USAGE_OID, Criticality::Agnostic, None),
                 // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
                 ExtensionPolicy::present(
                     SUBJECT_ALTERNATIVE_NAME_OID,
