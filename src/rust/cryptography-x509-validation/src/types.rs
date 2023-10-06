@@ -164,9 +164,7 @@ impl<'a> DNSConstraint<'a> {
                 .0
                 .rlabels()
                 .zip(name.rlabels())
-                .skip_while(|(a, o)| a.eq_ignore_ascii_case(o))
-                .next()
-                .is_none()
+                .all(|(a, o)| a.eq_ignore_ascii_case(o))
     }
 }
 
