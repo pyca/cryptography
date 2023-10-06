@@ -144,9 +144,9 @@ impl<'a> DNSConstraint<'a> {
     /// let example_com = DNSName::new("example.com").unwrap();
     /// let badexample_com = DNSName::new("badexample.com").unwrap();
     /// let foo_example_com = DNSName::new("foo.example.com").unwrap();
-    /// assert!(DNSConstraint::from(example_com.clone()).matches(&example_com));
-    /// assert!(DNSConstraint::from(example_com.clone()).matches(&foo_example_com));
-    /// assert!(!DNSConstraint::from(example_com.clone()).matches(&badexample_com));
+    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&example_com));
+    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&foo_example_com));
+    /// assert!(!DNSConstraint::new(example_com.as_str()).unwrap().matches(&badexample_com));
     /// ```
     pub fn matches(&self, name: &DNSName<'_>) -> bool {
         // NOTE: This may seem like an obtuse way to perform label matching,
@@ -164,12 +164,6 @@ impl<'a> DNSConstraint<'a> {
                 .rlabels()
                 .zip(name.rlabels())
                 .all(|(a, o)| a.eq_ignore_ascii_case(o))
-    }
-}
-
-impl<'a> From<DNSName<'a>> for DNSConstraint<'a> {
-    fn from(value: DNSName<'a>) -> Self {
-        Self(value)
     }
 }
 
