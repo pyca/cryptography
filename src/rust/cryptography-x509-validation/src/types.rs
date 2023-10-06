@@ -146,10 +146,8 @@ impl<'a> DNSConstraint<'a> {
     /// ```
     pub fn matches(&self, name: &DNSName<'_>) -> bool {
         // NOTE: This may seem like an obtuse way to perform label matching,
-        // but it saves us a few allocations: we create an intermediate
-        // vector for each reversed label set, but the strings themselves
-        // are never cloned. By contrast, a substring check would require
-        // us to clone each string and do case normalization.
+        // but it saves us a few allocations: doing a substring check instead
+        // would require us to clone each string and do case normalization.
         // Note also that we check the length in advance: Rust's zip
         // implementation terminates with the shorter iterator, so we need
         // to first check that the candidate name is at least as long as
