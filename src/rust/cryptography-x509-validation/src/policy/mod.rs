@@ -19,7 +19,7 @@ use cryptography_x509::oid::{
 };
 
 use crate::ops::CryptoOps;
-use crate::types::{DNSName, DNSPattern, IPAddress, IPRange};
+use crate::types::{DNSName, DNSPattern, IPAddress, IPConstraint};
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
 static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
@@ -125,7 +125,7 @@ impl Subject<'_> {
                 DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
             }
             (GeneralName::IPAddress(pattern), Self::IP(name)) => {
-                IPRange::from_bytes(pattern).map_or(false, |p| p.matches(name))
+                IPConstraint::from_bytes(pattern).map_or(false, |p| p.matches(name))
             }
             _ => false,
         }
@@ -218,7 +218,6 @@ mod tests {
     use cryptography_x509::{
         extensions::SubjectAlternativeName,
         name::{GeneralName, UnvalidatedIA5String},
-        oid::EXTENDED_KEY_USAGE_OID,
     };
 
     use crate::{
