@@ -14,7 +14,7 @@ pub mod types;
 use std::collections::HashSet;
 
 use crate::certificate::cert_is_self_issued;
-use crate::types::{DNSConstraint, IPAddress, IPRange};
+use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::Extensions;
 use cryptography_x509::{
@@ -183,7 +183,7 @@ where
                 }
             }
             (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
-                if let Some(pattern) = IPRange::from_bytes(pattern) {
+                if let Some(pattern) = IPConstraint::from_bytes(pattern) {
                     let name = IPAddress::from_bytes(name).unwrap();
                     Ok(Applied(pattern.matches(&name)))
                 } else {

@@ -73,11 +73,7 @@ impl<'a> DNSName<'a> {
     /// Returns this DNS name's labels, in reversed order
     /// (from top-level domain to most-specific subdomain).
     fn rlabels(&self) -> impl Iterator<Item = &'_ str> {
-        self.as_str()
-            .split('.')
-            .collect::<Vec<_>>()
-            .into_iter()
-            .rev()
+        self.as_str().rsplit('.')
     }
 }
 
@@ -126,7 +122,6 @@ impl<'a> DNSPattern<'a> {
 /// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
 ///
 /// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
-#[derive(Debug, PartialEq)]
 pub struct DNSConstraint<'a>(DNSName<'a>);
 
 impl<'a> DNSConstraint<'a> {
@@ -145,16 +140,14 @@ impl<'a> DNSConstraint<'a> {
     /// let example_com = DNSName::new("example.com").unwrap();
     /// let badexample_com = DNSName::new("badexample.com").unwrap();
     /// let foo_example_com = DNSName::new("foo.example.com").unwrap();
-    /// assert!(DNSConstraint::from(example_com.clone()).matches(&example_com));
-    /// assert!(DNSConstraint::from(example_com.clone()).matches(&foo_example_com));
-    /// assert!(!DNSConstraint::from(example_com.clone()).matches(&badexample_com));
+    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&example_com));
+    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&foo_example_com));
+    /// assert!(!DNSConstraint::new(example_com.as_str()).unwrap().matches(&badexample_com));
     /// ```
     pub fn matches(&self, name: &DNSName<'_>) -> bool {
         // NOTE: This may seem like an obtuse way to perform label matching,
-        // but it saves us a few allocations: we create an intermediate
-        // vector for each reversed label set, but the strings themselves
-        // are never cloned. By contrast, a substring check would require
-        // us to clone each string and do case normalization.
+        // but it saves us a few allocations: doing a substring check instead
+        // would require us to clone each string and do case normalization.
         // Note also that we check the length in advance: Rust's zip
         // implementation terminates with the shorter iterator, so we need
         // to first check that the candidate name is at least as long as
@@ -165,12 +158,6 @@ impl<'a> DNSConstraint<'a> {
                 .rlabels()
                 .zip(name.rlabels())
                 .all(|(a, o)| a.eq_ignore_ascii_case(o))
-    }
-}
-
-impl<'a> From<DNSName<'a>> for DNSConstraint<'a> {
-    fn from(value: DNSName<'a>) -> Self {
-        Self(value)
     }
 }
 
@@ -267,17 +254,17 @@ impl From<IpAddr> for IPAddress {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct IPRange {
+pub struct IPConstraint {
     address: IPAddress,
     prefix: u8,
 }
 
-/// An `IPRange` represents a CIDR-style address range used in a name constraints
+/// An `IPConstraint` represents a CIDR-style IP address range used in a name constraints
 /// extension, as defined by [RFC 5280 4.2.1.10].
 ///
 /// [RFC 5280 4.2.1.10]: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
-impl IPRange {
-    /// Constructs an `IPRange` from a slice. The input slice must be 8 (IPv4)
+impl IPConstraint {
+    /// Constructs an `IPConstraint` from a slice. The input slice must be 8 (IPv4)
     /// or 32 (IPv6) bytes long and contain two IP addresses, the first being
     /// a subnet and the second defining the subnet's mask.
     ///
@@ -292,18 +279,18 @@ impl IPRange {
         };
 
         let prefix = IPAddress::from_bytes(&b[slice_idx..])?.as_prefix()?;
-        Some(IPRange {
+        Some(IPConstraint {
             address: IPAddress::from_bytes(&b[..slice_idx])?.mask(prefix),
             prefix,
         })
     }
 
-    /// Determines if the `addr` is within the `IPRange`.
+    /// Determines if the `addr` is within the `IPConstraint`.
     ///
     /// ```rust
-    /// # use cryptography_x509_validation::types::{IPAddress,IPRange};
+    /// # use cryptography_x509_validation::types::{IPAddress, IPConstraint};
     /// let range_bytes = b"\xc6\x33\x64\x00\xff\xff\xff\x00";
-    /// let range = IPRange::from_bytes(range_bytes).unwrap();
+    /// let range = IPConstraint::from_bytes(range_bytes).unwrap();
     /// assert!(range.matches(&IPAddress::from_str("198.51.100.42").unwrap()));
     /// ```
     pub fn matches(&self, addr: &IPAddress) -> bool {
@@ -313,7 +300,7 @@ impl IPRange {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPRange};
+    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint};
 
     #[test]
     fn test_dnsname_debug_trait() {
@@ -451,13 +438,13 @@ mod tests {
 
     #[test]
     fn test_dnsconstraint_new() {
-        assert_eq!(DNSConstraint::new(""), None);
-        assert_eq!(DNSConstraint::new("."), None);
-        assert_eq!(DNSConstraint::new("*."), None);
-        assert_eq!(DNSConstraint::new("*"), None);
-        assert_eq!(DNSConstraint::new(".example"), None);
-        assert_eq!(DNSConstraint::new("*.example"), None);
-        assert_eq!(DNSConstraint::new("*.example.com"), None);
+        assert!(DNSConstraint::new("").is_none());
+        assert!(DNSConstraint::new(".").is_none());
+        assert!(DNSConstraint::new("*.").is_none());
+        assert!(DNSConstraint::new("*").is_none());
+        assert!(DNSConstraint::new(".example").is_none());
+        assert!(DNSConstraint::new("*.example").is_none());
+        assert!(DNSConstraint::new("*.example.com").is_none());
 
         assert!(DNSConstraint::new("example").is_some());
         assert!(DNSConstraint::new("example.com").is_some());
@@ -535,7 +522,7 @@ mod tests {
     }
 
     #[test]
-    fn test_iprange_from_bytes() {
+    fn test_ipconstraint_from_bytes() {
         let ipv4_bad = b"\xc0\xa8\x01\x01\xff\xfe\xff\x00";
         let ipv4_bad_many_bits = b"\xc0\xa8\x01\x01\xff\xfc\xff\x00";
         let ipv4_bad_octet = b"\xc0\xa8\x01\x01\x00\xff\xff\xff";
@@ -551,38 +538,38 @@ mod tests {
             \x00\x00\x00\x00\x00\x00\x00\x00";
         let bad = b"\xff\xff\xff";
 
-        assert_eq!(IPRange::from_bytes(ipv4_bad), None);
-        assert_eq!(IPRange::from_bytes(ipv4_bad_many_bits), None);
-        assert_eq!(IPRange::from_bytes(ipv4_bad_octet), None);
-        assert_eq!(IPRange::from_bytes(ipv6_bad), None);
-        assert_ne!(IPRange::from_bytes(ipv6_good), None);
-        assert_eq!(IPRange::from_bytes(bad), None);
+        assert_eq!(IPConstraint::from_bytes(ipv4_bad), None);
+        assert_eq!(IPConstraint::from_bytes(ipv4_bad_many_bits), None);
+        assert_eq!(IPConstraint::from_bytes(ipv4_bad_octet), None);
+        assert_eq!(IPConstraint::from_bytes(ipv6_bad), None);
+        assert_ne!(IPConstraint::from_bytes(ipv6_good), None);
+        assert_eq!(IPConstraint::from_bytes(bad), None);
 
         // 192.168.1.1/16
         let ipv4_with_extra = b"\xc0\xa8\x01\x01\xff\xff\x00\x00";
-        assert_ne!(IPRange::from_bytes(ipv4_with_extra), None);
+        assert_ne!(IPConstraint::from_bytes(ipv4_with_extra), None);
 
         // 192.168.0.0/16
         let ipv4_masked = b"\xc0\xa8\x00\x00\xff\xff\x00\x00";
         assert_eq!(
-            IPRange::from_bytes(ipv4_with_extra),
-            IPRange::from_bytes(ipv4_masked)
+            IPConstraint::from_bytes(ipv4_with_extra),
+            IPConstraint::from_bytes(ipv4_masked)
         );
     }
 
     #[test]
-    fn test_iprange_matches() {
+    fn test_ipconstraint_matches() {
         // 192.168.1.1/16
-        let ipv4 = IPRange::from_bytes(b"\xc0\xa8\x01\x01\xff\xff\x00\x00").unwrap();
-        let ipv4_32 = IPRange::from_bytes(b"\xc0\x00\x02\xde\xff\xff\xff\xff").unwrap();
-        let ipv6 = IPRange::from_bytes(
+        let ipv4 = IPConstraint::from_bytes(b"\xc0\xa8\x01\x01\xff\xff\x00\x00").unwrap();
+        let ipv4_32 = IPConstraint::from_bytes(b"\xc0\x00\x02\xde\xff\xff\xff\xff").unwrap();
+        let ipv6 = IPConstraint::from_bytes(
             b"\x26\x00\x0d\xb8\x00\x00\x00\x00\
               \x00\x00\x00\x00\x00\x00\x00\x01\
               \xff\xff\xff\xff\x00\x00\x00\x00\
               \x00\x00\x00\x00\x00\x00\x00\x00",
         )
         .unwrap();
-        let ipv6_128 = IPRange::from_bytes(
+        let ipv6_128 = IPConstraint::from_bytes(
             b"\x26\x00\x0d\xb8\x00\x00\x00\x00\
               \x00\x00\x00\x00\xff\x00\xde\xde\
               \xff\xff\xff\xff\xff\xff\xff\xff\
