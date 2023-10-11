@@ -94,7 +94,7 @@ fn py_curve_from_curve<'p>(
     Ok(types::CURVE_TYPES
         .get(py)?
         .extract::<&pyo3::types::PyDict>()?
-        .get_item(name)
+        .get_item(name)?
         .ok_or_else(|| {
             CryptographyError::from(exceptions::UnsupportedAlgorithm::new_err((
                 format!("{} is not a supported elliptic curve", name),
