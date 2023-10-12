@@ -36,23 +36,12 @@ impl CertificateSigningRequest {
         hasher.finish()
     }
 
-    fn __richcmp__(
+    fn __eq__(
         &self,
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, CertificateSigningRequest>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_owner().as_bytes(py) == other.raw.borrow_owner().as_bytes(py))
-            }
-            pyo3::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_owner().as_bytes(py) != other.raw.borrow_owner().as_bytes(py))
-            }
-            _ => Err(pyo3::exceptions::PyTypeError::new_err(
-                "CSRs cannot be ordered",
-            )),
-        }
+    ) -> bool {
+        self.raw.borrow_owner().as_bytes(py) == other.raw.borrow_owner().as_bytes(py)
     }
 
     fn public_key<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {

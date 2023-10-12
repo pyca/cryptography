@@ -152,16 +152,8 @@ impl Ed25519PublicKey {
         utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
     }
 
-    fn __richcmp__(
-        &self,
-        other: pyo3::PyRef<'_, Ed25519PublicKey>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => Ok(self.pkey.public_eq(&other.pkey)),
-            pyo3::basic::CompareOp::Ne => Ok(!self.pkey.public_eq(&other.pkey)),
-            _ => Err(pyo3::exceptions::PyTypeError::new_err("Cannot be ordered")),
-        }
+    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
+        self.pkey.public_eq(&other.pkey)
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
