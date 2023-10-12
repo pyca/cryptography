@@ -54,18 +54,8 @@ impl ObjectIdentifier {
         ))
     }
 
-    fn __richcmp__(
-        &self,
-        other: pyo3::PyRef<'_, ObjectIdentifier>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => Ok(self.oid == other.oid),
-            pyo3::basic::CompareOp::Ne => Ok(self.oid != other.oid),
-            _ => Err(pyo3::exceptions::PyTypeError::new_err(
-                "ObjectIdentifiers cannot be ordered",
-            )),
-        }
+    fn __eq__(&self, other: pyo3::PyRef<'_, ObjectIdentifier>) -> bool {
+        self.oid == other.oid
     }
 
     fn __hash__(&self) -> u64 {

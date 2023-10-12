@@ -49,22 +49,8 @@ impl Certificate {
         hasher.finish()
     }
 
-    fn __richcmp__(
-        &self,
-        other: pyo3::PyRef<'_, Certificate>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => {
-                Ok(self.raw.borrow_dependent() == other.raw.borrow_dependent())
-            }
-            pyo3::basic::CompareOp::Ne => {
-                Ok(self.raw.borrow_dependent() != other.raw.borrow_dependent())
-            }
-            _ => Err(pyo3::exceptions::PyTypeError::new_err(
-                "Certificates cannot be ordered",
-            )),
-        }
+    fn __eq__(&self, other: pyo3::PyRef<'_, Certificate>) -> bool {
+        self.raw.borrow_dependent() == other.raw.borrow_dependent()
     }
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {

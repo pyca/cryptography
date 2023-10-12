@@ -142,18 +142,8 @@ pub(crate) struct Sct {
 
 #[pyo3::prelude::pymethods]
 impl Sct {
-    fn __richcmp__(
-        &self,
-        other: pyo3::PyRef<'_, Sct>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => Ok(self.sct_data == other.sct_data),
-            pyo3::basic::CompareOp::Ne => Ok(self.sct_data != other.sct_data),
-            _ => Err(pyo3::exceptions::PyTypeError::new_err(
-                "SCTs cannot be ordered",
-            )),
-        }
+    fn __eq__(&self, other: pyo3::PyRef<'_, Sct>) -> bool {
+        self.sct_data == other.sct_data
     }
 
     fn __hash__(&self) -> u64 {

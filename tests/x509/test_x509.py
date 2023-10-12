@@ -1493,7 +1493,7 @@ class TestRSACertificate:
             os.path.join("x509", "custom", "post2000utctime.pem"),
             x509.load_pem_x509_certificate,
         )
-        with pytest.raises(TypeError, match="cannot be ordered"):
+        with pytest.raises(TypeError, match="'>' not supported"):
             cert > cert2  # type: ignore[operator]
 
     def test_hash(self, backend):
@@ -2164,7 +2164,7 @@ class TestRSACertificateRequest:
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
         )
-        with pytest.raises(TypeError, match="cannot be ordered"):
+        with pytest.raises(TypeError, match="'>' not supported"):
             csr > csr2  # type: ignore[operator]
 
     def test_hash(self, backend):

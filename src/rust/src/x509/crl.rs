@@ -103,22 +103,8 @@ impl CertificateRevocationList {
 
 #[pyo3::prelude::pymethods]
 impl CertificateRevocationList {
-    fn __richcmp__(
-        &self,
-        other: pyo3::PyRef<'_, CertificateRevocationList>,
-        op: pyo3::basic::CompareOp,
-    ) -> pyo3::PyResult<bool> {
-        match op {
-            pyo3::basic::CompareOp::Eq => {
-                Ok(self.owned.borrow_dependent() == other.owned.borrow_dependent())
-            }
-            pyo3::basic::CompareOp::Ne => {
-                Ok(self.owned.borrow_dependent() != other.owned.borrow_dependent())
-            }
-            _ => Err(pyo3::exceptions::PyTypeError::new_err(
-                "CRLs cannot be ordered",
-            )),
-        }
+    fn __eq__(&self, other: pyo3::PyRef<'_, CertificateRevocationList>) -> bool {
+        self.owned.borrow_dependent() == other.owned.borrow_dependent()
     }
 
     fn __len__(&self) -> usize {
