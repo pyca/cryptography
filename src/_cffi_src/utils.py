@@ -12,7 +12,7 @@ from cffi import FFI
 
 # Load the cryptography __about__ to get the current package version
 base_src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-about = {}
+about: dict = {}
 with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
     exec(f.read(), about)
 

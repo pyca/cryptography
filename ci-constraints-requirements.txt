@@ -13,7 +13,7 @@ babel==2.13.0
     # via sphinx
 black==23.9.1
     # via cryptography (pyproject.toml)
-bleach==6.0.0
+bleach==6.1.0
     # via readme-renderer
 build==1.0.3
     # via
@@ -68,7 +68,7 @@ mdurl==0.1.2
     # via markdown-it-py
 more-itertools==10.1.0
     # via jaraco-classes
-mypy==1.5.1
+mypy==1.6.0
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via

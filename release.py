@@ -44,8 +44,7 @@ def release(version: str) -> None:
 def replace_version(
     p: pathlib.Path, variable_name: str, new_version: str
 ) -> None:
-    with p.open() as f:
-        content = f.read()
+    content = p.read_text()
 
     pattern = rf"^{variable_name}\s*=\s*.*$"
     match = re.search(pattern, content, re.MULTILINE)
@@ -56,9 +55,7 @@ def replace_version(
         content[:start] + f'{variable_name} = "{new_version}"' + content[end:]
     )
 
-    # Write back to file
-    with p.open("w") as f:
-        f.write(new_content)
+    p.write_text(new_content)
 
 
 @cli.command()
