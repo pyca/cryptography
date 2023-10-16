@@ -247,3 +247,27 @@ pub(crate) mod ca {
         Ok(())
     }
 }
+
+pub(crate) mod common {
+    use cryptography_x509::{
+        certificate::Certificate,
+        extensions::{Extension, SequenceOfAccessDescriptions},
+    };
+
+    use crate::{
+        ops::CryptoOps,
+        policy::{Policy, PolicyError},
+    };
+
+    pub(crate) fn authority_information_access<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        // We don't currently do anything useful with these, but we
+        // do check that they're well-formed.
+        let _: SequenceOfAccessDescriptions<'_> = extn.value()?;
+
+        Ok(())
+    }
+}

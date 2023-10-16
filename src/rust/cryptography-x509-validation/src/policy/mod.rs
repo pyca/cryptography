@@ -21,12 +21,13 @@ use cryptography_x509::extensions::{
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, POLICY_CONSTRAINTS_OID,
-    SUBJECT_ALTERNATIVE_NAME_OID, SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
+    AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
+    EKU_SERVER_AUTH_OID, EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID,
+    POLICY_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID, SUBJECT_DIRECTORY_ATTRIBUTES_OID,
+    SUBJECT_KEY_IDENTIFIER_OID,
 };
 
-use self::extension::{ca, ee, Criticality, ExtensionPolicy};
+use self::extension::{ca, common, ee, Criticality, ExtensionPolicy};
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress};
@@ -224,6 +225,7 @@ pub struct Policy<'a, B: CryptoOps> {
     pub critical_ca_extensions: HashSet<ObjectIdentifier>,
     pub critical_ee_extensions: HashSet<ObjectIdentifier>,
 
+    common_extension_policies: Vec<ExtensionPolicy<B>>,
     ca_extension_policies: Vec<ExtensionPolicy<B>>,
     ee_extension_policies: Vec<ExtensionPolicy<B>>,
 }
@@ -247,6 +249,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ),
             critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
             critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
+            common_extension_policies: Vec::from([ExtensionPolicy::maybe_present(
+                // 5280 4.2.2.1: Authority Information Access
+                AUTHORITY_INFORMATION_ACCESS_OID,
+                Criticality::NonCritical,
+                Some(common::authority_information_access),
+            )]),
             ca_extension_policies: Vec::from([
                 // 5280 4.2.1.2: Subject Key Identifier
                 ExtensionPolicy::present(
@@ -353,6 +361,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // This field must MUST only appear if the certificate version is 3,
         // and it MUST be non-empty if present.
         // TODO: Check this.
+
+        for ext_policy in self.common_extension_policies.iter() {
+            ext_policy.permits(self, cert, &extensions)?;
+        }
 
         // 5280 4.2.1.1: Authority Key Identifier
         // Certificates MUST have an AuthorityKeyIdentifier, it MUST contain
