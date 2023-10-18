@@ -194,10 +194,18 @@ cryptography==41.0.4 \
     #   pyopenssl
     #   secretstorage
     #   sigstore
+dnspython==2.4.2 \
+    --hash=sha256:57c6fbaaeaaf39c891292012060beb141791735dbb4004798328fc2c467402d8 \
+    --hash=sha256:8dcfae8c7460a2f84b4072e26f1c9f4101ca20c071649cb7c34e8b6a93d58984
+    # via email-validator
 docutils==0.20.1 \
     --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6 \
     --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b
     # via readme-renderer
+email-validator==2.0.0.post2 \
+    --hash=sha256:1ff6e86044200c56ae23595695c54e9614f4a9551e0e393614f764860b3d7900 \
+    --hash=sha256:2466ba57cda361fb7309fd3d5a225723c788ca4bbad32a0ebd5373b99730285c
+    # via pydantic
 grpclib==0.4.6 \
     --hash=sha256:595d05236ca8b8f8e433f5bf6095e6354c1d8777d003ddaf5288efa9611e3fd6
     # via betterproto
@@ -220,7 +228,9 @@ id==1.1.0 \
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
     --hash=sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2
-    # via requests
+    # via
+    #   email-validator
+    #   requests
 importlib-metadata==6.8.0 \
     --hash=sha256:3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb \
     --hash=sha256:dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743
@@ -355,12 +365,13 @@ pycparser==2.21 \
     --hash=sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9 \
     --hash=sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206
     # via cffi
-pydantic==2.4.2 \
+pydantic[email]==2.4.2 \
     --hash=sha256:94f336138093a5d7f426aac732dcfe7ab4eb4da243c88f891d65deb4a2556ee7 \
     --hash=sha256:bc3ddf669d234f4220e6e1c4d96b061abe0998185a8d7855c0126782b7abc8c1
     # via
     #   id
     #   sigstore
+    #   sigstore-rekor-types
 pydantic-core==2.10.1 \
     --hash=sha256:042462d8d6ba707fd3ce9649e7bf268633a41018d6a998fb5fbacb7e928a183e \
     --hash=sha256:0523aeb76e03f753b58be33b26540880bac5aa54422e4462404c432230543f33 \
@@ -523,13 +534,17 @@ securesystemslib==0.30.0 \
     # via
     #   sigstore
     #   tuf
-sigstore==2.0.0 \
-    --hash=sha256:ef342f4fd4fc03f8ca12b58462683da099e26279ff6eba8fc3ec03f86e1c42ed \
-    --hash=sha256:fed5457c3be16c9dff6367dad9062260d67761a46cb1e7cf0ca8c96b96632bb7
+sigstore==2.0.1 \
+    --hash=sha256:1ec613be4e9623e3b7992cf92be7e127c470141ecae691fdc417d2855f7b25f4 \
+    --hash=sha256:78013eaa2207c054ac803b361f8722011766d243bcbfa50c6e48003df2e3ca2f
     # via -r publish-requirements.in
 sigstore-protobuf-specs==0.2.1 \
     --hash=sha256:5add858b87fb119607fcab48cad5b880d414a1ac8dc60cf0bf63148dd89ac194 \
     --hash=sha256:ea9db15cd2fa7229d3647d0c47079f246bfb177b6a6189647224910b0a740da9
+    # via sigstore
+sigstore-rekor-types==0.0.11 \
+    --hash=sha256:791a696eccd5d07c933cc11d46dea22983efedaf5f1068734263ce0f25695bba \
+    --hash=sha256:b63b4dc6dd70a3f69b236575146a18c357a3743172a03e8ceb18bbc25ef2563b
     # via sigstore
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
@@ -549,9 +564,9 @@ typing-extensions==4.8.0 \
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.0.6 \
-    --hash=sha256:7a7c7003b000adf9e7ca2a377c9688bbc54ed41b985789ed576570342a375cd2 \
-    --hash=sha256:b19e1a85d206b56d7df1d5e683df4a7725252a964e3993648dd0fb5a1c157564
+urllib3==2.0.7 \
+    --hash=sha256:c97dfde1f7bd43a71c8d2a58e369e9b2bf692d1334ea9f9cae55add7d0dd0f84 \
+    --hash=sha256:fdb6d215c776278489906c2f8916e6e7d4f5a9b602ccbcfdf7f016fc8da0596e
     # via
     #   requests
     #   twine
