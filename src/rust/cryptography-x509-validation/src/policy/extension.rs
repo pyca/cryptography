@@ -34,8 +34,11 @@ impl Criticality {
     }
 }
 
-type ExtensionValidatorCallback<B> =
+type PresentExtensionValidatorCallback<B> =
     fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), PolicyError>;
+
+type MaybeExtensionValidatorCallback<B> =
+    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), PolicyError>;
 
 /// Represents different validation states for an extension.
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
@@ -47,12 +50,13 @@ pub(crate) enum ExtensionValidator<B: CryptoOps> {
         criticality: Criticality,
         /// An optional validator over the extension's inner contents, with
         /// the surrounding `Policy` as context.
-        validator: Option<ExtensionValidatorCallback<B>>,
+        validator: Option<PresentExtensionValidatorCallback<B>>,
     },
-    /// The extension MAY be present.
+    /// The extension MAY be present; the interior validator is
+    /// always called if supplied, including if the extension is not present.
     MaybePresent {
         criticality: Criticality,
-        validator: Option<ExtensionValidatorCallback<B>>,
+        validator: Option<MaybeExtensionValidatorCallback<B>>,
     },
 }
 
@@ -74,7 +78,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
     pub(crate) fn present(
         oid: ObjectIdentifier,
         criticality: Criticality,
-        validator: Option<ExtensionValidatorCallback<B>>,
+        validator: Option<PresentExtensionValidatorCallback<B>>,
     ) -> Self {
         Self {
             oid,
@@ -88,7 +92,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
     pub(crate) fn maybe_present(
         oid: ObjectIdentifier,
         criticality: Criticality,
-        validator: Option<ExtensionValidatorCallback<B>>,
+        validator: Option<MaybeExtensionValidatorCallback<B>>,
     ) -> Self {
         Self {
             oid,
@@ -133,25 +137,27 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 // If a custom validator is supplied, apply it.
                 validator.map_or(Ok(()), |v| v(policy, cert, &extn))
             }
-            // Extension MAY be present and is; check it.
+            // Extension MAY be present.
             (
                 ExtensionValidator::MaybePresent {
                     criticality,
                     validator,
                 },
-                Some(extn),
+                extn,
             ) => {
-                if !criticality.permits(extn.critical) {
+                // If the extension is present, apply our criticality check.
+                if extn
+                    .as_ref()
+                    .map_or(false, |extn| !criticality.permits(extn.critical))
+                {
                     return Err(PolicyError::Other(
                         "EE certificate extension has incorrect criticality",
                     ));
                 }
 
                 // If a custom validator is supplied, apply it.
-                validator.map_or(Ok(()), |v| v(policy, cert, &extn))
+                validator.map_or(Ok(()), |v| v(policy, cert, extn.as_ref()))
             }
-            // Extension MAY be present and isn't; OK.
-            (ExtensionValidator::MaybePresent { .. }, None) => Ok(()),
         }
     }
 }
@@ -170,12 +176,14 @@ pub(crate) mod ee {
     pub(crate) fn basic_constraints<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
-        extn: &Extension<'_>,
+        extn: Option<&Extension<'_>>,
     ) -> Result<(), PolicyError> {
-        let basic_constraints: BasicConstraints = extn.value()?;
+        if let Some(extn) = extn {
+            let basic_constraints: BasicConstraints = extn.value()?;
 
-        if basic_constraints.ca {
-            return Err("basicConstraints.cA must not be asserted in an EE certificate".into());
+            if basic_constraints.ca {
+                return Err("basicConstraints.cA must not be asserted in an EE certificate".into());
+            }
         }
 
         Ok(())
@@ -215,9 +223,26 @@ pub(crate) mod ca {
     };
 
     use crate::{
+        certificate::cert_is_self_signed,
         ops::CryptoOps,
         policy::{Policy, PolicyError},
     };
+
+    pub(crate) fn authority_key_identifier<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), PolicyError> {
+        // The Authority Key Identifier MUST be present, with one exception:
+        // self-signed CAs may omit it.
+        if extn.is_none() && !cert_is_self_signed(cert, &policy.ops) {
+            return Err(
+                "authorityKeyIdentifier must be present in cross-signed CA certificate".into(),
+            );
+        }
+
+        Ok(())
+    }
 
     pub(crate) fn key_usage<B: CryptoOps>(
         _policy: &Policy<'_, B>,
@@ -262,11 +287,13 @@ pub(crate) mod common {
     pub(crate) fn authority_information_access<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
-        extn: &Extension<'_>,
+        extn: Option<&Extension<'_>>,
     ) -> Result<(), PolicyError> {
-        // We don't currently do anything useful with these, but we
-        // do check that they're well-formed.
-        let _: SequenceOfAccessDescriptions<'_> = extn.value()?;
+        if let Some(extn) = extn {
+            // We don't currently do anything useful with these, but we
+            // do check that they're well-formed.
+            let _: SequenceOfAccessDescriptions<'_> = extn.value()?;
+        }
 
         Ok(())
     }

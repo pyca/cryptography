@@ -249,13 +249,27 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ),
             critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
             critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
-            common_extension_policies: Vec::from([ExtensionPolicy::maybe_present(
+            common_extension_policies: Vec::from([
+                // 5280 4.2.1.8: Subject Directory Attributes
+                ExtensionPolicy::maybe_present(
+                    SUBJECT_DIRECTORY_ATTRIBUTES_OID,
+                    Criticality::NonCritical,
+                    None,
+                ),
                 // 5280 4.2.2.1: Authority Information Access
-                AUTHORITY_INFORMATION_ACCESS_OID,
-                Criticality::NonCritical,
-                Some(common::authority_information_access),
-            )]),
+                ExtensionPolicy::maybe_present(
+                    AUTHORITY_INFORMATION_ACCESS_OID,
+                    Criticality::NonCritical,
+                    Some(common::authority_information_access),
+                ),
+            ]),
             ca_extension_policies: Vec::from([
+                // 5280 4.2.1.1: Authority Key Identifier
+                ExtensionPolicy::maybe_present(
+                    AUTHORITY_KEY_IDENTIFIER_OID,
+                    Criticality::NonCritical,
+                    Some(ca::authority_key_identifier),
+                ),
                 // 5280 4.2.1.2: Subject Key Identifier
                 ExtensionPolicy::present(
                     SUBJECT_KEY_IDENTIFIER_OID,
@@ -276,6 +290,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 ExtensionPolicy::maybe_present(POLICY_CONSTRAINTS_OID, Criticality::Critical, None),
             ]),
             ee_extension_policies: Vec::from([
+                // 5280 4.2.1.1.: Authority Key Identifier
+                ExtensionPolicy::present(
+                    AUTHORITY_KEY_IDENTIFIER_OID,
+                    Criticality::NonCritical,
+                    None,
+                ),
                 // 5280 4.2.1.3: Key Usage
                 ExtensionPolicy::maybe_present(KEY_USAGE_OID, Criticality::Agnostic, None),
                 // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
@@ -299,22 +319,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
         let extensions = cert.extensions()?;
 
-        // 5280 4.1.1.1: tbsCertificate
-        // No checks required.
-
         // 5280 4.1.1.2 / 4.1.2.3: signatureAlgorithm / TBS Certificate Signature
         // The top-level signatureAlgorithm and TBSCert signature algorithm
         // MUST match.
         if cert.signature_alg != cert.tbs_cert.signature_alg {
             return Err("mismatch between signatureAlgorithm and SPKI algorithm".into());
         }
-
-        // 5280 4.1.1.3: signatureValue
-        // No checks required.
-
-        // 5280 4.1.2.1: Version
-        // No checks required; implementations SHOULD be prepared to accept
-        // any version certificate.
 
         // 5280 4.1.2.2: Serial Number
         // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
@@ -325,9 +335,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         if !(1..=21).contains(&cert.tbs_cert.serial.as_bytes().len()) {
             return Err("certificate must have a serial between 1 and 20 octets".into());
         }
-
-        // 5280 4.1.2.3: Signature
-        // See check under 4.1.1.2.
 
         // 5280 4.1.2.4: Issuer
         // The issuer MUST be a non-empty distinguished name.
@@ -347,85 +354,14 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             return Err(PolicyError::Other("cert is not valid at validation time"));
         }
 
-        // 5280 4.1.2.6: Subject
-        // Devolved to `permits_ca` and `permits_ee`.
-
-        // 5280 4.1.2.7: Subject Public Key Info
-        // No checks required.
-
-        // 5280 4.1.2.8: Unique Identifiers
-        // These fields MUST only appear if the certificate version is 2 or 3.
-        // TODO: Check this.
-
-        // 5280 4.1.2.9: Extensions
-        // This field must MUST only appear if the certificate version is 3,
-        // and it MUST be non-empty if present.
-        // TODO: Check this.
-
+        // Extension policy checks.
         for ext_policy in self.common_extension_policies.iter() {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // 5280 4.2.1.1: Authority Key Identifier
-        // Certificates MUST have an AuthorityKeyIdentifier, it MUST contain
-        // the keyIdentifier field, and it MUST NOT be critical.
-        // The exception to this is self-signed certificates, which MAY
-        // omit the AuthorityKeyIdentifier.
-        if let Some(aki) = extensions.get_extension(&AUTHORITY_KEY_IDENTIFIER_OID) {
-            if aki.critical {
-                return Err("AuthorityKeyIdentifier must not be marked critical".into());
-            }
+        // TODO: CA/B 7.1.3.1 SubjectPublicKeyInfo
 
-            let aki: AuthorityKeyIdentifier<'_> = aki.value()?;
-            if aki.key_identifier.is_none() {
-                return Err("AuthorityKeyIdentifier.keyIdentifier must be present".into());
-            }
-        } else if !cert_is_self_signed(cert, &self.ops) {
-            return Err(
-                "certificates must have a AuthorityKeyIdentifier unless self-signed".into(),
-            );
-        }
-
-        // 5280 4.2.1.2: Subject Key Identifier
-        // Developed to `permits_ca`.
-
-        // 5280 4.2.1.3: Key Usage
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            // KeyUsage must have at least one bit asserted, if present.
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-            if key_usage.is_zeroed() {
-                return Err("KeyUsage must have at least one usage asserted, when present".into());
-            }
-
-            // encipherOnly or decipherOnly without keyAgreement is not well defined.
-            // TODO: Check on a policy basis instead?
-            if !key_usage.key_agreement()
-                && (key_usage.encipher_only() || key_usage.decipher_only())
-            {
-                return Err(
-                    "KeyUsage encipherOnly and decipherOnly can only be true when keyAgreement is true"
-                        .into(),
-                );
-            }
-        }
-
-        // 5280 4.2.1.4: Certificate Policies
-        // No checks required.
-
-        // 5280 4.2.1.5: Policy Mappings
-        // No checks required.
-
-        // 5280 4.2.1.8: Subject Directory Attributes
-        // Conforming CAs MUST mark this extension as non-critical.
-        if extensions
-            .get_extension(&SUBJECT_DIRECTORY_ATTRIBUTES_OID)
-            .map_or(false, |e| e.critical)
-        {
-            return Err("SubjectDirectoryAttributes must not be marked critical".into());
-        }
-
-        // Non-profile checks follow.
-
+        // CA/B 7.1.3.2 Signature AlgorithmIdentifier
         if let Some(permitted_algorithms) = &self.permitted_algorithms {
             if !permitted_algorithms.contains(&cert.signature_alg) {
                 // TODO: Should probably include the OID here.
