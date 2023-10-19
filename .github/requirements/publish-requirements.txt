@@ -12,9 +12,9 @@ appdirs==1.4.4 \
     --hash=sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41 \
     --hash=sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128
     # via sigstore
-betterproto==2.0.0b5 \
-    --hash=sha256:00a301c70a2db4d3cdd2b261522ae1d34972fb04b655a154d67daaaf4131102e \
-    --hash=sha256:d3e6115c7d5136f1d5974e565b7560273f66b43065e74218e472321ee1258f4c
+betterproto==2.0.0b6 \
+    --hash=sha256:720ae92697000f6fcf049c69267d957f0871654c8b0d7458906607685daee784 \
+    --hash=sha256:a0839ec165d110a69d0d116f4d0e2bec8d186af4db826257931f0831dab73fcf
     # via sigstore-protobuf-specs
 certifi==2023.7.22 \
     --hash=sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082 \
@@ -538,9 +538,9 @@ sigstore==2.0.1 \
     --hash=sha256:1ec613be4e9623e3b7992cf92be7e127c470141ecae691fdc417d2855f7b25f4 \
     --hash=sha256:78013eaa2207c054ac803b361f8722011766d243bcbfa50c6e48003df2e3ca2f
     # via -r publish-requirements.in
-sigstore-protobuf-specs==0.2.1 \
-    --hash=sha256:5add858b87fb119607fcab48cad5b880d414a1ac8dc60cf0bf63148dd89ac194 \
-    --hash=sha256:ea9db15cd2fa7229d3647d0c47079f246bfb177b6a6189647224910b0a740da9
+sigstore-protobuf-specs==0.2.2 \
+    --hash=sha256:62c7beabc6910fb570dc4c600e33e81f2d2d683f785202ee109ca394bd829e94 \
+    --hash=sha256:c05c1e7478a80af0c7dea9cc2d11f047826e4c029573d564137f788e11377391
     # via sigstore
 sigstore-rekor-types==0.0.11 \
     --hash=sha256:791a696eccd5d07c933cc11d46dea22983efedaf5f1068734263ce0f25695bba \
