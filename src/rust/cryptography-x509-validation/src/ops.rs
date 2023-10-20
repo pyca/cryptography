@@ -45,10 +45,18 @@ pub(crate) mod tests {
         }
     }
 
-    #[test]
-    fn test_nullops() {
-        // Arbitrary relatively small cert (v1_cert.pem from cryptography_vectors).
-        let v1_cert = "
+    #[macro_export]
+    macro_rules! cert {
+        ($pem:literal) => {{
+            let parsed = Box::leak(Box::new(pem::parse($pem).unwrap()));
+            asn1::parse_single::<Certificate<'static>>(&parsed.contents()).unwrap()
+        }};
+    }
+
+    // Arbitrary relatively small cert (v1_cert.pem from cryptography_vectors).
+    pub(crate) fn v1_cert() -> Certificate<'static> {
+        cert!(
+            "
 -----BEGIN CERTIFICATE-----
 MIIBWzCCAQYCARgwDQYJKoZIhvcNAQEEBQAwODELMAkGA1UEBhMCQVUxDDAKBgNV
 BAgTA1FMRDEbMBkGA1UEAxMSU1NMZWF5L3JzYSB0ZXN0IENBMB4XDTk1MDYxOTIz
@@ -58,10 +66,13 @@ AANLADBIAkEAqtt6qS5GTxVxGZYWa0/4u+IwHf7p2LNZbcPBp9/OfIcYAXBQn8hO
 /Re1uwLKXdCjIoaGs4DLdG88rkzfyK5dPQIDAQABMAwGCCqGSIb3DQIFBQADQQAE
 Wc7EcF8po2/ZO6kNCwK/ICH6DobgLekA5lSLr5EvuioZniZp5lFzAw4+YzPQ7XKJ
 zl9HYIMxATFyqSiD9jsx
------END CERTIFICATE-----";
+-----END CERTIFICATE-----"
+        )
+    }
 
-        let pem = pem::parse(v1_cert.as_bytes()).unwrap();
-        let cert = asn1::parse_single::<Certificate<'_>>(pem.contents()).unwrap();
+    #[test]
+    fn test_nullops() {
+        let cert = v1_cert();
 
         let ops = NullOps {};
         assert_eq!(ops.public_key(&cert), Ok(()));

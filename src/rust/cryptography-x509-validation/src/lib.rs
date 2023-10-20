@@ -7,4 +7,5 @@
 
 pub mod ops;
 pub mod policy;
+pub mod trust_store;
 pub mod types;
