@@ -28,13 +28,14 @@ impl<'a> Store<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ops::tests::v1_cert;
+    use crate::ops::tests::{cert, v1_cert_pem};
 
     use super::Store;
 
     #[test]
     fn test_store() {
-        let cert = v1_cert();
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
         let store = Store::new([cert.clone()]);
 
         assert!(store.contains(&cert));
