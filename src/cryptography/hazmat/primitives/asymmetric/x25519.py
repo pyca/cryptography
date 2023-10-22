@@ -48,9 +48,7 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         """
 
 
-# For LibreSSL
-if hasattr(rust_openssl, "x25519"):
-    X25519PublicKey.register(rust_openssl.x25519.X25519PublicKey)
+X25519PublicKey.register(rust_openssl.x25519.X25519PublicKey)
 
 
 class X25519PrivateKey(metaclass=abc.ABCMeta):
@@ -108,6 +106,4 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
         """
 
 
-# For LibreSSL
-if hasattr(rust_openssl, "x25519"):
-    X25519PrivateKey.register(rust_openssl.x25519.X25519PrivateKey)
+X25519PrivateKey.register(rust_openssl.x25519.X25519PrivateKey)
