@@ -192,6 +192,9 @@ int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
 
 const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
 const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
+
+void X509_ALGOR_get0(const ASN1_OBJECT **, int *, const void **,
+                     const X509_ALGOR *);
 """
 
 CUSTOMIZATIONS = """

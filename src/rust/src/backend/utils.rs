@@ -71,7 +71,6 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
-    #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
     if raw_allowed
         && (encoding.is(types::ENCODING_RAW.get(py)?)
             || format.is(types::PRIVATE_FORMAT_RAW.get(py)?))
@@ -258,7 +257,6 @@ pub(crate) fn pkey_public_bytes<'p>(
         ));
     }
 
-    #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_370_OR_GREATER))]
     if raw_allowed
         && (encoding.is(types::ENCODING_RAW.get(py)?)
             || format.is(types::PUBLIC_FORMAT_RAW.get(py)?))

@@ -30,7 +30,7 @@ static const int GEN_EMAIL;
 static const int GEN_DNS;
 static const int GEN_URI;
 
-typedef struct stack_st_GENERAL_NAME GENERAL_NAMES;
+typedef ... GENERAL_NAMES;
 
 /* Only include the one union element used by pyOpenSSL. */
 typedef struct {
@@ -56,8 +56,8 @@ X509_EXTENSION *X509V3_EXT_nconf(CONF *, X509V3_CTX *, const char *,
 
 void X509V3_set_ctx_nodb(X509V3_CTX *);
 
-int sk_GENERAL_NAME_num(struct stack_st_GENERAL_NAME *);
-GENERAL_NAME *sk_GENERAL_NAME_value(struct stack_st_GENERAL_NAME *, int);
+int sk_GENERAL_NAME_num(GENERAL_NAMES *);
+GENERAL_NAME *sk_GENERAL_NAME_value(GENERAL_NAMES *, int);
 """
 
 CUSTOMIZATIONS = """

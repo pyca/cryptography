@@ -16,8 +16,8 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::{
-    AuthorityKeyIdentifier, BasicConstraints, DuplicateExtensionsError, ExtendedKeyUsage,
-    Extension, KeyUsage, SubjectAlternativeName,
+    BasicConstraints, DuplicateExtensionsError, ExtendedKeyUsage, Extension, KeyUsage,
+    SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -28,7 +28,7 @@ use cryptography_x509::oid::{
 };
 
 use self::extension::{ca, common, ee, Criticality, ExtensionPolicy};
-use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
+use crate::certificate::cert_is_self_issued;
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress};
 

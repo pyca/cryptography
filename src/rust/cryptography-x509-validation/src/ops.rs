@@ -45,10 +45,9 @@ pub(crate) mod tests {
         }
     }
 
-    #[test]
-    fn test_nullops() {
-        // Arbitrary relatively small cert (v1_cert.pem from cryptography_vectors).
-        let v1_cert = "
+    pub(crate) fn v1_cert_pem() -> pem::Pem {
+        pem::parse(
+            "
 -----BEGIN CERTIFICATE-----
 MIIBWzCCAQYCARgwDQYJKoZIhvcNAQEEBQAwODELMAkGA1UEBhMCQVUxDDAKBgNV
 BAgTA1FMRDEbMBkGA1UEAxMSU1NMZWF5L3JzYSB0ZXN0IENBMB4XDTk1MDYxOTIz
@@ -58,10 +57,19 @@ AANLADBIAkEAqtt6qS5GTxVxGZYWa0/4u+IwHf7p2LNZbcPBp9/OfIcYAXBQn8hO
 /Re1uwLKXdCjIoaGs4DLdG88rkzfyK5dPQIDAQABMAwGCCqGSIb3DQIFBQADQQAE
 Wc7EcF8po2/ZO6kNCwK/ICH6DobgLekA5lSLr5EvuioZniZp5lFzAw4+YzPQ7XKJ
 zl9HYIMxATFyqSiD9jsx
------END CERTIFICATE-----";
+-----END CERTIFICATE-----",
+        )
+        .unwrap()
+    }
 
-        let pem = pem::parse(v1_cert.as_bytes()).unwrap();
-        let cert = asn1::parse_single::<Certificate<'_>>(pem.contents()).unwrap();
+    pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
+        asn1::parse_single(cert_pem.contents()).unwrap()
+    }
+
+    #[test]
+    fn test_nullops() {
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
 
         let ops = NullOps {};
         assert_eq!(ops.public_key(&cert), Ok(()));

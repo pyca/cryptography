@@ -867,7 +867,7 @@ class Backend:
     def x25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return not self._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_370
+        return True
 
     def x448_supported(self) -> bool:
         if self._fips_enabled:
@@ -880,7 +880,7 @@ class Backend:
     def ed25519_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return self._lib.CRYPTOGRAPHY_HAS_WORKING_ED25519
+        return True
 
     def ed448_supported(self) -> bool:
         if self._fips_enabled:
