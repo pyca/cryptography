@@ -54,8 +54,7 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         """
 
 
-if hasattr(rust_openssl, "ed25519"):
-    Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
+Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
 
 
 class Ed25519PrivateKey(metaclass=abc.ABCMeta):
@@ -114,5 +113,4 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         """
 
 
-if hasattr(rust_openssl, "x25519"):
-    Ed25519PrivateKey.register(rust_openssl.ed25519.Ed25519PrivateKey)
+Ed25519PrivateKey.register(rust_openssl.ed25519.Ed25519PrivateKey)
