@@ -102,13 +102,6 @@ static const long Cryptography_HAS_SCRYPT = 0;
 static const long Cryptography_HAS_SCRYPT = 1;
 #endif
 
-/* This is tied to X448 support so we reuse the Cryptography_HAS_X448
-   conditional to remove it. OpenSSL 1.1.1 adds this define.  We can remove
-   this in the distant future when we drop 1.1.0 support. */
-#ifndef EVP_PKEY_X448
-#define EVP_PKEY_X448 NID_X448
-#endif
-
 /* This is tied to ED448 support so we reuse the Cryptography_HAS_ED448
    conditional to remove it. */
 #ifndef EVP_PKEY_ED448
