@@ -264,8 +264,14 @@ class Backend:
         self.register_cipher_adapter(
             TripleDES, ECB, GetCipherByName("des-ede3")
         )
+        # ChaCha20 uses the Short Name "chacha20" in OpenSSL, but in LibreSSL
+        # it uses "chacha"
         self.register_cipher_adapter(
-            ChaCha20, type(None), GetCipherByName("chacha20")
+            ChaCha20,
+            type(None),
+            GetCipherByName(
+                "chacha" if self._lib.CRYPTOGRAPHY_IS_LIBRESSL else "chacha20"
+            ),
         )
         self.register_cipher_adapter(AES, XTS, _get_xts_cipher)
         for mode_cls in [ECB, CBC, OFB, CFB, CTR]:

@@ -69,3 +69,24 @@ class TestChaCha20:
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
             algorithms.ChaCha20("0" * 32, b"0" * 16)  # type:ignore[arg-type]
+
+    def test_partial_blocks(self, backend):
+        # Test that partial blocks and counter increments are handled
+        # correctly. Successive calls to update should return the same
+        # as if the entire input was passed in a single call:
+        # update(pt[0:n]) + update(pt[n:m]) + update(pt[m:]) == update(pt)
+        key = bytearray(os.urandom(32))
+        nonce = bytearray(os.urandom(16))
+        cipher = Cipher(algorithms.ChaCha20(key, nonce), None, backend)
+        pt = bytearray(os.urandom(96 * 3))
+
+        enc_full = cipher.encryptor()
+        ct_full = enc_full.update(pt)
+
+        enc_partial = cipher.encryptor()
+        len_partial = len(pt) // 3
+        ct_partial_1 = enc_partial.update(pt[:len_partial])
+        ct_partial_2 = enc_partial.update(pt[len_partial : len_partial * 2])
+        ct_partial_3 = enc_partial.update(pt[len_partial * 2 :])
+
+        assert ct_full == ct_partial_1 + ct_partial_2 + ct_partial_3

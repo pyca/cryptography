@@ -38,7 +38,9 @@ Changelog
   :meth:`~cryptography.x509.CertificateRevocationList.next_update`,
   :meth:`~cryptography.x509.CertificateRevocationList.last_update`
   in favor of the new timezone-aware variants mentioned above.
-
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
+  on LibreSSL.
 
 .. _v41-0-4:
 
