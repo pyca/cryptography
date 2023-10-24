@@ -38,7 +38,17 @@ Changelog
   :meth:`~cryptography.x509.CertificateRevocationList.next_update`,
   :meth:`~cryptography.x509.CertificateRevocationList.last_update`
   in favor of the new timezone-aware variants mentioned above.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
+  on LibreSSL.
 
+.. _v41-0-5:
+
+41.0.5 - 2023-10-24
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.1.4.
+* Added a function to support an upcoming ``pyOpenSSL`` release.
 
 .. _v41-0-4:
 

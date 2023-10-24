@@ -29,23 +29,23 @@ jobs:
         PYTHON:
           - {VERSION: "3.12", NOXSESSION: "flake"}
           - {VERSION: "3.12", NOXSESSION: "rust"}
-          - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.3"}}
+          - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.1.4"}}
           - {VERSION: "pypy-3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1.1.1w"}}
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.11"}}
-          - {VERSION: "3.12", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.1.3"}}
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.3", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.3", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.3"}}
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.12"}}
+          - {VERSION: "3.12", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.1.4"}}
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.4", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.4", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.4"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.2.0-alpha2"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.3"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.1"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL master branch, as of Oct 21, 2023.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "bfa8369795b7533a222a72b7a1bc928941cd66bf"}}
-          # Latest commit on the OpenSSL master branch, as of Oct 21, 2023.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "b6eb95fa4439ea6254a5330487dabb2a499fb6c8"}}
+          # Latest commit on the OpenSSL master branch, as of Oct 24, 2023.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "fac61ea4618c83826b51aebf03cbc2bc3ac7b8c8"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin
