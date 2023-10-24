@@ -370,10 +370,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .map(|p| p.oid.clone())
             .collect::<HashSet<_>>();
 
-        if !critical_extensions
+        if critical_extensions
             .difference(&checked_extensions)
             .next()
-            .is_none()
+            .is_some()
         {
             // TODO: Render the OIDs here.
             return Err("certificate contains unaccounted-for critical extensions".into());
