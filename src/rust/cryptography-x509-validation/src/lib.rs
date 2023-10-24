@@ -30,7 +30,7 @@ use policy::{Policy, PolicyError};
 use trust_store::Store;
 use types::DNSName;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
     Policy(PolicyError),
 }
