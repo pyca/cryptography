@@ -264,7 +264,7 @@ class Backend:
         self.register_cipher_adapter(
             TripleDES, ECB, GetCipherByName("des-ede3")
         )
-        # ChaCha20 uses the Short Name "chacha20" in OpenSSL, but in LibreSSL
+        # ChaCha20 uses the Long Name "chacha20" in OpenSSL, but in LibreSSL
         # it uses "chacha"
         self.register_cipher_adapter(
             ChaCha20,
