@@ -21,16 +21,18 @@ from tests.x509.test_x509 import _load_cert
 
 
 def _get_limbo_peer(expected_peer, testcase_id):
-    if expected_peer is None:
-        assert False, f"{testcase_id}: no expected peer name"
+    assert expected_peer is not None, f"{testcase_id}: no expected peer name"
+
     kind = expected_peer["kind"]
+    assert kind in (
+        "DNS",
+        "IP",
+    ), f"{testcase_id}: unexpected peer kind: {kind}"
     value = expected_peer["value"]
     if kind == "DNS":
         return x509.DNSName(value)
-    elif kind == "IP":
-        return x509.IPAddress(IPv4Address(value))
     else:
-        assert False, f"{testcase_id}: unexpected peer kind: {kind}"
+        return x509.IPAddress(IPv4Address(value))
 
 
 LIMBO_UNSUPPORTED_FEATURES = {
