@@ -369,11 +369,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .chain(self.ee_extension_policies.iter())
             .map(|p| p.oid.clone())
             .collect::<HashSet<_>>();
-        let unchecked_extensions = critical_extensions
-            .difference(&checked_extensions)
-            .collect::<Vec<_>>();
 
-        if !unchecked_extensions.is_empty() {
+        if !critical_extensions
+            .difference(&checked_extensions)
+            .next()
+            .is_none()
+        {
             // TODO: Render the OIDs here.
             return Err("certificate contains unaccounted-for critical extensions".into());
         }
