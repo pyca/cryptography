@@ -117,14 +117,6 @@ pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> 
     ])
 });
 
-const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID];
-const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] = &[
-    BASIC_CONSTRAINTS_OID,
-    SUBJECT_ALTERNATIVE_NAME_OID,
-    KEY_USAGE_OID,
-];
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum PolicyError {
     Malformed(asn1::ParseError),
@@ -222,9 +214,6 @@ pub struct Policy<'a, B: CryptoOps> {
     /// If `None`, all signature algorithms are permitted.
     pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
 
-    pub critical_ca_extensions: HashSet<ObjectIdentifier>,
-    pub critical_ee_extensions: HashSet<ObjectIdentifier>,
-
     common_extension_policies: Vec<ExtensionPolicy<B>>,
     ca_extension_policies: Vec<ExtensionPolicy<B>>,
     ee_extension_policies: Vec<ExtensionPolicy<B>>,
@@ -247,8 +236,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     .cloned()
                     .collect(),
             ),
-            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
-            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
             common_extension_policies: Vec::from([
                 // 5280 4.2.1.8: Subject Directory Attributes
                 ExtensionPolicy::maybe_present(
@@ -369,6 +356,28 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
+        // Check that all critical extensions in this certificate are accounted for.
+        let critical_extensions = extensions
+            .iter()
+            .filter(|e| e.critical)
+            .map(|e| e.extn_id)
+            .collect::<HashSet<_>>();
+        let checked_extensions = self
+            .common_extension_policies
+            .iter()
+            .chain(self.ca_extension_policies.iter())
+            .chain(self.ee_extension_policies.iter())
+            .map(|p| p.oid.clone())
+            .collect::<HashSet<_>>();
+        let unchecked_extensions = critical_extensions
+            .difference(&checked_extensions)
+            .collect::<Vec<_>>();
+
+        if !unchecked_extensions.is_empty() {
+            // TODO: Render the OIDs here.
+            return Err("certificate contains unaccounted-for critical extensions".into());
+        }
+
         Ok(())
     }
 
@@ -466,16 +475,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         // TODO: Policy-level checks for EKUs, algorthms, etc.
 
-        // Finally, check whether every critical extension in this CA
-        // certificate is accounted for.
-        for ext in extensions.iter() {
-            if ext.critical && !self.critical_ca_extensions.contains(&ext.extn_id) {
-                return Err(PolicyError::Other(
-                    "CA certificate contains unaccounted critical extension",
-                ));
-            }
-        }
-
         Ok(())
     }
 
@@ -504,16 +503,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
 
         // TODO: Policy-level checks here for KUs, algorithms, etc.
-
-        // Finally, check whether every critical extension in this EE certificate
-        // is accounted for.
-        for ext in extensions.iter() {
-            if ext.critical && !self.critical_ee_extensions.contains(&ext.extn_id) {
-                return Err(PolicyError::Other(
-                    "EE certificate contains unaccounted critical extensions",
-                ));
-            }
-        }
 
         Ok(())
     }
@@ -583,15 +572,14 @@ mod tests {
     };
 
     use crate::{
-        ops::tests::NullOps,
-        policy::{Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        policy::Subject,
         types::{DNSName, IPAddress},
     };
 
     use super::{
-        Policy, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
-        RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
-        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
+        ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256, RSASSA_PKCS1V15_SHA384,
+        RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384, RSASSA_PSS_SHA512,
+        WEBPKI_PERMITTED_ALGORITHMS,
     };
 
     #[test]
@@ -667,21 +655,6 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
-    }
-
-    #[test]
-    fn test_policy_critical_extensions() {
-        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::new(NullOps {}, None, time);
-
-        assert_eq!(
-            policy.critical_ca_extensions,
-            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
-        );
-        assert_eq!(
-            policy.critical_ee_extensions,
-            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
-        );
     }
 
     #[test]
