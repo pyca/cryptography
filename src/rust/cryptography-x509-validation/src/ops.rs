@@ -73,8 +73,10 @@ zl9HYIMxATFyqSiD9jsx
 
         let ops = NullOps {};
         assert_eq!(ops.public_key(&cert), Ok(()));
-        assert!(ops
-            .verify_signed_by(&cert, ops.public_key(&cert).unwrap())
-            .is_ok());
+        assert!({
+            ops.public_key(&cert).unwrap();
+            ops.verify_signed_by(&cert, ())
+        }
+        .is_ok());
     }
 }
