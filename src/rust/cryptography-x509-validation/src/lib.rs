@@ -236,6 +236,7 @@ where
         &self,
         working_cert: &'a Certificate<'work>,
         current_depth: u8,
+        is_leaf: bool,
     ) -> Result<IntermediateChain<'work>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(PolicyError::Other("chain construction exceeds max depth").into());
@@ -263,12 +264,15 @@ where
                 self.policy
                     .valid_issuer(issuing_cert_candidate, working_cert, current_depth)
             {
-                let result = self.build_chain_inner(issuing_cert_candidate, next_depth);
+                let result = self.build_chain_inner(issuing_cert_candidate, next_depth, false);
                 if let Ok(result) = result {
                     let (remaining, mut constraints) = result;
-                    // Name constraints are not applied to self-issued certificates unless they're the leaf certificate in the chain.
-                    let skip_name_constraints =
-                        cert_is_self_issued(working_cert) && current_depth != 1;
+                    // Name constraints are not applied to self-issued certificates unless they're
+                    // the leaf certificate in the chain.
+                    //
+                    // NOTE: We can't simply check the `current_depth` since self-issued
+                    // certificates don't increase the working depth.
+                    let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
                     if skip_name_constraints
                         || self
                             .apply_name_constraints(&constraints, working_cert)
@@ -301,7 +305,7 @@ where
         self.policy.permits_leaf(leaf)?;
 
         // NOTE: We start the chain depth at 1, indicating the EE.
-        let result = self.build_chain_inner(leaf, 1);
+        let result = self.build_chain_inner(leaf, 1, true);
         match result {
             Ok(result) => {
                 let (chain, _) = result;
