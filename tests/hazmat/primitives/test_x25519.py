@@ -100,7 +100,8 @@ class TestX25519Exchange:
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                None, serialization.PublicFormat.Raw  # type: ignore[arg-type]
+                None,  # type: ignore[arg-type]
+                serialization.PublicFormat.Raw,
             )
         with pytest.raises(ValueError):
             key.public_bytes(

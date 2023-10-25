@@ -38,7 +38,9 @@ class TestHMAC:
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
             hmac.HMAC(
-                b"key", hashes.SHA1, backend=backend  # type: ignore[arg-type]
+                b"key",
+                hashes.SHA1,  # type: ignore[arg-type]
+                backend=backend,
             )
 
     def test_raises_after_finalize(self, backend):

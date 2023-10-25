@@ -346,7 +346,9 @@ class TestCipherUpdateInto:
         encryptor = c.encryptor()
         # Lower max chunk size so we can test chunking
         monkeypatch.setattr(
-            encryptor._ctx, "_MAX_CHUNK_SIZE", 40  # type: ignore[attr-defined]
+            encryptor._ctx,  # type: ignore[attr-defined]
+            "_MAX_CHUNK_SIZE",
+            40,
         )
         buf = bytearray(527)
         pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
@@ -355,7 +357,9 @@ class TestCipherUpdateInto:
         decryptor = c.decryptor()
         # Change max chunk size to verify alternate boundaries don't matter
         monkeypatch.setattr(
-            decryptor._ctx, "_MAX_CHUNK_SIZE", 73  # type: ignore[attr-defined]
+            decryptor._ctx,  # type: ignore[attr-defined]
+            "_MAX_CHUNK_SIZE",
+            73,
         )
         decbuf = bytearray(527)
         decprocessed = decryptor.update_into(buf[:processed], decbuf)
