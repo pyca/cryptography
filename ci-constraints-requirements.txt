@@ -9,7 +9,7 @@ alabaster==0.7.13
     # via sphinx
 argcomplete==3.1.2
     # via nox
-babel==2.13.0
+babel==2.13.1
     # via sphinx
 black==23.10.1
     # via cryptography (pyproject.toml)
