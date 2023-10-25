@@ -149,8 +149,9 @@ class _CipherContext:
         total_data_len = len(data)
         if len(buf) < (total_data_len + self._block_size_bytes - 1):
             raise ValueError(
-                "buffer must be at least {} bytes for this "
-                "payload".format(len(data) + self._block_size_bytes - 1)
+                "buffer must be at least {} bytes for this payload".format(
+                    len(data) + self._block_size_bytes - 1
+                )
             )
 
         data_processed = 0
