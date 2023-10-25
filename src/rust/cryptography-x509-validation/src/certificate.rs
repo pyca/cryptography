@@ -95,4 +95,15 @@ Xw4nMqk=
         assert!(cert_is_self_issued(&cert));
         assert!(!cert_is_self_signed(&cert, &ops));
     }
+
+    #[test]
+    fn test_certificate_public_key_error_ops() {
+        // Just to get coverage on the `PublicKeyErrorOps` helper.
+        let cert_pem = ca_pem();
+        let cert = cert(&cert_pem);
+        let ops = PublicKeyErrorOps {};
+
+        assert!(ops.public_key(&cert).is_err());
+        assert!(ops.verify_signed_by(&cert, ()).is_ok());
+    }
 }
