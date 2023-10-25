@@ -28,13 +28,40 @@ mod tests {
 
     use super::{cert_is_self_issued, cert_is_self_signed};
 
+    fn ca_pem() -> pem::Pem {
+        // From vectors/cryptography_vectors/x509/custom/ca/ca.pem
+        pem::parse(
+            "-----BEGIN CERTIFICATE-----
+MIIBUTCB96ADAgECAgIDCTAKBggqhkjOPQQDAjAnMQswCQYDVQQGEwJVUzEYMBYG
+A1UEAwwPY3J5cHRvZ3JhcGh5IENBMB4XDTE3MDEwMTEyMDEwMFoXDTM4MTIzMTA4
+MzAwMFowJzELMAkGA1UEBhMCVVMxGDAWBgNVBAMMD2NyeXB0b2dyYXBoeSBDQTBZ
+MBMGByqGSM49AgEGCCqGSM49AwEHA0IABBj/z7v5Obj13cPuwECLBnUGq0/N2CxS
+JE4f4BBGZ7VfFblivTvPDG++Gve0oQ+0uctuhrNQ+WxRv8GC177F+QWjEzARMA8G
+A1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhANES742XWm64tkGnz8Dn
+pG6u2lHkZFQr3oaVvPcemvlbAiEA0WGGzmYx5C9UvfXIK7NEziT4pQtyESE0uRVK
+Xw4nMqk=
+-----END CERTIFICATE-----",
+        )
+        .unwrap()
+    }
+
     #[test]
-    fn test_certificate_validation_helpers() {
+    fn test_certificate_validation_helpers_v1() {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
 
         assert!(!cert_is_self_issued(&cert));
         assert!(!cert_is_self_signed(&cert, &ops));
+    }
+
+    #[test]
+    fn test_certificate_validation_helpers_ca() {
+        let cert_pem = ca_pem();
+        let cert = cert(&cert_pem);
+        let ops = NullOps {};
+
+        assert!(cert_is_self_issued(&cert));
+        assert!(cert_is_self_signed(&cert, &ops));
     }
 }
