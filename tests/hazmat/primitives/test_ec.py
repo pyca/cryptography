@@ -1098,7 +1098,8 @@ class TestEllipticCurvePEMPublicKeySerialization:
     def test_from_encoded_point_not_a_curve(self):
         with pytest.raises(TypeError):
             ec.EllipticCurvePublicKey.from_encoded_point(
-                "notacurve", b"\x04data"  # type: ignore[arg-type]
+                "notacurve",  # type: ignore[arg-type]
+                b"\x04data",
             )
 
     def test_from_encoded_point_unsupported_encoding(self):
