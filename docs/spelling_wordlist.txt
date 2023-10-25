@@ -117,6 +117,7 @@ Serializers
 setuptools
 SHA
 Solaris
+Sonoma
 Sur
 syscall
 Tanja
