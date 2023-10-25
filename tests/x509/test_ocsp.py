@@ -203,7 +203,10 @@ class TestOCSPRequestBuilder:
         builder = ocsp.OCSPRequestBuilder()
         with pytest.raises(ValueError):
             builder.add_certificate_by_hash(
-                b"0" * 20, b"0" * 20, 1, "notahash"  # type:ignore[arg-type]
+                b"0" * 20,
+                b"0" * 20,
+                1,
+                "notahash",  # type:ignore[arg-type]
             )
         with pytest.raises(ValueError):
             builder.add_certificate_by_hash(
@@ -516,7 +519,8 @@ class TestOCSPResponseBuilder:
         builder = ocsp.OCSPResponseBuilder()
         with pytest.raises(TypeError):
             builder.add_extension(
-                "notanextension", True  # type: ignore[arg-type]
+                "notanextension",  # type: ignore[arg-type]
+                True,
             )
 
     def test_unsupported_extension(self):

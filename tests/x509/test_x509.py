@@ -3263,7 +3263,9 @@ class TestCertificateBuilder:
         )
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
-                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+                private_key,
+                hashes.MD5(),  # type: ignore[arg-type]
+                backend,
             )
 
     @pytest.mark.supported(
@@ -4300,7 +4302,9 @@ class TestCertificateSigningRequestBuilder:
         )
         with pytest.raises(TypeError):
             builder.sign(
-                private_key, "NotAHash", backend  # type: ignore[arg-type]
+                private_key,
+                "NotAHash",  # type: ignore[arg-type]
+                backend,
             )
 
     @pytest.mark.supported(
@@ -5726,7 +5730,8 @@ class TestNameAttribute:
     def test_init_none_value(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(
-                NameOID.ORGANIZATION_NAME, None  # type:ignore[arg-type]
+                NameOID.ORGANIZATION_NAME,
+                None,  # type:ignore[arg-type]
             )
 
     def test_init_bad_country_code_value(self):

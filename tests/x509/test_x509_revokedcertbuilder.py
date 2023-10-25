@@ -106,7 +106,8 @@ class TestRevokedCertificateBuilder:
     def test_add_invalid_extension(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().add_extension(
-                "notanextension", False  # type: ignore[arg-type]
+                "notanextension",  # type: ignore[arg-type]
+                False,
             )
 
     def test_no_serial_number(self, backend):

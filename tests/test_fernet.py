@@ -198,7 +198,9 @@ class TestMultiFernet:
             f.decrypt_at_time(token, ttl=1, current_time=102)
         with pytest.raises(ValueError):
             f.decrypt_at_time(
-                token, ttl=None, current_time=100  # type: ignore[arg-type]
+                token,
+                ttl=None,  # type: ignore[arg-type]
+                current_time=100,
             )
 
     def test_no_fernets(self, backend):
