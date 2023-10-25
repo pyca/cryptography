@@ -31,7 +31,7 @@ mod tests {
     use super::{cert_is_self_issued, cert_is_self_signed};
 
     #[test]
-    fn test_certificate_validation_helpers_v1() {
+    fn test_certificate_v1() {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
@@ -58,7 +58,7 @@ Xw4nMqk=
     }
 
     #[test]
-    fn test_certificate_validation_helpers_ca() {
+    fn test_certificate_ca() {
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
@@ -87,7 +87,7 @@ Xw4nMqk=
     }
 
     #[test]
-    fn test_certificate_validation_helpers_public_key_error() {
+    fn test_certificate_public_key_error() {
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
