@@ -24,9 +24,21 @@ pub(crate) fn cert_is_self_signed<B: CryptoOps>(cert: &Certificate<'_>, ops: &B)
 
 #[cfg(test)]
 mod tests {
+    use crate::certificate::Certificate;
     use crate::ops::tests::{cert, v1_cert_pem, NullOps};
+    use crate::ops::CryptoOps;
 
     use super::{cert_is_self_issued, cert_is_self_signed};
+
+    #[test]
+    fn test_certificate_validation_helpers_v1() {
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let ops = NullOps {};
+
+        assert!(!cert_is_self_issued(&cert));
+        assert!(!cert_is_self_signed(&cert, &ops));
+    }
 
     fn ca_pem() -> pem::Pem {
         // From vectors/cryptography_vectors/x509/custom/ca/ca.pem
@@ -46,16 +58,6 @@ Xw4nMqk=
     }
 
     #[test]
-    fn test_certificate_validation_helpers_v1() {
-        let cert_pem = v1_cert_pem();
-        let cert = cert(&cert_pem);
-        let ops = NullOps {};
-
-        assert!(!cert_is_self_issued(&cert));
-        assert!(!cert_is_self_signed(&cert, &ops));
-    }
-
-    #[test]
     fn test_certificate_validation_helpers_ca() {
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
@@ -63,5 +65,34 @@ Xw4nMqk=
 
         assert!(cert_is_self_issued(&cert));
         assert!(cert_is_self_signed(&cert, &ops));
+    }
+
+    struct PublicKeyErrorOps {}
+    impl CryptoOps for PublicKeyErrorOps {
+        type Key = ();
+        type Err = ();
+
+        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+            // Simulate failing to retrieve a public key.
+            Err(())
+        }
+
+        fn verify_signed_by(
+            &self,
+            _cert: &Certificate<'_>,
+            _key: Self::Key,
+        ) -> Result<(), Self::Err> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn test_certificate_validation_helpers_public_key_error() {
+        let cert_pem = ca_pem();
+        let cert = cert(&cert_pem);
+        let ops = PublicKeyErrorOps {};
+
+        assert!(cert_is_self_issued(&cert));
+        assert!(!cert_is_self_signed(&cert, &ops));
     }
 }
