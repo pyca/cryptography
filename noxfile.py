@@ -155,7 +155,7 @@ def flake(session: nox.Session) -> None:
     install(session, ".[pep8test,test,ssh,nox]")
 
     session.run("ruff", ".")
-    session.run("black", "--check", ".")
+    session.run("ruff", "format", "--check", ".")
     session.run("check-sdist")
     session.run(
         "mypy",
