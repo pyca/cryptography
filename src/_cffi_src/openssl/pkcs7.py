@@ -13,16 +13,10 @@ static const long Cryptography_HAS_PKCS7_FUNCS;
 
 typedef struct {
     Cryptography_STACK_OF_X509 *cert;
-    Cryptography_STACK_OF_X509_CRL *crl;
     ...;
 } PKCS7_SIGNED;
 
-typedef struct {
-    Cryptography_STACK_OF_X509 *cert;
-    Cryptography_STACK_OF_X509_CRL *crl;
-    ...;
-} PKCS7_SIGN_ENVELOPE;
-
+typedef ... PKCS7_SIGN_ENVELOPE;
 typedef ... PKCS7_DIGEST;
 typedef ... PKCS7_ENCRYPT;
 typedef ... PKCS7_ENVELOPE;
@@ -53,16 +47,6 @@ void PKCS7_free(PKCS7 *);
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                  BIO *, int);
 PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
-/* Included due to external consumer, see
-   https://github.com/pyca/pyopenssl/issues/1031 */
-Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
-                                               Cryptography_STACK_OF_X509 *,
-                                               int);
-
-int PKCS7_type_is_signed(PKCS7 *);
-int PKCS7_type_is_enveloped(PKCS7 *);
-int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
-int PKCS7_type_is_data(PKCS7 *);
 """
 
 CUSTOMIZATIONS = """
@@ -72,9 +56,6 @@ static const long Cryptography_HAS_PKCS7_FUNCS = 0;
 int (*PKCS7_verify)(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                     BIO *, int) = NULL;
 PKCS7 *(*SMIME_read_PKCS7)(BIO *, BIO **) = NULL;
-Cryptography_STACK_OF_X509 *(*PKCS7_get0_signers)(PKCS7 *,
-                                                  Cryptography_STACK_OF_X509 *,
-                                                  int) = NULL;
 #else
 static const long Cryptography_HAS_PKCS7_FUNCS = 1;
 #endif
