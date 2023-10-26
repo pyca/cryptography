@@ -130,12 +130,6 @@ impl From<asn1::ParseError> for PolicyError {
     }
 }
 
-impl From<DuplicateExtensionsError> for PolicyError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
-    }
-}
-
 impl From<&'static str> for PolicyError {
     fn from(value: &'static str) -> Self {
         Self::Other(value)
