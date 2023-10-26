@@ -174,7 +174,6 @@ def cryptography_has_pkcs7_funcs() -> list[str]:
     return [
         "PKCS7_verify",
         "SMIME_read_PKCS7",
-        "PKCS7_get0_signers",
     ]
 
 
