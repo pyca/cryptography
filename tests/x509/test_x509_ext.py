@@ -221,7 +221,8 @@ class TestUnrecognizedExtension:
     def test_invalid_oid(self):
         with pytest.raises(TypeError):
             x509.UnrecognizedExtension(
-                "notanoid", b"somedata"  # type:ignore[arg-type]
+                "notanoid",  # type:ignore[arg-type]
+                b"somedata",
             )
 
     def test_eq(self):
@@ -448,7 +449,8 @@ class TestNoticeReference:
     def test_notice_numbers_not_all_int(self):
         with pytest.raises(TypeError):
             x509.NoticeReference(
-                "org", [1, 2, "three"]  # type:ignore[list-item]
+                "org",
+                [1, 2, "three"],  # type:ignore[list-item]
             )
 
     def test_notice_numbers_none(self):
@@ -1223,7 +1225,9 @@ class TestAuthorityKeyIdentifier:
     def test_authority_cert_issuer_not_generalname(self):
         with pytest.raises(TypeError):
             x509.AuthorityKeyIdentifier(
-                b"identifier", ["notname"], 3  # type:ignore[list-item]
+                b"identifier",
+                ["notname"],  # type:ignore[list-item]
+                3,
             )
 
     def test_authority_cert_serial_number_not_integer(self):
@@ -1241,7 +1245,9 @@ class TestAuthorityKeyIdentifier:
         )
         with pytest.raises(TypeError):
             x509.AuthorityKeyIdentifier(
-                b"identifier", [dirname], "notanint"  # type:ignore[arg-type]
+                b"identifier",
+                [dirname],
+                "notanint",  # type:ignore[arg-type]
             )
 
     def test_authority_issuer_none_serial_not_none(self):
@@ -1354,7 +1360,8 @@ class TestBasicConstraints:
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):
             x509.BasicConstraints(
-                ca="notbool", path_length=None  # type:ignore[arg-type]
+                ca="notbool",  # type:ignore[arg-type]
+                path_length=None,
             )
 
     def test_path_length_not_ca(self):
@@ -1364,12 +1371,14 @@ class TestBasicConstraints:
     def test_path_length_not_int(self):
         with pytest.raises(TypeError):
             x509.BasicConstraints(
-                ca=True, path_length=1.1  # type:ignore[arg-type]
+                ca=True,
+                path_length=1.1,  # type:ignore[arg-type]
             )
 
         with pytest.raises(TypeError):
             x509.BasicConstraints(
-                ca=True, path_length="notint"  # type:ignore[arg-type]
+                ca=True,
+                path_length="notint",  # type:ignore[arg-type]
             )
 
     def test_path_length_negative(self):
@@ -2723,7 +2732,8 @@ class TestAccessDescription:
     def test_invalid_access_method(self):
         with pytest.raises(TypeError):
             x509.AccessDescription(
-                "notanoid", x509.DNSName("test")  # type:ignore[arg-type]
+                "notanoid",  # type:ignore[arg-type]
+                x509.DNSName("test"),
             )
 
     def test_invalid_access_location(self):
@@ -3910,19 +3920,30 @@ class TestDistributionPoint:
     def test_distribution_point_full_name_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                ["notgn"], None, None, None  # type:ignore[list-item]
+                ["notgn"],  # type:ignore[list-item]
+                None,
+                None,
+                None,
             )
 
     def test_distribution_point_relative_name_not_name(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                None, "notname", None, None  # type:ignore[arg-type]
+                None,
+                "notname",  # type:ignore[arg-type]
+                None,
+                None,
             )
 
     def test_distribution_point_full_and_relative_not_none(self):
         with pytest.raises(ValueError):
             x509.DistributionPoint(
-                "data", "notname", None, None  # type:ignore[arg-type]
+                [x509.UniformResourceIdentifier("http://crypt.og/crl")],
+                x509.RelativeDistinguishedName(
+                    [x509.NameAttribute(NameOID.TITLE, "Test")]
+                ),
+                None,
+                None,
             )
 
     def test_no_full_name_relative_name_or_crl_issuer(self):
@@ -3932,7 +3953,10 @@ class TestDistributionPoint:
     def test_crl_issuer_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                None, None, None, ["notgn"]  # type:ignore[list-item]
+                None,
+                None,
+                None,
+                ["notgn"],  # type:ignore[list-item]
             )
 
     def test_reason_not_reasonflags(self):
@@ -6203,16 +6227,22 @@ class TestMSCertificateTemplate:
     def test_invalid_type(self):
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
-                "notanoid", None, None  # type:ignore[arg-type]
+                "notanoid",  # type:ignore[arg-type]
+                None,
+                None,
             )
         oid = x509.ObjectIdentifier("1.2.3.4")
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
-                oid, "notanint", None  # type:ignore[arg-type]
+                oid,
+                "notanint",  # type:ignore[arg-type]
+                None,
             )
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
-                oid, None, "notanint"  # type:ignore[arg-type]
+                oid,
+                None,
+                "notanint",  # type:ignore[arg-type]
             )
 
     def test_eq(self):

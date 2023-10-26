@@ -194,14 +194,18 @@ class TestPKCS7Builder:
         cert, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                cert, key, hashes.SHA512_256()  # type: ignore[arg-type]
+                cert,
+                key,
+                hashes.SHA512_256(),  # type: ignore[arg-type]
             )
 
     def test_not_a_cert(self, backend):
         cert, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                b"notacert", key, hashes.SHA256()  # type: ignore[arg-type]
+                b"notacert",  # type: ignore[arg-type]
+                key,
+                hashes.SHA256(),
             )
 
     @pytest.mark.supported(
@@ -213,7 +217,9 @@ class TestPKCS7Builder:
         key = ed25519.Ed25519PrivateKey.generate()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                cert, key, hashes.SHA256()  # type: ignore[arg-type]
+                cert,
+                key,  # type: ignore[arg-type]
+                hashes.SHA256(),
             )
 
     def test_sign_invalid_options(self, backend):
@@ -816,5 +822,6 @@ class TestPKCS7SerializeCerts:
 
         with pytest.raises(TypeError):
             pkcs7.serialize_certificates(
-                certs, "not an encoding"  # type: ignore[arg-type]
+                certs,
+                "not an encoding",  # type: ignore[arg-type]
             )

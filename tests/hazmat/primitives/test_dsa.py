@@ -572,7 +572,8 @@ class TestDSANumbers:
     def test_dsa_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
             dsa.DSAPublicNumbers(
-                y=4, parameter_numbers=None  # type: ignore[arg-type]
+                y=4,
+                parameter_numbers=None,  # type: ignore[arg-type]
             )
 
         with pytest.raises(TypeError):
@@ -606,7 +607,8 @@ class TestDSANumbers:
 
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(
-                x=None, public_numbers=public_numbers  # type: ignore[arg-type]
+                x=None,  # type: ignore[arg-type]
+                public_numbers=public_numbers,
             )
 
     def test_repr(self):

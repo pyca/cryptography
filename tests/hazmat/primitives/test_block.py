@@ -44,7 +44,9 @@ class TestCipher:
         algorithm = object()
         with pytest.raises(TypeError):
             Cipher(
-                algorithm, mode=None, backend=backend  # type: ignore[arg-type]
+                algorithm,  # type: ignore[arg-type]
+                mode=None,
+                backend=backend,
             )
 
 

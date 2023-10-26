@@ -143,7 +143,9 @@ class TestPKCS12Loading:
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):
             load_key_and_certificates(
-                b"irrelevant", object(), backend  # type: ignore[arg-type]
+                b"irrelevant",
+                object(),  # type: ignore[arg-type]
+                backend,
             )
 
     def test_not_a_pkcs12(self, backend):
@@ -804,15 +806,21 @@ class TestPKCS12Objects:
     def test_key_and_certificates_constructor(self, backend):
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
-                "hello", None, []  # type:ignore[arg-type]
+                "hello",  # type:ignore[arg-type]
+                None,
+                [],
             )
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
-                None, "hello", []  # type:ignore[arg-type]
+                None,
+                "hello",  # type:ignore[arg-type]
+                [],
             )
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
-                None, None, ["hello"]  # type:ignore[list-item]
+                None,
+                None,
+                ["hello"],  # type:ignore[list-item]
             )
 
     def test_key_and_certificates_equality(self, backend):

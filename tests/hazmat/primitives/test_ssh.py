@@ -1501,11 +1501,13 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.add_critical_option(
-                "not bytes", b"test"  # type: ignore[arg-type]
+                "not bytes",  # type: ignore[arg-type]
+                b"test",
             )
         with pytest.raises(TypeError):
             builder.add_critical_option(
-                b"test", object()  # type: ignore[arg-type]
+                b"test",
+                object(),  # type: ignore[arg-type]
             )
         builder = builder.add_critical_option(b"test", b"test")
         with pytest.raises(ValueError):
@@ -1515,7 +1517,8 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.add_extension(
-                "not bytes", b"test"  # type: ignore[arg-type]
+                "not bytes",  # type: ignore[arg-type]
+                b"test",
             )
         with pytest.raises(TypeError):
             builder.add_extension(b"test", object())  # type: ignore[arg-type]

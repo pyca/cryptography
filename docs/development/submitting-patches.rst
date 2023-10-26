@@ -19,10 +19,10 @@ Code
 ----
 
 When in doubt, refer to :pep:`8` for Python code. You can check if your code
-meets our automated requirements by formatting it with ``black`` and running
-``ruff`` against it. If you've installed the development requirements this
-will automatically use our configuration. You can also run the ``nox`` job with
-``nox -e flake``.
+meets our automated requirements by formatting it with ``ruff format`` and
+running ``ruff`` against it. If you've installed the development requirements
+this will automatically use our configuration. You can also run the ``nox``
+job with ``nox -e flake``.
 
 `Write comments as complete sentences.`_
 
@@ -61,12 +61,12 @@ whether the signature was valid.
 .. code-block:: python
 
     # This is bad.
-    def verify(sig):
+    def verify(sig: bytes) -> bool:
         # ...
         return is_valid
 
     # Good!
-    def verify(sig):
+    def verify(sig: bytes) -> None:
         # ...
         if not is_valid:
             raise InvalidSignature

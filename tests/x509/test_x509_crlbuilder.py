@@ -476,7 +476,9 @@ class TestCertificateRevocationListBuilder:
 
         with pytest.raises(TypeError):
             builder.sign(
-                private_key, object(), backend  # type: ignore[arg-type]
+                private_key,
+                object(),  # type: ignore[arg-type]
+                backend,
             )
 
     @pytest.mark.supported(
@@ -781,7 +783,9 @@ class TestCertificateRevocationListBuilder:
 
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
-                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+                private_key,
+                hashes.MD5(),  # type: ignore[arg-type]
+                backend,
             )
 
     def test_ec_key_sign_md5(self, backend):
@@ -806,7 +810,9 @@ class TestCertificateRevocationListBuilder:
 
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
-                private_key, hashes.MD5(), backend  # type: ignore[arg-type]
+                private_key,
+                hashes.MD5(),  # type: ignore[arg-type]
+                backend,
             )
 
     def test_sign_with_revoked_certificates(
