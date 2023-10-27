@@ -296,7 +296,7 @@ impl KeyUsage<'_> {
 mod tests {
     use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
 
-    use super::{BasicConstraints, Extension, Extensions, KeyUsage};
+    use super::{BasicConstraints, DuplicateExtensionsError, Extension, Extensions, KeyUsage};
 
     #[test]
     fn test_get_extension() {
@@ -379,5 +379,14 @@ mod tests {
         assert!(ku.crl_sign());
         assert!(ku.encipher_only());
         assert!(ku.decipher_only());
+    }
+
+    #[test]
+    fn test_duplicate_extensions_error_debug() {
+        let dup_ext_err = DuplicateExtensionsError(BASIC_CONSTRAINTS_OID);
+        assert_eq!(
+            format!("{dup_ext_err:?}"),
+            "DuplicateExtensionsError(ObjectIdentifier { oid: 2.5.29.19 })"
+        );
     }
 }
