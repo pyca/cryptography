@@ -14,7 +14,7 @@ use cryptography_x509::common::{
     PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
     PSS_SHA512_MASK_GEN_ALG,
 };
-use cryptography_x509::extensions::{DuplicateExtensionsError, SubjectAlternativeName};
+use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
@@ -113,29 +113,8 @@ const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
 const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
 
-#[derive(Debug, PartialEq, Eq)]
 pub enum PolicyError {
-    Malformed(asn1::ParseError),
-    DuplicateExtension(DuplicateExtensionsError),
     Other(&'static str),
-}
-
-impl From<asn1::ParseError> for PolicyError {
-    fn from(value: asn1::ParseError) -> Self {
-        Self::Malformed(value)
-    }
-}
-
-impl From<DuplicateExtensionsError> for PolicyError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
-    }
-}
-
-impl From<&'static str> for PolicyError {
-    fn from(value: &'static str) -> Self {
-        Self::Other(value)
-    }
 }
 
 /// Represents a logical certificate "subject," i.e. a principal matching
