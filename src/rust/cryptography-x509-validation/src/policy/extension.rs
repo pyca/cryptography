@@ -185,21 +185,15 @@ mod tests {
     use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
     #[test]
-    fn test_criticality_critical() {
+    fn test_criticality_variants() {
         let criticality = Criticality::Critical;
         assert!(criticality.permits(true));
         assert!(!criticality.permits(false));
-    }
 
-    #[test]
-    fn test_criticality_agnostic() {
         let criticality = Criticality::Agnostic;
         assert!(criticality.permits(true));
         assert!(criticality.permits(false));
-    }
 
-    #[test]
-    fn test_criticality_non_critical() {
         let criticality = Criticality::NonCritical;
         assert!(!criticality.permits(true));
         assert!(criticality.permits(false));
