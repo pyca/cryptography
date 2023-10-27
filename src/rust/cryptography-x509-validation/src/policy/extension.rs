@@ -252,13 +252,17 @@ mod tests {
         };
         let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_ok());
 
         // Check the case where the extension isn't present.
         let der_exts: Vec<u8> = create_empty_encoded_extensions();
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
     }
 
@@ -292,13 +296,17 @@ mod tests {
         };
         let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_ok());
 
         // Check the case where the extension isn't present.
         let der_exts: Vec<u8> = create_empty_encoded_extensions();
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_ok());
     }
 
@@ -320,13 +328,17 @@ mod tests {
         };
         let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
 
         // Check the case where the extension isn't present.
         let der_exts: Vec<u8> = create_empty_encoded_extensions();
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_ok());
     }
 
@@ -352,7 +364,9 @@ mod tests {
         };
         let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, false, &bc);
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
     }
 
@@ -378,7 +392,9 @@ mod tests {
         };
         let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, false, &bc);
         let raw_exts = asn1::parse_single(&der_exts).unwrap();
-        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts))
+            .ok()
+            .unwrap();
         assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
     }
 }

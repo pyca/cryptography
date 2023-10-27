@@ -8,7 +8,6 @@ use crate::common;
 use crate::crl;
 use crate::name;
 
-#[derive(Debug)]
 pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
@@ -379,14 +378,5 @@ mod tests {
         assert!(ku.crl_sign());
         assert!(ku.encipher_only());
         assert!(ku.decipher_only());
-    }
-
-    #[test]
-    fn test_duplicate_extensions_error_debug() {
-        let dup_ext_err = DuplicateExtensionsError(BASIC_CONSTRAINTS_OID);
-        assert_eq!(
-            format!("{dup_ext_err:?}"),
-            "DuplicateExtensionsError(ObjectIdentifier { oid: 2.5.29.19 })"
-        );
     }
 }
