@@ -171,153 +171,17 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
     }
 }
 
-#[allow(dead_code)]
-pub(crate) mod ee {
-    use cryptography_x509::{
-        certificate::Certificate,
-        extensions::{BasicConstraints, Extension},
-    };
-
-    use crate::{
-        ops::CryptoOps,
-        policy::{Policy, PolicyError},
-    };
-
-    pub(crate) fn basic_constraints<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
-        if let Some(extn) = extn {
-            let basic_constraints: BasicConstraints = extn.value()?;
-
-            if basic_constraints.ca {
-                return Err("basicConstraints.cA must not be asserted in an EE certificate".into());
-            }
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn subject_alternative_name<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
-        extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
-        match (cert.subject().is_empty(), extn.critical) {
-            // If the subject is empty, the SAN MUST be critical.
-            (true, false) => {
-                return Err("EE subjectAltName MUST be critical when subject is empty".into());
-            }
-            // If the subject is non-empty, the SAN MUST NOT be critical.
-            (false, true) => {
-                return Err(
-                    "EE subjectAltName MUST NOT be critical when subject is nonempty".into(),
-                )
-            }
-            _ => (),
-        };
-
-        // For Subscriber Certificates, the Subject Alternative Name MUST be present and MUST contain at
-        // least one dNSName or iPAddress GeneralName. See below for further requirements about the
-        // permitted fields and their validation requirements
-
-        Ok(())
-    }
-}
-
-#[allow(dead_code)]
-pub(crate) mod ca {
-    use cryptography_x509::{
-        certificate::Certificate,
-        extensions::{BasicConstraints, Extension, KeyUsage},
-    };
-
-    use crate::{
-        certificate::cert_is_self_signed,
-        ops::CryptoOps,
-        policy::{Policy, PolicyError},
-    };
-
-    pub(crate) fn authority_key_identifier<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
-        extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
-        // The Authority Key Identifier MUST be present, with one exception:
-        // self-signed CAs may omit it.
-        if extn.is_none() && !cert_is_self_signed(cert, &policy._ops) {
-            return Err(
-                "authorityKeyIdentifier must be present in cross-signed CA certificate".into(),
-            );
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn key_usage<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
-        let key_usage: KeyUsage<'_> = extn.value()?;
-
-        if !key_usage.key_cert_sign() {
-            return Err("keyUsage.keyCertSign must be asserted in a CA certificate".into());
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn basic_constraints<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
-        let basic_constraints: BasicConstraints = extn.value()?;
-
-        if !basic_constraints.ca {
-            return Err("basicConstraints.cA must be asserted in a CA certificate".into());
-        }
-
-        Ok(())
-    }
-}
-
-#[allow(dead_code)]
-pub(crate) mod common {
-    use cryptography_x509::{
-        certificate::Certificate,
-        extensions::{Extension, SequenceOfAccessDescriptions},
-    };
-
-    use crate::{
-        ops::CryptoOps,
-        policy::{Policy, PolicyError},
-    };
-
-    pub(crate) fn authority_information_access<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
-        if let Some(extn) = extn {
-            // We don't currently do anything useful with these, but we
-            // do check that they're well-formed.
-            let _: SequenceOfAccessDescriptions<'_> = extn.value()?;
-        }
-
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{ca, ee, Criticality, ExtensionPolicy};
+    use super::{Criticality, ExtensionPolicy};
     use crate::ops::tests::{cert, v1_cert_pem, NullOps};
-    use crate::policy::Policy;
+    use crate::ops::CryptoOps;
+    use crate::policy::{Policy, PolicyError};
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
-    use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
+    use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::extensions::{
+        BasicConstraints, Extension, Extensions, PolicyConstraints,
+    };
     use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
     #[test]
@@ -366,6 +230,14 @@ mod tests {
         der_exts
     }
 
+    fn present_extension_validator<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        cert: &Certificate<'_>,
+        ext: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        Ok(())
+    }
+
     #[test]
     fn test_extension_policy_present() {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
@@ -378,7 +250,7 @@ mod tests {
         let extension_policy = ExtensionPolicy::present(
             BASIC_CONSTRAINTS_OID,
             Criticality::Critical,
-            Some(ca::basic_constraints),
+            Some(present_extension_validator),
         );
 
         // Check the case where the extension is present.
@@ -398,6 +270,14 @@ mod tests {
         assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
     }
 
+    fn maybe_extension_validator<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        cert: &Certificate<'_>,
+        ext: Option<&Extension<'_>>,
+    ) -> Result<(), PolicyError> {
+        Ok(())
+    }
+
     #[test]
     fn test_extension_policy_maybe() {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
@@ -410,7 +290,7 @@ mod tests {
         let extension_policy = ExtensionPolicy::maybe_present(
             BASIC_CONSTRAINTS_OID,
             Criticality::Critical,
-            Some(ee::basic_constraints),
+            Some(maybe_extension_validator),
         );
 
         // Check the case where the extension is present.
@@ -470,7 +350,7 @@ mod tests {
         let extension_policy = ExtensionPolicy::present(
             BASIC_CONSTRAINTS_OID,
             Criticality::Critical,
-            Some(ca::basic_constraints),
+            Some(present_extension_validator),
         );
 
         // Mark the extension as non-critical despite our policy stipulating that it must be critical.
