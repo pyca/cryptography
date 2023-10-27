@@ -318,7 +318,7 @@ mod tests {
         let ops = NullOps {};
         let policy = Policy::new(ops, None, epoch());
 
-        // Test a policy that stipulates that a given extension CAN be present.
+        // Test a policy that stipulates that a given extension MUST NOT be present.
         let extension_policy = ExtensionPolicy::not_present(BASIC_CONSTRAINTS_OID);
 
         // Check the case where the extension is present.
