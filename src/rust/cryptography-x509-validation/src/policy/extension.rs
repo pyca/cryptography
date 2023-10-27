@@ -179,9 +179,7 @@ mod tests {
     use crate::policy::{Policy, PolicyError};
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
     use cryptography_x509::certificate::Certificate;
-    use cryptography_x509::extensions::{
-        BasicConstraints, Extension, Extensions, PolicyConstraints,
-    };
+    use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
     use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
     #[test]
@@ -225,9 +223,9 @@ mod tests {
     }
 
     fn present_extension_validator<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
-        ext: &Extension<'_>,
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        _ext: &Extension<'_>,
     ) -> Result<(), PolicyError> {
         Ok(())
     }
@@ -265,9 +263,9 @@ mod tests {
     }
 
     fn maybe_extension_validator<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
-        ext: Option<&Extension<'_>>,
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        _ext: Option<&Extension<'_>>,
     ) -> Result<(), PolicyError> {
         Ok(())
     }
@@ -340,11 +338,37 @@ mod tests {
         let ops = NullOps {};
         let policy = Policy::new(ops, None, epoch());
 
-        // Test a policy that stipulates that a given extension MUST be critical.
+        // Test a present policy that stipulates that a given extension MUST be critical.
         let extension_policy = ExtensionPolicy::present(
             BASIC_CONSTRAINTS_OID,
             Criticality::Critical,
             Some(present_extension_validator),
+        );
+
+        // Mark the extension as non-critical despite our policy stipulating that it must be critical.
+        let bc = BasicConstraints {
+            ca: true,
+            path_length: Some(3),
+        };
+        let der_exts = create_encoded_extensions(BASIC_CONSTRAINTS_OID, false, &bc);
+        let raw_exts = asn1::parse_single(&der_exts).unwrap();
+        let exts = Extensions::from_raw_extensions(Some(&raw_exts)).unwrap();
+        assert!(extension_policy.permits(&policy, &cert, &exts).is_err());
+    }
+
+    #[test]
+    fn test_extension_policy_maybe_present_incorrect_criticality() {
+        // The certificate doesn't get used for this validator, so the certificate we use isn't important.
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let ops = NullOps {};
+        let policy = Policy::new(ops, None, epoch());
+
+        // Test a maybe present policy that stipulates that a given extension MUST be critical.
+        let extension_policy = ExtensionPolicy::maybe_present(
+            BASIC_CONSTRAINTS_OID,
+            Criticality::Critical,
+            Some(maybe_extension_validator),
         );
 
         // Mark the extension as non-critical despite our policy stipulating that it must be critical.
