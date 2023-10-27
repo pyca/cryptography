@@ -160,6 +160,7 @@ def flake(session: nox.Session) -> None:
         session,
         "setuptools-rust",
         "cffi>=1.12; platform_python_implementation != 'PyPy'",
+        "wheel",
         "ruff",
         "check-sdist",
         "mypy",
