@@ -158,6 +158,8 @@ def flake(session: nox.Session) -> None:
     # but not install us.
     install(
         session,
+        "setuptools-rust",
+        "cffi>=1.12; platform_python_implementation != 'PyPy'",
         "ruff",
         "check-sdist",
         "mypy",
@@ -170,7 +172,7 @@ def flake(session: nox.Session) -> None:
 
     session.run("ruff", ".")
     session.run("ruff", "format", "--check", ".")
-    session.run("check-sdist")
+    session.run("check-sdist", "--no-isolation")
     session.run(
         "mypy",
         "src/cryptography/",
