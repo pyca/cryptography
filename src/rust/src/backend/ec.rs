@@ -6,7 +6,6 @@ use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 use foreign_types_shared::ForeignTypeRef;
-use pyo3::basic::CompareOp;
 use pyo3::ToPyObject;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
@@ -214,9 +213,7 @@ fn public_key_from_numbers(
     let py_y = numbers.getattr(pyo3::intern!(py, "y"))?;
 
     let zero = (0).to_object(py);
-    if py_x.rich_compare(&zero, CompareOp::Lt)?.is_true()?
-        || py_y.rich_compare(&zero, CompareOp::Lt)?.is_true()?
-    {
+    if py_x.lt(&zero)? || py_y.lt(&zero)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "Invalid EC key. Both x and y must be non-negative.",
