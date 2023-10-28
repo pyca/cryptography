@@ -228,7 +228,7 @@ pub(crate) mod ee {
 pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, Extension, KeyUsage},
+        extensions::{AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage},
     };
 
     use crate::{
@@ -244,10 +244,31 @@ pub(crate) mod ca {
     ) -> Result<(), PolicyError> {
         // The Authority Key Identifier MUST be present, with one exception:
         // self-signed CAs may omit it.
-        if extn.is_none() && !cert_is_self_signed(cert, &policy.ops) {
-            return Err(
-                "authorityKeyIdentifier must be present in cross-signed CA certificate".into(),
-            );
+        match extn {
+            Some(extn) => {
+                let aki: AuthorityKeyIdentifier<'_> = extn.value()?;
+                // 7.1.2.11.1 Authority Key Identifier:
+                // authorityCertIssuer and authorityCertSerialNumber MUST NOT be present.
+                if aki.authority_cert_issuer.is_some() {
+                    return Err(
+                        "authorityKeyIdentifier must not contain authorityCertIssuer".into(),
+                    );
+                }
+
+                if aki.authority_cert_serial_number.is_some() {
+                    return Err(
+                        "authorityKeyIdentifier must not contain authorityCertSerialNumber".into(),
+                    );
+                }
+            }
+            None => {
+                if !cert_is_self_signed(cert, &policy.ops) {
+                    return Err(
+                        "authorityKeyIdentifier must be present in cross-signed CA certificate"
+                            .into(),
+                    );
+                }
+            }
         }
 
         Ok(())
