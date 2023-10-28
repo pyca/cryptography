@@ -152,11 +152,28 @@ def docs_linkcheck(session: nox.Session) -> None:
 
 @nox.session
 def flake(session: nox.Session) -> None:
-    install(session, ".[pep8test,test,ssh,nox]")
+    # Just install the dependencies needed for these tests - basically
+    # `pip install .[pep8test,test,ssh,nox]`, but without installing `.`
+    # TODO: Ideally there'd be a pip flag to install just our dependencies,
+    # but not install us.
+    install(
+        session,
+        "setuptools-rust",
+        "cffi>=1.12; platform_python_implementation != 'PyPy'",
+        "wheel",
+        "ruff",
+        "check-sdist",
+        "mypy",
+        "bcrypt",
+        "click",
+        "pytest",
+        "nox",
+    )
+    install(session, "-e", "vectors/")
 
     session.run("ruff", ".")
     session.run("ruff", "format", "--check", ".")
-    session.run("check-sdist")
+    session.run("check-sdist", "--no-isolation")
     session.run(
         "mypy",
         "src/cryptography/",

@@ -24,11 +24,7 @@ typedef ... Cryptography_STACK_OF_X509;
 typedef ... Cryptography_STACK_OF_X509_CRL;
 typedef ... Cryptography_STACK_OF_X509_REVOKED;
 
-typedef struct {
-    ASN1_OBJECT *algorithm;
-    ...;
-} X509_ALGOR;
-
+typedef ... X509_ALGOR;
 typedef ... X509_ATTRIBUTE;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
