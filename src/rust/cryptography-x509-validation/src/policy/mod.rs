@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+mod extension;
+
 use std::collections::HashSet;
 
 use asn1::ObjectIdentifier;
@@ -110,6 +112,10 @@ const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
 const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
+
+pub enum PolicyError {
+    Other(&'static str),
+}
 
 /// Represents a logical certificate "subject," i.e. a principal matching
 /// one of the names listed in a certificate's `subjectAltNames` extension.

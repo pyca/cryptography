@@ -295,7 +295,7 @@ impl KeyUsage<'_> {
 mod tests {
     use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
 
-    use super::{BasicConstraints, Extension, Extensions, KeyUsage};
+    use super::{BasicConstraints, DuplicateExtensionsError, Extension, Extensions, KeyUsage};
 
     #[test]
     fn test_get_extension() {
