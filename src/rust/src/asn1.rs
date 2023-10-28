@@ -8,7 +8,6 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
-use pyo3::basic::CompareOp;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
@@ -68,7 +67,7 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     v: &'p pyo3::types::PyLong,
 ) -> pyo3::PyResult<&'p [u8]> {
     let zero = (0).to_object(py);
-    if v.rich_compare(zero, CompareOp::Lt)?.is_true()? {
+    if v.lt(zero)? {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "Negative integers are not supported",
         ));
