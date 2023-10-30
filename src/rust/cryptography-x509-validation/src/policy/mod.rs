@@ -537,29 +537,18 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
     /// Checks whether the given EE certificate is compatible with this policy.
     pub(crate) fn permits_ee(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        // An end entity cert is considered "permitted" under a policy if:
-        // 1. It satisfies the basic (both EE and CA) requirements of the underlying profile;
-        // 2. It satisfies the EE-specific requirements of the profile;
-        // 3. It satisfies the policy's own requirements (e.g. the cert's SANs
-        //    match the policy's name).
         self.permits_basic(cert)?;
 
         let extensions = cert.extensions()?;
-
         for ext_policy in self.ee_extension_policies.iter() {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // 5280 4.2.1.5: Policy Mappings
-        // The RFC is not clear on whether these may appear in EE certificates.
-
-        // 5280 4.2.1.11: Policy Constraints
-        // The RFC is not clear on whether these may appear in EE certificates.
-
+        // TODO: These should become extension policies.
         self.permits_san(extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID))?;
         self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
 
-        // TODO: Policy-level checks here for KUs, algorithms, etc.
+        // TODO: Policy-level checks here for KUs, etc.
 
         Ok(())
     }
@@ -610,7 +599,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         // Self-issued issuers don't increase the working depth.
-        // NOTE: This is technically part of the profile's semantics.
         match cert_is_self_issued(issuer) {
             true => Ok(current_depth),
             false => Ok(current_depth + 1),
