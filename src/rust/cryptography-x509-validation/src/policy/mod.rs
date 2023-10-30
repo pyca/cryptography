@@ -10,7 +10,7 @@ use asn1::ObjectIdentifier;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
-    AlgorithmIdentifier, AlgorithmParameters, RsaPssParameters, PSS_SHA256_HASH_ALG,
+    AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, PSS_SHA256_HASH_ALG,
     PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
     PSS_SHA512_MASK_GEN_ALG,
 };
@@ -35,19 +35,19 @@ static SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 // SECP256R1
 static SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcNamedCurve(EC_SECP256R1),
+    params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP256R1)),
 };
 
 // SECP384R1
 static SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcNamedCurve(EC_SECP384R1),
+    params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP384R1)),
 };
 
 // SECP521R1
 static SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcNamedCurve(EC_SECP521R1),
+    params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP521R1)),
 };
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
