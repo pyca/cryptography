@@ -510,9 +510,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
-        if cert.subject().is_empty() {
-            return Err("CA certificate must have a non-empty Subject".into());
-        }
+        // No check required here: `permits_basic` checks that the issuer is non-empty
+        // and `ChainBuilder::potential_issuers` enforces subject/issuer matching,
+        // meaning that an CA with an empty subject cannot occur in a built chain.
 
         // 5280 4.2:
         // CA certificates must contain a few core extensions. This implies
