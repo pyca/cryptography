@@ -45,6 +45,13 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    // These encodings are only used in SPKI AlgorithmIdentifiers.
+    #[defined_by(oid::EC_OID)]
+    Ec(EcParameters<'a>),
+
+    #[defined_by(oid::RSA_OID)]
+    Rsa(Option<asn1::Null>),
+
     // These ECDSA algorithms should have no parameters,
     // but Java 11 (up to at least 11.0.19) encodes them
     // with NULL parameters. The JDK team is looking to
@@ -280,6 +287,21 @@ pub const PSS_SHA512_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
     oid: oid::MGF1_OID,
     params: PSS_SHA512_HASH_ALG,
 };
+
+// From RFC 5480 section 2.1.1:
+// ECParameters ::= CHOICE {
+//     namedCurve         OBJECT IDENTIFIER
+//     -- implicitCurve   NULL
+//     -- specifiedCurve  SpecifiedECDomain }
+//
+// Only the namedCurve form may appear in PKIX. Other forms may be found in
+// other PKIs.
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+pub enum EcParameters<'a> {
+    NamedCurve(asn1::ObjectIdentifier),
+    ImplicitCurve(asn1::Null),
+    SpecifiedCurve(asn1::Sequence<'a>),
+}
 
 // From RFC 4055 section 3.1:
 // RSASSA-PSS-params  ::=  SEQUENCE  {
