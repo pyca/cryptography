@@ -300,7 +300,7 @@ pub const PSS_SHA512_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
 pub enum EcParameters<'a> {
     NamedCurve(asn1::ObjectIdentifier),
     ImplicitCurve(asn1::Null),
-    SpecifiedCurve(asn1::Tlv<'a>),
+    SpecifiedCurve(asn1::Sequence<'a>),
 }
 
 // From RFC 4055 section 3.1:
