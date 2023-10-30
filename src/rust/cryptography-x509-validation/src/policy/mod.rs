@@ -17,11 +17,45 @@ use cryptography_x509::common::{
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    BASIC_CONSTRAINTS_OID, EKU_SERVER_AUTH_OID, KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
+    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID,
+    KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
 
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPConstraint};
+
+// SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
+
+// RSA
+static SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Rsa(Some(())),
+};
+
+// SECP256R1
+static SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::EcNamedCurve(EC_SECP256R1),
+};
+
+// SECP384R1
+static SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::EcNamedCurve(EC_SECP384R1),
+};
+
+// SECP521R1
+static SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::EcNamedCurve(EC_SECP521R1),
+};
+
+/// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
+/// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
+pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> =
+    Lazy::new(|| HashSet::from([&SPKI_RSA, &SPKI_SECP256R1, &SPKI_SECP384R1, &SPKI_SECP521R1]));
+
+// Signature AlgorithmIdentifier constants, as defined in CA/B 7.1.3.2.
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
 static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
@@ -94,19 +128,20 @@ static ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-pub static WEBPKI_PERMITTED_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> = Lazy::new(|| {
-    HashSet::from([
-        &RSASSA_PKCS1V15_SHA256,
-        &RSASSA_PKCS1V15_SHA384,
-        &RSASSA_PKCS1V15_SHA512,
-        &RSASSA_PSS_SHA256,
-        &RSASSA_PSS_SHA384,
-        &RSASSA_PSS_SHA512,
-        &ECDSA_SHA256,
-        &ECDSA_SHA384,
-        &ECDSA_SHA512,
-    ])
-});
+pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> =
+    Lazy::new(|| {
+        HashSet::from([
+            &RSASSA_PKCS1V15_SHA256,
+            &RSASSA_PKCS1V15_SHA384,
+            &RSASSA_PKCS1V15_SHA512,
+            &RSASSA_PSS_SHA256,
+            &RSASSA_PSS_SHA384,
+            &RSASSA_PSS_SHA512,
+            &ECDSA_SHA256,
+            &ECDSA_SHA384,
+            &ECDSA_SHA512,
+        ])
+    });
 
 const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
     &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
@@ -204,7 +239,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
             permitted_algorithms: Some(
-                WEBPKI_PERMITTED_ALGORITHMS
+                WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
                     .clone()
                     .into_iter()
                     .cloned()
@@ -228,20 +263,50 @@ mod tests {
 
     use crate::{
         ops::tests::NullOps,
-        policy::{Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS},
+        policy::{
+            Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS, SPKI_RSA,
+            SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1, WEBPKI_PERMITTED_SPKI_ALGORITHMS,
+        },
         types::{DNSName, IPAddress},
     };
 
     use super::{
         Policy, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
-        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_ALGORITHMS,
+        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
     };
 
     #[test]
-    fn test_webpki_permitted_algorithms_canonical_encodings() {
+    fn test_webpki_permitted_spki_algorithms_canonical_encodings() {
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA256));
+            assert!(WEBPKI_PERMITTED_SPKI_ALGORITHMS.contains(&SPKI_RSA));
+            let exp_encoding = b"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\x00";
+            assert_eq!(asn1::write_single(&SPKI_RSA).unwrap(), exp_encoding);
+        }
+
+        {
+            assert!(WEBPKI_PERMITTED_SPKI_ALGORITHMS.contains(&SPKI_SECP256R1));
+            let exp_encoding = b"0\x13\x06\x07*\x86H\xce=\x02\x01\x06\x08*\x86H\xce=\x03\x01\x07";
+            assert_eq!(asn1::write_single(&SPKI_SECP256R1).unwrap(), exp_encoding);
+        }
+
+        {
+            assert!(WEBPKI_PERMITTED_SPKI_ALGORITHMS.contains(&SPKI_SECP384R1));
+            let exp_encoding = b"0\x10\x06\x07*\x86H\xce=\x02\x01\x06\x05+\x81\x04\x00\"";
+            assert_eq!(asn1::write_single(&SPKI_SECP384R1).unwrap(), exp_encoding);
+        }
+
+        {
+            assert!(WEBPKI_PERMITTED_SPKI_ALGORITHMS.contains(&SPKI_SECP521R1));
+            let exp_encoding = b"0\x10\x06\x07*\x86H\xce=\x02\x01\x06\x05+\x81\x04\x00#";
+            assert_eq!(asn1::write_single(&SPKI_SECP521R1).unwrap(), exp_encoding);
+        }
+    }
+
+    #[test]
+    fn test_webpki_permitted_signature_algorithms_canonical_encodings() {
+        {
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA256));
             let exp_encoding = b"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\x00";
             assert_eq!(
                 asn1::write_single(&RSASSA_PKCS1V15_SHA256).unwrap(),
@@ -250,7 +315,7 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA384));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA384));
             let exp_encoding = b"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0c\x05\x00";
             assert_eq!(
                 asn1::write_single(&RSASSA_PKCS1V15_SHA384).unwrap(),
@@ -259,7 +324,7 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA512));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PKCS1V15_SHA512));
             let exp_encoding = b"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\r\x05\x00";
             assert_eq!(
                 asn1::write_single(&RSASSA_PKCS1V15_SHA512).unwrap(),
@@ -268,7 +333,7 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PSS_SHA256.deref()));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA256.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x01\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x01\x05\x00\xa2\x03\x02\x01 ";
             assert_eq!(
                 asn1::write_single(&RSASSA_PSS_SHA256.deref()).unwrap(),
@@ -277,7 +342,7 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PSS_SHA384.deref()));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA384.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x02\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x02\x05\x00\xa2\x03\x02\x010";
             assert_eq!(
                 asn1::write_single(&RSASSA_PSS_SHA384.deref()).unwrap(),
@@ -286,7 +351,7 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&RSASSA_PSS_SHA512.deref()));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA512.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x03\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x03\x05\x00\xa2\x03\x02\x01@";
             assert_eq!(
                 asn1::write_single(&RSASSA_PSS_SHA512.deref()).unwrap(),
@@ -295,19 +360,19 @@ mod tests {
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&ECDSA_SHA256));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&ECDSA_SHA256));
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x02";
             assert_eq!(asn1::write_single(&ECDSA_SHA256).unwrap(), exp_encoding);
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&ECDSA_SHA384));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&ECDSA_SHA384));
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x03";
             assert_eq!(asn1::write_single(&ECDSA_SHA384).unwrap(), exp_encoding);
         }
 
         {
-            assert!(WEBPKI_PERMITTED_ALGORITHMS.contains(&ECDSA_SHA512));
+            assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&ECDSA_SHA512));
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
