@@ -215,6 +215,15 @@ pub struct Policy<'a, B: CryptoOps> {
     /// An extended key usage that must appear in EEs validated by this policy.
     pub extended_key_usage: ObjectIdentifier,
 
+    /// The set of permitted public key algorithms, identified by their
+    /// algorithm identifiers.
+    ///
+    /// If not `None`, all certificates validated by this policy MUST
+    /// have a public key algorithm in this set.
+    ///
+    /// If `None`, all public key algorithms are permitted.
+    pub permitted_public_key_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+
     /// The set of permitted signature algorithms, identified by their
     /// algorithm identifiers.
     ///
@@ -222,7 +231,7 @@ pub struct Policy<'a, B: CryptoOps> {
     /// have a signature algorithm in this set.
     ///
     /// If `None`, all signature algorithms are permitted.
-    pub permitted_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+    pub permitted_signature_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
 
     pub critical_ca_extensions: HashSet<ObjectIdentifier>,
     pub critical_ee_extensions: HashSet<ObjectIdentifier>,
@@ -238,7 +247,14 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            permitted_algorithms: Some(
+            permitted_public_key_algorithms: Some(
+                WEBPKI_PERMITTED_SPKI_ALGORITHMS
+                    .clone()
+                    .into_iter()
+                    .cloned()
+                    .collect(),
+            ),
+            permitted_signature_algorithms: Some(
                 WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
                     .clone()
                     .into_iter()
