@@ -57,6 +57,12 @@ chain building, etc.
 
         The verifier's validation time.
 
+    .. attribute:: store
+
+        :type: :class:`Store`
+
+        The verifier's trust store.
+
 .. class:: PolicyBuilder
 
     .. versionadded:: 42.0.0
