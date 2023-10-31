@@ -364,12 +364,16 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         // 5280 4.1.2.2: Serial Number
-        // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
-        // NOTE: In practice, this requires us to check for an encoding of
-        // 21 octets, since some CAs generate 20 bytes of randomness and
-        // then forget to check whether that number would be negative, resulting
-        // in a 21-byte encoding.
-        if !(1..=21).contains(&cert.tbs_cert.serial.as_bytes().len()) {
+        let serial_bytes = cert.tbs_cert.serial.as_bytes();
+        if serial_bytes.len() == 1 && serial_bytes[0] == 0 {
+            // The serial number MUST be a positive integer.
+            return Err("certificate serial number must not be 0".into());
+        } else if !(1..=21).contains(&serial_bytes.len()) {
+            // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
+            // NOTE: In practice, this requires us to check for an encoding of
+            // 21 octets, since some CAs generate 20 bytes of randomness and
+            // then forget to check whether that number would be negative, resulting
+            // in a 21-byte encoding.
             return Err("certificate must have a serial between 1 and 20 octets".into());
         }
 
