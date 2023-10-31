@@ -75,6 +75,14 @@ chain building, etc.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
+    .. method:: store(new_store)
+
+        Sets the verifier's trust store.
+
+        :param new_store: The :class:`Store` to use in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
     .. method:: build_server_verifier(subject)
 
         Builds a verifier for verifying server certificates.
