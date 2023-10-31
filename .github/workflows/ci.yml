@@ -75,6 +75,7 @@ jobs:
         if: matrix.PYTHON.RUST
 
       - run: rustup component add llvm-tools-preview
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
