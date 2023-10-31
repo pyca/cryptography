@@ -79,6 +79,8 @@ struct PyServerVerifier {
     #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
     policy: OwnedPolicy,
+    #[pyo3(get)]
+    store: pyo3::Py<PyStore>,
 }
 
 impl PyServerVerifier {
@@ -99,14 +101,15 @@ impl PyServerVerifier {
         py: pyo3::Python<'p>,
         leaf: &PyCertificate,
         intermediates: &'p pyo3::types::PyList,
-        store: &'p PyStore,
     ) -> CryptographyResult<Vec<PyCertificate>> {
         let intermediates = intermediates
             .iter()
             .map(|o| o.extract::<pyo3::PyRef<'p, PyCertificate>>())
             .collect::<Result<Vec<_>, _>>()?;
         let store = Store::new(
-            store
+            self.store
+                .as_ref(py)
+                .get()
                 .0
                 .iter()
                 .map(|t| t.get().raw.borrow_dependent().clone()),
@@ -192,6 +195,7 @@ fn build_subject<'a>(
 fn create_server_verifier(
     py: pyo3::Python<'_>,
     subject: pyo3::Py<pyo3::PyAny>,
+    store: pyo3::Py<PyStore>,
     time: Option<&pyo3::PyAny>,
 ) -> pyo3::PyResult<PyServerVerifier> {
     let time = match time {
@@ -212,6 +216,7 @@ fn create_server_verifier(
     Ok(PyServerVerifier {
         py_subject: subject,
         policy,
+        store,
     })
 }
 

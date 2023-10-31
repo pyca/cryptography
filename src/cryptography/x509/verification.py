@@ -24,8 +24,10 @@ class PolicyBuilder:
         self,
         *,
         time: datetime.datetime | None = None,
+        store: Store | None = None,
     ):
         self._time = time
+        self._store = store
 
     def time(self, new_time: datetime.datetime) -> PolicyBuilder:
         """
@@ -34,13 +36,28 @@ class PolicyBuilder:
         if self._time is not None:
             raise ValueError("The validation time may only be set once.")
 
-        return PolicyBuilder(
-            time=new_time,
-        )
+        return PolicyBuilder(time=new_time, store=self._store)
+
+    def store(self, new_store: Store) -> PolicyBuilder:
+        """
+        Sets the trust store.
+        """
+
+        if self._store is not None:
+            raise ValueError("The trust store may only be set once.")
+
+        return PolicyBuilder(time=self._time, store=new_store)
 
     def build_server_verifier(self, subject: Subject) -> ServerVerifier:
         """
         Builds a verifier for verifying server certificates.
         """
 
-        return rust_x509.create_server_verifier(subject, self._time)
+        if self._store is None:
+            raise ValueError("A server verifier must have a trust store")
+
+        return rust_x509.create_server_verifier(
+            subject,
+            self._store,
+            self._time,
+        )
