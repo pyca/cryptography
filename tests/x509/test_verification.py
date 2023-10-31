@@ -40,17 +40,13 @@ class TestPolicyBuilder:
                 "cryptography.io"  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().build_server_verifier(
-                "0.0.0.0"  # type: ignore[arg-type]
-            )
+            PolicyBuilder().build_server_verifier("0.0.0.0")  # type: ignore[arg-type]
         with pytest.raises(TypeError):
             PolicyBuilder().build_server_verifier(
                 IPv4Address("0.0.0.0")  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().build_server_verifier(
-                None  # type: ignore[arg-type]
-            )
+            PolicyBuilder().build_server_verifier(None)  # type: ignore[arg-type]
 
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
@@ -78,3 +74,16 @@ class TestStore:
             x509.load_pem_x509_certificate,
         )
         assert Store([cert]) is not None
+
+
+class TestServerVerifier:
+    def test_not_implemented(self):
+        verifier = PolicyBuilder().build_server_verifier(
+            DNSName("cryptography.io")
+        )
+        cert = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(NotImplementedError):
+            verifier.verify(cert, [], Store([cert]))

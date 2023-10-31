@@ -90,6 +90,16 @@ impl PyServerVerifier {
     fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         datetime_to_py(py, &self.as_policy().validation_time)
     }
+
+    fn verify<'p>(
+        &self,
+        _py: pyo3::Python<'p>,
+        _leaf: &PyCertificate,
+        _intermediates: &'p pyo3::types::PyList,
+        _store: &'p PyStore,
+    ) -> CryptographyResult<Vec<PyCertificate>> {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err("unimplemented").into())
+    }
 }
 
 fn build_subject_owner(
