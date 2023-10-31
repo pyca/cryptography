@@ -63,7 +63,7 @@ chain building, etc.
 
         The verifier's trust store.
 
-    .. method:: verify(leaf, intermediates, store)
+    .. method:: verify(leaf, intermediates)
 
         Performs path validation on ``leaf``, returning a valid path
         if one exists.
