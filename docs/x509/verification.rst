@@ -57,6 +57,19 @@ chain building, etc.
 
         The verifier's validation time.
 
+    .. method:: verify(leaf, intermediates, store)
+
+        Performs path validation on ``leaf``, returning a valid path
+        if one exists.
+
+        :param leaf: The leaf :class:`~cryptography.x509.Certificate` to validate
+        :param intermediates: A :class:`list` of intermediate :class:`~cryptography.x509.Certificate` to attempt to use
+        :param store: A :class:`Store` of trusted certificates
+
+        :returns: A list containing a valid chain from ``leaf`` to a member of ``store``.
+
+        :raises ValueError: If a valid chain cannot be constructed
+
 .. class:: PolicyBuilder
 
     .. versionadded:: 42.0.0
