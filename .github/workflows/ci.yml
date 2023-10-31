@@ -75,9 +75,11 @@ jobs:
         if: matrix.PYTHON.RUST
 
       - run: rustup component add llvm-tools-preview
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
