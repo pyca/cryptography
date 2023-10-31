@@ -59,8 +59,8 @@ class TestPolicyBuilder:
             )
         with pytest.raises(TypeError):
             PolicyBuilder().store(dummy_store()).build_server_verifier(
-                "0.0.0.0"
-            )  # type: ignore[arg-type]
+                "0.0.0.0"  # type: ignore[arg-type]
+            )
         with pytest.raises(TypeError):
             PolicyBuilder().store(dummy_store()).build_server_verifier(
                 IPv4Address("0.0.0.0")  # type: ignore[arg-type]
