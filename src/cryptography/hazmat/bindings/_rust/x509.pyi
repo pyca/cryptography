@@ -39,6 +39,7 @@ def create_x509_crl(
 ) -> x509.CertificateRevocationList: ...
 def create_server_verifier(
     name: x509.verification.Subject,
+    store: Store,
     time: datetime.datetime | None,
 ) -> x509.verification.ServerVerifier: ...
 
@@ -53,11 +54,12 @@ class ServerVerifier:
     def subject(self) -> x509.verification.Subject: ...
     @property
     def validation_time(self) -> datetime.datetime: ...
+    @property
+    def store(self) -> Store: ...
     def verify(
         self,
         leaf: x509.Certificate,
         intermediates: list[x509.Certificate],
-        store: Store,
     ) -> list[x509.Certificate]: ...
 
 class Store:
