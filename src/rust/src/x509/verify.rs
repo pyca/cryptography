@@ -76,6 +76,8 @@ struct PyServerVerifier {
     #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
     policy: OwnedPolicy,
+    #[pyo3(get)]
+    store: pyo3::Py<PyStore>,
 }
 
 impl PyServerVerifier {
@@ -89,6 +91,15 @@ impl PyServerVerifier {
     #[getter]
     fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         datetime_to_py(py, &self.as_policy().validation_time)
+    }
+
+    fn verify<'p>(
+        &self,
+        _py: pyo3::Python<'p>,
+        _leaf: &PyCertificate,
+        _intermediates: &'p pyo3::types::PyList,
+    ) -> CryptographyResult<Vec<PyCertificate>> {
+        Err(pyo3::exceptions::PyNotImplementedError::new_err("unimplemented").into())
     }
 }
 
@@ -142,6 +153,7 @@ fn build_subject<'a>(
 fn create_server_verifier(
     py: pyo3::Python<'_>,
     subject: pyo3::Py<pyo3::PyAny>,
+    store: pyo3::Py<PyStore>,
     time: Option<&pyo3::PyAny>,
 ) -> pyo3::PyResult<PyServerVerifier> {
     let time = match time {
@@ -162,6 +174,7 @@ fn create_server_verifier(
     Ok(PyServerVerifier {
         py_subject: subject,
         policy,
+        store,
     })
 }
 

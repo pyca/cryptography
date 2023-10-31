@@ -57,6 +57,12 @@ chain building, etc.
 
         The verifier's validation time.
 
+    .. attribute:: store
+
+        :type: :class:`Store`
+
+        The verifier's trust store.
+
 .. class:: PolicyBuilder
 
     .. versionadded:: 42.0.0
@@ -72,6 +78,14 @@ chain building, etc.
         when :meth:`build_server_verifier` is called.
 
         :param new_time: The :class:`datetime.datetime` to use in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: store(new_store)
+
+        Sets the verifier's trust store.
+
+        :param new_store: The :class:`Store` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
