@@ -3,7 +3,7 @@
 // for complete details.
 
 pub(crate) mod aead;
-pub(crate) mod ciphers;
+pub(crate) mod cipher_registry;
 pub(crate) mod cmac;
 pub(crate) mod dh;
 pub(crate) mod dsa;
