@@ -17,13 +17,9 @@ from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
-def _openssl_assert(
-    ok: bool,
-    errors: list[openssl.OpenSSLError] | None = None,
-) -> None:
+def _openssl_assert(ok: bool) -> None:
     if not ok:
-        if errors is None:
-            errors = openssl.capture_error_stack()
+        errors = openssl.capture_error_stack()
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "

@@ -473,6 +473,10 @@ pub static AES256: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["AES256"],
 );
+pub static CHACHA20: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["ChaCha20"],
+);
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
 pub static SM4: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
@@ -499,9 +503,50 @@ pub static CAST5: LazyPyImport = LazyPyImport::new(
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
 pub static IDEA: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["IDEA"]);
+pub static ARC4: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["ARC4"]);
+pub static RC2: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["RC2"]);
 
+pub static MODE_WITH_INITIALIZATION_VECTOR: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.modes",
+    &["ModeWithInitializationVector"],
+);
+pub static MODE_WITH_TWEAK: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.modes",
+    &["ModeWithTweak"],
+);
+pub static MODE_WITH_NONCE: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.modes",
+    &["ModeWithNonce"],
+);
+pub static MODE_WITH_AUTHENTICATION_TAG: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.modes",
+    &["ModeWithAuthenticationTag"],
+);
 pub static CBC: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CBC"]);
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+pub static CFB: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CFB"]);
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+pub static CFB8: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CFB8"]);
+pub static OFB: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["OFB"]);
+pub static ECB: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["ECB"]);
+pub static CTR: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CTR"]);
+pub static GCM: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["GCM"]);
+pub static XTS: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["XTS"]);
+
+pub static LEGACY_PROVIDER_LOADED: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.bindings._rust",
+    &["openssl", "_legacy_provider_loaded"],
+);
 
 #[cfg(test)]
 mod tests {

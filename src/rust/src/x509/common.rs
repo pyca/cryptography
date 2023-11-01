@@ -216,7 +216,7 @@ fn parse_name_attribute(
             pyo3::types::PyString::new(py, parsed)
         }
     };
-    let kwargs = [("_validate", false)].into_py_dict(py);
+    let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict(py);
     Ok(types::NAME_ATTRIBUTE
         .get(py)?
         .call((oid, py_data, py_tag), Some(kwargs))?
