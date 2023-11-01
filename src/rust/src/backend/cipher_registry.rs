@@ -52,20 +52,37 @@ impl std::hash::Hash for RegistryKey {
     }
 }
 
-fn add_cipher(
-    py: pyo3::Python<'_>,
-    m: &mut HashMap<RegistryKey, openssl::symm::Cipher>,
-    algorithm: &pyo3::PyAny,
-    mode: &pyo3::PyAny,
-    key_size: Option<u16>,
-    cipher: openssl::symm::Cipher,
-) -> CryptographyResult<()> {
-    m.insert(
-        RegistryKey::new(py, algorithm.into(), mode.into(), key_size)?,
-        cipher,
-    );
+struct RegisteryBuilder<'p> {
+    py: pyo3::Python<'p>,
+    m: HashMap<RegistryKey, openssl::symm::Cipher>,
+}
 
-    Ok(())
+impl<'p> RegisteryBuilder<'p> {
+    fn new(py: pyo3::Python<'p>) -> Self {
+        RegisteryBuilder {
+            py,
+            m: HashMap::new(),
+        }
+    }
+
+    fn add(
+        &mut self,
+        algorithm: &pyo3::PyAny,
+        mode: &pyo3::PyAny,
+        key_size: Option<u16>,
+        cipher: openssl::symm::Cipher,
+    ) -> CryptographyResult<()> {
+        self.m.insert(
+            RegistryKey::new(self.py, algorithm.into(), mode.into(), key_size)?,
+            cipher,
+        );
+
+        Ok(())
+    }
+
+    fn build(self) -> HashMap<RegistryKey, openssl::symm::Cipher> {
+        self.m
+    }
 }
 
 fn get_cipher_registry(
@@ -75,8 +92,7 @@ fn get_cipher_registry(
         pyo3::once_cell::GILOnceCell::new();
 
     REGISTRY.get_or_try_init(py, || {
-        let mut r = HashMap::new();
-        let m = &mut r;
+        let mut m = RegisteryBuilder::new(py);
 
         let aes = types::AES.get(py)?;
         let aes128 = types::AES128.get(py)?;
@@ -97,38 +113,38 @@ fn get_cipher_registry(
 
         let cbc = types::CBC.get(py)?;
 
-        add_cipher(py, m, aes, cbc, Some(128), Cipher::aes_128_cbc())?;
-        add_cipher(py, m, aes, cbc, Some(192), Cipher::aes_192_cbc())?;
-        add_cipher(py, m, aes, cbc, Some(256), Cipher::aes_256_cbc())?;
+        m.add(aes, cbc, Some(128), Cipher::aes_128_cbc())?;
+        m.add(aes, cbc, Some(192), Cipher::aes_192_cbc())?;
+        m.add(aes, cbc, Some(256), Cipher::aes_256_cbc())?;
 
-        add_cipher(py, m, aes128, cbc, Some(128), Cipher::aes_128_cbc())?;
-        add_cipher(py, m, aes256, cbc, Some(256), Cipher::aes_256_cbc())?;
+        m.add(aes128, cbc, Some(128), Cipher::aes_128_cbc())?;
+        m.add(aes256, cbc, Some(256), Cipher::aes_256_cbc())?;
 
-        add_cipher(py, m, triple_des, cbc, Some(192), Cipher::des_ede3_cbc())?;
+        m.add(triple_des, cbc, Some(192), Cipher::des_ede3_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        add_cipher(py, m, camellia, cbc, Some(128), Cipher::camellia_128_cbc())?;
+        m.add(camellia, cbc, Some(128), Cipher::camellia_128_cbc())?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        add_cipher(py, m, camellia, cbc, Some(192), Cipher::camellia_192_cbc())?;
+        m.add(camellia, cbc, Some(192), Cipher::camellia_192_cbc())?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        add_cipher(py, m, camellia, cbc, Some(256), Cipher::camellia_256_cbc())?;
+        m.add(camellia, cbc, Some(256), Cipher::camellia_256_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
-        add_cipher(py, m, sm4, cbc, Some(128), Cipher::sm4_cbc())?;
+        m.add(sm4, cbc, Some(128), Cipher::sm4_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
-        add_cipher(py, m, seed, cbc, Some(128), Cipher::seed_cbc())?;
+        m.add(seed, cbc, Some(128), Cipher::seed_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
-        add_cipher(py, m, blowfish, cbc, None, Cipher::bf_cbc())?;
+        m.add(blowfish, cbc, None, Cipher::bf_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAST"))]
-        add_cipher(py, m, cast5, cbc, None, Cipher::cast5_cbc())?;
+        m.add(cast5, cbc, None, Cipher::cast5_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
-        add_cipher(py, m, idea, cbc, Some(128), Cipher::idea_cbc())?;
+        m.add(idea, cbc, Some(128), Cipher::idea_cbc())?;
 
-        Ok(r)
+        Ok(m.build())
     })
 }
 
