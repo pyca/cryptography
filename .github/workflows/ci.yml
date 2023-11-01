@@ -124,7 +124,7 @@ jobs:
           # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
           key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
       - name: Create nox environment
         run: |
             nox -v --install-only
@@ -198,7 +198,7 @@ jobs:
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
       - run: '/venv/bin/nox -v --install-only'
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -249,7 +249,7 @@ jobs:
           cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
 
       - name: Clone wycheproof
         timeout-minutes: 2
@@ -312,7 +312,7 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox"
+      - run: python -m pip install -c ci-constraints-requirements.txt "nox" "tomli; python_version < '3.11'"
 
       - uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # v2.28.0
         with:
