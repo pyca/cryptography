@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::backend::ciphers;
+use crate::backend::cipher_registry;
 use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -50,12 +50,13 @@ impl Cmac {
             ));
         }
 
-        let cipher = ciphers::get_cipher(py, algorithm, types::CBC.get(py)?)?.ok_or_else(|| {
-            exceptions::UnsupportedAlgorithm::new_err((
-                "CMAC is not supported with this algorithm",
-                exceptions::Reasons::UNSUPPORTED_CIPHER,
-            ))
-        })?;
+        let cipher =
+            cipher_registry::get_cipher(py, algorithm, types::CBC.get(py)?)?.ok_or_else(|| {
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "CMAC is not supported with this algorithm",
+                    exceptions::Reasons::UNSUPPORTED_CIPHER,
+                ))
+            })?;
 
         let key = algorithm
             .getattr(pyo3::intern!(py, "key"))?
