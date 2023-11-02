@@ -355,6 +355,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
         let extensions = cert.extensions()?;
 
+        // CA/B 7.1.1:
+        // Certificates MUST be of type X.509 v3.
+        if cert.tbs_cert.version != 2 {
+            return Err("certificate must be an X509v3 certificate".into());
+        }
+
         // 5280 4.1.1.2 / 4.1.2.3: signatureAlgorithm / TBS Certificate Signature
         // The top-level signatureAlgorithm and TBSCert signature algorithm
         // MUST match.
@@ -486,14 +492,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // No check required here: `permits_basic` checks that the issuer is non-empty
         // and `ChainBuilder::potential_issuers` enforces subject/issuer matching,
         // meaning that an CA with an empty subject cannot occur in a built chain.
-
-        // 5280 4.2:
-        // CA certificates must contain a few core extensions. This implies
-        // that the CA certificate must be a v3 certificate, since earlier
-        // versions lack extensions entirely.
-        if cert.tbs_cert.version != 2 {
-            return Err("CA certificate must be an X509v3 certificate".into());
-        }
 
         let extensions = cert.extensions()?;
         for ext_policy in self.ca_extension_policies.iter() {
