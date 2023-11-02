@@ -19,7 +19,6 @@ from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...doubles import (
     DummyAsymmetricPadding,
-    DummyBlockCipherAlgorithm,
     DummyCipherAlgorithm,
     DummyHashAlgorithm,
     DummyMode,
@@ -249,12 +248,6 @@ class TestOpenSSLRSA:
                     label=None,
                 ),
             )
-
-
-class TestOpenSSLCMAC:
-    def test_unsupported_cipher(self):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            backend.create_cmac_ctx(DummyBlockCipherAlgorithm(b"bad"))
 
 
 class TestOpenSSLSerializationWithOpenSSL:

@@ -486,6 +486,56 @@ pub static DSA_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
 pub static EXTRACT_BUFFER_LENGTH: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["_extract_buffer_length"]);
 
+pub static BLOCK_CIPHER_ALGORITHM: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers",
+    &["BlockCipherAlgorithm"],
+);
+
+pub static TRIPLE_DES: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["TripleDES"],
+);
+pub static AES: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["AES"],
+);
+pub static AES128: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["AES128"],
+);
+pub static AES256: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["AES256"],
+);
+pub static SM4: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["SM4"],
+);
+pub static SEED: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["_SEEDInternal"],
+);
+pub static CAMELLIA: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["Camellia"],
+);
+pub static BLOWFISH: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["_BlowfishInternal"],
+);
+pub static CAST5: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["_CAST5Internal"],
+);
+#[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
+pub static IDEA: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.ciphers.algorithms",
+    &["_IDEAInternal"],
+);
+
+pub static CBC: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CBC"]);
+
 #[cfg(test)]
 mod tests {
     use super::LazyPyImport;

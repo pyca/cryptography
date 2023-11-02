@@ -42,10 +42,10 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.7.3"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.1"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Oct 27, 2023.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "3309ca66385ecb0c37f1ac1be9f88712e25aa8ec"}}
-          # Latest commit on the OpenSSL master branch, as of Oct 31, 2023.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "497a7810bcee48781aa12d4db870f6a565bd0592"}}
+          # Latest commit on the BoringSSL master branch, as of Nov 02, 2023.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "f714cb2935906a2f085c3b89d7e206af94627b56"}}
+          # Latest commit on the OpenSSL master branch, as of Nov 02, 2023.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "d13488b93690121bd50c97599760a19ead6bcd1f"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin
@@ -75,9 +75,11 @@ jobs:
         if: matrix.PYTHON.RUST
 
       - run: rustup component add llvm-tools-preview
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
       - name: Clone wycheproof
         timeout-minutes: 2
         uses: ./.github/actions/wycheproof
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
       - name: Compute config hash and set config vars
         run: |
           DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
@@ -122,7 +124,7 @@ jobs:
           # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
           key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
       - name: Create nox environment
         run: |
             nox -v --install-only
@@ -196,7 +198,7 @@ jobs:
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
       - run: '/venv/bin/nox -v --install-only'
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
@@ -247,7 +249,7 @@ jobs:
           cache-dependency-path: ci-constraints-requirements.txt
       - run: rustup component add llvm-tools-preview
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
 
       - name: Clone wycheproof
         timeout-minutes: 2
@@ -310,7 +312,7 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox"
+      - run: python -m pip install -c ci-constraints-requirements.txt "nox" "tomli; python_version < '3.11'"
 
       - uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # v2.28.0
         with:

@@ -71,8 +71,8 @@ impl HmacRef {
 }
 
 pub struct DigestBytes {
-    buf: [u8; ffi::EVP_MAX_MD_SIZE as usize],
-    len: usize,
+    pub(crate) buf: [u8; ffi::EVP_MAX_MD_SIZE as usize],
+    pub(crate) len: usize,
 }
 
 impl std::ops::Deref for DigestBytes {

@@ -13,7 +13,6 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
-from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -31,7 +30,6 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     PublicKeyTypes,
 )
 from cryptography.hazmat.primitives.ciphers import (
-    BlockCipherAlgorithm,
     CipherAlgorithm,
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
@@ -570,9 +568,6 @@ class Backend:
         return self.cipher_supported(
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )
-
-    def create_cmac_ctx(self, algorithm: BlockCipherAlgorithm) -> _CMACContext:
-        return _CMACContext(self, algorithm)
 
     def load_pem_private_key(
         self,
