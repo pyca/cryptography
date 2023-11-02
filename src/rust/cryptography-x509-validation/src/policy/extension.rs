@@ -174,7 +174,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, Extension, SubjectAlternativeName},
+        extensions::{BasicConstraints, ExtendedKeyUsage, Extension, SubjectAlternativeName},
     };
 
     use crate::{
@@ -221,6 +221,20 @@ pub(crate) mod ee {
         match policy.subject.matches(&san) {
             true => Ok(()),
             false => Err(PolicyError::Other("EE cert has no matching SAN")),
+        }
+    }
+
+    pub(crate) fn extended_key_usage<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: &Extension<'_>,
+    ) -> Result<(), PolicyError> {
+        let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
+
+        if ekus.any(|eku| eku == policy.extended_key_usage) {
+            Ok(())
+        } else {
+            Err(PolicyError::Other("required EKU not found"))
         }
     }
 }
@@ -301,6 +315,8 @@ pub(crate) mod ca {
 
         Ok(())
     }
+
+    // TODO: Validate EKUs for non-root CAs as well.
 }
 
 pub(crate) mod common {

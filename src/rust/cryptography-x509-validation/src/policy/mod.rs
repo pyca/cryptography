@@ -16,8 +16,7 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::{
-    BasicConstraints, DuplicateExtensionsError, ExtendedKeyUsage, Extension, KeyUsage,
-    SubjectAlternativeName,
+    BasicConstraints, DuplicateExtensionsError, KeyUsage, SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -348,6 +347,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 ),
                 // 5280 4.2.1.10: Name Constraints
                 ExtensionPolicy::not_present(NAME_CONSTRAINTS_OID),
+                // CA/B 7.1.2.7.10 Subscriber Certificate Extended Key Usage
+                ExtensionPolicy::present(
+                    EXTENDED_KEY_USAGE_OID,
+                    Criticality::NonCritical,
+                    Some(ee::extended_key_usage),
+                ),
             ]),
         }
     }
@@ -447,24 +452,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         Ok(())
     }
 
-    fn permits_eku(&self, eku_ext: Option<Extension<'_>>) -> Result<(), PolicyError> {
-        if let Some(ext) = eku_ext {
-            let mut ekus: ExtendedKeyUsage<'_> = ext.value()?;
-
-            if ekus.any(|eku| eku == self.extended_key_usage) {
-                Ok(())
-            } else {
-                Err(PolicyError::Other("required EKU not found"))
-            }
-        } else {
-            // If our cert doesn't specify an EKU, then we have nothing to check.
-            // This is consistent with the CA/B BRs: a root CA MUST NOT contain
-            // an EKU extension.
-            // See: CA/B Baseline Requirements v2.0.0: 7.1.2.1.2
-            Ok(())
-        }
-    }
-
     /// Checks whether the given "leaf" certificate is compatible with this policy.
     ///
     /// A "leaf" certificate is just the certificate in the leaf position during
@@ -498,11 +485,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // CA certificates must also adhere to the expected EKU.
-        self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
-
-        // TODO: Policy-level checks for EKUs, algorthms, etc.
-
         Ok(())
     }
 
@@ -514,10 +496,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         for ext_policy in self.ee_extension_policies.iter() {
             ext_policy.permits(self, cert, &extensions)?;
         }
-
-        self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
-
-        // TODO: Policy-level checks here for KUs, etc.
 
         Ok(())
     }
