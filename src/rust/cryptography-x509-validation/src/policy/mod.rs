@@ -229,8 +229,7 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
-    /// If `None`, the EE certificate must not contain a SAN.
-    pub subject: Option<Subject<'a>>,
+    pub subject: Subject<'a>,
 
     /// The validation time. All certificates validated by this policy must
     /// be valid at this time.
@@ -265,7 +264,7 @@ pub struct Policy<'a, B: CryptoOps> {
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Create a new policy with defaults for the certificate profile defined in
     /// the CA/B Forum's Basic Requirements.
-    pub fn new(ops: B, subject: Option<Subject<'a>>, time: asn1::DateTime) -> Self {
+    pub fn new(ops: B, subject: Subject<'a>, time: asn1::DateTime) -> Self {
         Self {
             ops,
             max_chain_depth: 8,
@@ -449,26 +448,18 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         match (&self.subject, san_ext) {
             // If we're given both an expected name and the cert has a SAN,
             // then we attempt to match them.
-            (Some(sub), Some(san)) => {
+            (sub, Some(san)) => {
                 let san: SubjectAlternativeName<'_> = san.value()?;
                 match sub.matches(&san) {
                     true => Ok(()),
                     false => Err(PolicyError::Other("EE cert has no matching SAN")),
                 }
             }
-            // If we aren't given a name but the cert contains a SAN,
-            // we complain loudly (under the theory that the user has misused
-            // our API and actually intended to match against the SAN).
-            (None, Some(_)) => Err(PolicyError::Other(
-                "EE cert has subjectAltName but no expected name given to match against",
-            )),
             // If we're given an expected name but the cert doesn't contain a
             // SAN, we error.
-            (Some(_), None) => Err(PolicyError::Other(
+            (_, None) => Err(PolicyError::Other(
                 "EE cert has no subjectAltName but expected name given",
             )),
-            // No expected name and no SAN, no problem.
-            (None, None) => Ok(()),
         }
     }
 

@@ -442,9 +442,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         let time = asn1::DateTime::new(2023, 7, 10, 0, 0, 0).unwrap();
         let policy: Policy<'_, _> = Policy::new(
             ops,
-            Some(policy::Subject::DNS(
-                DNSName::new("cryptography.io").unwrap(),
-            )),
+            policy::Subject::DNS(DNSName::new("cryptography.io").unwrap()),
             time,
         );
 
@@ -532,9 +530,7 @@ nLRbwHOoq7hHwg==
         let time = asn1::DateTime::new(2023, 7, 10, 0, 0, 0).unwrap();
         let policy: Policy<'_, _> = Policy::new(
             ops,
-            Some(policy::Subject::DNS(
-                DNSName::new("cryptography.io").unwrap(),
-            )),
+            policy::Subject::DNS(DNSName::new("cryptography.io").unwrap()),
             time,
         );
         assert_eq!(
