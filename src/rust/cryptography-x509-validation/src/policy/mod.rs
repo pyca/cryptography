@@ -217,21 +217,11 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// The set of permitted public key algorithms, identified by their
     /// algorithm identifiers.
-    ///
-    /// If not `None`, all certificates validated by this policy MUST
-    /// have a public key algorithm in this set.
-    ///
-    /// If `None`, all public key algorithms are permitted.
-    pub permitted_public_key_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+    pub permitted_public_key_algorithms: HashSet<AlgorithmIdentifier<'a>>,
 
     /// The set of permitted signature algorithms, identified by their
     /// algorithm identifiers.
-    ///
-    /// If not `None`, all certificates validated by this policy MUST
-    /// have a signature algorithm in this set.
-    ///
-    /// If `None`, all signature algorithms are permitted.
-    pub permitted_signature_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+    pub permitted_signature_algorithms: HashSet<AlgorithmIdentifier<'a>>,
 
     pub critical_ca_extensions: HashSet<ObjectIdentifier>,
     pub critical_ee_extensions: HashSet<ObjectIdentifier>,
@@ -247,20 +237,16 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            permitted_public_key_algorithms: Some(
-                WEBPKI_PERMITTED_SPKI_ALGORITHMS
-                    .clone()
-                    .into_iter()
-                    .cloned()
-                    .collect(),
-            ),
-            permitted_signature_algorithms: Some(
-                WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
-                    .clone()
-                    .into_iter()
-                    .cloned()
-                    .collect(),
-            ),
+            permitted_public_key_algorithms: WEBPKI_PERMITTED_SPKI_ALGORITHMS
+                .clone()
+                .into_iter()
+                .cloned()
+                .collect(),
+            permitted_signature_algorithms: WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
+                .clone()
+                .into_iter()
+                .cloned()
+                .collect(),
             critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
             critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
