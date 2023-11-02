@@ -8,9 +8,9 @@ import os
 from functools import lru_cache
 from ipaddress import IPv4Address
 
-import cryptography_vectors
 import pytest
 
+import cryptography_vectors
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.general_name import DNSName, IPAddress
