@@ -8,16 +8,13 @@ import os
 from functools import lru_cache
 from ipaddress import IPv4Address
 
+import cryptography_vectors
 import pytest
 
-import cryptography_vectors
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import (
-    PolicyBuilder,
-    Store,
-)
+from cryptography.x509.verification import PolicyBuilder, Store
 from tests.x509.test_x509 import _load_cert
 
 
@@ -43,8 +40,9 @@ LIMBO_UNSUPPORTED_FEATURES = {
     "pedantic-public-suffix-wildcard",
     # TODO: We don't support Distinguished Name Constraints yet.
     "name-constraint-dn",
-    # TODO: We don't support Extended Key Usage yet.
-    "eku",
+    # Our support for custom EKUs is limited, and we (like most impls.) don't
+    # handle all EKU conditions under CABF.
+    "pedantic-webpki-eku",
 }
 
 
@@ -61,9 +59,9 @@ def _limbo_testcase(testcase):
     assert (
         testcase["signature_algorithms"] is None
     ), f"{testcase_id}: signature_algorithms not supported yet"
-    assert (
-        testcase["extended_key_usage"] is None
-    ), f"{testcase_id}: extended_key_usage not supported yet"
+    assert testcase["extended_key_usage"] is None or testcase[
+        "extended_key_usage"
+    ] == ["serverAuth"], f"{testcase_id}: extended_key_usage not supported yet"
     assert (
         testcase["expected_peer_names"] is None
     ), f"{testcase_id}: expected_peer_names not supported yet"
