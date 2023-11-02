@@ -174,7 +174,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, Extension},
+        extensions::{BasicConstraints, Extension, SubjectAlternativeName},
     };
 
     use crate::{
@@ -199,7 +199,7 @@ pub(crate) mod ee {
     }
 
     pub(crate) fn subject_alternative_name<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
+        policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extn: &Extension<'_>,
     ) -> Result<(), PolicyError> {
@@ -217,11 +217,11 @@ pub(crate) mod ee {
             _ => (),
         };
 
-        // For Subscriber Certificates, the Subject Alternative Name MUST be present and MUST contain at
-        // least one dNSName or iPAddress GeneralName. See below for further requirements about the
-        // permitted fields and their validation requirements
-
-        Ok(())
+        let san: SubjectAlternativeName<'_> = extn.value()?;
+        match policy.subject.matches(&san) {
+            true => Ok(()),
+            false => Err(PolicyError::Other("EE cert has no matching SAN")),
+        }
     }
 }
 

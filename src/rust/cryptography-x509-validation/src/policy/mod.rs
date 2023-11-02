@@ -441,28 +441,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         Ok(())
     }
 
-    fn permits_san(&self, san_ext: Option<Extension<'_>>) -> Result<(), PolicyError> {
-        // TODO: Check if the underlying profile requires a SAN here;
-        // if it does and `name` is `None`, then fail.
-
-        match (&self.subject, san_ext) {
-            // If we're given both an expected name and the cert has a SAN,
-            // then we attempt to match them.
-            (sub, Some(san)) => {
-                let san: SubjectAlternativeName<'_> = san.value()?;
-                match sub.matches(&san) {
-                    true => Ok(()),
-                    false => Err(PolicyError::Other("EE cert has no matching SAN")),
-                }
-            }
-            // If we're given an expected name but the cert doesn't contain a
-            // SAN, we error.
-            (_, None) => Err(PolicyError::Other(
-                "EE cert has no subjectAltName but expected name given",
-            )),
-        }
-    }
-
     fn permits_eku(&self, eku_ext: Option<Extension<'_>>) -> Result<(), PolicyError> {
         if let Some(ext) = eku_ext {
             let mut ekus: ExtendedKeyUsage<'_> = ext.value()?;
@@ -539,8 +517,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // TODO: These should become extension policies.
-        self.permits_san(extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID))?;
         self.permits_eku(extensions.get_extension(&EXTENDED_KEY_USAGE_OID))?;
 
         // TODO: Policy-level checks here for KUs, etc.
