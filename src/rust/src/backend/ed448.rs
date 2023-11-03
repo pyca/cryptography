@@ -6,15 +6,14 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
-struct Ed448PrivateKey {
+pub(crate) struct Ed448PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
-struct Ed448PublicKey {
+pub(crate) struct Ed448PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
@@ -25,19 +24,17 @@ fn generate_key() -> CryptographyResult<Ed448PrivateKey> {
     })
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(ptr: usize) -> Ed448PrivateKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn private_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> Ed448PrivateKey {
     Ed448PrivateKey {
         pkey: pkey.to_owned(),
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(ptr: usize) -> Ed448PublicKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn public_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> Ed448PublicKey {
     Ed448PublicKey {
         pkey: pkey.to_owned(),
     }
@@ -161,8 +158,6 @@ impl Ed448PublicKey {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "ed448")?;
     m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
 

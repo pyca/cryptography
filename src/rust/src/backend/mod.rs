@@ -14,6 +14,7 @@ pub(crate) mod ed448;
 pub(crate) mod hashes;
 pub(crate) mod hmac;
 pub(crate) mod kdf;
+pub(crate) mod keys;
 pub(crate) mod poly1305;
 pub(crate) mod rsa;
 pub(crate) mod utils;
@@ -27,6 +28,7 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
     module.add_submodule(dh::create_module(module.py())?)?;
     module.add_submodule(dsa::create_module(module.py())?)?;
     module.add_submodule(ec::create_module(module.py())?)?;
+    module.add_submodule(keys::create_module(module.py())?)?;
 
     module.add_submodule(ed25519::create_module(module.py())?)?;
     #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]

@@ -5,15 +5,14 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
-use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
-struct X25519PrivateKey {
+pub(crate) struct X25519PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
-struct X25519PublicKey {
+pub(crate) struct X25519PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
@@ -24,19 +23,17 @@ fn generate_key() -> CryptographyResult<X25519PrivateKey> {
     })
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(ptr: usize) -> X25519PrivateKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn private_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> X25519PrivateKey {
     X25519PrivateKey {
         pkey: pkey.to_owned(),
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(ptr: usize) -> X25519PublicKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn public_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> X25519PublicKey {
     X25519PublicKey {
         pkey: pkey.to_owned(),
     }
@@ -152,8 +149,6 @@ impl X25519PublicKey {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "x25519")?;
     m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
 
