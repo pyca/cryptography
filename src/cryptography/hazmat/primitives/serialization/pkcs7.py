@@ -14,7 +14,7 @@ import typing
 from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.utils import _check_byteslike
 
 
@@ -87,6 +87,8 @@ class PKCS7SignatureBuilder:
         certificate: x509.Certificate,
         private_key: PKCS7PrivateKeyTypes,
         hash_algorithm: PKCS7HashTypes,
+        *,
+        rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
     ) -> PKCS7SignatureBuilder:
         if not isinstance(
             hash_algorithm,
@@ -109,9 +111,18 @@ class PKCS7SignatureBuilder:
         ):
             raise TypeError("Only RSA & EC keys are supported at this time.")
 
+        if rsa_padding is not None:
+            if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
+                raise TypeError("Padding must be PSS or PKCS1v15")
+            if not isinstance(private_key, rsa.RSAPrivateKey):
+                raise TypeError("Padding is only supported for RSA keys")
+
         return PKCS7SignatureBuilder(
             self._data,
-            [*self._signers, (certificate, private_key, hash_algorithm)],
+            [
+                *self._signers,
+                (certificate, private_key, hash_algorithm, rsa_padding),
+            ],
         )
 
     def add_certificate(

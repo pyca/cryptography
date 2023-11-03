@@ -12,7 +12,7 @@ import pytest
 from cryptography import x509
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 from ...utils import load_vectors_from_file, raises_unsupported_algorithm
@@ -623,6 +623,94 @@ class TestPKCS7Builder:
         options = [pkcs7.PKCS7Options.NoCerts]
         sig_no = builder.sign(serialization.Encoding.DER, options)
         assert sig_no.count(cert.public_bytes(serialization.Encoding.DER)) == 0
+
+    @pytest.mark.parametrize(
+        "pad",
+        [
+            padding.PKCS1v15(),
+            None,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA512()),
+                salt_length=padding.PSS.DIGEST_LENGTH,
+            ),
+        ],
+    )
+    def test_rsa_pkcs_padding_options(self, pad, backend):
+        data = b"hello world"
+        rsa_key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
+            ),
+            mode="rb",
+        )
+        assert isinstance(rsa_key, rsa.RSAPrivateKey)
+        rsa_cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+            loader=lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read()
+            ),
+            mode="rb",
+        )
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(rsa_cert, rsa_key, hashes.SHA512(), rsa_padding=pad)
+        )
+        options: typing.List[pkcs7.PKCS7Options] = []
+        sig = builder.sign(serialization.Encoding.DER, options)
+        # This should be a pkcs1 sha512 signature
+        if isinstance(pad, padding.PSS):
+            # PKCS7_verify can't verify a PSS sig and we don't bind CMS so
+            # we instead just check that a few things are present in the
+            # output.
+            # There should be four SHA512 OIDs in this structure
+            assert sig.count(b"\x06\t`\x86H\x01e\x03\x04\x02\x03") == 4
+            # There should be one MGF1 OID in this structure
+            assert (
+                sig.count(b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x08") == 1
+            )
+        else:
+            # This should be a pkcs1 sha512 signature
+            assert (
+                sig.count(b"\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x01\x0D") == 1
+            )
+            _pkcs7_verify(
+                serialization.Encoding.DER,
+                sig,
+                None,
+                [rsa_cert],
+                options,
+                backend,
+            )
+
+    def test_not_rsa_key_with_padding(self, backend):
+        cert, key = _load_cert_key()
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7SignatureBuilder().add_signer(
+                cert, key, hashes.SHA512(), rsa_padding=padding.PKCS1v15()
+            )
+
+    def test_rsa_invalid_padding(self, backend):
+        rsa_key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
+            ),
+            mode="rb",
+        )
+        assert isinstance(rsa_key, rsa.RSAPrivateKey)
+        rsa_cert = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+            loader=lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read()
+            ),
+            mode="rb",
+        )
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7SignatureBuilder().add_signer(
+                rsa_cert, rsa_key, hashes.SHA512(), rsa_padding=object()
+            )
 
     def test_multiple_signers(self, backend):
         data = b"hello world"

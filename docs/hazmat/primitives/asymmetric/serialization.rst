@@ -1127,7 +1127,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :param data: The data to be hashed and signed.
         :type data: :term:`bytes-like`
 
-    .. method:: add_signer(certificate, private_key, hash_algorithm)
+    .. method:: add_signer(certificate, private_key, hash_algorithm, *, rsa_padding=None)
 
         :param certificate: The :class:`~cryptography.x509.Certificate`.
 
@@ -1141,6 +1141,18 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature. This must be one of the
             types in :data:`PKCS7HashTypes`.
+
+        :param rsa_padding:
+
+            .. versionadded:: 42.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``RSAPrivateKey`` then this can be set to either
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15` or
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` to sign
+            with those respective paddings. If this is ``None`` then RSA
+            keys will default to ``PKCS1v15`` padding. All other key types **must**
+            not pass a value other than ``None``.
 
     .. method:: add_certificate(certificate)
 
