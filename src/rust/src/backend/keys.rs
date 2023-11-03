@@ -21,7 +21,7 @@ fn private_key_from_ptr(
             unsafe_skip_rsa_key_validation,
         )?
         .into_py(py)),
-        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESS), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
+        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
         openssl::pkey::Id::RSA_PSS => {
             // At the moment the way we handle RSA PSS keys is to strip the
             // PSS constraints from them and treat them as normal RSA keys
@@ -72,7 +72,7 @@ fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<p
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
     match pkey.id() {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey).into_py(py)),
-        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESS), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
+        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
         openssl::pkey::Id::RSA_PSS => {
             // At the moment the way we handle RSA PSS keys is to strip the
             // PSS constraints from them and treat them as normal RSA keys
