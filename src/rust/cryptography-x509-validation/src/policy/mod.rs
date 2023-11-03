@@ -239,21 +239,11 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// The set of permitted public key algorithms, identified by their
     /// algorithm identifiers.
-    ///
-    /// If not `None`, all certificates validated by this policy MUST
-    /// have a public key algorithm in this set.
-    ///
-    /// If `None`, all public key algorithms are permitted.
-    pub permitted_public_key_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+    pub permitted_public_key_algorithms: HashSet<AlgorithmIdentifier<'a>>,
 
     /// The set of permitted signature algorithms, identified by their
     /// algorithm identifiers.
-    ///
-    /// If not `None`, all certificates validated by this policy MUST
-    /// have a signature algorithm in this set.
-    ///
-    /// If `None`, all signature algorithms are permitted.
-    pub permitted_signature_algorithms: Option<HashSet<AlgorithmIdentifier<'a>>>,
+    pub permitted_signature_algorithms: HashSet<AlgorithmIdentifier<'a>>,
 
     common_extension_policies: Vec<ExtensionPolicy<B>>,
     ca_extension_policies: Vec<ExtensionPolicy<B>>,
@@ -270,20 +260,16 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            permitted_public_key_algorithms: Some(
-                WEBPKI_PERMITTED_SPKI_ALGORITHMS
-                    .clone()
-                    .into_iter()
-                    .cloned()
-                    .collect(),
-            ),
-            permitted_signature_algorithms: Some(
-                WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
-                    .clone()
-                    .into_iter()
-                    .cloned()
-                    .collect(),
-            ),
+            permitted_public_key_algorithms: WEBPKI_PERMITTED_SPKI_ALGORITHMS
+                .clone()
+                .into_iter()
+                .cloned()
+                .collect(),
+            permitted_signature_algorithms: WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
+                .clone()
+                .into_iter()
+                .cloned()
+                .collect(),
             common_extension_policies: Vec::from([
                 // 5280 4.2.1.8: Subject Directory Attributes
                 ExtensionPolicy::maybe_present(
@@ -411,19 +397,21 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo
-        if let Some(permitted_public_key_algorithms) = &self.permitted_public_key_algorithms {
-            if !permitted_public_key_algorithms.contains(&cert.tbs_cert.spki.algorithm) {
-                // TODO: Should probably include the OID here.
-                return Err("Forbidden public key algorithm".into());
-            }
+        if !self
+            .permitted_public_key_algorithms
+            .contains(&cert.tbs_cert.spki.algorithm)
+        {
+            // TODO: Should probably include the OID here.
+            return Err("Forbidden public key algorithm".into());
         }
 
         // CA/B 7.1.3.2 Signature AlgorithmIdentifier
-        if let Some(permitted_signature_algorithms) = &self.permitted_signature_algorithms {
-            if !permitted_signature_algorithms.contains(&cert.signature_alg) {
-                // TODO: Should probably include the OID here.
-                return Err("Forbidden signature algorithm".into());
-            }
+        if !self
+            .permitted_signature_algorithms
+            .contains(&cert.signature_alg)
+        {
+            // TODO: Should probably include the OID here.
+            return Err("Forbidden signature algorithm".into());
         }
 
         // Check that all critical extensions in this certificate are accounted for.
