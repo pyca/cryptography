@@ -7,17 +7,16 @@ use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
 use cryptography_x509::common;
-use foreign_types_shared::ForeignTypeRef;
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
-struct DHPrivateKey {
+pub(crate) struct DHPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
-struct DHPublicKey {
+pub(crate) struct DHPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
@@ -47,19 +46,17 @@ fn generate_parameters(generator: u32, key_size: u32) -> CryptographyResult<DHPa
     Ok(DHParameters { dh })
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(ptr: usize) -> DHPrivateKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn private_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> DHPrivateKey {
     DHPrivateKey {
         pkey: pkey.to_owned(),
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(ptr: usize) -> DHPublicKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn public_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> DHPublicKey {
     DHPublicKey {
         pkey: pkey.to_owned(),
     }
@@ -390,8 +387,6 @@ impl DHParameters {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "dh")?;
     m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, m)?)?;
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]

@@ -5,18 +5,17 @@
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use foreign_types_shared::ForeignTypeRef;
 use pyo3::ToPyObject;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
-struct ECPrivateKey {
+pub(crate) struct ECPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
     #[pyo3(get)]
     curve: pyo3::Py<pyo3::PyAny>,
 }
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
-struct ECPublicKey {
+pub(crate) struct ECPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
     #[pyo3(get)]
     curve: pyo3::Py<pyo3::PyAny>,
@@ -121,10 +120,10 @@ fn curve_supported(py: pyo3::Python<'_>, py_curve: &pyo3::PyAny) -> bool {
     curve_from_py_curve(py, py_curve).is_ok()
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPrivateKey> {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn private_key_from_pkey(
+    py: pyo3::Python<'_>,
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> CryptographyResult<ECPrivateKey> {
     let curve = py_curve_from_curve(py, pkey.ec_key().unwrap().group())?;
     check_key_infinity(&pkey.ec_key().unwrap())?;
     Ok(ECPrivateKey {
@@ -133,10 +132,10 @@ fn private_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<
     })
 }
 
-#[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<ECPublicKey> {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn public_key_from_pkey(
+    py: pyo3::Python<'_>,
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> CryptographyResult<ECPublicKey> {
     let ec = pkey.ec_key().map_err(|e| {
         pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {}", e))
     })?;
@@ -505,8 +504,6 @@ impl ECPublicKey {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "ec")?;
     m.add_function(pyo3::wrap_pyfunction!(curve_supported, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(generate_private_key, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(derive_private_key, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;

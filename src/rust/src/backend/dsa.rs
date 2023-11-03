@@ -5,14 +5,13 @@
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use foreign_types_shared::ForeignTypeRef;
 
 #[pyo3::prelude::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPrivateKey"
 )]
-struct DsaPrivateKey {
+pub(crate) struct DsaPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
@@ -21,7 +20,7 @@ struct DsaPrivateKey {
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPublicKey"
 )]
-struct DsaPublicKey {
+pub(crate) struct DsaPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
@@ -34,19 +33,17 @@ struct DsaParameters {
     dsa: openssl::dsa::Dsa<openssl::pkey::Params>,
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(ptr: usize) -> DsaPrivateKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn private_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> DsaPrivateKey {
     DsaPrivateKey {
         pkey: pkey.to_owned(),
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(ptr: usize) -> DsaPublicKey {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+pub(crate) fn public_key_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> DsaPublicKey {
     DsaPublicKey {
         pkey: pkey.to_owned(),
     }
@@ -293,8 +290,6 @@ impl DsaParameters {
 
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "dsa")?;
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_private_numbers, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_public_numbers, m)?)?;

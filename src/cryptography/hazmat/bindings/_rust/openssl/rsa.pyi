@@ -11,11 +11,6 @@ def generate_private_key(
     public_exponent: int,
     key_size: int,
 ) -> rsa.RSAPrivateKey: ...
-def private_key_from_ptr(
-    ptr: int,
-    unsafe_skip_rsa_key_validation: bool,
-) -> rsa.RSAPrivateKey: ...
-def public_key_from_ptr(ptr: int) -> rsa.RSAPublicKey: ...
 def from_private_numbers(
     numbers: rsa.RSAPrivateNumbers,
     unsafe_skip_rsa_key_validation: bool,
