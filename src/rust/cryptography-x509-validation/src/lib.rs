@@ -19,9 +19,7 @@ use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::Extensions;
 use cryptography_x509::{
     certificate::Certificate,
-    extensions::{
-        DuplicateExtensionsError, NameConstraints, SequenceOfSubtrees, SubjectAlternativeName,
-    },
+    extensions::{NameConstraints, SequenceOfSubtrees, SubjectAlternativeName},
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
@@ -44,12 +42,6 @@ impl From<PolicyError> for ValidationError {
 impl From<asn1::ParseError> for ValidationError {
     fn from(value: asn1::ParseError) -> Self {
         ValidationError::Policy(PolicyError::Malformed(value))
-    }
-}
-
-impl From<DuplicateExtensionsError> for ValidationError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        ValidationError::Policy(PolicyError::DuplicateExtension(value))
     }
 }
 
@@ -151,7 +143,9 @@ where
         constraints: &mut AccumulatedNameConstraints<'work>,
         working_cert: &'a Certificate<'work>,
     ) -> Result<(), ValidationError> {
-        let extensions: Extensions<'work> = working_cert.extensions()?;
+        let extensions: Extensions<'work> = working_cert
+            .extensions()
+            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             let nc: NameConstraints<'work> = nc.value()?;
             if let Some(permitted_subtrees) = nc.permitted_subtrees {
@@ -199,7 +193,9 @@ where
         constraints: &AccumulatedNameConstraints<'work>,
         working_cert: &Certificate<'work>,
     ) -> Result<(), ValidationError> {
-        let extensions = working_cert.extensions()?;
+        let extensions = working_cert
+            .extensions()
+            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
             let sans: SubjectAlternativeName<'_> = sans.value()?;
             for san in sans.clone() {
