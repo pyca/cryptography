@@ -452,14 +452,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
             let key_usage: KeyUsage<'_> = key_usage.value()?;
             if key_usage.key_cert_sign() {
-                return self.permits_ca(leaf);
+                // NOTE: Pass in a current depth of 1 here, since we're
+                // checking a CA in the leaf position.
+                return self.permits_ca(leaf, 1);
             }
         }
         self.permits_ee(leaf)
     }
 
     /// Checks whether the given CA certificate is compatible with this policy.
-    pub(crate) fn permits_ca(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
+    pub(crate) fn permits_ca(
+        &self,
+        cert: &Certificate<'_>,
+        current_depth: u8,
+    ) -> Result<(), PolicyError> {
         self.permits_basic(cert)?;
 
         // 5280 4.1.2.6: Subject
@@ -469,6 +475,25 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // meaning that an CA with an empty subject cannot occur in a built chain.
 
         let extensions = cert.extensions()?;
+
+        // NOTE: This conceptually belongs in `valid_issuer`, but is easier
+        // to test here.
+        if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
+            let bc: BasicConstraints = bc
+                .value()
+                .map_err(|_| PolicyError::Other("issuer has malformed basicConstraints"))?;
+
+            // NOTE: `current_depth` starts at 1, indicating the EE cert in the chain.
+            // Path length constraints only concern the intermediate portion of a chain,
+            // so we have to adjust by 1.
+            if bc
+                .path_length
+                .map_or(false, |len| (current_depth as u64) - 1 > len)
+            {
+                return Err(PolicyError::Other("path length constraint violated"));
+            }
+        }
+
         for ext_policy in self.ca_extension_policies.iter() {
             ext_policy.permits(self, cert, &extensions)?;
         }
@@ -504,26 +529,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &Certificate<'_>,
         current_depth: u8,
     ) -> Result<u8, PolicyError> {
-        // The issuer needs to be a valid CA.
-        self.permits_ca(issuer)?;
-
-        let issuer_extensions = issuer.extensions()?;
-
-        if let Some(bc) = issuer_extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let bc: BasicConstraints = bc
-                .value()
-                .map_err(|_| PolicyError::Other("issuer has malformed basicConstraints"))?;
-
-            // NOTE: `current_depth` starts at 1, indicating the EE cert in the chain.
-            // Path length constraints only concern the intermediate portion of a chain,
-            // so we have to adjust by 1.
-            if bc
-                .path_length
-                .map_or(false, |len| (current_depth as u64) - 1 > len)
-            {
-                return Err(PolicyError::Other("path length constraint violated"));
-            }
-        }
+        // The issuer needs to be a valid CA at the current depth.
+        self.permits_ca(issuer, current_depth)?;
 
         let pk = self
             .ops
