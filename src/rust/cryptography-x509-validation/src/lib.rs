@@ -39,11 +39,11 @@ impl From<PolicyError> for ValidationError {
     }
 }
 
-impl From<asn1::ParseError> for ValidationError {
-    fn from(value: asn1::ParseError) -> Self {
-        ValidationError::Policy(PolicyError::Malformed(value))
-    }
-}
+// impl From<asn1::ParseError> for ValidationError {
+//     fn from(value: asn1::ParseError) -> Self {
+//         ValidationError::Policy(PolicyError::Malformed(value))
+//     }
+// }
 
 #[derive(Default)]
 pub struct AccumulatedNameConstraints<'a> {
@@ -147,7 +147,7 @@ where
             .extensions()
             .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            let nc: NameConstraints<'work> = nc.value()?;
+            let nc: NameConstraints<'work> = nc.value().map_err(PolicyError::Malformed)?;
             if let Some(permitted_subtrees) = nc.permitted_subtrees {
                 constraints
                     .permitted
@@ -197,7 +197,7 @@ where
             .extensions()
             .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-            let sans: SubjectAlternativeName<'_> = sans.value()?;
+            let sans: SubjectAlternativeName<'_> = sans.value().map_err(PolicyError::Malformed)?;
             for san in sans.clone() {
                 // If there are no applicable constraints, the SAN is considered valid so let's default to true.
                 let mut permit = true;
