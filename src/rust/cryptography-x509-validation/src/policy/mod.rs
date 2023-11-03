@@ -477,7 +477,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         let extensions = cert.extensions()?;
 
         // NOTE: This conceptually belongs in `valid_issuer`, but is easier
-        // to test here.
+        // to test here. It's also conceptually an extension policy, but
+        // requires a bit of extra external state (`current_depth`) that isn't
+        // presently convenient to push into that layer.
         if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
             let bc: BasicConstraints = bc
                 .value()
