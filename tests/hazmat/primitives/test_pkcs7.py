@@ -709,7 +709,10 @@ class TestPKCS7Builder:
         )
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                rsa_cert, rsa_key, hashes.SHA512(), rsa_padding=object()
+                rsa_cert,
+                rsa_key,
+                hashes.SHA512(),
+                rsa_padding=object(),  # type: ignore[arg-type]
             )
 
     def test_multiple_signers(self, backend):

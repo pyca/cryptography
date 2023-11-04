@@ -67,6 +67,7 @@ class PKCS7SignatureBuilder:
                 x509.Certificate,
                 PKCS7PrivateKeyTypes,
                 PKCS7HashTypes,
+                padding.PSS | padding.PKCS1v15 | None,
             ]
         ] = [],
         additional_certs: list[x509.Certificate] = [],
