@@ -105,6 +105,7 @@ fn sign_and_serialize<'p>(
         pyo3::PyRef<'p, x509::certificate::Certificate>,
         &pyo3::PyAny,
         &pyo3::PyAny,
+        &pyo3::PyAny,
     )> = builder.getattr(pyo3::intern!(py, "_signers"))?.extract()?;
 
     let py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>> = builder
@@ -117,7 +118,7 @@ fn sign_and_serialize<'p>(
         .iter()
         .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
-    for (cert, py_private_key, py_hash_alg) in &py_signers {
+    for (cert, py_private_key, py_hash_alg, rsa_padding) in &py_signers {
         let (authenticated_attrs, signature) = if options
             .contains(types::PKCS7_NO_ATTRIBUTES.get(py)?)?
         {
@@ -127,7 +128,7 @@ fn sign_and_serialize<'p>(
                     py,
                     py_private_key,
                     py_hash_alg,
-                    py.None().into_ref(py),
+                    rsa_padding,
                     &data_with_header,
                 )?,
             )
@@ -174,13 +175,7 @@ fn sign_and_serialize<'p>(
                 Some(common::Asn1ReadableOrWritable::new_write(
                     asn1::SetOfWriter::new(authenticated_attrs),
                 )),
-                x509::sign::sign_data(
-                    py,
-                    py_private_key,
-                    py_hash_alg,
-                    py.None().into_ref(py),
-                    &signed_data,
-                )?,
+                x509::sign::sign_data(py, py_private_key, py_hash_alg, rsa_padding, &signed_data)?,
             )
         };
 
@@ -206,7 +201,7 @@ fn sign_and_serialize<'p>(
                 py,
                 py_private_key,
                 py_hash_alg,
-                py.None().into_ref(py),
+                rsa_padding,
             )?,
             encrypted_digest: signature,
             unauthenticated_attributes: None,
