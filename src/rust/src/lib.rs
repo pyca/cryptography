@@ -3,6 +3,8 @@
 // for complete details.
 
 #![deny(rust_2018_idioms)]
+// Work-around for https://github.com/PyO3/pyo3/issues/3561
+#![allow(unknown_lints, clippy::unnecessary_fallible_conversions)]
 
 mod asn1;
 mod backend;
