@@ -41,6 +41,8 @@ Changelog
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
   on LibreSSL.
+* Added support for RSA PSS signatures in PKCS7 with
+  :meth:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder.add_signer`.
 
 .. _v41-0-5:
 

@@ -252,9 +252,12 @@ class TestRSA:
 
     @pytest.mark.supported(
         only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+            not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and (
+                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
+            )
         ),
         skip_message="Does not support RSA PSS loading",
     )
@@ -291,9 +294,12 @@ class TestRSA:
 
     @pytest.mark.supported(
         only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+            not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and (
+                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
+            )
         ),
         skip_message="Does not support RSA PSS loading",
     )
@@ -315,9 +321,12 @@ class TestRSA:
 
     @pytest.mark.supported(
         only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            or backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            or backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+            backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            and (
+                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
+                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
+                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
+            )
         ),
         skip_message="Test requires a backend without RSA-PSS key support",
     )
