@@ -3,7 +3,6 @@
 // for complete details.
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
-
 // Work-around for https://github.com/PyO3/pyo3/issues/3561
 #![allow(clippy::unnecessary_fallible_conversions)]
 
