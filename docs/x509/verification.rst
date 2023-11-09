@@ -57,6 +57,12 @@ chain building, etc.
 
         The verifier's validation time.
 
+    .. attribute:: max_chain_depth
+
+        :type: :class:`int`
+
+        The verifier's maximum intermediate CA chain depth.
+
     .. attribute:: store
 
         :type: :class:`Store`
