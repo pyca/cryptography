@@ -161,15 +161,11 @@ fn create_server_verifier(
     subject: pyo3::Py<pyo3::PyAny>,
     store: pyo3::Py<PyStore>,
     time: Option<&pyo3::PyAny>,
-    max_chain_depth: Option<&pyo3::types::PyInt>,
+    max_chain_depth: Option<u8>,
 ) -> pyo3::PyResult<PyServerVerifier> {
     let time = match time {
         Some(time) => py_to_datetime(py, time)?,
         None => datetime_now(py)?,
-    };
-    let max_chain_depth: Option<u8> = match max_chain_depth {
-        Some(max_chain_depth) => max_chain_depth.extract()?,
-        None => None,
     };
 
     let subject_owner = build_subject_owner(py, &subject)?;
