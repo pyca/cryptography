@@ -164,6 +164,79 @@ also support providing integrity for associated data which is not encrypted.
             when the ciphertext has been changed, but will also occur when the
             key, nonce, or associated data are wrong.
 
+.. class:: AESGCMSIV(key)
+
+    .. versionadded:: 42.0.0
+
+    The AES-GCM-SIV construction is defined in :rfc:`8452` and is composed of
+    the :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
+    cipher utilizing Galois Counter Mode (GCM) and a synthetic initialization
+    vector (SIV).
+
+    :param key: A 128, 192, or 256-bit key. This **must** be kept secret.
+    :type key: :term:`bytes-like`
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the version of
+        OpenSSL does not support AES-GCM-SIV.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers.aead import AESGCMSIV
+        >>> data = b"a secret message"
+        >>> aad = b"authenticated but unencrypted data"
+        >>> key = AESGCMSIV.generate_key(bit_length=128)
+        >>> aesgcmsiv = AESGCMSIV(key)
+        >>> nonce = os.urandom(12)
+        >>> ct = aesgcmsiv.encrypt(nonce, data, aad)
+        >>> aesgcmsiv.decrypt(nonce, ct, aad)
+        b'a secret message'
+
+    .. classmethod:: generate_key(bit_length)
+
+        Securely generates a random AES-GCM-SIV key.
+
+        :param bit_length: The bit length of the key to generate. Must be
+            128, 192, or 256.
+
+        :returns bytes: The generated key.
+
+    .. method:: encrypt(nonce, data, associated_data)
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output of this can be
+        passed directly to the ``decrypt`` method.
+
+        :param nonce: A 12-byte value.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :returns bytes: The ciphertext bytes with the 16 byte tag appended.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`32` - 1 bytes.
+
+    .. method:: decrypt(nonce, data, associated_data)
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail.
+
+        :param nonce: A 12-byte value.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
 .. class:: AESOCB3(key)
 
     .. versionadded:: 36.0.0
