@@ -468,7 +468,7 @@ class _SSHFormatECDSA:
         self, data: memoryview
     ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make ECDSA public key from data."""
-        (curve_name, point), data = self.get_public(data)
+        (_, point), data = self.get_public(data)
         public_key = ec.EllipticCurvePublicKey.from_encoded_point(
             self.curve, point.tobytes()
         )
@@ -684,7 +684,8 @@ def load_ssh_private_key(
     if key_type != pub_key_type:
         raise ValueError("Corrupt data: key type mismatch")
     private_key, edata = kformat.load_private(edata, pubfields)
-    comment, edata = _get_sshstr(edata)
+    # We don't use the comment
+    _, edata = _get_sshstr(edata)
 
     # yes, SSH does padding check *after* all other parsing is done.
     # need to follow as it writes zero-byte padding too.
