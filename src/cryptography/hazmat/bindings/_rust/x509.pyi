@@ -41,6 +41,7 @@ def create_server_verifier(
     name: x509.verification.Subject,
     store: Store,
     time: datetime.datetime | None,
+    max_chain_depth: int | None,
 ) -> x509.verification.ServerVerifier: ...
 
 class Sct: ...
@@ -56,6 +57,8 @@ class ServerVerifier:
     def validation_time(self) -> datetime.datetime: ...
     @property
     def store(self) -> Store: ...
+    @property
+    def max_chain_depth(self) -> int: ...
     def verify(
         self,
         leaf: x509.Certificate,
