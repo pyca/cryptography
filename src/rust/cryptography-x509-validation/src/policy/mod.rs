@@ -150,6 +150,17 @@ pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentif
         ])
     });
 
+/// A default reasonable maximum chain depth.
+///
+/// This depth was chosen to balance between common validation lengths
+/// (chains in the Web PKI are ordinarily no longer than 2 or 3 intermediates
+/// in the longest cases) and support for pathological cases.
+///
+/// Relatively little prior art for selecting a default depth exists;
+/// OpenSSL defaults to a limit of 100, which is far more permissive than
+/// necessary.
+const DEFAULT_MAX_CHAIN_DEPTH: u8 = 8;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum PolicyError {
     Malformed(asn1::ParseError),
@@ -218,12 +229,11 @@ impl From<IPAddress> for Subject<'_> {
 pub struct Policy<'a, B: CryptoOps> {
     ops: B,
 
-    /// A top-level constraint on the length of paths constructed under
-    /// this policy.
+    /// A top-level constraint on the length of intermediate CA paths
+    /// constructed under this policy.
     ///
-    /// Note that this has different semantics from `pathLenConstraint`:
-    /// it controls the *overall* non-self-issued chain length, not the number
-    /// of non-self-issued intermediates in the chain.
+    /// Per RFC 5280, this limits the length of the non-self-issued intermediate
+    /// CA chain, without counting either the leaf or trust anchor.
     pub max_chain_depth: u8,
 
     /// A subject (i.e. DNS name or other name format) that any EE certificates
@@ -261,7 +271,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     ) -> Self {
         Self {
             ops,
-            max_chain_depth: max_chain_depth.unwrap_or(8),
+            max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),

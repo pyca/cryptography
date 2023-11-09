@@ -72,6 +72,20 @@ class PolicyBuilder:
             max_chain_depth=new_max_chain_depth,
         )
 
+    def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder:
+        """
+        Sets the maximum chain depth.
+        """
+
+        if self._max_chain_depth is not None:
+            raise ValueError("The maximum chain depth may only be set once.")
+
+        return PolicyBuilder(
+            time=self._time,
+            store=self._store,
+            max_chain_depth=new_max_chain_depth,
+        )
+
     def build_server_verifier(self, subject: Subject) -> ServerVerifier:
         """
         Builds a verifier for verifying server certificates.
