@@ -38,7 +38,11 @@ class PolicyBuilder:
         if self._time is not None:
             raise ValueError("The validation time may only be set once.")
 
-        return PolicyBuilder(time=new_time, store=self._store)
+        return PolicyBuilder(
+            time=new_time,
+            store=self._store,
+            max_chain_depth=self._max_chain_depth,
+        )
 
     def store(self, new_store: Store) -> PolicyBuilder:
         """
@@ -48,7 +52,11 @@ class PolicyBuilder:
         if self._store is not None:
             raise ValueError("The trust store may only be set once.")
 
-        return PolicyBuilder(time=self._time, store=new_store)
+        return PolicyBuilder(
+            time=self._time,
+            store=new_store,
+            max_chain_depth=self._max_chain_depth,
+        )
 
     def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder:
         """
