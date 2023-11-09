@@ -242,6 +242,10 @@ class TestPolicyBuilder:
         with pytest.raises(ValueError):
             PolicyBuilder().store(dummy_store()).store(dummy_store())
 
+    def test_max_chain_depth_already_set(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
     def test_ipaddress_subject(self):
         policy = (
             PolicyBuilder()
