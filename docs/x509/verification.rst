@@ -89,6 +89,20 @@ chain building, etc.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
+    .. method:: max_chain_depth(new_max_chain_depth)
+
+        Sets the verifier's maximum chain building depth.
+
+        This depth behaves tracks the length of the intermediate CA
+        chain: a maximum depth of zero means that the leaf must be directly
+        issued by a member of the store, a depth of one means no more than
+        one intermediate CA, and so forth. Note that self-issued intermediates
+        don't count against the chain depth, per RFC 5280.
+
+        :param new_max_chain_depth: The maximum depth to allow in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
     .. method:: build_server_verifier(subject)
 
         Builds a verifier for verifying server certificates.
