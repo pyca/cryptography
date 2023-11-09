@@ -215,8 +215,7 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
-    /// If `None`, the EE certificate must not contain a SAN.
-    pub subject: Option<Subject<'a>>,
+    pub subject: Subject<'a>,
 
     /// The validation time. All certificates validated by this policy must
     /// be valid at this time.
@@ -242,7 +241,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// the CA/B Forum's Basic Requirements.
     pub fn new(
         ops: B,
-        subject: Option<Subject<'a>>,
+        subject: Subject<'a>,
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
     ) -> Self {
@@ -398,7 +397,12 @@ mod tests {
     #[test]
     fn test_policy_critical_extensions() {
         let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::new(NullOps {}, None, time, None);
+        let policy = Policy::new(
+            NullOps {},
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            time,
+            None,
+        );
 
         assert_eq!(
             policy.critical_ca_extensions,

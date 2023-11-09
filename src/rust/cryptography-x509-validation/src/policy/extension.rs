@@ -176,7 +176,8 @@ mod tests {
     use super::{Criticality, ExtensionPolicy};
     use crate::ops::tests::{cert, v1_cert_pem, NullOps};
     use crate::ops::CryptoOps;
-    use crate::policy::{Policy, PolicyError};
+    use crate::policy::{Policy, PolicyError, Subject};
+    use crate::types::DNSName;
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
@@ -236,7 +237,12 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
-        let policy = Policy::new(ops, None, epoch(), None);
+        let policy = Policy::new(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+        );
 
         // Test a policy that stipulates that a given extension MUST be present.
         let extension_policy = ExtensionPolicy::present(
@@ -280,7 +286,12 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
-        let policy = Policy::new(ops, None, epoch(), None);
+        let policy = Policy::new(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+        );
 
         // Test a policy that stipulates that a given extension CAN be present.
         let extension_policy = ExtensionPolicy::maybe_present(
@@ -316,7 +327,12 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
-        let policy = Policy::new(ops, None, epoch(), None);
+        let policy = Policy::new(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+        );
 
         // Test a policy that stipulates that a given extension MUST NOT be present.
         let extension_policy = ExtensionPolicy::not_present(BASIC_CONSTRAINTS_OID);
@@ -348,7 +364,12 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
-        let policy = Policy::new(ops, None, epoch(), None);
+        let policy = Policy::new(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+        );
 
         // Test a present policy that stipulates that a given extension MUST be critical.
         let extension_policy = ExtensionPolicy::present(
@@ -376,7 +397,12 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = NullOps {};
-        let policy = Policy::new(ops, None, epoch(), None);
+        let policy = Policy::new(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+        );
 
         // Test a maybe present policy that stipulates that a given extension MUST be critical.
         let extension_policy = ExtensionPolicy::maybe_present(
