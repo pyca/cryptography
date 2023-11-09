@@ -10,7 +10,6 @@ from ipaddress import IPv4Address
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.verification import PolicyBuilder, Store
-from vectors import cryptography_vectors
 
 LIMBO_UNSUPPORTED_FEATURES = {
     # NOTE: Path validation is required to reject wildcards on public suffixes,
@@ -100,10 +99,8 @@ def _limbo_testcase(testcase):
 
 def test_limbo(subtests, pytestconfig):
     limbo_root = pytestconfig.getoption("--x509-limbo-root", skip=True)
-    limbo_file = cryptography_vectors.open_vector_file(
-        os.path.join(limbo_root, "limbo.json"), "r"
-    )
-    with limbo_file:
+    limbo_path = os.path.join(limbo_root, "limbo.json")
+    with open(limbo_path) as limbo_file:
         limbo = json.load(limbo_file)
         testcases = limbo["testcases"]
         for testcase in testcases:
