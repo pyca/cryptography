@@ -35,6 +35,10 @@ class TestPolicyBuilder:
         with pytest.raises(ValueError):
             PolicyBuilder().store(dummy_store()).store(dummy_store())
 
+    def test_max_chain_depth_already_set(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
     def test_ipaddress_subject(self):
         policy = (
             PolicyBuilder()
@@ -71,15 +75,18 @@ class TestPolicyBuilder:
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
         store = dummy_store()
+        max_chain_depth = 16
 
         builder = PolicyBuilder()
         builder = builder.time(now)
         builder = builder.store(store)
+        builder = builder.max_chain_depth(max_chain_depth)
 
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))
         assert verifier.subject == DNSName("cryptography.io")
         assert verifier.validation_time == now
         assert verifier.store == store
+        assert verifier.max_chain_depth == max_chain_depth
 
     def test_build_server_verifier_missing_store(self):
         with pytest.raises(
