@@ -25,9 +25,11 @@ class PolicyBuilder:
         *,
         time: datetime.datetime | None = None,
         store: Store | None = None,
+        max_chain_depth: int | None = None,
     ):
         self._time = time
         self._store = store
+        self._max_chain_depth = max_chain_depth
 
     def time(self, new_time: datetime.datetime) -> PolicyBuilder:
         """
@@ -36,7 +38,11 @@ class PolicyBuilder:
         if self._time is not None:
             raise ValueError("The validation time may only be set once.")
 
-        return PolicyBuilder(time=new_time, store=self._store)
+        return PolicyBuilder(
+            time=new_time,
+            store=self._store,
+            max_chain_depth=self._max_chain_depth,
+        )
 
     def store(self, new_store: Store) -> PolicyBuilder:
         """
@@ -46,7 +52,25 @@ class PolicyBuilder:
         if self._store is not None:
             raise ValueError("The trust store may only be set once.")
 
-        return PolicyBuilder(time=self._time, store=new_store)
+        return PolicyBuilder(
+            time=self._time,
+            store=new_store,
+            max_chain_depth=self._max_chain_depth,
+        )
+
+    def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder:
+        """
+        Sets the maximum chain depth.
+        """
+
+        if self._max_chain_depth is not None:
+            raise ValueError("The maximum chain depth may only be set once.")
+
+        return PolicyBuilder(
+            time=self._time,
+            store=self._store,
+            max_chain_depth=new_max_chain_depth,
+        )
 
     def build_server_verifier(self, subject: Subject) -> ServerVerifier:
         """
@@ -60,4 +84,5 @@ class PolicyBuilder:
             subject,
             self._store,
             self._time,
+            self._max_chain_depth,
         )

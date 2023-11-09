@@ -300,8 +300,7 @@ where
         // against the EE cert's SANs.
         self.policy.permits_leaf(leaf)?;
 
-        // NOTE: We start the chain depth at 1, indicating the EE.
-        let result = self.build_chain_inner(leaf, 1, true);
+        let result = self.build_chain_inner(leaf, 0, true);
         match result {
             Ok(result) => {
                 let (chain, _) = result;
@@ -440,6 +439,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
             ops,
             policy::Subject::DNS(DNSName::new("cryptography.io").unwrap()),
             time,
+            None,
         );
 
         let chain = verify(&ee, [intermediate.clone()], &policy, &store).unwrap();
@@ -528,6 +528,7 @@ nLRbwHOoq7hHwg==
             ops,
             policy::Subject::DNS(DNSName::new("cryptography.io").unwrap()),
             time,
+            None,
         );
         assert_eq!(
             verify(&ee, [intermediate.clone()], &policy, &store).err(),

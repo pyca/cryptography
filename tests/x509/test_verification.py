@@ -84,13 +84,14 @@ def _limbo_testcase(testcase):
         if validation_time is not None
         else None
     )
+    max_chain_depth = testcase["max_chain_depth"]
     should_pass = testcase["expected_result"] == "SUCCESS"
 
-    verifier = (
-        PolicyBuilder(time=validation_time)
-        .store(Store(trusted_certs))
-        .build_server_verifier(peer_name)
-    )
+    verifier = PolicyBuilder(
+        time=validation_time,
+        store=Store(trusted_certs),
+        max_chain_depth=max_chain_depth,
+    ).build_server_verifier(peer_name)
 
     try:
         verifier.verify(peer_certificate, untrusted_intermediates)
@@ -277,15 +278,18 @@ class TestPolicyBuilder:
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
         store = dummy_store()
+        max_chain_depth = 16
 
         builder = PolicyBuilder()
         builder = builder.time(now)
         builder = builder.store(store)
+        builder = builder.max_chain_depth(max_chain_depth)
 
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))
         assert verifier.subject == DNSName("cryptography.io")
         assert verifier.validation_time == now
         assert verifier.store == store
+        assert verifier.max_chain_depth == max_chain_depth
 
     def test_build_server_verifier_missing_store(self):
         with pytest.raises(

@@ -253,10 +253,15 @@ pub struct Policy<'a, B: CryptoOps> {
 impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Create a new policy with defaults for the certificate profile defined in
     /// the CA/B Forum's Basic Requirements.
-    pub fn new(ops: B, subject: Subject<'a>, time: asn1::DateTime) -> Self {
+    pub fn new(
+        ops: B,
+        subject: Subject<'a>,
+        time: asn1::DateTime,
+        max_chain_depth: Option<u8>,
+    ) -> Self {
         Self {
             ops,
-            max_chain_depth: 8,
+            max_chain_depth: max_chain_depth.unwrap_or(8),
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
@@ -452,9 +457,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
             let key_usage: KeyUsage<'_> = key_usage.value()?;
             if key_usage.key_cert_sign() {
-                // NOTE: Pass in a current depth of 1 here, since we're
-                // checking a CA in the leaf position.
-                return self.permits_ca(leaf, 1);
+                return self.permits_ca(leaf, 0);
             }
         }
         self.permits_ee(leaf)
@@ -485,12 +488,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .value()
                 .map_err(|_| PolicyError::Other("issuer has malformed basicConstraints"))?;
 
-            // NOTE: `current_depth` starts at 1, indicating the EE cert in the chain.
-            // Path length constraints only concern the intermediate portion of a chain,
-            // so we have to adjust by 1.
             if bc
                 .path_length
-                .map_or(false, |len| (current_depth as u64) - 1 > len)
+                .map_or(false, |len| current_depth as u64 > len)
             {
                 return Err(PolicyError::Other("path length constraint violated"));
             }

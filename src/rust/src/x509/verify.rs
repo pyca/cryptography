@@ -9,6 +9,7 @@ use cryptography_x509_validation::{
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
+use pyo3::IntoPy;
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
@@ -94,6 +95,11 @@ impl PyServerVerifier {
     #[getter]
     fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         datetime_to_py(py, &self.as_policy().validation_time)
+    }
+
+    #[getter]
+    fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        Ok(self.as_policy().max_chain_depth.into_py(py))
     }
 
     fn verify<'p>(
@@ -197,10 +203,15 @@ fn create_server_verifier(
     subject: pyo3::Py<pyo3::PyAny>,
     store: pyo3::Py<PyStore>,
     time: Option<&pyo3::PyAny>,
+    max_chain_depth: Option<&pyo3::PyAny>,
 ) -> pyo3::PyResult<PyServerVerifier> {
     let time = match time {
         Some(time) => py_to_datetime(py, time)?,
         None => datetime_now(py)?,
+    };
+    let max_chain_depth: Option<u8> = match max_chain_depth {
+        Some(max_chain_depth) => max_chain_depth.extract()?,
+        None => None,
     };
 
     let subject_owner = build_subject_owner(py, &subject)?;
@@ -210,6 +221,7 @@ fn create_server_verifier(
             PyCryptoOps {},
             subject,
             time,
+            max_chain_depth,
         )))
     })?;
 

@@ -415,6 +415,7 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
         );
 
         // Test a policy that stipulates that a given extension MUST be present.
@@ -463,6 +464,7 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
         );
 
         // Test a policy that stipulates that a given extension CAN be present.
@@ -503,6 +505,7 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
         );
 
         // Test a policy that stipulates that a given extension MUST NOT be present.
@@ -539,6 +542,7 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
         );
 
         // Test a present policy that stipulates that a given extension MUST be critical.
@@ -571,6 +575,7 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
         );
 
         // Test a maybe present policy that stipulates that a given extension MUST be critical.
