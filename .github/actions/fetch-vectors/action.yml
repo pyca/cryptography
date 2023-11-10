@@ -1,0 +1,18 @@
+name: Clone test vectors
+description: Clones the wycheproof and x509-limbo repositories
+
+runs:
+  using: "composite"
+
+  steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      with:
+        repository: "google/wycheproof"
+        path: "wycheproof"
+        ref: "master"
+
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      with:
+        repository: "trailofbits/x509-limbo"
+        path: "x509-limbo"
+        ref: "main"
