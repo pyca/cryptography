@@ -12,10 +12,7 @@ use crate::ops::CryptoOps;
 
 use super::{Policy, PolicyError};
 
-// TODO: Remove `dead_code` attributes once we start using these helpers.
-
 /// Represents different criticality states for an extension.
-#[allow(dead_code)]
 pub(crate) enum Criticality {
     /// The extension MUST be marked as critical.
     Critical,
@@ -25,7 +22,6 @@ pub(crate) enum Criticality {
     NonCritical,
 }
 
-#[allow(dead_code)]
 impl Criticality {
     pub(crate) fn permits(&self, critical: bool) -> bool {
         match (self, critical) {
@@ -38,16 +34,13 @@ impl Criticality {
     }
 }
 
-#[allow(dead_code)]
 type PresentExtensionValidatorCallback<B> =
     fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), PolicyError>;
 
-#[allow(dead_code)]
 type MaybeExtensionValidatorCallback<B> =
     fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), PolicyError>;
 
 /// Represents different validation states for an extension.
-#[allow(dead_code)]
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
     /// The extension MUST NOT be present.
     NotPresent,
@@ -69,13 +62,11 @@ pub(crate) enum ExtensionValidator<B: CryptoOps> {
 
 /// A "policy" for validating a specific X.509v3 extension, identified by
 /// its OID.
-#[allow(dead_code)]
 pub(crate) struct ExtensionPolicy<B: CryptoOps> {
     pub(crate) oid: asn1::ObjectIdentifier,
     pub(crate) validator: ExtensionValidator<B>,
 }
 
-#[allow(dead_code)]
 impl<B: CryptoOps> ExtensionPolicy<B> {
     pub(crate) fn not_present(oid: ObjectIdentifier) -> Self {
         Self {
