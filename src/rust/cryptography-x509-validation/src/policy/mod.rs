@@ -16,10 +16,7 @@ use cryptography_x509::common::{
 };
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::name::GeneralName;
-use cryptography_x509::oid::{
-    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID,
-    KEY_USAGE_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-};
+use cryptography_x509::oid::{EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID};
 
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress, IPConstraint};
@@ -143,11 +140,6 @@ pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentif
         ])
     });
 
-const RFC5280_CRITICAL_CA_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, KEY_USAGE_OID];
-const RFC5280_CRITICAL_EE_EXTENSIONS: &[asn1::ObjectIdentifier] =
-    &[BASIC_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID];
-
 /// A default reasonable maximum chain depth.
 ///
 /// This depth was chosen to balance between common validation lengths
@@ -231,9 +223,6 @@ pub struct Policy<'a, B: CryptoOps> {
     /// The set of permitted signature algorithms, identified by their
     /// algorithm identifiers.
     pub permitted_signature_algorithms: HashSet<AlgorithmIdentifier<'a>>,
-
-    pub critical_ca_extensions: HashSet<ObjectIdentifier>,
-    pub critical_ee_extensions: HashSet<ObjectIdentifier>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -261,8 +250,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .into_iter()
                 .cloned()
                 .collect(),
-            critical_ca_extensions: RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect(),
-            critical_ee_extensions: RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect(),
         }
     }
 }
@@ -280,8 +267,8 @@ mod tests {
     use crate::{
         ops::tests::NullOps,
         policy::{
-            Subject, RFC5280_CRITICAL_CA_EXTENSIONS, RFC5280_CRITICAL_EE_EXTENSIONS, SPKI_RSA,
-            SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1, WEBPKI_PERMITTED_SPKI_ALGORITHMS,
+            Subject, SPKI_RSA, SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1,
+            WEBPKI_PERMITTED_SPKI_ALGORITHMS,
         },
         types::{DNSName, IPAddress},
     };
@@ -392,26 +379,6 @@ mod tests {
             let exp_encoding = b"0\n\x06\x08*\x86H\xce=\x04\x03\x04";
             assert_eq!(asn1::write_single(&ECDSA_SHA512).unwrap(), exp_encoding);
         }
-    }
-
-    #[test]
-    fn test_policy_critical_extensions() {
-        let time = asn1::DateTime::new(2023, 9, 12, 1, 1, 1).unwrap();
-        let policy = Policy::new(
-            NullOps {},
-            Subject::DNS(DNSName::new("example.com").unwrap()),
-            time,
-            None,
-        );
-
-        assert_eq!(
-            policy.critical_ca_extensions,
-            RFC5280_CRITICAL_CA_EXTENSIONS.iter().cloned().collect()
-        );
-        assert_eq!(
-            policy.critical_ee_extensions,
-            RFC5280_CRITICAL_EE_EXTENSIONS.iter().cloned().collect()
-        );
     }
 
     #[test]
