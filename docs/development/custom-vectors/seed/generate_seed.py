@@ -32,13 +32,13 @@ def build_vectors(mode, filename):
                 )
             output.append(f"\nCOUNT = {count}")
             count += 1
-            name, key = line.split(" = ")
+            _, key = line.split(" = ")
             output.append(f"KEY = {key}")
         elif line.startswith("IV"):
-            name, iv = line.split(" = ")
+            _, iv = line.split(" = ")
             output.append(f"IV = {iv}")
         elif line.startswith("PLAINTEXT"):
-            name, plaintext = line.split(" = ")
+            _, plaintext = line.split(" = ")
             output.append(f"PLAINTEXT = {plaintext}")
 
     output.append(f"CIPHERTEXT = {encrypt(mode, key, iv, plaintext)}")

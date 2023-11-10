@@ -200,7 +200,7 @@ class TestPKCS7Builder:
             )
 
     def test_not_a_cert(self, backend):
-        cert, key = _load_cert_key()
+        _, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
                 b"notacert",  # type: ignore[arg-type]

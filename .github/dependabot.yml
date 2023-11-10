@@ -23,7 +23,7 @@ updates:
       timezone: "America/New_York"
     open-pull-requests-limit: 1024
   - package-ecosystem: "github-actions"
-    directory: "/.github/actions/wycheproof/"
+    directory: "/.github/actions/fetch-vectors/"
     schedule:
       interval: "daily"
       time: "06:00"
@@ -51,7 +51,7 @@ updates:
       # Also update indirect dependencies
       - dependency-type: all
     open-pull-requests-limit: 1024
-  
+
   - package-ecosystem: pip
     directory: "/.github/requirements/"
     schedule:

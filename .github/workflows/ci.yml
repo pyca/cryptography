@@ -44,8 +44,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL master branch, as of Nov 07, 2023.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "ad57528d2c978543106f9b115bd0eb658f3ebdd2"}}
-          # Latest commit on the OpenSSL master branch, as of Nov 09, 2023.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4d4657cb6ba364dfa60681948b0a30c40bee31ca"}}
+          # Latest commit on the OpenSSL master branch, as of Nov 10, 2023.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "a2b1ab6100d5f0fb50b61d241471eea087415632"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin
@@ -76,14 +76,9 @@ jobs:
 
       - run: rustup component add llvm-tools-preview
         if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
-        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
-
-      - name: Clone x509-limbo
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-limbo
+        uses: ./.github/actions/fetch-vectors
         if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
 
       - name: Compute config hash and set config vars
@@ -194,12 +189,9 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.IMAGE.IMAGE }}
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
-      - name: Clone x509-limbo
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-limbo
+        uses: ./.github/actions/fetch-vectors
       # When run in a docker container the home directory doesn't have the same owner as the
       # apparent user so pip refuses to create a cache dir
       - name: create pip cache dir
@@ -260,13 +252,9 @@ jobs:
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
 
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
-
-      - name: Clone x509-limbo
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-limbo
+        uses: ./.github/actions/fetch-vectors
 
       - uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # v2.28.0
         with:
@@ -341,13 +329,9 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
-
-      - name: Clone x509-limbo
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-limbo
+        uses: ./.github/actions/fetch-vectors
 
       - name: Build nox environment
         run: nox -v --install-only
