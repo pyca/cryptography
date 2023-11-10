@@ -46,7 +46,12 @@ impl Hmac {
         let _ = backend;
 
         let md = message_digest_from_algorithm(py, algorithm)?;
-        let ctx = cryptography_openssl::hmac::Hmac::new(key.as_bytes(), md)?;
+        let ctx = cryptography_openssl::hmac::Hmac::new(key.as_bytes(), md).map_err(|_| {
+            exceptions::UnsupportedAlgorithm::new_err((
+                "Digest is not supported for HMAC",
+                exceptions::Reasons::UNSUPPORTED_HASH,
+            ))
+        })?;
 
         Ok(Hmac {
             ctx: Some(ctx),
