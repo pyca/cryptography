@@ -8,13 +8,10 @@ use cryptography_x509::certificate::Certificate;
 
 use crate::ops::CryptoOps;
 
-// TODO: Remove these attributes once we start using these helpers.
-#[allow(dead_code)]
 pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
     cert.issuer() == cert.subject()
 }
 
-#[allow(dead_code)]
 pub(crate) fn cert_is_self_signed<B: CryptoOps>(cert: &Certificate<'_>, ops: &B) -> bool {
     match ops.public_key(cert) {
         Ok(pk) => cert_is_self_issued(cert) && ops.verify_signed_by(cert, pk).is_ok(),
