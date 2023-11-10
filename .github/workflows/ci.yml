@@ -76,9 +76,9 @@ jobs:
 
       - run: rustup component add llvm-tools-preview
         if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
+        uses: ./.github/actions/fetch-vectors
         if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
       - name: Compute config hash and set config vars
         run: |
@@ -188,9 +188,9 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.IMAGE.IMAGE }}
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
+        uses: ./.github/actions/fetch-vectors
       # When run in a docker container the home directory doesn't have the same owner as the
       # apparent user so pip refuses to create a cache dir
       - name: create pip cache dir
@@ -251,9 +251,9 @@ jobs:
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
 
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
+        uses: ./.github/actions/fetch-vectors
 
       - uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # v2.28.0
         with:
@@ -328,9 +328,9 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Clone wycheproof
+      - name: Clone test vectors
         timeout-minutes: 2
-        uses: ./.github/actions/wycheproof
+        uses: ./.github/actions/fetch-vectors
 
       - name: Build nox environment
         run: nox -v --install-only
