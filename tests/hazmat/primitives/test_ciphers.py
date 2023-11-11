@@ -4,7 +4,9 @@
 
 
 import binascii
+import mmap
 import os
+import sys
 
 import pytest
 
@@ -355,39 +357,20 @@ class TestCipherUpdateInto:
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
 
-    def test_update_into_auto_chunking(self, backend, monkeypatch):
-        key = b"\x00" * 16
-        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
-        encryptor = c.encryptor()
-        # Lower max chunk size so we can test chunking
-        monkeypatch.setattr(
-            encryptor._ctx,  # type: ignore[attr-defined]
-            "_MAX_CHUNK_SIZE",
-            40,
-        )
-        buf = bytearray(527)
-        pt = b"abcdefghijklmnopqrstuvwxyz012345" * 16  # 512 bytes
-        processed = encryptor.update_into(pt, buf)
-        assert processed == 512
-        decryptor = c.decryptor()
-        # Change max chunk size to verify alternate boundaries don't matter
-        monkeypatch.setattr(
-            decryptor._ctx,  # type: ignore[attr-defined]
-            "_MAX_CHUNK_SIZE",
-            73,
-        )
-        decbuf = bytearray(527)
-        decprocessed = decryptor.update_into(buf[:processed], decbuf)
-        assert decbuf[:decprocessed] == pt
 
-    def test_max_chunk_size_fits_in_int32(self, backend):
-        # max chunk must fit in signed int32 or else a call large enough to
-        # cause chunking will result in the very OverflowError we want to
-        # avoid with chunking.
-        key = b"\x00" * 16
-        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
-        encryptor = c.encryptor()
-        backend._ffi.new(
-            "int *",
-            encryptor._ctx._MAX_CHUNK_SIZE,  # type: ignore[attr-defined]
-        )
+@pytest.mark.skipif(
+    sys.platform not in {"linux", "darwin"}, reason="mmap required"
+)
+def test_update_auto_chunking():
+    large_data = mmap.mmap(-1, 2**29 + 2**20, prot=mmap.PROT_READ)
+
+    key = b"\x00" * 16
+    c = ciphers.Cipher(AES(key), modes.ECB())
+    encryptor = c.encryptor()
+
+    result = encryptor.update(memoryview(large_data))
+    assert len(result) == len(large_data)
+
+    decryptor = c.decryptor()
+    result = decryptor.update(result)
+    assert result == large_data[:]
