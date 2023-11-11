@@ -14,6 +14,14 @@ from ...utils import load_nist_vectors
 from .utils import generate_aead_test
 
 
+def _advance(ctx, n):
+    ctx._bytes_processed += n
+
+
+def _advance_aad(ctx, n):
+    ctx._aad_bytes_processed += n
+
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
@@ -66,34 +74,44 @@ class TestAESModeGCM:
         assert encryptor.tag == tag
 
     def test_gcm_ciphertext_limit(self, backend):
-        encryptor = base.Cipher(
+        cipher = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
             backend=backend,
-        ).encryptor()
-        new_max = modes.GCM._MAX_ENCRYPTED_BYTES - 16
-        encryptor._bytes_processed = new_max  # type: ignore[attr-defined]
+        )
+        encryptor = cipher.encryptor()
+        _advance(encryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16)
         encryptor.update(b"0" * 16)
-        max = modes.GCM._MAX_ENCRYPTED_BYTES
-        assert encryptor._bytes_processed == max  # type: ignore[attr-defined]
         with pytest.raises(ValueError):
             encryptor.update(b"0")
+        with pytest.raises(ValueError):
+            encryptor.update_into(b"0", bytearray(1))
+
+        decryptor = cipher.decryptor()
+        _advance(decryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16)
+        decryptor.update(b"0" * 16)
+        with pytest.raises(ValueError):
+            decryptor.update(b"0")
+        with pytest.raises(ValueError):
+            decryptor.update_into(b"0", bytearray(1))
 
     def test_gcm_aad_limit(self, backend):
-        encryptor = base.Cipher(
+        cipher = base.Cipher(
             algorithms.AES(b"\x00" * 16),
             modes.GCM(b"\x01" * 16),
             backend=backend,
-        ).encryptor()
-        new_max = modes.GCM._MAX_AAD_BYTES - 16
-        encryptor._aad_bytes_processed = new_max  # type: ignore[attr-defined]
-        encryptor.authenticate_additional_data(b"0" * 16)
-        max = modes.GCM._MAX_AAD_BYTES
-        assert (
-            encryptor._aad_bytes_processed == max  # type: ignore[attr-defined]
         )
+        encryptor = cipher.encryptor()
+        _advance_aad(encryptor, modes.GCM._MAX_AAD_BYTES - 16)
+        encryptor.authenticate_additional_data(b"0" * 16)
         with pytest.raises(ValueError):
             encryptor.authenticate_additional_data(b"0")
+
+        decryptor = cipher.decryptor()
+        _advance_aad(decryptor, modes.GCM._MAX_AAD_BYTES - 16)
+        decryptor.authenticate_additional_data(b"0" * 16)
+        with pytest.raises(ValueError):
+            decryptor.authenticate_additional_data(b"0")
 
     def test_gcm_ciphertext_increments(self, backend):
         encryptor = base.Cipher(
