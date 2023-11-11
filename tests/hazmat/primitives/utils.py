@@ -285,6 +285,8 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
     )
     decryptor = cipher.decryptor()
     decryptor.update(b"a" * 16)
+    with pytest.raises(AlreadyUpdated):
+        decryptor.authenticate_additional_data(b"b" * 16)
     with pytest.raises(AttributeError):
         decryptor.tag  # type: ignore[attr-defined]
 
