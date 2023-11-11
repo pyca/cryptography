@@ -290,6 +290,21 @@ class TestCipherUpdateInto:
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize_with_tag(encryptor.tag)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
+        ),
+        skip_message="Does not support AES GCM",
+    )
+    def test_finalize_with_tag_duplicate_tag(self, backend):
+        decryptor = ciphers.Cipher(
+            AES(b"\x00" * 16),
+            modes.GCM(b"\x00" * 12, tag=b"\x00" * 16),
+            backend,
+        ).decryptor()
+        with pytest.raises(ValueError):
+            decryptor.finalize_with_tag(b"\x00" * 16)
+
     @pytest.mark.parametrize(
         "params",
         load_vectors_from_file(

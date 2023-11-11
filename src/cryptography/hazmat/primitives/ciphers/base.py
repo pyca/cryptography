@@ -250,6 +250,11 @@ class _AEADDecryptionContext(_AEADCipherContext, AEADDecryptionContext):
     def finalize_with_tag(self, tag: bytes) -> bytes:
         if self._ctx is None:
             raise AlreadyFinalized("Context was already finalized.")
+        if self._ctx._tag is not None:
+            raise ValueError(
+                "tag provided both in mode and in call with finalize_with_tag:"
+                " tag should only be provided once"
+            )
         data = self._ctx.finalize_with_tag(tag)
         self._tag = self._ctx.tag
         self._ctx = None
