@@ -206,21 +206,23 @@ class TestAESModeGCM:
 
     def test_buffer_protocol(self, backend):
         data = bytearray(b"helloworld")
-        enc = base.Cipher(
+        c = base.Cipher(
             algorithms.AES(bytearray(b"\x00" * 16)),
             modes.GCM(bytearray(b"\x00" * 12)),
             backend,
-        ).encryptor()
+        )
+        enc = c.encryptor()
         enc.authenticate_additional_data(bytearray(b"foo"))
         ct = enc.update(data) + enc.finalize()
-        dec = base.Cipher(
-            algorithms.AES(bytearray(b"\x00" * 16)),
-            modes.GCM(bytearray(b"\x00" * 12), enc.tag),
-            backend,
-        ).decryptor()
+
+        dec = c.decryptor()
         dec.authenticate_additional_data(bytearray(b"foo"))
-        pt = dec.update(ct) + dec.finalize()
+        pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
         assert pt == data
+
+        enc = c.encryptor()
+        with pytest.raises(ValueError):
+            enc.update_into(b"abc123", bytearray(0))
 
     @pytest.mark.parametrize("size", [8, 128])
     def test_gcm_min_max_iv(self, size, backend):
