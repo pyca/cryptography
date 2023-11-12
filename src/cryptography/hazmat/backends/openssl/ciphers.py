@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
 class _CipherContext:
     _ENCRYPT = 1
     _DECRYPT = 0
-    _MAX_CHUNK_SIZE = 2**30 - 1
+    _MAX_CHUNK_SIZE = 2**29
 
     def __init__(self, backend: Backend, cipher, mode, operation: int) -> None:
         self._backend = backend
