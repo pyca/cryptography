@@ -83,6 +83,11 @@ chain building, etc.
 
         :raises ValueError: If a valid chain cannot be constructed
 
+.. class:: VerificationError
+
+    .. versionadded:: 42.0.0
+
+    The error raised when path validation fails.
 
 .. class:: PolicyBuilder
 
