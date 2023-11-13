@@ -39,6 +39,6 @@ mod tests {
         let store = Store::new([cert.clone()]);
 
         assert!(store.contains(&cert));
-        assert!(store.iter().collect::<Vec<_>>() == Vec::from([&cert]));
+        assert!(store.iter().collect::<Vec<_>>() == [&cert]);
     }
 }
