@@ -9,7 +9,11 @@ from ipaddress import IPv4Address
 
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
-from cryptography.x509.verification import PolicyBuilder, Store
+from cryptography.x509.verification import (
+    PolicyBuilder,
+    Store,
+    VerificationError,
+)
 
 LIMBO_UNSUPPORTED_FEATURES = {
     # NOTE: Path validation is required to reject wildcards on public suffixes,
@@ -85,7 +89,7 @@ def _limbo_testcase(testcase):
         # Assert that the verifier returns chains in [EE, ..., TA] order.
         assert built_chain[0] == peer_certificate
         assert built_chain[-1] in trusted_certs
-    except ValueError:
+    except VerificationError:
         assert not should_pass
 
 

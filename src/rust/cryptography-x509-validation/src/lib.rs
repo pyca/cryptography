@@ -48,21 +48,21 @@ pub struct AccumulatedNameConstraints<'a> {
 pub type Chain<'c> = Vec<Certificate<'c>>;
 type IntermediateChain<'c> = (Chain<'c>, AccumulatedNameConstraints<'c>);
 
-pub fn verify<'leaf: 'chain, 'inter: 'chain, 'store: 'chain, 'chain, B: CryptoOps>(
-    leaf: &'chain Certificate<'leaf>,
-    intermediates: impl IntoIterator<Item = Certificate<'inter>>,
+pub fn verify<'a, 'chain, B: CryptoOps>(
+    leaf: &'a Certificate<'chain>,
+    intermediates: impl IntoIterator<Item = Certificate<'chain>>,
     policy: &Policy<'_, B>,
-    store: &'chain Store<'store>,
+    store: &'a Store<'chain>,
 ) -> Result<Chain<'chain>, ValidationError> {
     let builder = ChainBuilder::new(HashSet::from_iter(intermediates), policy, store);
 
     builder.build_chain(leaf)
 }
 
-struct ChainBuilder<'a, 'inter, 'store, B: CryptoOps> {
-    intermediates: HashSet<Certificate<'inter>>,
+struct ChainBuilder<'a, 'chain, B: CryptoOps> {
+    intermediates: HashSet<Certificate<'chain>>,
     policy: &'a Policy<'a, B>,
-    store: &'a Store<'store>,
+    store: &'a Store<'chain>,
 }
 
 // When applying a name constraint, we need to distinguish between a few different scenarios:
@@ -84,18 +84,11 @@ impl ApplyNameConstraintStatus {
     }
 }
 
-impl<'a, 'inter, 'store, 'leaf, 'chain, 'work, B: CryptoOps> ChainBuilder<'a, 'inter, 'store, B>
-where
-    'leaf: 'chain,
-    'inter: 'chain,
-    'store: 'chain,
-    'work: 'leaf + 'inter,
-    'chain: 'work,
-{
+impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: HashSet<Certificate<'inter>>,
+        intermediates: HashSet<Certificate<'chain>>,
         policy: &'a Policy<'a, B>,
-        store: &'a Store<'store>,
+        store: &'a Store<'chain>,
     ) -> Self {
         Self {
             intermediates,
@@ -106,8 +99,8 @@ where
 
     fn potential_issuers(
         &'a self,
-        cert: &'a Certificate<'work>,
-    ) -> impl Iterator<Item = &'a Certificate<'work>> + '_ {
+        cert: &'a Certificate<'chain>,
+    ) -> impl Iterator<Item = &'a Certificate<'chain>> + '_ {
         // TODO: Optimizations:
         // * Use a backing structure that allows us to search by name
         //   rather than doing a linear scan
@@ -124,21 +117,21 @@ where
 
     fn build_name_constraints_subtrees(
         &self,
-        subtrees: SequenceOfSubtrees<'work>,
-    ) -> impl Iterator<Item = GeneralName<'work>> {
+        subtrees: SequenceOfSubtrees<'chain>,
+    ) -> impl Iterator<Item = GeneralName<'chain>> {
         subtrees.unwrap_read().clone().map(|x| x.base)
     }
 
     fn build_name_constraints(
         &self,
-        constraints: &mut AccumulatedNameConstraints<'work>,
-        working_cert: &'a Certificate<'work>,
+        constraints: &mut AccumulatedNameConstraints<'chain>,
+        working_cert: &'a Certificate<'chain>,
     ) -> Result<(), ValidationError> {
-        let extensions: Extensions<'work> = working_cert
+        let extensions: Extensions<'chain> = working_cert
             .extensions()
             .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            let nc: NameConstraints<'work> = nc.value().map_err(PolicyError::Malformed)?;
+            let nc: NameConstraints<'chain> = nc.value().map_err(PolicyError::Malformed)?;
             if let Some(permitted_subtrees) = nc.permitted_subtrees {
                 constraints
                     .permitted
@@ -155,7 +148,7 @@ where
 
     fn apply_name_constraint(
         &self,
-        constraint: &GeneralName<'work>,
+        constraint: &GeneralName<'chain>,
         san: &GeneralName<'_>,
     ) -> Result<ApplyNameConstraintStatus, ValidationError> {
         match (constraint, san) {
@@ -181,8 +174,8 @@ where
 
     fn apply_name_constraints(
         &self,
-        constraints: &AccumulatedNameConstraints<'work>,
-        working_cert: &Certificate<'work>,
+        constraints: &AccumulatedNameConstraints<'chain>,
+        working_cert: &Certificate<'chain>,
     ) -> Result<(), ValidationError> {
         let extensions = working_cert
             .extensions()
@@ -221,10 +214,10 @@ where
 
     fn build_chain_inner(
         &self,
-        working_cert: &'a Certificate<'work>,
+        working_cert: &'a Certificate<'chain>,
         current_depth: u8,
         is_leaf: bool,
-    ) -> Result<IntermediateChain<'work>, ValidationError> {
+    ) -> Result<IntermediateChain<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(PolicyError::Other("chain construction exceeds max depth").into());
         }
@@ -265,7 +258,7 @@ where
                             .apply_name_constraints(&constraints, working_cert)
                             .is_ok()
                     {
-                        let mut chain: Vec<Certificate<'work>> = vec![working_cert.clone()];
+                        let mut chain: Vec<Certificate<'chain>> = vec![working_cert.clone()];
                         chain.extend(remaining);
                         self.build_name_constraints(&mut constraints, working_cert)?;
                         return Ok((chain, constraints));
@@ -279,10 +272,7 @@ where
         Err(PolicyError::Other("chain construction exhausted all candidates").into())
     }
 
-    fn build_chain(
-        &self,
-        leaf: &'chain Certificate<'leaf>,
-    ) -> Result<Chain<'chain>, ValidationError> {
+    fn build_chain(&self, leaf: &'a Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).

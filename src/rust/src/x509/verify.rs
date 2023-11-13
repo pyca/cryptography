@@ -129,9 +129,7 @@ impl PyServerVerifier {
             policy,
             &store,
         )
-        .map_err(|e| {
-            pyo3::exceptions::PyValueError::new_err(format!("validation failed: {e:?}"))
-        })?;
+        .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
 
         // TODO: Optimize this? Turning a Certificate back into a PyCertificate
         // involves a full round-trip back through DER, which isn't ideal.
