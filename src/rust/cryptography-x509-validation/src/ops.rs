@@ -65,18 +65,4 @@ zl9HYIMxATFyqSiD9jsx
     pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
         asn1::parse_single(cert_pem.contents()).unwrap()
     }
-
-    #[test]
-    fn test_nullops() {
-        let cert_pem = v1_cert_pem();
-        let cert = cert(&cert_pem);
-
-        let ops = NullOps {};
-        assert_eq!(ops.public_key(&cert), Ok(()));
-        assert!({
-            ops.public_key(&cert).unwrap();
-            ops.verify_signed_by(&cert, ())
-        }
-        .is_ok());
-    }
 }
