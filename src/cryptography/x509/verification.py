@@ -19,6 +19,10 @@ Subject = typing.Union[DNSName, IPAddress]
 ServerVerifier = rust_x509.ServerVerifier
 
 
+class VerificationError(Exception):
+    pass
+
+
 class PolicyBuilder:
     def __init__(
         self,

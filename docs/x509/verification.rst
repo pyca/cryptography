@@ -69,6 +69,12 @@ chain building, etc.
 
         The verifier's trust store.
 
+.. class:: VerificationError
+
+    .. versionadded:: 42.0.0
+
+    The error raised when path validation fails.
+
 .. class:: PolicyBuilder
 
     .. versionadded:: 42.0.0
@@ -116,3 +122,17 @@ chain building, etc.
         :param subject: A :class:`Subject` to use in the verifier
 
         :returns: An instance of :class:`ServerVerifier`
+
+    .. method:: verify(leaf, intermediates)
+
+        Performs path validation on ``leaf``, returning a valid path
+        if one exists. The path is returned in leaf-first order:
+        the first member is ``leaf``, followed by the intermediates used
+        (if any), followed by a member of the ``store``.
+
+        :param leaf: The leaf :class:`~cryptography.x509.Certificate` to validate
+        :param intermediates: A :class:`list` of intermediate :class:`~cryptography.x509.Certificate` to attempt to use
+
+        :returns: A list containing a valid chain from ``leaf`` to a member of :class:`ServerVerifier.store`.
+
+        :raises VerificationError: If a valid chain cannot be constructed
