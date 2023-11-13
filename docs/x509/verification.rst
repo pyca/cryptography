@@ -72,7 +72,9 @@ chain building, etc.
     .. method:: verify(leaf, intermediates)
 
         Performs path validation on ``leaf``, returning a valid path
-        if one exists.
+        if one exists. The path is returned in leaf-first order:
+        the first member is ``leaf``, followed by the intermediates used
+        (if any), followed by a member of the ``store``.
 
         :param leaf: The leaf :class:`~cryptography.x509.Certificate` to validate
         :param intermediates: A :class:`list` of intermediate :class:`~cryptography.x509.Certificate` to attempt to use

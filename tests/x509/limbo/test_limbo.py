@@ -87,14 +87,16 @@ def _limbo_testcase(testcase):
     ).build_server_verifier(peer_name)
 
     try:
-        verifier.verify(peer_certificate, untrusted_intermediates)
-        assert (
-            should_pass
-        ), f"{testcase_id}: verification succeeded when we expected failure"
-    except ValueError as e:
-        assert (
-            not should_pass
-        ), f"{testcase_id}: verification failed when we expected success: {e}"
+        built_chain = verifier.verify(
+            peer_certificate, untrusted_intermediates
+        )
+        assert should_pass
+
+        # Assert that the verifier returns chains in [EE, ..., TA] order.
+        assert built_chain[0] == peer_certificate
+        assert built_chain[-1] in trusted_certs
+    except ValueError:
+        assert not should_pass
 
 
 def test_limbo(subtests, pytestconfig):
