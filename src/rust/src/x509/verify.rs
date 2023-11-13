@@ -106,12 +106,8 @@ impl PyServerVerifier {
         &self,
         py: pyo3::Python<'p>,
         leaf: &PyCertificate,
-        intermediates: &'p pyo3::types::PyList,
+        intermediates: Vec<pyo3::PyRef<'p, PyCertificate>>,
     ) -> CryptographyResult<Vec<PyCertificate>> {
-        let intermediates = intermediates
-            .iter()
-            .map(|o| o.extract::<pyo3::PyRef<'p, PyCertificate>>())
-            .collect::<Result<Vec<_>, _>>()?;
         let store = Store::new(
             self.store
                 .as_ref(py)
