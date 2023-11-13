@@ -27,6 +27,7 @@ def pytest_report_header(config):
 
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
+    parser.addoption("--x509-limbo-root", default=None)
     parser.addoption("--enable-fips", default=False)
 
 
