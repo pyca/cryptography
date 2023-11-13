@@ -24,14 +24,11 @@ LIMBO_UNSUPPORTED_FEATURES = {
 }
 
 
-def _get_limbo_peer(expected_peer, testcase_id):
-    assert expected_peer is not None, f"{testcase_id}: no expected peer name"
+def _get_limbo_peer(expected_peer):
+    assert expected_peer is not None
 
     kind = expected_peer["kind"]
-    assert kind in (
-        "DNS",
-        "IP",
-    ), f"{testcase_id}: unexpected peer kind: {kind}"
+    assert kind in ("DNS", "IP")
     value = expected_peer["value"]
     if kind == "DNS":
         return x509.DNSName(value)
@@ -45,19 +42,12 @@ def _limbo_testcase(testcase):
         features
     ):
         return
-    testcase_id = testcase["id"]
-    assert (
-        testcase["validation_kind"] == "SERVER"
-    ), f"{testcase_id}: non-SERVER testcases not supported yet"
-    assert (
-        testcase["signature_algorithms"] is None
-    ), f"{testcase_id}: signature_algorithms not supported yet"
+    assert testcase["validation_kind"] == "SERVER"
+    assert testcase["signature_algorithms"] is None
     assert testcase["extended_key_usage"] is None or testcase[
         "extended_key_usage"
-    ] == ["serverAuth"], f"{testcase_id}: extended_key_usage not supported yet"
-    assert (
-        testcase["expected_peer_names"] is None
-    ), f"{testcase_id}: expected_peer_names not supported yet"
+    ] == ["serverAuth"]
+    assert testcase["expected_peer_names"] is None
 
     trusted_certs = [
         load_pem_x509_certificate(cert.encode())
@@ -70,7 +60,7 @@ def _limbo_testcase(testcase):
     peer_certificate = load_pem_x509_certificate(
         testcase["peer_certificate"].encode()
     )
-    peer_name = _get_limbo_peer(testcase["expected_peer_name"], testcase_id)
+    peer_name = _get_limbo_peer(testcase["expected_peer_name"])
     validation_time = testcase["validation_time"]
     validation_time = (
         datetime.datetime.fromisoformat(validation_time)
