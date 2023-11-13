@@ -10,11 +10,14 @@ use cryptography_x509_validation::{
 };
 use pyo3::IntoPy;
 
-use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
+use crate::{
+    error::{CryptographyError, CryptographyResult},
+    exceptions::VerificationError,
+};
 
 pub(crate) struct PyCryptoOps {}
 
@@ -105,7 +108,7 @@ impl PyServerVerifier {
         _leaf: &PyCertificate,
         _intermediates: &'p pyo3::types::PyList,
     ) -> CryptographyResult<Vec<PyCertificate>> {
-        Err(pyo3::exceptions::PyNotImplementedError::new_err("unimplemented").into())
+        Err(VerificationError::new_err("unimplemented").into())
     }
 }
 

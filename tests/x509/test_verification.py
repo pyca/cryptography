@@ -11,7 +11,11 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import PolicyBuilder, Store
+from cryptography.x509.verification import (
+    PolicyBuilder,
+    Store,
+    VerificationError,
+)
 from tests.x509.test_x509 import _load_cert
 
 
@@ -116,5 +120,5 @@ class TestServerVerifier:
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
         )
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(VerificationError):
             verifier.verify(cert, [])
