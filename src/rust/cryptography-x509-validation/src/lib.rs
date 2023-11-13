@@ -80,10 +80,7 @@ impl ApplyNameConstraintStatus {
     }
 
     fn is_match(&self) -> bool {
-        match self {
-            Applied(a) => *a,
-            _ => false,
-        }
+        matches!(self, Applied(true))
     }
 }
 
