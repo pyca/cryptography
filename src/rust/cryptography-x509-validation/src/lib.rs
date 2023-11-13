@@ -190,7 +190,7 @@ where
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
             let sans: SubjectAlternativeName<'_> = sans.value().map_err(PolicyError::Malformed)?;
             for san in sans.clone() {
-                // If there are no applicable constraints, the SAN is considered valid so let's default to true.
+                // If there are no applicable constraints, the SAN is considered valid so the default is true.
                 let mut permit = true;
                 for c in constraints.permitted.iter() {
                     let status = self.apply_name_constraint(c, &san)?;
