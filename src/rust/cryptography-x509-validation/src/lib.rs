@@ -125,8 +125,8 @@ where
     fn build_name_constraints_subtrees(
         &self,
         subtrees: SequenceOfSubtrees<'work>,
-    ) -> Vec<GeneralName<'work>> {
-        subtrees.unwrap_read().clone().map(|x| x.base).collect()
+    ) -> impl Iterator<Item = GeneralName<'work>> {
+        subtrees.unwrap_read().clone().map(|x| x.base)
     }
 
     fn build_name_constraints(
