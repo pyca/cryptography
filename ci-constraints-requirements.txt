@@ -7,7 +7,7 @@
 
 alabaster==0.7.13
     # via sphinx
-argcomplete==3.1.4; python_version >= "3.8"
+argcomplete==3.1.6; python_version >= "3.8"
     # via nox
 babel==2.13.1
     # via sphinx
@@ -56,7 +56,7 @@ jaraco-classes==3.3.0
     # via keyring
 jinja2==3.1.2
     # via sphinx
-keyring==24.2.0
+keyring==24.3.0
     # via twine
 markdown-it-py==3.0.0
     # via rich
@@ -117,7 +117,7 @@ pytest-cov==4.1.0
     # via cryptography (pyproject.toml)
 pytest-randomly==3.15.0
     # via cryptography (pyproject.toml)
-pytest-xdist==3.3.1
+pytest-xdist==3.4.0
     # via cryptography (pyproject.toml)
 readme-renderer==42.0
     # via twine
