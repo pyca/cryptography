@@ -81,7 +81,7 @@ chain building, etc.
 
         :returns: A list containing a valid chain from ``leaf`` to a member of :class:`ServerVerifier.store`.
 
-        :raises ValueError: If a valid chain cannot be constructed
+        :raises VerificationError: If a valid chain cannot be constructed
 
 .. class:: VerificationError
 
