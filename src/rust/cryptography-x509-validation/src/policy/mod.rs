@@ -386,6 +386,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             // then forget to check whether that number would be negative, resulting
             // in a 21-byte encoding.
             return Err("certificate must have a serial between 1 and 20 octets".into());
+        } else if serial_bytes[0] & 0x80 == 0x80 {
+            // If the high-bit is set, then we know the serial number is negative.
+            return Err("certificate serial number cannot be negative".into());
         }
 
         // 5280 4.1.2.4: Issuer
