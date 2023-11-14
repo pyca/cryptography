@@ -227,7 +227,7 @@ impl From<IPAddress> for Subject<'_> {
 
 /// A `Policy` describes user-configurable aspects of X.509 path validation.
 pub struct Policy<'a, B: CryptoOps> {
-    ops: B,
+    pub ops: B,
 
     /// A top-level constraint on the length of intermediate CA paths
     /// constructed under this policy.

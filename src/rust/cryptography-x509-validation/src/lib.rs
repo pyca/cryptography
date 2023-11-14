@@ -13,7 +13,7 @@ pub mod types;
 
 use std::collections::HashSet;
 
-use crate::certificate::cert_is_self_issued;
+use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::Extensions;
@@ -104,7 +104,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             // NOTE: The intermediate set isn't allowed to offer a self-signed
             // certificate as a candidate, since self-signed certs can only
             // be roots.
-            .filter(|&candidate| !cert_is_self_issued(candidate))
+            .filter(|&candidate| !cert_is_self_signed(candidate, &self.policy.ops))
             .chain(self.store.iter())
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
