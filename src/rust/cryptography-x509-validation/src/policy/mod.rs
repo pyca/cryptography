@@ -16,7 +16,7 @@ use cryptography_x509::common::{
     PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::{
-    BasicConstraints, DuplicateExtensionsError, KeyUsage, SubjectAlternativeName,
+    BasicConstraints, DuplicateExtensionsError, Extensions, KeyUsage, SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -460,17 +460,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// A "leaf" certificate is just the certificate in the leaf position during
     /// path validation, whether it be a CA or EE. As such, `permits_leaf`
     /// is logically equivalent to `permits_ee(leaf) || permits_ca(leaf)`.
-    pub(crate) fn permits_leaf(&self, leaf: &Certificate<'_>) -> Result<(), PolicyError> {
+    pub(crate) fn permits_leaf(
+        &self,
+        leaf: &Certificate<'_>,
+        extensions: &Extensions<'_>,
+    ) -> Result<(), PolicyError> {
         // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
         // Code like this will propagate irrelevant error messages out of the API.
-        let extensions = leaf.extensions()?;
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
             let key_usage: KeyUsage<'_> = key_usage.value()?;
             if key_usage.key_cert_sign() {
-                return self.permits_ca(leaf, 0);
+                return self.permits_ca(leaf, 0, extensions);
             }
         }
-        self.permits_ee(leaf)
+        self.permits_ee(leaf, extensions)
     }
 
     /// Checks whether the given CA certificate is compatible with this policy.
@@ -478,6 +481,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         &self,
         cert: &Certificate<'_>,
         current_depth: u8,
+        extensions: &Extensions<'_>,
     ) -> Result<(), PolicyError> {
         self.permits_basic(cert)?;
 
@@ -486,8 +490,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // No check required here: `permits_basic` checks that the issuer is non-empty
         // and `ChainBuilder::potential_issuers` enforces subject/issuer matching,
         // meaning that an CA with an empty subject cannot occur in a built chain.
-
-        let extensions = cert.extensions()?;
 
         // NOTE: This conceptually belongs in `valid_issuer`, but is easier
         // to test here. It's also conceptually an extension policy, but
@@ -507,19 +509,22 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         for ext_policy in self.ca_extension_policies.iter() {
-            ext_policy.permits(self, cert, &extensions)?;
+            ext_policy.permits(self, cert, extensions)?;
         }
 
         Ok(())
     }
 
     /// Checks whether the given EE certificate is compatible with this policy.
-    pub(crate) fn permits_ee(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
+    pub(crate) fn permits_ee(
+        &self,
+        cert: &Certificate<'_>,
+        extensions: &Extensions<'_>,
+    ) -> Result<(), PolicyError> {
         self.permits_basic(cert)?;
 
-        let extensions = cert.extensions()?;
         for ext_policy in self.ee_extension_policies.iter() {
-            ext_policy.permits(self, cert, &extensions)?;
+            ext_policy.permits(self, cert, extensions)?;
         }
 
         Ok(())
@@ -540,9 +545,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         issuer: &Certificate<'_>,
         child: &Certificate<'_>,
         current_depth: u8,
+        issuer_extensions: &Extensions<'_>,
     ) -> Result<u8, PolicyError> {
         // The issuer needs to be a valid CA at the current depth.
-        self.permits_ca(issuer, current_depth)?;
+        self.permits_ca(issuer, current_depth, issuer_extensions)?;
 
         let pk = self
             .ops

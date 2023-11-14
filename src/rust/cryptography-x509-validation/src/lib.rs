@@ -198,14 +198,11 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         working_cert: &'a Certificate<'chain>,
         current_depth: u8,
         is_leaf: bool,
+        extensions: &'a Extensions<'chain>,
     ) -> Result<IntermediateChain<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(PolicyError::Other("chain construction exceeds max depth").into());
         }
-
-        let extensions = working_cert
-            .extensions()
-            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
 
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
@@ -215,7 +212,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // even if the working certificate is an EE or intermediate CA.
         if self.store.contains(working_cert) {
             let mut constraints = vec![];
-            self.build_name_constraints(&mut constraints, &extensions)?;
+            self.build_name_constraints(&mut constraints, extensions)?;
             return Ok((vec![working_cert.clone()], constraints));
         }
 
@@ -225,11 +222,21 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
             // policy.
-            if let Ok(next_depth) =
-                self.policy
-                    .valid_issuer(issuing_cert_candidate, working_cert, current_depth)
-            {
-                let result = self.build_chain_inner(issuing_cert_candidate, next_depth, false);
+            let issuer_extensions = issuing_cert_candidate
+                .extensions()
+                .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
+            if let Ok(next_depth) = self.policy.valid_issuer(
+                issuing_cert_candidate,
+                working_cert,
+                current_depth,
+                &issuer_extensions,
+            ) {
+                let result = self.build_chain_inner(
+                    issuing_cert_candidate,
+                    next_depth,
+                    false,
+                    &issuer_extensions,
+                );
                 if let Ok(result) = result {
                     let (remaining, mut constraints) = result;
                     // Name constraints are not applied to self-issued certificates unless they're
@@ -240,12 +247,12 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
                     if skip_name_constraints
                         || self
-                            .apply_name_constraints(&constraints, &extensions)
+                            .apply_name_constraints(&constraints, extensions)
                             .is_ok()
                     {
                         let mut chain: Vec<Certificate<'chain>> = vec![working_cert.clone()];
                         chain.extend(remaining);
-                        self.build_name_constraints(&mut constraints, &extensions)?;
+                        self.build_name_constraints(&mut constraints, extensions)?;
                         return Ok((chain, constraints));
                     }
                 }
@@ -264,9 +271,13 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         //
         // In the case that the leaf is an EE, this includes a check
         // against the EE cert's SANs.
-        self.policy.permits_leaf(leaf)?;
+        let extensions = leaf
+            .extensions()
+            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
 
-        let result = self.build_chain_inner(leaf, 0, true);
+        self.policy.permits_leaf(leaf, &extensions)?;
+
+        let result = self.build_chain_inner(leaf, 0, true, &extensions);
         match result {
             Ok(result) => {
                 let (chain, _) = result;
