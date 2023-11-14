@@ -413,24 +413,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ext_policy.permits(self, cert, &extensions)?;
         }
 
-        // CA/B 7.1.3.1 SubjectPublicKeyInfo
-        if !self
-            .permitted_public_key_algorithms
-            .contains(&cert.tbs_cert.spki.algorithm)
-        {
-            // TODO: Should probably include the OID here.
-            return Err("Forbidden public key algorithm".into());
-        }
-
-        // CA/B 7.1.3.2 Signature AlgorithmIdentifier
-        if !self
-            .permitted_signature_algorithms
-            .contains(&cert.signature_alg)
-        {
-            // TODO: Should probably include the OID here.
-            return Err("Forbidden signature algorithm".into());
-        }
-
         // Check that all critical extensions in this certificate are accounted for.
         let critical_extensions = extensions
             .iter()
@@ -551,6 +533,24 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     ) -> Result<u8, PolicyError> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer, current_depth, issuer_extensions)?;
+
+        // CA/B 7.1.3.1 SubjectPublicKeyInfo
+        if !self
+            .permitted_public_key_algorithms
+            .contains(&child.tbs_cert.spki.algorithm)
+        {
+            // TODO: Should probably include the OID here.
+            return Err("Forbidden public key algorithm".into());
+        }
+
+        // CA/B 7.1.3.2 Signature AlgorithmIdentifier
+        if !self
+            .permitted_signature_algorithms
+            .contains(&child.signature_alg)
+        {
+            // TODO: Should probably include the OID here.
+            return Err("Forbidden signature algorithm".into());
+        }
 
         let pk = self
             .ops
