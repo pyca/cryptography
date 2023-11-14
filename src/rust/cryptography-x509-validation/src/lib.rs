@@ -112,11 +112,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn build_name_constraints(
         &self,
         constraints: &mut Vec<NameConstraints<'chain>>,
-        working_cert: &'a Certificate<'chain>,
+        extensions: &Extensions<'chain>,
     ) -> Result<(), ValidationError> {
-        let extensions: Extensions<'chain> = working_cert
-            .extensions()
-            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             let nc: NameConstraints<'chain> = nc.value().map_err(PolicyError::Malformed)?;
             constraints.push(nc);
@@ -153,11 +150,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn apply_name_constraints(
         &self,
         constraints: &Vec<NameConstraints<'chain>>,
-        working_cert: &Certificate<'chain>,
+        extensions: &Extensions<'chain>,
     ) -> Result<(), ValidationError> {
-        let extensions = working_cert
-            .extensions()
-            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
             let sans: SubjectAlternativeName<'_> = sans.value().map_err(PolicyError::Malformed)?;
             for san in sans.clone() {
@@ -209,6 +203,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             return Err(PolicyError::Other("chain construction exceeds max depth").into());
         }
 
+        let extensions = working_cert
+            .extensions()
+            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
+
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
         //
@@ -217,7 +215,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // even if the working certificate is an EE or intermediate CA.
         if self.store.contains(working_cert) {
             let mut constraints = vec![];
-            self.build_name_constraints(&mut constraints, working_cert)?;
+            self.build_name_constraints(&mut constraints, &extensions)?;
             return Ok((vec![working_cert.clone()], constraints));
         }
 
@@ -242,12 +240,12 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
                     if skip_name_constraints
                         || self
-                            .apply_name_constraints(&constraints, working_cert)
+                            .apply_name_constraints(&constraints, &extensions)
                             .is_ok()
                     {
                         let mut chain: Vec<Certificate<'chain>> = vec![working_cert.clone()];
                         chain.extend(remaining);
-                        self.build_name_constraints(&mut constraints, working_cert)?;
+                        self.build_name_constraints(&mut constraints, &extensions)?;
                         return Ok((chain, constraints));
                     }
                 }
