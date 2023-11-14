@@ -104,7 +104,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             // NOTE: The intermediate set isn't allowed to offer a self-signed
             // certificate as a candidate, since self-signed certs can only
             // be roots.
-            .filter(|&candidate| cert_is_self_issued(candidate))
+            .filter(|&candidate| !cert_is_self_issued(candidate))
             .chain(self.store.iter())
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
