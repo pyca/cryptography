@@ -6,14 +6,14 @@ mod extension;
 
 use std::collections::HashSet;
 
-use asn1::ObjectIdentifier;
+use asn1::{DateTime, ObjectIdentifier};
 use cryptography_x509::certificate::Certificate;
 use once_cell::sync::Lazy;
 
 use cryptography_x509::common::{
-    AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, PSS_SHA256_HASH_ALG,
-    PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG, PSS_SHA512_HASH_ALG,
-    PSS_SHA512_MASK_GEN_ALG,
+    AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, Time,
+    PSS_SHA256_HASH_ALG, PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG,
+    PSS_SHA512_HASH_ALG, PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::{
     BasicConstraints, DuplicateExtensionsError, Extensions, KeyUsage, SubjectAlternativeName,
@@ -397,12 +397,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // 5280 4.1.2.5: Validity
         // Validity dates before 2050 MUST be encoded as UTCTime;
         // dates in or after 2050 MUST be encoded as GeneralizedTime.
-        // TODO: The existing `tbs_cert.validity` types don't expose this
-        // underlying detail. This check has no practical effect on the
-        // correctness of the certificate, so it's pretty low priority.
-        if &self.validation_time < cert.tbs_cert.validity.not_before.as_datetime()
-            || &self.validation_time > cert.tbs_cert.validity.not_after.as_datetime()
-        {
+        let not_before = cert.tbs_cert.validity.not_before.as_datetime();
+        let not_after = cert.tbs_cert.validity.not_after.as_datetime();
+        self.valid_validity_date(&cert.tbs_cert.validity.not_before, not_before)?;
+        self.valid_validity_date(&cert.tbs_cert.validity.not_after, not_after)?;
+        if &self.validation_time < not_before || &self.validation_time > not_after {
             return Err(PolicyError::Other("cert is not valid at validation time"));
         }
 
@@ -565,6 +564,27 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .checked_add(1)
                 .ok_or(PolicyError::Other("current depth calculation overflowed"))?),
         }
+    }
+
+    fn valid_validity_date(&self, validity_date: &Time, dt: &DateTime) -> Result<(), PolicyError> {
+        const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
+        match validity_date {
+            Time::UtcTime(_) => {
+                if dt.year() >= GENERALIZED_DATE_CUTOFF_YEAR {
+                    return Err(PolicyError::Other(
+                        "validity dates after generalized date cutoff must be GeneralizedTime",
+                    ));
+                }
+            }
+            Time::GeneralizedTime(_) => {
+                if dt.year() < GENERALIZED_DATE_CUTOFF_YEAR {
+                    return Err(PolicyError::Other(
+                        "validity dates before generalized date cutoff must be UtcTime",
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
 }
 
