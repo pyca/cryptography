@@ -19,7 +19,7 @@ use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::Extensions;
 use cryptography_x509::{
     certificate::Certificate,
-    extensions::{NameConstraints, SequenceOfSubtrees, SubjectAlternativeName},
+    extensions::{NameConstraints, SubjectAlternativeName},
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
@@ -39,14 +39,8 @@ impl From<PolicyError> for ValidationError {
     }
 }
 
-#[derive(Default)]
-pub struct AccumulatedNameConstraints<'a> {
-    pub permitted: Vec<GeneralName<'a>>,
-    pub excluded: Vec<GeneralName<'a>>,
-}
-
 pub type Chain<'c> = Vec<Certificate<'c>>;
-type IntermediateChain<'c> = (Chain<'c>, AccumulatedNameConstraints<'c>);
+type IntermediateChain<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
 
 pub fn verify<'a, 'chain, B: CryptoOps>(
     leaf: &'a Certificate<'chain>,
@@ -115,16 +109,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
 
-    fn build_name_constraints_subtrees(
-        &self,
-        subtrees: SequenceOfSubtrees<'chain>,
-    ) -> impl Iterator<Item = GeneralName<'chain>> {
-        subtrees.unwrap_read().clone().map(|x| x.base)
-    }
-
     fn build_name_constraints(
         &self,
-        constraints: &mut AccumulatedNameConstraints<'chain>,
+        constraints: &mut Vec<NameConstraints<'chain>>,
         working_cert: &'a Certificate<'chain>,
     ) -> Result<(), ValidationError> {
         let extensions: Extensions<'chain> = working_cert
@@ -132,16 +119,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             let nc: NameConstraints<'chain> = nc.value().map_err(PolicyError::Malformed)?;
-            if let Some(permitted_subtrees) = nc.permitted_subtrees {
-                constraints
-                    .permitted
-                    .extend(self.build_name_constraints_subtrees(permitted_subtrees));
-            }
-            if let Some(excluded_subtrees) = nc.excluded_subtrees {
-                constraints
-                    .excluded
-                    .extend(self.build_name_constraints_subtrees(excluded_subtrees));
-            }
+            constraints.push(nc);
         }
         Ok(())
     }
@@ -174,7 +152,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
     fn apply_name_constraints(
         &self,
-        constraints: &AccumulatedNameConstraints<'chain>,
+        constraints: &Vec<NameConstraints<'chain>>,
         working_cert: &Certificate<'chain>,
     ) -> Result<(), ValidationError> {
         let extensions = working_cert
@@ -185,12 +163,16 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             for san in sans.clone() {
                 // If there are no applicable constraints, the SAN is considered valid so the default is true.
                 let mut permit = true;
-                for c in constraints.permitted.iter() {
-                    let status = self.apply_name_constraint(c, &san)?;
-                    if status.is_applied() {
-                        permit = status.is_match();
-                        if permit {
-                            break;
+                for nc in constraints {
+                    if let Some(permitted_subtrees) = &nc.permitted_subtrees {
+                        for p in permitted_subtrees.unwrap_read().clone() {
+                            let status = self.apply_name_constraint(&p.base, &san)?;
+                            if status.is_applied() {
+                                permit = status.is_match();
+                                if permit {
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -199,12 +181,17 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         PolicyError::Other("no permitted name constraints matched SAN").into(),
                     );
                 }
-                for c in constraints.excluded.iter() {
-                    let status = self.apply_name_constraint(c, &san)?;
-                    if status.is_match() {
-                        return Err(
-                            PolicyError::Other("excluded name constraint matched SAN").into()
-                        );
+                for nc in constraints {
+                    if let Some(excluded_subtrees) = &nc.excluded_subtrees {
+                        for e in excluded_subtrees.unwrap_read().clone() {
+                            let status = self.apply_name_constraint(&e.base, &san)?;
+                            if status.is_match() {
+                                return Err(PolicyError::Other(
+                                    "excluded name constraint matched SAN",
+                                )
+                                .into());
+                            }
+                        }
                     }
                 }
             }
@@ -229,7 +216,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // here: inclusion in the root set implies a trust relationship,
         // even if the working certificate is an EE or intermediate CA.
         if self.store.contains(working_cert) {
-            let mut constraints = AccumulatedNameConstraints::default();
+            let mut constraints = vec![];
             self.build_name_constraints(&mut constraints, working_cert)?;
             return Ok((vec![working_cert.clone()], constraints));
         }
