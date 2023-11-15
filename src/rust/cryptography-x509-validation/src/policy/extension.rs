@@ -237,42 +237,48 @@ pub(crate) mod ca {
     };
 
     use crate::{
-        certificate::cert_is_self_signed,
         ops::CryptoOps,
         policy::{Policy, PolicyError},
     };
 
     pub(crate) fn authority_key_identifier<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
     ) -> Result<(), PolicyError> {
-        // The Authority Key Identifier MUST be present, with one exception:
-        // self-signed CAs may omit it.
-        match extn {
-            Some(extn) => {
-                let aki: AuthorityKeyIdentifier<'_> = extn.value()?;
-                // 7.1.2.11.1 Authority Key Identifier:
-                // authorityCertIssuer and authorityCertSerialNumber MUST NOT be present.
-                if aki.authority_cert_issuer.is_some() {
-                    return Err(
-                        "authorityKeyIdentifier must not contain authorityCertIssuer".into(),
-                    );
-                }
+        // CABF: AKI is required on all CA certificates *except* root CA certificates,
+        // where is it merely recommended. This is slightly different from RFC 5280,
+        // which requires AKI on all CA certificates *except* self-signed root CA certificates.
+        //
+        // This discrepancy poses a challenge: from a strict CABF perspective we should
+        // require the AKI unless we're on a root CA, but we lack the context to determine that
+        // here. We *could* infer that we're on a root by checking whether the CA is self-signed,
+        // but many root CAs still use RSA with SHA-1 (which is intentionally unsupported
+        // for signature verification).
+        //
+        // Consequently, the best we can currently do here is check whether the AKI conforms
+        // to the CABF mandated format, *if* it exists. This means that we will accept
+        // some chains that are not strictly CABF compliant (e.g. ones where intermediate
+        // CAs are missing AKIs), but this is a relatively minor discrepancy.
+        if let Some(extn) = extn {
+            let aki: AuthorityKeyIdentifier<'_> = extn.value()?;
+            // 7.1.2.11.1 Authority Key Identifier:
 
-                if aki.authority_cert_serial_number.is_some() {
-                    return Err(
-                        "authorityKeyIdentifier must not contain authorityCertSerialNumber".into(),
-                    );
-                }
+            // keyIdentifier MUST be present.
+            // TODO: Check that keyIdentifier matches subjectKeyIdentifier.
+            if aki.key_identifier.is_none() {
+                return Err("authorityKeyIdentifier must contain keyIdentifier".into());
             }
-            None => {
-                if !cert_is_self_signed(cert, &policy.ops) {
-                    return Err(
-                        "authorityKeyIdentifier must be present in cross-signed CA certificate"
-                            .into(),
-                    );
-                }
+
+            // authorityCertIssuer and authorityCertSerialNumber MUST NOT be present.
+            if aki.authority_cert_issuer.is_some() {
+                return Err("authorityKeyIdentifier must not contain authorityCertIssuer".into());
+            }
+
+            if aki.authority_cert_serial_number.is_some() {
+                return Err(
+                    "authorityKeyIdentifier must not contain authorityCertSerialNumber".into(),
+                );
             }
         }
 

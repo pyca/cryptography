@@ -34,6 +34,13 @@ LIMBO_UNSUPPORTED_FEATURES = {
     "pedantic-rfc5280",
 }
 
+LIMBO_XFAIL_TESTCASES = {
+    # We currently allow intermediate CAs that don't have AKIs, which
+    # is technically forbidden under CABF. This is consistent with that
+    # Go's crypto/x509 and Rust's webpki crate do.
+    "rfc5280::intermediate-missing-aki"
+}
+
 
 def _get_limbo_peer(expected_peer):
     assert expected_peer is not None
@@ -48,6 +55,9 @@ def _get_limbo_peer(expected_peer):
 
 
 def _limbo_testcase(testcase):
+    if testcase["id"] in LIMBO_XFAIL_TESTCASES:
+        return
+
     features = testcase["features"]
     if features is not None and LIMBO_UNSUPPORTED_FEATURES.intersection(
         features
