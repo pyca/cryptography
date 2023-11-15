@@ -36,9 +36,13 @@ LIMBO_UNSUPPORTED_FEATURES = {
 
 LIMBO_XFAIL_TESTCASES = {
     # We currently allow intermediate CAs that don't have AKIs, which
-    # is technically forbidden under CABF. This is consistent with that
+    # is technically forbidden under CABF. This is consistent with what
     # Go's crypto/x509 and Rust's webpki crate do.
-    "rfc5280::intermediate-missing-aki"
+    "rfc5280::intermediate-missing-aki",
+    # We allow root CAs where the AKI and SKI mismatch, which is technically
+    # forbidden under CABF. This is consistent with what
+    # Go's crypto/x509 and Rust's webpki crate do.
+    "webpki::aki::root-with-aki-ski-mismatch",
 }
 
 
