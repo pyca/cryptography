@@ -387,7 +387,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             // in a 21-byte encoding.
             return Err("certificate must have a serial between 1 and 20 octets".into());
         } else if serial_bytes[0] & 0x80 == 0x80 {
-            // If the high-bit is set, then we know the serial number is negative.
+            // TODO: replace with `is_negative`: https://github.com/alex/rust-asn1/pull/425
             return Err("certificate serial number cannot be negative".into());
         }
 
