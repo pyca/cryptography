@@ -862,10 +862,10 @@ X.509 Certificate Builder
         >>> public_key = private_key.public_key()
         >>> builder = x509.CertificateBuilder()
         >>> builder = builder.subject_name(x509.Name([
-        ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+        ...     x509.NameAttribute(NameOID.COMMON_NAME, 'cryptography.io'),
         ... ]))
         >>> builder = builder.issuer_name(x509.Name([
-        ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+        ...     x509.NameAttribute(NameOID.COMMON_NAME, 'cryptography.io'),
         ... ]))
         >>> builder = builder.not_valid_before(datetime.datetime.today() - one_day)
         >>> builder = builder.not_valid_after(datetime.datetime.today() + (one_day * 30))
@@ -873,7 +873,7 @@ X.509 Certificate Builder
         >>> builder = builder.public_key(public_key)
         >>> builder = builder.add_extension(
         ...     x509.SubjectAlternativeName(
-        ...         [x509.DNSName(u'cryptography.io')]
+        ...         [x509.DNSName('cryptography.io')]
         ...     ),
         ...     critical=False
         ... )
@@ -1150,7 +1150,7 @@ X.509 Certificate Revocation List Builder
         ... )
         >>> builder = x509.CertificateRevocationListBuilder()
         >>> builder = builder.issuer_name(x509.Name([
-        ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io CA'),
+        ...     x509.NameAttribute(NameOID.COMMON_NAME, 'cryptography.io CA'),
         ... ]))
         >>> builder = builder.last_update(datetime.datetime.today())
         >>> builder = builder.next_update(datetime.datetime.today() + one_day)
@@ -1369,7 +1369,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         ... )
         >>> builder = x509.CertificateSigningRequestBuilder()
         >>> builder = builder.subject_name(x509.Name([
-        ...     x509.NameAttribute(NameOID.COMMON_NAME, u'cryptography.io'),
+        ...     x509.NameAttribute(NameOID.COMMON_NAME, 'cryptography.io'),
         ... ]))
         >>> builder = builder.add_extension(
         ...     x509.BasicConstraints(ca=False, path_length=None), critical=True,

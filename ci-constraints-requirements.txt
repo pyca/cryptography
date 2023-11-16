@@ -130,7 +130,7 @@ requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.6.0
+rich==13.7.0
     # via twine
 ruff==0.1.5
     # via cryptography (pyproject.toml)
@@ -174,7 +174,7 @@ twine==4.0.2
     # via cryptography (pyproject.toml)
 typing-extensions==4.8.0; python_version >= "3.8"
     # via mypy
-urllib3==2.0.7
+urllib3==2.1.0
     # via
     #   requests
     #   twine
