@@ -25,10 +25,6 @@ LIMBO_UNSUPPORTED_FEATURES = {
     # Our support for custom EKUs is limited, and we (like most impls.) don't
     # handle all EKU conditions under CABF.
     "pedantic-webpki-eku",
-    # Contains tests that fail as a matter of strict CA/BF policy, but
-    # aren't strictly a part of path validation (meaning that compliant
-    # validators largely ignore them),
-    "pedantic-webpki",
     # Similarly: contains tests that fail based on a strict reading of RFC 5280
     # but are widely ignored by validators.
     "pedantic-rfc5280",
