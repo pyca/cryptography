@@ -501,8 +501,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_public_key_algorithms
             .contains(&child.tbs_cert.spki.algorithm)
         {
-            // TODO: Should probably include the OID here.
-            return Err("Forbidden public key algorithm".into());
+            return Err(format!(
+                "Forbidden public key algorithm: {:?}",
+                &child.tbs_cert.spki.algorithm
+            )
+            .into());
         }
 
         // CA/B 7.1.3.2 Signature AlgorithmIdentifier
@@ -510,8 +513,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_signature_algorithms
             .contains(&child.signature_alg)
         {
-            // TODO: Should probably include the OID here.
-            return Err("Forbidden signature algorithm".into());
+            return Err(
+                format!("Forbidden signature algorithm: {:?}", &child.signature_alg).into(),
+            );
         }
 
         let pk = self
