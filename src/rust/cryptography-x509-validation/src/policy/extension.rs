@@ -10,7 +10,7 @@ use cryptography_x509::{
 
 use crate::ops::CryptoOps;
 
-use super::{Policy, PolicyError};
+use super::{Policy, ValidationError};
 
 /// Represents different criticality states for an extension.
 pub(crate) enum Criticality {
@@ -35,10 +35,10 @@ impl Criticality {
 }
 
 type PresentExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), PolicyError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), ValidationError>;
 
 type MaybeExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), PolicyError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), ValidationError>;
 
 /// Represents different validation states for an extension.
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
@@ -108,18 +108,18 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         match (&self.validator, extensions.get_extension(&self.oid)) {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
             // Extension MUST NOT be present but is; NOT OK.
-            (ExtensionValidator::NotPresent, Some(_)) => Err(PolicyError::Other(
-                "EE certificate contains prohibited extension",
-            )),
+            (ExtensionValidator::NotPresent, Some(_)) => {
+                Err("EE certificate contains prohibited extension".into())
+            }
             // Extension MUST be present but is not; NOT OK.
-            (ExtensionValidator::Present { .. }, None) => Err(PolicyError::Other(
-                "EE certificate is missing required extension",
-            )),
+            (ExtensionValidator::Present { .. }, None) => {
+                Err("EE certificate is missing required extension".into())
+            }
             // Extension MUST be present and is; check it.
             (
                 ExtensionValidator::Present {
@@ -129,9 +129,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 Some(extn),
             ) => {
                 if !criticality.permits(extn.critical) {
-                    return Err(PolicyError::Other(
-                        "EE certificate extension has incorrect criticality",
-                    ));
+                    return Err("EE certificate extension has incorrect criticality".into());
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -150,9 +148,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                     .as_ref()
                     .map_or(false, |extn| !criticality.permits(extn.critical))
                 {
-                    return Err(PolicyError::Other(
-                        "EE certificate extension has incorrect criticality",
-                    ));
+                    return Err("EE certificate extension has incorrect criticality".into());
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -170,14 +166,14 @@ pub(crate) mod ee {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, PolicyError},
+        policy::{Policy, ValidationError},
     };
 
     pub(crate) fn basic_constraints<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         if let Some(extn) = extn {
             let basic_constraints: BasicConstraints = extn.value()?;
 
@@ -193,7 +189,7 @@ pub(crate) mod ee {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         match (cert.subject().is_empty(), extn.critical) {
             // If the subject is empty, the SAN MUST be critical.
             (true, false) => {
@@ -211,7 +207,7 @@ pub(crate) mod ee {
         let san: SubjectAlternativeName<'_> = extn.value()?;
         match policy.subject.matches(&san) {
             true => Ok(()),
-            false => Err(PolicyError::Other("EE cert has no matching SAN")),
+            false => Err("EE cert has no matching SAN".into()),
         }
     }
 
@@ -219,13 +215,13 @@ pub(crate) mod ee {
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
         if ekus.any(|eku| eku == policy.extended_key_usage) {
             Ok(())
         } else {
-            Err(PolicyError::Other("required EKU not found"))
+            Err("required EKU not found".into())
         }
     }
 }
@@ -238,14 +234,14 @@ pub(crate) mod ca {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, PolicyError},
+        policy::{Policy, ValidationError},
     };
 
     pub(crate) fn authority_key_identifier<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         // CABF: AKI is required on all CA certificates *except* root CA certificates,
         // where is it merely recommended. This is slightly different from RFC 5280,
         // which requires AKI on all CA certificates *except* self-signed root CA certificates.
@@ -289,7 +285,7 @@ pub(crate) mod ca {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         let key_usage: KeyUsage<'_> = extn.value()?;
 
         if !key_usage.key_cert_sign() {
@@ -303,7 +299,7 @@ pub(crate) mod ca {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         let basic_constraints: BasicConstraints = extn.value()?;
 
         if !basic_constraints.ca {
@@ -324,14 +320,14 @@ pub(crate) mod common {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, PolicyError},
+        policy::{Policy, ValidationError},
     };
 
     pub(crate) fn authority_information_access<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         if let Some(extn) = extn {
             // We don't currently do anything useful with these, but we
             // do check that they're well-formed.
@@ -347,7 +343,7 @@ mod tests {
     use super::{Criticality, ExtensionPolicy};
     use crate::ops::tests::{cert, v1_cert_pem, NullOps};
     use crate::ops::CryptoOps;
-    use crate::policy::{Policy, PolicyError, Subject};
+    use crate::policy::{Policy, Subject, ValidationError};
     use crate::types::DNSName;
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
     use cryptography_x509::certificate::Certificate;
@@ -398,7 +394,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         Ok(())
     }
 
@@ -447,7 +443,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         Ok(())
     }
 

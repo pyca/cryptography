@@ -16,7 +16,7 @@ use std::collections::HashSet;
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
-use cryptography_x509::extensions::Extensions;
+use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
 use cryptography_x509::{
     certificate::Certificate,
     extensions::{NameConstraints, SubjectAlternativeName},
@@ -24,18 +24,39 @@ use cryptography_x509::{
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
 use ops::CryptoOps;
-use policy::{Policy, PolicyError};
+use policy::Policy;
 use trust_store::Store;
 use types::DNSName;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
-    Policy(PolicyError),
+    CandidatesExhausted,
+    Malformed(asn1::ParseError),
+    DuplicateExtension(DuplicateExtensionsError),
+    Other(String),
 }
 
-impl From<PolicyError> for ValidationError {
-    fn from(value: PolicyError) -> Self {
-        ValidationError::Policy(value)
+impl From<asn1::ParseError> for ValidationError {
+    fn from(value: asn1::ParseError) -> Self {
+        Self::Malformed(value)
+    }
+}
+
+impl From<DuplicateExtensionsError> for ValidationError {
+    fn from(value: DuplicateExtensionsError) -> Self {
+        Self::DuplicateExtension(value)
+    }
+}
+
+impl From<&str> for ValidationError {
+    fn from(value: &str) -> Self {
+        Self::Other(value.into())
+    }
+}
+
+impl From<String> for ValidationError {
+    fn from(value: String) -> Self {
+        Self::Other(value)
     }
 }
 
@@ -115,7 +136,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         extensions: &Extensions<'chain>,
     ) -> Result<(), ValidationError> {
         if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            let nc: NameConstraints<'chain> = nc.value().map_err(PolicyError::Malformed)?;
+            let nc: NameConstraints<'chain> = nc.value()?;
             constraints.push(nc);
         }
         Ok(())
@@ -132,7 +153,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let name = DNSName::new(name.0).unwrap();
                     Ok(Applied(pattern.matches(&name)))
                 } else {
-                    Err(PolicyError::Other("malformed DNS name constraint").into())
+                    Err("malformed DNS name constraint".into())
                 }
             }
             (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
@@ -140,7 +161,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let name = IPAddress::from_bytes(name).unwrap();
                     Ok(Applied(pattern.matches(&name)))
                 } else {
-                    Err(PolicyError::Other("malformed IP name constraint").into())
+                    Err("malformed IP name constraint".into())
                 }
             }
             _ => Ok(Skipped),
@@ -153,7 +174,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         extensions: &Extensions<'chain>,
     ) -> Result<(), ValidationError> {
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-            let sans: SubjectAlternativeName<'_> = sans.value().map_err(PolicyError::Malformed)?;
+            let sans: SubjectAlternativeName<'_> = sans.value()?;
             for san in sans.clone() {
                 // If there are no applicable constraints, the SAN is considered valid so the default is true.
                 let mut permit = true;
@@ -171,19 +192,14 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     }
                 }
                 if !permit {
-                    return Err(
-                        PolicyError::Other("no permitted name constraints matched SAN").into(),
-                    );
+                    return Err("no permitted name constraints matched SAN".into());
                 }
                 for nc in constraints {
                     if let Some(excluded_subtrees) = &nc.excluded_subtrees {
                         for e in excluded_subtrees.unwrap_read().clone() {
                             let status = self.apply_name_constraint(&e.base, &san)?;
                             if status.is_match() {
-                                return Err(PolicyError::Other(
-                                    "excluded name constraint matched SAN",
-                                )
-                                .into());
+                                return Err("excluded name constraint matched SAN".into());
                             }
                         }
                     }
@@ -201,7 +217,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         extensions: &'a Extensions<'chain>,
     ) -> Result<IntermediateChain<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
-            return Err(PolicyError::Other("chain construction exceeds max depth").into());
+            return Err("chain construction exceeds max depth".into());
         }
 
         // Look in the store's root set to see if the working cert is listed.
@@ -222,9 +238,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
             // policy.
-            let issuer_extensions = issuing_cert_candidate
-                .extensions()
-                .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
+            let issuer_extensions = issuing_cert_candidate.extensions()?;
             if let Ok(next_depth) = self.policy.valid_issuer(
                 issuing_cert_candidate,
                 working_cert,
@@ -261,7 +275,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         // We only reach this if we fail to hit our base case above, or if
         // a chain building step fails to find a next valid certificate.
-        Err(PolicyError::Other("chain construction exhausted all candidates").into())
+        Err(ValidationError::CandidatesExhausted)
     }
 
     fn build_chain(&self, leaf: &'a Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
@@ -271,9 +285,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         //
         // In the case that the leaf is an EE, this includes a check
         // against the EE cert's SANs.
-        let extensions = leaf
-            .extensions()
-            .map_err(|e| ValidationError::Policy(PolicyError::DuplicateExtension(e)))?;
+        let extensions = leaf.extensions()?;
 
         self.policy.permits_leaf(leaf, &extensions)?;
 

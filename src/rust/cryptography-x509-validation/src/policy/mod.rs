@@ -16,7 +16,7 @@ use cryptography_x509::common::{
     PSS_SHA512_HASH_ALG, PSS_SHA512_MASK_GEN_ALG,
 };
 use cryptography_x509::extensions::{
-    BasicConstraints, DuplicateExtensionsError, Extensions, KeyUsage, SubjectAlternativeName,
+    BasicConstraints, Extensions, KeyUsage, SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -30,6 +30,7 @@ use self::extension::{ca, common, ee, Criticality, ExtensionPolicy};
 use crate::certificate::cert_is_self_issued;
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress};
+use crate::ValidationError;
 
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
@@ -160,25 +161,6 @@ pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentif
 /// OpenSSL defaults to a limit of 100, which is far more permissive than
 /// necessary.
 const DEFAULT_MAX_CHAIN_DEPTH: u8 = 8;
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum PolicyError {
-    Malformed(asn1::ParseError),
-    DuplicateExtension(DuplicateExtensionsError),
-    Other(&'static str),
-}
-
-impl From<asn1::ParseError> for PolicyError {
-    fn from(value: asn1::ParseError) -> Self {
-        Self::Malformed(value)
-    }
-}
-
-impl From<&'static str> for PolicyError {
-    fn from(value: &'static str) -> Self {
-        Self::Other(value)
-    }
-}
 
 /// Represents a logical certificate "subject," i.e. a principal matching
 /// one of the names listed in a certificate's `subjectAltNames` extension.
@@ -352,8 +334,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
     }
 
-    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        let extensions = cert.extensions().map_err(PolicyError::DuplicateExtension)?;
+    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {
+        let extensions = cert.extensions()?;
 
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
@@ -399,7 +381,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         valid_validity_date(&cert.tbs_cert.validity.not_before)?;
         valid_validity_date(&cert.tbs_cert.validity.not_after)?;
         if &self.validation_time < not_before || &self.validation_time > not_after {
-            return Err(PolicyError::Other("cert is not valid at validation time"));
+            return Err("cert is not valid at validation time".into());
         }
 
         // Extension policy checks.
@@ -442,7 +424,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         &self,
         leaf: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
         // Code like this will propagate irrelevant error messages out of the API.
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
@@ -460,7 +442,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         cert: &Certificate<'_>,
         current_depth: u8,
         extensions: &Extensions<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         self.permits_basic(cert)?;
 
         // 5280 4.1.2.6: Subject
@@ -474,15 +456,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // requires a bit of extra external state (`current_depth`) that isn't
         // presently convenient to push into that layer.
         if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let bc: BasicConstraints = bc
-                .value()
-                .map_err(|_| PolicyError::Other("issuer has malformed basicConstraints"))?;
+            let bc: BasicConstraints = bc.value()?;
 
             if bc
                 .path_length
                 .map_or(false, |len| current_depth as u64 > len)
             {
-                return Err(PolicyError::Other("path length constraint violated"));
+                return Err(ValidationError::from("path length constraint violated"))?;
             }
         }
 
@@ -498,7 +478,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         &self,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         self.permits_basic(cert)?;
 
         for ext_policy in self.ee_extension_policies.iter() {
@@ -524,7 +504,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &Certificate<'_>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
-    ) -> Result<u8, PolicyError> {
+    ) -> Result<u8, ValidationError> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer, current_depth, issuer_extensions)?;
 
@@ -549,9 +529,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         let pk = self
             .ops
             .public_key(issuer)
-            .map_err(|_| PolicyError::Other("issuer has malformed public key"))?;
+            .map_err(|_| ValidationError::from("issuer has malformed public key"))?;
         if self.ops.verify_signed_by(child, pk).is_err() {
-            return Err(PolicyError::Other("signature does not match"));
+            return Err("signature does not match".into());
         }
 
         // Self-issued issuers don't increase the working depth.
@@ -559,12 +539,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             true => Ok(current_depth),
             false => Ok(current_depth
                 .checked_add(1)
-                .ok_or(PolicyError::Other("current depth calculation overflowed"))?),
+                .ok_or_else(|| ValidationError::from("current depth calculation overflowed"))?),
         }
     }
 }
 
-fn valid_validity_date(validity_date: &Time) -> Result<(), PolicyError> {
+fn valid_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
     const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
     match validity_date {
         Time::UtcTime(_) => {
@@ -573,9 +553,7 @@ fn valid_validity_date(validity_date: &Time) -> Result<(), PolicyError> {
         }
         Time::GeneralizedTime(_) => {
             if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
-                return Err(PolicyError::Other(
-                    "validity dates before generalized date cutoff must be UtcTime",
-                ));
+                return Err("validity dates before generalized date cutoff must be UtcTime".into());
             }
         }
     }
