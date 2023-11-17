@@ -174,12 +174,6 @@ impl From<asn1::ParseError> for PolicyError {
     }
 }
 
-impl From<DuplicateExtensionsError> for PolicyError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
-    }
-}
-
 impl From<&'static str> for PolicyError {
     fn from(value: &'static str) -> Self {
         Self::Other(value)
@@ -359,7 +353,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 
     fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), PolicyError> {
-        let extensions = cert.extensions()?;
+        let extensions = cert.extensions().map_err(PolicyError::DuplicateExtension)?;
 
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
