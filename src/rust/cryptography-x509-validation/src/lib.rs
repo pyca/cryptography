@@ -13,11 +13,5 @@ pub mod types;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
-    Other(String),
-}
-
-impl From<&str> for ValidationError {
-    fn from(value: &str) -> Self {
-        Self::Other(value.into())
-    }
+    Other(&'static str),
 }

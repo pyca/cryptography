@@ -122,13 +122,13 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
             // Extension MUST NOT be present but is; NOT OK.
-            (ExtensionValidator::NotPresent, Some(_)) => {
-                Err("EE certificate contains prohibited extension".into())
-            }
+            (ExtensionValidator::NotPresent, Some(_)) => Err(ValidationError::Other(
+                "EE certificate contains prohibited extension",
+            )),
             // Extension MUST be present but is not; NOT OK.
-            (ExtensionValidator::Present { .. }, None) => {
-                Err("EE certificate is missing required extension".into())
-            }
+            (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(
+                "EE certificate is missing required extension",
+            )),
             // Extension MUST be present and is; check it.
             (
                 ExtensionValidator::Present {
@@ -138,7 +138,9 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 Some(extn),
             ) => {
                 if !criticality.permits(extn.critical) {
-                    return Err("EE certificate extension has incorrect criticality".into());
+                    return Err(ValidationError::Other(
+                        "EE certificate extension has incorrect criticality",
+                    ));
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -157,7 +159,9 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                     .as_ref()
                     .map_or(false, |extn| !criticality.permits(extn.critical))
                 {
-                    return Err("EE certificate extension has incorrect criticality".into());
+                    return Err(ValidationError::Other(
+                        "EE certificate extension has incorrect criticality",
+                    ));
                 }
 
                 // If a custom validator is supplied, apply it.
