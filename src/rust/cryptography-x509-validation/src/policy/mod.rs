@@ -151,10 +151,6 @@ pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentif
 /// necessary.
 const DEFAULT_MAX_CHAIN_DEPTH: u8 = 8;
 
-pub enum PolicyError {
-    Other(&'static str),
-}
-
 /// Represents a logical certificate "subject," i.e. a principal matching
 /// one of the names listed in a certificate's `subjectAltNames` extension.
 pub enum Subject<'a> {
