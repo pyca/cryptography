@@ -6,7 +6,7 @@ mod extension;
 
 use std::collections::HashSet;
 
-use asn1::{DateTime, ObjectIdentifier};
+use asn1::ObjectIdentifier;
 use cryptography_x509::certificate::Certificate;
 use once_cell::sync::Lazy;
 
@@ -396,8 +396,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // dates in or after 2050 MUST be encoded as GeneralizedTime.
         let not_before = cert.tbs_cert.validity.not_before.as_datetime();
         let not_after = cert.tbs_cert.validity.not_after.as_datetime();
-        self.valid_validity_date(&cert.tbs_cert.validity.not_before, not_before)?;
-        self.valid_validity_date(&cert.tbs_cert.validity.not_after, not_after)?;
+        valid_validity_date(&cert.tbs_cert.validity.not_before)?;
+        valid_validity_date(&cert.tbs_cert.validity.not_after)?;
         if &self.validation_time < not_before || &self.validation_time > not_after {
             return Err(PolicyError::Other("cert is not valid at validation time"));
         }
@@ -562,34 +562,32 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .ok_or(PolicyError::Other("current depth calculation overflowed"))?),
         }
     }
+}
 
-    fn valid_validity_date(&self, validity_date: &Time, dt: &DateTime) -> Result<(), PolicyError> {
-        const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
-        match validity_date {
-            Time::UtcTime(_) => {
-                if dt.year() >= GENERALIZED_DATE_CUTOFF_YEAR {
-                    return Err(PolicyError::Other(
-                        "validity dates after generalized date cutoff must be GeneralizedTime",
-                    ));
-                }
-            }
-            Time::GeneralizedTime(_) => {
-                if dt.year() < GENERALIZED_DATE_CUTOFF_YEAR {
-                    return Err(PolicyError::Other(
-                        "validity dates before generalized date cutoff must be UtcTime",
-                    ));
-                }
+fn valid_validity_date(validity_date: &Time) -> Result<(), PolicyError> {
+    const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
+    match validity_date {
+        Time::UtcTime(_) => {
+            // NOTE: The `asn1::UtcTime` constructor already checks the underlying datetime year so
+            // it's not possible for this type to exist past the cutoff.
+        }
+        Time::GeneralizedTime(_) => {
+            if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
+                return Err(PolicyError::Other(
+                    "validity dates before generalized date cutoff must be UtcTime",
+                ));
             }
         }
-        Ok(())
     }
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use std::ops::Deref;
 
-    use asn1::SequenceOfWriter;
+    use asn1::{DateTime, SequenceOfWriter};
+    use cryptography_x509::common::Time;
     use cryptography_x509::{
         extensions::SubjectAlternativeName,
         name::{GeneralName, UnvalidatedIA5String},
@@ -604,9 +602,9 @@ mod tests {
     };
 
     use super::{
-        ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256, RSASSA_PKCS1V15_SHA384,
-        RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384, RSASSA_PSS_SHA512,
-        WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
+        valid_validity_date, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
+        RSASSA_PSS_SHA512, WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
     };
 
     #[test]
@@ -771,6 +769,59 @@ mod tests {
                 asn1::parse_single::<SubjectAlternativeName<'_>>(&san_der).unwrap();
 
             assert!(!domain_sub.matches(&any_cryptography_io));
+        }
+    }
+
+    #[test]
+    fn test_validity_date() {
+        {
+            // Pre-2050 date.
+            let utc_dt = DateTime::new(1980, 1, 1, 0, 0, 0).unwrap();
+            let generalized_dt = utc_dt.clone();
+            let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
+            let generalized_validity =
+                Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
+            assert!(valid_validity_date(&utc_validity).is_ok());
+            assert!(valid_validity_date(&generalized_validity).is_err());
+        }
+        {
+            // 2049 date.
+            let utc_dt = DateTime::new(2049, 1, 1, 0, 0, 0).unwrap();
+            let generalized_dt = utc_dt.clone();
+            let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
+            let generalized_validity =
+                Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
+            assert!(valid_validity_date(&utc_validity).is_ok());
+            assert!(valid_validity_date(&generalized_validity).is_err());
+        }
+        {
+            // 2050 date.
+            let utc_dt = DateTime::new(2050, 1, 1, 0, 0, 0).unwrap();
+            let generalized_dt = utc_dt.clone();
+            assert!(asn1::UtcTime::new(utc_dt).is_err());
+            let generalized_validity =
+                Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
+            assert!(valid_validity_date(&generalized_validity).is_ok());
+        }
+        {
+            // 2051 date.
+            let utc_dt = DateTime::new(2051, 1, 1, 0, 0, 0).unwrap();
+            let generalized_dt = utc_dt.clone();
+            // The `asn1::UtcTime` constructor prevents this.
+            assert!(asn1::UtcTime::new(utc_dt).is_err());
+            let generalized_validity =
+                Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
+            assert!(valid_validity_date(&generalized_validity).is_ok());
+        }
+        {
+            // Post-2050 date.
+            let utc_dt = DateTime::new(3050, 1, 1, 0, 0, 0).unwrap();
+            let generalized_dt = utc_dt.clone();
+            // The `asn1::UtcTime` constructor prevents this.
+            assert!(asn1::UtcTime::new(utc_dt).is_err());
+            let generalized_validity =
+                Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
+            assert!(valid_validity_date(&generalized_validity).is_ok());
         }
     }
 }
