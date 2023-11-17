@@ -178,18 +178,6 @@ impl Subject<'_> {
     }
 }
 
-impl<'a> From<DNSName<'a>> for Subject<'a> {
-    fn from(value: DNSName<'a>) -> Self {
-        Self::DNS(value)
-    }
-}
-
-impl From<IPAddress> for Subject<'_> {
-    fn from(value: IPAddress) -> Self {
-        Self::IP(value)
-    }
-}
-
 /// A `Policy` describes user-configurable aspects of X.509 path validation.
 pub struct Policy<'a, B: CryptoOps> {
     _ops: B,
@@ -377,22 +365,9 @@ mod tests {
     }
 
     #[test]
-    fn test_subject_from_impls() {
-        assert!(matches!(
-            Subject::from(DNSName::new("cryptography.io").unwrap()),
-            Subject::DNS(_)
-        ));
-
-        assert!(matches!(
-            Subject::from(IPAddress::from_str("1.1.1.1").unwrap()),
-            Subject::IP(_)
-        ));
-    }
-
-    #[test]
     fn test_subject_matches() {
-        let domain_sub = Subject::from(DNSName::new("test.cryptography.io").unwrap());
-        let ip_sub = Subject::from(IPAddress::from_str("127.0.0.1").unwrap());
+        let domain_sub = Subject::DNS(DNSName::new("test.cryptography.io").unwrap());
+        let ip_sub = Subject::IP(IPAddress::from_str("127.0.0.1").unwrap());
 
         // Single SAN, domain wildcard.
         {
