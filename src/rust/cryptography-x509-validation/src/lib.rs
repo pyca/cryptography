@@ -10,3 +10,7 @@ pub mod ops;
 pub mod policy;
 pub mod trust_store;
 pub mod types;
+
+pub enum ValidationError {
+    Other(&'static str),
+}

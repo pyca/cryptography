@@ -8,9 +8,9 @@ use cryptography_x509::{
     extensions::{Extension, Extensions},
 };
 
-use crate::ops::CryptoOps;
+use crate::{ops::CryptoOps, ValidationError};
 
-use super::{Policy, PolicyError};
+use super::Policy;
 
 // TODO: Remove `dead_code` attributes once we start using these helpers.
 
@@ -40,11 +40,11 @@ impl Criticality {
 
 #[allow(dead_code)]
 type PresentExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), PolicyError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), ValidationError>;
 
 #[allow(dead_code)]
 type MaybeExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), PolicyError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), ValidationError>;
 
 /// Represents different validation states for an extension.
 #[allow(dead_code)]
@@ -117,16 +117,16 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         match (&self.validator, extensions.get_extension(&self.oid)) {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
             // Extension MUST NOT be present but is; NOT OK.
-            (ExtensionValidator::NotPresent, Some(_)) => Err(PolicyError::Other(
+            (ExtensionValidator::NotPresent, Some(_)) => Err(ValidationError::Other(
                 "EE certificate contains prohibited extension",
             )),
             // Extension MUST be present but is not; NOT OK.
-            (ExtensionValidator::Present { .. }, None) => Err(PolicyError::Other(
+            (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(
                 "EE certificate is missing required extension",
             )),
             // Extension MUST be present and is; check it.
@@ -138,7 +138,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 Some(extn),
             ) => {
                 if !criticality.permits(extn.critical) {
-                    return Err(PolicyError::Other(
+                    return Err(ValidationError::Other(
                         "EE certificate extension has incorrect criticality",
                     ));
                 }
@@ -159,7 +159,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                     .as_ref()
                     .map_or(false, |extn| !criticality.permits(extn.critical))
                 {
-                    return Err(PolicyError::Other(
+                    return Err(ValidationError::Other(
                         "EE certificate extension has incorrect criticality",
                     ));
                 }
@@ -176,8 +176,9 @@ mod tests {
     use super::{Criticality, ExtensionPolicy};
     use crate::ops::tests::{cert, v1_cert_pem, NullOps};
     use crate::ops::CryptoOps;
-    use crate::policy::{Policy, PolicyError, Subject};
+    use crate::policy::{Policy, Subject};
     use crate::types::DNSName;
+    use crate::ValidationError;
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
@@ -227,7 +228,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: &Extension<'_>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         Ok(())
     }
 
@@ -276,7 +277,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: Option<&Extension<'_>>,
-    ) -> Result<(), PolicyError> {
+    ) -> Result<(), ValidationError> {
         Ok(())
     }
 
