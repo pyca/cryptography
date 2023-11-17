@@ -48,18 +48,6 @@ impl From<DuplicateExtensionsError> for ValidationError {
     }
 }
 
-impl From<&str> for ValidationError {
-    fn from(value: &str) -> Self {
-        Self::Other(value.into())
-    }
-}
-
-impl From<String> for ValidationError {
-    fn from(value: String) -> Self {
-        Self::Other(value)
-    }
-}
-
 pub type Chain<'c> = Vec<Certificate<'c>>;
 type IntermediateChain<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
 
@@ -153,7 +141,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let name = DNSName::new(name.0).unwrap();
                     Ok(Applied(pattern.matches(&name)))
                 } else {
-                    Err("malformed DNS name constraint".into())
+                    Err(ValidationError::Other(
+                        "malformed DNS name constraint".to_string(),
+                    ))
                 }
             }
             (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
@@ -161,7 +151,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     let name = IPAddress::from_bytes(name).unwrap();
                     Ok(Applied(pattern.matches(&name)))
                 } else {
-                    Err("malformed IP name constraint".into())
+                    Err(ValidationError::Other(
+                        "malformed IP name constraint".to_string(),
+                    ))
                 }
             }
             _ => Ok(Skipped),
@@ -192,14 +184,18 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     }
                 }
                 if !permit {
-                    return Err("no permitted name constraints matched SAN".into());
+                    return Err(ValidationError::Other(
+                        "no permitted name constraints matched SAN".into(),
+                    ));
                 }
                 for nc in constraints {
                     if let Some(excluded_subtrees) = &nc.excluded_subtrees {
                         for e in excluded_subtrees.unwrap_read().clone() {
                             let status = self.apply_name_constraint(&e.base, &san)?;
                             if status.is_match() {
-                                return Err("excluded name constraint matched SAN".into());
+                                return Err(ValidationError::Other(
+                                    "excluded name constraint matched SAN".into(),
+                                ));
                             }
                         }
                     }
@@ -217,7 +213,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         extensions: &'a Extensions<'chain>,
     ) -> Result<IntermediateChain<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
-            return Err("chain construction exceeds max depth".into());
+            return Err(ValidationError::Other(
+                "chain construction exceeds max depth".into(),
+            ));
         }
 
         // Look in the store's root set to see if the working cert is listed.

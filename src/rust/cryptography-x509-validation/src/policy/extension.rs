@@ -8,9 +8,7 @@ use cryptography_x509::{
     extensions::{Extension, Extensions},
 };
 
-use crate::ops::CryptoOps;
-
-use super::{Policy, ValidationError};
+use crate::{ops::CryptoOps, policy::Policy, ValidationError};
 
 /// Represents different criticality states for an extension.
 pub(crate) enum Criticality {
@@ -113,13 +111,13 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
             // Extension MUST NOT be present but is; NOT OK.
-            (ExtensionValidator::NotPresent, Some(_)) => {
-                Err("EE certificate contains prohibited extension".into())
-            }
+            (ExtensionValidator::NotPresent, Some(_)) => Err(ValidationError::Other(
+                "EE certificate contains prohibited extension".to_string(),
+            )),
             // Extension MUST be present but is not; NOT OK.
-            (ExtensionValidator::Present { .. }, None) => {
-                Err("EE certificate is missing required extension".into())
-            }
+            (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(
+                "EE certificate is missing required extension".to_string(),
+            )),
             // Extension MUST be present and is; check it.
             (
                 ExtensionValidator::Present {
@@ -129,7 +127,9 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 Some(extn),
             ) => {
                 if !criticality.permits(extn.critical) {
-                    return Err("EE certificate extension has incorrect criticality".into());
+                    return Err(ValidationError::Other(
+                        "EE certificate extension has incorrect criticality".to_string(),
+                    ));
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -148,7 +148,9 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                     .as_ref()
                     .map_or(false, |extn| !criticality.permits(extn.critical))
                 {
-                    return Err("EE certificate extension has incorrect criticality".into());
+                    return Err(ValidationError::Other(
+                        "EE certificate extension has incorrect criticality".to_string(),
+                    ));
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -178,7 +180,9 @@ pub(crate) mod ee {
             let basic_constraints: BasicConstraints = extn.value()?;
 
             if basic_constraints.ca {
-                return Err("basicConstraints.cA must not be asserted in an EE certificate".into());
+                return Err(ValidationError::Other(
+                    "basicConstraints.cA must not be asserted in an EE certificate".to_string(),
+                ));
             }
         }
 
@@ -193,13 +197,15 @@ pub(crate) mod ee {
         match (cert.subject().is_empty(), extn.critical) {
             // If the subject is empty, the SAN MUST be critical.
             (true, false) => {
-                return Err("EE subjectAltName MUST be critical when subject is empty".into());
+                return Err(ValidationError::Other(
+                    "EE subjectAltName MUST be critical when subject is empty".to_string(),
+                ));
             }
             // If the subject is non-empty, the SAN MUST NOT be critical.
             (false, true) => {
-                return Err(
-                    "EE subjectAltName MUST NOT be critical when subject is nonempty".into(),
-                )
+                return Err(ValidationError::Other(
+                    "EE subjectAltName MUST NOT be critical when subject is nonempty".to_string(),
+                ))
             }
             _ => (),
         };
@@ -207,7 +213,9 @@ pub(crate) mod ee {
         let san: SubjectAlternativeName<'_> = extn.value()?;
         match policy.subject.matches(&san) {
             true => Ok(()),
-            false => Err("EE cert has no matching SAN".into()),
+            false => Err(ValidationError::Other(
+                "EE cert has no matching SAN".to_string(),
+            )),
         }
     }
 
@@ -221,7 +229,7 @@ pub(crate) mod ee {
         if ekus.any(|eku| eku == policy.extended_key_usage) {
             Ok(())
         } else {
-            Err("required EKU not found".into())
+            Err(ValidationError::Other("required EKU not found".to_string()))
         }
     }
 }
@@ -263,18 +271,22 @@ pub(crate) mod ca {
             // keyIdentifier MUST be present.
             // TODO: Check that keyIdentifier matches subjectKeyIdentifier.
             if aki.key_identifier.is_none() {
-                return Err("authorityKeyIdentifier must contain keyIdentifier".into());
+                return Err(ValidationError::Other(
+                    "authorityKeyIdentifier must contain keyIdentifier".to_string(),
+                ));
             }
 
             // authorityCertIssuer and authorityCertSerialNumber MUST NOT be present.
             if aki.authority_cert_issuer.is_some() {
-                return Err("authorityKeyIdentifier must not contain authorityCertIssuer".into());
+                return Err(ValidationError::Other(
+                    "authorityKeyIdentifier must not contain authorityCertIssuer".to_string(),
+                ));
             }
 
             if aki.authority_cert_serial_number.is_some() {
-                return Err(
-                    "authorityKeyIdentifier must not contain authorityCertSerialNumber".into(),
-                );
+                return Err(ValidationError::Other(
+                    "authorityKeyIdentifier must not contain authorityCertSerialNumber".to_string(),
+                ));
             }
         }
 
@@ -289,7 +301,9 @@ pub(crate) mod ca {
         let key_usage: KeyUsage<'_> = extn.value()?;
 
         if !key_usage.key_cert_sign() {
-            return Err("keyUsage.keyCertSign must be asserted in a CA certificate".into());
+            return Err(ValidationError::Other(
+                "keyUsage.keyCertSign must be asserted in a CA certificate".to_string(),
+            ));
         }
 
         Ok(())
@@ -303,7 +317,9 @@ pub(crate) mod ca {
         let basic_constraints: BasicConstraints = extn.value()?;
 
         if !basic_constraints.ca {
-            return Err("basicConstraints.cA must be asserted in a CA certificate".into());
+            return Err(ValidationError::Other(
+                "basicConstraints.cA must be asserted in a CA certificate".to_string(),
+            ));
         }
 
         Ok(())

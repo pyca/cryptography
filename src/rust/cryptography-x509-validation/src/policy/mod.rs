@@ -328,37 +328,49 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
-            return Err("certificate must be an X509v3 certificate".into());
+            return Err(ValidationError::Other(
+                "certificate must be an X509v3 certificate".to_string(),
+            ));
         }
 
         // 5280 4.1.1.2 / 4.1.2.3: signatureAlgorithm / TBS Certificate Signature
         // The top-level signatureAlgorithm and TBSCert signature algorithm
         // MUST match.
         if cert.signature_alg != cert.tbs_cert.signature_alg {
-            return Err("mismatch between signatureAlgorithm and SPKI algorithm".into());
+            return Err(ValidationError::Other(
+                "mismatch between signatureAlgorithm and SPKI algorithm".to_string(),
+            ));
         }
 
         // 5280 4.1.2.2: Serial Number
         let serial_bytes = cert.tbs_cert.serial.as_bytes();
         if serial_bytes.len() == 1 && serial_bytes[0] == 0 {
             // The serial number MUST be a positive integer.
-            return Err("certificate serial number must not be 0".into());
+            return Err(ValidationError::Other(
+                "certificate serial number must not be 0".to_string(),
+            ));
         } else if !(1..=21).contains(&serial_bytes.len()) {
             // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
             // NOTE: In practice, this requires us to check for an encoding of
             // 21 octets, since some CAs generate 20 bytes of randomness and
             // then forget to check whether that number would be negative, resulting
             // in a 21-byte encoding.
-            return Err("certificate must have a serial between 1 and 20 octets".into());
+            return Err(ValidationError::Other(
+                "certificate must have a serial between 1 and 20 octets".to_string(),
+            ));
         } else if serial_bytes[0] & 0x80 == 0x80 {
             // TODO: replace with `is_negative`: https://github.com/alex/rust-asn1/pull/425
-            return Err("certificate serial number cannot be negative".into());
+            return Err(ValidationError::Other(
+                "certificate serial number cannot be negative".to_string(),
+            ));
         }
 
         // 5280 4.1.2.4: Issuer
         // The issuer MUST be a non-empty distinguished name.
         if cert.issuer().is_empty() {
-            return Err("certificate must have a non-empty Issuer".into());
+            return Err(ValidationError::Other(
+                "certificate must have a non-empty Issuer".to_string(),
+            ));
         }
 
         // 5280 4.1.2.5: Validity
@@ -369,7 +381,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         valid_validity_date(&cert.tbs_cert.validity.not_before)?;
         valid_validity_date(&cert.tbs_cert.validity.not_after)?;
         if &self.validation_time < not_before || &self.validation_time > not_after {
-            return Err("cert is not valid at validation time".into());
+            return Err(ValidationError::Other(
+                "cert is not valid at validation time".to_string(),
+            ));
         }
 
         // Extension policy checks.
@@ -397,7 +411,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .is_some()
         {
             // TODO: Render the OIDs here.
-            return Err("certificate contains unaccounted-for critical extensions".into());
+            return Err(ValidationError::Other(
+                "certificate contains unaccounted-for critical extensions".to_string(),
+            ));
         }
 
         Ok(())
@@ -450,7 +466,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .path_length
                 .map_or(false, |len| current_depth as u64 > len)
             {
-                return Err(ValidationError::from("path length constraint violated"))?;
+                return Err(ValidationError::Other(
+                    "path length constraint violated".to_string(),
+                ))?;
             }
         }
 
@@ -501,11 +519,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_public_key_algorithms
             .contains(&child.tbs_cert.spki.algorithm)
         {
-            return Err(format!(
+            return Err(ValidationError::Other(format!(
                 "Forbidden public key algorithm: {:?}",
                 &child.tbs_cert.spki.algorithm
-            )
-            .into());
+            )));
         }
 
         // CA/B 7.1.3.2 Signature AlgorithmIdentifier
@@ -513,25 +530,28 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_signature_algorithms
             .contains(&child.signature_alg)
         {
-            return Err(
-                format!("Forbidden signature algorithm: {:?}", &child.signature_alg).into(),
-            );
+            return Err(ValidationError::Other(format!(
+                "Forbidden signature algorithm: {:?}",
+                &child.signature_alg
+            )));
         }
 
         let pk = self
             .ops
             .public_key(issuer)
-            .map_err(|_| ValidationError::from("issuer has malformed public key"))?;
+            .map_err(|_| ValidationError::Other("issuer has malformed public key".to_string()))?;
         if self.ops.verify_signed_by(child, pk).is_err() {
-            return Err("signature does not match".into());
+            return Err(ValidationError::Other(
+                "signature does not match".to_string(),
+            ));
         }
 
         // Self-issued issuers don't increase the working depth.
         match cert_is_self_issued(issuer) {
             true => Ok(current_depth),
-            false => Ok(current_depth
-                .checked_add(1)
-                .ok_or_else(|| ValidationError::from("current depth calculation overflowed"))?),
+            false => Ok(current_depth.checked_add(1).ok_or_else(|| {
+                ValidationError::Other("current depth calculation overflowed".to_string())
+            })?),
         }
     }
 }
@@ -545,7 +565,9 @@ fn valid_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
         }
         Time::GeneralizedTime(_) => {
             if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
-                return Err("validity dates before generalized date cutoff must be UtcTime".into());
+                return Err(ValidationError::Other(
+                    "validity dates before generalized date cutoff must be UtcTime".to_string(),
+                ));
             }
         }
     }
