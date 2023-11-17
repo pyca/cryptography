@@ -11,7 +11,6 @@ pub mod policy;
 pub mod trust_store;
 pub mod types;
 
-#[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
     Other(&'static str),
 }
