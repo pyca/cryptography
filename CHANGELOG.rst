@@ -43,6 +43,9 @@ Changelog
   on LibreSSL.
 * Added support for RSA PSS signatures in PKCS7 with
   :meth:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder.add_signer`.
+* In the next release (43.0.0) of cryptography, loading an X.509 certificate
+  with a negative serial number will raise an exception. This has been
+  deprecated since 36.0.0.
 
 .. _v41-0-5:
 
