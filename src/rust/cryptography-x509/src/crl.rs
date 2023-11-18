@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub type ReasonFlags<'a> =
-    Option<common::Asn1ReadableOrWritable<'a, asn1::BitString<'a>, asn1::OwnedBitString>>;
+    Option<common::Asn1ReadableOrWritable<asn1::BitString<'a>, asn1::OwnedBitString>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]
 pub struct CertificateRevocationList<'a> {
@@ -20,7 +20,6 @@ pub struct CertificateRevocationList<'a> {
 
 pub type RevokedCertificates<'a> = Option<
     common::Asn1ReadableOrWritable<
-        'a,
         asn1::SequenceOf<'a, RevokedCertificate<'a>>,
         asn1::SequenceOfWriter<'a, RevokedCertificate<'a>, Vec<RevokedCertificate<'a>>>,
     >,

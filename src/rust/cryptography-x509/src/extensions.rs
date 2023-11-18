@@ -11,7 +11,6 @@ use crate::name;
 pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SequenceOf<'a, Extension<'a>>,
     asn1::SequenceOfWriter<'a, Extension<'a>, Vec<Extension<'a>>>,
 >;
@@ -95,14 +94,12 @@ pub struct AccessDescription<'a> {
 }
 
 pub type SequenceOfAccessDescriptions<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SequenceOf<'a, AccessDescription<'a>>,
     asn1::SequenceOfWriter<'a, AccessDescription<'a>, Vec<AccessDescription<'a>>>,
 >;
 
 // Needed due to clippy type complexity warning.
 type SequenceOfPolicyQualifiers<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
     asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
 >;
@@ -135,7 +132,6 @@ pub struct UserNotice<'a> {
 pub struct NoticeReference<'a> {
     pub organization: DisplayText<'a>,
     pub notice_numbers: common::Asn1ReadableOrWritable<
-        'a,
         asn1::SequenceOf<'a, asn1::BigUint<'a>>,
         asn1::SequenceOfWriter<'a, asn1::BigUint<'a>, Vec<asn1::BigUint<'a>>>,
     >,
@@ -154,7 +150,6 @@ pub enum DisplayText<'a> {
 
 // Needed due to clippy type complexity warning.
 pub type SequenceOfSubtrees<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SequenceOf<'a, GeneralSubtree<'a>>,
     asn1::SequenceOfWriter<'a, GeneralSubtree<'a>, Vec<GeneralSubtree<'a>>>,
 >;
@@ -207,7 +202,6 @@ pub enum DistributionPointName<'a> {
     #[implicit(1)]
     NameRelativeToCRLIssuer(
         common::Asn1ReadableOrWritable<
-            'a,
             asn1::SetOf<'a, common::AttributeTypeValue<'a>>,
             asn1::SetOfWriter<
                 'a,

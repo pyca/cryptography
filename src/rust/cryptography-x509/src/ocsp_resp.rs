@@ -23,7 +23,6 @@ pub struct ResponseBytes<'a> {
 
 pub type OCSPCerts<'a> = Option<
     common::Asn1ReadableOrWritable<
-        'a,
         asn1::SequenceOf<'a, certificate::Certificate<'a>>,
         asn1::SequenceOfWriter<'a, certificate::Certificate<'a>, Vec<certificate::Certificate<'a>>>,
     >,
@@ -46,7 +45,6 @@ pub struct ResponseData<'a> {
     pub responder_id: ResponderId<'a>,
     pub produced_at: asn1::GeneralizedTime,
     pub responses: common::Asn1ReadableOrWritable<
-        'a,
         asn1::SequenceOf<'a, SingleResponse<'a>>,
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
     >,

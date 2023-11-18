@@ -54,7 +54,6 @@ pub fn check_attribute_length<'a>(
 }
 
 pub type Attributes<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SetOf<'a, Attribute<'a>>,
     asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>,
 >;
@@ -63,7 +62,6 @@ pub type Attributes<'a> = common::Asn1ReadableOrWritable<
 pub struct Attribute<'a> {
     pub type_id: asn1::ObjectIdentifier,
     pub values: common::Asn1ReadableOrWritable<
-        'a,
         asn1::SetOf<'a, asn1::Tlv<'a>>,
         asn1::SetOfWriter<'a, common::RawTlv<'a>, [common::RawTlv<'a>; 1]>,
     >,

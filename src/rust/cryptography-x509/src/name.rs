@@ -7,7 +7,6 @@ use crate::common;
 pub type NameReadable<'a> = asn1::SequenceOf<'a, asn1::SetOf<'a, common::AttributeTypeValue<'a>>>;
 
 pub type Name<'a> = common::Asn1ReadableOrWritable<
-    'a,
     NameReadable<'a>,
     asn1::SequenceOfWriter<
         'a,
@@ -84,7 +83,6 @@ pub enum GeneralName<'a> {
 }
 
 pub(crate) type SequenceOfGeneralName<'a> = common::Asn1ReadableOrWritable<
-    'a,
     asn1::SequenceOf<'a, GeneralName<'a>>,
     asn1::SequenceOfWriter<'a, GeneralName<'a>, Vec<GeneralName<'a>>>,
 >;

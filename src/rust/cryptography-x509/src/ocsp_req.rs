@@ -16,7 +16,6 @@ pub struct TBSRequest<'a> {
     #[explicit(1)]
     pub requestor_name: Option<name::GeneralName<'a>>,
     pub request_list: common::Asn1ReadableOrWritable<
-        'a,
         asn1::SequenceOf<'a, Request<'a>>,
         asn1::SequenceOfWriter<'a, Request<'a>>,
     >,
