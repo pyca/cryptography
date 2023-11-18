@@ -549,9 +549,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // Self-issued issuers don't increase the working depth.
         match cert_is_self_issued(issuer) {
             true => Ok(current_depth),
-            false => Ok(current_depth.checked_add(1).ok_or(ValidationError::Other(
-                "current depth calculation overflowed".to_string(),
-            ))?),
+            false => Ok(current_depth.checked_add(1).ok_or_else(|| {
+                ValidationError::Other("current depth calculation overflowed".to_string())
+            })?),
         }
     }
 }
