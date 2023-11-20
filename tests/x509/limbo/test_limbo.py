@@ -101,13 +101,13 @@ def _limbo_testcase(testcase):
         built_chain = verifier.verify(
             peer_certificate, untrusted_intermediates
         )
-        assert should_pass
+        assert should_pass, testcase["id"]
 
         # Assert that the verifier returns chains in [EE, ..., TA] order.
         assert built_chain[0] == peer_certificate
         assert built_chain[-1] in trusted_certs
     except VerificationError:
-        assert not should_pass
+        assert not should_pass, testcase["id"]
 
 
 def test_limbo(subtests, pytestconfig):
