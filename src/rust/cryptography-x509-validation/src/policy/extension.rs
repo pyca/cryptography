@@ -115,9 +115,10 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 "EE certificate contains prohibited extension".to_string(),
             )),
             // Extension MUST be present but is not; NOT OK.
-            (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(
-                "EE certificate is missing required extension".to_string(),
-            )),
+            (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(format!(
+                "EE certificate is missing required extension: {}",
+                self.oid
+            ))),
             // Extension MUST be present and is; check it.
             (
                 ExtensionValidator::Present {

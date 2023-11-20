@@ -30,7 +30,7 @@ use types::DNSName;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
-    CandidatesExhausted,
+    CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
     DuplicateExtension(DuplicateExtensionsError),
     Other(String),
@@ -252,48 +252,66 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         // Otherwise, we collect a list of potential issuers for this cert,
         // and continue with the first that verifies.
+        let mut last_err: Option<ValidationError> = None;
         for issuing_cert_candidate in self.potential_issuers(working_cert) {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
             // policy.
             let issuer_extensions = issuing_cert_candidate.extensions()?;
-            if let Ok(next_depth) = self.policy.valid_issuer(
+            match self.policy.valid_issuer(
                 issuing_cert_candidate,
                 working_cert,
                 current_depth,
                 &issuer_extensions,
             ) {
-                let result = self.build_chain_inner(
-                    issuing_cert_candidate,
-                    next_depth,
-                    false,
-                    &issuer_extensions,
-                );
-                if let Ok(result) = result {
-                    let (remaining, mut constraints) = result;
-                    // Name constraints are not applied to self-issued certificates unless they're
-                    // the leaf certificate in the chain.
-                    //
-                    // NOTE: We can't simply check the `current_depth` since self-issued
-                    // certificates don't increase the working depth.
-                    let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
-                    if skip_name_constraints
-                        || self
-                            .apply_name_constraints(&constraints, extensions)
-                            .is_ok()
-                    {
-                        let mut chain: Vec<Certificate<'chain>> = vec![working_cert.clone()];
-                        chain.extend(remaining);
-                        self.build_name_constraints(&mut constraints, extensions)?;
-                        return Ok((chain, constraints));
-                    }
+                Ok(next_depth) => {
+                    match self.build_chain_inner(
+                        issuing_cert_candidate,
+                        next_depth,
+                        false,
+                        &issuer_extensions,
+                    ) {
+                        Ok((remaining, mut constraints)) => {
+                            // Name constraints are not applied to self-issued certificates unless they're
+                            // the leaf certificate in the chain.
+                            //
+                            // NOTE: We can't simply check the `current_depth` since self-issued
+                            // certificates don't increase the working depth.
+                            let skip_name_constraints =
+                                cert_is_self_issued(working_cert) && !is_leaf;
+                            if skip_name_constraints
+                                || self
+                                    .apply_name_constraints(&constraints, extensions)
+                                    .is_ok()
+                            {
+                                let mut chain: Vec<Certificate<'chain>> =
+                                    vec![working_cert.clone()];
+                                chain.extend(remaining);
+                                self.build_name_constraints(&mut constraints, extensions)?;
+                                return Ok((chain, constraints));
+                            }
+                        }
+                        Err(e) => last_err = Some(e),
+                    };
                 }
-            }
+                Err(e) => last_err = Some(e),
+            };
         }
 
         // We only reach this if we fail to hit our base case above, or if
         // a chain building step fails to find a next valid certificate.
-        Err(ValidationError::CandidatesExhausted)
+        Err(ValidationError::CandidatesExhausted(last_err.map_or_else(
+            || {
+                Box::new(ValidationError::Other(
+                    "all candidates exhausted with no interior errors".to_string(),
+                ))
+            },
+            |e| match e {
+                // Avoid spamming the user with nested `CandidatesExhausted` errors.
+                ValidationError::CandidatesExhausted(e) => e,
+                _ => Box::new(e),
+            },
+        )))
     }
 
     fn build_chain(&self, leaf: &'a Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
