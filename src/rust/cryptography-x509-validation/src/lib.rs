@@ -48,6 +48,27 @@ impl From<DuplicateExtensionsError> for ValidationError {
     }
 }
 
+pub struct Intermediates<'a>(HashSet<Certificate<'a>>);
+
+impl<'a> Intermediates<'a> {
+    fn new<B: CryptoOps>(
+        intermediates: impl IntoIterator<Item = Certificate<'a>>,
+        policy: &Policy<'_, B>,
+    ) -> Result<Self, ValidationError> {
+        Ok(Self(
+            intermediates
+                .into_iter()
+                .map(
+                    |intermediate| match cert_is_self_signed(&intermediate, &policy.ops) {
+                        true => Ok(intermediate),
+                        false => Err(ValidationError::Other("oops".to_string())),
+                    },
+                )
+                .collect::<Result<_, _>>()?,
+        ))
+    }
+}
+
 pub type Chain<'c> = Vec<Certificate<'c>>;
 type IntermediateChain<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
 
@@ -57,13 +78,13 @@ pub fn verify<'a, 'chain, B: CryptoOps>(
     policy: &Policy<'_, B>,
     store: &'a Store<'chain>,
 ) -> Result<Chain<'chain>, ValidationError> {
-    let builder = ChainBuilder::new(HashSet::from_iter(intermediates), policy, store);
+    let builder = ChainBuilder::new(Intermediates::new(intermediates, policy)?, policy, store);
 
     builder.build_chain(leaf)
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
-    intermediates: HashSet<Certificate<'chain>>,
+    intermediates: Intermediates<'chain>,
     policy: &'a Policy<'a, B>,
     store: &'a Store<'chain>,
 }
@@ -89,7 +110,7 @@ impl ApplyNameConstraintStatus {
 
 impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: HashSet<Certificate<'chain>>,
+        intermediates: Intermediates<'chain>,
         policy: &'a Policy<'a, B>,
         store: &'a Store<'chain>,
     ) -> Self {
@@ -109,11 +130,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         //   rather than doing a linear scan
         // * Search by AKI and other identifiers?
         self.intermediates
+            .0
             .iter()
-            // NOTE: The intermediate set isn't allowed to offer a self-signed
-            // certificate as a candidate, since self-signed certs can only
-            // be roots.
-            .filter(|&candidate| !cert_is_self_signed(candidate, &self.policy.ops))
             .chain(self.store.iter())
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
