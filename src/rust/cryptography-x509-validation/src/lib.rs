@@ -240,10 +240,6 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
-        //
-        // Observe that no issuer connection or signature verification happens
-        // here: inclusion in the root set implies a trust relationship,
-        // even if the working certificate is an EE or intermediate CA.
         if self.store.contains(working_cert) {
             let mut constraints = vec![];
             self.build_name_constraints(&mut constraints, extensions)?;
