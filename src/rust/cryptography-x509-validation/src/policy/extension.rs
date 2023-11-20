@@ -226,6 +226,8 @@ pub(crate) mod ee {
     ) -> Result<(), ValidationError> {
         let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
+        // NOTE: Exact match for now because CABF says that EE certs
+        // MUST NOT contain anyExtendedKeyUsage.
         if ekus.any(|eku| eku == policy.extended_key_usage) {
             Ok(())
         } else {
