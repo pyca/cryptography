@@ -378,8 +378,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // dates in or after 2050 MUST be encoded as GeneralizedTime.
         let not_before = cert.tbs_cert.validity.not_before.as_datetime();
         let not_after = cert.tbs_cert.validity.not_after.as_datetime();
-        valid_validity_date(&cert.tbs_cert.validity.not_before)?;
-        valid_validity_date(&cert.tbs_cert.validity.not_after)?;
+        permits_validity_date(&cert.tbs_cert.validity.not_before)?;
+        permits_validity_date(&cert.tbs_cert.validity.not_after)?;
         if &self.validation_time < not_before || &self.validation_time > not_after {
             return Err(ValidationError::Other(
                 "cert is not valid at validation time".to_string(),
@@ -556,21 +556,19 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 }
 
-fn valid_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
+fn permits_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
     const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
-    match validity_date {
-        Time::UtcTime(_) => {
-            // NOTE: The `asn1::UtcTime` constructor already checks the underlying datetime year so
-            // it's not possible for this type to exist past the cutoff.
-        }
-        Time::GeneralizedTime(_) => {
-            if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
-                return Err(ValidationError::Other(
-                    "validity dates before generalized date cutoff must be UtcTime".to_string(),
-                ));
-            }
+
+    // NOTE: The inverse check on `asn1::UtcTime` is already done for us
+    // by the variant's constructor.
+    if let Time::GeneralizedTime(_) = validity_date {
+        if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
+            return Err(ValidationError::Other(
+                "validity dates before generalized date cutoff must be UtcTime".to_string(),
+            ));
         }
     }
+
     Ok(())
 }
 
@@ -594,7 +592,7 @@ mod tests {
     };
 
     use super::{
-        valid_validity_date, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
+        permits_validity_date, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
     };
@@ -760,8 +758,8 @@ mod tests {
             let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(valid_validity_date(&utc_validity).is_ok());
-            assert!(valid_validity_date(&generalized_validity).is_err());
+            assert!(permits_validity_date(&utc_validity).is_ok());
+            assert!(permits_validity_date(&generalized_validity).is_err());
         }
         {
             // 2049 date.
@@ -770,8 +768,8 @@ mod tests {
             let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(valid_validity_date(&utc_validity).is_ok());
-            assert!(valid_validity_date(&generalized_validity).is_err());
+            assert!(permits_validity_date(&utc_validity).is_ok());
+            assert!(permits_validity_date(&generalized_validity).is_err());
         }
         {
             // 2050 date.
@@ -780,7 +778,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(valid_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date(&generalized_validity).is_ok());
         }
         {
             // 2051 date.
@@ -790,7 +788,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(valid_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date(&generalized_validity).is_ok());
         }
         {
             // Post-2050 date.
@@ -800,7 +798,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(valid_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date(&generalized_validity).is_ok());
         }
     }
 }
