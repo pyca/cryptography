@@ -61,7 +61,9 @@ impl<'a> Intermediates<'a> {
                 .map(
                     |intermediate| match cert_is_self_signed(&intermediate, &policy.ops) {
                         true => Ok(intermediate),
-                        false => Err(ValidationError::Other("oops".to_string())),
+                        false => Err(ValidationError::Other(
+                            "self-signed certificate cannot be an intermediate".to_string(),
+                        )),
                     },
                 )
                 .collect::<Result<_, _>>()?,
