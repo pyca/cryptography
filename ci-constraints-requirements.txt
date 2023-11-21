@@ -117,7 +117,7 @@ pytest-cov==4.1.0
     # via cryptography (pyproject.toml)
 pytest-randomly==3.15.0
     # via cryptography (pyproject.toml)
-pytest-xdist==3.4.0
+pytest-xdist==3.5.0
     # via cryptography (pyproject.toml)
 readme-renderer==42.0
     # via twine
