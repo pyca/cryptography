@@ -3,9 +3,9 @@
 # for complete details.
 
 import datetime
+import ipaddress
 import json
 import os
-from ipaddress import IPv4Address
 
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
@@ -51,7 +51,7 @@ def _get_limbo_peer(expected_peer):
     if kind == "DNS":
         return x509.DNSName(value)
     else:
-        return x509.IPAddress(IPv4Address(value))
+        return x509.IPAddress(ipaddress.ip_address(value))
 
 
 def _limbo_testcase(testcase):
