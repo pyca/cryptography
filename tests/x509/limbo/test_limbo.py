@@ -28,6 +28,10 @@ LIMBO_UNSUPPORTED_FEATURES = {
     # Similarly: contains tests that fail based on a strict reading of RFC 5280
     # but are widely ignored by validators.
     "pedantic-rfc5280",
+    # In rare circumstances, CABF relaxes RFC 5280's prescriptions in
+    # incompatible ways. Our validator always tries (by default) to comply
+    # closer to CABF, so we skip these.
+    "rfc5280-incompatible-with-webpki",
 }
 
 LIMBO_XFAIL_TESTCASES = {
