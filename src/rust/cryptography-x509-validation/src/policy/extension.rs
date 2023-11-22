@@ -241,7 +241,7 @@ pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
         extensions::{
-            self, AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage, NameConstraints,
+            AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage, NameConstraints,
         },
     };
 
