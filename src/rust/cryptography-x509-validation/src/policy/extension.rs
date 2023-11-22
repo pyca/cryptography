@@ -354,24 +354,9 @@ pub(crate) mod ca {
                 ));
             }
 
-            let all_general_subtrees = name_constraints
-                .permitted_subtrees
-                .iter()
-                .flat_map(|pst| pst.unwrap_read().clone())
-                .chain(
-                    name_constraints
-                        .excluded_subtrees
-                        .iter()
-                        .flat_map(|est| est.unwrap_read().clone()),
-                );
-            for general_subtree in all_general_subtrees {
-                // 7.1.2.5.2 and 7.1.2.10.8: minimum and maximum MUST NOT be present.
-                if general_subtree.minimum != 0 || general_subtree.maximum.is_some() {
-                    return Err(ValidationError::Other(
-                        "nameConstraints must not have minimum or maxmimum constraints".to_string(),
-                    ));
-                }
-            }
+            // NOTE: Both RFC 5280 and CABF require each `GeneralSubtree`
+            // to have `minimum=0` and `maximum=NULL`, but experimentally
+            // not many validators check for this.
         }
 
         Ok(())
