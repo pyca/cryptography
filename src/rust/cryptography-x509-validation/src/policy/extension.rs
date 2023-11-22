@@ -240,7 +240,9 @@ pub(crate) mod ee {
 pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage},
+        extensions::{
+            self, AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage, NameConstraints,
+        },
     };
 
     use crate::{
@@ -323,6 +325,53 @@ pub(crate) mod ca {
             return Err(ValidationError::Other(
                 "basicConstraints.cA must be asserted in a CA certificate".to_string(),
             ));
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn name_constraints<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), ValidationError> {
+        if let Some(extn) = extn {
+            let name_constraints: NameConstraints<'_> = extn.value()?;
+
+            let permitted_subtrees_empty = name_constraints
+                .permitted_subtrees
+                .as_ref()
+                .map_or(true, |pst| pst.unwrap_read().is_empty());
+            let excluded_subtrees_empty = name_constraints
+                .excluded_subtrees
+                .as_ref()
+                .map_or(true, |est| est.unwrap_read().is_empty());
+
+            if permitted_subtrees_empty && excluded_subtrees_empty {
+                return Err(ValidationError::Other(
+                    "nameConstraints must have non-empty permittedSubtrees or excludedSubtrees"
+                        .to_string(),
+                ));
+            }
+
+            let all_general_subtrees = name_constraints
+                .permitted_subtrees
+                .iter()
+                .flat_map(|pst| pst.unwrap_read().clone())
+                .chain(
+                    name_constraints
+                        .excluded_subtrees
+                        .iter()
+                        .flat_map(|est| est.unwrap_read().clone()),
+                );
+            for general_subtree in all_general_subtrees {
+                // 7.1.2.5.2 and 7.1.2.10.8: minimum and maximum MUST NOT be present.
+                if general_subtree.maximum.is_some() || general_subtree.maximum.is_some() {
+                    return Err(ValidationError::Other(
+                        "nameConstraints must not have minimum or maxmimum constraints".to_string(),
+                    ));
+                }
+            }
         }
 
         Ok(())

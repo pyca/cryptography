@@ -285,7 +285,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Some(ca::basic_constraints),
                 ),
                 // 5280 4.2.1.10: Name Constraints
-                ExtensionPolicy::maybe_present(NAME_CONSTRAINTS_OID, Criticality::Critical, None),
+                // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
+                ExtensionPolicy::maybe_present(
+                    NAME_CONSTRAINTS_OID,
+                    Criticality::Agnostic,
+                    Some(ca::name_constraints),
+                ),
                 // 5280 4.2.1.10: Policy Constraints
                 ExtensionPolicy::maybe_present(POLICY_CONSTRAINTS_OID, Criticality::Critical, None),
             ]),
