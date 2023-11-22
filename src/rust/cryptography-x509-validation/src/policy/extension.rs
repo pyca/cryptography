@@ -366,7 +366,7 @@ pub(crate) mod ca {
                 );
             for general_subtree in all_general_subtrees {
                 // 7.1.2.5.2 and 7.1.2.10.8: minimum and maximum MUST NOT be present.
-                if general_subtree.maximum.is_some() || general_subtree.maximum.is_some() {
+                if general_subtree.minimum != 0 || general_subtree.maximum.is_some() {
                     return Err(ValidationError::Other(
                         "nameConstraints must not have minimum or maxmimum constraints".to_string(),
                     ));
