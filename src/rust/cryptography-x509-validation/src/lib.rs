@@ -267,7 +267,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         false,
                         &issuer_extensions,
                     ) {
-                        Ok((remaining, mut constraints)) => {
+                        Ok((mut chain, mut constraints)) => {
                             // Name constraints are not applied to self-issued certificates unless they're
                             // the leaf certificate in the chain.
                             //
@@ -280,9 +280,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                                     .apply_name_constraints(&constraints, extensions)
                                     .is_ok()
                             {
-                                let mut chain: Vec<Certificate<'chain>> =
-                                    vec![working_cert.clone()];
-                                chain.extend(remaining);
+                                chain.insert(0, working_cert.clone());
                                 self.build_name_constraints(&mut constraints, extensions)?;
                                 return Ok((chain, constraints));
                             }
