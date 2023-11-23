@@ -320,10 +320,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         let result = self.build_chain_inner(leaf, 0, true, &extensions);
         match result {
-            Ok(result) => {
-                let (chain, _) = result;
-                Ok(chain)
-            }
+            Ok((chain, _)) => Ok(chain),
             Err(error) => Err(error),
         }
     }
