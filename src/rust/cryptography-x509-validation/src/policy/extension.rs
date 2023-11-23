@@ -327,6 +327,10 @@ pub(crate) mod ca {
             ));
         }
 
+        // NOTE: basicConstraints.pathLength is checked as part of
+        // `Policy::permits_ca`, since we need the current chain building
+        // depth to check it.
+
         Ok(())
     }
 
