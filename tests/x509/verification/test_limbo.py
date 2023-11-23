@@ -7,6 +7,8 @@ import ipaddress
 import json
 import os
 
+import pytest
+
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.verification import (
@@ -34,7 +36,7 @@ LIMBO_UNSUPPORTED_FEATURES = {
     "rfc5280-incompatible-with-webpki",
 }
 
-LIMBO_XFAIL_TESTCASES = {
+LIMBO_SKIP_TESTCASES = {
     # We currently allow intermediate CAs that don't have AKIs, which
     # is technically forbidden under CABF. This is consistent with what
     # Go's crypto/x509 and Rust's webpki crate do.
@@ -47,8 +49,6 @@ LIMBO_XFAIL_TESTCASES = {
 
 
 def _get_limbo_peer(expected_peer):
-    assert expected_peer is not None
-
     kind = expected_peer["kind"]
     assert kind in ("DNS", "IP")
     value = expected_peer["value"]
@@ -59,7 +59,7 @@ def _get_limbo_peer(expected_peer):
 
 
 def _limbo_testcase(testcase):
-    if testcase["id"] in LIMBO_XFAIL_TESTCASES:
+    if testcase["id"] in LIMBO_SKIP_TESTCASES:
         return
 
     features = testcase["features"]
@@ -101,17 +101,17 @@ def _limbo_testcase(testcase):
         max_chain_depth=max_chain_depth,
     ).build_server_verifier(peer_name)
 
-    try:
+    if should_pass:
         built_chain = verifier.verify(
             peer_certificate, untrusted_intermediates
         )
-        assert should_pass, testcase["id"]
 
         # Assert that the verifier returns chains in [EE, ..., TA] order.
         assert built_chain[0] == peer_certificate
         assert built_chain[-1] in trusted_certs
-    except VerificationError:
-        assert not should_pass, testcase["id"]
+    else:
+        with pytest.raises(VerificationError):
+            verifier.verify(peer_certificate, untrusted_intermediates)
 
 
 def test_limbo(subtests, pytestconfig):
