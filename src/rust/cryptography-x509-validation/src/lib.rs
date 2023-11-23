@@ -182,7 +182,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
     fn apply_name_constraints(
         &self,
-        constraints: &Vec<NameConstraints<'chain>>,
+        constraints: &[NameConstraints<'chain>],
         extensions: &Extensions<'chain>,
     ) -> Result<(), ValidationError> {
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
