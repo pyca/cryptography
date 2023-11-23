@@ -398,7 +398,7 @@ fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyRes
         pyo3::PyErr::warn(
             py,
             warning_cls,
-            "Parsed a negative serial number, which is disallowed by RFC 5280.",
+            "Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.",
             1,
         )?;
     }

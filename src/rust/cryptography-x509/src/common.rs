@@ -4,7 +4,6 @@
 
 use crate::oid;
 use asn1::Asn1DefinedByWritable;
-use std::marker::PhantomData;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone, Eq, Debug)]
 pub struct AlgorithmIdentifier<'a> {
@@ -180,30 +179,30 @@ impl Time {
 }
 
 #[derive(Hash, PartialEq, Eq, Clone)]
-pub enum Asn1ReadableOrWritable<'a, T, U> {
-    Read(T, PhantomData<&'a ()>),
-    Write(U, PhantomData<&'a ()>),
+pub enum Asn1ReadableOrWritable<T, U> {
+    Read(T),
+    Write(U),
 }
 
-impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
+impl<T, U> Asn1ReadableOrWritable<T, U> {
     pub fn new_read(v: T) -> Self {
-        Asn1ReadableOrWritable::Read(v, PhantomData)
+        Asn1ReadableOrWritable::Read(v)
     }
 
     pub fn new_write(v: U) -> Self {
-        Asn1ReadableOrWritable::Write(v, PhantomData)
+        Asn1ReadableOrWritable::Write(v)
     }
 
     pub fn unwrap_read(&self) -> &T {
         match self {
-            Asn1ReadableOrWritable::Read(v, _) => v,
-            Asn1ReadableOrWritable::Write(_, _) => panic!("unwrap_read called on a Write value"),
+            Asn1ReadableOrWritable::Read(v) => v,
+            Asn1ReadableOrWritable::Write(_) => panic!("unwrap_read called on a Write value"),
         }
     }
 }
 
 impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
-    for Asn1ReadableOrWritable<'a, T, U>
+    for Asn1ReadableOrWritable<T, U>
 {
     const TAG: asn1::Tag = T::TAG;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
@@ -211,14 +210,14 @@ impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
     }
 }
 
-impl<'a, T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1Writable
-    for Asn1ReadableOrWritable<'a, T, U>
+impl<T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1Writable
+    for Asn1ReadableOrWritable<T, U>
 {
     const TAG: asn1::Tag = U::TAG;
     fn write_data(&self, w: &mut asn1::WriteBuf) -> asn1::WriteResult {
         match self {
-            Asn1ReadableOrWritable::Read(v, _) => T::write_data(v, w),
-            Asn1ReadableOrWritable::Write(v, _) => U::write_data(v, w),
+            Asn1ReadableOrWritable::Read(v) => T::write_data(v, w),
+            Asn1ReadableOrWritable::Write(v) => U::write_data(v, w),
         }
     }
 }
