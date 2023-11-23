@@ -72,7 +72,7 @@ impl<'a> Intermediates<'a> {
 }
 
 pub type Chain<'c> = Vec<Certificate<'c>>;
-type IntermediateChain<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
+type PartialChainState<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
 
 pub fn verify<'a, 'chain, B: CryptoOps>(
     leaf: &'a Certificate<'chain>,
@@ -230,7 +230,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         current_depth: u8,
         is_leaf: bool,
         extensions: &'a Extensions<'chain>,
-    ) -> Result<IntermediateChain<'chain>, ValidationError> {
+    ) -> Result<PartialChainState<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(ValidationError::Other(
                 "chain construction exceeds max depth".into(),
