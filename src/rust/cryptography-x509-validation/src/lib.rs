@@ -131,10 +131,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // * Use a backing structure that allows us to search by name
         //   rather than doing a linear scan
         // * Search by AKI and other identifiers?
-        self.intermediates
-            .0
+        self.store
             .iter()
-            .chain(self.store.iter())
+            .chain(self.intermediates.0.iter())
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
 
