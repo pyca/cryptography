@@ -267,11 +267,18 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         &issuer_extensions,
                     ) {
                         Ok((mut chain, mut constraints)) => {
-                            // Name constraints are not applied to self-issued certificates unless they're
-                            // the leaf certificate in the chain.
+                            // Per RFC 5280: Name constraints are not applied
+                            // to self-issued certificates, *unless* the
+                            // certificate is the final certificate in the path.
                             //
-                            // NOTE: We can't simply check the `current_depth` since self-issued
-                            // certificates don't increase the working depth.
+                            // Naively we'd check `current_depth == 0` to determine
+                            // if we're checking the final certificate, but this
+                            // isn't sufficient: self-issued certificates don't
+                            // increase the depth, so we pass in a special-purpose
+                            // `is_leaf` state that's only true on the first chain
+                            // building step.
+                            //
+                            // See: RFC 5280 4.2.1.10
                             let skip_name_constraints =
                                 cert_is_self_issued(working_cert) && !is_leaf;
                             if skip_name_constraints
