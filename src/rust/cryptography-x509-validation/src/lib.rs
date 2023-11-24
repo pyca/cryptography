@@ -201,12 +201,14 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                             }
                         }
                     }
+
+                    if !permit {
+                        return Err(ValidationError::Other(
+                            "no permitted name constraints matched SAN".into(),
+                        ));
+                    }
                 }
-                if !permit {
-                    return Err(ValidationError::Other(
-                        "no permitted name constraints matched SAN".into(),
-                    ));
-                }
+
                 for nc in constraints {
                     if let Some(excluded_subtrees) = &nc.excluded_subtrees {
                         for e in excluded_subtrees.unwrap_read().clone() {
@@ -281,14 +283,26 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                             // See: RFC 5280 4.2.1.10
                             let skip_name_constraints =
                                 cert_is_self_issued(working_cert) && !is_leaf;
-                            if skip_name_constraints
-                                || self
-                                    .apply_name_constraints(&constraints, extensions)
-                                    .is_ok()
-                            {
+
+                            let name_constraints_pass = match skip_name_constraints {
+                                true => true,
+                                false => {
+                                    match self.apply_name_constraints(&constraints, extensions) {
+                                        Ok(()) => true,
+                                        Err(e) => {
+                                            last_err = Some(e);
+                                            false
+                                        }
+                                    }
+                                }
+                            };
+
+                            if name_constraints_pass {
                                 chain.insert(0, working_cert.clone());
-                                self.build_name_constraints(&mut constraints, extensions)?;
-                                return Ok((chain, constraints));
+                                match self.build_name_constraints(&mut constraints, extensions) {
+                                    Ok(()) => return Ok((chain, constraints)),
+                                    Err(e) => last_err = Some(e),
+                                };
                             }
                         }
                         Err(e) => last_err = Some(e),
