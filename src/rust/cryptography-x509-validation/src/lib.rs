@@ -186,7 +186,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     ) -> Result<(), ValidationError> {
         if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
             let sans: SubjectAlternativeName<'_> = sans.value()?;
-            for san in sans.clone() {
+            for san in sans {
                 // If there are no applicable constraints, the SAN is considered valid so the default is true.
                 let mut permit = true;
                 for nc in constraints {
