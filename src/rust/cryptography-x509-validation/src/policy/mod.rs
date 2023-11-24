@@ -164,8 +164,8 @@ impl Subject<'_> {
             (GeneralName::DNSName(pattern), Self::DNS(name)) => {
                 DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
             }
-            (GeneralName::IPAddress(pattern), Self::IP(name)) => {
-                IPAddress::from_bytes(pattern).map_or(false, |addr| addr == *name)
+            (GeneralName::IPAddress(addr), Self::IP(name)) => {
+                IPAddress::from_bytes(addr).map_or(false, |addr| addr == *name)
             }
             _ => false,
         }
