@@ -299,10 +299,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
                             if name_constraints_pass {
                                 chain.insert(0, working_cert.clone());
-                                match self.build_name_constraints(&mut constraints, extensions) {
-                                    Ok(()) => return Ok((chain, constraints)),
-                                    Err(e) => last_err = Some(e),
-                                };
+                                self.build_name_constraints(&mut constraints, extensions)?;
+                                return Ok((chain, constraints));
                             }
                         }
                         Err(e) => last_err = Some(e),
