@@ -350,10 +350,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // 5280 4.1.2.2: Serial Number
         let serial_bytes = cert.tbs_cert.serial.as_bytes();
         if serial_bytes.len() == 1 && serial_bytes[0] == 0 {
-            // The serial number MUST be a positive integer.
-            return Err(ValidationError::Other(
-                "certificate serial number must not be 0".to_string(),
-            ));
+            // Per 5280: The serial number MUST be a positive integer.
+            // In practice, there are a few roots in common trust stores (like certifi)
+            // that have `serial == 0`, so we can't enforce this.
+            // It's left as a separate return condition here so that
+            // an error case can be added in the distant future.
+            return Ok(());
         } else if !(1..=21).contains(&serial_bytes.len()) {
             // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
             // NOTE: In practice, this requires us to check for an encoding of
