@@ -156,23 +156,32 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     ) -> Result<ApplyNameConstraintStatus, ValidationError> {
         match (constraint, san) {
             (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
-                if let Some(pattern) = DNSConstraint::new(pattern.0) {
-                    let name = DNSName::new(name.0).unwrap();
-                    Ok(Applied(pattern.matches(&name)))
-                } else {
-                    Err(ValidationError::Other(
-                        "malformed DNS name constraint".to_string(),
-                    ))
+                match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(_), None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable DNS name constraint: NC {} cannot match SAN {}",
+                        pattern.0, name.0
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed DNS name constraint: {}",
+                        pattern.0
+                    ))),
                 }
             }
             (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
-                if let Some(pattern) = IPConstraint::from_bytes(pattern) {
-                    let name = IPAddress::from_bytes(name).unwrap();
-                    Ok(Applied(pattern.matches(&name)))
-                } else {
-                    Err(ValidationError::Other(
-                        "malformed IP name constraint".to_string(),
-                    ))
+                match (
+                    IPConstraint::from_bytes(pattern),
+                    IPAddress::from_bytes(name),
+                ) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(_), None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable IP name constraint: NC {:?} cannot match SAN {:?}",
+                        pattern, name,
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed IP name constraints: {:?}",
+                        pattern
+                    ))),
                 }
             }
             _ => Ok(Skipped),
