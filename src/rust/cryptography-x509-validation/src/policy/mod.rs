@@ -464,6 +464,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // to test here. It's also conceptually an extension policy, but
         // requires a bit of extra external state (`current_depth`) that isn't
         // presently convenient to push into that layer.
+        //
+        // NOTE: BasicConstraints is required via `ca_extension_policies`,
+        // so we always take this branch.
         if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
             let bc: BasicConstraints = bc.value()?;
 
