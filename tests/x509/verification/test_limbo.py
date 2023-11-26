@@ -41,6 +41,11 @@ LIMBO_SKIP_TESTCASES = {
     # invalid under RFC 5280 but is widely violated by certs in common
     # trust stores.
     "rfc5280::serial-number-zero",
+    # We allow CAs that don't have AKIs, which is forbidden under
+    # RFC 5280. This is consistent with what Go's crypto/x509 and Rust's
+    # webpki crate do.
+    "rfc5280::ski::root-missing-ski",
+    "rfc5280::ski::intermediate-missing-ski",
     # We currently allow intermediate CAs that don't have AKIs, which
     # is technically forbidden under CABF. This is consistent with what
     # Go's crypto/x509 and Rust's webpki crate do.

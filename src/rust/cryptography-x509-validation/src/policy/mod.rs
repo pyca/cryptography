@@ -271,7 +271,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Some(ca::authority_key_identifier),
                 ),
                 // 5280 4.2.1.2: Subject Key Identifier
-                ExtensionPolicy::present(
+                // NOTE: CABF requires SKI in CA certificates, but many older CAs lack it.
+                // We choose to be permissive here.
+                ExtensionPolicy::maybe_present(
                     SUBJECT_KEY_IDENTIFIER_OID,
                     Criticality::NonCritical,
                     None,
