@@ -508,6 +508,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// This checks that `issuer` is permitted under this policy and that
     /// it was used to sign for `child`.
     ///
+    /// As a precondition, the caller must have already checked that
+    /// `issuer.subject() == child.issuer()`.
+    ///
     /// On success, this function returns the new path-building depth. This
     /// may or may not be a higher number than the original depth, depending
     /// on the kind of validation performed (e.g., whether the issuer was
