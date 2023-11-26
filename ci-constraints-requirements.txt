@@ -42,7 +42,7 @@ execnet==2.0.2
     # via pytest-xdist
 filelock==3.13.1; python_version >= "3.8"
     # via virtualenv
-idna==3.4
+idna==3.6
     # via requests
 imagesize==1.4.1
     # via sphinx
