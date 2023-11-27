@@ -42,8 +42,8 @@ static const long Cryptography_HAS_ENGINE = 0;
 typedef void UI_METHOD;
 #endif
 
-/* Despite being OPENSSL_NO_ENGINE, BoringSSL defines these symbols. */
-#if !CRYPTOGRAPHY_IS_BORINGSSL
+/* Despite being OPENSSL_NO_ENGINE, BoringSSL/LibreSSL define these symbols. */
+#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_LIBRESSL
 int (*ENGINE_free)(ENGINE *) = NULL;
 void (*ENGINE_load_builtin_engines)(void) = NULL;
 #endif
