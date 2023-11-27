@@ -38,6 +38,7 @@ decrypted
 decrypting
 deprecations
 DER
+dereference
 deserialize
 deserialized
 Deserialization
