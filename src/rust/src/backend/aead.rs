@@ -235,30 +235,30 @@ impl AesSiv {
             }
         };
 
-        #[cfg(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))]
-        {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "AES-SIV is not supported by this version of OpenSSL",
-                    exceptions::Reasons::UNSUPPORTED_CIPHER,
-                )),
-            ));
-        }
-        #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-        {
-            if cryptography_openssl::fips::is_enabled() {
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
+                if cryptography_openssl::fips::is_enabled() {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "AES-SIV is not supported by this version of OpenSSL",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ));
+                }
+
+                let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
+                Ok(AesSiv {
+                    ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, true)?,
+                })
+            } else {
                 return Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "AES-SIV is not supported by this version of OpenSSL",
                         exceptions::Reasons::UNSUPPORTED_CIPHER,
                     )),
                 ));
-            }
 
-            let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
-            Ok(AesSiv {
-                ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, true)?,
-            })
+            }
         }
     }
 
