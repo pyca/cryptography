@@ -1890,9 +1890,12 @@ class Backend:
                 _Reasons.UNSUPPORTED_SERIALIZATION,
             )
 
+        certs: list[x509.Certificate] = []
+        if p7.d.sign == self._ffi.NULL:
+            return certs
+
         sk_x509 = p7.d.sign.cert
         num = self._lib.sk_X509_num(sk_x509)
-        certs = []
         for i in range(num):
             x509 = self._lib.sk_X509_value(sk_x509, i)
             self.openssl_assert(x509 != self._ffi.NULL)
