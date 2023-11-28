@@ -38,7 +38,7 @@ def release(version: str) -> None:
 
     # Tag and push the tag (this will trigger the wheel builder in Actions)
     run("git", "tag", "-s", version, "-m", f"{version} release")
-    run("git", "push", "--tags")
+    run("git", "push", "--tags", "git@github.com:pyca/cryptography.git")
 
 
 def replace_version(
