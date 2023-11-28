@@ -105,6 +105,7 @@ fn dh_parameters_from_numbers(
     Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
 }
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 #[pyo3::prelude::pyfunction]
 fn from_private_numbers(
     py: pyo3::Python<'_>,
@@ -131,6 +132,7 @@ fn from_private_numbers(
     Ok(DHPrivateKey { pkey })
 }
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 #[pyo3::prelude::pyfunction]
 fn from_public_numbers(
     py: pyo3::Python<'_>,
@@ -226,6 +228,7 @@ impl DHPrivateKey {
         )?)
     }
 
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn public_key(&self) -> CryptographyResult<DHPublicKey> {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
@@ -353,6 +356,7 @@ impl DHPublicKey {
 
 #[pyo3::prelude::pymethods]
 impl DHParameters {
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
@@ -424,7 +428,9 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
     m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, m)?)?;
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     m.add_function(pyo3::wrap_pyfunction!(from_private_numbers, m)?)?;
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     m.add_function(pyo3::wrap_pyfunction!(from_public_numbers, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(from_parameter_numbers, m)?)?;
 
