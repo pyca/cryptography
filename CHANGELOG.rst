@@ -47,6 +47,13 @@ Changelog
   with a negative serial number will raise an exception. This has been
   deprecated since 36.0.0.
 
+.. _v41-0-7:
+
+41.0.7 - 2023-11-27
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 3.8.2.
+
 .. _v41-0-6:
 
 41.0.6 - 2023-11-27
