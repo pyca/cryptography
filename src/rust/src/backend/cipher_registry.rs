@@ -88,8 +88,8 @@ impl<'p> RegisteryBuilder<'p> {
 fn get_cipher_registry(
     py: pyo3::Python<'_>,
 ) -> CryptographyResult<&HashMap<RegistryKey, openssl::symm::Cipher>> {
-    static REGISTRY: pyo3::once_cell::GILOnceCell<HashMap<RegistryKey, openssl::symm::Cipher>> =
-        pyo3::once_cell::GILOnceCell::new();
+    static REGISTRY: pyo3::sync::GILOnceCell<HashMap<RegistryKey, openssl::symm::Cipher>> =
+        pyo3::sync::GILOnceCell::new();
 
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegisteryBuilder::new(py);

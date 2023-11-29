@@ -57,8 +57,8 @@ fn load_der_ocsp_response(
     };
     Ok(OCSPResponse {
         raw: Arc::new(raw),
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
-        cached_single_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
+        cached_single_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 
@@ -74,8 +74,8 @@ self_cell::self_cell!(
 struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
 
-    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
-    cached_single_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_single_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 impl OCSPResponse {
@@ -243,7 +243,7 @@ impl OCSPResponse {
                 py,
                 x509::certificate::Certificate {
                     raw: raw_cert,
-                    cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+                    cached_extensions: pyo3::sync::GILOnceCell::new(),
                 },
             )?)?;
         }
