@@ -38,7 +38,7 @@ self_cell::self_cell!(
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
-    pub(crate) cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    pub(crate) cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -388,7 +388,7 @@ fn load_der_x509_certificate(
 
     Ok(Certificate {
         raw,
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 

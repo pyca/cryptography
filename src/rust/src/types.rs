@@ -5,7 +5,7 @@
 pub struct LazyPyImport {
     module: &'static str,
     names: &'static [&'static str],
-    value: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    value: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 impl LazyPyImport {
@@ -13,7 +13,7 @@ impl LazyPyImport {
         LazyPyImport {
             module,
             names,
-            value: pyo3::once_cell::GILOnceCell::new(),
+            value: pyo3::sync::GILOnceCell::new(),
         }
     }
 

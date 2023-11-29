@@ -359,7 +359,7 @@ pub(crate) fn parse_and_cache_extensions<
     F: Fn(&Extension<'_>) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
-    cached_extensions: &pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: &pyo3::sync::GILOnceCell<pyo3::PyObject>,
     raw_extensions: &Option<RawExtensions<'_>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {

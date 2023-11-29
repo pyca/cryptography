@@ -45,7 +45,7 @@ fn load_der_ocsp_request(
 
     Ok(OCSPRequest {
         raw,
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 
@@ -53,7 +53,7 @@ fn load_der_ocsp_request(
 struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
-    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 impl OCSPRequest {
