@@ -42,8 +42,7 @@ fn derive_scrypt<'p>(
             // https://blog.filippo.io/the-scrypt-parameters/
             let min_memory = 128 * n * r / (1024 * 1024);
             pyo3::exceptions::PyMemoryError::new_err(format!(
-                "Not enough memory to derive key. These parameters require {}MB of memory.",
-                min_memory
+                "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
             ))
         })
     })?)

@@ -18,7 +18,7 @@ fn main() {
         // More details at https://github.com/alexcrichton/curl-rust/issues/279.
         if let Some(path) = macos_link_search_path() {
             println!("cargo:rustc-link-lib=clang_rt.osx");
-            println!("cargo:rustc-link-search={}", path);
+            println!("cargo:rustc-link-search={path}");
         }
     }
 
@@ -46,7 +46,7 @@ fn main() {
         "import platform; print(platform.python_implementation(), end='')",
     )
     .unwrap();
-    println!("cargo:rustc-cfg=python_implementation=\"{}\"", python_impl);
+    println!("cargo:rustc-cfg=python_implementation=\"{python_impl}\"");
     let python_includes = run_python_script(
         &python,
         "import os; \
@@ -127,7 +127,7 @@ fn macos_link_search_path() -> Option<String> {
     for line in stdout.lines() {
         if line.contains("libraries: =") {
             let path = line.split('=').nth(1)?;
-            return Some(format!("{}/lib/darwin", path));
+            return Some(format!("{path}/lib/darwin"));
         }
     }
 

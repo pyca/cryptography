@@ -45,8 +45,7 @@ fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
         openssl::pkey::PKey::private_key_from_raw_bytes(data.as_bytes(), openssl::pkey::Id::X25519)
             .map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "An X25519 private key is 32 bytes long: {}",
-                    e
+                    "An X25519 private key is 32 bytes long: {e}"
                 ))
             })?;
     Ok(X25519PrivateKey { pkey })

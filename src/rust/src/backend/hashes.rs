@@ -62,7 +62,7 @@ pub(crate) fn message_digest_from_algorithm(
         Some(md) => Ok(md),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
-                format!("{} is not a supported hash on this backend", name),
+                format!("{name} is not a supported hash on this backend"),
                 exceptions::Reasons::UNSUPPORTED_HASH,
             )),
         )),

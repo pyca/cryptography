@@ -127,8 +127,7 @@ pub(crate) fn encode_general_name<'a>(
             type_id: py_oid_to_oid(gn.getattr(pyo3::intern!(py, "type_id"))?)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "OtherName value must be valid DER: {:?}",
-                    e
+                    "OtherName value must be valid DER: {e:?}"
                 ))
             })?,
         }))
@@ -437,8 +436,7 @@ pub(crate) fn encode_extensions<
             }
             None => {
                 return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-                    "Extension not supported: {}",
-                    oid
+                    "Extension not supported: {oid}"
                 )))
             }
         }
@@ -465,8 +463,7 @@ fn encode_extension_value<'p>(
     }
 
     Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
-        "Extension not supported: {}",
-        oid
+        "Extension not supported: {oid}"
     )))
 }
 

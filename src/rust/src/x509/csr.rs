@@ -149,7 +149,7 @@ impl CertificateSigningRequest {
             }
         }
         Err(exceptions::AttributeNotFound::new_err((
-            format!("No {} attribute was found", oid),
+            format!("No {oid} attribute was found"),
             oid.into_py(py),
         )))
     }
@@ -248,7 +248,7 @@ fn load_der_x509_csr(
     if version != 0 {
         return Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
-                format!("{} is not a valid CSR version", version),
+                format!("{version} is not a valid CSR version"),
                 version,
             )),
         ));
