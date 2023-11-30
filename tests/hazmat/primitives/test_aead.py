@@ -732,10 +732,11 @@ class TestAESSIV:
                 aad1 = vector.get("aad", None)
                 aad2 = vector.get("aad2", None)
                 aad3 = vector.get("aad3", None)
-                aad = []
-                for a in [aad1, aad2, aad3]:
-                    if a is not None:
-                        aad.append(binascii.unhexlify(a))
+                aad = [
+                    binascii.unhexlify(a)
+                    for a in (aad1, aad2, aad3)
+                    if a is not None
+                ]
                 ct = binascii.unhexlify(vector["ciphertext"])
                 tag = binascii.unhexlify(vector["tag"])
                 pt = binascii.unhexlify(vector.get("plaintext", b""))
@@ -757,10 +758,11 @@ class TestAESSIV:
                 aad1 = vector.get("aad", None)
                 aad2 = vector.get("aad2", None)
                 aad3 = vector.get("aad3", None)
-                aad = []
-                for a in [aad1, aad2, aad3]:
-                    if a is not None:
-                        aad.append(binascii.unhexlify(a))
+                aad = [
+                    binascii.unhexlify(a)
+                    for a in (aad1, aad2, aad3)
+                    if a is not None
+                ]
 
                 ct = binascii.unhexlify(vector["ciphertext"])
                 aessiv = AESSIV(key)

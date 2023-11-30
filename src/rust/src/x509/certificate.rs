@@ -38,7 +38,7 @@ self_cell::self_cell!(
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
-    pub(crate) cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    pub(crate) cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -56,7 +56,7 @@ impl Certificate {
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let subject = self.subject(py)?;
         let subject_repr = subject.repr()?.extract::<&str>()?;
-        Ok(format!("<Certificate(subject={}, ...)>", subject_repr))
+        Ok(format!("<Certificate(subject={subject_repr}, ...)>"))
     }
 
     fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
@@ -324,7 +324,7 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, Crypt
         2 => Ok(types::CERTIFICATE_VERSION_V3.get(py)?),
         _ => Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
-                format!("{} is not a valid X509 version", version),
+                format!("{version} is not a valid X509 version"),
                 version,
             )),
         )),
@@ -388,7 +388,7 @@ fn load_der_x509_certificate(
 
     Ok(Certificate {
         raw,
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 

@@ -34,7 +34,7 @@ fn load_der_x509_crl(
     if version != 1 {
         return Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
-                format!("{} is not a valid CRL version", version),
+                format!("{version} is not a valid CRL version"),
                 version,
             )),
         ));
@@ -42,8 +42,8 @@ fn load_der_x509_crl(
 
     Ok(CertificateRevocationList {
         owned: Arc::new(owned),
-        revoked_certs: pyo3::once_cell::GILOnceCell::new(),
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        revoked_certs: pyo3::sync::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 
@@ -75,8 +75,8 @@ self_cell::self_cell!(
 struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
-    revoked_certs: pyo3::once_cell::GILOnceCell<Vec<OwnedRevokedCertificate>>,
-    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    revoked_certs: pyo3::sync::GILOnceCell<Vec<OwnedRevokedCertificate>>,
+    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 impl CertificateRevocationList {
@@ -87,7 +87,7 @@ impl CertificateRevocationList {
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
         RevokedCertificate {
             owned: self.revoked_certs.get(py).unwrap()[idx].clone(),
-            cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+            cached_extensions: pyo3::sync::GILOnceCell::new(),
         }
     }
 
@@ -375,7 +375,7 @@ impl CertificateRevocationList {
         match owned {
             Ok(o) => Ok(Some(RevokedCertificate {
                 owned: o,
-                cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+                cached_extensions: pyo3::sync::GILOnceCell::new(),
             })),
             Err(()) => Ok(None),
         }
@@ -464,7 +464,7 @@ impl CRLIterator {
         .ok()?;
         Some(RevokedCertificate {
             owned: revoked,
-            cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+            cached_extensions: pyo3::sync::GILOnceCell::new(),
         })
     }
 }
@@ -492,7 +492,7 @@ impl Clone for OwnedRevokedCertificate {
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct RevokedCertificate {
     owned: OwnedRevokedCertificate,
-    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -557,8 +557,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
         value => {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Unsupported reason code: {}",
-                    value
+                    "Unsupported reason code: {value}"
                 )),
             ))
         }

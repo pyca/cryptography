@@ -58,7 +58,7 @@ fn curve_from_py_curve(
         _ => {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
-                    format!("Curve {} is not supported", curve_name),
+                    format!("Curve {curve_name} is not supported"),
                     exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
                 )),
             ));
@@ -95,7 +95,7 @@ fn py_curve_from_curve<'p>(
         .get_item(name)?
         .ok_or_else(|| {
             CryptographyError::from(exceptions::UnsupportedAlgorithm::new_err((
-                format!("{} is not a supported elliptic curve", name),
+                format!("{name} is not a supported elliptic curve"),
                 exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
             )))
         })?
@@ -137,7 +137,7 @@ pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<ECPublicKey> {
     let ec = pkey.ec_key().map_err(|e| {
-        pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {}", e))
+        pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {e}"))
     })?;
     let curve = py_curve_from_curve(py, ec.group())?;
     check_key_infinity(&ec)?;

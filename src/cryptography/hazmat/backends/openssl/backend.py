@@ -174,7 +174,7 @@ class Backend:
         return self._lib.OpenSSL_version_num()
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
-        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+        if algorithm.name in ("blake2b", "blake2s"):
             alg = f"{algorithm.name}{algorithm.digest_size * 8}".encode(
                 "ascii"
             )
@@ -1111,9 +1111,12 @@ class Backend:
                 _Reasons.UNSUPPORTED_SERIALIZATION,
             )
 
+        certs: list[x509.Certificate] = []
+        if p7.d.sign == self._ffi.NULL:
+            return certs
+
         sk_x509 = p7.d.sign.cert
         num = self._lib.sk_X509_num(sk_x509)
-        certs = []
         for i in range(num):
             x509 = self._lib.sk_X509_value(sk_x509, i)
             self.openssl_assert(x509 != self._ffi.NULL)

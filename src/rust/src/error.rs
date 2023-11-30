@@ -45,8 +45,7 @@ impl From<openssl::error::ErrorStack> for CryptographyError {
 impl From<pem::PemError> for CryptographyError {
     fn from(e: pem::PemError) -> CryptographyError {
         CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(format!(
-            "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. {:?}",
-            e
+            "Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. {e:?}"
         )))
     }
 }
@@ -55,7 +54,7 @@ impl From<CryptographyError> for pyo3::PyErr {
     fn from(e: CryptographyError) -> pyo3::PyErr {
         match e {
             CryptographyError::Asn1Parse(asn1_error) => pyo3::exceptions::PyValueError::new_err(
-                format!("error parsing asn1 value: {:?}", asn1_error),
+                format!("error parsing asn1 value: {asn1_error:?}"),
             ),
             CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
                 pyo3::exceptions::PyMemoryError::new_err(
@@ -81,8 +80,7 @@ impl From<CryptographyError> for pyo3::PyErr {
                         that uses OpenSSL try disabling it before reporting a bug.
                         Otherwise please file an issue at
                         https://github.com/pyca/cryptography/issues with
-                        information on how to reproduce this. ({:?})",
-                        errors
+                        information on how to reproduce this. ({errors:?})"
                     ),
                     errors.to_object(py),
                 ))

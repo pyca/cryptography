@@ -25,7 +25,7 @@ self_cell::self_cell!(
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
     raw: OwnedCsr,
-    cached_extensions: pyo3::once_cell::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
 #[pyo3::prelude::pymethods]
@@ -149,7 +149,7 @@ impl CertificateSigningRequest {
             }
         }
         Err(exceptions::AttributeNotFound::new_err((
-            format!("No {} attribute was found", oid),
+            format!("No {oid} attribute was found"),
             oid.into_py(py),
         )))
     }
@@ -248,7 +248,7 @@ fn load_der_x509_csr(
     if version != 0 {
         return Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
-                format!("{} is not a valid CSR version", version),
+                format!("{version} is not a valid CSR version"),
                 version,
             )),
         ));
@@ -256,7 +256,7 @@ fn load_der_x509_csr(
 
     Ok(CertificateSigningRequest {
         raw,
-        cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::GILOnceCell::new(),
     })
 }
 

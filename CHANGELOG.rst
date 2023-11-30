@@ -47,6 +47,22 @@ Changelog
   with a negative serial number will raise an exception. This has been
   deprecated since 36.0.0.
 
+.. _v41-0-7:
+
+41.0.7 - 2023-11-27
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 3.8.2.
+
+.. _v41-0-6:
+
+41.0.6 - 2023-11-27
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed a null-pointer-dereference and segfault that could occur when loading
+  certificates from a PKCS#7 bundle.  Credit to **pkuzco** for reporting the
+  issue. **CVE-2023-49083**
+
 .. _v41-0-5:
 
 41.0.5 - 2023-10-24
