@@ -12,7 +12,7 @@ import warnings
 
 
 # We use a UserWarning subclass, instead of DeprecationWarning, because CPython
-# decided deprecation warnings should be invisble by default.
+# decided deprecation warnings should be invisible by default.
 class CryptographyDeprecationWarning(UserWarning):
     pass
 
