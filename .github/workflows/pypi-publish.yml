@@ -18,6 +18,9 @@ on:
 env:
   PUBLISH_REQUIREMENTS_PATH: .github/requirements/publish-requirements.txt
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
