@@ -91,8 +91,7 @@ fn identify_hash_type(
         "sha3-384" => Ok(HashType::Sha3_384),
         "sha3-512" => Ok(HashType::Sha3_512),
         name => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
-            "Hash algorithm {:?} not supported for signatures",
-            name
+            "Hash algorithm {name:?} not supported for signatures"
         ))),
     }
 }

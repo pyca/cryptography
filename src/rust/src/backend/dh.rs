@@ -30,8 +30,7 @@ fn generate_parameters(generator: u32, key_size: u32) -> CryptographyResult<DHPa
     if key_size < MIN_MODULUS_SIZE {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(format!(
-                "DH key_size must be at least {} bits",
-                MIN_MODULUS_SIZE
+                "DH key_size must be at least {MIN_MODULUS_SIZE} bits"
             )),
         ));
     }

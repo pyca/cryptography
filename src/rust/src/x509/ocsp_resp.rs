@@ -445,8 +445,7 @@ fn single_response<'a>(
     if num_responses != 1 {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(format!(
-                "OCSP response contains {} SINGLERESP structures.  Use .response_iter to iterate through them",
-                num_responses
+                "OCSP response contains {num_responses} SINGLERESP structures.  Use .response_iter to iterate through them"
             ))
         ));
     }

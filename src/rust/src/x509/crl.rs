@@ -34,7 +34,7 @@ fn load_der_x509_crl(
     if version != 1 {
         return Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
-                format!("{} is not a valid CRL version", version),
+                format!("{version} is not a valid CRL version"),
                 version,
             )),
         ));
@@ -557,8 +557,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
         value => {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Unsupported reason code: {}",
-                    value
+                    "Unsupported reason code: {value}"
                 )),
             ))
         }
