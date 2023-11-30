@@ -223,16 +223,20 @@ pub(crate) mod ee {
     pub(crate) fn extended_key_usage<B: CryptoOps>(
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
-        extn: &Extension<'_>,
+        extn: Option<&Extension<'_>>,
     ) -> Result<(), ValidationError> {
-        let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
+        if let Some(extn) = extn {
+            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
-        // NOTE: Exact match for now because CABF says that EE certs
-        // MUST NOT contain anyExtendedKeyUsage.
-        if ekus.any(|eku| eku == policy.extended_key_usage) {
-            Ok(())
+            // NOTE: Exact match for now because CABF says that EE certs
+            // MUST NOT contain anyExtendedKeyUsage.
+            if ekus.any(|eku| eku == policy.extended_key_usage) {
+                Ok(())
+            } else {
+                Err(ValidationError::Other("required EKU not found".to_string()))
+            }
         } else {
-            Err(ValidationError::Other("required EKU not found".to_string()))
+            Ok(())
         }
     }
 }

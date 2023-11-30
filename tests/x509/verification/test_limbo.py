@@ -40,7 +40,7 @@ LIMBO_SKIP_TESTCASES = {
     # We allow certificates with serial numbers of zero. This is
     # invalid under RFC 5280 but is widely violated by certs in common
     # trust stores.
-    "rfc5280::serial-number-zero",
+    "rfc5280::serial::zero",
     # We allow CAs that don't have AKIs, which is forbidden under
     # RFC 5280. This is consistent with what Go's crypto/x509 and Rust's
     # webpki crate do.
