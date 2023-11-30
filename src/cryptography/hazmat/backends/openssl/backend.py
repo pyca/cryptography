@@ -174,7 +174,7 @@ class Backend:
         return self._lib.OpenSSL_version_num()
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
-        if algorithm.name == "blake2b" or algorithm.name == "blake2s":
+        if algorithm.name in ("blake2b", "blake2s"):
             alg = f"{algorithm.name}{algorithm.digest_size * 8}".encode(
                 "ascii"
             )
