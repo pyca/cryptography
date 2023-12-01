@@ -164,7 +164,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, ExtendedKeyUsage, Extension, SubjectAlternativeName},
+        extensions::{BasicConstraints, Extension, SubjectAlternativeName},
     };
 
     use crate::{
@@ -217,26 +217,6 @@ pub(crate) mod ee {
             false => Err(ValidationError::Other(
                 "EE cert has no matching SAN".to_string(),
             )),
-        }
-    }
-
-    pub(crate) fn extended_key_usage<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
-        if let Some(extn) = extn {
-            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
-
-            // NOTE: Exact match for now because CABF says that EE certs
-            // MUST NOT contain anyExtendedKeyUsage.
-            if ekus.any(|eku| eku == policy.extended_key_usage) {
-                Ok(())
-            } else {
-                Err(ValidationError::Other("required EKU not found".to_string()))
-            }
-        } else {
-            Ok(())
         }
     }
 }
@@ -369,14 +349,12 @@ pub(crate) mod ca {
 
         Ok(())
     }
-
-    // TODO: Validate EKUs for non-root CAs as well.
 }
 
 pub(crate) mod common {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{Extension, SequenceOfAccessDescriptions},
+        extensions::{ExtendedKeyUsage, Extension, SequenceOfAccessDescriptions},
     };
 
     use crate::{
@@ -396,6 +374,26 @@ pub(crate) mod common {
         }
 
         Ok(())
+    }
+
+    pub(crate) fn extended_key_usage<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), ValidationError> {
+        if let Some(extn) = extn {
+            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
+
+            // NOTE: Exact match for now because CABF says that EE certs
+            // MUST NOT contain anyExtendedKeyUsage.
+            if ekus.any(|eku| eku == policy.extended_key_usage) {
+                Ok(())
+            } else {
+                Err(ValidationError::Other("required EKU not found".to_string()))
+            }
+        } else {
+            Ok(())
+        }
     }
 }
 

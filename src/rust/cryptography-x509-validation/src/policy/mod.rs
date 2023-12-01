@@ -262,6 +262,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Criticality::NonCritical,
                     Some(common::authority_information_access),
                 ),
+                // 5280 4.2.1.12: Extended Key Usage
+                //
+                // NOTE: CABF requires EKUs in all subscriber certs and in many
+                // non-root CA certs, but validators widely ignore this
+                // requirement and treat a missing EKU as "any EKU".
+                // We choose to be permissive here.
+                ExtensionPolicy::maybe_present(
+                    EXTENDED_KEY_USAGE_OID,
+                    Criticality::NonCritical,
+                    Some(common::extended_key_usage),
+                ),
             ]),
             ca_extension_policies: Vec::from([
                 // 5280 4.2.1.1: Authority Key Identifier
@@ -319,15 +330,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 ),
                 // 5280 4.2.1.10: Name Constraints
                 ExtensionPolicy::not_present(NAME_CONSTRAINTS_OID),
-                // CA/B 7.1.2.7.10 Subscriber Certificate Extended Key Usage
-                // NOTE: CABF requires EKUs in EE certs, but many validators
-                // treat the absence of an EKU as "any EKU," so we choose to be
-                // permissive.
-                ExtensionPolicy::maybe_present(
-                    EXTENDED_KEY_USAGE_OID,
-                    Criticality::NonCritical,
-                    Some(ee::extended_key_usage),
-                ),
             ]),
         }
     }
