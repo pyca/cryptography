@@ -13,7 +13,7 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
   or
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
-  will now raise an exception rather than return an empty list.
+  will now raise a ``ValueError`` rather than return an empty list.
 * Parsing SSH certificates no longer permits malformed critical options with
   values, as documented in the 41.0.2 release notes.
 * Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
