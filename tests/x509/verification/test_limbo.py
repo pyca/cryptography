@@ -67,8 +67,8 @@ def _get_limbo_peer(expected_peer):
         return x509.IPAddress(ipaddress.ip_address(value))
 
 
-def _limbo_testcase(testcase):
-    if testcase["id"] in LIMBO_SKIP_TESTCASES:
+def _limbo_testcase(id_, testcase):
+    if id_ in LIMBO_SKIP_TESTCASES:
         return
 
     features = testcase["features"]
@@ -131,4 +131,6 @@ def test_limbo(subtests, pytestconfig):
         testcases = limbo["testcases"]
         for testcase in testcases:
             with subtests.test():
-                _limbo_testcase(testcase)
+                # NOTE: Pass in the id separately to make pytest
+                # error renderings slightly nicer.
+                _limbo_testcase(testcase["id"], testcase)

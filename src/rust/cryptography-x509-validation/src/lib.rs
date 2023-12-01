@@ -12,6 +12,7 @@ pub mod trust_store;
 pub mod types;
 
 use std::collections::HashSet;
+use std::vec;
 
 use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
@@ -48,6 +49,117 @@ impl From<DuplicateExtensionsError> for ValidationError {
     }
 }
 
+#[derive(Default)]
+struct AccumulatedNameConstraints<'a> {
+    sans: Vec<GeneralName<'a>>,
+    name_constraints: Vec<NameConstraints<'a>>,
+}
+
+impl<'a> AccumulatedNameConstraints<'a> {
+    fn accumulate_san(&mut self, extensions: &Extensions<'a>) -> Result<(), ValidationError> {
+        if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
+            let sans: SubjectAlternativeName<'_> = sans.value()?;
+            self.sans.extend(sans);
+        }
+
+        Ok(())
+    }
+
+    fn apply_inner(
+        &self,
+        constraint: &GeneralName<'a>,
+        san: &GeneralName<'_>,
+    ) -> Result<ApplyNameConstraintStatus, ValidationError> {
+        match (constraint, san) {
+            (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
+                match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(_), None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable DNS name constraint: NC {} cannot match SAN {}",
+                        pattern.0, name.0
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed DNS name constraint: {}",
+                        pattern.0
+                    ))),
+                }
+            }
+            (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
+                match (
+                    IPConstraint::from_bytes(pattern),
+                    IPAddress::from_bytes(name),
+                ) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(_), None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable IP name constraint: NC {:?} cannot match SAN {:?}",
+                        pattern, name,
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed IP name constraints: {:?}",
+                        pattern
+                    ))),
+                }
+            }
+            _ => Ok(Skipped),
+        }
+    }
+
+    /// Apply the current name constraints (including those in the specified
+    /// extensions, if any) to the accumulated SAN set.
+    ///
+    /// On success (no constraint violations found), the new constraints
+    /// are additionally added to the name constraint set for future checks.
+    fn apply_and_accumulate(&mut self, extensions: &Extensions<'a>) -> Result<(), ValidationError> {
+        let new_constraints = match extensions.get_extension(&NAME_CONSTRAINTS_OID) {
+            Some(nc) => Some(nc.value::<NameConstraints<'a>>()?),
+            None => None,
+        };
+
+        for san in &self.sans {
+            // If there are no applicable constraints, the SAN is considered valid so the default is true.
+            let mut permit = true;
+            for nc in self.name_constraints.iter().chain(new_constraints.iter()) {
+                if let Some(permitted_subtrees) = &nc.permitted_subtrees {
+                    for p in permitted_subtrees.unwrap_read().clone() {
+                        let status = self.apply_inner(&p.base, san)?;
+                        if status.is_applied() {
+                            permit = status.is_match();
+                            if permit {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if !permit {
+                    return Err(ValidationError::Other(
+                        "no permitted name constraints matched SAN".into(),
+                    ));
+                }
+            }
+
+            for nc in self.name_constraints.iter().chain(new_constraints.iter()) {
+                if let Some(excluded_subtrees) = &nc.excluded_subtrees {
+                    for e in excluded_subtrees.unwrap_read().clone() {
+                        let status = self.apply_inner(&e.base, san)?;
+                        if status.is_match() {
+                            return Err(ValidationError::Other(
+                                "excluded name constraint matched SAN".into(),
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(new_constraints) = new_constraints {
+            self.name_constraints.push(new_constraints);
+        }
+
+        Ok(())
+    }
+}
+
 pub struct Intermediates<'a>(HashSet<Certificate<'a>>);
 
 impl<'a> Intermediates<'a> {
@@ -72,7 +184,6 @@ impl<'a> Intermediates<'a> {
 }
 
 pub type Chain<'c> = Vec<Certificate<'c>>;
-type PartialChainState<'c> = (Chain<'c>, Vec<NameConstraints<'c>>);
 
 pub fn verify<'a, 'chain, B: CryptoOps>(
     leaf: &'a Certificate<'chain>,
@@ -137,123 +248,43 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
 
-    fn build_name_constraints(
-        &self,
-        constraints: &mut Vec<NameConstraints<'chain>>,
-        extensions: &Extensions<'chain>,
-    ) -> Result<(), ValidationError> {
-        if let Some(nc) = extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            let nc: NameConstraints<'chain> = nc.value()?;
-            constraints.push(nc);
-        }
-        Ok(())
-    }
-
-    fn apply_name_constraint(
-        &self,
-        constraint: &GeneralName<'chain>,
-        san: &GeneralName<'_>,
-    ) -> Result<ApplyNameConstraintStatus, ValidationError> {
-        match (constraint, san) {
-            (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
-                match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
-                    (Some(_), None) => Err(ValidationError::Other(format!(
-                        "unsatisfiable DNS name constraint: NC {} cannot match SAN {}",
-                        pattern.0, name.0
-                    ))),
-                    (None, _) => Err(ValidationError::Other(format!(
-                        "malformed DNS name constraint: {}",
-                        pattern.0
-                    ))),
-                }
-            }
-            (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
-                match (
-                    IPConstraint::from_bytes(pattern),
-                    IPAddress::from_bytes(name),
-                ) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
-                    (Some(_), None) => Err(ValidationError::Other(format!(
-                        "unsatisfiable IP name constraint: NC {:?} cannot match SAN {:?}",
-                        pattern, name,
-                    ))),
-                    (None, _) => Err(ValidationError::Other(format!(
-                        "malformed IP name constraints: {:?}",
-                        pattern
-                    ))),
-                }
-            }
-            _ => Ok(Skipped),
-        }
-    }
-
-    fn apply_name_constraints(
-        &self,
-        constraints: &[NameConstraints<'chain>],
-        extensions: &Extensions<'chain>,
-    ) -> Result<(), ValidationError> {
-        if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-            let sans: SubjectAlternativeName<'_> = sans.value()?;
-            for san in sans {
-                // If there are no applicable constraints, the SAN is considered valid so the default is true.
-                let mut permit = true;
-                for nc in constraints {
-                    if let Some(permitted_subtrees) = &nc.permitted_subtrees {
-                        for p in permitted_subtrees.unwrap_read().clone() {
-                            let status = self.apply_name_constraint(&p.base, &san)?;
-                            if status.is_applied() {
-                                permit = status.is_match();
-                                if permit {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if !permit {
-                        return Err(ValidationError::Other(
-                            "no permitted name constraints matched SAN".into(),
-                        ));
-                    }
-                }
-
-                for nc in constraints {
-                    if let Some(excluded_subtrees) = &nc.excluded_subtrees {
-                        for e in excluded_subtrees.unwrap_read().clone() {
-                            let status = self.apply_name_constraint(&e.base, &san)?;
-                            if status.is_match() {
-                                return Err(ValidationError::Other(
-                                    "excluded name constraint matched SAN".into(),
-                                ));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-
     fn build_chain_inner(
         &self,
         working_cert: &'a Certificate<'chain>,
         current_depth: u8,
         is_leaf: bool,
-        extensions: &'a Extensions<'chain>,
-    ) -> Result<PartialChainState<'chain>, ValidationError> {
+        working_cert_extensions: &'a Extensions<'chain>,
+        accumulated_constraints: &'a mut AccumulatedNameConstraints<'chain>,
+    ) -> Result<Chain<'chain>, ValidationError> {
         if current_depth > self.policy.max_chain_depth {
             return Err(ValidationError::Other(
                 "chain construction exceeds max depth".into(),
             ));
         }
 
+        // Per RFC 5280: Name constraints are not applied
+        // to subjects in self-issued certificates, *unless* the
+        // certificate is the final certificate in the path.
+        //
+        // Naively we'd check `current_depth == 0` to determine
+        // if we're checking the final certificate, but this
+        // isn't sufficient: self-issued certificates don't
+        // increase the depth, so we pass in a special-purpose
+        // `is_leaf` state that's only true on the first chain
+        // building step.
+        //
+        // See: RFC 5280 4.2.1.10
+        let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
+        if !skip_name_constraints {
+            accumulated_constraints.accumulate_san(working_cert_extensions)?;
+        }
+
+        accumulated_constraints.apply_and_accumulate(working_cert_extensions)?;
+
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
         if self.store.contains(working_cert) {
-            let mut constraints = vec![];
-            self.build_name_constraints(&mut constraints, extensions)?;
-            return Ok((vec![working_cert.clone()], constraints));
+            return Ok(vec![working_cert.clone()]);
         }
 
         // Otherwise, we collect a list of potential issuers for this cert,
@@ -276,41 +307,11 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         next_depth,
                         false,
                         &issuer_extensions,
+                        accumulated_constraints,
                     ) {
-                        Ok((mut chain, mut constraints)) => {
-                            // Per RFC 5280: Name constraints are not applied
-                            // to self-issued certificates, *unless* the
-                            // certificate is the final certificate in the path.
-                            //
-                            // Naively we'd check `current_depth == 0` to determine
-                            // if we're checking the final certificate, but this
-                            // isn't sufficient: self-issued certificates don't
-                            // increase the depth, so we pass in a special-purpose
-                            // `is_leaf` state that's only true on the first chain
-                            // building step.
-                            //
-                            // See: RFC 5280 4.2.1.10
-                            let skip_name_constraints =
-                                cert_is_self_issued(working_cert) && !is_leaf;
-
-                            let name_constraints_pass = match skip_name_constraints {
-                                true => true,
-                                false => {
-                                    match self.apply_name_constraints(&constraints, extensions) {
-                                        Ok(()) => true,
-                                        Err(e) => {
-                                            last_err = Some(e);
-                                            false
-                                        }
-                                    }
-                                }
-                            };
-
-                            if name_constraints_pass {
-                                chain.insert(0, working_cert.clone());
-                                self.build_name_constraints(&mut constraints, extensions)?;
-                                return Ok((chain, constraints));
-                            }
+                        Ok(mut chain) => {
+                            chain.insert(0, working_cert.clone());
+                            return Ok(chain);
                         }
                         Err(e) => last_err = Some(e),
                     };
@@ -342,13 +343,19 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         //
         // In the case that the leaf is an EE, this includes a check
         // against the EE cert's SANs.
-        let extensions = leaf.extensions()?;
+        let leaf_extensions = leaf.extensions()?;
 
-        self.policy.permits_leaf(leaf, &extensions)?;
+        self.policy.permits_leaf(leaf, &leaf_extensions)?;
 
-        let result = self.build_chain_inner(leaf, 0, true, &extensions);
+        let result = self.build_chain_inner(
+            leaf,
+            0,
+            true,
+            &leaf_extensions,
+            &mut AccumulatedNameConstraints::default(),
+        );
         match result {
-            Ok((chain, _)) => Ok(chain),
+            Ok(chain) => Ok(chain),
             Err(error) => Err(error),
         }
     }
