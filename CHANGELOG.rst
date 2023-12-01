@@ -1,6 +1,17 @@
 Changelog
 =========
 
+.. _v41-0-8:
+
+41.0.8 - 2024-02-07
+~~~~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Loading a PKCS7 with no content field using
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
+  or
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
+  will now raise a ``ValueError`` rather than return an empty list.
+
 .. _v41-0-7:
 
 41.0.7 - 2023-11-27

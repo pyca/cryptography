@@ -92,8 +92,8 @@ class TestPKCS7Loading:
     def test_load_pkcs7_empty_certificates(self, backend):
         der = b"\x30\x0B\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x07\x02"
 
-        certificates = pkcs7.load_der_pkcs7_certificates(der)
-        assert certificates == []
+        with pytest.raises(ValueError):
+            pkcs7.load_der_pkcs7_certificates(der)
 
 
 # We have no public verification API and won't be adding one until we get
