@@ -14,6 +14,7 @@ from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
+    AESGCMSIV,
     AESOCB3,
     AESSIV,
     ChaCha20Poly1305,
@@ -829,4 +830,156 @@ class TestAESSIV:
         ct2 = aessiv.encrypt(pt, ad)
         assert ct2 == ct
         computed_pt2 = aessiv.decrypt(ct2, ad)
+        assert computed_pt2 == pt
+
+
+@pytest.mark.skipif(
+    not _aead_supported(AESGCMSIV),
+    reason="Does not support AESGCMSIV",
+)
+class TestAESGCMSIV:
+    @pytest.mark.skipif(
+        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+    )
+    def test_data_too_large(self):
+        key = AESGCMSIV.generate_key(256)
+        nonce = os.urandom(12)
+        aesgcmsiv = AESGCMSIV(key)
+
+        large_data = large_mmap()
+
+        with pytest.raises(OverflowError):
+            aesgcmsiv.encrypt(nonce, large_data, None)
+
+        with pytest.raises(OverflowError):
+            aesgcmsiv.encrypt(nonce, b"irrelevant", large_data)
+
+        with pytest.raises(OverflowError):
+            aesgcmsiv.decrypt(nonce, b"very very irrelevant", large_data)
+
+    def test_invalid_nonce_length(self, backend):
+        key = AESGCMSIV.generate_key(128)
+        aesgcmsiv = AESGCMSIV(key)
+        pt = b"hello"
+        nonce = os.urandom(14)
+        with pytest.raises(ValueError):
+            aesgcmsiv.encrypt(nonce, pt, None)
+
+        with pytest.raises(ValueError):
+            aesgcmsiv.decrypt(nonce, pt, None)
+
+    def test_no_empty_encryption(self):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        nonce = os.urandom(12)
+
+        with pytest.raises(ValueError):
+            aesgcmsiv.encrypt(nonce, b"", None)
+
+        with pytest.raises(InvalidTag):
+            aesgcmsiv.decrypt(nonce, b"", None)
+
+    def test_vectors(self, backend, subtests):
+        vectors = _load_all_params(
+            os.path.join("ciphers", "AES", "GCM-SIV"),
+            [
+                "openssl.txt",
+                "aes-192-gcm-siv.txt",
+            ],
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                nonce = binascii.unhexlify(vector["iv"])
+                aad = binascii.unhexlify(vector.get("aad", b""))
+                ct = binascii.unhexlify(vector["ciphertext"])
+                tag = binascii.unhexlify(vector["tag"])
+                pt = binascii.unhexlify(vector.get("plaintext", b""))
+                aesgcmsiv = AESGCMSIV(key)
+                computed_ct = aesgcmsiv.encrypt(nonce, pt, aad)
+                assert computed_ct[:-16] == ct
+                assert computed_ct[-16:] == tag
+                computed_pt = aesgcmsiv.decrypt(nonce, computed_ct, aad)
+                assert computed_pt == pt
+
+    def test_vectors_invalid(self, backend, subtests):
+        vectors = _load_all_params(
+            os.path.join("ciphers", "AES", "GCM-SIV"),
+            [
+                "openssl.txt",
+                "aes-192-gcm-siv.txt",
+            ],
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                key = binascii.unhexlify(vector["key"])
+                nonce = binascii.unhexlify(vector["iv"])
+                aad = binascii.unhexlify(vector.get("aad", b""))
+                ct = binascii.unhexlify(vector["ciphertext"])
+                aesgcmsiv = AESGCMSIV(key)
+                with pytest.raises(InvalidTag):
+                    badkey = AESGCMSIV(AESGCMSIV.generate_key(256))
+                    badkey.decrypt(nonce, ct, aad)
+                with pytest.raises(InvalidTag):
+                    aesgcmsiv.decrypt(nonce, ct, b"nonsense")
+                with pytest.raises(InvalidTag):
+                    aesgcmsiv.decrypt(nonce, b"nonsense", aad)
+
+    @pytest.mark.parametrize(
+        ("nonce", "data", "associated_data"),
+        [
+            [object(), b"data", b""],
+            [b"0" * 12, object(), b""],
+            [b"0" * 12, b"data", object()],
+        ],
+    )
+    def test_params_not_bytes(self, nonce, data, associated_data, backend):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        with pytest.raises(TypeError):
+            aesgcmsiv.encrypt(nonce, data, associated_data)
+
+        with pytest.raises(TypeError):
+            aesgcmsiv.decrypt(nonce, data, associated_data)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESGCMSIV(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESGCMSIV(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESGCMSIV.generate_key(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESGCMSIV.generate_key(129)
+
+    def test_associated_data_none_equal_to_empty_bytestring(self, backend):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        nonce = os.urandom(12)
+        ct1 = aesgcmsiv.encrypt(nonce, b"some_data", None)
+        ct2 = aesgcmsiv.encrypt(nonce, b"some_data", b"")
+        assert ct1 == ct2
+        pt1 = aesgcmsiv.decrypt(nonce, ct1, None)
+        pt2 = aesgcmsiv.decrypt(nonce, ct2, b"")
+        assert pt1 == pt2
+
+    def test_buffer_protocol(self, backend):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        ct = aesgcmsiv.encrypt(nonce, pt, ad)
+        computed_pt = aesgcmsiv.decrypt(nonce, ct, ad)
+        assert computed_pt == pt
+        aesgcmsiv = AESGCMSIV(bytearray(key))
+        ct2 = aesgcmsiv.encrypt(nonce, pt, ad)
+        assert ct2 == ct
+        computed_pt2 = aesgcmsiv.decrypt(nonce, ct2, ad)
         assert computed_pt2 == pt

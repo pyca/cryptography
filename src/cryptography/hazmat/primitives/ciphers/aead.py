@@ -16,12 +16,14 @@ __all__ = [
     "ChaCha20Poly1305",
     "AESCCM",
     "AESGCM",
+    "AESGCMSIV",
     "AESOCB3",
     "AESSIV",
 ]
 
 AESSIV = rust_openssl.aead.AESSIV
 AESOCB3 = rust_openssl.aead.AESOCB3
+AESGCMSIV = rust_openssl.aead.AESGCMSIV
 
 
 class ChaCha20Poly1305:

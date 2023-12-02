@@ -51,6 +51,9 @@ Changelog
 * In the next release (43.0.0) of cryptography, loading an X.509 certificate
   with a negative serial number will raise an exception. This has been
   deprecated since 36.0.0.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV` when using
+  OpenSSL 3.2.0+.
 
 .. _v41-0-7:
 
