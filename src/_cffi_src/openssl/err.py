@@ -45,4 +45,11 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
+#if OPENSSL_VERSION_MAJOR >= 3
+// OpenSSL v3 has dropped this function
+int ERR_GET_FUNC(unsigned long errcode)
+{
+    return 0;
+}
+#endif
 """
