@@ -49,20 +49,7 @@ def _skip_curve_unsupported(backend, curve):
 )
 class TestPKCS12Loading:
     def _test_load_pkcs12_ec_keys(self, filename, password, backend):
-        cert = load_vectors_from_file(
-            os.path.join("x509", "custom", "ca", "ca.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            ),
-            mode="rb",
-        )
-        key = load_vectors_from_file(
-            os.path.join("x509", "custom", "ca", "ca_key.pem"),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ),
-            mode="rb",
-        )
+        cert, key = _load_ca(backend)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", filename),
@@ -101,13 +88,7 @@ class TestPKCS12Loading:
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
     def test_load_pkcs12_cert_only(self, backend):
-        cert = load_vectors_from_file(
-            os.path.join("x509", "custom", "ca", "ca.pem"),
-            lambda pemfile: x509.load_pem_x509_certificate(
-                pemfile.read(), backend
-            ),
-            mode="rb",
-        )
+        cert, _ = _load_ca(backend)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "cert-aes256cbc-no-key.p12"),
             lambda data: load_key_and_certificates(
@@ -120,13 +101,7 @@ class TestPKCS12Loading:
         assert parsed_more_certs == [cert]
 
     def test_load_pkcs12_key_only(self, backend):
-        key = load_vectors_from_file(
-            os.path.join("x509", "custom", "ca", "ca_key.pem"),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ),
-            mode="rb",
-        )
+        _, key = _load_ca(backend)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "no-cert-key-aes256cbc.p12"),
@@ -290,9 +265,9 @@ def _load_cert(backend, path):
 
 
 def _load_ca(backend):
-    cert = _load_cert(backend, os.path.join("x509", "custom", "ca", "ca.pem"))
+    cert = _load_cert(backend, os.path.join("pkcs12", "ca", "ca.pem"))
     key = load_vectors_from_file(
-        os.path.join("x509", "custom", "ca", "ca_key.pem"),
+        os.path.join("pkcs12", "ca", "ca_key.pem"),
         lambda pemfile: load_pem_private_key(pemfile.read(), None, backend),
         mode="rb",
     )

@@ -107,7 +107,9 @@ Custom asymmetric vectors
   ``asymmetric/public/PKCS1/rsa.pub.der`` are PKCS1 conversions of the public
   key from ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem`` using PEM and DER encoding.
 * ``x509/custom/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
-  the private key for the certificate ``x509/custom/ca/ca.pem``. This key is
+  the private key for the certificate ``x509/custom/ca/ca.pem``.
+* ``pkcs12/ca/ca_key.pem`` - An unencrypted PCKS8 ``secp256r1`` key. It is
+  the private key for the certificate ``pkcs12/ca/ca.pem``. This key is
   encoded in several of the PKCS12 custom vectors.
 * ``x509/custom/ca/rsa_key.pem`` - An unencrypted PCKS8 4096 bit RSA key. It is
   the private key for the certificate ``x509/custom/ca/rsa_ca.pem``.
@@ -464,8 +466,10 @@ Custom X.509 Vectors
   information access extension with both a CA repository entry and a custom
   OID entry.
 * ``ca/ca.pem`` - A self-signed certificate with ``basicConstraints`` set to
-  true. Its private key is ``ca/ca_key.pem``. This certificate is encoded in
-  several of the PKCS12 custom vectors.
+  true. Its private key is ``ca/ca_key.pem``.
+* ``pkcs12/ca/ca.pem`` - A self-signed certificate with ``basicConstraints``
+  set to true. Its private key is ``pkcs12/ca/ca_key.pem``.  This key is
+  encoded in several of the PKCS12 custom vectors.
 * ``negative_serial.pem`` - A certificate with a serial number that is a
   negative number.
 * ``rsa_pss.pem`` - A certificate with an RSA PSS signature.
@@ -686,90 +690,90 @@ Custom X.509 OCSP Test Vectors
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 * ``pkcs12/cert-key-aes256cbc.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   both encrypted with AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/cert-none-key-none.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with no encryption. The password (used for integrity checking only) is
   ``cryptography``.
 * ``pkcs12/cert-rc2-key-3des.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) encrypted with RC2 and key
-  (``x509/custom/ca/ca_key.pem``) encrypted via 3DES with the password
+  (``pkcs12/ca/ca.pem``) encrypted with RC2 and key
+  (``pkcs12/ca/ca_key.pem``) encrypted via 3DES with the password
   ``cryptography``.
 * ``pkcs12/no-password.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``) with no
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``) with no
   encryption and no password.
 * ``pkcs12/no-cert-key-aes256cbc.p12`` - A PKCS12 file containing a key
-  (``x509/custom/ca/ca_key.pem``) encrypted via AES 256 CBC with the
+  (``pkcs12/ca/ca_key.pem``) encrypted via AES 256 CBC with the
   password ``cryptography`` and no certificate.
 * ``pkcs12/cert-aes256cbc-no-key.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) encrypted via AES 256 CBC with the
+  (``pkcs12/ca/ca.pem``) encrypted via AES 256 CBC with the
   password ``cryptography`` and no private key.
 * ``pkcs12/no-name-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``).
 * ``pkcs12/name-all-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``name``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``)
   with friendly names ``name2`` and ``name3``, respectively.
 * ``pkcs12/name-1-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``name``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``).
 * ``pkcs12/name-2-3-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``) with friendly names ``name2`` and
   ``name3``, respectively.
 * ``pkcs12/name-2-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``), the first having friendly name ``name2``.
 * ``pkcs12/name-3-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``), the latter having friendly name ``name3``.
 * ``pkcs12/name-unicode-no-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``☺``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``)
   with friendly names ``ä`` and ``ç``, respectively.
 * ``pkcs12/no-name-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``),
   encrypted via AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/name-all-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``name``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``)
   with friendly names ``name2`` and ``name3`` respectively,
   encrypted via AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/name-1-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``name``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``),
   encrypted via AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/name-2-3-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``) with friendly names ``name2` and
   ``name3`` respectively, encrypted via AES 256 CBC with the password
   ``cryptography``.
 * ``pkcs12/name-2-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``), the first having friendly name ``name2``,
   encrypted via AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/name-3-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``),
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
   and ``x509/letsencryptx3.pem``), the latter having friendly name ``name2``,
   encrypted via AES 256 CBC with the password ``cryptography``.
 * ``pkcs12/name-unicode-pwd.p12`` - A PKCS12 file containing a cert
-  (``x509/custom/ca/ca.pem``) and key (``x509/custom/ca/ca_key.pem``)
+  (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``)
   with friendly name ``☺``, as well as two additional certificates
   (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``)
   with friendly names ``ä`` and ``ç`` respectively, encrypted via
