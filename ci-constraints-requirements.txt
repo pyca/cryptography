@@ -84,7 +84,7 @@ pathspec==0.11.2
     #   check-sdist
 pkginfo==1.9.6
     # via twine
-platformdirs==4.0.0
+platformdirs==4.1.0; python_version >= "3.8"
     # via
     #   virtualenv
 pluggy==1.3.0; python_version >= "3.8"
