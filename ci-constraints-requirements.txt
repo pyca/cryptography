@@ -11,8 +11,6 @@ argcomplete==3.1.6; python_version >= "3.8"
     # via nox
 babel==2.13.1
     # via sphinx
-bleach==6.1.0
-    # via readme-renderer
 build==1.0.3
     # via
     #   check-sdist
@@ -31,7 +29,7 @@ coverage==7.3.2; python_version >= "3.8"
     # via pytest-cov
 distlib==0.3.7
     # via virtualenv
-docutils==0.18.1
+docutils==0.20.1
     # via
     #   readme-renderer
     #   sphinx
@@ -69,8 +67,9 @@ more-itertools==10.1.0
 mypy==1.7.1
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
-    # via
-    #   mypy
+    # via mypy
+nh3==0.2.15
+    # via readme-renderer
 nox==2023.4.22
     # via cryptography (pyproject.toml)
 packaging==23.2
@@ -80,8 +79,7 @@ packaging==23.2
     #   pytest
     #   sphinx
 pathspec==0.11.2
-    # via
-    #   check-sdist
+    # via check-sdist
 pkginfo==1.9.6
     # via twine
 platformdirs==4.1.0; python_version >= "3.8"
@@ -134,15 +132,18 @@ rich==13.7.0
     # via twine
 ruff==0.1.7
     # via cryptography (pyproject.toml)
-six==1.16.0
-    # via bleach
 snowballstemmer==2.2.0
     # via sphinx
 sphinx==7.2.6
     # via
     #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme
+    #   sphinxcontrib-applehelp
+    #   sphinxcontrib-devhelp
+    #   sphinxcontrib-htmlhelp
     #   sphinxcontrib-jquery
+    #   sphinxcontrib-qthelp
+    #   sphinxcontrib-serializinghtml
     #   sphinxcontrib-spelling
 sphinx-rtd-theme==2.0.0
     # via cryptography (pyproject.toml)
@@ -180,8 +181,6 @@ urllib3==2.1.0
     #   twine
 virtualenv==20.25.0
     # via nox
-webencodings==0.5.1
-    # via bleach
 zipp==3.17.0; python_version >= "3.8"
     # via importlib-metadata
 
