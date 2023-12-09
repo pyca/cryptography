@@ -98,10 +98,11 @@ for the OpenSSL and ``libffi`` libraries available on your system.
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
 
-The easies way to get a working `rust` is via `rustup <https://rustup.rs>`_
+The easiest way to get a working `rust` is via `rustup <https://rustup.rs>`_
 and have it installed in your home directory.
 
-After `rustup` is installed, you can install the optional rust dev tools::
+After `rustup` is installed, you can install the optional rust
+development tools::
 
     rustup component add llvm-tools
 

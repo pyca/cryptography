@@ -50,13 +50,13 @@ Running tests for TDD
 
 .. warning::
 
-    When not using `nox`, it's easy to screw up the build system,
+    When not using ``nox``, it's easy to screw up the build system,
     Failing to rebuild any extension module will get you confusing
     and inconsistent results.
-    When in doubt, fallback to using `nox`.
+    When in doubt, fallback to using ``nox``.
 
 For TDD you might want to speed up the test run cycle.
-After activating your virtualenv, install the dev requirements
+After activating your ``virtualenv``, install the development requirements
 and then install the project in edit mode.
 
 .. code-block:: console
