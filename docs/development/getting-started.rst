@@ -4,6 +4,7 @@ Getting started
 Development dependencies
 ------------------------
 
+Start by reading the installation documentation.
 Working on ``cryptography`` requires the installation of a small number of
 development dependencies in addition to the dependencies for
 :doc:`/installation`. These are handled by the use of ``nox``, which can be
@@ -17,31 +18,12 @@ installed with ``pip``.
     $ # Specify your Python version here.
     $ nox -e tests -p py310
 
-
-Rust dependencies on Linux
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Here are the notes for Ubuntu.
-I hope they help and you can adapt them to your OS.
-Make sure to have the following packages installed, for OpenSSL development::
-
-    apt install pkgconf libssl-dev
-
-The easies way to get a working `rust` dev environment is via https://rustup.rs
-and have it installed in your home directory.
-
-After `rustup` is installed, you can install the optional rust dev tools::
-
-    rustup component add llvm-tools
-
-
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
 
 You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_, or a custom
 build) and must configure the build `as documented here`_ before calling
 ``nox`` or else pip will fail to compile.
-
 
 Running tests
 -------------
@@ -62,6 +44,17 @@ You can also specify a subset of tests to run as positional arguments:
 
     $ # run the whole x509 testsuite, plus the fernet tests
     $ nox -e tests -p py310 -- tests/x509/ tests/test_fernet.py
+
+
+Running tests for TDD
+~~~~~~~~~~~~~~~~~~~~~
+
+.. warning::
+
+    When not using `nox`, it's easy to screw up the build system,
+    Failing to rebuild any extension module will get you confusing
+    and inconsistent results.
+    When in doubt, fallback to using `nox`.
 
 For TDD you might want to speed up the test run cycle.
 After activating your virtualenv, install the dev requirements
