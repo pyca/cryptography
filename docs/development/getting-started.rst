@@ -17,12 +17,31 @@ installed with ``pip``.
     $ # Specify your Python version here.
     $ nox -e tests -p py310
 
+
+Rust dependencies on Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here are the notes for Ubuntu.
+I hope they help and you can adapt them to your OS.
+Make sure to have the following packages installed, for OpenSSL development::
+
+    apt install pkgconf libssl-dev
+
+The easies way to get a working `rust` dev environment is via https://rustup.rs
+and have it installed in your home directory.
+
+After `rustup` is installed, you can install the optional rust dev tools::
+
+    rustup component add llvm-tools
+
+
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
 
 You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_, or a custom
 build) and must configure the build `as documented here`_ before calling
 ``nox`` or else pip will fail to compile.
+
 
 Running tests
 -------------
@@ -43,6 +62,27 @@ You can also specify a subset of tests to run as positional arguments:
 
     $ # run the whole x509 testsuite, plus the fernet tests
     $ nox -e tests -p py310 -- tests/x509/ tests/test_fernet.py
+
+For TDD you might want to speed up the test run cycle.
+After activating your virtualenv, install the dev requirements
+and then install the project in edit mode.
+
+.. code-block:: console
+
+    $ pip install -e vectors/
+    $ pip install -e .[ssh,test,test-randomorder]
+
+If you are changing the OpenSSL bindings from `src/_cffi_src` you will need
+to rebuild the rust OpenSSL bindings.
+The easiest method is to just reinstall in edit mode.
+
+.. code-block:: console
+
+    $ # Re-build the binding and other extensions.
+    $ pip install -e .
+    $ # Then re-run the tests.
+    $ pytest tests/hazmat/bindings/
+
 
 Building documentation
 ----------------------
