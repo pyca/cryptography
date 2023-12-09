@@ -142,6 +142,7 @@ FUNCTIONS = """
 const char *SSL_state_string_long(const SSL *);
 SSL_SESSION *SSL_get1_session(SSL *);
 int SSL_set_session(SSL *, SSL_SESSION *);
+int SSL_session_reused(const SSL *ssl);
 SSL *SSL_new(SSL_CTX *);
 void SSL_free(SSL *);
 int SSL_set_fd(SSL *, int);
