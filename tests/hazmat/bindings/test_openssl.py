@@ -112,16 +112,3 @@ class TestOpenSSL:
         assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH
         if not b.lib.CRYPTOGRAPHY_IS_BORINGSSL:
             assert b"data not multiple of block length" in error.reason_text
-
-    def test_ssl_session_reused_new(self):
-        """
-        The SSL_session_reused API is available
-        and return 0 for a new connection.
-        """
-        b = Binding()
-        ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
-        ctx = b.ffi.gc(ctx, b.lib.SSL_CTX_free)
-        ssl = b.lib.SSL_new(ctx)
-        ssl = b.ffi.gc(ssl, b.lib.SSL_free)
-
-        assert b.lib.SSL_session_reused(ssl) == 0
