@@ -21,9 +21,8 @@ installed with ``pip``.
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
 
-You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_, or a custom
-build) and must configure the build `as documented here`_ before calling
-``nox`` or else pip will fail to compile.
+You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_) before
+invoking ``nox`` or else pip will fail to compile.
 
 Running tests
 -------------
@@ -77,23 +76,6 @@ The easiest method is to just reinstall in edit mode.
     $ pytest tests/hazmat/bindings/
 
 
-Building documentation
-----------------------
-
-``cryptography`` documentation is stored in the ``docs/`` directory. It is
-written in `reStructured Text`_ and rendered using `Sphinx`_.
-
-Use `nox`_ to build the documentation. For example:
-
-.. code-block:: console
-
-    $ nox -e docs
-    ...
-    nox > Session docs was successful.
-
-The HTML documentation index can now be found at
-``docs/_build/html/index.html``.
-
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
 .. _`OpenSSL`: https://www.openssl.org
@@ -101,6 +83,4 @@ The HTML documentation index can now be found at
 .. _`nox`: https://pypi.org/project/nox/
 .. _`virtualenv`: https://pypi.org/project/virtualenv/
 .. _`pip`: https://pypi.org/project/pip/
-.. _`sphinx`: https://pypi.org/project/Sphinx/
-.. _`reStructured Text`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 .. _`as documented here`: https://docs.rs/openssl/latest/openssl/#automatic
