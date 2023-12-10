@@ -6,8 +6,8 @@ Development dependencies
 
 Working on ``cryptography`` requires the installation of a small number of
 development dependencies in addition to the dependencies for
-:doc:`/installation`. These are handled by the use of ``nox``, which can be
-installed with ``pip``.
+:doc:`/installation` (including :ref:`Rust<installation:rust>`). These are
+handled by the use of ``nox``, which can be installed with ``pip``.
 
 .. code-block:: console
 
