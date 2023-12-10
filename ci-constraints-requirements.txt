@@ -173,7 +173,7 @@ tomli==2.0.1
     #   pytest
 twine==4.0.2
     # via cryptography (pyproject.toml)
-typing-extensions==4.8.0; python_version >= "3.8"
+typing-extensions==4.9.0; python_version >= "3.8"
     # via mypy
 urllib3==2.1.0
     # via
