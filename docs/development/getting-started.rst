@@ -14,8 +14,7 @@ installed with ``pip``.
     $ # Create a virtualenv and activate it
     $ # Set up your cryptography build environment
     $ pip install nox
-    $ # Specify your Python version here.
-    $ nox -e tests -p py310
+    $ nox -e tests-nocoverage
 
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
@@ -31,9 +30,9 @@ designed to be run using `pytest`_. ``nox`` automatically invokes ``pytest``:
 
 .. code-block:: console
 
-    $ nox -e tests -p py310
+    $ nox -e tests-nocoverage
     ...
-    62746 passed in 220.43 seconds
+    ===== 3062 passed, 61 skipped in 16.02s =====
 
 
 You can also specify a subset of tests to run as positional arguments:
@@ -41,7 +40,7 @@ You can also specify a subset of tests to run as positional arguments:
 .. code-block:: console
 
     $ # run the whole x509 testsuite, plus the fernet tests
-    $ nox -e tests -p py310 -- tests/x509/ tests/test_fernet.py
+    $ nox -e tests-nocoverage -- tests/x509/ tests/test_fernet.py
 
 
 .. _`Homebrew`: https://brew.sh
