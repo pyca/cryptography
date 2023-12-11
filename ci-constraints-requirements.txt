@@ -78,7 +78,7 @@ packaging==23.2
     #   nox
     #   pytest
     #   sphinx
-pathspec==0.12.0
+pathspec==0.12.1
     # via check-sdist
 pkginfo==1.9.6
     # via twine
