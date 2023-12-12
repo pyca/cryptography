@@ -27,7 +27,7 @@ colorlog==6.8.0
     # via nox
 coverage==7.3.2; python_version >= "3.8"
     # via pytest-cov
-distlib==0.3.7
+distlib==0.3.8
     # via virtualenv
 docutils==0.20.1
     # via
