@@ -8,6 +8,7 @@ import subprocess
 
 import click
 import tomllib
+from packaging.version import Version
 
 
 def run(*args: str) -> None:
@@ -22,18 +23,15 @@ def cli():
 
 @cli.command()
 @click.argument("version")
-def release(version: str) -> None:
-    """
-    ``version`` should be a string like '0.4' or '1.0'.
-    """
+def release() -> None:
     base_dir = pathlib.Path(__file__).parent
     with (base_dir / "pyproject.toml").open("rb") as f:
         pyproject = tomllib.load(f)
-        pyproject_version = pyproject["project"]["version"]
+        version = pyproject["project"]["version"]
 
-    if version != pyproject_version:
+    if Version(version).is_prerelease:
         raise RuntimeError(
-            f"Version mismatch: pyproject.toml has {pyproject_version}"
+            f"Can't release, pyproject.toml version is pre-release: {version}"
         )
 
     # Tag and push the tag (this will trigger the wheel builder in Actions)
