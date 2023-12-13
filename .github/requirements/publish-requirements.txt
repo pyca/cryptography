@@ -221,9 +221,9 @@ hyperframe==6.0.1 \
     --hash=sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15 \
     --hash=sha256:ae510046231dc8e9ecb1a6586f63d2347bf4c8905914aa84ba585ae85f28a914
     # via h2
-id==1.1.0 \
-    --hash=sha256:726b995ffea6954ecbe3f2bb9e9d52b8502b2683b8470b13c58a429cd8e701e8 \
-    --hash=sha256:a15f919fa1e847f57572748d37cf40192913a861a2669059b4cb5079bbbbbdbd
+id==1.2.1 \
+    --hash=sha256:339fe8d7a0edf20514ed5e5dc841e504c99f38c7b7d7a2849724c6dfedc89860 \
+    --hash=sha256:51021c5ba12c6ee88fb58240a58f788f43aa9c4f629280d6a97a1192f3cefdb9
     # via sigstore
 idna==3.6 \
     --hash=sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca \
