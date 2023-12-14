@@ -17,6 +17,9 @@ Changelog
 * Parsing SSH certificates no longer permits malformed critical options with
   values, as documented in the 41.0.2 release notes.
 * Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
+* We now publish both ``py37`` and ``py39`` ``abi3`` wheels. This should
+  resolve some errors relating to initializing a module multiple times per
+  process.
 * Support :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` for
   X.509 certificate signing requests and certificate revocation lists with the
   keyword-only argument ``rsa_padding`` on the ``sign`` methods for
