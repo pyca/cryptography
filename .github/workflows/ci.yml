@@ -355,7 +355,8 @@ jobs:
           - paramiko
           - pyopenssl
           - pyopenssl-release
-          - twisted
+          # TODO: https://github.com/twisted/twisted/issues/12052
+          # - twisted
           - aws-encryption-sdk
           - dynamodb-encryption-sdk
           - certbot
