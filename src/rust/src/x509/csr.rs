@@ -291,7 +291,7 @@ fn create_x509_csr(
             values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),
-        })
+        });
     }
 
     for py_attr in builder.getattr(pyo3::intern!(py, "_attributes"))?.iter()? {
@@ -315,7 +315,7 @@ fn create_x509_csr(
             values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 common::RawTlv::new(tag, value),
             ])),
-        })
+        });
     }
 
     let py_subject_name = builder.getattr(pyo3::intern!(py, "_subject_name"))?;

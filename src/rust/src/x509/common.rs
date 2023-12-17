@@ -99,7 +99,7 @@ pub(crate) fn encode_general_names<'a>(
     let mut gns = vec![];
     for el in py_gns.iter()? {
         let gn = encode_general_name(py, el?)?;
-        gns.push(gn)
+        gns.push(gn);
     }
     Ok(gns)
 }
@@ -432,7 +432,7 @@ pub(crate) fn encode_extensions<
                     extn_id: oid,
                     critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
                     extn_value: py_data.as_bytes(),
-                })
+                });
             }
             None => {
                 return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(

@@ -8,7 +8,6 @@ use cryptography_x509_validation::{
     policy::{Policy, Subject},
     types::{DNSName, IPAddress},
 };
-use pyo3::IntoPy;
 
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
@@ -98,8 +97,8 @@ impl PyServerVerifier {
     }
 
     #[getter]
-    fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
-        Ok(self.as_policy().max_chain_depth.into_py(py))
+    fn max_chain_depth(&self) -> u8 {
+        self.as_policy().max_chain_depth
     }
 
     fn verify<'p>(
