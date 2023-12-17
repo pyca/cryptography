@@ -19,8 +19,6 @@ typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
 """
 
 TYPES = """
-static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
-
 typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
 typedef ... Cryptography_STACK_OF_X509_OBJECT;
 
@@ -174,16 +172,7 @@ int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 
 X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *);
-void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_LIBRESSL
-static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
-typedef void *X509_STORE_CTX_get_issuer_fn;
-void (*X509_STORE_set_get_issuer)(X509_STORE *,
-                                  X509_STORE_CTX_get_issuer_fn) = NULL;
-#else
-static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 1;
-#endif
 """
