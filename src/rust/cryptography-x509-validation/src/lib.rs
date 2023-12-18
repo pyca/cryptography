@@ -14,7 +14,7 @@ pub mod types;
 use std::collections::HashSet;
 use std::vec;
 
-use crate::certificate::{cert_is_self_issued, cert_is_self_signed};
+use crate::certificate::cert_is_self_issued;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
