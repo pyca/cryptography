@@ -10,7 +10,13 @@ import pytest
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    ec,
+    ed448,
+    ed25519,
+    padding,
+    rsa,
+)
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
     NameOID,
@@ -204,6 +210,38 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256(), backend)
 
+    def test_sign_invalid_padding(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io CA"
+                        )
+                    ]
+                )
+            )
+            .last_update(last_update)
+            .next_update(next_update)
+        )
+
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+            )
+        eckey = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            builder.sign(
+                eckey, hashes.SHA256(), rsa_padding=padding.PKCS1v15()
+            )
+
     def test_sign_empty_list(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
@@ -233,6 +271,40 @@ class TestCertificateRevocationListBuilder:
         )
         assert crl.next_update_utc == next_update.replace(
             tzinfo=datetime.timezone.utc
+        )
+
+    def test_sign_pss(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        private_key = rsa_key_2048
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io CA"
+                        )
+                    ]
+                )
+            )
+            .last_update(last_update)
+            .next_update(next_update)
+        )
+
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.DIGEST_LENGTH,
+        )
+        crl = builder.sign(private_key, hashes.SHA256(), rsa_padding=pss)
+        assert len(crl) == 0
+        assert isinstance(crl.signature_algorithm_parameters, padding.PSS)
+        assert crl.signature_algorithm_parameters._salt_length == 32
+        private_key.public_key().verify(
+            crl.signature,
+            crl.tbs_certlist_bytes,
+            crl.signature_algorithm_parameters,
+            hashes.SHA256(),
         )
 
     @pytest.mark.parametrize(

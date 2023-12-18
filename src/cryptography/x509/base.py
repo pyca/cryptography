@@ -425,6 +425,15 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def signature_algorithm_parameters(
+        self,
+    ) -> None | padding.PSS | padding.PKCS1v15 | ec.ECDSA:
+        """
+        Returns the signature algorithm parameters.
+        """
+
+    @property
+    @abc.abstractmethod
     def issuer(self) -> Name:
         """
         Returns the X509Name with the issuer of this CRL.
@@ -1146,6 +1155,8 @@ class CertificateRevocationListBuilder:
         private_key: CertificateIssuerPrivateKeyTypes,
         algorithm: _AllowedHashTypes | None,
         backend: typing.Any = None,
+        *,
+        rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
     ) -> CertificateRevocationList:
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
@@ -1156,7 +1167,15 @@ class CertificateRevocationListBuilder:
         if self._next_update is None:
             raise ValueError("A CRL must have a next update time")
 
-        return rust_x509.create_x509_crl(self, private_key, algorithm)
+        if rsa_padding is not None:
+            if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
+                raise TypeError("Padding must be PSS or PKCS1v15")
+            if not isinstance(private_key, rsa.RSAPrivateKey):
+                raise TypeError("Padding is only supported for RSA keys")
+
+        return rust_x509.create_x509_crl(
+            self, private_key, algorithm, rsa_padding
+        )
 
 
 class RevokedCertificateBuilder:

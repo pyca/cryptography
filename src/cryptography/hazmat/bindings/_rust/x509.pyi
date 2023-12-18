@@ -24,18 +24,19 @@ def create_x509_certificate(
     builder: x509.CertificateBuilder,
     private_key: PrivateKeyTypes,
     hash_algorithm: hashes.HashAlgorithm | None,
-    padding: PKCS1v15 | PSS | None,
+    rsa_padding: PKCS1v15 | PSS | None,
 ) -> x509.Certificate: ...
 def create_x509_csr(
     builder: x509.CertificateSigningRequestBuilder,
     private_key: PrivateKeyTypes,
     hash_algorithm: hashes.HashAlgorithm | None,
-    padding: PKCS1v15 | PSS | None,
+    rsa_padding: PKCS1v15 | PSS | None,
 ) -> x509.CertificateSigningRequest: ...
 def create_x509_crl(
     builder: x509.CertificateRevocationListBuilder,
     private_key: PrivateKeyTypes,
     hash_algorithm: hashes.HashAlgorithm | None,
+    rsa_padding: PKCS1v15 | PSS | None,
 ) -> x509.CertificateRevocationList: ...
 def create_server_verifier(
     name: x509.verification.Subject,

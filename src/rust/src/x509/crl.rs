@@ -195,6 +195,17 @@ impl CertificateRevocationList {
     }
 
     #[getter]
+    fn signature_algorithm_parameters<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<&'p pyo3::PyAny> {
+        sign::identify_signature_algorithm_parameters(
+            py,
+            &self.owned.borrow_dependent().signature_algorithm,
+        )
+    }
+
+    #[getter]
     fn signature(&self) -> &[u8] {
         self.owned.borrow_dependent().signature_value.as_bytes()
     }
@@ -594,13 +605,10 @@ fn create_x509_crl(
     builder: &pyo3::PyAny,
     private_key: &pyo3::PyAny,
     hash_algorithm: &pyo3::PyAny,
+    rsa_padding: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateRevocationList> {
-    let sigalg = x509::sign::compute_signature_algorithm(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-    )?;
+    let sigalg =
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder
         .getattr(pyo3::intern!(py, "_revoked_certificates"))?
@@ -648,13 +656,8 @@ fn create_x509_crl(
     };
 
     let tbs_bytes = asn1::write_single(&tbs_cert_list)?;
-    let signature = x509::sign::sign_data(
-        py,
-        private_key,
-        hash_algorithm,
-        py.None().into_ref(py),
-        &tbs_bytes,
-    )?;
+    let signature =
+        x509::sign::sign_data(py, private_key, hash_algorithm, rsa_padding, &tbs_bytes)?;
     let data = asn1::write_single(&crl::CertificateRevocationList {
         tbs_cert_list,
         signature_algorithm: sigalg,

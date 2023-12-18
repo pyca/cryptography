@@ -18,12 +18,16 @@ Changelog
   values, as documented in the 41.0.2 release notes.
 * Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
 * Support :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` for
-  X.509 certificate signing requests with the keyword-only argument
-  ``rsa_padding`` on
-  :meth:`~cryptography.x509.CertificateSigningRequestBuilder.sign`.
+  X.509 certificate signing requests and certificate revocation lists with the
+  keyword-only argument ``rsa_padding`` on the ``sign`` methods for
+  :class:`~cryptography.x509.CertificateSigningRequestBuilder` and
+  :class:`~cryptography.x509.CertificateRevocationListBuilder`.
 * Added support for obtaining X.509 certificate signing request signature
   algorithm parameters (including PSS) via
   :meth:`~cryptography.x509.CertificateSigningRequest.signature_algorithm_parameters`.
+* Added support for obtaining X.509 certificate revocation list signature
+  algorithm parameters (including PSS) via
+  :meth:`~cryptography.x509.CertificateRevocationList.signature_algorithm_parameters`.
 * Added `mgf` property to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
 * Added `algorithm` and `mgf` properties to
