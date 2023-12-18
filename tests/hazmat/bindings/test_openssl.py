@@ -72,7 +72,7 @@ class TestOpenSSL:
             -1,
         )
         with pytest.raises(InternalError) as exc_info:
-            _openssl_assert(b.lib, False)
+            _openssl_assert(False)
 
         error = exc_info.value.err_code[0]
         assert error.lib == b.lib.ERR_LIB_EVP
