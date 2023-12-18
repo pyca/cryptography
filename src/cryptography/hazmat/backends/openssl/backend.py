@@ -150,7 +150,7 @@ class Backend:
         ok: bool,
         errors: list[rust_openssl.OpenSSLError] | None = None,
     ) -> None:
-        return binding._openssl_assert(self._lib, ok, errors=errors)
+        return binding._openssl_assert(ok, errors=errors)
 
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that

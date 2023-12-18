@@ -18,7 +18,6 @@ from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
 def _openssl_assert(
-    lib,
     ok: bool,
     errors: list[openssl.OpenSSLError] | None = None,
 ) -> None:
@@ -86,18 +85,18 @@ class Binding:
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
-        _openssl_assert(self.lib, self.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
+        _openssl_assert(self.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
         self._base_provider = self.lib.OSSL_PROVIDER_load(
             self.ffi.NULL, b"base"
         )
-        _openssl_assert(self.lib, self._base_provider != self.ffi.NULL)
+        _openssl_assert(self._base_provider != self.ffi.NULL)
         self.lib._fips_provider = self.lib.OSSL_PROVIDER_load(
             self.ffi.NULL, b"fips"
         )
-        _openssl_assert(self.lib, self.lib._fips_provider != self.ffi.NULL)
+        _openssl_assert(self.lib._fips_provider != self.ffi.NULL)
 
         res = self.lib.EVP_default_properties_enable_fips(self.ffi.NULL, 1)
-        _openssl_assert(self.lib, res == 1)
+        _openssl_assert(res == 1)
 
     @classmethod
     def _ensure_ffi_initialized(cls) -> None:
@@ -125,9 +124,7 @@ class Binding:
                     cls._default_provider = cls.lib.OSSL_PROVIDER_load(
                         cls.ffi.NULL, b"default"
                     )
-                    _openssl_assert(
-                        cls.lib, cls._default_provider != cls.ffi.NULL
-                    )
+                    _openssl_assert(cls._default_provider != cls.ffi.NULL)
 
     @classmethod
     def init_static_locks(cls) -> None:
@@ -157,7 +154,6 @@ def _verify_package_version(version: str) -> None:
         )
 
     _openssl_assert(
-        _openssl.lib,
         _openssl.lib.OpenSSL_version_num() == openssl.openssl_version(),
     )
 
