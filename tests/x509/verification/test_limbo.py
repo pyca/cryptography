@@ -37,6 +37,12 @@ LIMBO_UNSUPPORTED_FEATURES = {
 }
 
 LIMBO_SKIP_TESTCASES = {
+    # We unconditionally count intermediate certificates for pathlen and max
+    # depth constraint purposes, even when self-issued.
+    # This is a violation of RFC 5280, but is consistent with Go's crypto/x509
+    # and Rust's webpki crate do.
+    "pathlen::self-issued-certs-pathlen",
+    "pathlen::max-chain-depth-1-self-issued",
     # We allow certificates with serial numbers of zero. This is
     # invalid under RFC 5280 but is widely violated by certs in common
     # trust stores.

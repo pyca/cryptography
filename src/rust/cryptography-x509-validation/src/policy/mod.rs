@@ -27,7 +27,6 @@ use cryptography_x509::oid::{
 };
 
 use self::extension::{ca, common, ee, Criticality, ExtensionPolicy};
-use crate::certificate::cert_is_self_issued;
 use crate::ops::CryptoOps;
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::ValidationError;
@@ -526,7 +525,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &Certificate<'_>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
-    ) -> Result<u8, ValidationError> {
+    ) -> Result<(), ValidationError> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer, current_depth, issuer_extensions)?;
 
@@ -562,13 +561,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ));
         }
 
-        // Self-issued issuers don't increase the working depth.
-        match cert_is_self_issued(issuer) {
-            true => Ok(current_depth),
-            false => Ok(current_depth.checked_add(1).ok_or_else(|| {
-                ValidationError::Other("current depth calculation overflowed".to_string())
-            })?),
-        }
+        Ok(())
     }
 }
 

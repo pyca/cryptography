@@ -163,23 +163,8 @@ impl<'a> AccumulatedNameConstraints<'a> {
 pub struct Intermediates<'a>(HashSet<Certificate<'a>>);
 
 impl<'a> Intermediates<'a> {
-    fn new<B: CryptoOps>(
-        intermediates: impl IntoIterator<Item = Certificate<'a>>,
-        policy: &Policy<'_, B>,
-    ) -> Result<Self, ValidationError> {
-        Ok(Self(
-            intermediates
-                .into_iter()
-                .map(
-                    |intermediate| match cert_is_self_signed(&intermediate, &policy.ops) {
-                        true => Err(ValidationError::Other(
-                            "self-signed certificate cannot be an intermediate".to_string(),
-                        )),
-                        false => Ok(intermediate),
-                    },
-                )
-                .collect::<Result<_, _>>()?,
-        ))
+    fn new(intermediates: impl IntoIterator<Item = Certificate<'a>>) -> Self {
+        Self(intermediates.into_iter().collect())
     }
 }
 
@@ -191,7 +176,7 @@ pub fn verify<'a, 'chain, B: CryptoOps>(
     policy: &Policy<'_, B>,
     store: &'a Store<'chain>,
 ) -> Result<Chain<'chain>, ValidationError> {
-    let builder = ChainBuilder::new(Intermediates::new(intermediates, policy)?, policy, store);
+    let builder = ChainBuilder::new(Intermediates::new(intermediates), policy, store);
 
     builder.build_chain(leaf)
 }
@@ -252,29 +237,15 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         &self,
         working_cert: &'a Certificate<'chain>,
         current_depth: u8,
-        is_leaf: bool,
         working_cert_extensions: &'a Extensions<'chain>,
         accumulated_constraints: &'a mut AccumulatedNameConstraints<'chain>,
     ) -> Result<Chain<'chain>, ValidationError> {
-        if current_depth > self.policy.max_chain_depth {
-            return Err(ValidationError::Other(
-                "chain construction exceeds max depth".into(),
-            ));
-        }
-
         // Per RFC 5280: Name constraints are not applied
         // to subjects in self-issued certificates, *unless* the
         // certificate is the final certificate in the path.
         //
-        // Naively we'd check `current_depth == 0` to determine
-        // if we're checking the final certificate, but this
-        // isn't sufficient: self-issued certificates don't
-        // increase the depth, so we pass in a special-purpose
-        // `is_leaf` state that's only true on the first chain
-        // building step.
-        //
         // See: RFC 5280 4.2.1.10
-        let skip_name_constraints = cert_is_self_issued(working_cert) && !is_leaf;
+        let skip_name_constraints = cert_is_self_issued(working_cert) && current_depth != 0;
         if !skip_name_constraints {
             accumulated_constraints.accumulate_san(working_cert_extensions)?;
         }
@@ -285,6 +256,15 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // If it is, we've reached the end.
         if self.store.contains(working_cert) {
             return Ok(vec![working_cert.clone()]);
+        }
+
+        // Check that our current depth does not exceed our policy-configured
+        // max depth. We do this after the root set check, since the depth
+        // only measures the intermediate chain's length, not the root or leaf.
+        if current_depth > self.policy.max_chain_depth {
+            return Err(ValidationError::Other(
+                "chain construction exceeds max depth".into(),
+            ));
         }
 
         // Otherwise, we collect a list of potential issuers for this cert,
@@ -301,11 +281,29 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                 current_depth,
                 &issuer_extensions,
             ) {
-                Ok(next_depth) => {
+                Ok(_) => {
                     match self.build_chain_inner(
                         issuing_cert_candidate,
-                        next_depth,
-                        false,
+                        // NOTE(ww): According to RFC 5280, we should only
+                        // increase the chain depth when the certificate is **not**
+                        // self-issued. In practice however, implementations widely
+                        // ignore this requirement, and unconditionally increment
+                        // the depth with every chain member. We choose to do the same;
+                        // see `pathlen::self-issued-certs-pathlen` from x509-limbo
+                        // for the testcase we intentionally fail.
+                        //
+                        // Implementation note for someone looking to change this in the future:
+                        // care should be taken to avoid infinite recursion with self-signed
+                        // certificates in the intermediate set; changing this behavior will
+                        // also require a "is not self-signed" check on intermediate candidates.
+                        //
+                        // See https://gist.github.com/woodruffw/776153088e0df3fc2f0675c5e835f7b8
+                        // for an example of this change.
+                        current_depth.checked_add(1).ok_or_else(|| {
+                            ValidationError::Other(
+                                "current depth calculation overflowed".to_string(),
+                            )
+                        })?,
                         &issuer_extensions,
                         accumulated_constraints,
                     ) {
@@ -350,7 +348,6 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         let result = self.build_chain_inner(
             leaf,
             0,
-            true,
             &leaf_extensions,
             &mut AccumulatedNameConstraints::default(),
         );
