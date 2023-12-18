@@ -33,3 +33,20 @@ class AESOCB3:
         data: bytes,
         associated_data: bytes | None,
     ) -> bytes: ...
+
+class AESGCMSIV:
+    def __init__(self, key: bytes) -> None: ...
+    @staticmethod
+    def generate_key(key_size: int) -> bytes: ...
+    def encrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+    def decrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...

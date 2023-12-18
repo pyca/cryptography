@@ -9,6 +9,11 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.7.
+* **BACKWARDS INCOMPATIBLE:** Loading a PKCS7 with no content field using
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_pem_pkcs7_certificates`
+  or
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.load_der_pkcs7_certificates`
+  will now raise a ``ValueError`` rather than return an empty list.
 * Parsing SSH certificates no longer permits malformed critical options with
   values, as documented in the 41.0.2 release notes.
 * Updated the minimum supported Rust version (MSRV) to 1.63.0, from 1.56.0.
@@ -46,6 +51,9 @@ Changelog
 * In the next release (43.0.0) of cryptography, loading an X.509 certificate
   with a negative serial number will raise an exception. This has been
   deprecated since 36.0.0.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV` when using
+  OpenSSL 3.2.0+.
 
 .. _v41-0-7:
 

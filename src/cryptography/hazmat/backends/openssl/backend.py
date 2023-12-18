@@ -150,7 +150,7 @@ class Backend:
         ok: bool,
         errors: list[rust_openssl.OpenSSLError] | None = None,
     ) -> None:
-        return binding._openssl_assert(self._lib, ok, errors=errors)
+        return binding._openssl_assert(ok, errors=errors)
 
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
@@ -1111,12 +1111,15 @@ class Backend:
                 _Reasons.UNSUPPORTED_SERIALIZATION,
             )
 
-        certs: list[x509.Certificate] = []
         if p7.d.sign == self._ffi.NULL:
-            return certs
+            raise ValueError(
+                "The provided PKCS7 has no certificate data, but a cert "
+                "loading method was called."
+            )
 
         sk_x509 = p7.d.sign.cert
         num = self._lib.sk_X509_num(sk_x509)
+        certs: list[x509.Certificate] = []
         for i in range(num):
             x509 = self._lib.sk_X509_value(sk_x509, i)
             self.openssl_assert(x509 != self._ffi.NULL)

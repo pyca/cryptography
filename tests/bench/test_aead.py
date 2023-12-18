@@ -4,6 +4,7 @@
 
 import pytest
 
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
@@ -12,7 +13,13 @@ from cryptography.hazmat.primitives.ciphers.aead import (
     ChaCha20Poly1305,
 )
 
-from ..hazmat.primitives.test_aead import _aead_supported
+
+def _aead_supported(cls):
+    try:
+        cls(b"0" * 32)
+        return True
+    except UnsupportedAlgorithm:
+        return False
 
 
 @pytest.mark.skipif(

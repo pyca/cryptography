@@ -410,11 +410,121 @@ impl AesOcb3 {
     }
 }
 
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.aead",
+    name = "AESGCMSIV"
+)]
+struct AesGcmSiv {
+    ctx: EvpCipherAead,
+}
+
+#[pyo3::prelude::pymethods]
+impl AesGcmSiv {
+    #[new]
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcmSiv> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        let cipher_name = match key_buf.as_bytes().len() {
+            16 => "aes-128-gcm-siv",
+            24 => "aes-192-gcm-siv",
+            32 => "aes-256-gcm-siv",
+            _ => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "AES-GCM-SIV key must be 128, 192 or 256 bits.",
+                    ),
+                ))
+            }
+        };
+
+        cfg_if::cfg_if! {
+            if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
+                let _ = cipher_name;
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err((
+                        "AES-GCM-SIV is not supported by this version of OpenSSL",
+                        exceptions::Reasons::UNSUPPORTED_CIPHER,
+                    )),
+                ))
+            } else {
+                if cryptography_openssl::fips::is_enabled() {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "AES-GCM-SIV is not supported by this version of OpenSSL",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ));
+                }
+                let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
+                Ok(AesGcmSiv {
+                    ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, false)?,
+                })
+            }
+        }
+    }
+
+    #[staticmethod]
+    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+        if bit_length != 128 && bit_length != 192 && bit_length != 256 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
+            ));
+        }
+
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if data_bytes.is_empty() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
+            ));
+        };
+        if nonce_bytes.len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes long"),
+            ));
+        }
+        self.ctx.encrypt(py, data_bytes, aad, Some(nonce_bytes))
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+        if nonce_bytes.len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes long"),
+            ));
+        }
+        self.ctx
+            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+}
+
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "aead")?;
 
     m.add_class::<AesSiv>()?;
     m.add_class::<AesOcb3>()?;
+    m.add_class::<AesGcmSiv>()?;
 
     Ok(m)
 }

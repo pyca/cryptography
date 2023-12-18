@@ -145,10 +145,9 @@ def docs(session: nox.Session) -> None:
         "docs/_build/html",
     )
 
-    # This is in the docs job because `twine check` verifies that the README
-    # is valid reStructuredText.
-    session.run("python", "-m", "build", "--sdist")
-    session.run("twine", "check", "dist/*")
+    session.run(
+        "python3", "-m", "readme_renderer", "README.rst", "-o", "/dev/null"
+    )
 
 
 @nox.session(name="docs-linkcheck")

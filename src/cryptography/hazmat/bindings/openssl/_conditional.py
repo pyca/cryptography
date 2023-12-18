@@ -40,12 +40,6 @@ def cryptography_has_mem_functions() -> list[str]:
     ]
 
 
-def cryptography_has_x509_store_ctx_get_issuer() -> list[str]:
-    return [
-        "X509_STORE_set_get_issuer",
-    ]
-
-
 def cryptography_has_ed448() -> list[str]:
     return [
         "EVP_PKEY_ED448",
@@ -227,9 +221,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
     "Cryptography_HAS_EVP_PKEY_DHX": cryptography_has_evp_pkey_dhx,
     "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
-    "Cryptography_HAS_X509_STORE_CTX_GET_ISSUER": (
-        cryptography_has_x509_store_ctx_get_issuer
-    ),
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,

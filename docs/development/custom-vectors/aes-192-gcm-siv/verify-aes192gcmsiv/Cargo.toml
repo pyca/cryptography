@@ -1,0 +1,9 @@
+[package]
+name = "verify-aes192gcmsiv"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aes-gcm-siv = "0.11.1"
+aes = "0.8.1"
+hex = "0.4.3"

@@ -635,7 +635,7 @@ pub(crate) fn encode_distribution_point_reasons(
         let bit = reason_flag_mapping
             .get_item(py_reason?)?
             .extract::<usize>()?;
-        set_bit(&mut bits, bit, true)
+        set_bit(&mut bits, bit, true);
     }
     if bits[1] == 0 {
         bits.truncate(1);
