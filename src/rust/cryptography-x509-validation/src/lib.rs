@@ -75,8 +75,8 @@ impl<'a> AccumulatedNameConstraints<'a> {
                 match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
                     (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
                     (Some(_), None) => Err(ValidationError::Other(format!(
-                        "unsatisfiable DNS name constraint: NC {} cannot match SAN {}",
-                        pattern.0, name.0
+                        "unsatisfiable DNS name constraint: malformed SAN {}",
+                        name.0
                     ))),
                     (None, _) => Err(ValidationError::Other(format!(
                         "malformed DNS name constraint: {}",
@@ -91,8 +91,8 @@ impl<'a> AccumulatedNameConstraints<'a> {
                 ) {
                     (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
                     (Some(_), None) => Err(ValidationError::Other(format!(
-                        "unsatisfiable IP name constraint: NC {:?} cannot match SAN {:?}",
-                        pattern, name,
+                        "unsatisfiable IP name constraint: malformed SAN {:?}",
+                        name,
                     ))),
                     (None, _) => Err(ValidationError::Other(format!(
                         "malformed IP name constraints: {:?}",
@@ -109,7 +109,10 @@ impl<'a> AccumulatedNameConstraints<'a> {
     ///
     /// On success (no constraint violations found), the new constraints
     /// are additionally added to the name constraint set for future checks.
-    fn apply_and_accumulate(&mut self, extensions: &Extensions<'a>) -> Result<(), ValidationError> {
+    fn apply_and_accumulate_name_constraints(
+        &mut self,
+        extensions: &Extensions<'a>,
+    ) -> Result<(), ValidationError> {
         let new_constraints = match extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             Some(nc) => Some(nc.value::<NameConstraints<'a>>()?),
             None => None,
@@ -160,14 +163,6 @@ impl<'a> AccumulatedNameConstraints<'a> {
     }
 }
 
-pub struct Intermediates<'a>(HashSet<Certificate<'a>>);
-
-impl<'a> Intermediates<'a> {
-    fn new(intermediates: impl IntoIterator<Item = Certificate<'a>>) -> Self {
-        Self(intermediates.into_iter().collect())
-    }
-}
-
 pub type Chain<'c> = Vec<Certificate<'c>>;
 
 pub fn verify<'a, 'chain, B: CryptoOps>(
@@ -176,13 +171,13 @@ pub fn verify<'a, 'chain, B: CryptoOps>(
     policy: &Policy<'_, B>,
     store: &'a Store<'chain>,
 ) -> Result<Chain<'chain>, ValidationError> {
-    let builder = ChainBuilder::new(Intermediates::new(intermediates), policy, store);
+    let builder = ChainBuilder::new(intermediates.into_iter().collect(), policy, store);
 
     builder.build_chain(leaf)
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
-    intermediates: Intermediates<'chain>,
+    intermediates: HashSet<Certificate<'chain>>,
     policy: &'a Policy<'a, B>,
     store: &'a Store<'chain>,
 }
@@ -208,7 +203,7 @@ impl ApplyNameConstraintStatus {
 
 impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: Intermediates<'chain>,
+        intermediates: HashSet<Certificate<'chain>>,
         policy: &'a Policy<'a, B>,
         store: &'a Store<'chain>,
     ) -> Self {
@@ -229,7 +224,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // * Search by AKI and other identifiers?
         self.store
             .iter()
-            .chain(self.intermediates.0.iter())
+            .chain(self.intermediates.iter())
             .filter(|&candidate| candidate.subject() == cert.issuer())
     }
 
@@ -242,7 +237,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     ) -> Result<Chain<'chain>, ValidationError> {
         // Per RFC 5280: Name constraints are not applied
         // to subjects in self-issued certificates, *unless* the
-        // certificate is the final certificate in the path.
+        // certificate is the final (i.e., leaf) certificate in the path.
         //
         // See: RFC 5280 4.2.1.10
         let skip_name_constraints = cert_is_self_issued(working_cert) && current_depth != 0;
@@ -250,7 +245,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             accumulated_constraints.accumulate_san(working_cert_extensions)?;
         }
 
-        accumulated_constraints.apply_and_accumulate(working_cert_extensions)?;
+        accumulated_constraints.apply_and_accumulate_name_constraints(working_cert_extensions)?;
 
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
