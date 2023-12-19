@@ -58,6 +58,7 @@ jobs:
       matrix:
         PYTHON:
           - { VERSION: "cp311-cp311", ABI_VERSION: 'cp37' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'cp39' }
           - { VERSION: "pp39-pypy39_pp73" }
           - { VERSION: "pp310-pypy310_pp73" }
         MANYLINUX:
@@ -154,7 +155,7 @@ jobs:
       - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}"
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: cryptography-wheelhouse/
 
   macos:
@@ -166,6 +167,18 @@ jobs:
         PYTHON:
           - VERSION: '3.11'
             ABI_VERSION: 'cp37'
+            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
+            DEPLOYMENT_TARGET: '10.12'
+            # This archflags is default, but let's be explicit
+            ARCHFLAGS: '-arch x86_64 -arch arm64'
+            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
+            # This will change in the future as we change the base Python we
+            # build against
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+          - VERSION: '3.11'
+            ABI_VERSION: 'cp39'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
@@ -281,6 +294,7 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.11", "ABI_VERSION": "cp37"}
+          - {VERSION: "3.11", "ABI_VERSION": "cp39"}
           - {VERSION: "pypy-3.9"}
           - {VERSION: "pypy-3.10"}
         exclude:
@@ -348,5 +362,5 @@ jobs:
       - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
       - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION}}"
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: cryptography-wheelhouse\
