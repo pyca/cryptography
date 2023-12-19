@@ -400,7 +400,8 @@ pub(crate) mod common {
 #[cfg(test)]
 mod tests {
     use super::{Criticality, ExtensionPolicy};
-    use crate::ops::tests::{cert, v1_cert_pem, NullOps};
+    use crate::certificate::tests::PublicKeyErrorOps;
+    use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
     use crate::policy::{Policy, Subject, ValidationError};
     use crate::types::DNSName;
@@ -462,7 +463,7 @@ mod tests {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
+        let ops = PublicKeyErrorOps {};
         let policy = Policy::new(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
@@ -511,7 +512,7 @@ mod tests {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
+        let ops = PublicKeyErrorOps {};
         let policy = Policy::new(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
@@ -552,7 +553,7 @@ mod tests {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
+        let ops = PublicKeyErrorOps {};
         let policy = Policy::new(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
@@ -589,7 +590,7 @@ mod tests {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
+        let ops = PublicKeyErrorOps {};
         let policy = Policy::new(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
@@ -622,7 +623,7 @@ mod tests {
         // The certificate doesn't get used for this validator, so the certificate we use isn't important.
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
+        let ops = PublicKeyErrorOps {};
         let policy = Policy::new(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),

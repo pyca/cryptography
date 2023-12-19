@@ -11,7 +11,7 @@ pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use crate::certificate::Certificate;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
@@ -51,7 +51,7 @@ Xw4nMqk=
         assert!(cert_is_self_issued(&cert));
     }
 
-    struct PublicKeyErrorOps {}
+    pub(crate) struct PublicKeyErrorOps {}
     impl CryptoOps for PublicKeyErrorOps {
         type Key = ();
         type Err = ();

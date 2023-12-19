@@ -25,26 +25,6 @@ pub trait CryptoOps {
 pub(crate) mod tests {
     use cryptography_x509::certificate::Certificate;
 
-    use super::CryptoOps;
-
-    pub(crate) struct NullOps {}
-    impl CryptoOps for NullOps {
-        type Key = ();
-        type Err = ();
-
-        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
-            Ok(())
-        }
-
-        fn verify_signed_by(
-            &self,
-            _cert: &Certificate<'_>,
-            _key: Self::Key,
-        ) -> Result<(), Self::Err> {
-            Ok(())
-        }
-    }
-
     pub(crate) fn v1_cert_pem() -> pem::Pem {
         pem::parse(
             "
