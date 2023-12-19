@@ -139,9 +139,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
                         "no permitted name constraints matched SAN".into(),
                     ));
                 }
-            }
 
-            for nc in self.name_constraints.iter().chain(new_constraints.iter()) {
                 if let Some(excluded_subtrees) = &nc.excluded_subtrees {
                     for e in excluded_subtrees.unwrap_read().clone() {
                         let status = self.apply_inner(&e.base, san)?;
