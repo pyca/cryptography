@@ -476,7 +476,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
             if bc
                 .path_length
-                .map_or(false, |len| current_depth.into() > len)
+                .map_or(false, |len| u64::from(current_depth) > len)
             {
                 return Err(ValidationError::Other(
                     "path length constraint violated".to_string(),
