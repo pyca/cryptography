@@ -132,7 +132,7 @@ def _limbo_testcase(id_, testcase):
 def test_limbo(subtests, pytestconfig):
     limbo_root = pytestconfig.getoption("--x509-limbo-root", skip=True)
     limbo_path = os.path.join(limbo_root, "limbo.json")
-    with open(limbo_path) as limbo_file:
+    with open(limbo_path, mode="rb") as limbo_file:
         limbo = json.load(limbo_file)
         testcases = limbo["testcases"]
         for testcase in testcases:
