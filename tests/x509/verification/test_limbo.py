@@ -78,16 +78,14 @@ def _limbo_testcase(id_, testcase):
         return
 
     features = testcase["features"]
-    if features is not None and LIMBO_UNSUPPORTED_FEATURES.intersection(
-        features
-    ):
+    if LIMBO_UNSUPPORTED_FEATURES.intersection(features):
         return
     assert testcase["validation_kind"] == "SERVER"
-    assert testcase["signature_algorithms"] is None
-    assert testcase["extended_key_usage"] is None or testcase[
+    assert testcase["signature_algorithms"] == []
+    assert testcase["extended_key_usage"] == [] or testcase[
         "extended_key_usage"
     ] == ["serverAuth"]
-    assert testcase["expected_peer_names"] is None
+    assert testcase["expected_peer_names"] == []
 
     trusted_certs = [
         load_pem_x509_certificate(cert.encode())
