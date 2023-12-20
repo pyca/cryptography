@@ -134,9 +134,6 @@ class Backend:
             typing.Callable,
         ] = {}
         self._register_default_ciphers()
-        self._dh_types = [self._lib.EVP_PKEY_DH]
-        if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
-            self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def __repr__(self) -> str:
         return "<OpenSSLBackend(version: {}, FIPS: {}, Legacy: {})>".format(
