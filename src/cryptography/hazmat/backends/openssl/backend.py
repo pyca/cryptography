@@ -754,8 +754,6 @@ class Backend:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
         return True
 
     def x448_supported(self) -> bool:
