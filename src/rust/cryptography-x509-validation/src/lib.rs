@@ -65,7 +65,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
         Ok(())
     }
 
-    fn apply_inner(
+    fn apply_single_constraint(
         &self,
         constraint: &GeneralName<'a>,
         san: &GeneralName<'_>,
@@ -124,7 +124,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
             for nc in self.name_constraints.iter().chain(new_constraints.iter()) {
                 if let Some(permitted_subtrees) = &nc.permitted_subtrees {
                     for p in permitted_subtrees.unwrap_read().clone() {
-                        let status = self.apply_inner(&p.base, san)?;
+                        let status = self.apply_single_constraint(&p.base, san)?;
                         if status.is_applied() {
                             permit = status.is_match();
                             if permit {
@@ -142,7 +142,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
 
                 if let Some(excluded_subtrees) = &nc.excluded_subtrees {
                     for e in excluded_subtrees.unwrap_read().clone() {
-                        let status = self.apply_inner(&e.base, san)?;
+                        let status = self.apply_single_constraint(&e.base, san)?;
                         if status.is_match() {
                             return Err(ValidationError::Other(
                                 "excluded name constraint matched SAN".into(),
