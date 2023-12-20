@@ -338,15 +338,11 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         self.policy.permits_leaf(leaf, &leaf_extensions)?;
 
-        let result = self.build_chain_inner(
+        self.build_chain_inner(
             leaf,
             0,
             &leaf_extensions,
             &mut AccumulatedNameConstraints::default(),
-        );
-        match result {
-            Ok(chain) => Ok(chain),
-            Err(error) => Err(error),
-        }
+        )
     }
 }
