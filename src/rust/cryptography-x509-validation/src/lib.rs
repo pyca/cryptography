@@ -74,7 +74,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
             (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
                 match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
                     (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
-                    (Some(_), None) => Err(ValidationError::Other(format!(
+                    (_, None) => Err(ValidationError::Other(format!(
                         "unsatisfiable DNS name constraint: malformed SAN {}",
                         name.0
                     ))),
@@ -90,7 +90,7 @@ impl<'a> AccumulatedNameConstraints<'a> {
                     IPAddress::from_bytes(name),
                 ) {
                     (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
-                    (Some(_), None) => Err(ValidationError::Other(format!(
+                    (_, None) => Err(ValidationError::Other(format!(
                         "unsatisfiable IP name constraint: malformed SAN {:?}",
                         name,
                     ))),
