@@ -121,6 +121,8 @@ def _limbo_testcase(id_, testcase):
 
         # Assert that the verifier returns chains in [EE, ..., TA] order.
         assert built_chain[0] == peer_certificate
+        for intermediate in built_chain[1:-1]:
+            assert intermediate in untrusted_intermediates
         assert built_chain[-1] in trusted_certs
     else:
         with pytest.raises(VerificationError):
