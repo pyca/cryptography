@@ -50,25 +50,32 @@ impl From<DuplicateExtensionsError> for ValidationError {
 }
 
 #[derive(Default)]
-struct AccumulatedNameConstraints<'a> {
-    sans: Vec<GeneralName<'a>>,
-    name_constraints: Vec<NameConstraints<'a>>,
+struct NameChain<'a, 'chain> {
+    child: Option<&'a NameChain<'a, 'chain>>,
+    sans: Vec<GeneralName<'chain>>,
 }
 
-impl<'a> AccumulatedNameConstraints<'a> {
-    fn accumulate_san(&mut self, extensions: &Extensions<'a>) -> Result<(), ValidationError> {
-        if let Some(sans) = extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-            let sans: SubjectAlternativeName<'_> = sans.value()?;
-            self.sans.extend(sans);
-        }
+impl<'a, 'chain> NameChain<'a, 'chain> {
+    fn new(
+        child: Option<&'a NameChain<'a, 'chain>>,
+        extensions: &Extensions<'chain>,
+        self_issued_intermediate: bool,
+    ) -> Result<Self, ValidationError> {
+        let sans = match (
+            self_issued_intermediate,
+            extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID),
+        ) {
+            (false, Some(sans)) => sans.value::<SubjectAlternativeName<'chain>>()?.collect(),
+            _ => vec![],
+        };
 
-        Ok(())
+        Ok(Self { child, sans })
     }
 
-    fn apply_single_constraint(
+    fn evaluate_single_constraint(
         &self,
-        constraint: &GeneralName<'a>,
-        san: &GeneralName<'_>,
+        constraint: &GeneralName<'chain>,
+        san: &GeneralName<'chain>,
     ) -> Result<ApplyNameConstraintStatus, ValidationError> {
         match (constraint, san) {
             (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
@@ -104,57 +111,45 @@ impl<'a> AccumulatedNameConstraints<'a> {
         }
     }
 
-    /// Apply the current name constraints (including those in the specified
-    /// extensions, if any) to the accumulated SAN set.
-    ///
-    /// On success (no constraint violations found), the new constraints
-    /// are additionally added to the name constraint set for future checks.
-    fn apply_and_accumulate_name_constraints(
-        &mut self,
-        extensions: &Extensions<'a>,
+    fn evaluate_constraints(
+        &self,
+        constraints: &NameConstraints<'chain>,
     ) -> Result<(), ValidationError> {
-        let new_constraints = match extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            Some(nc) => Some(nc.value::<NameConstraints<'a>>()?),
-            None => None,
-        };
+        if let Some(child) = self.child {
+            child.evaluate_constraints(constraints)?;
+        }
 
         for san in &self.sans {
             // If there are no applicable constraints, the SAN is considered valid so the default is true.
             let mut permit = true;
-            for nc in self.name_constraints.iter().chain(new_constraints.iter()) {
-                if let Some(permitted_subtrees) = &nc.permitted_subtrees {
-                    for p in permitted_subtrees.unwrap_read().clone() {
-                        let status = self.apply_single_constraint(&p.base, san)?;
-                        if status.is_applied() {
-                            permit = status.is_match();
-                            if permit {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if !permit {
-                    return Err(ValidationError::Other(
-                        "no permitted name constraints matched SAN".into(),
-                    ));
-                }
-
-                if let Some(excluded_subtrees) = &nc.excluded_subtrees {
-                    for e in excluded_subtrees.unwrap_read().clone() {
-                        let status = self.apply_single_constraint(&e.base, san)?;
-                        if status.is_match() {
-                            return Err(ValidationError::Other(
-                                "excluded name constraint matched SAN".into(),
-                            ));
+            if let Some(permitted_subtrees) = &constraints.permitted_subtrees {
+                for p in permitted_subtrees.unwrap_read().clone() {
+                    let status = self.evaluate_single_constraint(&p.base, san)?;
+                    if status.is_applied() {
+                        permit = status.is_match();
+                        if permit {
+                            break;
                         }
                     }
                 }
             }
-        }
 
-        if let Some(new_constraints) = new_constraints {
-            self.name_constraints.push(new_constraints);
+            if !permit {
+                return Err(ValidationError::Other(
+                    "no permitted name constraints matched SAN".into(),
+                ));
+            }
+
+            if let Some(excluded_subtrees) = &constraints.excluded_subtrees {
+                for e in excluded_subtrees.unwrap_read().clone() {
+                    let status = self.evaluate_single_constraint(&e.base, san)?;
+                    if status.is_match() {
+                        return Err(ValidationError::Other(
+                            "excluded name constraint matched SAN".into(),
+                        ));
+                    }
+                }
+            }
         }
 
         Ok(())
@@ -231,19 +226,11 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         working_cert: &'a Certificate<'chain>,
         current_depth: u8,
         working_cert_extensions: &'a Extensions<'chain>,
-        accumulated_constraints: &'a mut AccumulatedNameConstraints<'chain>,
+        name_chain: NameChain<'a, 'chain>,
     ) -> Result<Chain<'chain>, ValidationError> {
-        // Per RFC 5280: Name constraints are not applied
-        // to subjects in self-issued certificates, *unless* the
-        // certificate is the final (i.e., leaf) certificate in the path.
-        //
-        // See: RFC 5280 4.2.1.10
-        let skip_name_constraints = cert_is_self_issued(working_cert) && current_depth != 0;
-        if !skip_name_constraints {
-            accumulated_constraints.accumulate_san(working_cert_extensions)?;
+        if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
+            name_chain.evaluate_constraints(&nc.value()?)?;
         }
-
-        accumulated_constraints.apply_and_accumulate_name_constraints(working_cert_extensions)?;
 
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
@@ -298,7 +285,16 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                             )
                         })?,
                         &issuer_extensions,
-                        accumulated_constraints,
+                        NameChain::new(
+                            Some(&name_chain),
+                            &issuer_extensions,
+                            // Per RFC 5280 4.2.1.10: Name constraints are not applied
+                            // to subjects in self-issued certificates, *unless* the
+                            // certificate is the "final" (i.e., leaf) certificate in the path.
+                            // We accomplish this by only collecting the SANs when the issuing
+                            // candidate (which is a non-leaf by definition) isn't self-issued.
+                            cert_is_self_issued(issuing_cert_candidate),
+                        )?,
                     ) {
                         Ok(mut chain) => {
                             chain.insert(0, working_cert.clone());
@@ -342,7 +338,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             leaf,
             0,
             &leaf_extensions,
-            &mut AccumulatedNameConstraints::default(),
+            NameChain::new(None, &leaf_extensions, false)?,
         )
     }
 }
