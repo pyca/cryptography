@@ -438,6 +438,24 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         leaf: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
+        // Regardless of whether it's a CA or an EE, we expect our leaf certificate to have a
+        // SAN for matching against the policy.
+        match extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
+            Some(san) => {
+                let san: SubjectAlternativeName<'_> = san.value()?;
+                if !self.subject.matches(&san) {
+                    return Err(ValidationError::Other(
+                        "leaf certificate has no matching subjectAltName".into(),
+                    ));
+                }
+            }
+            None => {
+                return Err(ValidationError::Other(
+                    "leaf certificate has no subjectAltName".into(),
+                ))
+            }
+        }
+
         // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
         // Code like this will propagate irrelevant error messages out of the API.
         if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
