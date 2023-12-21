@@ -15,9 +15,7 @@ use cryptography_x509::common::{
     PSS_SHA256_HASH_ALG, PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG,
     PSS_SHA512_HASH_ALG, PSS_SHA512_MASK_GEN_ALG,
 };
-use cryptography_x509::extensions::{
-    BasicConstraints, Extensions, KeyUsage, SubjectAlternativeName,
-};
+use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
@@ -312,7 +310,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     None,
                 ),
                 // 5280 4.2.1.3: Key Usage
-                ExtensionPolicy::maybe_present(KEY_USAGE_OID, Criticality::Agnostic, None),
+                ExtensionPolicy::maybe_present(
+                    KEY_USAGE_OID,
+                    Criticality::Agnostic,
+                    Some(ee::key_usage),
+                ),
                 // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
                 ExtensionPolicy::present(
                     SUBJECT_ALTERNATIVE_NAME_OID,
@@ -435,29 +437,18 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
     /// Checks whether the given "leaf" certificate is compatible with this policy.
     ///
-    /// A "leaf" certificate is just the certificate in the leaf position during
-    /// path validation, whether it be a CA or EE. As such, `permits_leaf`
-    /// is logically equivalent to `permits_ee(leaf) || permits_ca(leaf)`.
+    /// A "leaf" certificate is conceptually any certificate in the "leaf" position,
+    /// whether it's a CA or EE. However, this function currently only accepts
+    /// EEs in the leaf position, which is consistent with what CABF stipulates.
     pub(crate) fn permits_leaf(
         &self,
         leaf: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
-        // Code like this will propagate irrelevant error messages out of the API.
-        match extensions.get_extension(&KEY_USAGE_OID) {
-            Some(key_usage) => {
-                let key_usage: KeyUsage<'_> = key_usage.value()?;
-                if key_usage.key_cert_sign() {
-                    self.permits_ca(leaf, 0, extensions)?;
-                } else {
-                    self.permits_ee(leaf, extensions)?;
-                }
-            }
-            // No keyUsage extension implies an EE cert, since CA certs have
-            // keyUsage as a matter of policy.
-            None => self.permits_ee(leaf, extensions)?,
-        };
+        // In the future this could be made into a check on the `keyUsage`,
+        // with a dispatch to either `permits_ca` or `permits_ca` depending
+        // on whether `keyCertSign` is asserted.
+        self.permits_ee(leaf, extensions)?;
 
         // Regardless of whether it's a CA or an EE, we expect our leaf certificate to have a
         // SAN for matching against the policy.

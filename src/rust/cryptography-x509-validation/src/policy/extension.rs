@@ -164,7 +164,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, ExtendedKeyUsage, Extension},
+        extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage},
     };
 
     use crate::{
@@ -237,6 +237,24 @@ pub(crate) mod ee {
         } else {
             Ok(())
         }
+    }
+
+    pub(crate) fn key_usage<B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), ValidationError> {
+        if let Some(extn) = extn {
+            let key_usage: KeyUsage<'_> = extn.value()?;
+
+            if key_usage.key_cert_sign() {
+                return Err(ValidationError::Other(
+                    "EE keyUsage must not assert keyCertSign".to_string(),
+                ));
+            }
+        }
+
+        Ok(())
     }
 }
 
