@@ -571,6 +571,8 @@ fn permits_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
     // NOTE: The inverse check on `asn1::UtcTime` is already done for us
     // by the variant's constructor.
     if let Time::GeneralizedTime(_) = validity_date {
+        // NOTE: This is technically wrong for certificates issued before 1950,
+        // but this does not matter in practice.
         if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
             return Err(ValidationError::Other(
                 "validity dates before generalized date cutoff must be UtcTime".to_string(),

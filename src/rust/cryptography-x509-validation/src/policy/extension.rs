@@ -355,6 +355,7 @@ pub(crate) mod common {
     use cryptography_x509::{
         certificate::Certificate,
         extensions::{ExtendedKeyUsage, Extension, SequenceOfAccessDescriptions},
+        oid::EKU_ANY_KEY_USAGE_OID,
     };
 
     use crate::{
@@ -384,9 +385,9 @@ pub(crate) mod common {
         if let Some(extn) = extn {
             let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
-            // NOTE: Exact match for now because CABF says that EE certs
-            // MUST NOT contain anyExtendedKeyUsage.
-            if ekus.any(|eku| eku == policy.extended_key_usage) {
+            // NOTE: CABF explicitly forbids anyEKU in all EEs and most CA certs,
+            // but this is widely (universally?) ignored by other implementations.
+            if ekus.any(|eku| eku == policy.extended_key_usage || eku == EKU_ANY_KEY_USAGE_OID) {
                 Ok(())
             } else {
                 Err(ValidationError::Other("required EKU not found".to_string()))
