@@ -22,7 +22,7 @@ for various cryptographic algorithms. These are not included in the repository
 continuous integration environments.
 
 We have ensured all test vectors are used as of commit
-``b063b4aedae951c69df014cd25fa6d69ae9e8cb9``.
+``d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d``.
 
 Asymmetric ciphers
 ~~~~~~~~~~~~~~~~~~
