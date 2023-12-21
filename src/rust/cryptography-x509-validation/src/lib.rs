@@ -49,7 +49,6 @@ impl From<DuplicateExtensionsError> for ValidationError {
     }
 }
 
-#[derive(Default)]
 struct NameChain<'a, 'chain> {
     child: Option<&'a NameChain<'a, 'chain>>,
     sans: Vec<GeneralName<'chain>>,
