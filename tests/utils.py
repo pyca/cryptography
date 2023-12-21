@@ -918,8 +918,8 @@ class WycheproofTest:
         return cache_val
 
 
-def load_wycheproof_tests(wycheproof, test_file):
-    path = os.path.join(wycheproof, "testvectors", test_file)
+def load_wycheproof_tests(wycheproof, test_file, subdir):
+    path = os.path.join(wycheproof, subdir, test_file)
     with open(path) as f:
         data = json.load(f)
         for group in data.pop("testGroups"):
