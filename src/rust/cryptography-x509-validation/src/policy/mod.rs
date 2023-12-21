@@ -450,22 +450,23 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // on whether `keyCertSign` is asserted.
         self.permits_ee(leaf, extensions)?;
 
-        // Regardless of whether it's a CA or an EE, we expect our leaf certificate to have a
-        // SAN for matching against the policy.
-        match extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
-            Some(san) => {
-                let san: SubjectAlternativeName<'_> = san.value()?;
-                if !self.subject.matches(&san) {
-                    return Err(ValidationError::Other(
-                        "leaf certificate has no matching subjectAltName".into(),
-                    ));
-                }
-            }
-            None => {
-                return Err(ValidationError::Other(
-                    "leaf certificate has no subjectAltName".into(),
-                ))
-            }
+        // No matter what, we expect our leaf certificate to have a SAN for
+        // matching against the policy.
+        //
+        // NOTE: The unwrap here is intentional and safe: we assert the
+        // presence of the SAN as a matter of EE policy
+        // (see `policy::extension::ee::subject_alternative_name`),
+        // so we cannot have a missing SAN after calling `permits_ee`.
+        // Consequently, we unwrap to bypass the coverage gap (since
+        // we'd never be able to reach a "no SAN" condition here).
+        let san: SubjectAlternativeName<'_> = extensions
+            .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
+            .unwrap()
+            .value()?;
+        if !self.subject.matches(&san) {
+            return Err(ValidationError::Other(
+                "leaf certificate has no matching subjectAltName".into(),
+            ));
         }
 
         Ok(())
