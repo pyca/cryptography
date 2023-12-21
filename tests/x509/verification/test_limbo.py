@@ -60,6 +60,10 @@ LIMBO_SKIP_TESTCASES = {
     # forbidden under CABF. This is consistent with what
     # Go's crypto/x509 and Rust's webpki crate do.
     "webpki::aki::root-with-aki-ski-mismatch",
+    # We allow CAs in the leaf position, which are explicitly forbidden by
+    # CABF but allowed under RFC 5280. This is consistent with Go's
+    # crypto/x509 and OpenSSL, but inconsistent with rustls and webpki.
+    "webpki::ca-as-leaf",
 }
 
 

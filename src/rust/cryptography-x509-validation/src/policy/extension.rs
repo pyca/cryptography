@@ -164,7 +164,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, Extension},
+        extensions::{BasicConstraints, ExtendedKeyUsage, Extension},
     };
 
     use crate::{
@@ -214,14 +214,40 @@ pub(crate) mod ee {
         // NOTE: SAN matching is performed in `Policy::permits_leaf`.
         Ok(())
     }
+
+    pub(crate) fn extended_key_usage<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), ValidationError> {
+        if let Some(extn) = extn {
+            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
+
+            // CABF requires EKUs in EE certs, but this is widely ignored
+            // by implementations (which treat a missing EKU as "any EKU").
+            // On the other hand, if the EKU is present, it **must** be
+            // the one specified in the policy (e.g., `serverAuth`) and
+            // **must not** be the explicit `anyExtendedKeyUsage` EKU.
+            // See: CABF 7.1.2.7.10.
+            if ekus.any(|eku| eku == policy.extended_key_usage) {
+                Ok(())
+            } else {
+                Err(ValidationError::Other("required EKU not found".to_string()))
+            }
+        } else {
+            Ok(())
+        }
+    }
 }
 
 pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
         extensions::{
-            AuthorityKeyIdentifier, BasicConstraints, Extension, KeyUsage, NameConstraints,
+            AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
+            NameConstraints,
         },
+        oid::EKU_ANY_KEY_USAGE_OID,
     };
 
     use crate::{
@@ -344,13 +370,32 @@ pub(crate) mod ca {
 
         Ok(())
     }
+
+    pub(crate) fn extended_key_usage<B: CryptoOps>(
+        policy: &Policy<'_, B>,
+        _cert: &Certificate<'_>,
+        extn: Option<&Extension<'_>>,
+    ) -> Result<(), ValidationError> {
+        if let Some(extn) = extn {
+            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
+
+            // NOTE: CABF explicitly forbids anyEKU in and most CA certs,
+            // but this is widely (universally?) ignored by other implementations.
+            if ekus.any(|eku| eku == policy.extended_key_usage || eku == EKU_ANY_KEY_USAGE_OID) {
+                Ok(())
+            } else {
+                Err(ValidationError::Other("required EKU not found".to_string()))
+            }
+        } else {
+            Ok(())
+        }
+    }
 }
 
 pub(crate) mod common {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{ExtendedKeyUsage, Extension, SequenceOfAccessDescriptions},
-        oid::EKU_ANY_KEY_USAGE_OID,
+        extensions::{Extension, SequenceOfAccessDescriptions},
     };
 
     use crate::{
@@ -370,26 +415,6 @@ pub(crate) mod common {
         }
 
         Ok(())
-    }
-
-    pub(crate) fn extended_key_usage<B: CryptoOps>(
-        policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
-        extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
-        if let Some(extn) = extn {
-            let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
-
-            // NOTE: CABF explicitly forbids anyEKU in all EEs and most CA certs,
-            // but this is widely (universally?) ignored by other implementations.
-            if ekus.any(|eku| eku == policy.extended_key_usage || eku == EKU_ANY_KEY_USAGE_OID) {
-                Ok(())
-            } else {
-                Err(ValidationError::Other("required EKU not found".to_string()))
-            }
-        } else {
-            Ok(())
-        }
     }
 }
 
