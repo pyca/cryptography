@@ -443,6 +443,22 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         leaf: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
+        // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
+        // Code like this will propagate irrelevant error messages out of the API.
+        match extensions.get_extension(&KEY_USAGE_OID) {
+            Some(key_usage) => {
+                let key_usage: KeyUsage<'_> = key_usage.value()?;
+                if key_usage.key_cert_sign() {
+                    self.permits_ca(leaf, 0, extensions)?;
+                } else {
+                    self.permits_ee(leaf, extensions)?;
+                }
+            }
+            // No keyUsage extension implies an EE cert, since CA certs have
+            // keyUsage as a matter of policy.
+            None => self.permits_ee(leaf, extensions)?,
+        };
+
         // Regardless of whether it's a CA or an EE, we expect our leaf certificate to have a
         // SAN for matching against the policy.
         match extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
@@ -461,15 +477,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
-        // NOTE: Avoid refactoring this to `permits_ee() || permits_ca()` or any variation thereof.
-        // Code like this will propagate irrelevant error messages out of the API.
-        if let Some(key_usage) = extensions.get_extension(&KEY_USAGE_OID) {
-            let key_usage: KeyUsage<'_> = key_usage.value()?;
-            if key_usage.key_cert_sign() {
-                return self.permits_ca(leaf, 0, extensions);
-            }
-        }
-        self.permits_ee(leaf, extensions)
+        Ok(())
     }
 
     /// Checks whether the given CA certificate is compatible with this policy.
