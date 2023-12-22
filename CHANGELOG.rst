@@ -61,6 +61,10 @@ Changelog
 * Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV` when using
   OpenSSL 3.2.0+.
+* Added the :mod:`~cryptography.x509.verification` APIs, which provide
+  X.509 chain building and path validation for :class:`~cryptography.x509.Certificate`
+  chains. These APIs should be considered unstable and not subject to
+  Cryptography's stability guarantees until documented as such in a future release.
 
 .. _v41-0-7:
 
