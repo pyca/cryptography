@@ -6,38 +6,24 @@
 
 use cryptography_x509::certificate::Certificate;
 
-use crate::ops::CryptoOps;
-
-// TODO: Remove these attributes once we start using these helpers.
-#[allow(dead_code)]
 pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
     cert.issuer() == cert.subject()
 }
 
-#[allow(dead_code)]
-pub(crate) fn cert_is_self_signed<B: CryptoOps>(cert: &Certificate<'_>, ops: &B) -> bool {
-    match ops.public_key(cert) {
-        Ok(pk) => cert_is_self_issued(cert) && ops.verify_signed_by(cert, pk).is_ok(),
-        Err(_) => false,
-    }
-}
-
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use crate::certificate::Certificate;
-    use crate::ops::tests::{cert, v1_cert_pem, NullOps};
+    use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
 
-    use super::{cert_is_self_issued, cert_is_self_signed};
+    use super::cert_is_self_issued;
 
     #[test]
     fn test_certificate_v1() {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
 
         assert!(!cert_is_self_issued(&cert));
-        assert!(!cert_is_self_signed(&cert, &ops));
     }
 
     fn ca_pem() -> pem::Pem {
@@ -61,13 +47,11 @@ Xw4nMqk=
     fn test_certificate_ca() {
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
-        let ops = NullOps {};
 
         assert!(cert_is_self_issued(&cert));
-        assert!(cert_is_self_signed(&cert, &ops));
     }
 
-    struct PublicKeyErrorOps {}
+    pub(crate) struct PublicKeyErrorOps {}
     impl CryptoOps for PublicKeyErrorOps {
         type Key = ();
         type Err = ();
@@ -90,10 +74,8 @@ Xw4nMqk=
     fn test_certificate_public_key_error() {
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
-        let ops = PublicKeyErrorOps {};
 
         assert!(cert_is_self_issued(&cert));
-        assert!(!cert_is_self_signed(&cert, &ops));
     }
 
     #[test]

@@ -11,11 +11,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import (
-    PolicyBuilder,
-    Store,
-    VerificationError,
-)
+from cryptography.x509.verification import PolicyBuilder, Store
 from tests.x509.test_x509 import _load_cert
 
 
@@ -107,18 +103,3 @@ class TestStore:
     def test_store_rejects_non_certificates(self):
         with pytest.raises(TypeError):
             Store(["not a cert"])  # type: ignore[list-item]
-
-
-class TestServerVerifier:
-    def test_not_implemented(self):
-        verifier = (
-            PolicyBuilder()
-            .store(dummy_store())
-            .build_server_verifier(DNSName("cryptography.io"))
-        )
-        cert = _load_cert(
-            os.path.join("x509", "cryptography.io.pem"),
-            x509.load_pem_x509_certificate,
-        )
-        with pytest.raises(VerificationError):
-            verifier.verify(cert, [])

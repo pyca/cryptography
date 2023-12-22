@@ -6,6 +6,7 @@ use cryptography_x509::certificate::Certificate;
 use cryptography_x509_validation::{
     ops::CryptoOps,
     policy::{Policy, Subject},
+    trust_store::Store,
     types::{DNSName, IPAddress},
 };
 
@@ -17,6 +18,8 @@ use crate::{
     error::{CryptographyError, CryptographyResult},
     exceptions::VerificationError,
 };
+
+use super::certificate::OwnedCertificate;
 
 pub(crate) struct PyCryptoOps {}
 
@@ -103,11 +106,44 @@ impl PyServerVerifier {
 
     fn verify<'p>(
         &self,
-        _py: pyo3::Python<'p>,
-        _leaf: &PyCertificate,
-        _intermediates: &'p pyo3::types::PyList,
+        py: pyo3::Python<'p>,
+        leaf: &PyCertificate,
+        intermediates: Vec<pyo3::PyRef<'p, PyCertificate>>,
     ) -> CryptographyResult<Vec<PyCertificate>> {
-        Err(VerificationError::new_err("unimplemented").into())
+        let store = Store::new(
+            self.store
+                .as_ref(py)
+                .get()
+                .0
+                .iter()
+                .map(|t| t.get().raw.borrow_dependent().clone()),
+        );
+
+        let policy = self.as_policy();
+        let chain = cryptography_x509_validation::verify(
+            leaf.raw.borrow_dependent(),
+            intermediates
+                .iter()
+                .map(|i| i.raw.borrow_dependent().clone()),
+            policy,
+            &store,
+        )
+        .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
+
+        // TODO: Optimize this? Turning a Certificate back into a PyCertificate
+        // involves a full round-trip back through DER, which isn't ideal.
+        chain
+            .iter()
+            .map(|c| {
+                let raw = pyo3::types::PyBytes::new(py, &asn1::write_single(c)?);
+                Ok(PyCertificate {
+                    raw: OwnedCertificate::try_new(raw.into(), |raw| {
+                        asn1::parse_single(raw.as_bytes(py))
+                    })?,
+                    cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+                })
+            })
+            .collect()
     }
 }
 
