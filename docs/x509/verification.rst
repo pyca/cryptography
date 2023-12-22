@@ -1,15 +1,16 @@
-X.509 verification
+X.509 Verification
 ==================
 
 .. currentmodule:: cryptography.x509.verification
 
-Support for X.509 certificate verification, also known as path validation,
-chain building, etc.
+.. module:: cryptography.x509.verification
+
+Support for X.509 certificate verification, also known as path validation
+or chain building.
 
 .. note::
-    This module is a work in progress, and does not yet contain a fully usable
-    X.509 path validation implementation. These APIs should be considered
-    experimental and not yet subject to our backwards compatibility policy.
+    While usable, these APIs should be considered experimental and not yet
+    subject to our backwards compatibility policy.
 
 .. class:: Store(certs)
 
