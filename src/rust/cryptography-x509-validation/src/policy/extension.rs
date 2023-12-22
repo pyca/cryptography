@@ -164,7 +164,9 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 pub(crate) mod ee {
     use cryptography_x509::{
         certificate::Certificate,
-        extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage},
+        extensions::{
+            BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage, SubjectAlternativeName,
+        },
     };
 
     use crate::{
@@ -191,7 +193,7 @@ pub(crate) mod ee {
     }
 
     pub(crate) fn subject_alternative_name<B: CryptoOps>(
-        _policy: &Policy<'_, B>,
+        policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extn: &Extension<'_>,
     ) -> Result<(), ValidationError> {
@@ -211,7 +213,13 @@ pub(crate) mod ee {
             _ => (),
         };
 
-        // NOTE: SAN matching is performed in `Policy::permits_leaf`.
+        let san: SubjectAlternativeName<'_> = extn.value()?;
+        if !policy.subject.matches(&san) {
+            return Err(ValidationError::Other(
+                "leaf certificate has no matching subjectAltName".into(),
+            ));
+        }
+
         Ok(())
     }
 

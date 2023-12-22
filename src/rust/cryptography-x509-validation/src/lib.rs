@@ -327,11 +327,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // is well-formed according to our policy (and its underlying
         // certificate profile).
         //
-        // In the case that the leaf is an EE, this includes a check
-        // against the EE cert's SANs.
+        // The leaf must be an EE; a CA cert in the leaf position will be rejected.
         let leaf_extensions = leaf.extensions()?;
 
-        self.policy.permits_leaf(leaf, &leaf_extensions)?;
+        self.policy.permits_ee(leaf, &leaf_extensions)?;
 
         self.build_chain_inner(
             leaf,

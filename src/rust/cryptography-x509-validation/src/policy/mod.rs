@@ -435,43 +435,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         Ok(())
     }
 
-    /// Checks whether the given "leaf" certificate is compatible with this policy.
-    ///
-    /// A "leaf" certificate is conceptually any certificate in the "leaf" position,
-    /// whether it's a CA or EE. However, this function currently only accepts
-    /// EEs in the leaf position, which is consistent with what CABF stipulates.
-    pub(crate) fn permits_leaf(
-        &self,
-        leaf: &Certificate<'_>,
-        extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
-        // In the future this could be made into a check on the `keyUsage`,
-        // with a dispatch to either `permits_ca` or `permits_ca` depending
-        // on whether `keyCertSign` is asserted.
-        self.permits_ee(leaf, extensions)?;
-
-        // No matter what, we expect our leaf certificate to have a SAN for
-        // matching against the policy.
-        //
-        // NOTE: The unwrap here is intentional and safe: we assert the
-        // presence of the SAN as a matter of EE policy
-        // (see `policy::extension::ee::subject_alternative_name`),
-        // so we cannot have a missing SAN after calling `permits_ee`.
-        // Consequently, we unwrap to bypass the coverage gap (since
-        // we'd never be able to reach a "no SAN" condition here).
-        let san: SubjectAlternativeName<'_> = extensions
-            .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
-            .unwrap()
-            .value()?;
-        if !self.subject.matches(&san) {
-            return Err(ValidationError::Other(
-                "leaf certificate has no matching subjectAltName".into(),
-            ));
-        }
-
-        Ok(())
-    }
-
     /// Checks whether the given CA certificate is compatible with this policy.
     pub(crate) fn permits_ca(
         &self,
