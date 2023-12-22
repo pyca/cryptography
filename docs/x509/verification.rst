@@ -3,6 +3,8 @@ X.509 Verification
 
 .. currentmodule:: cryptography.x509.verification
 
+.. module:: cryptography.x509.verification
+
 Support for X.509 certificate verification, also known as path validation
 or chain building.
 
