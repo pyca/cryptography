@@ -5,6 +5,7 @@
 mod extension;
 
 use std::collections::HashSet;
+use std::ops::Range;
 
 use asn1::ObjectIdentifier;
 use cryptography_x509::certificate::Certificate;
@@ -552,16 +553,14 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 }
 
 fn permits_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
-    const GENERALIZED_DATE_CUTOFF_YEAR: u16 = 2050;
+    const GENERALIZED_DATE_INVALIDITY_RANGE: Range<u16> = 1950..2050;
 
     // NOTE: The inverse check on `asn1::UtcTime` is already done for us
     // by the variant's constructor.
     if let Time::GeneralizedTime(_) = validity_date {
-        // NOTE: This is technically wrong for certificates issued before 1950,
-        // but this does not matter in practice.
-        if validity_date.as_datetime().year() < GENERALIZED_DATE_CUTOFF_YEAR {
+        if GENERALIZED_DATE_INVALIDITY_RANGE.contains(&validity_date.as_datetime().year()) {
             return Err(ValidationError::Other(
-                "validity dates before generalized date cutoff must be UtcTime".to_string(),
+                "validity dates between 1950 and 2049 must be UtcTime".to_string(),
             ));
         }
     }
