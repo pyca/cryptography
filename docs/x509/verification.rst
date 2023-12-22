@@ -12,6 +12,23 @@ or chain building.
     While usable, these APIs should be considered experimental and not yet
     subject to our backwards compatibility policy.
 
+Example usage, with `certifi <https://pypi.org/project/certifi/>`_ providing
+the root of trust:
+
+.. code-block:: python
+
+    from cryptography.x509 import Certificate, DNSName, load_pem_x509_certificates
+    from cryptography.x509.verification import PolicyBuilder, Store
+    import certifi
+
+    with open(certifi.where()) as pems:
+        store = Store(load_pem_x509_certificates(pems.read()))
+
+    builder = PolicyBuilder().store(store)
+    verifier = builder().build_server_verifier(DNSName("cryptography.io"))
+
+    verifier.verify(peer, untrusted_intermediates)
+
 .. class:: Store(certs)
 
     .. versionadded:: 42.0.0
