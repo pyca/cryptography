@@ -110,23 +110,16 @@ impl PyServerVerifier {
         leaf: &PyCertificate,
         intermediates: Vec<pyo3::PyRef<'p, PyCertificate>>,
     ) -> CryptographyResult<Vec<PyCertificate>> {
-        let store = Store::new(
-            self.store
-                .as_ref(py)
-                .get()
-                .0
-                .iter()
-                .map(|t| t.get().raw.borrow_dependent().clone()),
-        );
-
         let policy = self.as_policy();
+        let store = self.store.as_ref(py).borrow();
+
         let chain = cryptography_x509_verification::verify(
             leaf.raw.borrow_dependent(),
             intermediates
                 .iter()
                 .map(|i| i.raw.borrow_dependent().clone()),
             policy,
-            &store,
+            store.raw.borrow_dependent(),
         )
         .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
 
@@ -224,12 +217,23 @@ fn create_server_verifier(
     })
 }
 
+self_cell::self_cell!(
+    struct RawPyStore {
+        owner: Vec<pyo3::Py<PyCertificate>>,
+
+        #[covariant]
+        dependent: Store,
+    }
+);
+
 #[pyo3::pyclass(
     frozen,
     name = "Store",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyStore(Vec<pyo3::Py<PyCertificate>>);
+struct PyStore {
+    raw: RawPyStore,
+}
 
 #[pyo3::pymethods]
 impl PyStore {
@@ -240,7 +244,11 @@ impl PyStore {
                 "can't create an empty store",
             ));
         }
-        Ok(Self(certs))
+        Ok(Self {
+            raw: RawPyStore::new(certs, |v| {
+                Store::new(v.iter().map(|t| t.get().raw.borrow_dependent().clone()))
+            }),
+        })
     }
 }
 
