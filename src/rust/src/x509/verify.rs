@@ -140,7 +140,7 @@ impl PyServerVerifier {
                     raw: OwnedCertificate::try_new(raw.into(), |raw| {
                         asn1::parse_single(raw.as_bytes(py))
                     })?,
-                    cached_extensions: pyo3::once_cell::GILOnceCell::new(),
+                    cached_extensions: pyo3::sync::GILOnceCell::new(),
                 })
             })
             .collect()
