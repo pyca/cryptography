@@ -2,7 +2,11 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import datetime
+import json
 import os
+
+import certifi
 
 from cryptography import x509
 
@@ -40,3 +44,38 @@ def test_load_pem_certificate(benchmark):
     )
 
     benchmark(x509.load_pem_x509_certificate, cert_bytes)
+
+
+def test_verify_docs_python_org(benchmark, pytestconfig):
+    limbo_root = pytestconfig.getoption("--x509-limbo-root", skip=True)
+    with open(os.path.join(limbo_root, "limbo.json"), "rb") as f:
+        [testcase] = [
+            tc
+            for tc in json.load(f)["testcases"]
+            if tc["id"] == "online::docs.python.org"
+        ]
+
+    with open(certifi.where(), "rb") as f:
+        store = x509.verification.Store(
+            x509.load_pem_x509_certificates(f.read())
+        )
+
+    leaf = x509.load_pem_x509_certificate(
+        testcase["peer_certificate"].encode()
+    )
+    intermediates = [
+        x509.load_pem_x509_certificate(c.encode())
+        for c in testcase["untrusted_intermediates"]
+    ]
+    time = datetime.datetime.fromisoformat(testcase["validation_time"])
+
+    def bench():
+        verifier = (
+            x509.verification.PolicyBuilder()
+            .store(store)
+            .time(time)
+            .build_server_verifier(x509.DNSName("docs.python.org"))
+        )
+        verifier.verify(leaf, intermediates)
+
+    benchmark(bench)
