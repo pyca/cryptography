@@ -1,0 +1,51 @@
+name: Bump x509-limbo and/or wycheproof
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily
+    - cron: "0 0 * * *"
+
+jobs:
+  bump:
+    if: github.repository_owner == 'pyca'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - id: check-sha-x509-limbo
+        run: |
+          SHA=$(git ls-remote https://github.com/trailofbits/x509-limbo refs/heads/main | cut -f1)
+          LAST_COMMIT=$(grep x509-limbo-ref .github/actions/fetch-vectors/action.yml | grep -oE '[a-f0-9]{40}')
+          if ! grep -q "$SHA" .github/actions/fetch-vectors/action.yml; then
+            echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
+            echo "COMMIT_MSG<<EOF" >> $GITHUB_OUTPUT
+            echo -e "## x509-limbo\n[Commit: ${SHA}](https://github.com/trailofbits/x509-limbo/commit/${SHA})\n\n[Diff](https://github.com/trailofbits/x509-limbo/compare/${LAST_COMMIT}...${SHA}) between the last commit hash merged to this repository and the new commit." >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+      - name: Update x509-limbo
+        run: |
+          set -xe
+          CURRENT_DATE=$(date "+%b %d, %Y")
+          sed -E -i "s/Latest commit on the x509-limbo main branch.*/Latest commit on the x509-limbo main branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
+          sed -E -i "s/ref: \"[0-9a-f]{40}\" # x509-limbo-ref/ref: \"${{ steps.check-sha-x509-limbo.outputs.COMMIT_SHA }}\" # x509-limbo-ref/" .github/actions/fetch-vectors/action.yml
+          git status
+        if: steps.check-sha-openssl.outputs.COMMIT_SHA
+      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        id: generate-token
+        with:
+          app_id: ${{ secrets.BORINGBOT_APP_ID }}
+          private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
+        with:
+          commit-message: "Bump x509-limbo and/or wycheproof in CI"
+          title: "Bump x509-limbo and/or wycheproof in CI"
+          author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
+          body: |
+            ${{ steps.check-sha-x509-limbo.outputs.COMMIT_MSG }}
+            ${{ steps.check-sha-wycheproof.outputs.COMMIT_MSG }}
+          token: ${{ steps.generate-token.outputs.token }}
+        if: steps.check-sha-x509-limbo.outputs.COMMIT_SHA || steps.check-sha-wycheproof.outputs.COMMIT_SHA
