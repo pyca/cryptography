@@ -296,7 +296,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         )?,
                     ) {
                         Ok(mut chain) => {
-                            chain.insert(0, working_cert.clone());
+                            chain.push(working_cert.clone());
                             return Ok(chain);
                         }
                         Err(e) => last_err = Some(e),
@@ -332,11 +332,14 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         self.policy.permits_ee(leaf, &leaf_extensions)?;
 
-        self.build_chain_inner(
+        let mut chain = self.build_chain_inner(
             leaf,
             0,
             &leaf_extensions,
             NameChain::new(None, &leaf_extensions, false)?,
-        )
+        )?;
+        // We build the chain in reverse order, fix it now.
+        chain.reverse();
+        Ok(chain)
     }
 }
