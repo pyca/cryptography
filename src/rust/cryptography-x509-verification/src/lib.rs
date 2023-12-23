@@ -51,7 +51,7 @@ impl From<DuplicateExtensionsError> for ValidationError {
 
 struct NameChain<'a, 'chain> {
     child: Option<&'a NameChain<'a, 'chain>>,
-    sans: Vec<GeneralName<'chain>>,
+    sans: SubjectAlternativeName<'chain>,
 }
 
 impl<'a, 'chain> NameChain<'a, 'chain> {
@@ -64,8 +64,10 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             self_issued_intermediate,
             extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID),
         ) {
-            (false, Some(sans)) => sans.value::<SubjectAlternativeName<'chain>>()?.collect(),
-            _ => vec![],
+            (false, Some(sans)) => sans.value::<SubjectAlternativeName<'chain>>()?,
+            // TODO: there really ought to be a better way to express an empty
+            // `asn1::SequenceOf`.
+            _ => asn1::parse_single(b"\x30\x00")?,
         };
 
         Ok(Self { child, sans })
@@ -118,12 +120,12 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             child.evaluate_constraints(constraints)?;
         }
 
-        for san in &self.sans {
+        for san in self.sans.clone() {
             // If there are no applicable constraints, the SAN is considered valid so the default is true.
             let mut permit = true;
             if let Some(permitted_subtrees) = &constraints.permitted_subtrees {
                 for p in permitted_subtrees.unwrap_read().clone() {
-                    let status = self.evaluate_single_constraint(&p.base, san)?;
+                    let status = self.evaluate_single_constraint(&p.base, &san)?;
                     if status.is_applied() {
                         permit = status.is_match();
                         if permit {
@@ -141,7 +143,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
             if let Some(excluded_subtrees) = &constraints.excluded_subtrees {
                 for e in excluded_subtrees.unwrap_read().clone() {
-                    let status = self.evaluate_single_constraint(&e.base, san)?;
+                    let status = self.evaluate_single_constraint(&e.base, &san)?;
                     if status.is_match() {
                         return Err(ValidationError::Other(
                             "excluded name constraint matched SAN".into(),
