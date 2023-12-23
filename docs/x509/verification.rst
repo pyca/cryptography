@@ -21,13 +21,13 @@ the root of trust:
     from cryptography.x509.verification import PolicyBuilder, Store
     import certifi
 
-    with open(certifi.where()) as pems:
+    with open(certifi.where(), "rb") as pems:
         store = Store(load_pem_x509_certificates(pems.read()))
 
     builder = PolicyBuilder().store(store)
     verifier = builder().build_server_verifier(DNSName("cryptography.io"))
 
-    verifier.verify(peer, untrusted_intermediates)
+    chain = verifier.verify(peer, untrusted_intermediates)
 
 .. class:: Store(certs)
 
