@@ -14,7 +14,7 @@ pyo3 = { version = "0.20", features = ["abi3"] }
 asn1 = { version = "0.15.5", default-features = false }
 cryptography-cffi = { path = "cryptography-cffi" }
 cryptography-x509 = { path = "cryptography-x509" }
-cryptography-x509-validation = { path = "cryptography-x509-validation" }
+cryptography-x509-verification = { path = "cryptography-x509-verification" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
 openssl = "0.10.62"
@@ -41,5 +41,5 @@ members = [
     "cryptography-cffi",
     "cryptography-openssl",
     "cryptography-x509",
-    "cryptography-x509-validation",
+    "cryptography-x509-verification",
 ]

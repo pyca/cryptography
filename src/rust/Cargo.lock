@@ -90,7 +90,7 @@ dependencies = [
  "cryptography-cffi",
  "cryptography-openssl",
  "cryptography-x509",
- "cryptography-x509-validation",
+ "cryptography-x509-verification",
  "foreign-types-shared",
  "once_cell",
  "openssl",
@@ -108,7 +108,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cryptography-x509-validation"
+name = "cryptography-x509-verification"
 version = "0.1.0"
 dependencies = [
  "asn1",

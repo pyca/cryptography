@@ -17,7 +17,7 @@ use std::str::FromStr;
 /// [RFC 1123 2.1]: https://datatracker.ietf.org/doc/html/rfc1123#section-2.1
 ///
 /// ```rust
-/// # use cryptography_x509_validation::types::DNSName;
+/// # use cryptography_x509_verification::types::DNSName;
 /// assert_eq!(DNSName::new("foo.com").unwrap(), DNSName::new("FOO.com").unwrap());
 /// ```
 #[derive(Clone, Debug)]
@@ -59,7 +59,7 @@ impl<'a> DNSName<'a> {
     /// Return this `DNSName`'s parent domain, if it has one.
     ///
     /// ```rust
-    /// # use cryptography_x509_validation::types::DNSName;
+    /// # use cryptography_x509_verification::types::DNSName;
     /// let domain = DNSName::new("foo.example.com").unwrap();
     /// assert_eq!(domain.parent().unwrap().as_str(), "example.com");
     /// ```
@@ -136,7 +136,7 @@ impl<'a> DNSConstraint<'a> {
     /// side of the name satisfies the name constraint.
     ///
     /// ```rust
-    /// # use cryptography_x509_validation::types::{DNSConstraint, DNSName};
+    /// # use cryptography_x509_verification::types::{DNSConstraint, DNSName};
     /// let example_com = DNSName::new("example.com").unwrap();
     /// let badexample_com = DNSName::new("badexample.com").unwrap();
     /// let foo_example_com = DNSName::new("foo.example.com").unwrap();
@@ -217,7 +217,7 @@ impl IPAddress {
     /// Returns a new `IPAddress` with the first `prefix` bits of the `IPAddress`.
     ///
     /// ```rust
-    /// # use cryptography_x509_validation::types::IPAddress;
+    /// # use cryptography_x509_verification::types::IPAddress;
     /// let ip = IPAddress::from_str("192.0.2.1").unwrap();
     /// assert_eq!(ip.mask(24), IPAddress::from_str("192.0.2.0").unwrap());
     /// ```
@@ -288,7 +288,7 @@ impl IPConstraint {
     /// Determines if the `addr` is within the `IPConstraint`.
     ///
     /// ```rust
-    /// # use cryptography_x509_validation::types::{IPAddress, IPConstraint};
+    /// # use cryptography_x509_verification::types::{IPAddress, IPConstraint};
     /// let range_bytes = b"\xc6\x33\x64\x00\xff\xff\xff\x00";
     /// let range = IPConstraint::from_bytes(range_bytes).unwrap();
     /// assert!(range.matches(&IPAddress::from_str("198.51.100.42").unwrap()));

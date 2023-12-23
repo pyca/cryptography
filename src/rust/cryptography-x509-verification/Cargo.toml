@@ -1,5 +1,5 @@
 [package]
-name = "cryptography-x509-validation"
+name = "cryptography-x509-verification"
 version = "0.1.0"
 authors = ["The cryptography developers <cryptography-dev@python.org>"]
 edition = "2021"
