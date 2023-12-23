@@ -10,11 +10,11 @@ runs:
         repository: "google/wycheproof"
         path: "wycheproof"
         # Latest commit on the wycheproof master branch, as of Oct 28, 2023.
-        ref: "cd5d271eab5c841f734d044683e4e30b76f65abb" # wycheproof-ref
+        ref: "d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d" # wycheproof-ref
 
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       with:
         repository: "trailofbits/x509-limbo"
         path: "x509-limbo"
-        # Latest commit on the x509-limbo main branch, as of Dec 21, 2023.
-        ref: "387386a6fc389c2114c8669b3318e1fe62b4bd1e" # x509-limbo-ref
+        # Latest commit on the x509-limbo main branch, as of Dec 23, 2023.
+        ref: "2dfce6da5c6dca2dce0ce4caa93e9ea781202cd2" # x509-limbo-ref
