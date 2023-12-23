@@ -32,6 +32,9 @@ jobs:
           repository: "pyca/cryptography"
           path: "cryptography-base"
           ref: "${{ github.base_ref }}"
+      - name: Clone test vectors
+        timeout-minutes: 2
+        uses: ./cryptography-base/.github/actions/fetch-vectors
 
       - name: Setup python
         id: setup-python
@@ -49,9 +52,9 @@ jobs:
           .venv-pr/bin/pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt "./cryptography-pr[test]" ./cryptography-pr/vectors/
 
       - name: Run benchmarks (base)
-        run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json
+        run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json --x509-limbo-root=x509-limbo/
       - name: Run benchmarks (PR)
-        run: .venv-pr/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-pr.json
+        run: .venv-pr/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-pr.json --x509-limbo-root=x509-limbo/
 
       - name: Compare results
         run: python ./cryptography-pr/.github/compare_benchmarks.py bench-base.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY
