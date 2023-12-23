@@ -204,6 +204,8 @@ linkcheck_ignore = [
     # GitHub changed how they do page renders so anchor detection
     # no longer works in source view
     r"https://github.com/.*/blob/.*#L\d+",
+    # Kuleuven struggles with the endless forward march of time
+    r"https://www.cosic.esat.kuleuven.be",
 ]
 
 autosectionlabel_prefix_document = True
