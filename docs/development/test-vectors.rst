@@ -232,7 +232,7 @@ X.509
   ``cryptography.io.pem`` certificate.
 * ``cryptography.io.precert.pem`` - A pre-certificate with the CT poison
   extension for the cryptography website.
-* ``cryptography-scts.io.pem`` - A leaf certificate issued by Let's Encrypt for
+* ``cryptography-scts.pem`` - A leaf certificate issued by Let's Encrypt for
   the cryptography website which contains signed certificate timestamps.
 * ``wildcard_san.pem`` - A leaf certificate issued by a public CA for
   ``langui.sh`` that contains wildcard entries in the SAN extension.
