@@ -3,7 +3,7 @@
 // for complete details.
 
 use cryptography_x509::certificate::Certificate;
-use cryptography_x509_validation::{
+use cryptography_x509_verification::{
     ops::CryptoOps,
     policy::{Policy, Subject},
     trust_store::Store,
@@ -120,7 +120,7 @@ impl PyServerVerifier {
         );
 
         let policy = self.as_policy();
-        let chain = cryptography_x509_validation::verify(
+        let chain = cryptography_x509_verification::verify(
             leaf.raw.borrow_dependent(),
             intermediates
                 .iter()

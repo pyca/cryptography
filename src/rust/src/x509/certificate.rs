@@ -21,7 +21,7 @@ use cryptography_x509::extensions::{
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
-use cryptography_x509_validation::ops::CryptoOps;
+use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::{IntoPy, ToPyObject};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
