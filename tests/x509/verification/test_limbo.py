@@ -113,11 +113,13 @@ def _limbo_testcase(id_, testcase):
     max_chain_depth = testcase["max_chain_depth"]
     should_pass = testcase["expected_result"] == "SUCCESS"
 
-    verifier = PolicyBuilder(
-        time=validation_time,
-        store=Store(trusted_certs),
-        max_chain_depth=max_chain_depth,
-    ).build_server_verifier(peer_name)
+    verifier = (
+        PolicyBuilder()
+        .time(validation_time)
+        .store(Store(trusted_certs))
+        .max_chain_depth(max_chain_depth)
+        .build_server_verifier(peer_name)
+    )
 
     if should_pass:
         built_chain = verifier.verify(
