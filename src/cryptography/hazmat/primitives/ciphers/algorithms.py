@@ -104,7 +104,7 @@ _BlowfishInternal = Blowfish
 utils.deprecated(
     Blowfish,
     __name__,
-    "Blowfish has been deprecated",
+    "Blowfish has been deprecated and will be removed in a future release",
     utils.DeprecatedIn37,
     name="Blowfish",
 )
@@ -127,7 +127,7 @@ _CAST5Internal = CAST5
 utils.deprecated(
     CAST5,
     __name__,
-    "CAST5 has been deprecated",
+    "CAST5 has been deprecated and will be removed in a future release",
     utils.DeprecatedIn37,
     name="CAST5",
 )
@@ -162,7 +162,7 @@ _IDEAInternal = IDEA
 utils.deprecated(
     IDEA,
     __name__,
-    "IDEA has been deprecated",
+    "IDEA has been deprecated and will be removed in a future release",
     utils.DeprecatedIn37,
     name="IDEA",
 )
@@ -185,7 +185,7 @@ _SEEDInternal = SEED
 utils.deprecated(
     SEED,
     __name__,
-    "SEED has been deprecated",
+    "SEED has been deprecated and will be removed in a future release",
     utils.DeprecatedIn37,
     name="SEED",
 )
