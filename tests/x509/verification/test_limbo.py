@@ -34,6 +34,8 @@ LIMBO_UNSUPPORTED_FEATURES = {
     # incompatible ways. Our validator always tries (by default) to comply
     # closer to CABF, so we skip these.
     "rfc5280-incompatible-with-webpki",
+    # We do not support policy constraints.
+    "has-policy-constraints",
 }
 
 LIMBO_SKIP_TESTCASES = {
