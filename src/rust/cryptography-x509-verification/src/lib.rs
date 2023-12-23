@@ -213,13 +213,15 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         cert: &'a Certificate<'chain>,
     ) -> impl Iterator<Item = &'a Certificate<'chain>> + '_ {
         // TODO: Optimizations:
-        // * Use a backing structure that allows us to search by name
-        //   rather than doing a linear scan
         // * Search by AKI and other identifiers?
         self.store
+            .get_by_subject(&cert.tbs_cert.issuer)
             .iter()
-            .chain(self.intermediates.iter())
-            .filter(|&candidate| candidate.subject() == cert.issuer())
+            .chain(
+                self.intermediates
+                    .iter()
+                    .filter(|&candidate| candidate.subject() == cert.issuer()),
+            )
     }
 
     fn build_chain_inner(
