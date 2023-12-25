@@ -4,12 +4,51 @@
 
 use cryptography_x509::certificate::Certificate;
 
+pub struct VerificationCertificate<'a, B: CryptoOps> {
+    pub cert: Certificate<'a>,
+    pub extra: B::CertificateExtra,
+}
+
+impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
+    pub fn new(cert: Certificate<'a>, extra: B::CertificateExtra) -> Self {
+        VerificationCertificate { cert, extra }
+    }
+
+    pub fn certificate(&self) -> &Certificate<'a> {
+        &self.cert
+    }
+
+    pub fn extra(&self) -> &B::CertificateExtra {
+        &self.extra
+    }
+}
+
+impl<B: CryptoOps> PartialEq for VerificationCertificate<'_, B> {
+    fn eq(&self, other: &Self) -> bool {
+        self.cert == other.cert
+    }
+}
+impl<B: CryptoOps> Eq for VerificationCertificate<'_, B> {}
+impl<B: CryptoOps> std::hash::Hash for VerificationCertificate<'_, B> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.cert.hash(state)
+    }
+}
+impl<B: CryptoOps> Clone for VerificationCertificate<'_, B> {
+    fn clone(&self) -> Self {
+        VerificationCertificate::new(self.cert.clone(), self.extra.clone())
+    }
+}
+
 pub trait CryptoOps {
     /// A public key type for this cryptographic backend.
     type Key;
 
     /// An error type for this cryptographic backend.
     type Err;
+
+    /// Extra data that's passed around with the certificate.
+    type CertificateExtra: Clone;
 
     /// Extracts the public key from the given `Certificate` in
     /// a `Key` format known by the cryptographic backend, or `None`
