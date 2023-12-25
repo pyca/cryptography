@@ -159,11 +159,11 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
 pub type Chain<'c> = Vec<Certificate<'c>>;
 
-pub fn verify<'a, 'chain, B: CryptoOps>(
-    leaf: &'a Certificate<'chain>,
+pub fn verify<'chain, B: CryptoOps>(
+    leaf: &Certificate<'chain>,
     intermediates: impl IntoIterator<Item = Certificate<'chain>>,
     policy: &Policy<'_, B>,
-    store: &'a Store<'chain>,
+    store: &Store<'chain>,
 ) -> Result<Chain<'chain>, ValidationError> {
     let builder = ChainBuilder::new(intermediates.into_iter().collect(), policy, store);
 
