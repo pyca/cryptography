@@ -30,7 +30,7 @@ impl CryptoOps for PyCryptoOps {
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
             // This makes an unnecessary copy. It'd be nice to get rid of it.
-            let spki_der = pyo3::types::PyBytes::new(py, &asn1::write_single(&cert.tbs_cert.spki)?);
+            let spki_der = pyo3::types::PyBytes::new(py, cert.tbs_cert.spki.tlv().full_data());
 
             Ok(types::LOAD_DER_PUBLIC_KEY
                 .get(py)?

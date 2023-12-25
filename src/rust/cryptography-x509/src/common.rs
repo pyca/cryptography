@@ -354,9 +354,61 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
     }
 }
 
+#[derive(Clone)]
+pub struct WithTlv<'a, T> {
+    tlv: asn1::Tlv<'a>,
+    value: T,
+}
+
+impl<'a, T> WithTlv<'a, T> {
+    pub fn tlv(&self) -> &asn1::Tlv<'a> {
+        &self.tlv
+    }
+}
+
+impl<T> std::ops::Deref for WithTlv<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
+    fn parse(p: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
+        let tlv = p.read_element::<asn1::Tlv<'a>>()?;
+        Ok(Self {
+            tlv,
+            value: tlv.parse()?,
+        })
+    }
+
+    fn can_parse(t: asn1::Tag) -> bool {
+        T::can_parse(t)
+    }
+}
+
+impl<'a, T: asn1::Asn1Writable> asn1::Asn1Writable for WithTlv<'a, T> {
+    fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult<()> {
+        self.value.write(w)
+    }
+}
+
+impl<T: PartialEq> PartialEq for WithTlv<'_, T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl<T: Eq> Eq for WithTlv<'_, T> {}
+impl<T: std::hash::Hash> std::hash::Hash for WithTlv<'_, T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.value.hash(state)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString};
+    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString, WithTlv};
     use asn1::Asn1Readable;
 
     #[test]
@@ -382,5 +434,13 @@ mod tests {
     fn test_raw_tlv_can_parse() {
         let t = asn1::Tag::from_bytes(&[0]).unwrap().0;
         assert!(RawTlv::can_parse(t));
+    }
+
+    #[test]
+    fn test_with_raw_tlv_can_parse() {
+        let t = asn1::Tag::from_bytes(&[0x30]).unwrap().0;
+
+        assert!(WithTlv::<asn1::Sequence<'_>>::can_parse(t));
+        assert!(!WithTlv::<bool>::can_parse(t));
     }
 }

@@ -18,7 +18,7 @@ pub struct Csr<'a> {
 pub struct CertificationRequestInfo<'a> {
     pub version: u8,
     pub subject: name::Name<'a>,
-    pub spki: common::SubjectPublicKeyInfo<'a>,
+    pub spki: common::WithTlv<'a, common::SubjectPublicKeyInfo<'a>>,
     #[implicit(0, required)]
     pub attributes: Attributes<'a>,
 }
