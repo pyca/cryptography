@@ -226,10 +226,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
     fn build_chain_inner(
         &self,
-        working_cert: &'a Certificate<'chain>,
+        working_cert: &Certificate<'chain>,
         current_depth: u8,
-        working_cert_extensions: &'a Extensions<'chain>,
-        name_chain: NameChain<'a, 'chain>,
+        working_cert_extensions: &Extensions<'chain>,
+        name_chain: NameChain<'_, 'chain>,
     ) -> Result<Chain<'chain>, ValidationError> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             name_chain.evaluate_constraints(&nc.value()?)?;
@@ -326,7 +326,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         )))
     }
 
-    fn build_chain(&self, leaf: &'a Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
+    fn build_chain(&self, leaf: &Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).
