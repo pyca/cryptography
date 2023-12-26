@@ -59,9 +59,9 @@ def load_der_private_key(
 def load_der_public_key(
     data: bytes, backend: typing.Any = None
 ) -> PublicKeyTypes:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_der_public_key(data)
+    return rust_openssl.keys.load_der_public_key(
+        data,
+    )
 
 
 def load_der_parameters(
