@@ -2,11 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{
-    certificate, common, crl,
-    extensions::{self},
-    name, ocsp_req,
-};
+use crate::{certificate, common, crl, extensions, name, ocsp_req};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct OCSPResponse<'a> {
