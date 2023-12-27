@@ -2,10 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
-use crate::{exceptions, types, x509};
+use std::sync::Arc;
+
 use cryptography_x509::ocsp_resp::SingleResponse;
 use cryptography_x509::{
     common,
@@ -13,7 +11,11 @@ use cryptography_x509::{
     oid,
 };
 use pyo3::IntoPy;
-use std::sync::Arc;
+
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
+use crate::{exceptions, types, x509};
 
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 

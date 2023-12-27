@@ -2,10 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::borrow::Cow;
+
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use std::borrow::Cow;
 
 #[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
 pub(crate) struct Hash {

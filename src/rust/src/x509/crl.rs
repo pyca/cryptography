@@ -2,13 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{
-    big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
-};
-use crate::backend::hashes::Hash;
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::{certificate, extensions, sign};
-use crate::{exceptions, types, x509};
+use std::sync::Arc;
+
 use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
 use cryptography_x509::{
     common,
@@ -19,7 +14,14 @@ use cryptography_x509::{
     name, oid,
 };
 use pyo3::{IntoPy, ToPyObject};
-use std::sync::Arc;
+
+use crate::asn1::{
+    big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
+};
+use crate::backend::hashes::Hash;
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::{certificate, extensions, sign};
+use crate::{exceptions, types, x509};
 
 #[pyo3::prelude::pyfunction]
 fn load_der_x509_crl(

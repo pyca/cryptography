@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::exceptions;
 use pyo3::ToPyObject;
+
+use crate::exceptions;
 
 pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),

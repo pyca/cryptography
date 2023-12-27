@@ -2,14 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{
-    big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
-};
-use crate::backend::{hashes, keys};
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::verify::PyCryptoOps;
-use crate::x509::{extensions, sct, sign};
-use crate::{exceptions, types, x509};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
@@ -23,8 +18,15 @@ use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::{IntoPy, ToPyObject};
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+
+use crate::asn1::{
+    big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
+};
+use crate::backend::{hashes, keys};
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::verify::PyCryptoOps;
+use crate::x509::{extensions, sct, sign};
+use crate::{exceptions, types, x509};
 
 self_cell::self_cell!(
     pub(crate) struct OwnedCertificate {

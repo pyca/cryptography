@@ -2,10 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::ptr;
+
+use foreign_types_shared::{ForeignType, ForeignTypeRef};
+
 use crate::hmac::DigestBytes;
 use crate::{cvt, cvt_p, OpenSSLResult};
-use foreign_types_shared::{ForeignType, ForeignTypeRef};
-use std::ptr;
 
 foreign_types::foreign_type! {
     type CType = ffi::CMAC_CTX;

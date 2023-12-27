@@ -12,11 +12,10 @@ pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use super::cert_is_self_issued;
     use crate::certificate::Certificate;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
-
-    use super::cert_is_self_issued;
 
     #[test]
     fn test_certificate_v1() {

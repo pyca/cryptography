@@ -2,11 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use cryptography_x509::common;
+
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
-use cryptography_x509::common;
 
 const MIN_MODULUS_SIZE: u32 = 512;
 

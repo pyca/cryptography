@@ -14,6 +14,13 @@ pub mod types;
 use std::collections::HashSet;
 use std::vec;
 
+use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
+use cryptography_x509::{
+    extensions::{NameConstraints, SubjectAlternativeName},
+    name::GeneralName,
+    oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
+};
+
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
@@ -21,12 +28,6 @@ use crate::trust_store::Store;
 use crate::types::DNSName;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
-use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
-use cryptography_x509::{
-    extensions::{NameConstraints, SubjectAlternativeName},
-    name::GeneralName,
-    oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
-};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {

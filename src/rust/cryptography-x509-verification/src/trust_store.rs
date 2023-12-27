@@ -4,9 +4,10 @@
 
 use std::collections::{HashMap, HashSet};
 
+use cryptography_x509::name::Name;
+
 use crate::CryptoOps;
 use crate::VerificationCertificate;
-use cryptography_x509::name::Name;
 
 /// A `Store` represents the core state needed for X.509 path validation.
 pub struct Store<'a, B: CryptoOps> {

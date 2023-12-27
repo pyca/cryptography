@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::types;
 use std::{ptr, slice};
+
+use crate::types;
 
 pub(crate) struct CffiBuf<'p> {
     _pyobj: &'p pyo3::PyAny,

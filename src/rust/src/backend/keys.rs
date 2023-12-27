@@ -2,11 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use foreign_types_shared::ForeignTypeRef;
+use pyo3::IntoPy;
+
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, exceptions, types};
-use foreign_types_shared::ForeignTypeRef;
-use pyo3::IntoPy;
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(

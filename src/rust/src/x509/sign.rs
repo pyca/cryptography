@@ -2,12 +2,14 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashMap;
+
+use cryptography_x509::{common, oid};
+use once_cell::sync::Lazy;
+
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use cryptography_x509::{common, oid};
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
 
 // This is similar to a hashmap in ocsp.rs but contains more hash algorithms
 // that aren't allowable in OCSP
@@ -515,11 +517,12 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
 
 #[cfg(test)]
 mod tests {
+    use cryptography_x509::{common, oid};
+
     use super::{
         identify_alg_params_for_hash_type, identify_key_type_for_algorithm_params, HashType,
         KeyType,
     };
-    use cryptography_x509::{common, oid};
 
     #[test]
     fn test_identify_key_type_for_algorithm_params() {

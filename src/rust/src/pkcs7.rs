@@ -2,16 +2,18 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::ops::Deref;
+
+use cryptography_x509::csr::Attribute;
+use cryptography_x509::{common, oid, pkcs7};
+use once_cell::sync::Lazy;
+
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::{types, x509};
-use cryptography_x509::csr::Attribute;
-use cryptography_x509::{common, oid, pkcs7};
-use once_cell::sync::Lazy;
-use std::borrow::Cow;
-use std::collections::HashMap;
-use std::ops::Deref;
 
 const PKCS7_CONTENT_TYPE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 3);
 const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 4);
@@ -299,9 +301,10 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
 #[cfg(test)]
 mod tests {
-    use super::smime_canonicalize;
     use std::borrow::Cow;
     use std::ops::Deref;
+
+    use super::smime_canonicalize;
 
     #[test]
     fn test_smime_canonicalize() {
