@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...utils import load_nist_vectors
 from .utils import generate_encrypt_test
@@ -91,3 +91,74 @@ class TestSM4ModeCTR:
         lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.SM4(b"\x00" * 16), modes.GCM(b"\x00" * 16)
+    ),
+    skip_message="Does not support SM4 GCM",
+)
+class TestSM4ModeGCM:
+    def test_gcm(self, backend):
+        # test vectors from RFC 8998 Appendix A.1
+        key = binascii.unhexlify("0123456789ABCDEFFEDCBA9876543210")
+        iv = binascii.unhexlify("00001234567800000000ABCD")
+        associated_data = binascii.unhexlify(
+            "FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2",
+        )
+        plaintext = binascii.unhexlify(
+            "AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBB"
+            "CCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDD"
+            "EEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFF"
+            "EEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAA"
+        )
+        ciphertext = binascii.unhexlify(
+            "17F399F08C67D5EE19D0DC9969C4BB7D"
+            "5FD46FD3756489069157B282BB200735"
+            "D82710CA5C22F0CCFA7CBF93D496AC15"
+            "A56834CBCF98C397B4024A2691233B8D"
+        )
+        tag = binascii.unhexlify("83DE3541E4C2B58177E065A9BF7B62EC")
+
+        cipher = base.Cipher(
+            algorithms.SM4(key), modes.GCM(iv), backend=backend
+        )
+        encryptor = cipher.encryptor()
+        encryptor.authenticate_additional_data(associated_data)
+        computed_ciphertext = (
+            encryptor.update(plaintext) + encryptor.finalize()
+        )
+        assert computed_ciphertext == ciphertext
+        assert encryptor.tag == tag
+
+    def test_gcm_decrypt(self, backend):
+        # test vectors from RFC 8998 Appendix A.1
+        key = binascii.unhexlify("0123456789ABCDEFFEDCBA9876543210")
+        iv = binascii.unhexlify("00001234567800000000ABCD")
+        associated_data = binascii.unhexlify(
+            "FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2"
+        )
+        plaintext = binascii.unhexlify(
+            "AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBB"
+            "CCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDD"
+            "EEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFF"
+            "EEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAA"
+        )
+        ciphertext = binascii.unhexlify(
+            "17F399F08C67D5EE19D0DC9969C4BB7D"
+            "5FD46FD3756489069157B282BB200735"
+            "D82710CA5C22F0CCFA7CBF93D496AC15"
+            "A56834CBCF98C397B4024A2691233B8D"
+        )
+        tag = binascii.unhexlify("83DE3541E4C2B58177E065A9BF7B62EC")
+
+        cipher = base.Cipher(
+            algorithms.SM4(key), modes.GCM(iv, tag), backend=backend
+        )
+        decryptor = cipher.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        computed_plaintext = (
+            decryptor.update(ciphertext) + decryptor.finalize()
+        )
+        assert computed_plaintext == plaintext

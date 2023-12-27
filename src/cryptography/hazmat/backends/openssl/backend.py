@@ -269,7 +269,7 @@ class Backend:
             ),
         )
         self.register_cipher_adapter(AES, XTS, _get_xts_cipher)
-        for mode_cls in [ECB, CBC, OFB, CFB, CTR]:
+        for mode_cls in [ECB, CBC, OFB, CFB, CTR, GCM]:
             self.register_cipher_adapter(
                 SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
             )
