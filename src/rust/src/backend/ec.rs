@@ -339,7 +339,7 @@ impl ECPrivateKey {
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
-        data: &pyo3::types::PyBytes,
+        data: &[u8],
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if !algorithm.is_instance(types::ECDSA.get(py)?)? {
@@ -351,10 +351,11 @@ impl ECPrivateKey {
             ));
         }
 
-        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((data, algorithm.getattr(pyo3::intern!(py, "algorithm"))?))?
-            .extract()?;
+        let (data, _) = utils::calculate_digest_and_algorithm(
+            py,
+            data,
+            algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
+        )?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
@@ -433,7 +434,7 @@ impl ECPublicKey {
         &self,
         py: pyo3::Python<'_>,
         signature: &[u8],
-        data: &pyo3::types::PyBytes,
+        data: &[u8],
         signature_algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
         if !signature_algorithm.is_instance(types::ECDSA.get(py)?)? {
@@ -445,13 +446,11 @@ impl ECPublicKey {
             ));
         }
 
-        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((
-                data,
-                signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
-            ))?
-            .extract()?;
+        let (data, _) = utils::calculate_digest_and_algorithm(
+            py,
+            data,
+            signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
+        )?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;

@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 
@@ -347,4 +348,30 @@ pub(crate) fn pkey_public_bytes<'p>(
     Err(CryptographyError::from(
         pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
     ))
+}
+
+pub(crate) fn calculate_digest_and_algorithm<'p>(
+    py: pyo3::Python<'p>,
+    mut data: &'p [u8],
+    mut algorithm: &'p pyo3::PyAny,
+) -> CryptographyResult<(&'p [u8], &'p pyo3::PyAny)> {
+    if algorithm.is_instance(types::PREHASHED.get(py)?)? {
+        algorithm = algorithm.getattr("_algorithm")?;
+    } else {
+        // Potential optimization: rather than allocate a PyBytes in
+        // `h.finalize()`, have a way to get the `DigestBytes` directly.
+        let mut h = Hash::new(py, algorithm, None)?;
+        h.update_bytes(data)?;
+        data = h.finalize(py)?.as_bytes();
+    }
+
+    if data.len() != algorithm.getattr("digest_size")?.extract()? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "The provided data must be the same length as the hash algorithm's digest size.",
+            ),
+        ));
+    }
+
+    Ok((data, algorithm))
 }

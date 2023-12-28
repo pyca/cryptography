@@ -322,10 +322,7 @@ impl RsaPrivateKey {
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        let (data, algorithm): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((data, algorithm))?
-            .extract()?;
+        let (data, algorithm) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.sign_init().map_err(|_| {
@@ -461,10 +458,7 @@ impl RsaPublicKey {
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, algorithm): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((data, algorithm))?
-            .extract()?;
+        let (data, algorithm) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
