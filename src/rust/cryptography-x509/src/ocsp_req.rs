@@ -2,11 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{
-    common,
-    extensions::{self},
-    name,
-};
+use crate::{common, extensions, name};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct TBSRequest<'a> {
