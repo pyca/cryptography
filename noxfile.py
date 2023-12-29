@@ -176,7 +176,6 @@ def flake(session: nox.Session) -> None:
 
     session.run("ruff", ".")
     session.run("ruff", "format", "--check", ".")
-    session.run("check-sdist", "--no-isolation")
     session.run(
         "mypy",
         "src/cryptography/",
@@ -185,6 +184,7 @@ def flake(session: nox.Session) -> None:
         "release.py",
         "noxfile.py",
     )
+    session.run("check-sdist", "--no-isolation")
 
 
 @nox.session
