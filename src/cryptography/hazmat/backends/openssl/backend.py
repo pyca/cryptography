@@ -17,7 +17,7 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import dh, ec
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.padding import (
     MGF1,
@@ -734,18 +734,6 @@ class Backend:
 
     def dh_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-
-    def dh_parameters_supported(
-        self, p: int, g: int, q: int | None = None
-    ) -> bool:
-        try:
-            rust_openssl.dh.from_parameter_numbers(
-                dh.DHParameterNumbers(p=p, g=g, q=q)
-            )
-        except ValueError:
-            return False
-        else:
-            return True
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1

@@ -449,19 +449,6 @@ pub static ED448_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["Ed448PublicKey"],
 );
 
-pub static DH_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dh",
-    &["DHParameterNumbers"],
-);
-pub static DH_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dh",
-    &["DHPublicNumbers"],
-);
-pub static DH_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dh",
-    &["DHPrivateNumbers"],
-);
-
 pub static DSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
     &["DSAPrivateKey"],
