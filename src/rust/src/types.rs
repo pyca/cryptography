@@ -461,18 +461,6 @@ pub static DSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
     &["DSAPublicKey"],
 );
-pub static DSA_PARAMETER_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dsa",
-    &["DSAParameterNumbers"],
-);
-pub static DSA_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dsa",
-    &["DSAPublicNumbers"],
-);
-pub static DSA_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.dsa",
-    &["DSAPrivateNumbers"],
-);
 
 pub static EXTRACT_BUFFER_LENGTH: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["_extract_buffer_length"]);
