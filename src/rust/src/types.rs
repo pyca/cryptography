@@ -397,14 +397,6 @@ pub static RSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.rsa",
     &["RSAPublicKey"],
 );
-pub static RSA_PUBLIC_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.rsa",
-    &["RSAPublicNumbers"],
-);
-pub static RSA_PRIVATE_NUMBERS: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.rsa",
-    &["RSAPrivateNumbers"],
-);
 
 pub static ELLIPTIC_CURVE_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.ec",
