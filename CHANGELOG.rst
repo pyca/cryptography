@@ -65,6 +65,10 @@ Changelog
   for :class:`~cryptography.x509.Certificate` chains. These APIs should be
   considered unstable and not subject to our stability guarantees until
   documented as such in a future release.
+* Added support for 
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`
+  :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`
+  when using OpenSSL 3.0 or greater.
 
 .. _v41-0-7:
 
