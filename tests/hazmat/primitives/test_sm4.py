@@ -144,6 +144,14 @@ class TestSM4ModeGCM:
         computed_pt = decryptor.update(ciphertext) + decryptor.finalize()
         assert computed_pt == plaintext
 
+        cipher_no_tag = base.Cipher(algorithms.SM4(key), modes.GCM(iv))
+        decryptor = cipher_no_tag.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        computed_pt = decryptor.update(
+            ciphertext
+        ) + decryptor.finalize_with_tag(tag)
+        assert computed_pt == plaintext
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -164,3 +172,10 @@ class TestSM4ModeGCM:
         decryptor.update(ciphertext[:-1])
         with pytest.raises(InvalidTag):
             decryptor.finalize()
+
+        cipher_no_tag = base.Cipher(algorithms.SM4(key), modes.GCM(iv))
+        decryptor = cipher_no_tag.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        decryptor.update(ciphertext[:-1])
+        with pytest.raises(InvalidTag):
+            decryptor.finalize_with_tag(tag)
