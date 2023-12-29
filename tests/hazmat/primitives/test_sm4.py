@@ -7,9 +7,10 @@ import os
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
-from ...utils import load_nist_vectors
+from ...utils import load_nist_vectors, load_vectors_from_file
 from .utils import generate_encrypt_test
 
 
@@ -91,3 +92,90 @@ class TestSM4ModeCTR:
         lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
         lambda iv, **kwargs: modes.CTR(binascii.unhexlify(iv)),
     )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.cipher_supported(
+        algorithms.SM4(b"\x00" * 16), modes.GCM(b"\x00" * 16)
+    ),
+    skip_message="Does not support SM4 GCM",
+)
+class TestSM4ModeGCM:
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("ciphers", "SM4", "rfc8998.txt"),
+            load_nist_vectors,
+        ),
+    )
+    def test_encryption(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        iv = binascii.unhexlify(vector["iv"])
+        associated_data = binascii.unhexlify(vector["aad"])
+        tag = binascii.unhexlify(vector["tag"])
+        plaintext = binascii.unhexlify(vector["plaintext"])
+        ciphertext = binascii.unhexlify(vector["ciphertext"])
+
+        cipher = base.Cipher(algorithms.SM4(key), modes.GCM(iv))
+        encryptor = cipher.encryptor()
+        encryptor.authenticate_additional_data(associated_data)
+        computed_ct = encryptor.update(plaintext) + encryptor.finalize()
+        assert computed_ct == ciphertext
+        assert encryptor.tag == tag
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("ciphers", "SM4", "rfc8998.txt"),
+            load_nist_vectors,
+        ),
+    )
+    def test_decryption(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        iv = binascii.unhexlify(vector["iv"])
+        associated_data = binascii.unhexlify(vector["aad"])
+        tag = binascii.unhexlify(vector["tag"])
+        plaintext = binascii.unhexlify(vector["plaintext"])
+        ciphertext = binascii.unhexlify(vector["ciphertext"])
+
+        cipher = base.Cipher(algorithms.SM4(key), modes.GCM(iv, tag))
+        decryptor = cipher.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        computed_pt = decryptor.update(ciphertext) + decryptor.finalize()
+        assert computed_pt == plaintext
+
+        cipher_no_tag = base.Cipher(algorithms.SM4(key), modes.GCM(iv))
+        decryptor = cipher_no_tag.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        computed_pt = decryptor.update(
+            ciphertext
+        ) + decryptor.finalize_with_tag(tag)
+        assert computed_pt == plaintext
+
+    @pytest.mark.parametrize(
+        "vector",
+        load_vectors_from_file(
+            os.path.join("ciphers", "SM4", "rfc8998.txt"),
+            load_nist_vectors,
+        ),
+    )
+    def test_invalid_tag(self, vector, backend):
+        key = binascii.unhexlify(vector["key"])
+        iv = binascii.unhexlify(vector["iv"])
+        associated_data = binascii.unhexlify(vector["aad"])
+        tag = binascii.unhexlify(vector["tag"])
+        ciphertext = binascii.unhexlify(vector["ciphertext"])
+
+        cipher = base.Cipher(algorithms.SM4(key), modes.GCM(iv, tag))
+        decryptor = cipher.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        decryptor.update(ciphertext[:-1])
+        with pytest.raises(InvalidTag):
+            decryptor.finalize()
+
+        cipher_no_tag = base.Cipher(algorithms.SM4(key), modes.GCM(iv))
+        decryptor = cipher_no_tag.decryptor()
+        decryptor.authenticate_additional_data(associated_data)
+        decryptor.update(ciphertext[:-1])
+        with pytest.raises(InvalidTag):
+            decryptor.finalize_with_tag(tag)
