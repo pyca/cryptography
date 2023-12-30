@@ -25,8 +25,8 @@ use cryptography_x509::oid::{
     SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
 };
 
-use self::extension::{ca, common, ee, Criticality, ExtensionPolicy};
 use crate::ops::CryptoOps;
+use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::ValidationError;
 
