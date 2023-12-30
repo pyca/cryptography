@@ -118,13 +118,10 @@ impl DsaPrivateKey {
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
-        data: &pyo3::types::PyBytes,
+        data: &[u8],
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((data, algorithm))?
-            .extract()?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
@@ -204,13 +201,10 @@ impl DsaPublicKey {
         &self,
         py: pyo3::Python<'_>,
         signature: &[u8],
-        data: &pyo3::types::PyBytes,
+        data: &[u8],
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, _): (&[u8], &pyo3::PyAny) = types::CALCULATE_DIGEST_AND_ALGORITHM
-            .get(py)?
-            .call1((data, algorithm))?
-            .extract()?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
