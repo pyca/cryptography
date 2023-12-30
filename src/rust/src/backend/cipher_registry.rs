@@ -62,14 +62,14 @@ impl From<&'static openssl::cipher::CipherRef> for RegistryCipher {
     }
 }
 
-struct RegisteryBuilder<'p> {
+struct RegistryBuilder<'p> {
     py: pyo3::Python<'p>,
     m: HashMap<RegistryKey, RegistryCipher>,
 }
 
-impl<'p> RegisteryBuilder<'p> {
+impl<'p> RegistryBuilder<'p> {
     fn new(py: pyo3::Python<'p>) -> Self {
-        RegisteryBuilder {
+        RegistryBuilder {
             py,
             m: HashMap::new(),
         }
@@ -102,7 +102,7 @@ fn get_cipher_registry(
         pyo3::sync::GILOnceCell::new();
 
     REGISTRY.get_or_try_init(py, || {
-        let mut m = RegisteryBuilder::new(py);
+        let mut m = RegistryBuilder::new(py);
 
         let aes = types::AES.get(py)?;
         let aes128 = types::AES128.get(py)?;
