@@ -21,7 +21,7 @@ unsafe impl Sync for Cmac {}
 unsafe impl Send for Cmac {}
 
 impl Cmac {
-    pub fn new(key: &[u8], cipher: &openssl::symm::Cipher) -> OpenSSLResult<Cmac> {
+    pub fn new(key: &[u8], cipher: &openssl::cipher::CipherRef) -> OpenSSLResult<Cmac> {
         // SAFETY: All FFI conditions are handled.
         unsafe {
             let ctx = Cmac::from_ptr(cvt_p(ffi::CMAC_CTX_new())?);
