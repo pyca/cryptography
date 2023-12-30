@@ -4,7 +4,7 @@
 
 use crate::error::CryptographyResult;
 use crate::types;
-use openssl::symm::Cipher;
+use openssl::cipher::Cipher;
 use std::collections::HashMap;
 
 struct RegistryKey {
@@ -54,7 +54,7 @@ impl std::hash::Hash for RegistryKey {
 
 struct RegisteryBuilder<'p> {
     py: pyo3::Python<'p>,
-    m: HashMap<RegistryKey, openssl::symm::Cipher>,
+    m: HashMap<RegistryKey, &'static openssl::cipher::CipherRef>,
 }
 
 impl<'p> RegisteryBuilder<'p> {
@@ -70,7 +70,7 @@ impl<'p> RegisteryBuilder<'p> {
         algorithm: &pyo3::PyAny,
         mode: &pyo3::PyAny,
         key_size: Option<u16>,
-        cipher: openssl::symm::Cipher,
+        cipher: &'static openssl::cipher::CipherRef,
     ) -> CryptographyResult<()> {
         self.m.insert(
             RegistryKey::new(self.py, algorithm.into(), mode.into(), key_size)?,
@@ -80,16 +80,17 @@ impl<'p> RegisteryBuilder<'p> {
         Ok(())
     }
 
-    fn build(self) -> HashMap<RegistryKey, openssl::symm::Cipher> {
+    fn build(self) -> HashMap<RegistryKey, &'static openssl::cipher::CipherRef> {
         self.m
     }
 }
 
 fn get_cipher_registry(
     py: pyo3::Python<'_>,
-) -> CryptographyResult<&HashMap<RegistryKey, openssl::symm::Cipher>> {
-    static REGISTRY: pyo3::sync::GILOnceCell<HashMap<RegistryKey, openssl::symm::Cipher>> =
-        pyo3::sync::GILOnceCell::new();
+) -> CryptographyResult<&HashMap<RegistryKey, &'static openssl::cipher::CipherRef>> {
+    static REGISTRY: pyo3::sync::GILOnceCell<
+        HashMap<RegistryKey, &'static openssl::cipher::CipherRef>,
+    > = pyo3::sync::GILOnceCell::new();
 
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegisteryBuilder::new(py);
@@ -123,11 +124,11 @@ fn get_cipher_registry(
         m.add(triple_des, cbc, Some(192), Cipher::des_ede3_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        m.add(camellia, cbc, Some(128), Cipher::camellia_128_cbc())?;
+        m.add(camellia, cbc, Some(128), Cipher::camellia128_cbc())?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        m.add(camellia, cbc, Some(192), Cipher::camellia_192_cbc())?;
+        m.add(camellia, cbc, Some(192), Cipher::camellia192_cbc())?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        m.add(camellia, cbc, Some(256), Cipher::camellia_256_cbc())?;
+        m.add(camellia, cbc, Some(256), Cipher::camellia256_cbc())?;
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
         m.add(sm4, cbc, Some(128), Cipher::sm4_cbc())?;
@@ -148,11 +149,11 @@ fn get_cipher_registry(
     })
 }
 
-pub(crate) fn get_cipher(
+pub(crate) fn get_cipher<'a>(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::PyAny,
     mode_cls: &pyo3::PyAny,
-) -> CryptographyResult<Option<openssl::symm::Cipher>> {
+) -> CryptographyResult<Option<&'a openssl::cipher::CipherRef>> {
     let registry = get_cipher_registry(py)?;
 
     let key_size = algorithm

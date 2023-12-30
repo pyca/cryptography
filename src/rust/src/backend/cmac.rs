@@ -61,7 +61,7 @@ impl Cmac {
         let key = algorithm
             .getattr(pyo3::intern!(py, "key"))?
             .extract::<CffiBuf<'_>>()?;
-        let ctx = cryptography_openssl::cmac::Cmac::new(key.as_bytes(), &cipher)?;
+        let ctx = cryptography_openssl::cmac::Cmac::new(key.as_bytes(), cipher)?;
         Ok(Cmac { ctx: Some(ctx) })
     }
 
