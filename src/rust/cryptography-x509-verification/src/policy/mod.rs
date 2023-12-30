@@ -341,9 +341,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
     }
 
-    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {
-        let extensions = cert.extensions()?;
-
+    fn permits_basic(
+        &self,
+        cert: &Certificate<'_>,
+        extensions: &Extensions<'_>,
+    ) -> Result<(), ValidationError> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
@@ -405,7 +407,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         // Extension policy checks.
         for ext_policy in self.common_extension_policies.iter() {
-            ext_policy.permits(self, cert, &extensions)?;
+            ext_policy.permits(self, cert, extensions)?;
         }
 
         // Check that all critical extensions in this certificate are accounted for.
@@ -443,7 +445,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         current_depth: u8,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert, extensions)?;
 
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
@@ -484,7 +486,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert, extensions)?;
 
         for ext_policy in self.ee_extension_policies.iter() {
             ext_policy.permits(self, cert, extensions)?;
