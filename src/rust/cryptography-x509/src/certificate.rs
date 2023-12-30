@@ -46,7 +46,7 @@ pub struct TbsCertificate<'a> {
     pub validity: Validity,
     pub subject: name::Name<'a>,
 
-    pub spki: common::SubjectPublicKeyInfo<'a>,
+    pub spki: common::WithTlv<'a, common::SubjectPublicKeyInfo<'a>>,
     #[implicit(1)]
     pub issuer_unique_id: Option<asn1::BitString<'a>>,
     #[implicit(2)]

@@ -48,7 +48,7 @@ impl CertificateSigningRequest {
         // This makes an unnecessary copy. It'd be nice to get rid of it.
         let serialized = pyo3::types::PyBytes::new(
             py,
-            &asn1::write_single(&self.raw.borrow_dependent().csr_info.spki)?,
+            self.raw.borrow_dependent().csr_info.spki.tlv().full_data(),
         );
         Ok(types::LOAD_DER_PUBLIC_KEY.get(py)?.call1((serialized,))?)
     }
