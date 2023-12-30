@@ -52,9 +52,19 @@ impl std::hash::Hash for RegistryKey {
     }
 }
 
+enum RegistryCipher {
+    Ref(&'static openssl::cipher::CipherRef),
+}
+
+impl From<&'static openssl::cipher::CipherRef> for RegistryCipher {
+    fn from(c: &'static openssl::cipher::CipherRef) -> RegistryCipher {
+        RegistryCipher::Ref(c)
+    }
+}
+
 struct RegisteryBuilder<'p> {
     py: pyo3::Python<'p>,
-    m: HashMap<RegistryKey, &'static openssl::cipher::CipherRef>,
+    m: HashMap<RegistryKey, RegistryCipher>,
 }
 
 impl<'p> RegisteryBuilder<'p> {
@@ -70,27 +80,26 @@ impl<'p> RegisteryBuilder<'p> {
         algorithm: &pyo3::PyAny,
         mode: &pyo3::PyAny,
         key_size: Option<u16>,
-        cipher: &'static openssl::cipher::CipherRef,
+        cipher: impl Into<RegistryCipher>,
     ) -> CryptographyResult<()> {
         self.m.insert(
             RegistryKey::new(self.py, algorithm.into(), mode.into(), key_size)?,
-            cipher,
+            cipher.into(),
         );
 
         Ok(())
     }
 
-    fn build(self) -> HashMap<RegistryKey, &'static openssl::cipher::CipherRef> {
+    fn build(self) -> HashMap<RegistryKey, RegistryCipher> {
         self.m
     }
 }
 
 fn get_cipher_registry(
     py: pyo3::Python<'_>,
-) -> CryptographyResult<&HashMap<RegistryKey, &'static openssl::cipher::CipherRef>> {
-    static REGISTRY: pyo3::sync::GILOnceCell<
-        HashMap<RegistryKey, &'static openssl::cipher::CipherRef>,
-    > = pyo3::sync::GILOnceCell::new();
+) -> CryptographyResult<&HashMap<RegistryKey, RegistryCipher>> {
+    static REGISTRY: pyo3::sync::GILOnceCell<HashMap<RegistryKey, RegistryCipher>> =
+        pyo3::sync::GILOnceCell::new();
 
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegisteryBuilder::new(py);
@@ -161,5 +170,8 @@ pub(crate) fn get_cipher<'a>(
         .extract()?;
     let key = RegistryKey::new(py, algorithm.get_type().into(), mode_cls.into(), key_size)?;
 
-    Ok(registry.get(&key).cloned())
+    match registry.get(&key) {
+        Some(RegistryCipher::Ref(c)) => Ok(Some(c)),
+        None => Ok(None),
+    }
 }
