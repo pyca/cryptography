@@ -33,7 +33,7 @@ impl CryptoOps for PyCryptoOps {
         })
     }
 
-    fn verify_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err> {
+    fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err> {
         pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
             sign::verify_signature_with_signature_algorithm(
                 py,
