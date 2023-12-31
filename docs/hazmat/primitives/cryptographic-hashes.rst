@@ -290,7 +290,7 @@ Interfaces
 
 
 .. _`Lifetimes of cryptographic hash functions`: https://valerieaurora.org/hash.html
-.. _`BLAKE2`: https://blake2.net
+.. _`BLAKE2`: https://www.blake2.net/
 .. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
 .. _`GM/T 0004-2012`: https://www.oscca.gov.cn/sca/xxgk/2010-12/17/1002389/files/302a3ada057c4a73830536d03e683110.pdf
 .. _`draft-sca-cfrg-sm3`: https://datatracker.ietf.org/doc/html/draft-sca-cfrg-sm3
