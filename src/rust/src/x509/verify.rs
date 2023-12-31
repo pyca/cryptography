@@ -4,7 +4,7 @@
 
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509_verification::{
-    ops::CryptoOps,
+    ops::{CryptoOps, VerificationCertificate},
     policy::{Policy, Subject},
     trust_store::Store,
     types::{DNSName, IPAddress},
@@ -20,13 +20,12 @@ use crate::{
     exceptions::VerificationError,
 };
 
-use super::certificate::OwnedCertificate;
-
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
     type Key = pyo3::Py<pyo3::PyAny>;
     type Err = CryptographyError;
+    type CertificateExtra = pyo3::Py<PyCertificate>;
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
@@ -99,39 +98,32 @@ impl PyServerVerifier {
         self.as_policy().max_chain_depth
     }
 
-    fn verify<'p>(
+    fn verify(
         &self,
-        py: pyo3::Python<'p>,
-        leaf: &PyCertificate,
-        intermediates: Vec<pyo3::PyRef<'p, PyCertificate>>,
-    ) -> CryptographyResult<Vec<PyCertificate>> {
+        py: pyo3::Python<'_>,
+        leaf: pyo3::Py<PyCertificate>,
+        intermediates: Vec<pyo3::Py<PyCertificate>>,
+    ) -> CryptographyResult<Vec<pyo3::Py<PyCertificate>>> {
         let policy = self.as_policy();
-        let store = self.store.as_ref(py).borrow();
+        let store = self.store.get();
 
         let chain = cryptography_x509_verification::verify(
-            leaf.raw.borrow_dependent(),
-            intermediates
-                .iter()
-                .map(|i| i.raw.borrow_dependent().clone()),
+            &VerificationCertificate::new(
+                leaf.get().raw.borrow_dependent().clone(),
+                leaf.clone_ref(py),
+            ),
+            intermediates.iter().map(|i| {
+                VerificationCertificate::new(
+                    i.get().raw.borrow_dependent().clone(),
+                    i.clone_ref(py),
+                )
+            }),
             policy,
             store.raw.borrow_dependent(),
         )
         .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
 
-        // TODO: Optimize this? Turning a Certificate back into a PyCertificate
-        // involves a full round-trip back through DER, which isn't ideal.
-        chain
-            .iter()
-            .map(|c| {
-                let raw = pyo3::types::PyBytes::new(py, &asn1::write_single(c)?);
-                Ok(PyCertificate {
-                    raw: OwnedCertificate::try_new(raw.into(), |raw| {
-                        asn1::parse_single(raw.as_bytes(py))
-                    })?,
-                    cached_extensions: pyo3::sync::GILOnceCell::new(),
-                })
-            })
-            .collect()
+        Ok(chain.iter().map(|c| c.extra().clone_ref(py)).collect())
     }
 }
 
@@ -212,12 +204,14 @@ fn create_server_verifier(
     })
 }
 
+type PyCryptoOpsStore<'a> = Store<'a, PyCryptoOps>;
+
 self_cell::self_cell!(
     struct RawPyStore {
         owner: Vec<pyo3::Py<PyCertificate>>,
 
         #[covariant]
-        dependent: Store,
+        dependent: PyCryptoOpsStore,
     }
 );
 
@@ -233,7 +227,7 @@ struct PyStore {
 #[pyo3::pymethods]
 impl PyStore {
     #[new]
-    fn new(certs: Vec<pyo3::Py<PyCertificate>>) -> pyo3::PyResult<Self> {
+    fn new(py: pyo3::Python<'_>, certs: Vec<pyo3::Py<PyCertificate>>) -> pyo3::PyResult<Self> {
         if certs.is_empty() {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "can't create an empty store",
@@ -241,7 +235,12 @@ impl PyStore {
         }
         Ok(Self {
             raw: RawPyStore::new(certs, |v| {
-                Store::new(v.iter().map(|t| t.get().raw.borrow_dependent().clone()))
+                Store::new(v.iter().map(|t| {
+                    VerificationCertificate::new(
+                        t.get().raw.borrow_dependent().clone(),
+                        t.clone_ref(py),
+                    )
+                }))
             }),
         })
     }

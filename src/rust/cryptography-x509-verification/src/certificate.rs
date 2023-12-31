@@ -55,6 +55,7 @@ Xw4nMqk=
     impl CryptoOps for PublicKeyErrorOps {
         type Key = ();
         type Err = ();
+        type CertificateExtra = ();
 
         fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
             // Simulate failing to retrieve a public key.

@@ -15,19 +15,18 @@ use std::collections::HashSet;
 use std::vec;
 
 use crate::certificate::cert_is_self_issued;
+use crate::ops::{CryptoOps, VerificationCertificate};
+use crate::policy::Policy;
+use crate::trust_store::Store;
+use crate::types::DNSName;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
 use cryptography_x509::{
-    certificate::Certificate,
     extensions::{NameConstraints, SubjectAlternativeName},
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
-use ops::CryptoOps;
-use policy::Policy;
-use trust_store::Store;
-use types::DNSName;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationError {
@@ -157,23 +156,23 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
     }
 }
 
-pub type Chain<'c> = Vec<Certificate<'c>>;
+pub type Chain<'c, B> = Vec<VerificationCertificate<'c, B>>;
 
 pub fn verify<'chain, B: CryptoOps>(
-    leaf: &Certificate<'chain>,
-    intermediates: impl IntoIterator<Item = Certificate<'chain>>,
+    leaf: &VerificationCertificate<'chain, B>,
+    intermediates: impl IntoIterator<Item = VerificationCertificate<'chain, B>>,
     policy: &Policy<'_, B>,
-    store: &Store<'chain>,
-) -> Result<Chain<'chain>, ValidationError> {
+    store: &Store<'chain, B>,
+) -> Result<Chain<'chain, B>, ValidationError> {
     let builder = ChainBuilder::new(intermediates.into_iter().collect(), policy, store);
 
     builder.build_chain(leaf)
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
-    intermediates: HashSet<Certificate<'chain>>,
+    intermediates: HashSet<VerificationCertificate<'chain, B>>,
     policy: &'a Policy<'a, B>,
-    store: &'a Store<'chain>,
+    store: &'a Store<'chain, B>,
 }
 
 // When applying a name constraint, we need to distinguish between a few different scenarios:
@@ -197,9 +196,9 @@ impl ApplyNameConstraintStatus {
 
 impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: HashSet<Certificate<'chain>>,
+        intermediates: HashSet<VerificationCertificate<'chain, B>>,
         policy: &'a Policy<'a, B>,
-        store: &'a Store<'chain>,
+        store: &'a Store<'chain, B>,
     ) -> Self {
         Self {
             intermediates,
@@ -210,27 +209,25 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
     fn potential_issuers(
         &'a self,
-        cert: &'a Certificate<'chain>,
-    ) -> impl Iterator<Item = &'a Certificate<'chain>> + '_ {
+        cert: &'a VerificationCertificate<'chain, B>,
+    ) -> impl Iterator<Item = &'a VerificationCertificate<'chain, B>> + '_ {
         // TODO: Optimizations:
         // * Search by AKI and other identifiers?
         self.store
-            .get_by_subject(&cert.tbs_cert.issuer)
+            .get_by_subject(&cert.certificate().tbs_cert.issuer)
             .iter()
-            .chain(
-                self.intermediates
-                    .iter()
-                    .filter(|&candidate| candidate.subject() == cert.issuer()),
-            )
+            .chain(self.intermediates.iter().filter(|&candidate| {
+                candidate.certificate().subject() == cert.certificate().issuer()
+            }))
     }
 
     fn build_chain_inner(
         &self,
-        working_cert: &Certificate<'chain>,
+        working_cert: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         working_cert_extensions: &Extensions<'chain>,
         name_chain: NameChain<'_, 'chain>,
-    ) -> Result<Chain<'chain>, ValidationError> {
+    ) -> Result<Chain<'chain, B>, ValidationError> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             name_chain.evaluate_constraints(&nc.value()?)?;
         }
@@ -257,10 +254,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
             // policy.
-            let issuer_extensions = issuing_cert_candidate.extensions()?;
+            let issuer_extensions = issuing_cert_candidate.certificate().extensions()?;
             match self.policy.valid_issuer(
-                issuing_cert_candidate,
-                working_cert,
+                issuing_cert_candidate.certificate(),
+                working_cert.certificate(),
                 current_depth,
                 &issuer_extensions,
             ) {
@@ -296,7 +293,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                             // certificate is the "final" (i.e., leaf) certificate in the path.
                             // We accomplish this by only collecting the SANs when the issuing
                             // candidate (which is a non-leaf by definition) isn't self-issued.
-                            cert_is_self_issued(issuing_cert_candidate),
+                            cert_is_self_issued(issuing_cert_candidate.certificate()),
                         )?,
                     ) {
                         Ok(mut chain) => {
@@ -326,15 +323,19 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         )))
     }
 
-    fn build_chain(&self, leaf: &Certificate<'chain>) -> Result<Chain<'chain>, ValidationError> {
+    fn build_chain(
+        &self,
+        leaf: &VerificationCertificate<'chain, B>,
+    ) -> Result<Chain<'chain, B>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).
         //
         // The leaf must be an EE; a CA cert in the leaf position will be rejected.
-        let leaf_extensions = leaf.extensions()?;
+        let leaf_extensions = leaf.certificate().extensions()?;
 
-        self.policy.permits_ee(leaf, &leaf_extensions)?;
+        self.policy
+            .permits_ee(leaf.certificate(), &leaf_extensions)?;
 
         let mut chain = self.build_chain_inner(
             leaf,
