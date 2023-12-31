@@ -384,6 +384,10 @@ pub static CRL_ENTRY_REASON_ENUM_TO_CODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.backends.openssl.decode_asn1",
     &["_CRL_ENTRY_REASON_ENUM_TO_CODE"],
 );
+pub static BACKEND_HANDLE_KEY_LOADING_ERROR: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.backends.openssl.backend",
+    &["backend", "_handle_key_loading_error"],
+);
 
 pub static RSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.rsa",

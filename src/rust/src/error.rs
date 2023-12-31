@@ -50,6 +50,22 @@ impl From<pem::PemError> for CryptographyError {
     }
 }
 
+pub(crate) fn list_from_openssl_error(
+    py: pyo3::Python<'_>,
+    error_stack: openssl::error::ErrorStack,
+) -> &pyo3::types::PyList {
+    let errors = pyo3::types::PyList::empty(py);
+    for e in error_stack.errors() {
+        errors
+            .append(
+                pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })
+                    .expect("Failed to create OpenSSLError"),
+            )
+            .expect("Failed to append to list");
+    }
+    errors
+}
+
 impl From<CryptographyError> for pyo3::PyErr {
     fn from(e: CryptographyError) -> pyo3::PyErr {
         match e {
@@ -63,15 +79,7 @@ impl From<CryptographyError> for pyo3::PyErr {
             }
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
-                let errors = pyo3::types::PyList::empty(py);
-                for e in error_stack.errors() {
-                    errors
-                        .append(
-                            pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })
-                                .expect("Failed to create OpenSSLError"),
-                        )
-                        .expect("Failed to append to list");
-                }
+                let errors = list_from_openssl_error(py, error_stack);
                 exceptions::InternalError::new_err((
                     format!(
                         "Unknown OpenSSL error. This error is commonly encountered

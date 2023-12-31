@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{error, exceptions, types};
 use foreign_types_shared::ForeignTypeRef;
 use pyo3::IntoPy;
 
@@ -67,9 +68,38 @@ fn private_key_from_ptr(
 }
 
 #[pyo3::prelude::pyfunction]
+fn load_der_public_key(
+    py: pyo3::Python<'_>,
+    data: CffiBuf<'_>,
+) -> CryptographyResult<pyo3::PyObject> {
+    if let Ok(pkey) = openssl::pkey::PKey::public_key_from_der(data.as_bytes()) {
+        return public_key_from_pkey(py, &pkey);
+    }
+    // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need to
+    // check to see if it is a pure PKCS1 RSA public key (not embedded in a
+    // subjectPublicKeyInfo)
+    let rsa = openssl::rsa::Rsa::public_key_from_der_pkcs1(data.as_bytes()).or_else(|e| {
+        let errors = error::list_from_openssl_error(py, e);
+        Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
+            .get(py)?
+            .call1((errors,))
+            .unwrap_err())
+    })?;
+    let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
+    public_key_from_pkey(py, &pkey)
+}
+
+#[pyo3::prelude::pyfunction]
 fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<pyo3::PyObject> {
     // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+    public_key_from_pkey(py, pkey)
+}
+
+fn public_key_from_pkey(
+    py: pyo3::Python<'_>,
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+) -> CryptographyResult<pyo3::PyObject> {
     match pkey.id() {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey).into_py(py)),
         #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
@@ -114,6 +144,9 @@ fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<p
 
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "keys")?;
+
+    m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
+
     m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
 

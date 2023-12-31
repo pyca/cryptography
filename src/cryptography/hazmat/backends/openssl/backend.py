@@ -511,7 +511,7 @@ class Backend:
                 evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
                 return self._evp_pkey_to_public_key(evp_pkey)
             else:
-                self._handle_key_loading_error()
+                self._handle_key_loading_error(self._consume_errors())
 
     def load_der_private_key(
         self,
@@ -552,29 +552,6 @@ class Backend:
         else:
             self._consume_errors()
             return None
-
-    def load_der_public_key(self, data: bytes) -> PublicKeyTypes:
-        mem_bio = self._bytes_to_bio(data)
-        evp_pkey = self._lib.d2i_PUBKEY_bio(mem_bio.bio, self._ffi.NULL)
-        if evp_pkey != self._ffi.NULL:
-            evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-            return self._evp_pkey_to_public_key(evp_pkey)
-        else:
-            # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
-            # need to check to see if it is a pure PKCS1 RSA public key (not
-            # embedded in a subjectPublicKeyInfo)
-            self._consume_errors()
-            res = self._lib.BIO_reset(mem_bio.bio)
-            self.openssl_assert(res == 1)
-            rsa_cdata = self._lib.d2i_RSAPublicKey_bio(
-                mem_bio.bio, self._ffi.NULL
-            )
-            if rsa_cdata != self._ffi.NULL:
-                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-                evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-                return self._evp_pkey_to_public_key(evp_pkey)
-            else:
-                self._handle_key_loading_error()
 
     def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)
@@ -640,7 +617,7 @@ class Backend:
                         "by this backend.".format(userdata.maxsize - 1)
                     )
             else:
-                self._handle_key_loading_error()
+                self._handle_key_loading_error(self._consume_errors())
 
         evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
@@ -657,9 +634,9 @@ class Backend:
             evp_pkey, unsafe_skip_rsa_key_validation
         )
 
-    def _handle_key_loading_error(self) -> typing.NoReturn:
-        errors = self._consume_errors()
-
+    def _handle_key_loading_error(
+        self, errors: list[rust_openssl.OpenSSLError]
+    ) -> typing.NoReturn:
         if not errors:
             raise ValueError(
                 "Could not deserialize key data. The data may be in an "
