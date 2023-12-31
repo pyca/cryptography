@@ -10,6 +10,7 @@ use cryptography_x509_verification::{
     types::{DNSName, IPAddress},
 };
 
+use crate::backend::keys;
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
@@ -29,13 +30,7 @@ impl CryptoOps for PyCryptoOps {
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
-            // This makes an unnecessary copy. It'd be nice to get rid of it.
-            let spki_der = pyo3::types::PyBytes::new(py, cert.tbs_cert.spki.tlv().full_data());
-
-            Ok(types::LOAD_DER_PUBLIC_KEY
-                .get(py)?
-                .call1((spki_der,))?
-                .into())
+            keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())
         })
     }
 

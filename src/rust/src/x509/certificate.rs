@@ -5,7 +5,7 @@
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
 };
-use crate::backend::hashes;
+use crate::backend::{hashes, keys};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::verify::PyCryptoOps;
 use crate::x509::{extensions, sct, sign};
@@ -63,13 +63,11 @@ impl Certificate {
         slf
     }
 
-    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
-        // This makes an unnecessary copy. It'd be nice to get rid of it.
-        let serialized = pyo3::types::PyBytes::new(
+    fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<pyo3::PyObject> {
+        keys::load_der_public_key_bytes(
             py,
             self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
-        );
-        Ok(types::LOAD_DER_PUBLIC_KEY.get(py)?.call1((serialized,))?)
+        )
     }
 
     fn fingerprint<'p>(
