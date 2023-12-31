@@ -72,13 +72,20 @@ fn load_der_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
 ) -> CryptographyResult<pyo3::PyObject> {
-    if let Ok(pkey) = openssl::pkey::PKey::public_key_from_der(data.as_bytes()) {
+    load_der_public_key_bytes(py, data.as_bytes())
+}
+
+pub(crate) fn load_der_public_key_bytes(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+) -> CryptographyResult<pyo3::PyObject> {
+    if let Ok(pkey) = openssl::pkey::PKey::public_key_from_der(data) {
         return public_key_from_pkey(py, &pkey);
     }
     // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need to
     // check to see if it is a pure PKCS1 RSA public key (not embedded in a
     // subjectPublicKeyInfo)
-    let rsa = openssl::rsa::Rsa::public_key_from_der_pkcs1(data.as_bytes()).or_else(|e| {
+    let rsa = openssl::rsa::Rsa::public_key_from_der_pkcs1(data).or_else(|e| {
         let errors = error::list_from_openssl_error(py, e);
         Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
             .get(py)?

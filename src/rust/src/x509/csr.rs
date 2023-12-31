@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
+use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sign};
 use crate::{exceptions, types, x509};
@@ -44,13 +45,11 @@ impl CertificateSigningRequest {
         self.raw.borrow_owner().as_bytes(py) == other.raw.borrow_owner().as_bytes(py)
     }
 
-    fn public_key<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
-        // This makes an unnecessary copy. It'd be nice to get rid of it.
-        let serialized = pyo3::types::PyBytes::new(
+    fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<pyo3::PyObject> {
+        keys::load_der_public_key_bytes(
             py,
             self.raw.borrow_dependent().csr_info.spki.tlv().full_data(),
-        );
-        Ok(types::LOAD_DER_PUBLIC_KEY.get(py)?.call1((serialized,))?)
+        )
     }
 
     #[getter]
@@ -210,7 +209,7 @@ impl CertificateSigningRequest {
         let public_key = slf.public_key(py)?;
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key,
+            public_key.as_ref(py),
             &slf.raw.borrow_dependent().signature_alg,
             slf.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
