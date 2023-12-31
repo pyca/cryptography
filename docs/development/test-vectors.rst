@@ -1048,9 +1048,9 @@ header format (substituting the correct information):
 .. _`GnuTLS example keys`: https://gitlab.com/gnutls/gnutls/-/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
-.. _`draft-ribose-cfrg-sm4-10`: https://tools.ietf.org/html/draft-ribose-cfrg-sm4-10
+.. _`draft-ribose-cfrg-sm4-10`: https://datatracker.ietf.org/doc/html/draft-ribose-cfrg-sm4-10
 .. _`Ed25519 website`: https://ed25519.cr.yp.to/software.html
-.. _`NIST SP-800-38B`: https://csrc.nist.gov/publications/detail/sp/800-38b/archive/2005-05-01
+.. _`NIST SP-800-38B`: https://csrc.nist.gov/pubs/sp/800/38/b/final
 .. _`NIST PKI Testing`: https://csrc.nist.gov/Projects/PKI-Testing
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt

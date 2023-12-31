@@ -909,8 +909,8 @@ Elliptic Curve Object Identifiers
     :raises LookupError: Raised if no elliptic curve is found that matches
         the provided object identifier.
 
-.. _`FIPS 186-3`: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf
-.. _`FIPS 186-4`: https://csrc.nist.gov/publications/detail/fips/186/4/final
+.. _`FIPS 186-3`: https://csrc.nist.gov/files/pubs/fips/186-3/final/docs/fips_186-3.pdf
+.. _`FIPS 186-4`: https://csrc.nist.gov/pubs/fips/186-4/final
 .. _`800-56A`: https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
 .. _`some concern`: https://crypto.stackexchange.com/questions/10263/should-we-trust-the-nist-recommended-ecc-parameters
 .. _`less than 224 bits`: https://www.cosic.esat.kuleuven.be/ecrypt/ecrypt2/documents/D.SPA.20.pdf

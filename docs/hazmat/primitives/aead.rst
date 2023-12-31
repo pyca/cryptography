@@ -493,4 +493,4 @@ also support providing integrity for associated data which is not encrypted.
             when the ciphertext has been changed, but will also occur when the
             key, nonce, or associated data are wrong.
 
-.. _`recommends a 96-bit IV length`: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+.. _`recommends a 96-bit IV length`: https://csrc.nist.gov/pubs/sp/800/38/d/final
