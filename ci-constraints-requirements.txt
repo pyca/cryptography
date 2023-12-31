@@ -86,7 +86,7 @@ pygments==2.17.2
     #   sphinx
 pyproject-hooks==1.0.0
     # via build
-pytest==7.4.3
+pytest==7.4.4
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
