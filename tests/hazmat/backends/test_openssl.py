@@ -279,13 +279,12 @@ class TestOpenSSLSerializationWithOpenSSL:
         assert userdata.error == -1
 
     def test_unsupported_evp_pkey_type(self):
-        key = backend._create_evp_pkey_gc()
+        key = backend._lib.EVP_PKEY_new()
+        key = backend._ffi.gc(key, backend._lib.EVP_PKEY_free)
         with raises_unsupported_algorithm(None):
             backend._evp_pkey_to_private_key(
                 key, unsafe_skip_rsa_key_validation=False
             )
-        with raises_unsupported_algorithm(None):
-            backend._evp_pkey_to_public_key(key)
 
     def test_very_long_pem_serialization_password(self):
         password = b"x" * 1024
