@@ -138,10 +138,6 @@ const char *X509_get_default_cert_file(void);
 const char *X509_get_default_cert_dir_env(void);
 const char *X509_get_default_cert_file_env(void);
 
-int i2d_RSAPrivateKey_bio(BIO *, RSA *);
-RSA *d2i_RSAPublicKey_bio(BIO *, RSA **);
-int i2d_RSAPublicKey_bio(BIO *, RSA *);
-
 int X509_get_ext_count(const X509 *);
 X509_EXTENSION *X509_get_ext(const X509 *, int);
 X509_NAME *X509_get_subject_name(const X509 *);
