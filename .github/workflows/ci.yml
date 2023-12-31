@@ -68,6 +68,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
       - name: Setup rust
         uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
@@ -248,6 +249,7 @@ jobs:
           architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'tomli; python_version < "3.11"'
@@ -307,6 +309,7 @@ jobs:
           architecture: ${{ matrix.WINDOWS.ARCH }}
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
       - run: rustup component add llvm-tools-preview
       - name: Cache rust and pip
         uses: ./.github/actions/cache
@@ -381,6 +384,7 @@ jobs:
           python-version: ${{ matrix.PYTHON }}
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip install . setuptools
         env:
@@ -426,6 +430,7 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data
