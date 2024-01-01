@@ -46,7 +46,7 @@ classifiers = [
 requires-python = ">=3.7"
 dependencies = [
     # Must be kept in sync with `build-system.requires`
-    "cffi >=1.12",
+    "cffi>=1.12; platform_python_implementation != 'PyPy'",
 ]
 
 [project.urls]
