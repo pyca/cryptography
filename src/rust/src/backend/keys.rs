@@ -6,8 +6,8 @@ use foreign_types_shared::ForeignTypeRef;
 use pyo3::IntoPy;
 
 use crate::buf::CffiBuf;
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::{error, exceptions, types};
+use crate::error::{self, CryptographyError, CryptographyResult};
+use crate::{exceptions, types};
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(
@@ -86,14 +86,7 @@ pub(crate) fn load_der_public_key_bytes(
     // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need to
     // check to see if it is a pure PKCS1 RSA public key (not embedded in a
     // subjectPublicKeyInfo)
-    let rsa = openssl::rsa::Rsa::public_key_from_der_pkcs1(data).or_else(|e| {
-        let errors = error::list_from_openssl_error(py, e);
-        Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
-            .get(py)?
-            .call1((errors,))
-            .unwrap_err())
-    })?;
-    let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
+    let pkey = cryptography_key_parsing::rsa::parse_pkcs1_rsa_public_key(data)?;
     public_key_from_pkey(py, &pkey, pkey.id())
 }
 
@@ -104,18 +97,18 @@ fn load_pem_public_key(
 ) -> CryptographyResult<pyo3::PyObject> {
     let p = pem::parse(data.as_bytes())?;
     let pkey = match p.tag() {
-        "RSA PUBLIC KEY" => openssl::rsa::Rsa::public_key_from_der_pkcs1(p.contents())
-            .and_then(openssl::pkey::PKey::from_rsa),
-        "PUBLIC KEY" => openssl::pkey::PKey::public_key_from_der(p.contents()),
+        "RSA PUBLIC KEY" => {
+            cryptography_key_parsing::rsa::parse_pkcs1_rsa_public_key(p.contents())?
+        }
+        "PUBLIC KEY" => openssl::pkey::PKey::public_key_from_der(p.contents()).or_else(|e| {
+            let errors = error::list_from_openssl_error(py, e);
+            Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
+                .get(py)?
+                .call1((errors,))
+                .unwrap_err())
+        })?,
         _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
-    }
-    .or_else(|e| {
-        let errors = error::list_from_openssl_error(py, e);
-        Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
-            .get(py)?
-            .call1((errors,))
-            .unwrap_err())
-    })?;
+    };
     public_key_from_pkey(py, &pkey, pkey.id())
 }
 
