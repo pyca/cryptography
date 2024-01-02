@@ -173,7 +173,9 @@ def test_invalid_private_numbers_public_numbers():
 
 def test_ec_public_numbers_repr():
     pn = ec.EllipticCurvePublicNumbers(2, 3, ec.SECP256R1())
-    assert repr(pn) == "<EllipticCurvePublicNumbers(curve=secp256r1, x=2, y=3>"
+    assert (
+        repr(pn) == "<EllipticCurvePublicNumbers(curve=secp256r1, x=2, y=3)>"
+    )
 
 
 def test_ec_public_numbers_hash():

@@ -194,6 +194,9 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey
 EllipticCurvePublicKey.register(rust_openssl.ec.ECPublicKey)
 
+EllipticCurvePrivateNumbers = rust_openssl.ec.EllipticCurvePrivateNumbers
+EllipticCurvePublicNumbers = rust_openssl.ec.EllipticCurvePublicNumbers
+
 
 class SECT571R1(EllipticCurve):
     name = "sect571r1"
@@ -350,96 +353,6 @@ def derive_private_key(
         raise TypeError("curve must provide the EllipticCurve interface.")
 
     return rust_openssl.ec.derive_private_key(private_value, curve)
-
-
-class EllipticCurvePublicNumbers:
-    def __init__(self, x: int, y: int, curve: EllipticCurve):
-        if not isinstance(x, int) or not isinstance(y, int):
-            raise TypeError("x and y must be integers.")
-
-        if not isinstance(curve, EllipticCurve):
-            raise TypeError("curve must provide the EllipticCurve interface.")
-
-        self._y = y
-        self._x = x
-        self._curve = curve
-
-    def public_key(self, backend: typing.Any = None) -> EllipticCurvePublicKey:
-        return rust_openssl.ec.from_public_numbers(self)
-
-    @property
-    def curve(self) -> EllipticCurve:
-        return self._curve
-
-    @property
-    def x(self) -> int:
-        return self._x
-
-    @property
-    def y(self) -> int:
-        return self._y
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, EllipticCurvePublicNumbers):
-            return NotImplemented
-
-        return (
-            self.x == other.x
-            and self.y == other.y
-            and self.curve.name == other.curve.name
-            and self.curve.key_size == other.curve.key_size
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.x, self.y, self.curve.name, self.curve.key_size))
-
-    def __repr__(self) -> str:
-        return (
-            "<EllipticCurvePublicNumbers(curve={0.curve.name}, x={0.x}, "
-            "y={0.y}>".format(self)
-        )
-
-
-class EllipticCurvePrivateNumbers:
-    def __init__(
-        self, private_value: int, public_numbers: EllipticCurvePublicNumbers
-    ):
-        if not isinstance(private_value, int):
-            raise TypeError("private_value must be an integer.")
-
-        if not isinstance(public_numbers, EllipticCurvePublicNumbers):
-            raise TypeError(
-                "public_numbers must be an EllipticCurvePublicNumbers "
-                "instance."
-            )
-
-        self._private_value = private_value
-        self._public_numbers = public_numbers
-
-    def private_key(
-        self, backend: typing.Any = None
-    ) -> EllipticCurvePrivateKey:
-        return rust_openssl.ec.from_private_numbers(self)
-
-    @property
-    def private_value(self) -> int:
-        return self._private_value
-
-    @property
-    def public_numbers(self) -> EllipticCurvePublicNumbers:
-        return self._public_numbers
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, EllipticCurvePrivateNumbers):
-            return NotImplemented
-
-        return (
-            self.private_value == other.private_value
-            and self.public_numbers == other.public_numbers
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.private_value, self.public_numbers))
 
 
 class ECDH:
