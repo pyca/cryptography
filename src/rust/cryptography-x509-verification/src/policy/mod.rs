@@ -28,7 +28,7 @@ use cryptography_x509::oid::{
 use crate::ops::CryptoOps;
 use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy};
 use crate::types::{DNSName, DNSPattern, IPAddress};
-use crate::ValidationError;
+use crate::{ValidationError, VerificationCertificate};
 
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
@@ -510,13 +510,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// self-issued).
     pub(crate) fn valid_issuer(
         &self,
-        issuer: &Certificate<'_>,
+        issuer: &VerificationCertificate<'_, B>,
         child: &Certificate<'_>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
         // The issuer needs to be a valid CA at the current depth.
-        self.permits_ca(issuer, current_depth, issuer_extensions)?;
+        self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)?;
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo
         if !self
@@ -540,9 +540,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             )));
         }
 
-        let pk = self
-            .ops
-            .public_key(issuer)
+        let pk = issuer
+            .public_key(&self.ops)
             .map_err(|_| ValidationError::Other("issuer has malformed public key".to_string()))?;
         if self.ops.verify_signed_by(child, pk).is_err() {
             return Err(ValidationError::Other(

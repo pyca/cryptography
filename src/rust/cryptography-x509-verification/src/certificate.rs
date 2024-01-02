@@ -65,7 +65,7 @@ Xw4nMqk=
         fn verify_signed_by(
             &self,
             _cert: &Certificate<'_>,
-            _key: Self::Key,
+            _key: &Self::Key,
         ) -> Result<(), Self::Err> {
             Ok(())
         }
@@ -87,6 +87,6 @@ Xw4nMqk=
         let ops = PublicKeyErrorOps {};
 
         assert!(ops.public_key(&cert).is_err());
-        assert!(ops.verify_signed_by(&cert, ()).is_ok());
+        assert!(ops.verify_signed_by(&cert, &()).is_ok());
     }
 }

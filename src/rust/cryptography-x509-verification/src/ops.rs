@@ -5,17 +5,27 @@
 use cryptography_x509::certificate::Certificate;
 
 pub struct VerificationCertificate<'a, B: CryptoOps> {
-    pub cert: Certificate<'a>,
-    pub extra: B::CertificateExtra,
+    cert: Certificate<'a>,
+    public_key: once_cell::sync::OnceCell<B::Key>,
+    extra: B::CertificateExtra,
 }
 
 impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
     pub fn new(cert: Certificate<'a>, extra: B::CertificateExtra) -> Self {
-        VerificationCertificate { cert, extra }
+        VerificationCertificate {
+            cert,
+            extra,
+            public_key: once_cell::sync::OnceCell::new(),
+        }
     }
 
     pub fn certificate(&self) -> &Certificate<'a> {
         &self.cert
+    }
+
+    pub fn public_key(&self, ops: &B) -> Result<&B::Key, B::Err> {
+        self.public_key
+            .get_or_try_init(|| ops.public_key(self.certificate()))
     }
 
     pub fn extra(&self) -> &B::CertificateExtra {
@@ -57,7 +67,7 @@ pub trait CryptoOps {
 
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
-    fn verify_signed_by(&self, cert: &Certificate<'_>, key: Self::Key) -> Result<(), Self::Err>;
+    fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err>;
 }
 
 #[cfg(test)]
