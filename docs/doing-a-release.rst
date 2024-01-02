@@ -100,4 +100,4 @@ Post-release tasks
 .. _`upgrading OpenSSL issue template`: https://github.com/pyca/cryptography/issues/new?template=openssl-release.md
 .. _`milestone`: https://github.com/pyca/cryptography/milestones
 .. _`mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
-.. _`python-announce`: https://mail.python.org/mailman/listinfo/python-announce-list
+.. _`python-announce`: https://mail.python.org/mailman3/lists/python-announce-list.python.org/
