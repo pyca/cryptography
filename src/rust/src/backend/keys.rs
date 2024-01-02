@@ -80,7 +80,7 @@ pub(crate) fn load_der_public_key_bytes(
     data: &[u8],
 ) -> CryptographyResult<pyo3::PyObject> {
     if let Ok(pkey) = openssl::pkey::PKey::public_key_from_der(data) {
-        return public_key_from_pkey(py, &pkey);
+        return public_key_from_pkey(py, &pkey, pkey.id());
     }
     // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need to
     // check to see if it is a pure PKCS1 RSA public key (not embedded in a
@@ -93,21 +93,39 @@ pub(crate) fn load_der_public_key_bytes(
             .unwrap_err())
     })?;
     let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-    public_key_from_pkey(py, &pkey)
+    public_key_from_pkey(py, &pkey, pkey.id())
 }
 
 #[pyo3::prelude::pyfunction]
-fn public_key_from_ptr(py: pyo3::Python<'_>, ptr: usize) -> CryptographyResult<pyo3::PyObject> {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
-    public_key_from_pkey(py, pkey)
+fn load_pem_public_key(
+    py: pyo3::Python<'_>,
+    data: CffiBuf<'_>,
+) -> CryptographyResult<pyo3::PyObject> {
+    let p = pem::parse(data.as_bytes())?;
+    let pkey = match p.tag() {
+        "RSA PUBLIC KEY" => openssl::rsa::Rsa::public_key_from_der_pkcs1(p.contents())
+            .and_then(openssl::pkey::PKey::from_rsa),
+        "PUBLIC KEY" => openssl::pkey::PKey::public_key_from_der(p.contents()),
+        _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
+    }
+    .or_else(|e| {
+        let errors = error::list_from_openssl_error(py, e);
+        Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
+            .get(py)?
+            .call1((errors,))
+            .unwrap_err())
+    })?;
+    public_key_from_pkey(py, &pkey, pkey.id())
 }
 
 fn public_key_from_pkey(
     py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+    id: openssl::pkey::Id,
 ) -> CryptographyResult<pyo3::PyObject> {
-    match pkey.id() {
+    // `id` is a separate argument so we can test this while passing something
+    // unsupported.
+    match id {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey).into_py(py)),
         #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
         openssl::pkey::Id::RSA_PSS => {
@@ -153,9 +171,28 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
     let m = pyo3::prelude::PyModule::new(py, "keys")?;
 
     m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(load_pem_public_key, m)?)?;
 
     m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(public_key_from_ptr, m)?)?;
 
     Ok(m)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::public_key_from_pkey;
+
+    #[test]
+    fn test_public_key_from_pkey_unknown_key() {
+        pyo3::prepare_freethreaded_python();
+
+        pyo3::Python::with_gil(|py| {
+            let pkey =
+                openssl::pkey::PKey::public_key_from_raw_bytes(&[0; 32], openssl::pkey::Id::X25519)
+                    .unwrap();
+            // Pass a nonsense id for this key to test the unsupported
+            // algorithm path.
+            assert!(public_key_from_pkey(py, &pkey, openssl::pkey::Id::CMAC).is_err());
+        });
+    }
 }

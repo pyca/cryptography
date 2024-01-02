@@ -31,9 +31,7 @@ def load_pem_private_key(
 def load_pem_public_key(
     data: bytes, backend: typing.Any = None
 ) -> PublicKeyTypes:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_pem_public_key(data)
+    return rust_openssl.keys.load_pem_public_key(data)
 
 
 def load_pem_parameters(

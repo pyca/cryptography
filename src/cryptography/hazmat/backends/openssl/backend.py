@@ -27,7 +27,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
 )
 from cryptography.hazmat.primitives.asymmetric.types import (
     PrivateKeyTypes,
-    PublicKeyTypes,
 )
 from cryptography.hazmat.primitives.ciphers import (
     CipherAlgorithm,
@@ -335,18 +334,6 @@ class Backend:
             and key_size >= 512
         )
 
-    def _create_evp_pkey_gc(self):
-        evp_pkey = self._lib.EVP_PKEY_new()
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-        return evp_pkey
-
-    def _rsa_cdata_to_evp_pkey(self, rsa_cdata):
-        evp_pkey = self._create_evp_pkey_gc()
-        res = self._lib.EVP_PKEY_set1_RSA(evp_pkey, rsa_cdata)
-        self.openssl_assert(res == 1)
-        return evp_pkey
-
     def _bytes_to_bio(self, data: bytes) -> _MemoryBIO:
         """
         Return a _MemoryBIO namedtuple of (BIO, char*).
@@ -392,15 +379,6 @@ class Backend:
         return rust_openssl.keys.private_key_from_ptr(
             int(self._ffi.cast("uintptr_t", evp_pkey)),
             unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
-        )
-
-    def _evp_pkey_to_public_key(self, evp_pkey) -> PublicKeyTypes:
-        """
-        Return the appropriate type of PublicKey given an evp_pkey cdata
-        pointer.
-        """
-        return rust_openssl.keys.public_key_from_ptr(
-            int(self._ffi.cast("uintptr_t", evp_pkey))
         )
 
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
@@ -470,48 +448,6 @@ class Backend:
             password,
             unsafe_skip_rsa_key_validation,
         )
-
-    def load_pem_public_key(self, data: bytes) -> PublicKeyTypes:
-        mem_bio = self._bytes_to_bio(data)
-        # In OpenSSL 3.0.x the PEM_read_bio_PUBKEY function will invoke
-        # the default password callback if you pass an encrypted private
-        # key. This is very, very, very bad as the default callback can
-        # trigger an interactive console prompt, which will hang the
-        # Python process. We therefore provide our own callback to
-        # catch this and error out properly.
-        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
-        evp_pkey = self._lib.PEM_read_bio_PUBKEY(
-            mem_bio.bio,
-            self._ffi.NULL,
-            self._ffi.addressof(
-                self._lib._original_lib, "Cryptography_pem_password_cb"
-            ),
-            userdata,
-        )
-        if evp_pkey != self._ffi.NULL:
-            evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-            return self._evp_pkey_to_public_key(evp_pkey)
-        else:
-            # It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still
-            # need to check to see if it is a pure PKCS1 RSA public key (not
-            # embedded in a subjectPublicKeyInfo)
-            self._consume_errors()
-            res = self._lib.BIO_reset(mem_bio.bio)
-            self.openssl_assert(res == 1)
-            rsa_cdata = self._lib.PEM_read_bio_RSAPublicKey(
-                mem_bio.bio,
-                self._ffi.NULL,
-                self._ffi.addressof(
-                    self._lib._original_lib, "Cryptography_pem_password_cb"
-                ),
-                userdata,
-            )
-            if rsa_cdata != self._ffi.NULL:
-                rsa_cdata = self._ffi.gc(rsa_cdata, self._lib.RSA_free)
-                evp_pkey = self._rsa_cdata_to_evp_pkey(rsa_cdata)
-                return self._evp_pkey_to_public_key(evp_pkey)
-            else:
-                self._handle_key_loading_error(self._consume_errors())
 
     def load_der_private_key(
         self,
