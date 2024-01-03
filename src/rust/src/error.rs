@@ -9,6 +9,7 @@ use crate::exceptions;
 pub enum CryptographyError {
     Asn1Parse(asn1::ParseError),
     Asn1Write(asn1::WriteError),
+    KeyParsing(asn1::ParseError),
     Py(pyo3::PyErr),
     OpenSSL(openssl::error::ErrorStack),
 }
@@ -51,6 +52,15 @@ impl From<pem::PemError> for CryptographyError {
     }
 }
 
+impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
+    fn from(e: cryptography_key_parsing::KeyParsingError) -> CryptographyError {
+        match e {
+            cryptography_key_parsing::KeyParsingError::Parse(e) => CryptographyError::KeyParsing(e),
+            cryptography_key_parsing::KeyParsingError::OpenSSL(e) => CryptographyError::OpenSSL(e),
+        }
+    }
+}
+
 pub(crate) fn list_from_openssl_error(
     py: pyo3::Python<'_>,
     error_stack: openssl::error::ErrorStack,
@@ -78,6 +88,9 @@ impl From<CryptographyError> for pyo3::PyErr {
                     "failed to allocate memory while performing ASN.1 serialization",
                 )
             }
+            CryptographyError::KeyParsing(asn1_error) => pyo3::exceptions::PyValueError::new_err(
+                format!("Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: {asn1_error}"),
+            ),
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
                 let errors = list_from_openssl_error(py, error_stack);
@@ -103,6 +116,7 @@ impl CryptographyError {
         match self {
             CryptographyError::Py(e) => CryptographyError::Py(e),
             CryptographyError::Asn1Parse(e) => CryptographyError::Asn1Parse(e.add_location(loc)),
+            CryptographyError::KeyParsing(e) => CryptographyError::KeyParsing(e.add_location(loc)),
             CryptographyError::Asn1Write(e) => CryptographyError::Asn1Write(e),
             CryptographyError::OpenSSL(e) => CryptographyError::OpenSSL(e),
         }
@@ -184,6 +198,12 @@ mod tests {
             let e: CryptographyError =
                 pyo3::PyDowncastError::new(py.None().as_ref(py), "abc").into();
             assert!(matches!(e, CryptographyError::Py(_)));
+
+            let e = cryptography_key_parsing::KeyParsingError::OpenSSL(
+                openssl::error::ErrorStack::get(),
+            )
+            .into();
+            assert!(matches!(e, CryptographyError::OpenSSL(_)));
         })
     }
 
@@ -198,5 +218,9 @@ mod tests {
 
         let openssl_error = openssl::error::ErrorStack::get();
         CryptographyError::from(openssl_error).add_location(asn1::ParseLocation::Field("meh"));
+
+        let asn1_parse_error = asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue);
+        CryptographyError::KeyParsing(asn1_parse_error)
+            .add_location(asn1::ParseLocation::Field("meh"));
     }
 }

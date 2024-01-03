@@ -71,6 +71,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cryptography-key-parsing"
+version = "0.1.0"
+dependencies = [
+ "asn1",
+ "openssl",
+]
+
+[[package]]
 name = "cryptography-openssl"
 version = "0.1.0"
 dependencies = [
@@ -88,6 +96,7 @@ dependencies = [
  "cc",
  "cfg-if",
  "cryptography-cffi",
+ "cryptography-key-parsing",
  "cryptography-openssl",
  "cryptography-x509",
  "cryptography-x509-verification",

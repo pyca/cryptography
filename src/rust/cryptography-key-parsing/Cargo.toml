@@ -1,0 +1,12 @@
+[package]
+name = "cryptography-key-parsing"
+version = "0.1.0"
+authors = ["The cryptography developers <cryptography-dev@python.org>"]
+edition = "2021"
+publish = false
+# This specifies the MSRV
+rust-version = "1.63.0"
+
+[dependencies]
+asn1 = { version = "0.15.5", default-features = false }
+openssl = "0.10.62"
