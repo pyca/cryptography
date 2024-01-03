@@ -1025,7 +1025,7 @@ Interface
 
 .. [#nist] See `NIST SP 800-132`_.
 
-.. _`NIST SP 800-132`: https://csrc.nist.gov/publications/detail/sp/800-132/final
+.. _`NIST SP 800-132`: https://csrc.nist.gov/pubs/sp/800/132/final
 .. _`NIST SP 800-108`: https://csrc.nist.gov/pubs/sp/800/108/r1/final
 .. _`NIST SP 800-56Ar3`: https://csrc.nist.gov/pubs/sp/800/56/a/r3/final
 .. _`ANSI X9.63:2001`: https://webstore.ansi.org
@@ -1036,6 +1036,6 @@ Interface
 .. _`HKDF`: https://en.wikipedia.org/wiki/HKDF
 .. _`HKDF paper`: https://eprint.iacr.org/2010/264
 .. _`here`: https://stackoverflow.com/a/30308723/1170681
-.. _`recommends`: https://tools.ietf.org/html/rfc7914#section-2
+.. _`recommends`: https://datatracker.ietf.org/doc/html/rfc7914#section-2
 .. _`The scrypt paper`: https://www.tarsnap.com/scrypt/scrypt.pdf
 .. _`understanding HKDF`: https://soatok.blog/2021/11/17/understanding-hkdf/

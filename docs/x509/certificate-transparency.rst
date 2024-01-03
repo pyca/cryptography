@@ -125,4 +125,4 @@ issued.
 
     .. attribute:: ECDSA
 
-.. _`Certificate Transparency`: https://www.certificate-transparency.org/
+.. _`Certificate Transparency`: https://certificate.transparency.dev/

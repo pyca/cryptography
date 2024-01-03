@@ -3918,6 +3918,6 @@ Exceptions
         types can be found in `RFC 5280 section 4.2.1.6`_.
 
 
-.. _`RFC 5280 section 4.2.1.1`: https://tools.ietf.org/html/rfc5280#section-4.2.1.1
-.. _`RFC 5280 section 4.2.1.6`: https://tools.ietf.org/html/rfc5280#section-4.2.1.6
+.. _`RFC 5280 section 4.2.1.1`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
+.. _`RFC 5280 section 4.2.1.6`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 .. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/
