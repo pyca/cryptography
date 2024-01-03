@@ -446,16 +446,17 @@ pub(crate) mod common {
 
 #[cfg(test)]
 mod tests {
+    use asn1::{ObjectIdentifier, SimpleAsn1Writable};
+    use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
+    use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
+
     use super::{Criticality, ExtensionPolicy};
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
     use crate::policy::{Policy, Subject, ValidationError};
     use crate::types::DNSName;
-    use asn1::{ObjectIdentifier, SimpleAsn1Writable};
-    use cryptography_x509::certificate::Certificate;
-    use cryptography_x509::extensions::{BasicConstraints, Extension, Extensions};
-    use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
     #[test]
     fn test_criticality_variants() {

@@ -2,12 +2,14 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+use pyo3::ToPyObject;
+
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::ToPyObject;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 pub(crate) struct ECPrivateKey {

@@ -2,11 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::error::CryptographyError;
-use crate::types;
-use pyo3::ToPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+
+use pyo3::ToPyObject;
+
+use crate::error::CryptographyError;
+use crate::types;
 
 struct TLSReader<'a> {
     data: &'a [u8],

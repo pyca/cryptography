@@ -2,14 +2,15 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::types;
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
+
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::types;
 
 pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier> {
     Ok(py_oid

@@ -2,9 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::{exceptions, types, x509};
 use cryptography_x509::common::{Asn1ReadableOrWritable, AttributeTypeValue, RawTlv};
 use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
@@ -12,6 +9,10 @@ use cryptography_x509::extensions::{
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
 use pyo3::{IntoPy, ToPyObject};
+
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::{exceptions, types, x509};
 
 /// Parse all sections in a PEM file and return the first matching section.
 /// If no matching sections are found, return an error.

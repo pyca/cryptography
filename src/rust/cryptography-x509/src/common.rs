@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::oid;
 use asn1::Asn1DefinedByWritable;
+
+use crate::oid;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Hash, Clone, Eq, Debug)]
 pub struct AlgorithmIdentifier<'a> {
@@ -408,8 +409,9 @@ impl<T: std::hash::Hash> std::hash::Hash for WithTlv<'_, T> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString, WithTlv};
     use asn1::Asn1Readable;
+
+    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString, WithTlv};
 
     #[test]
     #[should_panic]

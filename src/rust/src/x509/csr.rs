@@ -2,17 +2,19 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+use asn1::SimpleAsn1Readable;
+use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
+use cryptography_x509::{common, oid};
+use pyo3::IntoPy;
+
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sign};
 use crate::{exceptions, types, x509};
-use asn1::SimpleAsn1Readable;
-use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
-use cryptography_x509::{common, oid};
-use pyo3::IntoPy;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 
 self_cell::self_cell!(
     struct OwnedCsr {

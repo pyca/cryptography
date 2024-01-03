@@ -2,10 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashMap;
+
+use openssl::cipher::Cipher;
+
 use crate::error::CryptographyResult;
 use crate::types;
-use openssl::cipher::Cipher;
-use std::collections::HashMap;
 
 struct RegistryKey {
     algorithm: pyo3::PyObject,

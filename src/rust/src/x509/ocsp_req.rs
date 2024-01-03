@@ -2,16 +2,17 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
-use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::{extensions, ocsp};
-use crate::{exceptions, types, x509};
 use cryptography_x509::{
     common,
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
     oid,
 };
 use pyo3::IntoPy;
+
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::{extensions, ocsp};
+use crate::{exceptions, types, x509};
 
 self_cell::self_cell!(
     struct OwnedOCSPRequest {

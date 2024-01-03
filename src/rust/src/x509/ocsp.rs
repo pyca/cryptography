@@ -2,14 +2,16 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashMap;
+
+use cryptography_x509::common;
+use cryptography_x509::ocsp_req::CertID;
+use once_cell::sync::Lazy;
+
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
 use crate::x509;
 use crate::x509::certificate::Certificate;
-use cryptography_x509::common;
-use cryptography_x509::ocsp_req::CertID;
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
 
 pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
     HashMap<common::AlgorithmParameters<'_>, &str>,
