@@ -5,6 +5,8 @@
 use crate::backend::{hashes, utils};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 #[pyo3::prelude::pyclass(
     frozen,
@@ -62,46 +64,6 @@ fn generate_private_key(public_exponent: u32, key_size: u32) -> CryptographyResu
     let rsa = openssl::rsa::Rsa::generate_with_e(key_size, &e)?;
     let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
     Ok(RsaPrivateKey { pkey })
-}
-
-#[pyo3::prelude::pyfunction]
-fn from_private_numbers(
-    py: pyo3::Python<'_>,
-    numbers: &pyo3::PyAny,
-    unsafe_skip_rsa_key_validation: bool,
-) -> CryptographyResult<RsaPrivateKey> {
-    let public_numbers = numbers.getattr(pyo3::intern!(py, "public_numbers"))?;
-
-    let rsa = openssl::rsa::Rsa::from_private_components(
-        utils::py_int_to_bn(py, public_numbers.getattr(pyo3::intern!(py, "n"))?)?,
-        utils::py_int_to_bn(py, public_numbers.getattr(pyo3::intern!(py, "e"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "d"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "p"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "q"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "dmp1"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "dmq1"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "iqmp"))?)?,
-    )
-    .unwrap();
-    if !unsafe_skip_rsa_key_validation {
-        check_rsa_private_key(&rsa)?;
-    }
-    let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-    Ok(RsaPrivateKey { pkey })
-}
-
-#[pyo3::prelude::pyfunction]
-fn from_public_numbers(
-    py: pyo3::Python<'_>,
-    numbers: &pyo3::PyAny,
-) -> CryptographyResult<RsaPublicKey> {
-    let rsa = openssl::rsa::Rsa::from_public_components(
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "n"))?)?,
-        utils::py_int_to_bn(py, numbers.getattr(pyo3::intern!(py, "e"))?)?,
-    )
-    .unwrap();
-    let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-    Ok(RsaPublicKey { pkey })
 }
 
 fn oaep_hash_supported(md: &openssl::hash::MessageDigest) -> bool {
@@ -404,7 +366,7 @@ impl RsaPrivateKey {
         Ok(RsaPublicKey { pkey })
     }
 
-    fn private_numbers<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
+    fn private_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<RsaPrivateNumbers> {
         let rsa = self.pkey.rsa().unwrap();
 
         let py_p = utils::bn_to_py_int(py, rsa.p().unwrap())?;
@@ -416,16 +378,19 @@ impl RsaPrivateKey {
         let py_e = utils::bn_to_py_int(py, rsa.e())?;
         let py_n = utils::bn_to_py_int(py, rsa.n())?;
 
-        let public_numbers = types::RSA_PUBLIC_NUMBERS.get(py)?.call1((py_e, py_n))?;
-        Ok(types::RSA_PRIVATE_NUMBERS.get(py)?.call1((
-            py_p,
-            py_q,
-            py_d,
-            py_dmp1,
-            py_dmq1,
-            py_iqmp,
-            public_numbers,
-        ))?)
+        let public_numbers = RsaPublicNumbers {
+            e: py_e.extract()?,
+            n: py_n.extract()?,
+        };
+        Ok(RsaPrivateNumbers {
+            p: py_p.extract()?,
+            q: py_q.extract()?,
+            d: py_d.extract()?,
+            dmp1: py_dmp1.extract()?,
+            dmq1: py_dmq1.extract()?,
+            iqmp: py_iqmp.extract()?,
+            public_numbers: pyo3::Py::new(py, public_numbers)?,
+        })
     }
 
     fn private_bytes<'p>(
@@ -528,13 +493,16 @@ impl RsaPublicKey {
         self.pkey.rsa().unwrap().n().num_bits()
     }
 
-    fn public_numbers<'p>(&self, py: pyo3::Python<'p>) -> CryptographyResult<&'p pyo3::PyAny> {
+    fn public_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<RsaPublicNumbers> {
         let rsa = self.pkey.rsa().unwrap();
 
         let py_e = utils::bn_to_py_int(py, rsa.e())?;
         let py_n = utils::bn_to_py_int(py, rsa.n())?;
 
-        Ok(types::RSA_PUBLIC_NUMBERS.get(py)?.call1((py_e, py_n))?)
+        Ok(RsaPublicNumbers {
+            e: py_e.extract()?,
+            n: py_n.extract()?,
+        })
     }
 
     fn public_bytes<'p>(
@@ -555,14 +523,302 @@ impl RsaPublicKey {
     }
 }
 
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.primitives.asymmetric.rsa",
+    name = "RSAPrivateNumbers"
+)]
+struct RsaPrivateNumbers {
+    #[pyo3(get)]
+    p: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    q: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    d: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    dmp1: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    dmq1: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    iqmp: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    public_numbers: pyo3::Py<RsaPublicNumbers>,
+}
+
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.primitives.asymmetric.rsa",
+    name = "RSAPublicNumbers"
+)]
+struct RsaPublicNumbers {
+    #[pyo3(get)]
+    e: pyo3::Py<pyo3::types::PyLong>,
+    #[pyo3(get)]
+    n: pyo3::Py<pyo3::types::PyLong>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn check_private_key_components(
+    p: &pyo3::types::PyLong,
+    q: &pyo3::types::PyLong,
+    private_exponent: &pyo3::types::PyLong,
+    dmp1: &pyo3::types::PyLong,
+    dmq1: &pyo3::types::PyLong,
+    iqmp: &pyo3::types::PyLong,
+    public_exponent: &pyo3::types::PyLong,
+    modulus: &pyo3::types::PyLong,
+) -> CryptographyResult<()> {
+    if modulus.lt(3)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("modulus must be >= 3."),
+        ));
+    }
+
+    if p.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("p must be < modulus."),
+        ));
+    }
+
+    if q.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("q must be < modulus."),
+        ));
+    }
+
+    if dmp1.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("dmp1 must be < modulus."),
+        ));
+    }
+
+    if dmq1.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("dmq1 must be < modulus."),
+        ));
+    }
+
+    if iqmp.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("iqmp must be < modulus."),
+        ));
+    }
+
+    if private_exponent.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("private_exponent must be < modulus."),
+        ));
+    }
+
+    if public_exponent.lt(3)? || public_exponent.ge(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("public_exponent must be >= 3 and < modulus."),
+        ));
+    }
+
+    // No `bitand` method.
+    if public_exponent.call_method1("__and__", (1,))?.eq(0)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("public_exponent must be odd."),
+        ));
+    }
+
+    if dmp1.call_method1("__and__", (1,))?.eq(0)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("dmp1 must be odd."),
+        ));
+    }
+
+    if dmq1.call_method1("__and__", (1,))?.eq(0)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("dmq1 must be odd."),
+        ));
+    }
+
+    if p.call_method1("__mul__", (q,))?.ne(modulus)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("p*q must equal modulus."),
+        ));
+    }
+
+    Ok(())
+}
+
+#[pyo3::prelude::pymethods]
+impl RsaPrivateNumbers {
+    #[new]
+    fn new(
+        p: pyo3::Py<pyo3::types::PyLong>,
+        q: pyo3::Py<pyo3::types::PyLong>,
+        d: pyo3::Py<pyo3::types::PyLong>,
+        dmp1: pyo3::Py<pyo3::types::PyLong>,
+        dmq1: pyo3::Py<pyo3::types::PyLong>,
+        iqmp: pyo3::Py<pyo3::types::PyLong>,
+        public_numbers: pyo3::Py<RsaPublicNumbers>,
+    ) -> RsaPrivateNumbers {
+        Self {
+            p,
+            q,
+            d,
+            dmp1,
+            dmq1,
+            iqmp,
+            public_numbers,
+        }
+    }
+
+    #[pyo3(signature = (backend = None, *, unsafe_skip_rsa_key_validation = false))]
+    fn private_key(
+        &self,
+        py: pyo3::Python<'_>,
+        backend: Option<&pyo3::PyAny>,
+        unsafe_skip_rsa_key_validation: bool,
+    ) -> CryptographyResult<RsaPrivateKey> {
+        let _ = backend;
+
+        check_private_key_components(
+            self.p.as_ref(py),
+            self.q.as_ref(py),
+            self.d.as_ref(py),
+            self.dmp1.as_ref(py),
+            self.dmq1.as_ref(py),
+            self.iqmp.as_ref(py),
+            self.public_numbers.get().e.as_ref(py),
+            self.public_numbers.get().n.as_ref(py),
+        )?;
+        let public_numbers = self.public_numbers.get();
+        let rsa = openssl::rsa::Rsa::from_private_components(
+            utils::py_int_to_bn(py, public_numbers.n.as_ref(py))?,
+            utils::py_int_to_bn(py, public_numbers.e.as_ref(py))?,
+            utils::py_int_to_bn(py, self.d.as_ref(py))?,
+            utils::py_int_to_bn(py, self.p.as_ref(py))?,
+            utils::py_int_to_bn(py, self.q.as_ref(py))?,
+            utils::py_int_to_bn(py, self.dmp1.as_ref(py))?,
+            utils::py_int_to_bn(py, self.dmq1.as_ref(py))?,
+            utils::py_int_to_bn(py, self.iqmp.as_ref(py))?,
+        )
+        .unwrap();
+        if !unsafe_skip_rsa_key_validation {
+            check_rsa_private_key(&rsa)?;
+        }
+        let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
+        Ok(RsaPrivateKey { pkey })
+    }
+
+    fn __eq__(
+        &self,
+        py: pyo3::Python<'_>,
+        other: pyo3::PyRef<'_, Self>,
+    ) -> CryptographyResult<bool> {
+        Ok(self.p.as_ref(py).eq(other.p.as_ref(py))?
+            && self.q.as_ref(py).eq(other.q.as_ref(py))?
+            && self.d.as_ref(py).eq(other.d.as_ref(py))?
+            && self.dmp1.as_ref(py).eq(other.dmp1.as_ref(py))?
+            && self.dmq1.as_ref(py).eq(other.dmq1.as_ref(py))?
+            && self.iqmp.as_ref(py).eq(other.iqmp.as_ref(py))?
+            && self
+                .public_numbers
+                .as_ref(py)
+                .eq(other.public_numbers.as_ref(py))?)
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> CryptographyResult<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.p.as_ref(py).hash()?.hash(&mut hasher);
+        self.q.as_ref(py).hash()?.hash(&mut hasher);
+        self.d.as_ref(py).hash()?.hash(&mut hasher);
+        self.dmp1.as_ref(py).hash()?.hash(&mut hasher);
+        self.dmq1.as_ref(py).hash()?.hash(&mut hasher);
+        self.iqmp.as_ref(py).hash()?.hash(&mut hasher);
+        self.public_numbers.as_ref(py).hash()?.hash(&mut hasher);
+        Ok(hasher.finish())
+    }
+}
+
+fn check_public_key_components(
+    e: &pyo3::types::PyLong,
+    n: &pyo3::types::PyLong,
+) -> CryptographyResult<()> {
+    if n.lt(3)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
+        ));
+    }
+
+    if e.lt(3)? || e.ge(n)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
+        ));
+    }
+
+    // No `bitand` method.
+    if e.call_method1("__and__", (1,))?.eq(0)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("e must be odd."),
+        ));
+    }
+
+    Ok(())
+}
+
+#[pyo3::prelude::pymethods]
+impl RsaPublicNumbers {
+    #[new]
+    fn new(e: pyo3::Py<pyo3::types::PyLong>, n: pyo3::Py<pyo3::types::PyLong>) -> RsaPublicNumbers {
+        RsaPublicNumbers { e, n }
+    }
+
+    fn public_key(
+        &self,
+        py: pyo3::Python<'_>,
+        backend: Option<&pyo3::PyAny>,
+    ) -> CryptographyResult<RsaPublicKey> {
+        let _ = backend;
+
+        check_public_key_components(self.e.as_ref(py), self.n.as_ref(py))?;
+
+        let rsa = openssl::rsa::Rsa::from_public_components(
+            utils::py_int_to_bn(py, self.n.as_ref(py))?,
+            utils::py_int_to_bn(py, self.e.as_ref(py))?,
+        )
+        .unwrap();
+        let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
+        Ok(RsaPublicKey { pkey })
+    }
+
+    fn __eq__(
+        &self,
+        py: pyo3::Python<'_>,
+        other: pyo3::PyRef<'_, Self>,
+    ) -> CryptographyResult<bool> {
+        Ok(
+            self.e.as_ref(py).eq(other.e.as_ref(py))?
+                && self.n.as_ref(py).eq(other.n.as_ref(py))?,
+        )
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> CryptographyResult<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.e.as_ref(py).hash()?.hash(&mut hasher);
+        self.n.as_ref(py).hash()?.hash(&mut hasher);
+        Ok(hasher.finish())
+    }
+
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        let e = self.e.as_ref(py);
+        let n = self.n.as_ref(py);
+        Ok(format!("<RSAPublicNumbers(e={e}, n={n})>"))
+    }
+}
+
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "rsa")?;
     m.add_function(pyo3::wrap_pyfunction!(generate_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_private_numbers, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_numbers, m)?)?;
 
     m.add_class::<RsaPrivateKey>()?;
     m.add_class::<RsaPublicKey>()?;
+    m.add_class::<RsaPrivateNumbers>()?;
+    m.add_class::<RsaPublicNumbers>()?;
 
     Ok(m)
 }
