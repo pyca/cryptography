@@ -108,6 +108,9 @@ def test_dh_parameter_numbers_equality():
     assert dh.DHParameterNumbers(P_1536, 2, 123) != dh.DHParameterNumbers(
         P_1536, 2, 456
     )
+    assert dh.DHParameterNumbers(P_1536, 2, 123) != dh.DHParameterNumbers(
+        P_1536, 2
+    )
     assert dh.DHParameterNumbers(P_1536, 5) != dh.DHParameterNumbers(P_1536, 2)
     assert dh.DHParameterNumbers(P_1536, 2) != object()
 
@@ -153,19 +156,6 @@ class TestDH:
         with pytest.raises(ValueError):
             dh.generate_parameters(2, 1 << 30)
 
-    @pytest.mark.skip_fips(reason="non-FIPS parameters")
-    def test_dh_parameters_supported(self, backend):
-        valid_p = int(
-            b"907c7211ae61aaaba1825ff53b6cb71ac6df9f1a424c033f4a0a41ac42fad3a9"
-            b"bcfc7f938a269710ed69e330523e4039029b7900977c740990d46efed79b9bbe"
-            b"73505ae878808944ce4d9c6c52daecc0a87dc889c53499be93db8551ee685f30"
-            b"349bf1b443d4ebaee0d5e8b441a40d4e8178f8f612f657a5eb91e0a8e"
-            b"107755f",
-            16,
-        )
-        assert backend.dh_parameters_supported(valid_p, 5)
-        assert not backend.dh_parameters_supported(23, 22)
-
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
@@ -200,18 +190,6 @@ class TestDH:
             # p = 2q + 1 since it is a Sophie Germain prime, so we can compute
             # what we expect OpenSSL to have done here.
             assert serialized_params.q == (params.p - 1) // 2
-
-    @pytest.mark.skip_fips(reason="non-FIPS parameters")
-    @pytest.mark.parametrize(
-        "vector",
-        load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "RFC5114.txt"), load_nist_vectors
-        ),
-    )
-    def test_dh_parameters_supported_with_q(self, backend, vector):
-        assert backend.dh_parameters_supported(
-            int(vector["p"], 16), int(vector["g"], 16), int(vector["q"], 16)
-        )
 
     @pytest.mark.skip_fips(reason="modulus too small for FIPS")
     @pytest.mark.parametrize("with_q", [False, True])
