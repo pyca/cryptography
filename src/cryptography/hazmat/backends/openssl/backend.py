@@ -369,18 +369,6 @@ class Backend:
         bio_data = self._ffi.buffer(buf[0], buf_len)[:]
         return bio_data
 
-    def _evp_pkey_to_private_key(
-        self, evp_pkey, unsafe_skip_rsa_key_validation: bool
-    ) -> PrivateKeyTypes:
-        """
-        Return the appropriate type of PrivateKey given an evp_pkey cdata
-        pointer.
-        """
-        return rust_openssl.keys.private_key_from_ptr(
-            int(self._ffi.cast("uintptr_t", evp_pkey)),
-            unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
-        )
-
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
@@ -436,59 +424,6 @@ class Backend:
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )
 
-    def load_pem_private_key(
-        self,
-        data: bytes,
-        password: bytes | None,
-        unsafe_skip_rsa_key_validation: bool,
-    ) -> PrivateKeyTypes:
-        return self._load_key(
-            self._lib.PEM_read_bio_PrivateKey,
-            data,
-            password,
-            unsafe_skip_rsa_key_validation,
-        )
-
-    def load_der_private_key(
-        self,
-        data: bytes,
-        password: bytes | None,
-        unsafe_skip_rsa_key_validation: bool,
-    ) -> PrivateKeyTypes:
-        # OpenSSL has a function called d2i_AutoPrivateKey that in theory
-        # handles this automatically, however it doesn't handle encrypted
-        # private keys. Instead we try to load the key two different ways.
-        # First we'll try to load it as a traditional key.
-        bio_data = self._bytes_to_bio(data)
-        key = self._evp_pkey_from_der_traditional_key(bio_data, password)
-        if key:
-            return self._evp_pkey_to_private_key(
-                key, unsafe_skip_rsa_key_validation
-            )
-        else:
-            # Finally we try to load it with the method that handles encrypted
-            # PKCS8 properly.
-            return self._load_key(
-                self._lib.d2i_PKCS8PrivateKey_bio,
-                data,
-                password,
-                unsafe_skip_rsa_key_validation,
-            )
-
-    def _evp_pkey_from_der_traditional_key(self, bio_data, password):
-        key = self._lib.d2i_PrivateKey_bio(bio_data.bio, self._ffi.NULL)
-        if key != self._ffi.NULL:
-            key = self._ffi.gc(key, self._lib.EVP_PKEY_free)
-            if password is not None:
-                raise TypeError(
-                    "Password was given but private key is not encrypted."
-                )
-
-            return key
-        else:
-            self._consume_errors()
-            return None
-
     def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
         data = cert.public_bytes(serialization.Encoding.DER)
         mem_bio = self._bytes_to_bio(data)
@@ -517,58 +452,6 @@ class Backend:
         )
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-    def _load_key(
-        self, openssl_read_func, data, password, unsafe_skip_rsa_key_validation
-    ) -> PrivateKeyTypes:
-        mem_bio = self._bytes_to_bio(data)
-
-        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
-        if password is not None:
-            utils._check_byteslike("password", password)
-            password_ptr = self._ffi.from_buffer(password)
-            userdata.password = password_ptr
-            userdata.length = len(password)
-
-        evp_pkey = openssl_read_func(
-            mem_bio.bio,
-            self._ffi.NULL,
-            self._ffi.addressof(
-                self._lib._original_lib, "Cryptography_pem_password_cb"
-            ),
-            userdata,
-        )
-
-        if evp_pkey == self._ffi.NULL:
-            if userdata.error != 0:
-                self._consume_errors()
-                if userdata.error == -1:
-                    raise TypeError(
-                        "Password was not given but private key is encrypted"
-                    )
-                else:
-                    assert userdata.error == -2
-                    raise ValueError(
-                        "Passwords longer than {} bytes are not supported "
-                        "by this backend.".format(userdata.maxsize - 1)
-                    )
-            else:
-                self._handle_key_loading_error(self._consume_errors())
-
-        evp_pkey = self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-        if password is not None and userdata.called == 0:
-            raise TypeError(
-                "Password was given but private key is not encrypted."
-            )
-
-        assert (
-            password is not None and userdata.called == 1
-        ) or password is None
-
-        return self._evp_pkey_to_private_key(
-            evp_pkey, unsafe_skip_rsa_key_validation
-        )
 
     def _handle_key_loading_error(
         self, errors: list[rust_openssl.OpenSSLError]
@@ -764,8 +647,9 @@ class Backend:
             evp_pkey = self._ffi.gc(evp_pkey_ptr[0], self._lib.EVP_PKEY_free)
             # We don't support turning off RSA key validation when loading
             # PKCS12 keys
-            key = self._evp_pkey_to_private_key(
-                evp_pkey, unsafe_skip_rsa_key_validation=False
+            key = rust_openssl.keys.private_key_from_ptr(
+                int(self._ffi.cast("uintptr_t", evp_pkey)),
+                unsafe_skip_rsa_key_validation=False,
             )
 
         if x509_ptr[0] != self._ffi.NULL:

@@ -21,10 +21,10 @@ def load_pem_private_key(
     *,
     unsafe_skip_rsa_key_validation: bool = False,
 ) -> PrivateKeyTypes:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_pem_private_key(
-        data, password, unsafe_skip_rsa_key_validation
+    return rust_openssl.keys.load_pem_private_key(
+        data,
+        password,
+        unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
     )
 
 
@@ -47,10 +47,10 @@ def load_der_private_key(
     *,
     unsafe_skip_rsa_key_validation: bool = False,
 ) -> PrivateKeyTypes:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_der_private_key(
-        data, password, unsafe_skip_rsa_key_validation
+    return rust_openssl.keys.load_der_private_key(
+        data,
+        password,
+        unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
     )
 
 

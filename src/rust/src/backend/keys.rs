@@ -5,9 +5,57 @@
 use foreign_types_shared::ForeignTypeRef;
 use pyo3::IntoPy;
 
+use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{self, CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
+
+#[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, password, *, unsafe_skip_rsa_key_validation))]
+fn load_der_private_key(
+    py: pyo3::Python<'_>,
+    data: CffiBuf<'_>,
+    password: Option<CffiBuf<'_>>,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::PyObject> {
+    if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data.as_bytes()) {
+        if password.is_some() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(
+                    "Password was given but private key is not encrypted.",
+                ),
+            ));
+        }
+        return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
+    }
+
+    let password = password.as_ref().map(CffiBuf::as_bytes);
+    let mut status = utils::PasswordCallbackStatus::Unused;
+    let pkey = openssl::pkey::PKey::private_key_from_pkcs8_callback(
+        data.as_bytes(),
+        utils::password_callback(&mut status, password),
+    );
+    let pkey = utils::handle_key_load_result(py, pkey, status, password)?;
+    private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+}
+
+#[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, password, *, unsafe_skip_rsa_key_validation))]
+fn load_pem_private_key(
+    py: pyo3::Python<'_>,
+    data: CffiBuf<'_>,
+    password: Option<CffiBuf<'_>>,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::PyObject> {
+    let password = password.as_ref().map(CffiBuf::as_bytes);
+    let mut status = utils::PasswordCallbackStatus::Unused;
+    let pkey = openssl::pkey::PKey::private_key_from_pem_callback(
+        data.as_bytes(),
+        utils::password_callback(&mut status, password),
+    );
+    let pkey = utils::handle_key_load_result(py, pkey, status, password)?;
+    private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+}
 
 #[pyo3::prelude::pyfunction]
 fn private_key_from_ptr(
@@ -17,6 +65,14 @@ fn private_key_from_ptr(
 ) -> CryptographyResult<pyo3::PyObject> {
     // SAFETY: Caller is responsible for passing a valid pointer.
     let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
+    private_key_from_pkey(py, pkey, unsafe_skip_rsa_key_validation)
+}
+
+fn private_key_from_pkey(
+    py: pyo3::Python<'_>,
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::PyObject> {
     match pkey.id() {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::private_key_from_pkey(
             pkey,
@@ -164,6 +220,8 @@ fn public_key_from_pkey(
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "keys")?;
 
+    m.add_function(pyo3::wrap_pyfunction!(load_pem_private_key, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(load_der_private_key, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(load_pem_public_key, m)?)?;
 

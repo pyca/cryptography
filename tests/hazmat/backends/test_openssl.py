@@ -11,6 +11,7 @@ import pytest
 from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher
@@ -282,14 +283,15 @@ class TestOpenSSLSerializationWithOpenSSL:
         key = backend._lib.EVP_PKEY_new()
         key = backend._ffi.gc(key, backend._lib.EVP_PKEY_free)
         with raises_unsupported_algorithm(None):
-            backend._evp_pkey_to_private_key(
-                key, unsafe_skip_rsa_key_validation=False
+            rust_openssl.keys.private_key_from_ptr(
+                int(backend._ffi.cast("uintptr_t", key)),
+                unsafe_skip_rsa_key_validation=False,
             )
 
     def test_very_long_pem_serialization_password(self):
-        password = b"x" * 1024
+        password = b"x" * 1025
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Passwords longer than"):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric",
@@ -297,7 +299,7 @@ class TestOpenSSLSerializationWithOpenSSL:
                     "key1.pem",
                 ),
                 lambda pemfile: (
-                    backend.load_pem_private_key(
+                    serialization.load_pem_private_key(
                         pemfile.read().encode(),
                         password,
                         unsafe_skip_rsa_key_validation=False,
