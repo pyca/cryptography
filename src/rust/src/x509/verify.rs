@@ -11,14 +11,11 @@ use cryptography_x509_verification::{
 };
 
 use crate::backend::keys;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
-use crate::{
-    error::{CryptographyError, CryptographyResult},
-    exceptions::VerificationError,
-};
 
 pub(crate) struct PyCryptoOps {}
 
@@ -46,6 +43,121 @@ impl CryptoOps for PyCryptoOps {
     }
 }
 
+pyo3::create_exception!(
+    cryptography.hazmat.bindings._rust.x509,
+    VerificationError,
+    pyo3::exceptions::PyException
+);
+
+#[pyo3::pyclass(frozen, module = "cryptography.x509.verification")]
+struct PolicyBuilder {
+    time: Option<asn1::DateTime>,
+    store: Option<pyo3::Py<PyStore>>,
+    max_chain_depth: Option<u8>,
+}
+
+#[pyo3::pymethods]
+impl PolicyBuilder {
+    #[new]
+    fn new() -> PolicyBuilder {
+        PolicyBuilder {
+            time: None,
+            store: None,
+            max_chain_depth: None,
+        }
+    }
+
+    fn time(
+        &self,
+        py: pyo3::Python<'_>,
+        new_time: &pyo3::PyAny,
+    ) -> CryptographyResult<PolicyBuilder> {
+        if self.time.is_some() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "The validation time may only be set once.",
+                ),
+            ));
+        }
+        Ok(PolicyBuilder {
+            time: Some(py_to_datetime(py, new_time)?),
+            store: self.store.as_ref().map(|s| s.clone_ref(py)),
+            max_chain_depth: self.max_chain_depth,
+        })
+    }
+
+    fn store(&self, new_store: pyo3::Py<PyStore>) -> CryptographyResult<PolicyBuilder> {
+        if self.store.is_some() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("The trust store may only be set once."),
+            ));
+        }
+        Ok(PolicyBuilder {
+            time: self.time.clone(),
+            store: Some(new_store),
+            max_chain_depth: self.max_chain_depth,
+        })
+    }
+
+    fn max_chain_depth(
+        &self,
+        py: pyo3::Python<'_>,
+        new_max_chain_depth: u8,
+    ) -> CryptographyResult<PolicyBuilder> {
+        if self.max_chain_depth.is_some() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "The maximum chain depth may only be set once.",
+                ),
+            ));
+        }
+        Ok(PolicyBuilder {
+            time: self.time.clone(),
+            store: self.store.as_ref().map(|s| s.clone_ref(py)),
+            max_chain_depth: Some(new_max_chain_depth),
+        })
+    }
+
+    fn build_server_verifier(
+        &self,
+        py: pyo3::Python<'_>,
+        subject: pyo3::PyObject,
+    ) -> CryptographyResult<PyServerVerifier> {
+        let store = match self.store.as_ref() {
+            Some(s) => s.clone_ref(py),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "A server verifier must have a trust store.",
+                    ),
+                ));
+            }
+        };
+
+        let time = match self.time.as_ref() {
+            Some(t) => t.clone(),
+            None => datetime_now(py)?,
+        };
+        let subject_owner = build_subject_owner(py, &subject)?;
+
+        let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
+            let subject = build_subject(py, subject_owner)?;
+            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
+                PyCryptoOps {},
+                subject,
+                time,
+                self.max_chain_depth,
+            )))
+        })?;
+
+        Ok(PyServerVerifier {
+            py_subject: subject,
+            policy,
+            store,
+        })
+    }
+}
+
 struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
@@ -69,6 +181,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyclass(
+    frozen,
     name = "ServerVerifier",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
@@ -173,37 +286,6 @@ fn build_subject<'a>(
     }
 }
 
-#[pyo3::prelude::pyfunction]
-fn create_server_verifier(
-    py: pyo3::Python<'_>,
-    subject: pyo3::Py<pyo3::PyAny>,
-    store: pyo3::Py<PyStore>,
-    time: Option<&pyo3::PyAny>,
-    max_chain_depth: Option<u8>,
-) -> pyo3::PyResult<PyServerVerifier> {
-    let time = match time {
-        Some(time) => py_to_datetime(py, time)?,
-        None => datetime_now(py)?,
-    };
-
-    let subject_owner = build_subject_owner(py, &subject)?;
-    let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
-        let subject = build_subject(py, subject_owner)?;
-        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
-            PyCryptoOps {},
-            subject,
-            time,
-            max_chain_depth,
-        )))
-    })?;
-
-    Ok(PyServerVerifier {
-        py_subject: subject,
-        policy,
-        store,
-    })
-}
-
 type PyCryptoOpsStore<'a> = Store<'a, PyCryptoOps>;
 
 self_cell::self_cell!(
@@ -249,7 +331,11 @@ impl PyStore {
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
     module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;
-    module.add_function(pyo3::wrap_pyfunction!(create_server_verifier, module)?)?;
+    module.add_class::<PolicyBuilder>()?;
+    module.add(
+        "VerificationError",
+        module.py().get_type::<VerificationError>(),
+    )?;
 
     Ok(())
 }
