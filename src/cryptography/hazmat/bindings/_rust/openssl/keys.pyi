@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
+
 from cryptography.hazmat.primitives.asymmetric.types import (
     PrivateKeyTypes,
     PublicKeyTypes,
@@ -14,18 +16,22 @@ def private_key_from_ptr(
 def load_der_private_key(
     data: bytes,
     password: bytes | None,
+    backend: typing.Any = None,
     *,
-    unsafe_skip_rsa_key_validation: bool,
+    unsafe_skip_rsa_key_validation: bool = False,
 ) -> PrivateKeyTypes: ...
 def load_pem_private_key(
     data: bytes,
     password: bytes | None,
+    backend: typing.Any = None,
     *,
-    unsafe_skip_rsa_key_validation: bool,
+    unsafe_skip_rsa_key_validation: bool = False,
 ) -> PrivateKeyTypes: ...
 def load_der_public_key(
     data: bytes,
+    backend: typing.Any = None,
 ) -> PublicKeyTypes: ...
 def load_pem_public_key(
     data: bytes,
+    backend: typing.Any = None,
 ) -> PublicKeyTypes: ...

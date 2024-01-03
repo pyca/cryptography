@@ -11,13 +11,15 @@ use crate::error::{self, CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
 #[pyo3::prelude::pyfunction]
-#[pyo3(signature = (data, password, *, unsafe_skip_rsa_key_validation))]
+#[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
 fn load_der_private_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
+    backend: Option<&pyo3::PyAny>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::PyObject> {
+    let _ = backend;
     if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data.as_bytes()) {
         if password.is_some() {
             return Err(CryptographyError::from(
@@ -40,13 +42,15 @@ fn load_der_private_key(
 }
 
 #[pyo3::prelude::pyfunction]
-#[pyo3(signature = (data, password, *, unsafe_skip_rsa_key_validation))]
+#[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
 fn load_pem_private_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
+    backend: Option<&pyo3::PyAny>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::PyObject> {
+    let _ = backend;
     let password = password.as_ref().map(CffiBuf::as_bytes);
     let mut status = utils::PasswordCallbackStatus::Unused;
     let pkey = openssl::pkey::PKey::private_key_from_pem_callback(
@@ -128,7 +132,9 @@ fn private_key_from_pkey(
 fn load_der_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::PyObject> {
+    let _ = backend;
     load_der_public_key_bytes(py, data.as_bytes())
 }
 
@@ -150,7 +156,9 @@ pub(crate) fn load_der_public_key_bytes(
 fn load_pem_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::PyObject> {
+    let _ = backend;
     let p = pem::parse(data.as_bytes())?;
     let pkey = match p.tag() {
         "RSA PUBLIC KEY" => {

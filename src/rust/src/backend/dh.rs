@@ -63,7 +63,11 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[pyo3::prelude::pyfunction]
-fn from_der_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
+fn from_der_parameters(
+    data: &[u8],
+    backend: Option<&pyo3::PyAny>,
+) -> CryptographyResult<DHParameters> {
+    let _ = backend;
     let asn1_params = asn1::parse_single::<common::DHParams<'_>>(data)?;
 
     let p = openssl::bn::BigNum::from_slice(asn1_params.p.as_bytes())?;
@@ -79,14 +83,18 @@ fn from_der_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
 }
 
 #[pyo3::prelude::pyfunction]
-fn from_pem_parameters(data: &[u8]) -> CryptographyResult<DHParameters> {
+fn from_pem_parameters(
+    data: &[u8],
+    backend: Option<&pyo3::PyAny>,
+) -> CryptographyResult<DHParameters> {
+    let _ = backend;
     let parsed = x509::find_in_pem(
         data,
         |p| p.tag() == "DH PARAMETERS" || p.tag() == "X9.42 DH PARAMETERS",
         "Valid PEM but no BEGIN DH PARAMETERS/END DH PARAMETERS delimiters. Are you sure this is a DH parameters?",
     )?;
 
-    from_der_parameters(parsed.contents())
+    from_der_parameters(parsed.contents(), None)
 }
 
 fn dh_parameters_from_numbers(
