@@ -156,3 +156,6 @@ virtualenv==20.25.0
 # The following packages are considered to be unsafe in a requirements file:
 # cffi
 # pycparser
+
+# Temporary workaround for cffi & python 3.13 incompatibility until cffi does a release
+cffi @ https://github.com/python-cffi/cffi/archive/refs/heads/main.zip; python_version == "3.13"
