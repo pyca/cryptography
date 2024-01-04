@@ -13,7 +13,7 @@ from cryptography import x509
 from ..utils import load_vectors_from_file
 
 
-def test_object_identier_constructor(benchmark):
+def test_object_identifier_constructor(benchmark):
     benchmark(x509.ObjectIdentifier, "1.3.6.1.4.1.11129.2.4.5")
 
 
