@@ -17,15 +17,12 @@ use cryptography_x509::common::{
 use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
-    EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID, EXTENDED_KEY_USAGE_OID,
-    KEY_USAGE_OID, NAME_CONSTRAINTS_OID, POLICY_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_DIRECTORY_ATTRIBUTES_OID, SUBJECT_KEY_IDENTIFIER_OID,
+    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID,
 };
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
-use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy};
+use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy, ExtensionValidator};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, VerificationCertificate};
 
@@ -216,9 +213,8 @@ pub struct Policy<'a, B: CryptoOps> {
     /// algorithm identifiers.
     pub permitted_signature_algorithms: HashSet<AlgorithmIdentifier<'a>>,
 
-    common_extension_policies: Vec<ExtensionPolicy<B>>,
-    ca_extension_policies: Vec<ExtensionPolicy<B>>,
-    ee_extension_policies: Vec<ExtensionPolicy<B>>,
+    ca_extension_policy: ExtensionPolicy<B>,
+    ee_extension_policy: ExtensionPolicy<B>,
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
@@ -246,105 +242,93 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .into_iter()
                 .cloned()
                 .collect(),
-            common_extension_policies: Vec::from([
-                // 5280 4.2.1.8: Subject Directory Attributes
-                ExtensionPolicy::maybe_present(
-                    SUBJECT_DIRECTORY_ATTRIBUTES_OID,
-                    Criticality::NonCritical,
-                    None,
-                ),
+            ca_extension_policy: ExtensionPolicy {
                 // 5280 4.2.2.1: Authority Information Access
-                ExtensionPolicy::maybe_present(
-                    AUTHORITY_INFORMATION_ACCESS_OID,
+                authority_information_access: ExtensionValidator::maybe_present(
                     Criticality::NonCritical,
                     Some(common::authority_information_access),
                 ),
-            ]),
-            ca_extension_policies: Vec::from([
                 // 5280 4.2.1.1: Authority Key Identifier
-                ExtensionPolicy::maybe_present(
-                    AUTHORITY_KEY_IDENTIFIER_OID,
+                authority_key_identifier: ExtensionValidator::maybe_present(
                     Criticality::NonCritical,
                     Some(ca::authority_key_identifier),
                 ),
                 // 5280 4.2.1.2: Subject Key Identifier
                 // NOTE: CABF requires SKI in CA certificates, but many older CAs lack it.
                 // We choose to be permissive here.
-                ExtensionPolicy::maybe_present(
-                    SUBJECT_KEY_IDENTIFIER_OID,
+                subject_key_identifier: ExtensionValidator::maybe_present(
                     Criticality::NonCritical,
                     None,
                 ),
                 // 5280 4.2.1.3: Key Usage
-                ExtensionPolicy::present(KEY_USAGE_OID, Criticality::Agnostic, Some(ca::key_usage)),
+                key_usage: ExtensionValidator::present(Criticality::Agnostic, Some(ca::key_usage)),
+                subject_alternative_name: ExtensionValidator::maybe_present(
+                    Criticality::Agnostic,
+                    None,
+                ),
                 // 5280 4.2.1.9: Basic Constraints
-                ExtensionPolicy::present(
-                    BASIC_CONSTRAINTS_OID,
+                basic_constraints: ExtensionValidator::present(
                     Criticality::Critical,
                     Some(ca::basic_constraints),
                 ),
                 // 5280 4.2.1.10: Name Constraints
                 // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
-                ExtensionPolicy::maybe_present(
-                    NAME_CONSTRAINTS_OID,
+                name_constraints: ExtensionValidator::maybe_present(
                     Criticality::Agnostic,
                     Some(ca::name_constraints),
                 ),
-                // 5280 4.2.1.11: Policy Constraints
-                ExtensionPolicy::maybe_present(POLICY_CONSTRAINTS_OID, Criticality::Critical, None),
                 // 5280: 4.2.1.12: Extended Key Usage
                 // NOTE: CABF requires EKUs in many non-root CA certs, but validators widely
                 // ignore this requirement and treat a missing EKU as "any EKU".
                 // We choose to be permissive here.
-                ExtensionPolicy::maybe_present(
-                    EXTENDED_KEY_USAGE_OID,
+                extended_key_usage: ExtensionValidator::maybe_present(
                     Criticality::NonCritical,
                     Some(ca::extended_key_usage),
                 ),
-            ]),
-            ee_extension_policies: Vec::from([
+            },
+            ee_extension_policy: ExtensionPolicy {
+                // 5280 4.2.2.1: Authority Information Access
+                authority_information_access: ExtensionValidator::maybe_present(
+                    Criticality::NonCritical,
+                    Some(common::authority_information_access),
+                ),
                 // 5280 4.2.1.1.: Authority Key Identifier
-                ExtensionPolicy::present(
-                    AUTHORITY_KEY_IDENTIFIER_OID,
+                authority_key_identifier: ExtensionValidator::present(
                     Criticality::NonCritical,
                     None,
                 ),
+                subject_key_identifier: ExtensionValidator::maybe_present(
+                    Criticality::Agnostic,
+                    None,
+                ),
                 // 5280 4.2.1.3: Key Usage
-                ExtensionPolicy::maybe_present(
-                    KEY_USAGE_OID,
+                key_usage: ExtensionValidator::maybe_present(
                     Criticality::Agnostic,
                     Some(ee::key_usage),
                 ),
                 // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-                ExtensionPolicy::present(
-                    SUBJECT_ALTERNATIVE_NAME_OID,
+                subject_alternative_name: ExtensionValidator::present(
                     Criticality::Agnostic,
                     Some(ee::subject_alternative_name),
                 ),
                 // 5280 4.2.1.9: Basic Constraints
-                ExtensionPolicy::maybe_present(
-                    BASIC_CONSTRAINTS_OID,
+                basic_constraints: ExtensionValidator::maybe_present(
                     Criticality::Agnostic,
                     Some(ee::basic_constraints),
                 ),
                 // 5280 4.2.1.10: Name Constraints
-                ExtensionPolicy::not_present(NAME_CONSTRAINTS_OID),
+                name_constraints: ExtensionValidator::not_present(),
                 // CA/B: 7.1.2.7.10: Subscriber Certificate Extended Key Usage
                 // NOTE: CABF requires EKUs in EE certs, while RFC 5280 does not.
-                ExtensionPolicy::maybe_present(
-                    EXTENDED_KEY_USAGE_OID,
+                extended_key_usage: ExtensionValidator::maybe_present(
                     Criticality::NonCritical,
                     Some(ee::extended_key_usage),
                 ),
-            ]),
+            },
         }
     }
 
-    fn permits_basic(
-        &self,
-        cert: &Certificate<'_>,
-        extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
+    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
@@ -404,36 +388,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             ));
         }
 
-        // Extension policy checks.
-        for ext_policy in self.common_extension_policies.iter() {
-            ext_policy.permits(self, cert, extensions)?;
-        }
-
-        // Check that all critical extensions in this certificate are accounted for.
-        let critical_extensions = extensions
-            .iter()
-            .filter(|e| e.critical)
-            .map(|e| e.extn_id)
-            .collect::<HashSet<_>>();
-        let checked_extensions = self
-            .common_extension_policies
-            .iter()
-            .chain(self.ca_extension_policies.iter())
-            .chain(self.ee_extension_policies.iter())
-            .map(|p| p.oid.clone())
-            .collect::<HashSet<_>>();
-
-        if critical_extensions
-            .difference(&checked_extensions)
-            .next()
-            .is_some()
-        {
-            // TODO: Render the OIDs here.
-            return Err(ValidationError::Other(
-                "certificate contains unaccounted-for critical extensions".to_string(),
-            ));
-        }
-
         Ok(())
     }
 
@@ -444,7 +398,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         current_depth: u8,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        self.permits_basic(cert, extensions)?;
+        self.permits_basic(cert)?;
 
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
@@ -472,9 +426,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
-        for ext_policy in self.ca_extension_policies.iter() {
-            ext_policy.permits(self, cert, extensions)?;
-        }
+        self.ca_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
@@ -485,11 +437,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        self.permits_basic(cert, extensions)?;
+        self.permits_basic(cert)?;
 
-        for ext_policy in self.ee_extension_policies.iter() {
-            ext_policy.permits(self, cert, extensions)?;
-        }
+        self.ee_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
