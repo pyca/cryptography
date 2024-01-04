@@ -45,6 +45,11 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    #[defined_by(oid::X25519_OID)]
+    X25519,
+    #[defined_by(oid::X448_OID)]
+    X448,
+
     // These encodings are only used in SPKI AlgorithmIdentifiers.
     #[defined_by(oid::EC_OID)]
     Ec(EcParameters<'a>),
@@ -103,6 +108,9 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RSASSA_PSS_OID)]
     RsaPss(Option<Box<RsaPssParameters<'a>>>),
 
+    #[defined_by(oid::DSA_OID)]
+    Dsa(DssParams<'a>),
+
     #[defined_by(oid::DSA_WITH_SHA224_OID)]
     DsaWithSha224(Option<asn1::Null>),
     #[defined_by(oid::DSA_WITH_SHA256_OID)]
@@ -111,6 +119,11 @@ pub enum AlgorithmParameters<'a> {
     DsaWithSha384(Option<asn1::Null>),
     #[defined_by(oid::DSA_WITH_SHA512_OID)]
     DsaWithSha512(Option<asn1::Null>),
+
+    #[defined_by(oid::DH_OID)]
+    Dh(DHXParams<'a>),
+    #[defined_by(oid::DH_KEY_AGREEMENT_OID)]
+    DhKeyAgreement(BasicDHParams<'a>),
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
@@ -235,6 +248,38 @@ pub struct DHParams<'a> {
     pub g: asn1::BigUint<'a>,
     pub q: Option<asn1::BigUint<'a>>,
 }
+
+// From PKCS#3 Section 9
+// DHParameter ::= SEQUENCE {
+//     prime INTEGER, -- p
+//     base INTEGER, -- g
+//     privateValueLength INTEGER OPTIONAL
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Clone, PartialEq, Eq, Debug, Hash)]
+pub struct BasicDHParams<'a> {
+    pub p: asn1::BigUint<'a>,
+    pub g: asn1::BigUint<'a>,
+    pub private_value_length: Option<u32>,
+}
+
+// From https://www.rfc-editor.org/rfc/rfc3279#section-2.3.3
+// DomainParameters ::= SEQUENCE {
+//     p       INTEGER, -- odd prime, p=jq +1
+//     g       INTEGER, -- generator, g
+//     q       INTEGER, -- factor of p-1
+//     j       INTEGER OPTIONAL, -- subgroup factor
+//     validationParms  ValidationParms OPTIONAL
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Clone, PartialEq, Eq, Debug, Hash)]
+pub struct DHXParams<'a> {
+    pub p: asn1::BigUint<'a>,
+    pub g: asn1::BigUint<'a>,
+    pub q: asn1::BigUint<'a>,
+    pub j: Option<asn1::BigUint<'a>>,
+    // No support for this, so don't bother filling out the fields.
+    pub validation_params: Option<asn1::Sequence<'a>>,
+}
+
 // RSA-PSS ASN.1 default hash algorithm
 pub const PSS_SHA1_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
@@ -325,6 +370,20 @@ pub struct RsaPssParameters<'a> {
     #[explicit(3)]
     #[default(1u8)]
     pub _trailer_field: u8,
+}
+
+// https://datatracker.ietf.org/doc/html/rfc3279#section-2.3.2
+//
+// Dss-Parms ::= SEQUENCE  {
+//     p  INTEGER,
+//     q  INTEGER,
+//     g  INTEGER
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+pub struct DssParams<'a> {
+    pub p: asn1::BigUint<'a>,
+    pub q: asn1::BigUint<'a>,
+    pub g: asn1::BigUint<'a>,
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the

@@ -57,6 +57,25 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
         match e {
             cryptography_key_parsing::KeyParsingError::Parse(e) => CryptographyError::KeyParsing(e),
             cryptography_key_parsing::KeyParsingError::OpenSSL(e) => CryptographyError::OpenSSL(e),
+            cryptography_key_parsing::KeyParsingError::InvalidKey => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err("Invalid key"))
+            }
+            cryptography_key_parsing::KeyParsingError::ExplicitCurveUnsupported => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "ECDSA keys with explicit parameters are unsupported at this time",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::UnsupportedKeyType(oid) => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Unknown key type: {oid}"
+                )))
+            }
+            cryptography_key_parsing::KeyParsingError::UnsupportedEllipticCurve(oid) => {
+                CryptographyError::Py(exceptions::UnsupportedAlgorithm::new_err((
+                    format!("Curve {oid} is not supported"),
+                    exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
+                )))
+            }
         }
     }
 }

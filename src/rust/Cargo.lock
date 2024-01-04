@@ -75,7 +75,10 @@ name = "cryptography-key-parsing"
 version = "0.1.0"
 dependencies = [
  "asn1",
+ "cfg-if",
+ "cryptography-x509",
  "openssl",
+ "openssl-sys",
 ]
 
 [[package]]

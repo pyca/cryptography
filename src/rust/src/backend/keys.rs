@@ -7,8 +7,8 @@ use pyo3::IntoPy;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
-use crate::error::{self, CryptographyError, CryptographyResult};
-use crate::{exceptions, types};
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::exceptions;
 
 #[pyo3::prelude::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
@@ -142,14 +142,18 @@ pub(crate) fn load_der_public_key_bytes(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> CryptographyResult<pyo3::PyObject> {
-    if let Ok(pkey) = openssl::pkey::PKey::public_key_from_der(data) {
-        return public_key_from_pkey(py, &pkey, pkey.id());
+    match cryptography_key_parsing::spki::parse_public_key(data) {
+        Ok(pkey) => public_key_from_pkey(py, &pkey, pkey.id()),
+        // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need
+        // to check to see if it is a pure PKCS1 RSA public key (not embedded
+        // in a subjectPublicKeyInfo)
+        Err(e) => {
+            // Use the original error.
+            let pkey =
+                cryptography_key_parsing::rsa::parse_pkcs1_public_key(data).map_err(|_| e)?;
+            public_key_from_pkey(py, &pkey, pkey.id())
+        }
     }
-    // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need to
-    // check to see if it is a pure PKCS1 RSA public key (not embedded in a
-    // subjectPublicKeyInfo)
-    let pkey = cryptography_key_parsing::rsa::parse_pkcs1_rsa_public_key(data)?;
-    public_key_from_pkey(py, &pkey, pkey.id())
 }
 
 #[pyo3::prelude::pyfunction]
@@ -161,16 +165,8 @@ fn load_pem_public_key(
     let _ = backend;
     let p = pem::parse(data.as_bytes())?;
     let pkey = match p.tag() {
-        "RSA PUBLIC KEY" => {
-            cryptography_key_parsing::rsa::parse_pkcs1_rsa_public_key(p.contents())?
-        }
-        "PUBLIC KEY" => openssl::pkey::PKey::public_key_from_der(p.contents()).or_else(|e| {
-            let errors = error::list_from_openssl_error(py, e);
-            Err(types::BACKEND_HANDLE_KEY_LOADING_ERROR
-                .get(py)?
-                .call1((errors,))
-                .unwrap_err())
-        })?,
+        "RSA PUBLIC KEY" => cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents())?,
+        "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
         _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
     };
     public_key_from_pkey(py, &pkey, pkey.id())
@@ -185,17 +181,6 @@ fn public_key_from_pkey(
     // unsupported.
     match id {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey).into_py(py)),
-        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
-        openssl::pkey::Id::RSA_PSS => {
-            // At the moment the way we handle RSA PSS keys is to strip the
-            // PSS constraints from them and treat them as normal RSA keys
-            // Unfortunately the RSA * itself tracks this data so we need to
-            // extract, serialize, and reload it without the constraints.
-            let der_bytes = pkey.rsa()?.public_key_to_der()?;
-            let rsa = openssl::rsa::Rsa::public_key_from_der(&der_bytes)?;
-            let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-            Ok(crate::backend::rsa::public_key_from_pkey(&pkey).into_py(py))
-        }
         openssl::pkey::Id::EC => {
             Ok(crate::backend::ec::public_key_from_pkey(py, pkey)?.into_py(py))
         }
