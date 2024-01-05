@@ -905,6 +905,19 @@ class TestECSerialization:
                 mode="rb",
             )
 
+        with pytest.raises(ValueError, match="explicit parameters"):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric",
+                    "EC",
+                    "explicit_parameters_wap_wsg_idm_ecid_wtls11_private_key.pem",
+                ),
+                lambda pemfile: serialization.load_pem_private_key(
+                    pemfile.read(), password=None
+                ),
+                mode="rb",
+            )
+
     def test_load_private_key_unsupported_curve(self):
         with pytest.raises((ValueError, exceptions.UnsupportedAlgorithm)):
             load_vectors_from_file(

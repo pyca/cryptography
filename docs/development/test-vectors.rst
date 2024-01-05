@@ -117,6 +117,9 @@ Custom asymmetric vectors
   generated using OpenSSL.
 * ``asymmetric/EC/explicit_parameters_private_key.pem`` - Contains an EC
   private key with an curve defined by explicit parameters.
+* ``asymmetric/EC/explicit_parameters_wap_wsg_idm_ecid_wtls11_private_key.pem`` -
+  Contains an EC private key with over the ``wap-wsg-idm-ecid-wtls11`` curve,
+  encoded with explicit parameters.
 * ``asymmetric/EC/secp128r1_private_key.pem`` - Contains an EC private key on
   the curve ``secp128r1``.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
