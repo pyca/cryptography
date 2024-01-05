@@ -119,6 +119,7 @@ setuptools
 SHA
 Solaris
 Sonoma
+SPKI
 Sur
 syscall
 Tanja
