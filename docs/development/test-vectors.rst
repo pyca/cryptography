@@ -115,6 +115,10 @@ Custom asymmetric vectors
   the private key for the certificate ``x509/custom/ca/rsa_ca.pem``.
 * ``asymmetric/EC/compressed_points.txt`` - Contains compressed public points
   generated using OpenSSL.
+* ``asymmetric/EC/explicit_parameters_private_key.pem`` - Contains an EC
+  private key with an curve defined by explicit parameters.
+* ``asymmetric/EC/secp128r1_private_key.pem`` - Contains an EC private key on
+  the curve ``secp128r1``.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
   ``asymmetric/X448/x448-pkcs8-enc.der`` contain an X448 key encrypted with
   AES 256 CBC with the password ``password``.
