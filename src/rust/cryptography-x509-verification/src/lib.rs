@@ -11,7 +11,6 @@ pub mod policy;
 pub mod trust_store;
 pub mod types;
 
-use std::collections::HashSet;
 use std::vec;
 
 use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
@@ -171,7 +170,7 @@ pub fn verify<'chain, B: CryptoOps>(
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
-    intermediates: HashSet<VerificationCertificate<'chain, B>>,
+    intermediates: Vec<VerificationCertificate<'chain, B>>,
     policy: &'a Policy<'a, B>,
     store: &'a Store<'chain, B>,
 }
@@ -197,7 +196,7 @@ impl ApplyNameConstraintStatus {
 
 impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: HashSet<VerificationCertificate<'chain, B>>,
+        intermediates: Vec<VerificationCertificate<'chain, B>>,
         policy: &'a Policy<'a, B>,
         store: &'a Store<'chain, B>,
     ) -> Self {
