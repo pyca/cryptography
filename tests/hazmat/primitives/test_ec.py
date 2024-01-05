@@ -937,7 +937,8 @@ class TestECSerialization:
             ("sect233r1-spki.pem", ec.SECT233R1),
         ],
     )
-    def test_load_public_keys(self, key_file, curve):
+    def test_load_public_keys(self, key_file, curve, backend):
+        _skip_curve_unsupported(backend, curve())
         key = load_vectors_from_file(
             os.path.join("asymmetric", "EC", key_file),
             lambda pemfile: serialization.load_pem_public_key(
