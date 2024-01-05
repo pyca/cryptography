@@ -928,6 +928,25 @@ class TestECSerialization:
                 mode="rb",
             )
 
+    @pytest.mark.parametrize(
+        ("key_file", "curve"),
+        [
+            ("sect163k1-spki.pem", ec.SECT163K1),
+            ("sect163r2-spki.pem", ec.SECT163R2),
+            ("sect233k1-spki.pem", ec.SECT233K1),
+            ("sect233r1-spki.pem", ec.SECT233R1),
+        ],
+    )
+    def test_load_public_keys(self, key_file, curve):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "EC", key_file),
+            lambda pemfile: serialization.load_pem_public_key(
+                pemfile.read(),
+            ),
+            mode="rb",
+        )
+        assert isinstance(key.curve, curve)
+
 
 class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(
