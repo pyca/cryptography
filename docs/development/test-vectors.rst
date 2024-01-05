@@ -122,6 +122,14 @@ Custom asymmetric vectors
   encoded with explicit parameters.
 * ``asymmetric/EC/secp128r1_private_key.pem`` - Contains an EC private key on
   the curve ``secp128r1``.
+* ``asymmetric/EC/sect163k1-spki.pem`` - Contains an EC SPKI on the curve
+  ``sect163k1``.
+* ``asymmetric/EC/sect163r2-spki.pem`` - Contains an EC SPKI on the curve
+  ``sect163r2``.
+* ``asymmetric/EC/sect233k1-spki.pem`` - Contains an EC SPKI on the curve
+  ``sect233k1``.
+* ``asymmetric/EC/sect233r1-spki.pem`` - Contains an EC SPKI on the curve
+  ``sect233r1``.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
   ``asymmetric/X448/x448-pkcs8-enc.der`` contain an X448 key encrypted with
   AES 256 CBC with the password ``password``.
