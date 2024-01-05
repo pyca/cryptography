@@ -945,6 +945,7 @@ class TestECSerialization:
             ),
             mode="rb",
         )
+        assert isinstance(key, ec.EllipticCurvePublicKey)
         assert isinstance(key.curve, curve)
 
 
