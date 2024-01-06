@@ -332,10 +332,7 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
         return self._algorithm
 
 
-def generate_private_key(
-    curve: EllipticCurve, backend: typing.Any = None
-) -> EllipticCurvePrivateKey:
-    return rust_openssl.ec.generate_private_key(curve)
+generate_private_key = rust_openssl.ec.generate_private_key
 
 
 def derive_private_key(

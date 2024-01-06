@@ -27,7 +27,10 @@ use crate::{exceptions, types, x509};
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
+    backend: Option<&pyo3::PyAny>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
+    let _ = backend;
+
     let owned = OwnedCertificateRevocationList::try_new(data, |data| {
         asn1::parse_single(data.as_bytes(py))
     })?;
@@ -53,7 +56,10 @@ fn load_der_x509_crl(
 fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
+    backend: Option<&pyo3::PyAny>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
+    let _ = backend;
+
     let block = x509::find_in_pem(
         data,
         |p| p.tag() == "X509 CRL",
@@ -62,6 +68,7 @@ fn load_pem_x509_crl(
     load_der_x509_crl(
         py,
         pyo3::types::PyBytes::new(py, block.contents()).into_py(py),
+        None,
     )
 }
 
@@ -665,7 +672,7 @@ fn create_x509_crl(
         signature_algorithm: sigalg,
         signature_value: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    load_der_x509_crl(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
+    load_der_x509_crl(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

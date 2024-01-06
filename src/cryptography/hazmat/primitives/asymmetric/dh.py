@@ -5,16 +5,11 @@
 from __future__ import annotations
 
 import abc
-import typing
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
 
-
-def generate_parameters(
-    generator: int, key_size: int, backend: typing.Any = None
-) -> DHParameters:
-    return rust_openssl.dh.generate_parameters(generator, key_size)
+generate_parameters = rust_openssl.dh.generate_parameters
 
 
 DHPrivateNumbers = rust_openssl.dh.DHPrivateNumbers

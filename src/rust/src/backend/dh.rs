@@ -27,7 +27,13 @@ struct DHParameters {
 }
 
 #[pyo3::prelude::pyfunction]
-fn generate_parameters(generator: u32, key_size: u32) -> CryptographyResult<DHParameters> {
+fn generate_parameters(
+    generator: u32,
+    key_size: u32,
+    backend: Option<&pyo3::PyAny>,
+) -> CryptographyResult<DHParameters> {
+    let _ = backend;
+
     if key_size < MIN_MODULUS_SIZE {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(format!(

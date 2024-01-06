@@ -224,7 +224,10 @@ impl CertificateSigningRequest {
 fn load_pem_x509_csr(
     py: pyo3::Python<'_>,
     data: &[u8],
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<CertificateSigningRequest> {
+    let _ = backend;
+
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L35-L36
     let parsed = x509::find_in_pem(
@@ -235,6 +238,7 @@ fn load_pem_x509_csr(
     load_der_x509_csr(
         py,
         pyo3::types::PyBytes::new(py, parsed.contents()).into_py(py),
+        None,
     )
 }
 
@@ -242,7 +246,10 @@ fn load_pem_x509_csr(
 fn load_der_x509_csr(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<CertificateSigningRequest> {
+    let _ = backend;
+
     let raw = OwnedCsr::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
     let version = raw.borrow_dependent().csr_info.version;
@@ -336,7 +343,7 @@ fn create_x509_csr(
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    load_der_x509_csr(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
+    load_der_x509_csr(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {

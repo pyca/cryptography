@@ -611,9 +611,5 @@ class OCSPResponseBuilder:
         return ocsp.create_ocsp_response(response_status, None, None, None)
 
 
-def load_der_ocsp_request(data: bytes) -> OCSPRequest:
-    return ocsp.load_der_ocsp_request(data)
-
-
-def load_der_ocsp_response(data: bytes) -> OCSPResponse:
-    return ocsp.load_der_ocsp_response(data)
+load_der_ocsp_request = ocsp.load_der_ocsp_request
+load_der_ocsp_response = ocsp.load_der_ocsp_response

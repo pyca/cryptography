@@ -641,50 +641,16 @@ class CertificateSigningRequest(metaclass=abc.ABCMeta):
 CertificateSigningRequest.register(rust_x509.CertificateSigningRequest)
 
 
-# Backend argument preserved for API compatibility, but ignored.
-def load_pem_x509_certificate(
-    data: bytes, backend: typing.Any = None
-) -> Certificate:
-    return rust_x509.load_pem_x509_certificate(data)
+load_pem_x509_certificate = rust_x509.load_pem_x509_certificate
+load_der_x509_certificate = rust_x509.load_der_x509_certificate
 
+load_pem_x509_certificates = rust_x509.load_pem_x509_certificates
 
-def load_pem_x509_certificates(data: bytes) -> list[Certificate]:
-    return rust_x509.load_pem_x509_certificates(data)
+load_pem_x509_csr = rust_x509.load_pem_x509_csr
+load_der_x509_csr = rust_x509.load_der_x509_csr
 
-
-# Backend argument preserved for API compatibility, but ignored.
-def load_der_x509_certificate(
-    data: bytes, backend: typing.Any = None
-) -> Certificate:
-    return rust_x509.load_der_x509_certificate(data)
-
-
-# Backend argument preserved for API compatibility, but ignored.
-def load_pem_x509_csr(
-    data: bytes, backend: typing.Any = None
-) -> CertificateSigningRequest:
-    return rust_x509.load_pem_x509_csr(data)
-
-
-# Backend argument preserved for API compatibility, but ignored.
-def load_der_x509_csr(
-    data: bytes, backend: typing.Any = None
-) -> CertificateSigningRequest:
-    return rust_x509.load_der_x509_csr(data)
-
-
-# Backend argument preserved for API compatibility, but ignored.
-def load_pem_x509_crl(
-    data: bytes, backend: typing.Any = None
-) -> CertificateRevocationList:
-    return rust_x509.load_pem_x509_crl(data)
-
-
-# Backend argument preserved for API compatibility, but ignored.
-def load_der_x509_crl(
-    data: bytes, backend: typing.Any = None
-) -> CertificateRevocationList:
-    return rust_x509.load_der_x509_crl(data)
+load_pem_x509_crl = rust_x509.load_pem_x509_crl
+load_der_x509_crl = rust_x509.load_der_x509_crl
 
 
 class CertificateSigningRequestBuilder:
