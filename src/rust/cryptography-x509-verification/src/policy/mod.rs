@@ -6,6 +6,7 @@ mod extension;
 
 use std::collections::HashSet;
 use std::ops::Range;
+use std::sync::Arc;
 
 use asn1::ObjectIdentifier;
 use cryptography_x509::certificate::Certificate;
@@ -54,8 +55,15 @@ static SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> =
-    Lazy::new(|| HashSet::from([&SPKI_RSA, &SPKI_SECP256R1, &SPKI_SECP384R1, &SPKI_SECP521R1]));
+pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: Lazy<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
+    Lazy::new(|| {
+        Arc::new(HashSet::from([
+            SPKI_RSA.clone(),
+            SPKI_SECP256R1.clone(),
+            SPKI_SECP384R1.clone(),
+            SPKI_SECP521R1.clone(),
+        ]))
+    });
 
 // Signature AlgorithmIdentifier constants, as defined in CA/B 7.1.3.2.
 
@@ -130,19 +138,19 @@ static ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<HashSet<&AlgorithmIdentifier<'_>>> =
+pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
     Lazy::new(|| {
-        HashSet::from([
-            &RSASSA_PKCS1V15_SHA256,
-            &RSASSA_PKCS1V15_SHA384,
-            &RSASSA_PKCS1V15_SHA512,
-            &RSASSA_PSS_SHA256,
-            &RSASSA_PSS_SHA384,
-            &RSASSA_PSS_SHA512,
-            &ECDSA_SHA256,
-            &ECDSA_SHA384,
-            &ECDSA_SHA512,
-        ])
+        Arc::new(HashSet::from([
+            RSASSA_PKCS1V15_SHA256.clone(),
+            RSASSA_PKCS1V15_SHA384.clone(),
+            RSASSA_PKCS1V15_SHA512.clone(),
+            RSASSA_PSS_SHA256.clone(),
+            RSASSA_PSS_SHA384.clone(),
+            RSASSA_PSS_SHA512.clone(),
+            ECDSA_SHA256.clone(),
+            ECDSA_SHA384.clone(),
+            ECDSA_SHA512.clone(),
+        ]))
     });
 
 /// A default reasonable maximum chain depth.
@@ -207,11 +215,11 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// The set of permitted public key algorithms, identified by their
     /// algorithm identifiers.
-    pub permitted_public_key_algorithms: HashSet<AlgorithmIdentifier<'a>>,
+    pub permitted_public_key_algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
 
     /// The set of permitted signature algorithms, identified by their
     /// algorithm identifiers.
-    pub permitted_signature_algorithms: HashSet<AlgorithmIdentifier<'a>>,
+    pub permitted_signature_algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
 
     ca_extension_policy: ExtensionPolicy<B>,
     ee_extension_policy: ExtensionPolicy<B>,
@@ -232,16 +240,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
-            permitted_public_key_algorithms: WEBPKI_PERMITTED_SPKI_ALGORITHMS
-                .clone()
-                .into_iter()
-                .cloned()
-                .collect(),
-            permitted_signature_algorithms: WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS
-                .clone()
-                .into_iter()
-                .cloned()
-                .collect(),
+            permitted_public_key_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SPKI_ALGORITHMS),
+            permitted_signature_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS),
             ca_extension_policy: ExtensionPolicy {
                 // 5280 4.2.2.1: Authority Information Access
                 authority_information_access: ExtensionValidator::maybe_present(
