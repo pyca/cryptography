@@ -30,11 +30,7 @@ def load_der_pkcs7_certificates(data: bytes) -> list[x509.Certificate]:
     return backend.load_der_pkcs7_certificates(data)
 
 
-def serialize_certificates(
-    certs: list[x509.Certificate],
-    encoding: serialization.Encoding,
-) -> bytes:
-    return rust_pkcs7.serialize_certificates(certs, encoding)
+serialize_certificates = rust_pkcs7.serialize_certificates
 
 
 PKCS7HashTypes = typing.Union[

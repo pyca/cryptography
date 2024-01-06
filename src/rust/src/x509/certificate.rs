@@ -332,7 +332,13 @@ fn cert_version(py: pyo3::Python<'_>, version: u8) -> Result<&pyo3::PyAny, Crypt
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyResult<Certificate> {
+fn load_pem_x509_certificate(
+    py: pyo3::Python<'_>,
+    data: &[u8],
+    backend: Option<&pyo3::PyAny>,
+) -> CryptographyResult<Certificate> {
+    let _ = backend;
+
     // We support both PEM header strings that OpenSSL does
     // https://github.com/openssl/openssl/blob/5e2d22d53ed322a7124e26a4fbd116a8210eb77a/include/openssl/pem.h#L32-L33
     let parsed = x509::find_in_pem(
@@ -343,6 +349,7 @@ fn load_pem_x509_certificate(py: pyo3::Python<'_>, data: &[u8]) -> CryptographyR
     load_der_x509_certificate(
         py,
         pyo3::types::PyBytes::new(py, parsed.contents()).into_py(py),
+        None,
     )
 }
 
@@ -355,7 +362,11 @@ fn load_pem_x509_certificates(
         .iter()
         .filter(|p| p.tag() == "CERTIFICATE" || p.tag() == "X509 CERTIFICATE")
         .map(|p| {
-            load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, p.contents()).into_py(py))
+            load_der_x509_certificate(
+                py,
+                pyo3::types::PyBytes::new(py, p.contents()).into_py(py),
+                None,
+            )
         })
         .collect::<Result<Vec<_>, _>>()?;
 
@@ -370,7 +381,10 @@ fn load_pem_x509_certificates(
 fn load_der_x509_certificate(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<Certificate> {
+    let _ = backend;
+
     let raw = OwnedCertificate::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
     // Parse cert version immediately so we can raise error on parse if it is invalid.
     cert_version(py, raw.borrow_dependent().tbs_cert.version)?;
@@ -894,7 +908,7 @@ fn create_x509_certificate(
         signature_alg: sigalg,
         signature: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
+    load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
 }
 
 pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {

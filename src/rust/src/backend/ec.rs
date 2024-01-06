@@ -153,14 +153,17 @@ pub(crate) fn public_key_from_pkey(
 #[pyo3::prelude::pyfunction]
 fn generate_private_key(
     py: pyo3::Python<'_>,
-    py_curve: &pyo3::PyAny,
+    curve: &pyo3::PyAny,
+    backend: Option<&pyo3::PyAny>,
 ) -> CryptographyResult<ECPrivateKey> {
-    let curve = curve_from_py_curve(py, py_curve)?;
-    let key = openssl::ec::EcKey::generate(&curve)?;
+    let _ = backend;
+
+    let ossl_curve = curve_from_py_curve(py, curve)?;
+    let key = openssl::ec::EcKey::generate(&ossl_curve)?;
 
     Ok(ECPrivateKey {
         pkey: openssl::pkey::PKey::from_ec_key(key)?,
-        curve: py_curve.into(),
+        curve: curve.into(),
     })
 }
 

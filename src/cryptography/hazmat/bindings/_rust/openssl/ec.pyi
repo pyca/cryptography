@@ -36,7 +36,7 @@ class EllipticCurvePublicNumbers:
 
 def curve_supported(curve: ec.EllipticCurve) -> bool: ...
 def generate_private_key(
-    curve: ec.EllipticCurve,
+    curve: ec.EllipticCurve, backend: typing.Any = None
 ) -> ec.EllipticCurvePrivateKey: ...
 def from_private_numbers(
     numbers: ec.EllipticCurvePrivateNumbers,
