@@ -220,9 +220,8 @@ struct AesSiv {
 #[pyo3::prelude::pymethods]
 impl AesSiv {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesSiv> {
-        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
-        let cipher_name = match key_buf.as_bytes().len() {
+    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesSiv> {
+        let cipher_name = match key.as_bytes().len() {
             32 => "aes-128-siv",
             48 => "aes-192-siv",
             64 => "aes-256-siv",
@@ -248,7 +247,7 @@ impl AesSiv {
 
                 let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
                 Ok(AesSiv {
-                    ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, true)?,
+                    ctx: EvpCipherAead::new(&cipher, key.as_bytes(), 16, true)?,
                 })
             } else {
                 return Err(CryptographyError::from(
@@ -315,9 +314,7 @@ struct AesOcb3 {
 #[pyo3::prelude::pymethods]
 impl AesOcb3 {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesOcb3> {
-        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
-
+    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesOcb3> {
         cfg_if::cfg_if! {
             if #[cfg(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL))] {
                 return Err(CryptographyError::from(
@@ -336,7 +333,7 @@ impl AesOcb3 {
                     ));
                 }
 
-                let cipher = match key_buf.as_bytes().len() {
+                let cipher = match key.as_bytes().len() {
                     16 => openssl::cipher::Cipher::aes_128_ocb(),
                     24 => openssl::cipher::Cipher::aes_192_ocb(),
                     32 => openssl::cipher::Cipher::aes_256_ocb(),
@@ -350,7 +347,7 @@ impl AesOcb3 {
                 };
 
                 Ok(AesOcb3 {
-                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new(cipher, key.as_bytes(), 16, false)?,
                 })
             }
         }
@@ -422,9 +419,8 @@ struct AesGcmSiv {
 #[pyo3::prelude::pymethods]
 impl AesGcmSiv {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcmSiv> {
-        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
-        let cipher_name = match key_buf.as_bytes().len() {
+    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesGcmSiv> {
+        let cipher_name = match key.as_bytes().len() {
             16 => "aes-128-gcm-siv",
             24 => "aes-192-gcm-siv",
             32 => "aes-256-gcm-siv",
@@ -457,7 +453,7 @@ impl AesGcmSiv {
                 }
                 let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
                 Ok(AesGcmSiv {
-                    ctx: EvpCipherAead::new(&cipher, key_buf.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new(&cipher, key.as_bytes(), 16, false)?,
                 })
             }
         }
