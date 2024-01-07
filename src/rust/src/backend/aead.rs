@@ -131,10 +131,21 @@ impl EvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        check_length(plaintext)?;
-
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_encryption_ctx)?;
+        self.encrypt_with_context(py, ctx, plaintext, aad, nonce)
+    }
+
+    fn encrypt_with_context<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        mut ctx: openssl::cipher_ctx::CipherCtx,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        check_length(plaintext)?;
+
         if let Some(nonce) = nonce {
             ctx.set_iv_length(nonce.len())?;
         }
@@ -170,12 +181,23 @@ impl EvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_decryption_ctx)?;
+        self.decrypt_with_ctx(py, ctx, ciphertext, aad, nonce)
+    }
+
+    fn decrypt_with_ctx<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        mut ctx: openssl::cipher_ctx::CipherCtx,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if ciphertext.len() < self.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_decryption_ctx)?;
         if let Some(nonce) = nonce {
             ctx.set_iv_length(nonce.len())?;
         }
