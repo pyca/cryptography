@@ -45,8 +45,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL master branch, as of Jan 06, 2024.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "7a813621dac6878ab53b6ed7392939a8982226e8"}}
-          # Latest commit on the OpenSSL master branch, as of Jan 06, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "5963aa8c196d7c5a940a979299a07418527932af"}}
+          # Latest commit on the OpenSSL master branch, as of Jan 09, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "0a22436ea5826d0089db7f1cd97b7c90135ca165"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin, workspace inheritance
