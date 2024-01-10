@@ -75,7 +75,7 @@ jobs:
           response.raise_for_status()
           token = response.json()["value"]
 
-          response = requests.post(f"https://{os.environ['PYPI_DOMAIN']}/_/oidc/github/mint-token", json={"token": token})
+          response = requests.post(f"https://{os.environ['PYPI_DOMAIN']}/_/oidc/mint-token", json={"token": token})
           response.raise_for_status()
           pypi_token = response.json()["token"]
 
