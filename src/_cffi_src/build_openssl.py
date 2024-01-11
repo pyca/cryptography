@@ -26,7 +26,6 @@ ffi = build_ffi_for_binding(
         "asn1",
         "bignum",
         "bio",
-        "cmac",
         "crypto",
         "dh",
         "dsa",
