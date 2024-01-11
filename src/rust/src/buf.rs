@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use std::{ptr, slice};
+use std::slice;
 
 use crate::types;
 
@@ -28,15 +28,9 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
             .extract()?;
 
         let len = bufobj.len()?;
-        let ptr = if len == 0 {
-            ptr::NonNull::dangling().as_ptr()
+        let buf = if len == 0 {
+            &[]
         } else {
-            ptrval as *const u8
-        };
-
-        Ok(CffiBuf {
-            _pyobj: pyobj,
-            _bufobj: bufobj,
             // SAFETY: _extract_buffer_length ensures that we have a valid ptr
             // and length (and we ensure we meet slice's requirements for
             // 0-length slices above), we're keeping pyobj alive which ensures
@@ -45,7 +39,13 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
             // https://alexgaynor.net/2022/oct/23/buffers-on-the-edge/
             // for details. This is the same as our cffi status quo ante, so
             // we're doing an unsound thing and living with it.
-            buf: unsafe { slice::from_raw_parts(ptr, len) },
+            unsafe { slice::from_raw_parts(ptrval as *const u8, len) }
+        };
+
+        Ok(CffiBuf {
+            _pyobj: pyobj,
+            _bufobj: bufobj,
+            buf,
         })
     }
 }
