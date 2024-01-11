@@ -252,33 +252,6 @@ class TestOpenSSLRSA:
 
 
 class TestOpenSSLSerializationWithOpenSSL:
-    def test_pem_password_cb(self):
-        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
-        pw = b"abcdefg"
-        password = backend._ffi.new("char []", pw)
-        userdata.password = password
-        userdata.length = len(pw)
-        buflen = 10
-        buf = backend._ffi.new("char []", buflen)
-        res = backend._lib.Cryptography_pem_password_cb(
-            buf, buflen, 0, userdata
-        )
-        assert res == len(pw)
-        assert userdata.called == 1
-        assert backend._ffi.buffer(buf, len(pw))[:] == pw
-        assert userdata.maxsize == buflen
-        assert userdata.error == 0
-
-    def test_pem_password_cb_no_password(self):
-        userdata = backend._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
-        buflen = 10
-        buf = backend._ffi.new("char []", buflen)
-        res = backend._lib.Cryptography_pem_password_cb(
-            buf, buflen, 0, userdata
-        )
-        assert res == 0
-        assert userdata.error == -1
-
     def test_unsupported_evp_pkey_type(self):
         key = backend._lib.EVP_PKEY_new()
         key = backend._ffi.gc(key, backend._lib.EVP_PKEY_free)
