@@ -122,8 +122,6 @@ static const long X509_PURPOSE_CRL_SIGN;
 static const long X509_PURPOSE_ANY;
 static const long X509_PURPOSE_OCSP_HELPER;
 static const long X509_PURPOSE_TIMESTAMP_SIGN;
-static const long X509_PURPOSE_MIN;
-static const long X509_PURPOSE_MAX;
 """
 
 FUNCTIONS = """
