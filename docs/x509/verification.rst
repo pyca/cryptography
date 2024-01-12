@@ -15,12 +15,9 @@ or chain building.
 Example usage, with `certifi <https://pypi.org/project/certifi/>`_ providing
 the root of trust:
 
-.. code-block:: python
+.. testsetup::
 
-    from cryptography.x509 import Certificate, DNSName, load_pem_x509_certificate, load_pem_x509_certificates
-    from cryptography.x509.verification import PolicyBuilder, Store
-    import certifi
-
+    from cryptography.x509 import load_pem_x509_certificate, load_pem_x509_certificates
     from datetime import datetime
 
     peer = load_pem_x509_certificate(b"""
@@ -68,14 +65,24 @@ the root of trust:
     -----END CERTIFICATE-----
     """)
 
-    with open(certifi.where(), "rb") as pems:
-        store = Store(load_pem_x509_certificates(pems.read()))
+    verification_time = datetime.fromisoformat("2024-01-12T00:00:00Z")
 
-    builder = PolicyBuilder().store(store)
-    builder = builder.time(datetime.fromisoformat("2024-01-12T00:00:00Z"))
-    verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+.. doctest::
 
-    chain = verifier.verify(peer, untrusted_intermediates)
+    >>> from cryptography.x509 import Certificate, DNSName, load_pem_x509_certificates
+    >>> from cryptography.x509.verification import PolicyBuilder, Store
+    >>> import certifi
+    >>> from datetime import datetime
+    >>> with open(certifi.where(), "rb") as pems:
+    ...    store = Store(load_pem_x509_certificates(pems.read()))
+    >>> builder = PolicyBuilder().store(store)
+    >>> builder = builder.time(verification_time)
+    >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+    >>> # NOTE: peer and untrusted_intermediates are Certificate and
+    >>> #       list[Certificate] respectively, and should be loaded from the
+    >>> #       application context that needs them verified, such as a
+    >>> #       TLS socket.
+    >>> chain = verifier.verify(peer, untrusted_intermediates)
 
 .. class:: Store(certs)
 
