@@ -120,6 +120,9 @@ impl CertificateRevocationList {
         self.len()
     }
 
+    // Silenced due to false-positives
+    // https://github.com/rust-lang/rust-clippy/issues/12135
+    #[allow(clippy::useless_asref)]
     fn __iter__(&self) -> CRLIterator {
         CRLIterator {
             contents: OwnedCRLIteratorData::try_new(Arc::clone(&self.owned), |v| {
