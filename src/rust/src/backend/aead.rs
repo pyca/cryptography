@@ -52,7 +52,6 @@ impl EvpCipherAead {
     }
 
     fn process_aad(
-        &self,
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         aad: Option<Aad<'_>>,
     ) -> CryptographyResult<()> {
@@ -75,7 +74,6 @@ impl EvpCipherAead {
     }
 
     fn process_data(
-        &self,
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         data: &[u8],
         out: &mut [u8],
@@ -133,16 +131,17 @@ impl EvpCipherAead {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_encryption_ctx)?;
-        self.encrypt_with_context(py, ctx, plaintext, aad, nonce)
+        Self::encrypt_with_context(py, ctx, plaintext, aad, nonce, self.tag_len, self.tag_first)
     }
 
     fn encrypt_with_context<'p>(
-        &self,
         py: pyo3::Python<'p>,
         mut ctx: openssl::cipher_ctx::CipherCtx,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
+        tag_len: usize,
+        tag_first: bool,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         check_length(plaintext)?;
 
@@ -151,21 +150,21 @@ impl EvpCipherAead {
         }
         ctx.encrypt_init(None, None, nonce)?;
 
-        self.process_aad(&mut ctx, aad)?;
+        Self::process_aad(&mut ctx, aad)?;
 
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            plaintext.len() + self.tag_len,
+            plaintext.len() + tag_len,
             |b| {
                 let ciphertext;
                 let tag;
-                if self.tag_first {
-                    (tag, ciphertext) = b.split_at_mut(self.tag_len);
+                if tag_first {
+                    (tag, ciphertext) = b.split_at_mut(tag_len);
                 } else {
                     (ciphertext, tag) = b.split_at_mut(plaintext.len());
                 }
 
-                self.process_data(&mut ctx, plaintext, ciphertext)?;
+                Self::process_data(&mut ctx, plaintext, ciphertext)?;
 
                 ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -183,18 +182,27 @@ impl EvpCipherAead {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_decryption_ctx)?;
-        self.decrypt_with_ctx(py, ctx, ciphertext, aad, nonce)
+        Self::decrypt_with_context(
+            py,
+            ctx,
+            ciphertext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+        )
     }
 
-    fn decrypt_with_ctx<'p>(
-        &self,
+    fn decrypt_with_context<'p>(
         py: pyo3::Python<'p>,
         mut ctx: openssl::cipher_ctx::CipherCtx,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
+        tag_len: usize,
+        tag_first: bool,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        if ciphertext.len() < self.tag_len {
+        if ciphertext.len() < tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
@@ -205,28 +213,322 @@ impl EvpCipherAead {
 
         let tag;
         let ciphertext_data;
-        if self.tag_first {
+        if tag_first {
             // RFC 5297 defines the output as IV || C, where the tag we generate
             // is the "IV" and C is the ciphertext. This is the opposite of our
             // other AEADs, which are Ciphertext || Tag.
-            (tag, ciphertext_data) = ciphertext.split_at(self.tag_len);
+            (tag, ciphertext_data) = ciphertext.split_at(tag_len);
         } else {
-            (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
+            (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - tag_len);
         }
         ctx.set_tag(tag)?;
 
-        self.process_aad(&mut ctx, aad)?;
+        Self::process_aad(&mut ctx, aad)?;
 
         Ok(pyo3::types::PyBytes::new_with(
             py,
             ciphertext_data.len(),
             |b| {
-                self.process_data(&mut ctx, ciphertext_data, b)
+                Self::process_data(&mut ctx, ciphertext_data, b)
                     .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
                 Ok(())
             },
         )?)
+    }
+}
+
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+    CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+)))]
+struct LazyEvpCipherAead {
+    cipher: &'static openssl::cipher::CipherRef,
+    key: pyo3::Py<pyo3::PyAny>,
+
+    tag_len: usize,
+    tag_first: bool,
+}
+
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+    CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+)))]
+impl LazyEvpCipherAead {
+    fn new(
+        cipher: &'static openssl::cipher::CipherRef,
+        key: pyo3::Py<pyo3::PyAny>,
+        tag_len: usize,
+        tag_first: bool,
+    ) -> LazyEvpCipherAead {
+        LazyEvpCipherAead {
+            cipher,
+            key,
+            tag_len,
+            tag_first,
+        }
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
+
+        let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        EvpCipherAead::encrypt_with_context(
+            py,
+            encryption_ctx,
+            plaintext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+        )
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
+
+        let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        EvpCipherAead::decrypt_with_context(
+            py,
+            decryption_ctx,
+            ciphertext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+        )
+    }
+}
+
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+struct EvpAead {
+    ctx: cryptography_openssl::aead::AeadCtx,
+    tag_len: usize,
+}
+
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+impl EvpAead {
+    fn new(
+        algorithm: cryptography_openssl::aead::AeadType,
+        key: &[u8],
+        tag_len: usize,
+    ) -> CryptographyResult<EvpAead> {
+        Ok(EvpAead {
+            ctx: cryptography_openssl::aead::AeadCtx::new(algorithm, key)?,
+            tag_len,
+        })
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        check_length(plaintext)?;
+
+        let ad = if let Some(Aad::Single(ad)) = &aad {
+            check_length(ad.as_bytes())?;
+            ad.as_bytes()
+        } else {
+            assert!(aad.is_none());
+            b""
+        };
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            plaintext.len() + self.tag_len,
+            |b| {
+                self.ctx
+                    .encrypt(plaintext, nonce.unwrap_or(b""), ad, b)
+                    .map_err(CryptographyError::from)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        if ciphertext.len() < self.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let ad = if let Some(Aad::Single(ad)) = &aad {
+            check_length(ad.as_bytes())?;
+            ad.as_bytes()
+        } else {
+            assert!(aad.is_none());
+            b""
+        };
+
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            ciphertext.len() - self.tag_len,
+            |b| {
+                self.ctx
+                    .decrypt(ciphertext, nonce.unwrap_or(b""), ad, b)
+                    .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+
+                Ok(())
+            },
+        )?)
+    }
+}
+
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
+struct ChaCha20Poly1305 {
+    #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+    ctx: EvpAead,
+    #[cfg(any(
+        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        all(
+            not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+            not(CRYPTOGRAPHY_IS_BORINGSSL)
+        )
+    ))]
+    ctx: EvpCipherAead,
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+    )))]
+    ctx: LazyEvpCipherAead,
+}
+
+#[pyo3::prelude::pymethods]
+impl ChaCha20Poly1305 {
+    #[new]
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<Self> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        if key_buf.as_bytes().len() != 32 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("ChaCha20Poly1305 key must be 32 bytes."),
+            ));
+        }
+
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                Ok(ChaCha20Poly1305 {
+                    ctx: EvpAead::new(
+                        cryptography_openssl::aead::AeadType::ChaCha20Poly1305,
+                        key_buf.as_bytes(),
+                        16,
+                    )?,
+                })
+            } else if #[cfg(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+            )))] {
+                if cryptography_openssl::fips::is_enabled() {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "ChaCha20Poly1305 is not supported by this version of OpenSSL",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ));
+                }
+
+                Ok(ChaCha20Poly1305 {
+                    ctx: EvpCipherAead::new(
+                        openssl::cipher::Cipher::chacha20_poly1305(),
+                        key_buf.as_bytes(),
+                        16,
+                        false,
+                    )?,
+                })
+            } else {
+                if cryptography_openssl::fips::is_enabled() {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "ChaCha20Poly1305 is not supported by this version of OpenSSL",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ));
+                }
+
+                Ok(ChaCha20Poly1305{
+                    ctx: LazyEvpCipherAead::new(
+                        openssl::cipher::Cipher::chacha20_poly1305(),
+                        key,
+                        16,
+                        false,
+                    )
+                })
+            }
+        }
+    }
+
+    #[staticmethod]
+    fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<&pyo3::PyAny> {
+        Ok(py
+            .import(pyo3::intern!(py, "os"))?
+            .call_method1(pyo3::intern!(py, "urandom"), (32,))?)
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
+
+        self.ctx
+            .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
+
+        self.ctx
+            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
     }
 }
 
@@ -540,6 +842,7 @@ impl AesGcmSiv {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "aead")?;
 
+    m.add_class::<ChaCha20Poly1305>()?;
     m.add_class::<AesSiv>()?;
     m.add_class::<AesOcb3>()?;
     m.add_class::<AesGcmSiv>()?;
