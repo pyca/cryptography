@@ -33,7 +33,6 @@ ffi = build_ffi_for_binding(
         "engine",
         "err",
         "evp",
-        "evp_aead",
         "nid",
         "objects",
         "opensslv",
