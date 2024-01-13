@@ -199,17 +199,6 @@ def cryptography_has_get_extms_support() -> list[str]:
     return ["SSL_get_extms_support"]
 
 
-def cryptography_has_evp_aead() -> list[str]:
-    return [
-        "EVP_aead_chacha20_poly1305",
-        "EVP_AEAD_CTX_free",
-        "EVP_AEAD_CTX_seal",
-        "EVP_AEAD_CTX_open",
-        "EVP_AEAD_max_overhead",
-        "Cryptography_EVP_AEAD_CTX_new",
-    ]
-
-
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -248,5 +237,4 @@ CONDITIONAL_NAMES = {
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
     "Cryptography_HAS_GET_EXTMS_SUPPORT": cryptography_has_get_extms_support,
-    "Cryptography_HAS_EVP_AEAD": cryptography_has_evp_aead,
 }
