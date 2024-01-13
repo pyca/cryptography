@@ -296,6 +296,9 @@ class TestAESCCM:
         with pytest.raises(ValueError):
             aesccm.encrypt(nonce, pt, None)
 
+        with pytest.raises(ValueError):
+            aesccm.decrypt(nonce, pt, None)
+
     @pytest.mark.parametrize(
         ("nonce", "data", "associated_data"),
         [
