@@ -22,13 +22,14 @@ except ImportError:
 nox.options.reuse_existing_virtualenvs = True
 
 
-def install(session: nox.Session, *args: str) -> None:
+def install(session: nox.Session, *args: str, silent: bool = False) -> None:
+    if not silent:
+        args += ("-v",)
     session.install(
-        "-v",
         "-c",
         "ci-constraints-requirements.txt",
         *args,
-        silent=False,
+        silent=silent,
     )
 
 
@@ -244,6 +245,67 @@ def rust(session: nox.Session) -> None:
                 rust_tests.extend(data["filenames"])
 
         process_rust_coverage(session, rust_tests, prof_location)
+
+
+@nox.session
+def local(session):
+    pyproject_data = load_pyproject_toml()
+    install(
+        session,
+        *pyproject_data["build-system"]["requires"],
+        *pyproject_data["project"]["optional-dependencies"]["pep8test"],
+        *pyproject_data["project"]["optional-dependencies"]["test"],
+        *pyproject_data["project"]["optional-dependencies"]["ssh"],
+        *pyproject_data["project"]["optional-dependencies"]["nox"],
+        silent=True,
+    )
+    install(session, "-e", "vectors/", silent=True)
+
+    session.run("ruff", "format", ".")
+    session.run("ruff", ".")
+
+    with session.chdir("src/rust/"):
+        session.run("cargo", "fmt", "--all", external=True)
+        session.run("cargo", "check", "--all", "--tests", external=True)
+        session.run(
+            "cargo",
+            "clippy",
+            "--all",
+            "--",
+            "-D",
+            "warnings",
+            external=True,
+        )
+
+    session.run(
+        "mypy",
+        "src/cryptography/",
+        "vectors/cryptography_vectors/",
+        "tests/",
+        "release.py",
+        "noxfile.py",
+    )
+
+    install(session, ".[test]")
+
+    if session.posargs:
+        tests = session.posargs
+    else:
+        tests = ["tests/"]
+
+    session.run(
+        "pytest",
+        "-n",
+        "auto",
+        "--dist=worksteal",
+        "--durations=10",
+        *tests,
+    )
+
+    with session.chdir("src/rust/"):
+        session.run(
+            "cargo", "test", "--no-default-features", "--all", external=True
+        )
 
 
 LCOV_SOURCEFILE_RE = re.compile(

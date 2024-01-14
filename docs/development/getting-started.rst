@@ -14,7 +14,7 @@ handled by the use of ``nox``, which can be installed with ``pip``.
     $ # Create a virtualenv and activate it
     $ # Set up your cryptography build environment
     $ pip install nox
-    $ nox -e tests-nocoverage
+    $ nox -e local
 
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
@@ -26,13 +26,12 @@ Running tests
 -------------
 
 ``cryptography`` unit tests are found in the ``tests/`` directory and are
-designed to be run using `pytest`_. ``nox`` automatically invokes ``pytest``:
+designed to be run using `pytest`_. ``nox`` automatically invokes ``pytest``
+and other required checks for ``cryptography``:
 
 .. code-block:: console
 
-    $ nox -e tests-nocoverage
-    ...
-    ===== 3062 passed, 61 skipped in 16.02s =====
+    $ nox -e local
 
 
 You can also specify a subset of tests to run as positional arguments:
@@ -40,7 +39,7 @@ You can also specify a subset of tests to run as positional arguments:
 .. code-block:: console
 
     $ # run the whole x509 testsuite, plus the fernet tests
-    $ nox -e tests-nocoverage -- tests/x509/ tests/test_fernet.py
+    $ nox -e local -- tests/x509/ tests/test_fernet.py
 
 
 .. _`Homebrew`: https://brew.sh
