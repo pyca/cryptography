@@ -122,7 +122,7 @@ sphinx==7.2.6
     #   sphinxcontrib-spelling
 sphinx-rtd-theme==2.0.0
     # via cryptography (pyproject.toml)
-sphinxcontrib-applehelp==1.0.7
+sphinxcontrib-applehelp==1.0.8
     # via sphinx
 sphinxcontrib-devhelp==1.0.5
     # via sphinx
