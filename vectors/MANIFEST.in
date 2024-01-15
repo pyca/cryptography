@@ -1,4 +1,0 @@
-recursive-include cryptography_vectors *
-include LICENSE
-include LICENSE.APACHE
-include LICENSE.BSD

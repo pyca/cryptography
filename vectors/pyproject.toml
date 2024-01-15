@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name = "cryptography_vectors"
@@ -14,9 +14,5 @@ license = {text = "Apache-2.0 OR BSD-3-Clause"}
 [project.urls]
 homepage = "https://github.com/pyca/cryptography"
 
-[tool.setuptools]
-zip-safe = false
-include-package-data = true
-
-[tool.distutils.bdist_wheel]
-universal = true
+[tool.flit.sdist]
+include = ["LICENSE", "LICENSE.APACHE", "LICENSE.BSD"]
