@@ -12,7 +12,7 @@ from binascii import hexlify
 
 import pytest
 
-from cryptography import exceptions, x509
+from cryptography import exceptions, utils, x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -208,6 +208,16 @@ def test_ec_key_key_size(backend):
     key = ec.generate_private_key(curve, backend)
     assert key.key_size == 256
     assert key.public_key().key_size == 256
+
+
+def test_deprecated_generate_private_key_with_curve_class(backend):
+    # This test verifies that if you pass a curve _class_ instead of instance,
+    # you get a warning and then `key.curve` is still an instance.
+    _skip_curve_unsupported(backend, ec.SECP256R1())
+
+    with pytest.warns(utils.DeprecatedIn42):
+        key = ec.generate_private_key(ec.SECP256R1)  # type: ignore[arg-type]
+    assert isinstance(key.curve, ec.SECP256R1)
 
 
 class TestECWithNumbers:
