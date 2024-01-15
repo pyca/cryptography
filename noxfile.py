@@ -257,9 +257,11 @@ def local(session):
         *pyproject_data["project"]["optional-dependencies"]["test"],
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
+        "flit",
         silent=True,
     )
-    install(session, "-e", "vectors/", silent=True)
+    with session.cd("vectors/"):
+        session.run("flit", "install", "-s", silent=True)
 
     session.run("ruff", "format", ".")
     session.run("ruff", ".")
