@@ -173,9 +173,6 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     ) -> EllipticCurvePublicKey:
         utils._check_bytes("data", data)
 
-        if not isinstance(curve, EllipticCurve):
-            raise TypeError("curve must be an EllipticCurve instance")
-
         if len(data) == 0:
             raise ValueError("data must not be an empty byte string")
 
@@ -345,9 +342,6 @@ def derive_private_key(
 
     if private_value <= 0:
         raise ValueError("private_value must be a positive integer.")
-
-    if not isinstance(curve, EllipticCurve):
-        raise TypeError("curve must provide the EllipticCurve interface.")
 
     return rust_openssl.ec.derive_private_key(private_value, curve)
 
