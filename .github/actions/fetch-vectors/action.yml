@@ -16,5 +16,5 @@ runs:
       with:
         repository: "trailofbits/x509-limbo"
         path: "x509-limbo"
-        # Latest commit on the x509-limbo main branch, as of Jan 12, 2024.
-        ref: "212c926ebab967dbff2c8910e11cf30cd94efde3" # x509-limbo-ref
+        # Latest commit on the x509-limbo main branch, as of Jan 17, 2024.
+        ref: "13ee076aae65a2ccfcfe5d3df3fa8b1fb8c540fd" # x509-limbo-ref
