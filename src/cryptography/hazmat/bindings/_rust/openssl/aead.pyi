@@ -67,3 +67,20 @@ class AESGCMSIV:
         data: bytes,
         associated_data: bytes | None,
     ) -> bytes: ...
+
+class AESGCM:
+    def __init__(self, key: bytes) -> None: ...
+    @staticmethod
+    def generate_key(key_size: int) -> bytes: ...
+    def encrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+    def decrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...

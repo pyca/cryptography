@@ -24,6 +24,7 @@ ChaCha20Poly1305 = rust_openssl.aead.ChaCha20Poly1305
 AESSIV = rust_openssl.aead.AESSIV
 AESOCB3 = rust_openssl.aead.AESOCB3
 AESGCMSIV = rust_openssl.aead.AESGCMSIV
+AESGCM = rust_openssl.aead.AESGCM
 
 
 class AESCCM:
@@ -109,66 +110,3 @@ class AESCCM:
         utils._check_byteslike("associated_data", associated_data)
         if not 7 <= len(nonce) <= 13:
             raise ValueError("Nonce must be between 7 and 13 bytes")
-
-
-class AESGCM:
-    _MAX_SIZE = 2**31 - 1
-
-    def __init__(self, key: bytes):
-        utils._check_byteslike("key", key)
-        if len(key) not in (16, 24, 32):
-            raise ValueError("AESGCM key must be 128, 192, or 256 bits.")
-
-        self._key = key
-
-    @classmethod
-    def generate_key(cls, bit_length: int) -> bytes:
-        if not isinstance(bit_length, int):
-            raise TypeError("bit_length must be an integer")
-
-        if bit_length not in (128, 192, 256):
-            raise ValueError("bit_length must be 128, 192, or 256")
-
-        return os.urandom(bit_length // 8)
-
-    def encrypt(
-        self,
-        nonce: bytes,
-        data: bytes,
-        associated_data: bytes | None,
-    ) -> bytes:
-        if associated_data is None:
-            associated_data = b""
-
-        if len(data) > self._MAX_SIZE or len(associated_data) > self._MAX_SIZE:
-            # This is OverflowError to match what cffi would raise
-            raise OverflowError(
-                "Data or associated data too long. Max 2**31 - 1 bytes"
-            )
-
-        self._check_params(nonce, data, associated_data)
-        return aead._encrypt(backend, self, nonce, data, [associated_data], 16)
-
-    def decrypt(
-        self,
-        nonce: bytes,
-        data: bytes,
-        associated_data: bytes | None,
-    ) -> bytes:
-        if associated_data is None:
-            associated_data = b""
-
-        self._check_params(nonce, data, associated_data)
-        return aead._decrypt(backend, self, nonce, data, [associated_data], 16)
-
-    def _check_params(
-        self,
-        nonce: bytes,
-        data: bytes,
-        associated_data: bytes,
-    ) -> None:
-        utils._check_byteslike("nonce", nonce)
-        utils._check_byteslike("data", data)
-        utils._check_byteslike("associated_data", associated_data)
-        if len(nonce) < 8 or len(nonce) > 128:
-            raise ValueError("Nonce must be between 8 and 128 bytes")

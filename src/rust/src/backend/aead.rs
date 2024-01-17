@@ -839,6 +839,100 @@ impl AesGcmSiv {
     }
 }
 
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.aead",
+    name = "AESGCM"
+)]
+struct AesGcm {
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    ctx: EvpCipherAead,
+    #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))]
+    ctx: LazyEvpCipherAead,
+}
+
+#[pyo3::prelude::pymethods]
+impl AesGcm {
+    #[new]
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+
+        let cipher = match key_buf.as_bytes().len() {
+            16 => openssl::cipher::Cipher::aes_128_gcm(),
+            24 => openssl::cipher::Cipher::aes_192_gcm(),
+            32 => openssl::cipher::Cipher::aes_256_gcm(),
+            _ => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "AES-GCM key must be 128, 192 or 256 bits.",
+                    ),
+                ))
+            }
+        };
+
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)] {
+                Ok(AesGcm {
+                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
+                })
+            } else {
+                Ok(AesGcm {
+                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false),
+                })
+            }
+        }
+    }
+
+    #[staticmethod]
+    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+        if bit_length != 128 && bit_length != 192 && bit_length != 256 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
+            ));
+        }
+
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
+            ));
+        }
+        self.ctx.encrypt(py, data_bytes, aad, Some(nonce_bytes))
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
+            ));
+        }
+        self.ctx
+            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+}
+
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "aead")?;
 
@@ -846,6 +940,7 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
     m.add_class::<AesSiv>()?;
     m.add_class::<AesOcb3>()?;
     m.add_class::<AesGcmSiv>()?;
+    m.add_class::<AesGcm>()?;
 
     Ok(m)
 }

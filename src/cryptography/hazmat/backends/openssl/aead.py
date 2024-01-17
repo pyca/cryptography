@@ -10,12 +10,9 @@ from cryptography.exceptions import InvalidTag
 
 if typing.TYPE_CHECKING:
     from cryptography.hazmat.backends.openssl.backend import Backend
-    from cryptography.hazmat.primitives.ciphers.aead import (
-        AESCCM,
-        AESGCM,
-    )
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
-    _AEADTypes = typing.Union[AESCCM, AESGCM]
+    _AEADTypes = typing.Union[AESCCM]
 
 
 def _aead_cipher_supported(backend: Backend, cipher: _AEADTypes) -> bool:
@@ -55,16 +52,10 @@ _DECRYPT = 0
 
 
 def _evp_cipher_cipher_name(cipher: _AEADTypes) -> bytes:
-    from cryptography.hazmat.primitives.ciphers.aead import (
-        AESCCM,
-        AESGCM,
-    )
+    from cryptography.hazmat.primitives.ciphers.aead import AESCCM
 
-    if isinstance(cipher, AESCCM):
-        return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
-    else:
-        assert isinstance(cipher, AESGCM)
-        return f"aes-{len(cipher._key) * 8}-gcm".encode("ascii")
+    assert isinstance(cipher, AESCCM)
+    return f"aes-{len(cipher._key) * 8}-ccm".encode("ascii")
 
 
 def _evp_cipher(cipher_name: bytes, backend: Backend):
