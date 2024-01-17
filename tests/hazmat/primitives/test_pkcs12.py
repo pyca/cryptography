@@ -308,7 +308,7 @@ class TestPKCS12Creation:
         ]
         + [
             pytest.param(
-                ec.generate_private_key, ec.EllipticCurvePrivateKey, [curve()]
+                ec.generate_private_key, ec.EllipticCurvePrivateKey, [curve]
             )
             for curve in ec._CURVE_TYPES.values()
         ],

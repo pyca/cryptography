@@ -41,18 +41,18 @@ _HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
 }
 
 
-def _skip_ecdsa_vector(backend, curve_type, hash_type):
+def _skip_ecdsa_vector(backend, curve: ec.EllipticCurve, hash_type):
     if not backend.elliptic_curve_signature_algorithm_supported(
-        ec.ECDSA(hash_type()), curve_type()
+        ec.ECDSA(hash_type()), curve
     ):
         pytest.skip(
             "ECDSA not supported with this hash {} and curve {}.".format(
-                hash_type().name, curve_type().name
+                hash_type().name, curve.name
             )
         )
 
 
-def _skip_curve_unsupported(backend, curve):
+def _skip_curve_unsupported(backend, curve: ec.EllipticCurve):
     if not backend.elliptic_curve_supported(curve):
         pytest.skip(
             f"Curve {curve.name} is not supported by this backend {backend}"
@@ -95,7 +95,7 @@ def test_skip_exchange_algorithm_unsupported(backend):
 
 def test_skip_ecdsa_vector(backend):
     with pytest.raises(pytest.skip.Exception):
-        _skip_ecdsa_vector(backend, DummyCurve, hashes.SHA256)
+        _skip_ecdsa_vector(backend, DummyCurve(), hashes.SHA256)
 
 
 def test_derive_private_key_success(backend):
@@ -233,16 +233,14 @@ class TestECWithNumbers:
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
-                    vector["curve"]
-                ]
+                curve = ec._CURVE_TYPES[vector["curve"]]
 
-                _skip_ecdsa_vector(backend, curve_type, hash_type)
+                _skip_ecdsa_vector(backend, curve, hash_type)
 
                 key = ec.EllipticCurvePrivateNumbers(
                     vector["d"],
                     ec.EllipticCurvePublicNumbers(
-                        vector["x"], vector["y"], curve_type()
+                        vector["x"], vector["y"], curve
                     ),
                 ).private_key(backend)
                 assert key
@@ -251,7 +249,7 @@ class TestECWithNumbers:
                 assert priv_num.private_value == vector["d"]
                 assert priv_num.public_numbers.x == vector["x"]
                 assert priv_num.public_numbers.y == vector["y"]
-                assert curve_type().name == priv_num.public_numbers.curve.name
+                assert curve.name == priv_num.public_numbers.curve.name
 
 
 class TestECDSAVectors:
@@ -267,14 +265,14 @@ class TestECDSAVectors:
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve = ec._CURVE_TYPES[vector["curve"]]
 
-                _skip_ecdsa_vector(backend, curve_type, hash_type)
+                _skip_ecdsa_vector(backend, curve, hash_type)
 
                 key = ec.EllipticCurvePrivateNumbers(
                     vector["d"],
                     ec.EllipticCurvePublicNumbers(
-                        vector["x"], vector["y"], curve_type()
+                        vector["x"], vector["y"], curve
                     ),
                 ).private_key(backend)
                 assert key
@@ -292,16 +290,16 @@ class TestECDSAVectors:
 
     @pytest.mark.parametrize("curve", ec._CURVE_TYPES.values())
     def test_generate_vector_curves(self, backend, curve):
-        _skip_curve_unsupported(backend, curve())
+        _skip_curve_unsupported(backend, curve)
 
-        key = ec.generate_private_key(curve(), backend)
+        key = ec.generate_private_key(curve, backend)
         assert key
-        assert isinstance(key.curve, curve)
+        assert type(key.curve) is type(curve)
         assert key.curve.key_size
 
         pkey = key.public_key()
         assert pkey
-        assert isinstance(pkey.curve, curve)
+        assert type(pkey.curve) is type(curve)
         assert key.curve.key_size == pkey.curve.key_size
 
     def test_generate_unknown_curve(self, backend):
@@ -469,14 +467,12 @@ class TestECDSAVectors:
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve_type: typing.Type[ec.EllipticCurve] = ec._CURVE_TYPES[
-                    vector["curve"]
-                ]
+                curve = ec._CURVE_TYPES[vector["curve"]]
 
-                _skip_ecdsa_vector(backend, curve_type, hash_type)
+                _skip_ecdsa_vector(backend, curve, hash_type)
 
                 key = ec.EllipticCurvePublicNumbers(
-                    vector["x"], vector["y"], curve_type()
+                    vector["x"], vector["y"], curve
                 ).public_key(backend)
 
                 signature = encode_dss_signature(vector["r"], vector["s"])
@@ -491,12 +487,12 @@ class TestECDSAVectors:
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve_type = ec._CURVE_TYPES[vector["curve"]]
+                curve = ec._CURVE_TYPES[vector["curve"]]
 
-                _skip_ecdsa_vector(backend, curve_type, hash_type)
+                _skip_ecdsa_vector(backend, curve, hash_type)
 
                 key = ec.EllipticCurvePublicNumbers(
-                    vector["x"], vector["y"], curve_type()
+                    vector["x"], vector["y"], curve
                 ).public_key(backend)
 
                 signature = encode_dss_signature(vector["r"], vector["s"])
@@ -1230,7 +1226,7 @@ class TestECDH:
         for vector in vectors:
             with subtests.test():
                 _skip_exchange_algorithm_unsupported(
-                    backend, ec.ECDH(), ec._CURVE_TYPES[vector["curve"]]()
+                    backend, ec.ECDH(), ec._CURVE_TYPES[vector["curve"]]
                 )
 
                 key_numbers = vector["IUT"]
@@ -1239,7 +1235,7 @@ class TestECDH:
                     ec.EllipticCurvePublicNumbers(
                         key_numbers["x"],
                         key_numbers["y"],
-                        ec._CURVE_TYPES[vector["curve"]](),
+                        ec._CURVE_TYPES[vector["curve"]],
                     ),
                 )
                 # Errno 5-7 indicates a bad public or private key, this
@@ -1255,7 +1251,7 @@ class TestECDH:
                 public_numbers = ec.EllipticCurvePublicNumbers(
                     peer_numbers["x"],
                     peer_numbers["y"],
-                    ec._CURVE_TYPES[vector["curve"]](),
+                    ec._CURVE_TYPES[vector["curve"]],
                 )
                 # Errno 1 and 2 indicates a bad public key, this doesn't test
                 # the ECDH code at all
@@ -1285,7 +1281,7 @@ class TestECDH:
         ),
     )
     def test_brainpool_kex(self, backend, vector):
-        curve = ec._CURVE_TYPES[vector["curve"].decode("ascii")]()
+        curve = ec._CURVE_TYPES[vector["curve"].decode("ascii")]
         _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
         key = ec.EllipticCurvePrivateNumbers(
             int(vector["da"], 16),

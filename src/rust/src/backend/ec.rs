@@ -106,7 +106,7 @@ fn py_curve_from_curve<'p>(
         ));
     }
 
-    Ok(types::CURVE_TYPES
+    types::CURVE_TYPES
         .get(py)?
         .extract::<&pyo3::types::PyDict>()?
         .get_item(name)?
@@ -115,8 +115,7 @@ fn py_curve_from_curve<'p>(
                 format!("{name} is not a supported elliptic curve"),
                 exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
             )))
-        })?
-        .call0()?)
+        })
 }
 
 fn check_key_infinity(
