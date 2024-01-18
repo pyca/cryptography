@@ -340,11 +340,11 @@ Creating Responses
             :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-            otherwise. This should not be the same algorithm used to add
-            a certificate to the response, as
-            :class:`~cryptography.hazmat.primitives.hashes.SHA1` can't be used
-            for signing, despite its compatibility requirement for certain 
-            applications.
+            otherwise. Please note that
+            :class:`~cryptography.hazmat.primitives.hashes.SHA1`
+            can not be used here, regardless of if it was used for
+            :meth: `~cryptography.x509.ocsp.OCSPResponseBuilder.add_response`
+            or not.
 
         :returns: A new :class:`~cryptography.x509.ocsp.OCSPResponse`.
 
