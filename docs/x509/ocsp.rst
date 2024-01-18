@@ -343,7 +343,7 @@ Creating Responses
             otherwise. Please note that
             :class:`~cryptography.hazmat.primitives.hashes.SHA1`
             can not be used here, regardless of if it was used for
-            :meth: `~cryptography.x509.ocsp.OCSPResponseBuilder.add_response`
+            :meth:`~cryptography.x509.ocsp.OCSPResponseBuilder.add_response`
             or not.
 
         :returns: A new :class:`~cryptography.x509.ocsp.OCSPResponse`.
