@@ -35,20 +35,6 @@ from ...utils import (
 __all__ = ["rsa_key_2048"]
 
 
-def skip_if_libre_ssl(openssl_version):
-    if "LibreSSL" in openssl_version:
-        pytest.skip("LibreSSL hard-codes RAND_bytes to use arc4random.")
-
-
-class TestLibreSkip:
-    def test_skip_no(self):
-        assert skip_if_libre_ssl("OpenSSL 1.0.2h  3 May 2016") is None
-
-    def test_skip_yes(self):
-        with pytest.raises(pytest.skip.Exception):
-            skip_if_libre_ssl("LibreSSL 2.1.6")
-
-
 class DummyMGF(padding.MGF):
     _salt_length = 0
     _algorithm = hashes.SHA1()
