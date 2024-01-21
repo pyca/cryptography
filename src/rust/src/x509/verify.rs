@@ -211,12 +211,12 @@ impl PyServerVerifier {
         self.as_policy().max_chain_depth
     }
 
-    fn verify(
+    fn verify<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
-    ) -> CryptographyResult<Vec<pyo3::Py<PyCertificate>>> {
+    ) -> CryptographyResult<&'p pyo3::types::PyList> {
         let policy = self.as_policy();
         let store = self.store.get();
 
@@ -236,7 +236,11 @@ impl PyServerVerifier {
         )
         .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
 
-        Ok(chain.iter().map(|c| c.extra().clone_ref(py)).collect())
+        let result = pyo3::types::PyList::empty(py);
+        for c in chain {
+            result.append(c.extra())?;
+        }
+        Ok(result)
     }
 }
 
