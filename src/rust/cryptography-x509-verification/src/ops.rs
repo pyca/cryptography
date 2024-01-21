@@ -39,11 +39,6 @@ impl<B: CryptoOps> PartialEq for VerificationCertificate<'_, B> {
     }
 }
 impl<B: CryptoOps> Eq for VerificationCertificate<'_, B> {}
-impl<B: CryptoOps> std::hash::Hash for VerificationCertificate<'_, B> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.cert.hash(state)
-    }
-}
 impl<B: CryptoOps> Clone for VerificationCertificate<'_, B> {
     fn clone(&self) -> Self {
         VerificationCertificate::new(self.cert.clone(), self.extra.clone())
