@@ -10,7 +10,7 @@ struct Pksc1RsaPublicKey<'a> {
     e: asn1::BigUint<'a>,
 }
 
-pub fn parse_pkcs1_rsa_public_key(
+pub fn parse_pkcs1_public_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Public>> {
     let k = asn1::parse_single::<Pksc1RsaPublicKey>(data)?;

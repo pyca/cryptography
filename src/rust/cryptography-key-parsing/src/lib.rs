@@ -3,8 +3,13 @@
 // for complete details.
 
 pub mod rsa;
+pub mod spki;
 
 pub enum KeyParsingError {
+    InvalidKey,
+    ExplicitCurveUnsupported,
+    UnsupportedKeyType(asn1::ObjectIdentifier),
+    UnsupportedEllipticCurve(asn1::ObjectIdentifier),
     Parse(asn1::ParseError),
     OpenSSL(openssl::error::ErrorStack),
 }

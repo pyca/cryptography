@@ -443,10 +443,6 @@ class TestDH:
         assert int.from_bytes(symkey1, "big") == int(vector["z"], 16)
         assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.dh_x942_serialization_supported(),
-        skip_message="DH X9.42 not supported",
-    )
     def test_public_key_equality(self, backend):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhpub.pem"),
@@ -468,10 +464,6 @@ class TestDH:
         with pytest.raises(TypeError):
             key1 < key2  # type: ignore[operator]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.dh_x942_serialization_supported(),
-        skip_message="DH X9.42 not supported",
-    )
     def test_public_key_copy(self):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhpub.pem"),
@@ -696,7 +688,24 @@ class TestDHPublicKeySerialization:
         loaded_key = loader_func(serialized, backend)
         loaded_pub_num = loaded_key.public_numbers()
         pub_num = key.public_numbers()
-        assert loaded_pub_num == pub_num
+
+        assert loaded_pub_num.y == pub_num.y
+        assert (
+            loaded_pub_num.parameter_numbers.p == pub_num.parameter_numbers.p
+        )
+        assert (
+            loaded_pub_num.parameter_numbers.g == pub_num.parameter_numbers.g
+        )
+        if pub_num.parameter_numbers.q and loaded_pub_num.parameter_numbers.q:
+            assert (
+                loaded_pub_num.parameter_numbers.q
+                == pub_num.parameter_numbers.q
+            )
+        else:
+            # When this branch becomes unreachable by coverage (when support
+            # for RHEL8 is dropped), all this code can be replaced with:
+            #   assert loaded_pub_num == pub_num
+            assert True
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(

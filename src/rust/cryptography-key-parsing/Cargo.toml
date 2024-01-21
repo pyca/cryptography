@@ -9,4 +9,7 @@ rust-version = "1.63.0"
 
 [dependencies]
 asn1 = { version = "0.15.5", default-features = false }
+cfg-if = "1"
 openssl = "0.10.63"
+openssl-sys = "0.9.99"
+cryptography-x509 = { path = "../cryptography-x509" }

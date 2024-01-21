@@ -1758,22 +1758,6 @@ class TestSubjectKeyIdentifierExtension:
         with pytest.raises(ValueError, match="Invalid public key encoding"):
             _key_identifier_from_public_key(pretend_key)
 
-    def test_no_optional_params_allowed_from_public_key(self, backend):
-        data = load_vectors_from_file(
-            filename=os.path.join(
-                "asymmetric",
-                "DER_Serialization",
-                "dsa_public_key_no_params.der",
-            ),
-            loader=lambda data: data.read(),
-            mode="rb",
-        )
-        pretend_key = pretend.stub(public_bytes=lambda x, y: data)
-        key_identifier = _key_identifier_from_public_key(pretend_key)
-        assert key_identifier == binascii.unhexlify(
-            b"24c0133a6a492f2c48a18c7648e515db5ac76749"
-        )
-
     def test_from_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
         cert = _load_cert(

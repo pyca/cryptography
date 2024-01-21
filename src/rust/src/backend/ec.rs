@@ -152,9 +152,7 @@ pub(crate) fn public_key_from_pkey(
     py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<ECPublicKey> {
-    let ec = pkey.ec_key().map_err(|e| {
-        pyo3::exceptions::PyValueError::new_err(format!("Unable to load EC key: {e}"))
-    })?;
+    let ec = pkey.ec_key()?;
     let curve = py_curve_from_curve(py, ec.group())?;
     check_key_infinity(&ec)?;
     Ok(ECPublicKey {
