@@ -20,7 +20,6 @@ static const int EVP_PKEY_RSA;
 static const int EVP_PKEY_RSA_PSS;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
-static const int EVP_PKEY_DHX;
 static const int EVP_PKEY_EC;
 static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
@@ -93,7 +92,6 @@ CUSTOMIZATIONS = """
 const long Cryptography_HAS_EVP_PKEY_DHX = 1;
 #else
 const long Cryptography_HAS_EVP_PKEY_DHX = 0;
-const long EVP_PKEY_DHX = -1;
 #endif
 
 #if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_SCRYPT)
