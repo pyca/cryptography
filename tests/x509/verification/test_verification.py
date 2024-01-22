@@ -106,8 +106,17 @@ class TestStore:
 
 
 class TestServerVerifier:
-    def test_verify_tz_aware(self):
-        # expires 2018-11-16 01:15:03 GMT
+    @pytest.mark.parametrize(
+        ("validation_time", "valid"),
+        [
+            # 03:15:02 UTC+2, or 1 second before expiry in UTC
+            ("2018-11-16T03:15:02+02:00", True),
+            # 00:15:04 UTC-1, or 1 second after expiry in UTC
+            ("2018-11-16T00:15:04-01:00", False),
+        ],
+    )
+    def test_verify_tz_aware(self, validation_time, valid):
+        # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
@@ -116,14 +125,16 @@ class TestServerVerifier:
         store = Store([leaf])
 
         builder = PolicyBuilder().store(store)
-        # 00:15:03 in GMT+2, or 02:15:03 local time
         builder = builder.time(
-            datetime.datetime.fromisoformat("2018-11-16T00:15:03+02:00")
+            datetime.datetime.fromisoformat(validation_time)
         )
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))
 
-        with pytest.raises(
-            x509.verification.VerificationError,
-            match="cert is not valid at validation time",
-        ):
-            verifier.verify(leaf, [])
+        if valid:
+            assert verifier.verify(leaf, []) == [leaf]
+        else:
+            with pytest.raises(
+                x509.verification.VerificationError,
+                match="cert is not valid at validation time",
+            ):
+                verifier.verify(leaf, [])
