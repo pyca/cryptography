@@ -17,21 +17,11 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.utils import _check_byteslike
 
+load_pem_pkcs7_certificates = rust_pkcs7.load_pem_pkcs7_certificates
 
-def load_pem_pkcs7_certificates(data: bytes) -> list[x509.Certificate]:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_pem_pkcs7_certificates(data)
-
-
-def load_der_pkcs7_certificates(data: bytes) -> list[x509.Certificate]:
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.load_der_pkcs7_certificates(data)
-
+load_der_pkcs7_certificates = rust_pkcs7.load_der_pkcs7_certificates
 
 serialize_certificates = rust_pkcs7.serialize_certificates
-
 
 PKCS7HashTypes = typing.Union[
     hashes.SHA224,
