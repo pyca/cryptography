@@ -503,13 +503,22 @@ pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
     val: &pyo3::PyAny,
 ) -> pyo3::PyResult<asn1::DateTime> {
+    // We treat naive datetimes as UTC times, while aware datetimes get
+    // normalized to UTC before conversion.
+    let val_utc = if val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
+        val
+    } else {
+        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+        val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
+    };
+
     Ok(asn1::DateTime::new(
-        val.getattr(pyo3::intern!(py, "year"))?.extract()?,
-        val.getattr(pyo3::intern!(py, "month"))?.extract()?,
-        val.getattr(pyo3::intern!(py, "day"))?.extract()?,
-        val.getattr(pyo3::intern!(py, "hour"))?.extract()?,
-        val.getattr(pyo3::intern!(py, "minute"))?.extract()?,
-        val.getattr(pyo3::intern!(py, "second"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "year"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "month"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "day"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "hour"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "minute"))?.extract()?,
+        val_utc.getattr(pyo3::intern!(py, "second"))?.extract()?,
     )
     .unwrap())
 }

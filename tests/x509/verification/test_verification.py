@@ -103,3 +103,38 @@ class TestStore:
     def test_store_rejects_non_certificates(self):
         with pytest.raises(TypeError):
             Store(["not a cert"])  # type: ignore[list-item]
+
+
+class TestServerVerifier:
+    @pytest.mark.parametrize(
+        ("validation_time", "valid"),
+        [
+            # 03:15:02 UTC+2, or 1 second before expiry in UTC
+            ("2018-11-16T03:15:02+02:00", True),
+            # 00:15:04 UTC-1, or 1 second after expiry in UTC
+            ("2018-11-16T00:15:04-01:00", False),
+        ],
+    )
+    def test_verify_tz_aware(self, validation_time, valid):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(
+            datetime.datetime.fromisoformat(validation_time)
+        )
+        verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+
+        if valid:
+            assert verifier.verify(leaf, []) == [leaf]
+        else:
+            with pytest.raises(
+                x509.verification.VerificationError,
+                match="cert is not valid at validation time",
+            ):
+                verifier.verify(leaf, [])
