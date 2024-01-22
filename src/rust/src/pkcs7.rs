@@ -9,11 +9,17 @@ use std::ops::Deref;
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use openssl::pkcs7::Pkcs7;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use pyo3::IntoPy;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
-use crate::error::CryptographyResult;
-use crate::{types, x509};
+use crate::error::{CryptographyError, CryptographyResult};
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use crate::x509::certificate::load_der_x509_certificate;
+use crate::{exceptions, types, x509};
 
 const PKCS7_CONTENT_TYPE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 3);
 const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 4);
@@ -290,11 +296,96 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     }
 }
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+fn load_pkcs7_certificates(
+    py: pyo3::Python<'_>,
+    pkcs7: Pkcs7,
+) -> CryptographyResult<&pyo3::types::PyList> {
+    let nid = pkcs7.type_().map(|t| t.nid());
+    if nid != Some(openssl::nid::Nid::PKCS7_SIGNED) {
+        let nid_string = nid.map_or("empty".to_string(), |n| n.as_raw().to_string());
+        return Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err((
+                format!("Only basic signed structures are currently supported. NID for this data was {}", nid_string),
+                exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+            )),
+        ));
+    }
+
+    let signed_certificates = pkcs7.signed().and_then(|x| x.certificates());
+    match signed_certificates {
+        None => Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "The provided PKCS7 has no certificate data, but a cert loading method was called.",
+            ),
+        )),
+        Some(certificates) => {
+            let result = pyo3::types::PyList::empty(py);
+            for c in certificates {
+                let cert_der = pyo3::types::PyBytes::new(py, c.to_der()?.as_slice()).into_py(py);
+                let cert = load_der_x509_certificate(py, cert_der, None)?;
+                result.append(cert.into_py(py))?;
+            }
+            Ok(result)
+        }
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn load_pem_pkcs7_certificates<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+) -> CryptographyResult<&'p pyo3::types::PyList> {
+    cfg_if::cfg_if! {
+        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_pem(data).map_err(|_| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Unable to parse PKCS7 data",
+                ))
+            })?;
+            load_pkcs7_certificates(py, pkcs7_decoded)
+        } else {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "PKCS#7 is not supported by this backend.",
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                )),
+            ));
+        }
+    }
+}
+
+#[pyo3::prelude::pyfunction]
+fn load_der_pkcs7_certificates<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+) -> CryptographyResult<&'p pyo3::types::PyList> {
+    cfg_if::cfg_if! {
+        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data).map_err(|_| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Unable to parse PKCS7 data",
+                ))
+            })?;
+            load_pkcs7_certificates(py, pkcs7_decoded)
+        } else {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "PKCS#7 is not supported by this backend.",
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                )),
+            ));
+        }
+    }
+}
+
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let submod = pyo3::prelude::PyModule::new(py, "pkcs7")?;
 
     submod.add_function(pyo3::wrap_pyfunction!(serialize_certificates, submod)?)?;
     submod.add_function(pyo3::wrap_pyfunction!(sign_and_serialize, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(load_pem_pkcs7_certificates, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(load_der_pkcs7_certificates, submod)?)?;
 
     Ok(submod)
 }

@@ -378,7 +378,7 @@ fn load_pem_x509_certificates(
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_x509_certificate(
+pub(crate) fn load_der_x509_certificate(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
     backend: Option<&pyo3::PyAny>,

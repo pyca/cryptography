@@ -10,7 +10,7 @@ import itertools
 import typing
 
 from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
@@ -862,61 +862,6 @@ class Backend:
 
     def pkcs7_supported(self) -> bool:
         return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-
-    def load_pem_pkcs7_certificates(
-        self, data: bytes
-    ) -> list[x509.Certificate]:
-        utils._check_bytes("data", data)
-        bio = self._bytes_to_bio(data)
-        p7 = self._lib.PEM_read_bio_PKCS7(
-            bio.bio, self._ffi.NULL, self._ffi.NULL, self._ffi.NULL
-        )
-        if p7 == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to parse PKCS7 data")
-
-        p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
-        return self._load_pkcs7_certificates(p7)
-
-    def load_der_pkcs7_certificates(
-        self, data: bytes
-    ) -> list[x509.Certificate]:
-        utils._check_bytes("data", data)
-        bio = self._bytes_to_bio(data)
-        p7 = self._lib.d2i_PKCS7_bio(bio.bio, self._ffi.NULL)
-        if p7 == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Unable to parse PKCS7 data")
-
-        p7 = self._ffi.gc(p7, self._lib.PKCS7_free)
-        return self._load_pkcs7_certificates(p7)
-
-    def _load_pkcs7_certificates(self, p7) -> list[x509.Certificate]:
-        nid = self._lib.OBJ_obj2nid(p7.type)
-        self.openssl_assert(nid != self._lib.NID_undef)
-        if nid != self._lib.NID_pkcs7_signed:
-            raise UnsupportedAlgorithm(
-                "Only basic signed structures are currently supported. NID"
-                f" for this data was {nid}",
-                _Reasons.UNSUPPORTED_SERIALIZATION,
-            )
-
-        if p7.d.sign == self._ffi.NULL:
-            raise ValueError(
-                "The provided PKCS7 has no certificate data, but a cert "
-                "loading method was called."
-            )
-
-        sk_x509 = p7.d.sign.cert
-        num = self._lib.sk_X509_num(sk_x509)
-        certs: list[x509.Certificate] = []
-        for i in range(num):
-            x509 = self._lib.sk_X509_value(sk_x509, i)
-            self.openssl_assert(x509 != self._ffi.NULL)
-            cert = self._ossl2cert(x509)
-            certs.append(cert)
-
-        return certs
 
 
 class GetCipherByName:
