@@ -508,10 +508,8 @@ pub(crate) fn py_to_datetime(
     let val_utc = if val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
         val
     } else {
-        val.call_method1(
-            pyo3::intern!(py, "astimezone"),
-            (types::DATETIME_TIMEZONE_UTC.get(py)?,),
-        )?
+        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+        val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
     };
 
     Ok(asn1::DateTime::new(
