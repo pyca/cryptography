@@ -292,17 +292,6 @@ class TestRSA:
             signature, b"whatever", padding.PKCS1v15(), hashes.SHA224()
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and (
-                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
-                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
-            )
-        ),
-        skip_message="Does not support RSA PSS loading",
-    )
     def test_load_pss_pub_keys_strips_constraints(self, backend):
         key = load_vectors_from_file(
             filename=os.path.join(

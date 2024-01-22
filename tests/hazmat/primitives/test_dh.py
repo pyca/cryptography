@@ -753,38 +753,33 @@ class TestDHPublicKeySerialization:
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     @pytest.mark.parametrize(
-        ("key_path", "loader_func", "vec_path", "is_dhx"),
+        ("key_path", "loader_func", "vec_path"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhpub.pem"),
                 serialization.load_pem_public_key,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-                False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhpub.der"),
                 serialization.load_der_public_key,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-                False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
                 serialization.load_pem_public_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-                True,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.der"),
                 serialization.load_der_public_key,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-                True,
             ),
         ],
     )
     def test_public_bytes_values(
-        self, key_path, loader_func, vec_path, is_dhx, backend
+        self, key_path, loader_func, vec_path, backend
     ):
-        _skip_dhx_unsupported(backend, is_dhx)
         key_bytes = load_vectors_from_file(
             key_path, lambda pemfile: pemfile.read(), mode="rb"
         )
@@ -882,38 +877,33 @@ class TestDHParameterSerialization:
         assert serialized == param_bytes
 
     @pytest.mark.parametrize(
-        ("param_path", "loader_func", "vec_path", "is_dhx"),
+        ("param_path", "loader_func", "vec_path"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
                 serialization.load_pem_parameters,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-                False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp.der"),
                 serialization.load_der_parameters,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
-                False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
                 serialization.load_pem_parameters,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-                True,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
                 serialization.load_der_parameters,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
-                True,
             ),
         ],
     )
     def test_public_bytes_values(
-        self, param_path, loader_func, vec_path, backend, is_dhx
+        self, param_path, loader_func, vec_path, backend
     ):
-        _skip_dhx_unsupported(backend, is_dhx)
         key_bytes = load_vectors_from_file(
             param_path, lambda pemfile: pemfile.read(), mode="rb"
         )
