@@ -31,9 +31,9 @@ Changelog
 * Added support for obtaining X.509 certificate revocation list signature
   algorithm parameters (including PSS) via
   :meth:`~cryptography.x509.CertificateRevocationList.signature_algorithm_parameters`.
-* Added `mgf` property to
+* Added ``mgf`` property to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
-* Added `algorithm` and `mgf` properties to
+* Added ``algorithm`` and ``mgf`` properties to
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
 * Added the following properties that return timezone-aware ``datetime`` objects:
   :meth:`~cryptography.x509.Certificate.not_valid_before_utc`,
