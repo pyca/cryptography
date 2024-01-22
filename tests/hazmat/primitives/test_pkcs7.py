@@ -930,8 +930,8 @@ class TestPKCS7SerializeCerts:
 )
 class TestPKCS7Unsupported:
     def test_pkcs7_functions_unsupported(self):
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             pkcs7.load_der_pkcs7_certificates(b"nonsense")
 
-        with raises_unsupported_algorithm(_Reasons.BACKEND_MISSING_INTERFACE):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             pkcs7.load_pem_pkcs7_certificates(b"nonsense")

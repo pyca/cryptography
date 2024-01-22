@@ -300,7 +300,7 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
 fn load_pkcs7_certificates(
     py: pyo3::Python<'_>,
     pkcs7: Pkcs7,
-) -> CryptographyResult<Vec<x509::certificate::Certificate>> {
+) -> CryptographyResult<&pyo3::types::PyList> {
     let nid = pkcs7.type_().map(|t| t.nid());
     if nid != Some(openssl::nid::Nid::PKCS7_SIGNED) {
         let nid_string = nid.map_or("empty".to_string(), |n| n.as_raw().to_string());
@@ -319,24 +319,23 @@ fn load_pkcs7_certificates(
                 "The provided PKCS7 has no certificate data, but a cert loading method was called.",
             ),
         )),
-        Some(c) => c
-            .iter()
-            .map(|c| {
-                load_der_x509_certificate(
-                    py,
-                    pyo3::types::PyBytes::new(py, c.to_der()?.as_slice()).into_py(py),
-                    None,
-                )
-            })
-            .collect(),
+        Some(certificates) => {
+            let result = pyo3::types::PyList::empty(py);
+            for c in certificates {
+                let cert_der = pyo3::types::PyBytes::new(py, c.to_der()?.as_slice()).into_py(py);
+                let cert = load_der_x509_certificate(py, cert_der, None)?;
+                result.append(cert.into_py(py))?;
+            }
+            Ok(result)
+        }
     }
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_pem_pkcs7_certificates(
-    py: pyo3::Python<'_>,
+fn load_pem_pkcs7_certificates<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
-) -> CryptographyResult<Vec<x509::certificate::Certificate>> {
+) -> CryptographyResult<&'p pyo3::types::PyList> {
     cfg_if::cfg_if! {
         if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
             let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_pem(data).map_err(|_| {
@@ -349,7 +348,7 @@ fn load_pem_pkcs7_certificates(
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "PKCS#7 is not supported by this backend.",
-                    exceptions::Reasons::BACKEND_MISSING_INTERFACE,
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                 )),
             ));
         }
@@ -357,10 +356,10 @@ fn load_pem_pkcs7_certificates(
 }
 
 #[pyo3::prelude::pyfunction]
-fn load_der_pkcs7_certificates(
-    py: pyo3::Python<'_>,
+fn load_der_pkcs7_certificates<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
-) -> CryptographyResult<Vec<x509::certificate::Certificate>> {
+) -> CryptographyResult<&'p pyo3::types::PyList> {
     cfg_if::cfg_if! {
         if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
             let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data).map_err(|_| {
@@ -373,7 +372,7 @@ fn load_der_pkcs7_certificates(
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "PKCS#7 is not supported by this backend.",
-                    exceptions::Reasons::BACKEND_MISSING_INTERFACE,
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                 )),
             ));
         }
