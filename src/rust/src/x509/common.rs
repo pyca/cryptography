@@ -505,12 +505,13 @@ pub(crate) fn py_to_datetime(
 ) -> pyo3::PyResult<asn1::DateTime> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
-    let val_utc = match val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
-        true => val,
-        false => val.call_method1(
+    let val_utc = if val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
+        val
+    } else {
+        val.call_method1(
             pyo3::intern!(py, "astimezone"),
             (types::DATETIME_TIMEZONE_UTC.get(py)?,),
-        )?,
+        )?
     };
 
     Ok(asn1::DateTime::new(
