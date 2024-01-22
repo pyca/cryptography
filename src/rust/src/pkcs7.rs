@@ -9,12 +9,15 @@ use std::ops::Deref;
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
 
@@ -293,6 +296,7 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     }
 }
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 fn load_pkcs7_certificates(
     py: pyo3::Python<'_>,
     pkcs7: Pkcs7,
@@ -333,12 +337,23 @@ fn load_pem_pkcs7_certificates(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> CryptographyResult<Vec<x509::certificate::Certificate>> {
-    let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_pem(data).map_err(|_| {
-        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "Unable to parse PKCS7 data",
-        ))
-    })?;
-    load_pkcs7_certificates(py, pkcs7_decoded)
+    cfg_if::cfg_if! {
+        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_pem(data).map_err(|_| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Unable to parse PKCS7 data",
+                ))
+            })?;
+            load_pkcs7_certificates(py, pkcs7_decoded)
+        } else {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "PKCS#7 is not supported by this backend.",
+                    exceptions::Reasons::BACKEND_MISSING_INTERFACE,
+                )),
+            ));
+        }
+    }
 }
 
 #[pyo3::prelude::pyfunction]
@@ -346,12 +361,23 @@ fn load_der_pkcs7_certificates(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> CryptographyResult<Vec<x509::certificate::Certificate>> {
-    let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data).map_err(|_| {
-        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "Unable to parse PKCS7 data",
-        ))
-    })?;
-    load_pkcs7_certificates(py, pkcs7_decoded)
+    cfg_if::cfg_if! {
+        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data).map_err(|_| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Unable to parse PKCS7 data",
+                ))
+            })?;
+            load_pkcs7_certificates(py, pkcs7_decoded)
+        } else {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "PKCS#7 is not supported by this backend.",
+                    exceptions::Reasons::BACKEND_MISSING_INTERFACE,
+                )),
+            ));
+        }
+    }
 }
 
 pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
