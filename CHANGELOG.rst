@@ -3,10 +3,8 @@ Changelog
 
 .. _v42-0-0:
 
-42.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+42.0.0 - 2024-01-22
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.7.
 * **BACKWARDS INCOMPATIBLE:** Loading a PKCS7 with no content field using
@@ -66,7 +64,7 @@ Changelog
   for :class:`~cryptography.x509.Certificate` chains. These APIs should be
   considered unstable and not subject to our stability guarantees until
   documented as such in a future release.
-* Added support for 
+* Added support for
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SM4`
   :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM`
   when using OpenSSL 3.0 or greater.
