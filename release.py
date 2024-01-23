@@ -22,7 +22,6 @@ def cli():
 
 
 @cli.command()
-@click.argument("version")
 def release() -> None:
     base_dir = pathlib.Path(__file__).parent
     with (base_dir / "pyproject.toml").open("rb") as f:
