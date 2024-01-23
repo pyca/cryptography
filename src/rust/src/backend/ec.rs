@@ -269,9 +269,9 @@ impl ECPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         data: &[u8],
-        algorithm: &pyo3::PyAny,
+        signature_algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        if !algorithm.is_instance(types::ECDSA.get(py)?)? {
+        if !signature_algorithm.is_instance(types::ECDSA.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -283,7 +283,7 @@ impl ECPrivateKey {
         let (data, _) = utils::calculate_digest_and_algorithm(
             py,
             data,
-            algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
+            signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
         )?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
