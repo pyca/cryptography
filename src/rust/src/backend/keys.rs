@@ -165,7 +165,15 @@ fn load_pem_public_key(
     let _ = backend;
     let p = pem::parse(data.as_bytes())?;
     let pkey = match p.tag() {
-        "RSA PUBLIC KEY" => cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents())?,
+        "RSA PUBLIC KEY" => {
+            // We try to parse it as a PKCS1 first since that's the PEM delimiter, and if
+            // that fails we try to parse it as an SPKI. This is to match the permissiveness
+            // of OpenSSL, which doesn't care about the delimiter.
+            match cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents()) {
+                Ok(pkey) => pkey,
+                Err(_) => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
+            }
+        },
         "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
         _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
     };

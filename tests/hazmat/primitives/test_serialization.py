@@ -506,6 +506,9 @@ class TestPEMSerialization:
                 "asymmetric", "PEM_Serialization", "rsa_public_key.pem"
             ),
             os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
+            os.path.join(
+                "asymmetric", "PEM_Serialization", "rsa_wrong_delimiter_public_key.pem"
+            ),
         ],
     )
     def test_load_pem_rsa_public_key(self, key_file, backend):
