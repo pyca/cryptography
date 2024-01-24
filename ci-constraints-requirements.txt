@@ -7,7 +7,7 @@
 
 alabaster==0.7.16
     # via sphinx
-argcomplete==3.2.1; python_version >= "3.8"
+argcomplete==3.2.2; python_version >= "3.8"
     # via nox
 babel==2.14.0
     # via sphinx
