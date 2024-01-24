@@ -173,7 +173,7 @@ fn load_pem_public_key(
                 Ok(pkey) => pkey,
                 Err(_) => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
             }
-        },
+        }
         "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
         _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
     };

@@ -507,7 +507,9 @@ class TestPEMSerialization:
             ),
             os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
             os.path.join(
-                "asymmetric", "PEM_Serialization", "rsa_wrong_delimiter_public_key.pem"
+                "asymmetric",
+                "PEM_Serialization",
+                "rsa_wrong_delimiter_public_key.pem",
             ),
         ],
     )
