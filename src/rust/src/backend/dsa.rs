@@ -3,6 +3,7 @@
 // for complete details.
 
 use crate::backend::utils;
+use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
@@ -66,10 +67,10 @@ impl DsaPrivateKey {
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
-        data: &[u8],
+        data: CffiBuf<'_>,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let (data, _) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
@@ -151,15 +152,15 @@ impl DsaPublicKey {
     fn verify(
         &self,
         py: pyo3::Python<'_>,
-        signature: &[u8],
-        data: &[u8],
+        signature: CffiBuf<'_>,
+        data: CffiBuf<'_>,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, _) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
-        let valid = verifier.verify(data, signature).unwrap_or(false);
+        let valid = verifier.verify(data, signature.as_bytes()).unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),

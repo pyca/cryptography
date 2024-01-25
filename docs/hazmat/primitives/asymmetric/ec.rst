@@ -569,7 +569,8 @@ Key Interfaces
         Sign one block of data which can be verified later by others using the
         public key.
 
-        :param bytes data: The message string to sign.
+        :param data: The message string to sign.
+        :type data: :term:`bytes-like`
 
         :param signature_algorithm: An instance of
             :class:`EllipticCurveSignatureAlgorithm`, such as :class:`ECDSA`.
@@ -678,12 +679,14 @@ Key Interfaces
         Verify one block of data was signed by the private key associated
         with this public key.
 
-        :param bytes signature: The DER-encoded signature to verify.
+        :param signature: The DER-encoded signature to verify.
             A raw signature may be DER-encoded by splitting it into the ``r``
             and ``s`` components and passing them into
             :func:`~cryptography.hazmat.primitives.asymmetric.utils.encode_dss_signature`.
+        :type signature: :term:`bytes-like`
 
-        :param bytes data: The message string that was signed.
+        :param data: The message string that was signed.
+        :type data: :term:`bytes-like`
 
         :param signature_algorithm: An instance of
             :class:`EllipticCurveSignatureAlgorithm`.
