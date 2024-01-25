@@ -117,6 +117,12 @@ class TestEd25519Signing:
         with pytest.raises(InvalidSignature):
             key.public_key().verify(b"0" * 64, b"test data")
 
+    def test_sign_verify_buffer(self, backend):
+        key = Ed25519PrivateKey.generate()
+        data = bytearray(b"test data")
+        signature = key.sign(data)
+        key.public_key().verify(bytearray(signature), data)
+
     def test_generate(self, backend):
         key = Ed25519PrivateKey.generate()
         assert key

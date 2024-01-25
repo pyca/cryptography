@@ -516,6 +516,15 @@ class TestECDSAVectors:
         public_key = private_key.public_key()
         public_key.verify(signature, message, algorithm)
 
+    def test_sign_verify_buffers(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        message = bytearray(b"one little message")
+        algorithm = ec.ECDSA(hashes.SHA1())
+        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        signature = private_key.sign(message, algorithm)
+        public_key = private_key.public_key()
+        public_key.verify(bytearray(signature), message, algorithm)
+
     def test_sign_prehashed(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         message = b"one little message"

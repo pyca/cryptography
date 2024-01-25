@@ -47,7 +47,8 @@ Key interfaces
 
     .. method:: sign(data)
 
-        :param bytes data: The data to sign.
+        :param data: The data to sign.
+        :type data: :term:`bytes-like`
 
         :returns bytes: The 114 byte signature.
 
@@ -146,9 +147,11 @@ Key interfaces
 
     .. method:: verify(signature, data)
 
-        :param bytes signature: The signature to verify.
+        :param signature: The signature to verify.
+        :type signature: :term:`bytes-like`
 
-        :param bytes data: The data to verify.
+        :param data: The data to verify.
+        :type data: :term:`bytes-like`
 
         :returns: None
         :raises cryptography.exceptions.InvalidSignature: Raised when the
