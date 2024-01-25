@@ -66,12 +66,12 @@ impl Ed25519PrivateKey {
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
-        data: &[u8],
+        data: CffiBuf<'_>,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)?;
         Ok(pyo3::types::PyBytes::new_with(py, signer.len()?, |b| {
             let n = signer
-                .sign_oneshot(b, data)
+                .sign_oneshot(b, data.as_bytes())
                 .map_err(CryptographyError::from)?;
             assert_eq!(n, b.len());
             Ok(())
@@ -118,9 +118,9 @@ impl Ed25519PrivateKey {
 
 #[pyo3::prelude::pymethods]
 impl Ed25519PublicKey {
-    fn verify(&self, signature: &[u8], data: &[u8]) -> CryptographyResult<()> {
+    fn verify(&self, signature: CffiBuf<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
-            .verify_oneshot(signature, data)
+            .verify_oneshot(signature.as_bytes(), data.as_bytes())
             .unwrap_or(false);
 
         if !valid {
