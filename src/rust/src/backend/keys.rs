@@ -171,7 +171,18 @@ fn load_pem_public_key(
             // of OpenSSL, which doesn't care about the delimiter.
             match cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents()) {
                 Ok(pkey) => pkey,
-                Err(_) => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
+                Err(err) => {
+                    let pkey = cryptography_key_parsing::spki::parse_public_key(p.contents())
+                        .map_err(|_| err)?;
+                    if pkey.id() != openssl::pkey::Id::RSA {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "Incorrect PEM delimiter for key type.",
+                            ),
+                        ));
+                    }
+                    pkey
+                }
             }
         }
         "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,

@@ -525,6 +525,17 @@ class TestPEMSerialization:
         numbers = key.public_numbers()
         assert numbers.e == 65537
 
+    def test_load_pem_public_fails_with_ec_key_with_rsa_delimiter(self):
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric",
+                    "PEM_Serialization",
+                    "ec_public_key_rsa_delimiter.pem",
+                ),
+                lambda pemfile: load_pem_public_key(pemfile.read().encode()),
+            )
+
     def test_load_priv_key_with_public_key_api_fails(
         self, rsa_key_2048, backend
     ):
