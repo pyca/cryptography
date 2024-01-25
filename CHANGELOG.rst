@@ -6,7 +6,7 @@ Changelog
 42.0.1 - 2024-01-24
 ~~~~~~~~~~~~~~~~~~~
 
-* Fixed an issue with incorrect ``kwarg`` naming with ``EllipticCurvePrivateKey``
+* Fixed an issue with incorrect keyword-argument naming with ``EllipticCurvePrivateKey``
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.sign`.
 * Resolved compatibility issue with loading certain RSA public keys in
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`.
