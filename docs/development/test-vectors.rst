@@ -72,12 +72,18 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/ec_public_key.pem`` and
   ``asymmetric/DER_Serialization/ec_public_key.der``- Contains the public key
   corresponding to ``ec_private_key.pem``, generated using OpenSSL.
+* ``asymmetric/PEM_Serialization/ec_public_key_rsa_delimiter.pem`` - Contains
+  the public key corresponding to ``ec_private_key.pem``, but with the wrong PEM
+  delimiter (``RSA PUBLIC KEY`` when it should be ``PUBLIC KEY``).
 * ``asymmetric/PEM_Serialization/rsa_private_key.pem`` - Contains an RSA 2048
   bit key generated using OpenSSL, protected by the secret "123456" with DES3
   encryption.
 * ``asymmetric/PEM_Serialization/rsa_public_key.pem`` and
   ``asymmetric/DER_Serialization/rsa_public_key.der``- Contains an RSA 2048
   bit public generated using OpenSSL from ``rsa_private_key.pem``.
+* ``asymmetric/PEM_Serialization/rsa_wrong_delimiter_public_key.pem`` - Contains
+  an RSA 2048 bit public key generated from ``rsa_private_key.pem``, but with
+  the wrong PEM delimiter (``RSA PUBLIC KEY`` when it should be ``PUBLIC KEY``).
 * ``asymmetric/PEM_Serialization/dsa_4096.pem`` - Contains a 4096-bit DSA
   private key generated using OpenSSL.
 * ``asymmetric/PEM_Serialization/dsaparam.pem`` - Contains 2048-bit DSA

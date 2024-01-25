@@ -506,6 +506,11 @@ class TestPEMSerialization:
                 "asymmetric", "PEM_Serialization", "rsa_public_key.pem"
             ),
             os.path.join("asymmetric", "public", "PKCS1", "rsa.pub.pem"),
+            os.path.join(
+                "asymmetric",
+                "PEM_Serialization",
+                "rsa_wrong_delimiter_public_key.pem",
+            ),
         ],
     )
     def test_load_pem_rsa_public_key(self, key_file, backend):
@@ -519,6 +524,17 @@ class TestPEMSerialization:
         assert isinstance(key, rsa.RSAPublicKey)
         numbers = key.public_numbers()
         assert numbers.e == 65537
+
+    def test_load_pem_public_fails_with_ec_key_with_rsa_delimiter(self):
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric",
+                    "PEM_Serialization",
+                    "ec_public_key_rsa_delimiter.pem",
+                ),
+                lambda pemfile: load_pem_public_key(pemfile.read().encode()),
+            )
 
     def test_load_priv_key_with_public_key_api_fails(
         self, rsa_key_2048, backend
