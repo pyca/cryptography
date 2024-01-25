@@ -6,6 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use crate::backend::{hashes, utils};
+use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
@@ -281,11 +282,12 @@ impl RsaPrivateKey {
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
-        data: &[u8],
+        data: CffiBuf<'_>,
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<&'p pyo3::PyAny> {
-        let (data, algorithm) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
+        let (data, algorithm) =
+            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.sign_init().map_err(|_| {
@@ -419,18 +421,19 @@ impl RsaPublicKey {
     fn verify(
         &self,
         py: pyo3::Python<'_>,
-        signature: &[u8],
-        data: &[u8],
+        signature: CffiBuf<'_>,
+        data: CffiBuf<'_>,
         padding: &pyo3::PyAny,
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<()> {
-        let (data, algorithm) = utils::calculate_digest_and_algorithm(py, data, algorithm)?;
+        let (data, algorithm) =
+            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
         setup_signature_ctx(py, &mut ctx, padding, algorithm, self.pkey.size(), false)?;
 
-        let valid = ctx.verify(data, signature).unwrap_or(false);
+        let valid = ctx.verify(data, signature.as_bytes()).unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
