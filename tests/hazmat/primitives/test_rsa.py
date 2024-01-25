@@ -763,9 +763,15 @@ class TestRSASignature:
         )
         private_key.sign(b"no failure", padding.PKCS1v15(), hashes.SHA512())
 
-    def test_sign(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    @pytest.mark.parametrize(
+        "message",
+        [
+            b"one little message",
+            bytearray(b"one little message"),
+        ],
+    )
+    def test_sign(self, rsa_key_2048: rsa.RSAPrivateKey, message, backend):
         private_key = rsa_key_2048
-        message = b"one little message"
         pkcs = padding.PKCS1v15()
         algorithm = hashes.SHA256()
         signature = private_key.sign(message, pkcs, algorithm)
@@ -1375,9 +1381,15 @@ class TestRSAVerification:
                 hashes.SHA1(),
             )
 
-    def test_verify(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    @pytest.mark.parametrize(
+        "message",
+        [
+            b"one little message",
+            bytearray(b"one little message"),
+        ],
+    )
+    def test_verify(self, rsa_key_2048: rsa.RSAPrivateKey, message, backend):
         private_key = rsa_key_2048
-        message = b"one little message"
         pkcs = padding.PKCS1v15()
         algorithm = hashes.SHA256()
         signature = private_key.sign(message, pkcs, algorithm)
