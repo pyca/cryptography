@@ -441,8 +441,15 @@ pub static DSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["DSAPublicKey"],
 );
 
-pub static EXTRACT_BUFFER_LENGTH: LazyPyImport =
-    LazyPyImport::new("cryptography.utils", &["_extract_buffer_length"]);
+pub static FFI_FROM_BUFFER: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.bindings._rust",
+    &["_openssl", "ffi", "from_buffer"],
+);
+
+pub static FFI_CAST: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.bindings._rust",
+    &["_openssl", "ffi", "cast"],
+);
 
 pub static BLOCK_CIPHER_ALGORITHM: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers",

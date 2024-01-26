@@ -45,13 +45,6 @@ def int_to_bytes(integer: int, length: int | None = None) -> bytes:
     )
 
 
-def _extract_buffer_length(obj: typing.Any) -> tuple[typing.Any, int]:
-    from cryptography.hazmat.bindings._rust import _openssl
-
-    buf = _openssl.ffi.from_buffer(obj)
-    return buf, int(_openssl.ffi.cast("uintptr_t", buf))
-
-
 class InterfaceNotImplemented(Exception):
     pass
 
