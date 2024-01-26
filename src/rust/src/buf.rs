@@ -18,8 +18,7 @@ fn _extract_buffer_length(pyobj: &pyo3::PyAny) -> pyo3::PyResult<(&pyo3::PyAny, 
     let ptrval = types::FFI_CAST
         .get(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj))?
-        .getattr(pyo3::intern!(py, "__int__"))?
-        .call0()?
+        .call_method0(pyo3::intern!(py, "__int__"))?
         .extract::<usize>()?;
     Ok((bufobj, ptrval))
 }
