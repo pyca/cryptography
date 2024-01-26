@@ -12,6 +12,18 @@ pub(crate) struct CffiBuf<'p> {
     buf: &'p [u8],
 }
 
+fn _extract_buffer_length(pyobj: &pyo3::PyAny) -> pyo3::PyResult<(&pyo3::PyAny, usize)> {
+    let py = pyobj.py();
+    let bufobj = types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))?;
+    let ptrval = types::FFI_CAST
+        .get(py)?
+        .call1((pyo3::intern!(py, "uintptr_t"), bufobj))?
+        .getattr(pyo3::intern!(py, "__int__"))?
+        .call0()?
+        .extract::<usize>()?;
+    Ok((bufobj, ptrval))
+}
+
 impl CffiBuf<'_> {
     pub(crate) fn as_bytes(&self) -> &[u8] {
         self.buf
@@ -20,13 +32,7 @@ impl CffiBuf<'_> {
 
 impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
     fn extract(pyobj: &'a pyo3::PyAny) -> pyo3::PyResult<Self> {
-        let py = pyobj.py();
-
-        let (bufobj, ptrval): (&pyo3::PyAny, usize) = types::EXTRACT_BUFFER_LENGTH
-            .get(py)?
-            .call1((pyobj,))?
-            .extract()?;
-
+        let (bufobj, ptrval) = _extract_buffer_length(pyobj)?;
         let len = bufobj.len()?;
         let buf = if len == 0 {
             &[]
