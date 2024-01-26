@@ -164,10 +164,7 @@ class TestDH:
     )
     def test_dh_parameters_allows_rfc3526_groups(self, backend, vector):
         p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
-        if (
-            backend._fips_enabled
-            and p.bit_length() < backend._fips_dh_min_modulus
-        ):
+        if backend._fips_enabled and p < backend._fips_dh_min_modulus:
             pytest.skip("modulus too small for FIPS mode")
 
         params = dh.DHParameterNumbers(p, int(vector["g"]))
