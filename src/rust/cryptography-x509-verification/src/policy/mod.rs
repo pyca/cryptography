@@ -350,8 +350,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // Per 5280: The serial number MUST be a positive integer.
         // In practice, there are a few roots in common trust stores (like certifi)
         // that have `serial == 0`, so we can't enforce this yet.
-        let serial_bytes = cert.tbs_cert.serial.as_bytes();
-        if !(1..=21).contains(&serial_bytes.len()) {
+        let serial = cert.tbs_cert.serial;
+        if !(1..=21).contains(&serial.as_bytes().len()) {
             // Conforming CAs MUST NOT use serial numbers longer than 20 octets.
             // NOTE: In practice, this requires us to check for an encoding of
             // 21 octets, since some CAs generate 20 bytes of randomness and
@@ -360,8 +360,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             return Err(ValidationError::Other(
                 "certificate must have a serial between 1 and 20 octets".to_string(),
             ));
-        } else if serial_bytes[0] & 0x80 == 0x80 {
-            // TODO: replace with `is_negative`: https://github.com/alex/rust-asn1/pull/425
+        } else if serial.is_negative() {
             return Err(ValidationError::Other(
                 "certificate serial number cannot be negative".to_string(),
             ));
