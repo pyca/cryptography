@@ -138,12 +138,6 @@ class TestOpenSSL:
 
 
 class TestOpenSSLRSA:
-    def test_generate_rsa_parameters_supported(self):
-        assert backend.generate_rsa_parameters_supported(1, 1024) is False
-        assert backend.generate_rsa_parameters_supported(4, 1024) is False
-        assert backend.generate_rsa_parameters_supported(3, 1024) is True
-        assert backend.generate_rsa_parameters_supported(3, 511) is False
-
     def test_rsa_padding_unsupported_pss_mgf1_hash(self):
         assert (
             backend.rsa_padding_supported(
