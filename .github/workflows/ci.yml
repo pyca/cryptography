@@ -50,7 +50,7 @@ jobs:
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin, workspace inheritance
-          # 1.65 - Generic associated types (GATs)
+          # 1.65 - Generic associated types (GATs), std::backtrace
           - {VERSION: "3.12", NOXSESSION: "rust-noclippy,tests", RUST: "1.63.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.64.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
