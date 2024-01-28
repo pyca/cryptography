@@ -325,15 +325,6 @@ class Backend:
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 
-    def generate_rsa_parameters_supported(
-        self, public_exponent: int, key_size: int
-    ) -> bool:
-        return (
-            public_exponent >= 3
-            and public_exponent & 1 != 0
-            and key_size >= 512
-        )
-
     def _bytes_to_bio(self, data: bytes) -> _MemoryBIO:
         """
         Return a _MemoryBIO namedtuple of (BIO, char*).
