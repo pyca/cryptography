@@ -256,7 +256,6 @@ class TestRSA:
             and (
                 not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
                 or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
             )
         ),
         skip_message="Does not support RSA PSS loading",
@@ -314,7 +313,6 @@ class TestRSA:
             and (
                 not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
                 or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-                and not backend._lib.CRYPTOGRAPHY_LIBRESSL_LESS_THAN_380
             )
         ),
         skip_message="Test requires a backend without RSA-PSS key support",

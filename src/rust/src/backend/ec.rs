@@ -90,15 +90,6 @@ fn py_curve_from_curve<'p>(
     py: pyo3::Python<'p>,
     curve: &openssl::ec::EcGroupRef,
 ) -> CryptographyResult<&'p pyo3::PyAny> {
-    let name = curve
-        .curve_name()
-        .ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(
-                "ECDSA keys with explicit parameters are unsupported at this time",
-            )
-        })?
-        .short_name()?;
-
     if curve.asn1_flag() == openssl::ec::Asn1Flag::EXPLICIT_CURVE {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
@@ -106,6 +97,8 @@ fn py_curve_from_curve<'p>(
             ),
         ));
     }
+
+    let name = curve.curve_name().unwrap().short_name()?;
 
     types::CURVE_TYPES
         .get(py)?

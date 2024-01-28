@@ -83,7 +83,6 @@ fn private_key_from_pkey(
             unsafe_skip_rsa_key_validation,
         )?
         .into_py(py)),
-        #[cfg(any(not(CRYPTOGRAPHY_IS_LIBRESSL), CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER))]
         openssl::pkey::Id::RSA_PSS => {
             // At the moment the way we handle RSA PSS keys is to strip the
             // PSS constraints from them and treat them as normal RSA keys

@@ -17,13 +17,8 @@ fn main() {
         }
     }
 
-    if let Ok(version) = env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER") {
-        let version = u64::from_str_radix(&version, 16).unwrap();
-
+    if env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_LIBRESSL");
-        if version >= 0x3_08_00_00_0 {
-            println!("cargo:rustc-cfg=CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER");
-        }
     }
 
     if env::var("DEP_OPENSSL_BORINGSSL").is_ok() {
