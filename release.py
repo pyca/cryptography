@@ -38,21 +38,22 @@ def release() -> None:
     run("git", "push", "--tags", "git@github.com:pyca/cryptography.git")
 
 
-def replace_version(
-    p: pathlib.Path, variable_name: str, new_version: str
-) -> None:
+def replace_pattern(p: pathlib.Path, pattern: str, replacement: str) -> None:
     content = p.read_text()
-
-    pattern = rf"^{variable_name}\s*=\s*.*$"
     match = re.search(pattern, content, re.MULTILINE)
     assert match is not None
 
     start, end = match.span()
-    new_content = (
-        content[:start] + f'{variable_name} = "{new_version}"' + content[end:]
-    )
-
+    new_content = content[:start] + replacement + content[end:]
     p.write_text(new_content)
+
+
+def replace_version(
+    p: pathlib.Path, variable_name: str, new_version: str
+) -> None:
+    replace_pattern(
+        p, rf"^{variable_name}\s*=\s*.*$", f'{variable_name} = "{new_version}"'
+    )
 
 
 @cli.command()
@@ -74,6 +75,19 @@ def bump_version(new_version: str) -> None:
         "__version__",
         new_version,
     )
+
+    if Version(new_version).is_prerelease:
+        replace_pattern(
+            base_dir / "pyproject.toml",
+            r'"cryptography_vectors(==.*?)?"',
+            '"cryptography_vectors"',
+        )
+    else:
+        replace_pattern(
+            base_dir / "pyproject.toml",
+            r'"cryptography_vectors(==.*?)?"',
+            f'"cryptography_vectors=={new_version}"',
+        )
 
 
 if __name__ == "__main__":
