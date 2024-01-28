@@ -486,9 +486,7 @@ impl ChaCha20Poly1305 {
 
     #[staticmethod]
     fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<&pyo3::PyAny> {
-        Ok(py
-            .import(pyo3::intern!(py, "os"))?
-            .call_method1(pyo3::intern!(py, "urandom"), (32,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((32,))?)
     }
 
     fn encrypt<'p>(
@@ -524,6 +522,118 @@ impl ChaCha20Poly1305 {
         if nonce_bytes.len() != 12 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
+
+        self.ctx
+            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+}
+
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.aead",
+    name = "AESGCM"
+)]
+struct AesGcm {
+    #[cfg(any(
+        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+    ))]
+    ctx: EvpCipherAead,
+
+    #[cfg(not(any(
+        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+    )))]
+    ctx: LazyEvpCipherAead,
+}
+
+#[pyo3::prelude::pymethods]
+impl AesGcm {
+    #[new]
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        let cipher = match key_buf.as_bytes().len() {
+            16 => openssl::cipher::Cipher::aes_128_gcm(),
+            24 => openssl::cipher::Cipher::aes_192_gcm(),
+            32 => openssl::cipher::Cipher::aes_256_gcm(),
+            _ => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "AESGCM key must be 128, 192, or 256 bits.",
+                    ),
+                ))
+            }
+        };
+
+        cfg_if::cfg_if! {
+            if #[cfg(any(
+                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER,
+            )))] {
+                Ok(AesGcm {
+                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
+                })
+            } else {
+                Ok(AesGcm {
+                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false),
+                })
+
+            }
+        }
+    }
+
+    #[staticmethod]
+    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+        if bit_length != 128 && bit_length != 192 && bit_length != 256 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
+            ));
+        }
+
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
+            ));
+        }
+
+        self.ctx
+            .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
             ));
         }
 
@@ -845,6 +955,7 @@ impl AesGcmSiv {
 pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
     let m = pyo3::prelude::PyModule::new(py, "aead")?;
 
+    m.add_class::<AesGcm>()?;
     m.add_class::<ChaCha20Poly1305>()?;
     m.add_class::<AesSiv>()?;
     m.add_class::<AesOcb3>()?;
