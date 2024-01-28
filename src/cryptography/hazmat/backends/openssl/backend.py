@@ -15,6 +15,12 @@ from cryptography.hazmat.backends.openssl import aead
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    CAST5,
+    IDEA,
+    SEED,
+    Blowfish,
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -40,10 +46,6 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     Camellia,
     ChaCha20,
     TripleDES,
-    _BlowfishInternal,
-    _CAST5Internal,
-    _IDEAInternal,
-    _SEEDInternal,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,
@@ -282,18 +284,18 @@ class Backend:
         ):
             for mode_cls in [CBC, CFB, OFB, ECB]:
                 self.register_cipher_adapter(
-                    _BlowfishInternal,
+                    Blowfish,
                     mode_cls,
                     GetCipherByName("bf-{mode.name}"),
                 )
             for mode_cls in [CBC, CFB, OFB, ECB]:
                 self.register_cipher_adapter(
-                    _SEEDInternal,
+                    SEED,
                     mode_cls,
                     GetCipherByName("seed-{mode.name}"),
                 )
             for cipher_cls, mode_cls in itertools.product(
-                [_CAST5Internal, _IDEAInternal],
+                [CAST5, IDEA],
                 [CBC, OFB, CFB, ECB],
             ):
                 self.register_cipher_adapter(

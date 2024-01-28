@@ -205,6 +205,12 @@ Algorithms
 
     .. versionadded:: 0.2
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 45.0.0.
+
     CAST5 (also known as CAST-128) is a block cipher approved for use in the
     Canadian government by the `Communications Security Establishment`_. It is
     a variable key length cipher and supports keys from 40-128 :term:`bits` in
@@ -217,6 +223,12 @@ Algorithms
 .. class:: SEED(key)
 
     .. versionadded:: 0.4
+
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 45.0.0.
 
     SEED is a block cipher developed by the Korea Information Security Agency
     (KISA). It is defined in :rfc:`4269` and is used broadly throughout South
@@ -252,6 +264,12 @@ Weak ciphers
 
 .. class:: Blowfish(key)
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 45.0.0.
+
     Blowfish is a block cipher developed by Bruce Schneier. It is known to be
     susceptible to attacks when using weak keys. The author has recommended
     that users of Blowfish move to newer algorithms such as :class:`AES`.
@@ -261,6 +279,12 @@ Weak ciphers
     :type key: :term:`bytes-like`
 
 .. class:: ARC4(key)
+
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 45.0.0.
 
     ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
     initial stream output. Its use is strongly discouraged. ARC4 does not use
@@ -283,6 +307,12 @@ Weak ciphers
         b'a secret message'
 
 .. class:: IDEA(key)
+
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 45.0.0.
 
     IDEA (`International Data Encryption Algorithm`_) is a block cipher created
     in 1991. It is an optional component of the `OpenPGP`_ standard. This cipher
