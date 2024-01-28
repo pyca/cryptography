@@ -331,6 +331,7 @@ pub static HASHES_MODULE: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &[]);
 pub static HASH_ALGORITHM: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["HashAlgorithm"]);
+#[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
 pub static EXTENDABLE_OUTPUT_FUNCTION: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.hashes",
     &["ExtendableOutputFunction"],
@@ -476,6 +477,7 @@ pub static SM4: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["SM4"],
 );
+#[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
 pub static SEED: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["_SEEDInternal"],

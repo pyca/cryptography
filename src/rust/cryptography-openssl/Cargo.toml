@@ -8,6 +8,7 @@ publish = false
 rust-version = "1.63.0"
 
 [dependencies]
+cfg-if = "1"
 openssl = "0.10.63"
 ffi = { package = "openssl-sys", version = "0.9.99" }
 foreign-types = "0.3"

@@ -574,13 +574,14 @@ impl AesSiv {
                     ctx: EvpCipherAead::new(&cipher, key.as_bytes(), 16, true)?,
                 })
             } else {
-                return Err(CryptographyError::from(
+                _ = cipher_name;
+
+                Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "AES-SIV is not supported by this version of OpenSSL",
                         exceptions::Reasons::UNSUPPORTED_CIPHER,
                     )),
-                ));
-
+                ))
             }
         }
     }
@@ -641,12 +642,14 @@ impl AesOcb3 {
     fn new(key: CffiBuf<'_>) -> CryptographyResult<AesOcb3> {
         cfg_if::cfg_if! {
             if #[cfg(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL))] {
-                return Err(CryptographyError::from(
+                _ = key;
+
+                Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "AES-OCB3 is not supported by this version of OpenSSL",
                         exceptions::Reasons::UNSUPPORTED_CIPHER,
                     )),
-                ));
+                ))
             } else {
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
