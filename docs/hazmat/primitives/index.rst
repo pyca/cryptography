@@ -4,7 +4,7 @@ Primitives
 ==========
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     aead
     asymmetric/index
