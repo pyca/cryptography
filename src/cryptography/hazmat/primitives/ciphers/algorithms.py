@@ -5,22 +5,23 @@
 from __future__ import annotations
 
 from cryptography import utils
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    CAST5 as CAST5,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    IDEA as IDEA,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    SEED as SEED,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    Blowfish as Blowfish,
+)
+from cryptography.hazmat.primitives._cipheralgorithm import _verify_key_size
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
 )
-
-
-def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
-    # Verify that the key is instance of bytes
-    utils._check_byteslike("key", key)
-
-    # Verify that the key size matches the expected key size
-    if len(key) * 8 not in algorithm.key_sizes:
-        raise ValueError(
-            f"Invalid key size ({len(key) * 8}) for {algorithm.name}."
-        )
-    return key
 
 
 class AES(BlockCipherAlgorithm):
@@ -87,47 +88,23 @@ class TripleDES(BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class Blowfish(BlockCipherAlgorithm):
-    name = "Blowfish"
-    block_size = 64
-    key_sizes = frozenset(range(32, 449, 8))
-
-    def __init__(self, key: bytes):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
-
-
-_BlowfishInternal = Blowfish
 utils.deprecated(
     Blowfish,
     __name__,
-    "Blowfish has been deprecated and will be removed in a future release",
+    "Blowfish has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.Blowfish and "
+    "will be removed from this module in 45.0.0.",
     utils.DeprecatedIn37,
     name="Blowfish",
 )
 
 
-class CAST5(BlockCipherAlgorithm):
-    name = "CAST5"
-    block_size = 64
-    key_sizes = frozenset(range(40, 129, 8))
-
-    def __init__(self, key: bytes):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
-
-
-_CAST5Internal = CAST5
 utils.deprecated(
     CAST5,
     __name__,
-    "CAST5 has been deprecated and will be removed in a future release",
+    "CAST5 has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.CAST5 and "
+    "will be removed from this module in 45.0.0.",
     utils.DeprecatedIn37,
     name="CAST5",
 )
@@ -145,47 +122,23 @@ class ARC4(CipherAlgorithm):
         return len(self.key) * 8
 
 
-class IDEA(BlockCipherAlgorithm):
-    name = "IDEA"
-    block_size = 64
-    key_sizes = frozenset([128])
-
-    def __init__(self, key: bytes):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
-
-
-_IDEAInternal = IDEA
 utils.deprecated(
     IDEA,
     __name__,
-    "IDEA has been deprecated and will be removed in a future release",
+    "IDEA has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.IDEA and "
+    "will be removed from this module in 45.0.0.",
     utils.DeprecatedIn37,
     name="IDEA",
 )
 
 
-class SEED(BlockCipherAlgorithm):
-    name = "SEED"
-    block_size = 128
-    key_sizes = frozenset([128])
-
-    def __init__(self, key: bytes):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
-
-
-_SEEDInternal = SEED
 utils.deprecated(
     SEED,
     __name__,
-    "SEED has been deprecated and will be removed in a future release",
+    "SEED has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.SEED and "
+    "will be removed from this module in 45.0.0.",
     utils.DeprecatedIn37,
     name="SEED",
 )

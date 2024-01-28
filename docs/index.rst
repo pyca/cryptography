@@ -67,6 +67,7 @@ hazmat layer only when necessary.
     hazmat/primitives/index
     exceptions
     random-numbers
+    hazmat/decrepit/index
 
 .. toctree::
     :maxdepth: 2

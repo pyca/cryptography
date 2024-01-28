@@ -11,7 +11,13 @@ Changelog
 * :func:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
   now enforces a minimum RSA key size of 1024-bit. Note that 1024-bit is still
   considered insecure, users should generally use a key size of 2048-bits.
-
+* Added new :doc:`/hazmat/decrepit/index` module which contains outdated and
+  insecure cryptographic primitives.
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish`, which were
+  deprecated in 37.0.0, have been added to this module.
 
 .. _v42-0-1:
 

@@ -478,27 +478,23 @@ pub static SM4: LazyPyImport = LazyPyImport::new(
     &["SM4"],
 );
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
-pub static SEED: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
-    &["_SEEDInternal"],
-);
+pub static SEED: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["SEED"]);
 pub static CAMELLIA: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["Camellia"],
 );
 pub static BLOWFISH: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
-    &["_BlowfishInternal"],
+    "cryptography.hazmat.decrepit.ciphers.algorithms",
+    &["Blowfish"],
 );
 pub static CAST5: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
-    &["_CAST5Internal"],
+    "cryptography.hazmat.decrepit.ciphers.algorithms",
+    &["CAST5"],
 );
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
-pub static IDEA: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
-    &["_IDEAInternal"],
-);
+pub static IDEA: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["IDEA"]);
 
 pub static CBC: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CBC"]);
