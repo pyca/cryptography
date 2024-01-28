@@ -85,6 +85,7 @@ dependencies = [
 name = "cryptography-openssl"
 version = "0.1.0"
 dependencies = [
+ "cfg-if",
  "foreign-types",
  "foreign-types-shared",
  "openssl",
