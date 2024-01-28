@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :func:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
+  now enforces a minimum RSA key size of 1024-bit. Note that 1024-bit is still
+  considered insecure, users should generally use a key size of 2048-bits.
+
+
 .. _v42-0-1:
 
 42.0.1 - 2024-01-24
