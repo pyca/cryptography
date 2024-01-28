@@ -150,8 +150,8 @@ def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
             "65537. Almost everyone should choose 65537 here!"
         )
 
-    if key_size < 512:
-        raise ValueError("key_size must be at least 512-bits.")
+    if key_size < 1024:
+        raise ValueError("key_size must be at least 1024-bits.")
 
 
 def _modinv(e: int, m: int) -> int:
