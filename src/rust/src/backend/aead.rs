@@ -77,6 +77,7 @@ impl EvpCipherAead {
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         data: &[u8],
         out: &mut [u8],
+        is_ccm: bool,
     ) -> CryptographyResult<()> {
         let bs = ctx.block_size();
 
@@ -87,9 +88,11 @@ impl EvpCipherAead {
             let n = ctx.cipher_update(data, Some(out))?;
             assert_eq!(n, data.len());
 
-            let mut final_block = [0];
-            let n = ctx.cipher_final(&mut final_block)?;
-            assert_eq!(n, 0);
+            if !is_ccm {
+                let mut final_block = [0];
+                let n = ctx.cipher_final(&mut final_block)?;
+                assert_eq!(n, 0);
+            }
         } else {
             // Our algorithm here is: split the data into the full chunks, and
             // the remaining partial chunk. Feed the full chunks into OpenSSL
@@ -131,9 +134,19 @@ impl EvpCipherAead {
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_encryption_ctx)?;
-        Self::encrypt_with_context(py, ctx, plaintext, aad, nonce, self.tag_len, self.tag_first)
+        Self::encrypt_with_context(
+            py,
+            ctx,
+            plaintext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+            false,
+        )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn encrypt_with_context<'p>(
         py: pyo3::Python<'p>,
         mut ctx: openssl::cipher_ctx::CipherCtx,
@@ -142,13 +155,19 @@ impl EvpCipherAead {
         nonce: Option<&[u8]>,
         tag_len: usize,
         tag_first: bool,
+        is_ccm: bool,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         check_length(plaintext)?;
 
-        if let Some(nonce) = nonce {
-            ctx.set_iv_length(nonce.len())?;
+        if !is_ccm {
+            if let Some(nonce) = nonce {
+                ctx.set_iv_length(nonce.len())?;
+            }
+            ctx.encrypt_init(None, None, nonce)?;
         }
-        ctx.encrypt_init(None, None, nonce)?;
+        if is_ccm {
+            ctx.set_data_len(plaintext.len())?;
+        }
 
         Self::process_aad(&mut ctx, aad)?;
 
@@ -164,7 +183,7 @@ impl EvpCipherAead {
                     (ciphertext, tag) = b.split_at_mut(plaintext.len());
                 }
 
-                Self::process_data(&mut ctx, plaintext, ciphertext)?;
+                Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
 
                 ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -190,9 +209,11 @@ impl EvpCipherAead {
             nonce,
             self.tag_len,
             self.tag_first,
+            false,
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn decrypt_with_context<'p>(
         py: pyo3::Python<'p>,
         mut ctx: openssl::cipher_ctx::CipherCtx,
@@ -201,15 +222,11 @@ impl EvpCipherAead {
         nonce: Option<&[u8]>,
         tag_len: usize,
         tag_first: bool,
+        is_ccm: bool,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if ciphertext.len() < tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
-
-        if let Some(nonce) = nonce {
-            ctx.set_iv_length(nonce.len())?;
-        }
-        ctx.decrypt_init(None, None, nonce)?;
 
         let tag;
         let ciphertext_data;
@@ -221,7 +238,18 @@ impl EvpCipherAead {
         } else {
             (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - tag_len);
         }
-        ctx.set_tag(tag)?;
+
+        if !is_ccm {
+            if let Some(nonce) = nonce {
+                ctx.set_iv_length(nonce.len())?;
+            }
+
+            ctx.decrypt_init(None, None, nonce)?;
+            ctx.set_tag(tag)?;
+        }
+        if is_ccm {
+            ctx.set_data_len(ciphertext_data.len())?;
+        }
 
         Self::process_aad(&mut ctx, aad)?;
 
@@ -229,7 +257,7 @@ impl EvpCipherAead {
             py,
             ciphertext_data.len(),
             |b| {
-                Self::process_data(&mut ctx, ciphertext_data, b)
+                Self::process_data(&mut ctx, ciphertext_data, b, is_ccm)
                     .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
                 Ok(())
@@ -238,38 +266,29 @@ impl EvpCipherAead {
     }
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
-    CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-)))]
 struct LazyEvpCipherAead {
     cipher: &'static openssl::cipher::CipherRef,
     key: pyo3::Py<pyo3::PyAny>,
 
     tag_len: usize,
     tag_first: bool,
+    is_ccm: bool,
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
-    CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-)))]
 impl LazyEvpCipherAead {
     fn new(
         cipher: &'static openssl::cipher::CipherRef,
         key: pyo3::Py<pyo3::PyAny>,
         tag_len: usize,
         tag_first: bool,
+        is_ccm: bool,
     ) -> LazyEvpCipherAead {
         LazyEvpCipherAead {
             cipher,
             key,
             tag_len,
             tag_first,
+            is_ccm,
         }
     }
 
@@ -283,7 +302,15 @@ impl LazyEvpCipherAead {
         let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
 
         let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        if self.is_ccm {
+            encryption_ctx.encrypt_init(Some(self.cipher), None, None)?;
+            encryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
+            encryption_ctx.set_tag_length(self.tag_len)?;
+            encryption_ctx.encrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
+        } else {
+            encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        }
+
         EvpCipherAead::encrypt_with_context(
             py,
             encryption_ctx,
@@ -292,6 +319,7 @@ impl LazyEvpCipherAead {
             nonce,
             self.tag_len,
             self.tag_first,
+            self.is_ccm,
         )
     }
 
@@ -305,7 +333,22 @@ impl LazyEvpCipherAead {
         let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
 
         let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        if self.is_ccm {
+            decryption_ctx.decrypt_init(Some(self.cipher), None, None)?;
+            decryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
+
+            if ciphertext.len() < self.tag_len {
+                return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+            }
+
+            let (_, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
+            decryption_ctx.set_tag(tag)?;
+
+            decryption_ctx.decrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
+        } else {
+            decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+        }
+
         EvpCipherAead::decrypt_with_context(
             py,
             decryption_ctx,
@@ -314,6 +357,7 @@ impl LazyEvpCipherAead {
             nonce,
             self.tag_len,
             self.tag_first,
+            self.is_ccm,
         )
     }
 }
@@ -478,6 +522,7 @@ impl ChaCha20Poly1305 {
                         key,
                         16,
                         false,
+                        false,
                     )
                 })
             }
@@ -583,7 +628,7 @@ impl AesGcm {
                 })
             } else {
                 Ok(AesGcm {
-                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false),
+                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false, false),
                 })
 
             }
@@ -639,6 +684,135 @@ impl AesGcm {
 
         self.ctx
             .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+    }
+}
+
+#[pyo3::prelude::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.aead",
+    name = "AESCCM"
+)]
+struct AesCcm {
+    ctx: LazyEvpCipherAead,
+}
+
+#[pyo3::prelude::pymethods]
+impl AesCcm {
+    #[new]
+    fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+        tag_length: Option<usize>,
+    ) -> CryptographyResult<AesCcm> {
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                return Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err((
+                        "AES-CCM is not supported by this version of OpenSSL",
+                        exceptions::Reasons::UNSUPPORTED_CIPHER,
+                    )),
+                ));
+            } else {
+                let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+                let cipher = match key_buf.as_bytes().len() {
+                    16 => openssl::cipher::Cipher::aes_128_ccm(),
+                    24 => openssl::cipher::Cipher::aes_192_ccm(),
+                    32 => openssl::cipher::Cipher::aes_256_ccm(),
+                    _ => {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "AESCCM key must be 128, 192, or 256 bits.",
+                            ),
+                        ))
+                    }
+                };
+                let tag_length = tag_length.unwrap_or(16);
+                if ![4, 6, 8, 10, 12, 14, 16].contains(&tag_length) {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err("Invalid tag_length"),
+                    ));
+                }
+
+                Ok(AesCcm {
+                    ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
+                })
+            }
+        }
+    }
+
+    #[staticmethod]
+    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+        if bit_length != 128 && bit_length != 192 && bit_length != 256 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
+            ));
+        }
+
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+    }
+
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() < 7 || nonce_bytes.len() > 13 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 7 and 13 bytes"),
+            ));
+        }
+
+        check_length(data_bytes)?;
+        // For information about computing this, see
+        // https://tools.ietf.org/html/rfc3610#section-2.1
+        let l_val = 15 - nonce_bytes.len();
+        let max_length = 1usize.checked_shl(8 * l_val as u32);
+        // If `max_length` overflowed, then it's not possible for data to be
+        // longer than it.
+        if max_length.map(|v| v < data_bytes.len()).unwrap_or(false) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Data too long for nonce"),
+            ));
+        }
+
+        self.ctx.encrypt(py, data_bytes, aad, Some(nonce_bytes))
+    }
+
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() < 7 || nonce_bytes.len() > 13 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 7 and 13 bytes"),
+            ));
+        }
+        // For information about computing this, see
+        // https://tools.ietf.org/html/rfc3610#section-2.1
+        let l_val = 15 - nonce_bytes.len();
+        let max_length = 1usize.checked_shl(8 * l_val as u32);
+        // If `max_length` overflowed, then it's not possible for data to be
+        // longer than it.
+        if max_length.map(|v| v < data_bytes.len()).unwrap_or(false) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Data too long for nonce"),
+            ));
+        }
+
+        self.ctx.decrypt(py, data_bytes, aad, Some(nonce_bytes))
     }
 }
 
@@ -957,6 +1131,7 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
 
     m.add_class::<AesGcm>()?;
     m.add_class::<ChaCha20Poly1305>()?;
+    m.add_class::<AesCcm>()?;
     m.add_class::<AesSiv>()?;
     m.add_class::<AesOcb3>()?;
     m.add_class::<AesGcmSiv>()?;

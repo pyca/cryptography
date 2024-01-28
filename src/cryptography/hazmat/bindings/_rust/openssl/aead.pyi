@@ -36,6 +36,23 @@ class ChaCha20Poly1305:
         associated_data: bytes | None,
     ) -> bytes: ...
 
+class AESCCM:
+    def __init__(self, key: bytes, tag_length: int = 16) -> None: ...
+    @staticmethod
+    def generate_key(key_size: int) -> bytes: ...
+    def encrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+    def decrypt(
+        self,
+        nonce: bytes,
+        data: bytes,
+        associated_data: bytes | None,
+    ) -> bytes: ...
+
 class AESSIV:
     def __init__(self, key: bytes) -> None: ...
     @staticmethod
