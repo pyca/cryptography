@@ -729,6 +729,31 @@ _CRLREASONFLAGS = {
     ReasonFlags.aa_compromise: 8,
 }
 
+#    CRLReason ::= ENUMERATED {
+#        unspecified             (0),
+#        keyCompromise           (1),
+#        cACompromise            (2),
+#        affiliationChanged      (3),
+#        superseded              (4),
+#        cessationOfOperation    (5),
+#        certificateHold         (6),
+#             -- value 7 is not used
+#        removeFromCRL           (8),
+#        privilegeWithdrawn      (9),
+#        aACompromise           (10) }
+_CRL_ENTRY_REASON_ENUM_TO_CODE = {
+    ReasonFlags.unspecified: 0,
+    ReasonFlags.key_compromise: 1,
+    ReasonFlags.ca_compromise: 2,
+    ReasonFlags.affiliation_changed: 3,
+    ReasonFlags.superseded: 4,
+    ReasonFlags.cessation_of_operation: 5,
+    ReasonFlags.certificate_hold: 6,
+    ReasonFlags.remove_from_crl: 8,
+    ReasonFlags.privilege_withdrawn: 9,
+    ReasonFlags.aa_compromise: 10,
+}
+
 
 class PolicyConstraints(ExtensionType):
     oid = ExtensionOID.POLICY_CONSTRAINTS
