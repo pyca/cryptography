@@ -6,8 +6,38 @@ from __future__ import annotations
 
 from cryptography.hazmat.primitives._cipheralgorithm import (
     BlockCipherAlgorithm,
+    CipherAlgorithm,
     _verify_key_size,
 )
+
+
+class ARC4(CipherAlgorithm):
+    name = "RC4"
+    key_sizes = frozenset([40, 56, 64, 80, 128, 160, 192, 256])
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
+
+    @property
+    def key_size(self) -> int:
+        return len(self.key) * 8
+
+
+class TripleDES(BlockCipherAlgorithm):
+    name = "3DES"
+    block_size = 64
+    key_sizes = frozenset([64, 128, 192])
+
+    def __init__(self, key: bytes):
+        if len(key) == 8:
+            key += key + key
+        elif len(key) == 16:
+            key += key[:8]
+        self.key = _verify_key_size(self, key)
+
+    @property
+    def key_size(self) -> int:
+        return len(self.key) * 8
 
 
 class Blowfish(BlockCipherAlgorithm):

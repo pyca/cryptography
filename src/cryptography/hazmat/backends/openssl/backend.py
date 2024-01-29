@@ -15,10 +15,12 @@ from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    ARC4,
     CAST5,
     IDEA,
     SEED,
     Blowfish,
+    TripleDES,
 )
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
@@ -40,11 +42,9 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
     AES128,
     AES256,
-    ARC4,
     SM4,
     Camellia,
     ChaCha20,
-    TripleDES,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,

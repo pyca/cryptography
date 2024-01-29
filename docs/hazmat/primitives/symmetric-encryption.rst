@@ -187,6 +187,12 @@ Algorithms
 
 .. class:: TripleDES(key)
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 48.0.0.
+
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
     block cipher standardized by NIST. Triple DES has known crypto-analytic
     flaws, however none of them currently enable a practical attack.
@@ -284,7 +290,7 @@ Weak ciphers
 
         This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
         module. If you need to continue using it then update your code to
-        use the new module path. It will be removed from this namespace in 45.0.0.
+        use the new module path. It will be removed from this namespace in 48.0.0.
 
     ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
     initial stream output. Its use is strongly discouraged. ARC4 does not use

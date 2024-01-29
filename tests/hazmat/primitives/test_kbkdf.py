@@ -871,7 +871,7 @@ class TestKBKDFCMAC:
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             KBKDFCMAC(
-                algorithms.ARC4,
+                algorithms.ChaCha20,
                 Mode.CounterMode,
                 32,
                 4,

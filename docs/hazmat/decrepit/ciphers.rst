@@ -14,6 +14,46 @@ compatibility or interoperability with legacy systems. Their use is
 These algorithms require you to use a :class:`~cryptography.hazmat.primitives.ciphers.Cipher`
 object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.modes`.
 
+.. class:: ARC4(key)
+
+    ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
+    initial stream output. Its use is strongly discouraged. ARC4 does not use
+    mode constructions.
+
+    :param key: The secret key. This must be kept secret. Either ``40``,
+        ``56``, ``64``, ``80``, ``128``, ``192``, or ``256`` :term:`bits` in
+        length.
+    :type key: :term:`bytes-like`
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> key = os.urandom(16)
+        >>> algorithm = algorithms.ARC4(key)
+        >>> cipher = Cipher(algorithm, mode=None)
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        b'a secret message'
+
+.. class:: TripleDES(key)
+
+    Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
+    block cipher standardized by NIST. Triple DES has known crypto-analytic
+    flaws, however none of them currently enable a practical attack.
+    Nonetheless, Triple DES is not recommended for new applications because it
+    is incredibly slow; old applications should consider moving away from it.
+
+    :param key: The secret key. This must be kept secret. Either ``64``,
+        ``128``, or ``192`` :term:`bits` long. DES only uses ``56``, ``112``,
+        or ``168`` bits of the key as there is a parity byte in each component
+        of the key.  Some writing refers to there being up to three separate
+        keys that are each ``56`` bits long, they can simply be concatenated
+        to produce the full key.
+    :type key: :term:`bytes-like`
+
 .. class:: CAST5(key)
 
     .. versionadded:: 43.0.0

@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from cryptography import utils
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    ARC4 as ARC4,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
     CAST5 as CAST5,
 )
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
@@ -16,6 +19,9 @@ from cryptography.hazmat.decrepit.ciphers.algorithms import (
 )
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
     Blowfish as Blowfish,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    TripleDES as TripleDES,
 )
 from cryptography.hazmat.primitives._cipheralgorithm import _verify_key_size
 from cryptography.hazmat.primitives.ciphers import (
@@ -71,22 +77,26 @@ class Camellia(BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
-class TripleDES(BlockCipherAlgorithm):
-    name = "3DES"
-    block_size = 64
-    key_sizes = frozenset([64, 128, 192])
+utils.deprecated(
+    ARC4,
+    __name__,
+    "ARC4 has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and "
+    "will be removed from this module in 48.0.0.",
+    utils.DeprecatedIn43,
+    name="ARC4",
+)
 
-    def __init__(self, key: bytes):
-        if len(key) == 8:
-            key += key + key
-        elif len(key) == 16:
-            key += key[:8]
-        self.key = _verify_key_size(self, key)
 
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
-
+utils.deprecated(
+    TripleDES,
+    __name__,
+    "TripleDES has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and "
+    "will be removed from this module in 48.0.0.",
+    utils.DeprecatedIn43,
+    name="TripleDES",
+)
 
 utils.deprecated(
     Blowfish,
@@ -108,18 +118,6 @@ utils.deprecated(
     utils.DeprecatedIn37,
     name="CAST5",
 )
-
-
-class ARC4(CipherAlgorithm):
-    name = "RC4"
-    key_sizes = frozenset([40, 56, 64, 80, 128, 160, 192, 256])
-
-    def __init__(self, key: bytes):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
 
 
 utils.deprecated(
