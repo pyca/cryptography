@@ -25,6 +25,23 @@ Changelog
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
   They will be removed from the ``cipher`` module in 48.0.0.
 
+.. _v42-0-2:
+
+42.0.2 - 2024-01-30
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.2.1.
+* Fixed an issue that prevented the use of Python buffer protocol objects in
+  ``sign`` and ``verify`` methods on asymmetric keys.
+* Fixed an issue with incorrect keyword-argument naming with ``EllipticCurvePrivateKey``
+  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey.exchange`,
+  ``X25519PrivateKey``
+  :meth:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey.exchange`,
+  ``X448PrivateKey``
+  :meth:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey.exchange`,
+  and ``DHPrivateKey``
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.exchange`.
+
 .. _v42-0-1:
 
 42.0.1 - 2024-01-24
