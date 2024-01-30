@@ -5,9 +5,9 @@
 use crate::KeyParsingResult;
 
 #[derive(asn1::Asn1Read)]
-struct Pksc1RsaPublicKey<'a> {
-    n: asn1::BigUint<'a>,
-    e: asn1::BigUint<'a>,
+pub struct Pksc1RsaPublicKey<'a> {
+    pub n: asn1::BigUint<'a>,
+    pub e: asn1::BigUint<'a>,
 }
 
 pub fn parse_pkcs1_public_key(

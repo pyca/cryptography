@@ -17,6 +17,24 @@ impl AlgorithmIdentifier<'_> {
     pub fn oid(&self) -> &asn1::ObjectIdentifier {
         self.params.item()
     }
+
+    pub fn is_rsa(&self) -> bool {
+        matches!(
+            self.params,
+            AlgorithmParameters::Rsa(_)
+                | AlgorithmParameters::RsaWithSha1(_)
+                | AlgorithmParameters::RsaWithSha1Alt(_)
+                | AlgorithmParameters::RsaWithSha224(_)
+                | AlgorithmParameters::RsaWithSha256(_)
+                | AlgorithmParameters::RsaWithSha384(_)
+                | AlgorithmParameters::RsaWithSha512(_)
+                | AlgorithmParameters::RsaWithSha3_224(_)
+                | AlgorithmParameters::RsaWithSha3_256(_)
+                | AlgorithmParameters::RsaWithSha3_384(_)
+                | AlgorithmParameters::RsaWithSha3_512(_)
+                | AlgorithmParameters::RsaPss(_)
+        )
+    }
 }
 
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone, Debug)]
