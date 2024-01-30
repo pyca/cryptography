@@ -458,7 +458,7 @@ pub static BLOCK_CIPHER_ALGORITHM: LazyPyImport = LazyPyImport::new(
 );
 
 pub static TRIPLE_DES: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
+    "cryptography.hazmat.decrepit.ciphers.algorithms",
     &["TripleDES"],
 );
 pub static AES: LazyPyImport = LazyPyImport::new(

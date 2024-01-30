@@ -8,10 +8,10 @@ import os
 
 import pytest
 
-from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.decrepit.ciphers import algorithms
 
-from ...utils import load_nist_vectors
-from .utils import generate_stream_encryption_test
+from ....utils import load_nist_vectors
+from ..utils import generate_stream_encryption_test
 
 
 @pytest.mark.supported(

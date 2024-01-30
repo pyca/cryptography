@@ -18,7 +18,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish`, which were
-  deprecated in 37.0.0, have been added to this module.
+  deprecated in 37.0.0, have been added to this module. They will be removed
+  from the ``cipher`` module in 45.0.0.
+* Moved :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES`
+  and :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ARC4` into
+  :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
+  They will be removed from the ``cipher`` module in 48.0.0.
 
 .. _v42-0-1:
 

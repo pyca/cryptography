@@ -12,10 +12,9 @@ from cryptography.exceptions import (
     InvalidSignature,
     _Reasons,
 )
+from cryptography.hazmat.decrepit.ciphers.algorithms import ARC4, TripleDES
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
-    ARC4,
-    TripleDES,
 )
 from cryptography.hazmat.primitives.cmac import CMAC
 

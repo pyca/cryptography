@@ -16,6 +16,9 @@ from cryptography.exceptions import (
     InvalidTag,
     NotYetFinalized,
 )
+from cryptography.hazmat.decrepit.ciphers import (
+    algorithms as decrepit_algorithms,
+)
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import (
@@ -430,15 +433,15 @@ def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
         "cmac_aes128": algorithms.AES,
         "cmac_aes192": algorithms.AES,
         "cmac_aes256": algorithms.AES,
-        "cmac_tdes2": algorithms.TripleDES,
-        "cmac_tdes3": algorithms.TripleDES,
+        "cmac_tdes2": decrepit_algorithms.TripleDES,
+        "cmac_tdes3": decrepit_algorithms.TripleDES,
     }
 
     algorithm = supported_cipher_algorithms.get(prf)
     assert algorithm is not None
 
     # TripleDES is disallowed in FIPS mode.
-    if backend._fips_enabled and algorithm is algorithms.TripleDES:
+    if backend._fips_enabled and algorithm is decrepit_algorithms.TripleDES:
         pytest.skip("TripleDES is not supported in FIPS mode.")
 
     ctrkdf = KBKDFCMAC(
