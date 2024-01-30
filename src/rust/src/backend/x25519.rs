@@ -65,10 +65,10 @@ impl X25519PrivateKey {
     fn exchange<'p>(
         &self,
         py: pyo3::Python<'p>,
-        public_key: &X25519PublicKey,
+        peer_public_key: &X25519PublicKey,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
-        deriver.set_peer(&public_key.pkey)?;
+        deriver.set_peer(&peer_public_key.pkey)?;
 
         Ok(pyo3::types::PyBytes::new_with(py, deriver.len()?, |b| {
             let n = deriver.derive(b).map_err(|_| {

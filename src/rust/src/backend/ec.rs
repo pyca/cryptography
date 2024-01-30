@@ -225,7 +225,7 @@ impl ECPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         algorithm: &pyo3::PyAny,
-        public_key: &ECPublicKey,
+        peer_public_key: &ECPublicKey,
     ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
         if !algorithm.is_instance(types::ECDH.get(py)?)? {
             return Err(CryptographyError::from(
@@ -242,12 +242,12 @@ impl ECPrivateKey {
         // ECPublicKey object.
         #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
         deriver
-            .set_peer_ex(&public_key.pkey, false)
+            .set_peer_ex(&peer_public_key.pkey, false)
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
         #[cfg(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))]
         deriver
-            .set_peer(&public_key.pkey)
+            .set_peer(&peer_public_key.pkey)
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
         Ok(pyo3::types::PyBytes::new_with(py, deriver.len()?, |b| {
