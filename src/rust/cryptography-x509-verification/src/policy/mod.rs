@@ -9,6 +9,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use asn1::ObjectIdentifier;
+use cryptography_key_parsing::rsa::Pksc1RsaPublicKey;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, Time,
@@ -26,6 +27,9 @@ use crate::ops::CryptoOps;
 use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy, ExtensionValidator};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, VerificationCertificate};
+
+// RSA key constraints, as defined in CA/B 6.1.5.
+static WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
 
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
@@ -213,6 +217,10 @@ pub struct Policy<'a, B: CryptoOps> {
     /// An extended key usage that must appear in EEs validated by this policy.
     pub extended_key_usage: ObjectIdentifier,
 
+    /// The minimum RSA modulus, in bits.
+    /// This is equivalent to the public key size, e.g. 2048 for an RSA-2048 key.
+    pub minimum_rsa_modulus: usize,
+
     /// The set of permitted public key algorithms, identified by their
     /// algorithm identifiers.
     pub permitted_public_key_algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
@@ -240,6 +248,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
+            minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
             permitted_public_key_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SPKI_ALGORITHMS),
             permitted_signature_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS),
             ca_extension_policy: ExtensionPolicy {
@@ -486,6 +495,22 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 "Forbidden signature algorithm: {:?}",
                 &child.signature_alg
             )));
+        }
+
+        // CA/B 6.1.5: Key sizes
+        // NOTE: We don't currently enforce that RSA moduli are divisible by 8,
+        // since other implementations don't bother.
+        let issuer_spki = &issuer.certificate().tbs_cert.spki;
+        if matches!(
+            issuer_spki.algorithm.params,
+            AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_)
+        ) {
+            let rsa_key: Pksc1RsaPublicKey<'_> =
+                asn1::parse_single(issuer_spki.subject_public_key.as_bytes())?;
+
+            if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {
+                return Err(ValidationError::Other("RSA key is too weak".into()));
+            }
         }
 
         let pk = issuer

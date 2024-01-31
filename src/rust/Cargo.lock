@@ -125,6 +125,7 @@ name = "cryptography-x509-verification"
 version = "0.1.0"
 dependencies = [
  "asn1",
+ "cryptography-key-parsing",
  "cryptography-x509",
  "once_cell",
  "pem",
