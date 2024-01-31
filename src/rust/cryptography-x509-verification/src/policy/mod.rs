@@ -436,19 +436,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         self.ca_extension_policy.permits(self, cert, extensions)?;
 
-        // CA/B 6.1.5: Key sizes
-        // NOTE: We don't currently enforce that RSA moduli are divisible by 8,
-        // since other implementations don't bother.
-        let cert_spki = &cert.tbs_cert.spki;
-        if cert_spki.algorithm.is_rsa_key() {
-            let rsa_key: Pksc1RsaPublicKey<'_> =
-                asn1::parse_single(cert_spki.subject_public_key.as_bytes())?;
-
-            if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {
-                return Err(ValidationError::Other("RSA key is too weak".into()));
-            }
-        }
-
         Ok(())
     }
 
@@ -508,6 +495,22 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 "Forbidden signature algorithm: {:?}",
                 &child.signature_alg
             )));
+        }
+
+        // CA/B 6.1.5: Key sizes
+        // NOTE: We don't currently enforce that RSA moduli are divisible by 8,
+        // since other implementations don't bother.
+        let issuer_spki = &issuer.certificate().tbs_cert.spki;
+        if matches!(
+            issuer_spki.algorithm.params,
+            AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_)
+        ) {
+            let rsa_key: Pksc1RsaPublicKey<'_> =
+                asn1::parse_single(issuer_spki.subject_public_key.as_bytes())?;
+
+            if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {
+                return Err(ValidationError::Other("RSA key is too weak".into()));
+            }
         }
 
         let pk = issuer

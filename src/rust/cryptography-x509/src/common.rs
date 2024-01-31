@@ -17,10 +17,6 @@ impl AlgorithmIdentifier<'_> {
     pub fn oid(&self) -> &asn1::ObjectIdentifier {
         self.params.item()
     }
-
-    pub fn is_rsa_key(&self) -> bool {
-        matches!(self.params, AlgorithmParameters::Rsa(_))
-    }
 }
 
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, PartialEq, Eq, Hash, Clone, Debug)]
