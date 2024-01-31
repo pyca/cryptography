@@ -34,6 +34,7 @@ above supported platforms:
 * ``OpenSSL 1.1.1-latest``
 * ``OpenSSL 3.0-latest``
 * ``OpenSSL 3.1-latest``
+* ``OpenSSL 3.2-latest``
 
 We also test against the latest commit of BoringSSL as well as versions of
 LibreSSL that are receiving security support at the time of a given
