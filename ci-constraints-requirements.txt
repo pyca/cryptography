@@ -148,7 +148,7 @@ tomli==2.0.1
     #   pytest
 typing-extensions==4.9.0; python_version >= "3.8"
     # via mypy
-urllib3==2.1.0
+urllib3==2.2.0
     # via requests
 virtualenv==20.25.0
     # via nox
