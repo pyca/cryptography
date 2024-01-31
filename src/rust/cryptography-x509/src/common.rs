@@ -18,7 +18,7 @@ impl AlgorithmIdentifier<'_> {
         self.params.item()
     }
 
-    pub fn is_rsa(&self) -> bool {
+    pub fn is_rsa_key(&self) -> bool {
         matches!(self.params, AlgorithmParameters::Rsa(_))
     }
 }
