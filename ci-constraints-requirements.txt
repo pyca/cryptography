@@ -68,7 +68,7 @@ packaging==23.2
     #   sphinx
 pathspec==0.12.1
     # via check-sdist
-platformdirs==4.1.0; python_version >= "3.8"
+platformdirs==4.2.0; python_version >= "3.8"
     # via virtualenv
 pluggy==1.4.0; python_version >= "3.8"
     # via pytest
