@@ -27,7 +27,10 @@ LIMBO_UNSUPPORTED_FEATURES = {
     # Our support for custom EKUs is limited, and we (like most impls.) don't
     # handle all EKU conditions under CABF.
     "pedantic-webpki-eku",
-    # Similarly: contains tests that fail based on a strict reading of RFC 5280
+    # Most CABF validators do not enforce the CABF key requirements on
+    # subscriber keys (i.e., in the leaf certificate).
+    "pedantic-webpki-subscriber-key",
+    # Tests that fail based on a strict reading of RFC 5280
     # but are widely ignored by validators.
     "pedantic-rfc5280",
     # In rare circumstances, CABF relaxes RFC 5280's prescriptions in
@@ -64,7 +67,7 @@ LIMBO_SKIP_TESTCASES = {
     "webpki::aki::root-with-aki-ski-mismatch",
     # We allow RSA keys that aren't divisible by 8, which is technically
     # forbidden under CABF. No other implementation checks this either.
-    "webpki::forbidden-rsa-key-not-divisable-by-8",
+    "webpki::forbidden-rsa-not-divisable-by-8-in-root",
     # We disallow CAs in the leaf position, which is explicitly forbidden
     # by CABF (but implicitly permitted under RFC 5280). This is consistent
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.

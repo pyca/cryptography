@@ -476,9 +476,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)?;
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo
+        // NOTE: We check the issuer's SPKI here, since the issuer is
+        // definitionally a CA and thus subject to CABF key requirements.
         if !self
             .permitted_public_key_algorithms
-            .contains(&child.tbs_cert.spki.algorithm)
+            .contains(&issuer.certificate().tbs_cert.spki.algorithm)
         {
             return Err(ValidationError::Other(format!(
                 "Forbidden public key algorithm: {:?}",
@@ -487,6 +489,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         }
 
         // CA/B 7.1.3.2 Signature AlgorithmIdentifier
+        // NOTE: We check the child's signature here, since the issuer's
+        // signature is not necessarily subject to signature checks (e.g.
+        // if it's a root). This works out transitively, as any non root-issuer
+        // will be checked in its recursive step (where it'll be in the child
+        // position).
         if !self
             .permitted_signature_algorithms
             .contains(&child.signature_alg)
