@@ -149,7 +149,7 @@ class Backend:
         Friendly string name of the loaded OpenSSL library. This is not
         necessarily the same version as it was compiled against.
 
-        Example: OpenSSL 1.1.1d  10 Sep 2019
+        Example: OpenSSL 3.2.1 30 Jan 2024
         """
         return self._ffi.string(
             self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)

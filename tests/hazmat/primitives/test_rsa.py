@@ -251,13 +251,7 @@ class TestRSA:
         assert public_num.e == public_num2.e
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and (
-                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
-                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            )
-        ),
+        only_if=lambda backend: not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RSA PSS loading",
     )
     @pytest.mark.parametrize(
@@ -308,13 +302,7 @@ class TestRSA:
             )
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            and (
-                not backend._lib.CRYPTOGRAPHY_OPENSSL_LESS_THAN_111E
-                or backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            )
-        ),
+        only_if=lambda backend: backend._lib.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Test requires a backend without RSA-PSS key support",
     )
     def test_load_pss_unsupported(self, backend):
