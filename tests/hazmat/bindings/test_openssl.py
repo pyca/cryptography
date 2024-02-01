@@ -8,7 +8,6 @@ from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
-    _legacy_provider_error,
     _openssl_assert,
     _verify_package_version,
 )
@@ -83,12 +82,6 @@ class TestOpenSSL:
     def test_version_mismatch(self):
         with pytest.raises(ImportError):
             _verify_package_version("nottherightversion")
-
-    def test_legacy_provider_error(self):
-        with pytest.raises(RuntimeError):
-            _legacy_provider_error(False)
-
-        _legacy_provider_error(True)
 
     def test_rust_internal_error(self):
         with pytest.raises(InternalError) as exc_info:
