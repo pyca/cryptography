@@ -16,6 +16,8 @@ object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.
 
 .. class:: ARC4(key)
 
+    .. versionadded:: 43.0.0
+
     ARC4 (Alleged RC4) is a stream cipher with serious weaknesses in its
     initial stream output. Its use is strongly discouraged. ARC4 does not use
     mode constructions.
@@ -40,6 +42,8 @@ object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.
         b'a secret message'
 
 .. class:: TripleDES(key)
+
+    .. versionadded:: 43.0.0
 
     Triple DES (Data Encryption Standard), sometimes referred to as 3DES, is a
     block cipher standardized by NIST. Triple DES has known crypto-analytic
