@@ -28,12 +28,6 @@ def cryptography_has_tls_st() -> list[str]:
     ]
 
 
-def cryptography_has_mem_functions() -> list[str]:
-    return [
-        "Cryptography_CRYPTO_set_mem_functions",
-    ]
-
-
 def cryptography_has_ed448() -> list[str]:
     return [
         "EVP_PKEY_ED448",
@@ -202,7 +196,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_MEM_FUNCTIONS": cryptography_has_mem_functions,
     "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
