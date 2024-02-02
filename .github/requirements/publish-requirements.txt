@@ -16,9 +16,9 @@ betterproto==2.0.0b6 \
     --hash=sha256:720ae92697000f6fcf049c69267d957f0871654c8b0d7458906607685daee784 \
     --hash=sha256:a0839ec165d110a69d0d116f4d0e2bec8d186af4db826257931f0831dab73fcf
     # via sigstore-protobuf-specs
-certifi==2023.11.17 \
-    --hash=sha256:9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1 \
-    --hash=sha256:e036ab49d5b79556f99cfc2d9320b34cfbe5be05c5871b51de9329f0603b0474
+certifi==2024.2.2 \
+    --hash=sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f \
+    --hash=sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1
     # via requests
 cffi==1.16.0 \
     --hash=sha256:0c9ef6ff37e974b73c25eecc13952c55bceed9112be2d9d938ded8e856138bcc \
@@ -246,6 +246,10 @@ importlib-metadata==7.0.1 \
     # via
     #   keyring
     #   twine
+importlib-resources==5.13.0 \
+    --hash=sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528 \
+    --hash=sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2
+    # via sigstore
 jaraco-classes==3.3.0 \
     --hash=sha256:10afa92b6743f25c0cf5f37c6bb6e18e2c5bb84a16527ccfc0040ea377e7aaeb \
     --hash=sha256:c063dd08e89217cee02c8d5e5ec560f2c8ce6cdc2fcdc2e68f7b2e5547ed3621
