@@ -38,11 +38,11 @@ fn is_fips_enabled() -> bool {
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 fn _initialize_legacy_provider() -> CryptographyResult<LoadedProviders> {
-    /* As of OpenSSL 3.0.0 we must register a legacy cipher provider
-    to get RC2 (needed for junk asymmetric private key
-    serialization), RC4, Blowfish, IDEA, SEED, etc. These things
-    are ugly legacy, but we aren't going to get rid of them
-    any time soon. */
+    // As of OpenSSL 3.0.0 we must register a legacy cipher provider
+    // to get RC2 (needed for junk asymmetric private key
+    // serialization), RC4, Blowfish, IDEA, SEED, etc. These things
+    // are ugly legacy, but we aren't going to get rid of them
+    // any time soon.
     let load_legacy = env::var("CRYPTOGRAPHY_OPENSSL_NO_LEGACY")
         .map(|v| v.is_empty() || v == "0")
         .unwrap_or(true);
