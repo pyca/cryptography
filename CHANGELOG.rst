@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1e has been
+  removed.  Users on older version of OpenSSL will need to upgrade.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.8.
 * :func:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
   now enforces a minimum RSA key size of 1024-bit. Note that 1024-bit is still
