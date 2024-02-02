@@ -28,9 +28,10 @@ object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.
     .. doctest::
 
         >>> import os
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.decrepit.ciphers.algorithms import ARC4
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, modes
         >>> key = os.urandom(16)
-        >>> algorithm = algorithms.ARC4(key)
+        >>> algorithm = ARC4(key)
         >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
