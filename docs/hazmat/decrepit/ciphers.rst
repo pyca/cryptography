@@ -29,7 +29,7 @@ object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.
 
         >>> import os
         >>> from cryptography.hazmat.decrepit.ciphers.algorithms import ARC4
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, modes
         >>> key = os.urandom(16)
         >>> algorithm = ARC4(key)
         >>> cipher = Cipher(algorithm, mode=None)
