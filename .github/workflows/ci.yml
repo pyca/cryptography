@@ -385,7 +385,7 @@ jobs:
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
-      - run: pip install . setuptools
+      - run: pip install .
         env:
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
