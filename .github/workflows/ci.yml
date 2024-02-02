@@ -395,15 +395,15 @@ jobs:
       # dist-info directory to pretend to be an older version to "solve" this.
       - run: |
           import json
-          import pkg_resources
+          import importlib.metadata
           import shutil
           import urllib.request
 
-          d = pkg_resources.get_distribution("cryptography")
+          d = importlib.metadata.distribution("cryptography")
           with urllib.request.urlopen("https://pypi.org/pypi/cryptography/json") as r:
               latest_version = json.load(r)["info"]["version"]
-          new_path = d.egg_info.replace(d.version, latest_version)
-          shutil.move(d.egg_info, new_path)
+          new_path = d.locate_file(f"cryptography-{latest_version}.dist-info")
+          shutil.move(d.locate_file(f"cryptography-{d.version}.dist-info"), new_path)
         shell: python
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
