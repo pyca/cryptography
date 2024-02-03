@@ -37,17 +37,6 @@ def _openssl_assert(
         )
 
 
-def _legacy_provider_error(loaded: bool) -> None:
-    if not loaded:
-        raise RuntimeError(
-            "OpenSSL 3.0's legacy provider failed to load. This is a fatal "
-            "error by default, but cryptography supports running without "
-            "legacy algorithms by setting the environment variable "
-            "CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error,"
-            " you have likely made a mistake with your OpenSSL configuration."
-        )
-
-
 def build_conditional_library(
     lib: typing.Any,
     conditional_names: dict[str, typing.Callable[[], list[str]]],
@@ -76,7 +65,6 @@ class Binding:
     _lib_loaded = False
     _init_lock = threading.Lock()
     _legacy_provider: typing.Any = ffi.NULL
-    _legacy_provider_loaded = False
     _default_provider: typing.Any = ffi.NULL
 
     def __init__(self) -> None:
@@ -106,25 +94,6 @@ class Binding:
                     _openssl.lib, CONDITIONAL_NAMES
                 )
                 cls._lib_loaded = True
-                # As of OpenSSL 3.0.0 we must register a legacy cipher provider
-                # to get RC2 (needed for junk asymmetric private key
-                # serialization), RC4, Blowfish, IDEA, SEED, etc. These things
-                # are ugly legacy, but we aren't going to get rid of them
-                # any time soon.
-                if cls.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                    if not os.environ.get("CRYPTOGRAPHY_OPENSSL_NO_LEGACY"):
-                        cls._legacy_provider = cls.lib.OSSL_PROVIDER_load(
-                            cls.ffi.NULL, b"legacy"
-                        )
-                        cls._legacy_provider_loaded = (
-                            cls._legacy_provider != cls.ffi.NULL
-                        )
-                        _legacy_provider_error(cls._legacy_provider_loaded)
-
-                    cls._default_provider = cls.lib.OSSL_PROVIDER_load(
-                        cls.ffi.NULL, b"default"
-                    )
-                    _openssl_assert(cls._default_provider != cls.ffi.NULL)
 
     @classmethod
     def init_static_locks(cls) -> None:

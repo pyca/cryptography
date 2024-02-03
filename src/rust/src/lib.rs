@@ -4,6 +4,11 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+use crate::error::CryptographyResult;
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+use openssl::provider;
+use std::env;
+
 mod asn1;
 mod backend;
 mod buf;
@@ -15,6 +20,12 @@ mod pkcs7;
 pub(crate) mod types;
 mod x509;
 
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
+struct LoadedProviders {
+    legacy: Option<provider::Provider>,
+}
+
 #[pyo3::prelude::pyfunction]
 fn openssl_version() -> i64 {
     openssl::version::number()
@@ -23,6 +34,35 @@ fn openssl_version() -> i64 {
 #[pyo3::prelude::pyfunction]
 fn is_fips_enabled() -> bool {
     cryptography_openssl::fips::is_enabled()
+}
+
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+fn _initialize_legacy_provider() -> CryptographyResult<LoadedProviders> {
+    // As of OpenSSL 3.0.0 we must register a legacy cipher provider
+    // to get RC2 (needed for junk asymmetric private key
+    // serialization), RC4, Blowfish, IDEA, SEED, etc. These things
+    // are ugly legacy, but we aren't going to get rid of them
+    // any time soon.
+    let load_legacy = env::var("CRYPTOGRAPHY_OPENSSL_NO_LEGACY")
+        .map(|v| v.is_empty() || v == "0")
+        .unwrap_or(true);
+    let legacy = if load_legacy {
+        let legacy_result = provider::Provider::try_load(None, "legacy", true);
+        _legacy_provider_error(legacy_result.is_ok())?;
+        Some(legacy_result?)
+    } else {
+        None
+    };
+    Ok(LoadedProviders { legacy })
+}
+
+fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
+    if !success {
+        return Err(pyo3::exceptions::PyRuntimeError::new_err(
+            "OpenSSL 3.0's legacy provider failed to load. This is a fatal error by default, but cryptography supports running without legacy algorithms by setting the environment variable CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error, you have likely made a mistake with your OpenSSL configuration."
+        ));
+    }
+    Ok(())
 }
 
 #[pyo3::prelude::pymodule]
@@ -52,6 +92,20 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_submodule(cryptography_cffi::create_module(py)?)?;
 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
+            let providers = _initialize_legacy_provider()?;
+            if providers.legacy.is_some() {
+                openssl_mod.add("_legacy_provider_loaded", true)?;
+                openssl_mod.add("_providers", providers)?;
+            } else {
+                openssl_mod.add("_legacy_provider_loaded", false)?;
+            }
+        } else {
+            // default value for non-openssl 3+
+            openssl_mod.add("_legacy_provider_loaded", false)?;
+        }
+    }
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(error::raise_openssl_error, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(error::capture_error_stack, m)?)?;
@@ -61,4 +115,15 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_submodule(openssl_mod)?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::_legacy_provider_error;
+
+    #[test]
+    fn test_legacy_provider_error() {
+        assert!(_legacy_provider_error(true).is_ok());
+        assert!(_legacy_provider_error(false).is_err());
+    }
 }
