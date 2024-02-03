@@ -221,14 +221,14 @@ jobs:
       matrix:
         RUNNER:
           - {OS: 'macos-13', ARCH: 'x86_64'}
-          - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+          - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.12", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
-            RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+            RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
