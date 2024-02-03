@@ -304,7 +304,11 @@ pub(crate) mod ee {
         };
 
         let san: SubjectAlternativeName<'_> = extn.value()?;
-        if !policy.subject.matches(&san) {
+        if !policy
+            .subject
+            .as_ref()
+            .map_or_else(|| false, |sub| sub.matches(&san))
+        {
             return Err(ValidationError::Other(
                 "leaf certificate has no matching subjectAltName".into(),
             ));
