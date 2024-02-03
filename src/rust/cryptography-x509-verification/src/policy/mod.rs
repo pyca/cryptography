@@ -208,7 +208,7 @@ pub struct Policy<'a, B: CryptoOps> {
 
     /// A subject (i.e. DNS name or other name format) that any EE certificates
     /// validated by this policy must match.
-    pub subject: Subject<'a>,
+    pub subject: Option<Subject<'a>>,
 
     /// The validation time. All certificates validated by this policy must
     /// be valid at this time.
@@ -245,7 +245,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         Self {
             ops,
             max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
-            subject,
+            subject: Some(subject),
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
             minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
