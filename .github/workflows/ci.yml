@@ -245,7 +245,6 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
