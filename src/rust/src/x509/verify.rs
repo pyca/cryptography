@@ -118,23 +118,35 @@ impl PolicyBuilder {
         })
     }
 
-    fn build_client_verifier(&self, _py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
-        // let store = match self.store.as_ref() {
-        //     Some(s) => s.clone_ref(py),
-        //     None => {
-        //         return Err(CryptographyError::from(
-        //             pyo3::exceptions::PyValueError::new_err(
-        //                 "A client verifier must have a trust store.",
-        //             ),
-        //         ));
-        //     }
-        // };
+    fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
+        let store = match self.store.as_ref() {
+            Some(s) => s.clone_ref(py),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "A client verifier must have a trust store.",
+                    ),
+                ));
+            }
+        };
 
-        // let time = match self.time.as_ref() {
-        //     Some(t) => t.clone(),
-        //     None => datetime_now(py)?,
-        // };
-        todo!()
+        let time = match self.time.as_ref() {
+            Some(t) => t.clone(),
+            None => datetime_now(py)?,
+        };
+
+        let policy = OwnedPolicy::try_new(SubjectOwner::None, |_| {
+            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::client(
+                PyCryptoOps {},
+                time,
+                self.max_chain_depth,
+            )))
+        })?;
+
+        Ok(PyClientVerifier {
+            _policy: policy,
+            store,
+        })
     }
 
     fn build_server_verifier(
@@ -188,6 +200,7 @@ enum SubjectOwner {
     // so, which was only stabilized with 3.10.
     DNSName(String),
     IPAddress(pyo3::Py<pyo3::types::PyBytes>),
+    None,
 }
 
 self_cell::self_cell!(
@@ -317,6 +330,7 @@ fn build_subject<'a>(
 
             Ok(Subject::IP(ip_addr))
         }
+        SubjectOwner::None => Err(pyo3::exceptions::PyValueError::new_err("missing subject")),
     }
 }
 
