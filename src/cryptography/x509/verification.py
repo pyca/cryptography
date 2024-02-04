@@ -19,6 +19,7 @@ __all__ = [
 
 Store = rust_x509.Store
 Subject = typing.Union[DNSName, IPAddress]
+ClientVerifier = rust_x509.ClientVerifier
 ServerVerifier = rust_x509.ServerVerifier
 PolicyBuilder = rust_x509.PolicyBuilder
 VerificationError = rust_x509.VerificationError

@@ -118,6 +118,25 @@ impl PolicyBuilder {
         })
     }
 
+    fn build_client_verifier(&self, _py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
+        // let store = match self.store.as_ref() {
+        //     Some(s) => s.clone_ref(py),
+        //     None => {
+        //         return Err(CryptographyError::from(
+        //             pyo3::exceptions::PyValueError::new_err(
+        //                 "A client verifier must have a trust store.",
+        //             ),
+        //         ));
+        //     }
+        // };
+
+        // let time = match self.time.as_ref() {
+        //     Some(t) => t.clone(),
+        //     None => datetime_now(py)?,
+        // };
+        todo!()
+    }
+
     fn build_server_verifier(
         &self,
         py: pyo3::Python<'_>,
@@ -142,7 +161,7 @@ impl PolicyBuilder {
 
         let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
             let subject = build_subject(py, subject_owner)?;
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
+            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::server(
                 PyCryptoOps {},
                 subject,
                 time,
@@ -179,6 +198,17 @@ self_cell::self_cell!(
         dependent: PyCryptoPolicy,
     }
 );
+
+#[pyo3::pyclass(
+    frozen,
+    name = "ClientVerifier",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyClientVerifier {
+    _policy: OwnedPolicy,
+    #[pyo3(get)]
+    store: pyo3::Py<PyStore>,
+}
 
 #[pyo3::pyclass(
     frozen,

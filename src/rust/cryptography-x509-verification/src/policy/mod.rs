@@ -234,18 +234,17 @@ pub struct Policy<'a, B: CryptoOps> {
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Create a new policy with defaults for the certificate profile defined in
-    /// the CA/B Forum's Basic Requirements.
-    pub fn new(
+    fn new(
         ops: B,
-        subject: Subject<'a>,
+        subject: Option<Subject<'a>>,
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
     ) -> Self {
+        let has_subject = subject.is_some();
         Self {
             ops,
             max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
-            subject: Some(subject),
+            subject,
             validation_time: time,
             extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
             minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
@@ -315,11 +314,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Criticality::Agnostic,
                     Some(ee::key_usage),
                 ),
-                // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-                subject_alternative_name: ExtensionValidator::present(
-                    Criticality::Agnostic,
-                    Some(ee::subject_alternative_name),
-                ),
+                subject_alternative_name: match has_subject {
+                    // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+                    true => ExtensionValidator::present(
+                        Criticality::Agnostic,
+                        Some(ee::subject_alternative_name),
+                    ),
+                    false => ExtensionValidator::MaybePresent {
+                        criticality: Criticality::Agnostic,
+                        validator: None,
+                    },
+                },
                 // 5280 4.2.1.9: Basic Constraints
                 basic_constraints: ExtensionValidator::maybe_present(
                     Criticality::Agnostic,
@@ -335,6 +340,27 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 ),
             },
         }
+    }
+
+    /// Create a new policy with suitable defaults for client certification
+    /// validation.
+    ///
+    /// **IMPORTANT**: This is **not** the appropriate API for verifying
+    /// website (i.e. server) certificates. For that, you **must** use
+    /// [`Policy::server`].
+    pub fn client(ops: B, time: asn1::DateTime, max_chain_depth: Option<u8>) -> Self {
+        Self::new(ops, None, time, max_chain_depth)
+    }
+
+    /// Create a new policy with defaults for the server certificate profile
+    /// defined in the CA/B Forum's Basic Requirements.
+    pub fn server(
+        ops: B,
+        subject: Subject<'a>,
+        time: asn1::DateTime,
+        max_chain_depth: Option<u8>,
+    ) -> Self {
+        Self::new(ops, Some(subject), time, max_chain_depth)
     }
 
     fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {

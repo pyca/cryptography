@@ -104,6 +104,55 @@ the root of trust:
     :class:`cryptography.x509.general_name.DNSName`,
     :class:`cryptography.x509.general_name.IPAddress`.
 
+.. class:: ClientVerifier
+
+    .. versionadded:: 43.0.0
+
+    A ClientVerifier verifies client certificates.
+
+    It contains and describes various pieces of configurable path
+    validation logic, such as which subject to expect, how deep prospective
+    validation chains may go, which signature algorithms are allowed, and
+    so forth.
+
+    ClientVerifier instances cannot be constructed directly;
+    :class:`PolicyBuilder` must be used.
+
+    .. attribute:: validation_time
+
+        :type: :class:`datetime.datetime`
+
+        The verifier's validation time.
+
+    .. attribute:: max_chain_depth
+
+        :type: :class:`int`
+
+        The verifier's maximum intermediate CA chain depth.
+
+    .. attribute:: store
+
+        :type: :class:`Store`
+
+        The verifier's trust store.
+
+    .. method:: verify(leaf, intermediates)
+
+        Performs path validation on ``leaf``, returning a valid path
+        if one exists. The path is returned in leaf-first order:
+        the first member is ``leaf``, followed by the intermediates used
+        (if any), followed by a member of the ``store``.
+
+        :param leaf: The leaf :class:`~cryptography.x509.Certificate` to validate
+        :param intermediates: A :class:`list` of intermediate :class:`~cryptography.x509.Certificate` to attempt to use
+
+        :returns:
+            A three-tuple of the client certificate's subject,
+            the client certificate's SAN (or ``None``), and a ``list`` containing
+            the built chain.
+
+        :raises VerificationError: If a valid chain cannot be constructed
+
 .. class:: ServerVerifier
 
     .. versionadded:: 42.0.0
@@ -174,7 +223,8 @@ the root of trust:
         Sets the verifier's verification time.
 
         If not called explicitly, this is set to :meth:`datetime.datetime.now`
-        when :meth:`build_server_verifier` is called.
+        when :meth:`build_server_verifier` or :meth:`build_client_verifier`
+        is called.
 
         :param new_time: The :class:`datetime.datetime` to use in the verifier
 
@@ -209,3 +259,17 @@ the root of trust:
         :param subject: A :class:`Subject` to use in the verifier
 
         :returns: An instance of :class:`ServerVerifier`
+
+    .. method:: build_client_verifier()
+
+        .. versionadded:: 43.0.0
+
+        Builds a verifier for verifying client certificates.
+
+        .. warning::
+
+            This API is not suitable for website (i.e. server) certificate
+            verification. You **must** use :meth:`build_server_verifier`
+            for server verification.
+
+        :returns: An instance of :class:`ClientVerifier`
