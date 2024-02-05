@@ -64,8 +64,6 @@ class Binding:
     ffi = _openssl.ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
-    _legacy_provider: typing.Any = ffi.NULL
-    _default_provider: typing.Any = ffi.NULL
 
     def __init__(self) -> None:
         self._ensure_ffi_initialized()
