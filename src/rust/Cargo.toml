@@ -23,9 +23,6 @@ openssl-sys = "0.9.99"
 foreign-types-shared = "0.1"
 self_cell = "1"
 
-[build-dependencies]
-cc = "1.0.83"
-
 [features]
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]
