@@ -104,6 +104,15 @@ the root of trust:
     :class:`cryptography.x509.general_name.DNSName`,
     :class:`cryptography.x509.general_name.IPAddress`.
 
+.. class:: VerifiedClient
+
+    .. versionadded:: 43.0.0
+
+    Type alias: A tuple of :class:`~cryptography.x509.Extension` and
+    a list of :class:`~cryptography.x509.Certificate`. The extension contains
+    a :class:`~cryptography.x509.SubjectAlternativeName` with the client's
+    SAN.
+
 .. class:: ClientVerifier
 
     .. versionadded:: 43.0.0
@@ -147,9 +156,7 @@ the root of trust:
         :param intermediates: A :class:`list` of intermediate :class:`~cryptography.x509.Certificate` to attempt to use
 
         :returns:
-            A three-tuple of the client certificate's subject,
-            the client certificate's SAN (or ``None``), and a ``list`` containing
-            the built chain.
+            A new instance of :class:`VerifiedClient`
 
         :raises VerificationError: If a valid chain cannot be constructed
 

@@ -78,9 +78,7 @@ class ClientVerifier:
         self,
         leaf: x509.Certificate,
         intermediates: list[x509.Certificate],
-    ) -> tuple[
-        x509.Name, x509.SubjectAlternativeName | None, list[x509.Certificate]
-    ]: ...
+    ) -> x509.verification.VerifiedClient: ...
 
 class ServerVerifier:
     @property

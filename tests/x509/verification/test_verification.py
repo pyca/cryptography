@@ -105,6 +105,31 @@ class TestStore:
             Store(["not a cert"])  # type: ignore[list-item]
 
 
+class TestClientVerifier:
+    def test_verify(self):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(
+            datetime.datetime.fromisoformat("2018-11-16T00:00:00+00:00")
+        )
+        verifier = builder.build_client_verifier()
+
+        san, chain = verifier.verify(leaf, [])
+        assert isinstance(san, x509.Extension)
+        assert isinstance(san.value, x509.SubjectAlternativeName)
+        assert chain == [leaf]
+
+        dns_names = san.value.get_values_for_type(x509.DNSName)
+        assert set(dns_names) == {"www.cryptography.io", "cryptography.io"}
+
+
 class TestServerVerifier:
     @pytest.mark.parametrize(
         ("validation_time", "valid"),

@@ -320,10 +320,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                         Criticality::Agnostic,
                         Some(ee::subject_alternative_name),
                     ),
-                    false => ExtensionValidator::MaybePresent {
-                        criticality: Criticality::Agnostic,
-                        validator: None,
-                    },
+                    // Under client validation, we return the SAN rather than verifying
+                    // it directly against the profile. As such, we require it here
+                    // but don't supply any custom validator logic.
+                    false => ExtensionValidator::present(Criticality::Agnostic, None),
                 },
                 // 5280 4.2.1.9: Basic Constraints
                 basic_constraints: ExtensionValidator::maybe_present(
