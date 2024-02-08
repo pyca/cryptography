@@ -23,7 +23,9 @@ __all__ = [
 
 Store = rust_x509.Store
 Subject = typing.Union[DNSName, IPAddress]
-VerifiedClient = tuple[Extension[SubjectAlternativeName], list[Certificate]]
+VerifiedClient = typing.Tuple[
+    Extension[SubjectAlternativeName], typing.List[Certificate]
+]
 ClientVerifier = rust_x509.ClientVerifier
 ServerVerifier = rust_x509.ServerVerifier
 PolicyBuilder = rust_x509.PolicyBuilder
