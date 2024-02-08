@@ -38,11 +38,7 @@ def _aead_supported(cls):
 
 
 def large_mmap():
-    # We need this large but not larger than fits in a 32-bit int. This way
-    # a 32-bit platform can return this mmap successfully but we'll raise
-    # OverFlowError in the tests because the underlying type for the
-    # function signature is a signed int
-    return mmap.mmap(-1, 2**31, prot=mmap.PROT_READ)
+    return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
 
 
 @pytest.mark.skipif(
@@ -60,7 +56,8 @@ def test_chacha20poly1305_unsupported_on_older_openssl(backend):
 )
 class TestChaCha20Poly1305:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = ChaCha20Poly1305.generate_key()
@@ -201,7 +198,8 @@ class TestChaCha20Poly1305:
 )
 class TestAESCCM:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = AESCCM.generate_key(128)
@@ -382,7 +380,8 @@ def _load_gcm_vectors():
 
 class TestAESGCM:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = AESGCM.generate_key(128)
@@ -529,7 +528,8 @@ def test_aesocb3_unsupported_on_older_openssl(backend):
 )
 class TestAESOCB3:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = AESOCB3.generate_key(128)
@@ -704,7 +704,8 @@ class TestAESOCB3:
 )
 class TestAESSIV:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = AESSIV.generate_key(256)
@@ -848,7 +849,8 @@ class TestAESSIV:
 )
 class TestAESGCMSIV:
     @pytest.mark.skipif(
-        sys.platform not in {"linux", "darwin"}, reason="mmap required"
+        sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
+        reason="mmap and 64-bit platform required",
     )
     def test_data_too_large(self):
         key = AESGCMSIV.generate_key(256)
