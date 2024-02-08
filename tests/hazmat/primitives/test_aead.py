@@ -38,11 +38,7 @@ def _aead_supported(cls):
 
 
 def large_mmap():
-    # We need this large but not larger than fits in a 32-bit int. This way
-    # a 32-bit platform can return this mmap successfully but we'll raise
-    # OverFlowError in the tests because the underlying type for the
-    # function signature is a signed int
-    return mmap.mmap(-1, 2**31, prot=mmap.PROT_READ)
+    return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
 
 
 @pytest.mark.skipif(
