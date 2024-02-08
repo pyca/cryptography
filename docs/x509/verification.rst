@@ -108,10 +108,20 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    Type alias: A tuple of :class:`~cryptography.x509.Extension` and
-    a list of :class:`~cryptography.x509.Certificate`. The extension contains
-    a :class:`~cryptography.x509.SubjectAlternativeName` with the client's
-    SAN.
+    .. attribute:: subject
+
+        :type: :class:`~cryptography.x509.Extension`
+
+        The subject of the verified client certificate, as presented in the
+        :class:`~cryptography.x509.SubjectAlternativeName` extension.
+
+    .. attribute:: chain
+
+        :type: A list of :class:`~cryptography.x509.Certificate`, in leaf-first order
+
+        The chain of certificates that forms the valid chain to the client
+        certificate.
+
 
 .. class:: ClientVerifier
 

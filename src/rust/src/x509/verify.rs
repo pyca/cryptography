@@ -217,6 +217,18 @@ self_cell::self_cell!(
 
 #[pyo3::pyclass(
     frozen,
+    name = "VerifiedClient",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyVerifiedClient {
+    #[pyo3(get)]
+    subject: pyo3::Py<pyo3::PyAny>,
+    #[pyo3(get)]
+    chain: pyo3::Py<pyo3::types::PyList>,
+}
+
+#[pyo3::pyclass(
+    frozen,
     name = "ClientVerifier",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
@@ -249,7 +261,7 @@ impl PyClientVerifier {
         py: pyo3::Python<'_>,
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
-    ) -> CryptographyResult<pyo3::Py<pyo3::types::PyTuple>> {
+    ) -> CryptographyResult<PyVerifiedClient> {
         let policy = self.as_policy();
         let store = self.store.get();
 
@@ -297,7 +309,10 @@ impl PyClientVerifier {
             .get(py)?
             .call1((py_oid, leaf_san.critical, py_san))?;
 
-        Ok((py_san_ext, py_chain).into_py(py))
+        Ok(PyVerifiedClient {
+            subject: py_san_ext.into_py(py),
+            chain: py_chain.into_py(py),
+        })
     }
 }
 
@@ -455,6 +470,7 @@ impl PyStore {
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_class::<PyVerifiedClient>()?;
     module.add_class::<PyClientVerifier>()?;
     module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;

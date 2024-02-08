@@ -67,6 +67,12 @@ class PolicyBuilder:
         self, subject: x509.verification.Subject
     ) -> ServerVerifier: ...
 
+class VerifiedClient:
+    @property
+    def subject(self) -> x509.Extension[x509.SubjectAlternativeName]: ...
+    @property
+    def chain(self) -> list[x509.Certificate]: ...
+
 class ClientVerifier:
     @property
     def validation_time(self) -> datetime.datetime: ...
@@ -78,7 +84,7 @@ class ClientVerifier:
         self,
         leaf: x509.Certificate,
         intermediates: list[x509.Certificate],
-    ) -> x509.verification.VerifiedClient: ...
+    ) -> VerifiedClient: ...
 
 class ServerVerifier:
     @property
