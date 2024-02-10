@@ -234,9 +234,9 @@ pub struct Policy<'a, B: CryptoOps> {
 }
 
 impl<'a, B: CryptoOps> Policy<'a, B> {
-    /// Create a new policy with defaults for the certificate profile defined in
-    /// the CA/B Forum's Basic Requirements.
-    pub fn new(
+    /// Create a new policy with defaults for the server certificate profile
+    /// defined in the CA/B Forum's Basic Requirements.
+    pub fn server(
         ops: B,
         subject: Subject<'a>,
         time: asn1::DateTime,

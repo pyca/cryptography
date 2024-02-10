@@ -599,7 +599,7 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::new(
+        let policy = Policy::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
@@ -639,7 +639,7 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::new(
+        let policy = Policy::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
@@ -673,7 +673,7 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::new(
+        let policy = Policy::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
@@ -704,7 +704,7 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::new(
+        let policy = Policy::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
@@ -733,7 +733,7 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::new(
+        let policy = Policy::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
