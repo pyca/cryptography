@@ -142,7 +142,7 @@ impl PolicyBuilder {
 
         let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
             let subject = build_subject(py, subject_owner)?;
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::new(
+            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::server(
                 PyCryptoOps {},
                 subject,
                 time,
