@@ -169,6 +169,8 @@ the root of trust:
 
         :raises VerificationError: If a valid chain cannot be constructed
 
+        :raises UnsupportedGeneralNameType: If a valid chain exists, but contains an unsupported general name type
+
 .. class:: ServerVerifier
 
     .. versionadded:: 42.0.0
