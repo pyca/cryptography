@@ -141,13 +141,7 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        let policy = OwnedPolicy::try_new(SubjectOwner::None, |_| {
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::client(
-                PyCryptoOps {},
-                time,
-                self.max_chain_depth,
-            )))
-        })?;
+        let policy = PyCryptoPolicy(Policy::client(PyCryptoOps {}, time, self.max_chain_depth));
 
         Ok(PyClientVerifier { policy, store })
     }
@@ -203,7 +197,6 @@ enum SubjectOwner {
     // so, which was only stabilized with 3.10.
     DNSName(String),
     IPAddress(pyo3::Py<pyo3::types::PyBytes>),
-    None,
 }
 
 self_cell::self_cell!(
@@ -233,14 +226,14 @@ struct PyVerifiedClient {
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
 struct PyClientVerifier {
-    policy: OwnedPolicy,
+    policy: PyCryptoPolicy<'static>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyClientVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy.borrow_dependent().0
+        &self.policy.0
     }
 }
 
@@ -423,7 +416,6 @@ fn build_subject<'a>(
 
             Ok(Subject::IP(ip_addr))
         }
-        SubjectOwner::None => Err(pyo3::exceptions::PyValueError::new_err("missing subject")),
     }
 }
 
