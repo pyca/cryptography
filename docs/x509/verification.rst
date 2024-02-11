@@ -130,9 +130,8 @@ the root of trust:
     A ClientVerifier verifies client certificates.
 
     It contains and describes various pieces of configurable path
-    validation logic, such as which subject to expect, how deep prospective
-    validation chains may go, which signature algorithms are allowed, and
-    so forth.
+    validation logic, such as how deep prospective validation chains may go,
+    which signature algorithms are allowed, and so forth.
 
     ClientVerifier instances cannot be constructed directly;
     :class:`PolicyBuilder` must be used.
