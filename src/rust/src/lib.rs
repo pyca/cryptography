@@ -32,6 +32,11 @@ fn openssl_version() -> i64 {
 }
 
 #[pyo3::prelude::pyfunction]
+fn openssl_version_text() -> &'static str {
+    openssl::version::version()
+}
+
+#[pyo3::prelude::pyfunction]
 fn is_fips_enabled() -> bool {
     cryptography_openssl::fips::is_enabled()
 }
@@ -107,6 +112,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
         }
     }
     openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version_text, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(error::raise_openssl_error, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(error::capture_error_stack, m)?)?;
     openssl_mod.add_function(pyo3::wrap_pyfunction!(is_fips_enabled, m)?)?;

@@ -151,12 +151,10 @@ class Backend:
 
         Example: OpenSSL 3.2.1 30 Jan 2024
         """
-        return self._ffi.string(
-            self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
-        ).decode("ascii")
+        return rust_openssl.openssl_version_text()
 
     def openssl_version_number(self) -> int:
-        return self._lib.OpenSSL_version_num()
+        return rust_openssl.openssl_version()
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         if algorithm.name in ("blake2b", "blake2s"):
