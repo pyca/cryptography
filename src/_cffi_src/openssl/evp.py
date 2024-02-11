@@ -30,7 +30,6 @@ static const int EVP_CTRL_AEAD_SET_IVLEN;
 static const int EVP_CTRL_AEAD_GET_TAG;
 static const int EVP_CTRL_AEAD_SET_TAG;
 
-static const int Cryptography_HAS_SCRYPT;
 static const int Cryptography_HAS_EVP_PKEY_DHX;
 static const long Cryptography_HAS_300_FIPS;
 static const long Cryptography_HAS_300_EVP_CIPHER;
@@ -92,12 +91,6 @@ CUSTOMIZATIONS = """
 const long Cryptography_HAS_EVP_PKEY_DHX = 1;
 #else
 const long Cryptography_HAS_EVP_PKEY_DHX = 0;
-#endif
-
-#if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_SCRYPT)
-static const long Cryptography_HAS_SCRYPT = 0;
-#else
-static const long Cryptography_HAS_SCRYPT = 1;
 #endif
 
 /* This is tied to X448 support so we reuse the Cryptography_HAS_X448
