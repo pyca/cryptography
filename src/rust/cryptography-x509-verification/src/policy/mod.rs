@@ -314,16 +314,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Criticality::Agnostic,
                     Some(ee::key_usage),
                 ),
-                subject_alternative_name: match has_subject {
+                subject_alternative_name: if has_subject {
                     // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-                    true => ExtensionValidator::present(
+                    ExtensionValidator::present(
                         Criticality::Agnostic,
                         Some(ee::subject_alternative_name),
-                    ),
+                    )
+                } else {
                     // Under client validation, we return the SAN rather than verifying
                     // it directly against the profile. As such, we require it here
                     // but don't supply any custom validator logic.
-                    false => ExtensionValidator::present(Criticality::Agnostic, None),
+                    ExtensionValidator::present(Criticality::Agnostic, None)
                 },
                 // 5280 4.2.1.9: Basic Constraints
                 basic_constraints: ExtensionValidator::maybe_present(
