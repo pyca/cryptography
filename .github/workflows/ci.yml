@@ -42,10 +42,10 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.2.1"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.2"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Feb 03, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "10a2132f50aaf7d49db7e258666f447b821588d9"}}
-          # Latest commit on the OpenSSL master branch, as of Feb 03, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "ed0f79c7ae63f7f29c9bfce2e0f960f0803be350"}}
+          # Latest commit on the BoringSSL master branch, as of Feb 11, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "c39e6cd9ec5acebb6de2adffc03cfe03b07f08ab"}}
+          # Latest commit on the OpenSSL master branch, as of Feb 11, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "925118e8c3b1041ce7f9840c2d67e7f878123e6b"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin, workspace inheritance
@@ -56,7 +56,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -180,7 +180,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -221,17 +221,17 @@ jobs:
       matrix:
         RUNNER:
           - {OS: 'macos-13', ARCH: 'x86_64'}
-          - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+          - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.12", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
-            RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+            RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -245,7 +245,6 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
@@ -296,7 +295,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -370,7 +369,7 @@ jobs:
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -414,7 +413,7 @@ jobs:
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -434,9 +433,10 @@ jobs:
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
-          name: coverage-data
+          pattern: coverage-data-*
+          merge-multiple: true
       - name: Combine coverage and fail if it's <100%.
         if: ${{ always() }}
         id: combinecoverage
@@ -476,14 +476,14 @@ jobs:
         run: python -m coverage html
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload HTML report.
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: _html-report
           path: htmlcov
           if-no-files-found: ignore
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload rust HTML report.
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         with:
           name: _html-rust-report
           path: rust-coverage
