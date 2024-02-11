@@ -14,10 +14,10 @@ use cryptography_x509_verification::{
 use pyo3::IntoPy;
 
 use crate::backend::keys;
+use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
-use crate::{asn1::oid_to_py_oid, types};
 use crate::{
     error::{CryptographyError, CryptographyResult},
     x509,
@@ -215,7 +215,7 @@ self_cell::self_cell!(
 )]
 struct PyVerifiedClient {
     #[pyo3(get)]
-    subject: pyo3::Py<pyo3::PyAny>,
+    subjects: pyo3::Py<pyo3::PyAny>,
     #[pyo3(get)]
     chain: pyo3::Py<pyo3::types::PyList>,
 }
@@ -289,21 +289,11 @@ impl PyClientVerifier {
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
             .unwrap();
 
-        let py_san =
-            types::SUBJECT_ALTERNATIVE_NAME
-                .get(py)?
-                .call1((x509::parse_general_names(
-                    py,
-                    &leaf_san.value::<SubjectAlternativeName<'_>>()?,
-                )?,))?;
-
-        let py_oid = oid_to_py_oid(py, &leaf_san.extn_id)?;
-        let py_san_ext = types::EXTENSION
-            .get(py)?
-            .call1((py_oid, leaf_san.critical, py_san))?;
+        let py_gns =
+            x509::parse_general_names(py, &leaf_san.value::<SubjectAlternativeName<'_>>()?)?;
 
         Ok(PyVerifiedClient {
-            subject: py_san_ext.into_py(py),
+            subjects: py_gns,
             chain: py_chain.into_py(py),
         })
     }

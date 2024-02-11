@@ -122,16 +122,11 @@ class TestClientVerifier:
         verifier = builder.build_client_verifier()
 
         verified_client = verifier.verify(leaf, [])
-        assert isinstance(verified_client.subject, x509.Extension)
-        assert isinstance(
-            verified_client.subject.value, x509.SubjectAlternativeName
-        )
         assert verified_client.chain == [leaf]
 
-        dns_names = verified_client.subject.value.get_values_for_type(
-            x509.DNSName
-        )
-        assert set(dns_names) == {"www.cryptography.io", "cryptography.io"}
+        assert x509.DNSName("www.cryptography.io") in verified_client.subjects
+        assert x509.DNSName("cryptography.io") in verified_client.subjects
+        assert len(verified_client.subjects) == 2
 
 
 class TestServerVerifier:

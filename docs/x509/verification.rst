@@ -108,12 +108,12 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    .. attribute:: subject
+    .. attribute:: subjects
 
-        :type: :class:`~cryptography.x509.Extension`
+        :type: list of :class:`~cryptography.x509.GeneralName`
 
-        The subject of the verified client certificate, as presented in the
-        :class:`~cryptography.x509.SubjectAlternativeName` extension.
+        The subjects presented in the verified client's Subject Alternative Name
+        extension.
 
     .. attribute:: chain
 
