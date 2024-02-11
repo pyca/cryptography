@@ -42,10 +42,10 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.2.1"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.2"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Feb 10, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "71c589682f7d1dabc08b56ef7a0a28913e44110e"}}
-          # Latest commit on the OpenSSL master branch, as of Feb 10, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "cfabddfb9f6f54b3f3b8e90ccb918967390a7fb2"}}
+          # Latest commit on the BoringSSL master branch, as of Feb 11, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "c39e6cd9ec5acebb6de2adffc03cfe03b07f08ab"}}
+          # Latest commit on the OpenSSL master branch, as of Feb 11, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "925118e8c3b1041ce7f9840c2d67e7f878123e6b"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV:
           # 1.64 - maturin, workspace inheritance
