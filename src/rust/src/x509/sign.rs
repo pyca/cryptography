@@ -48,7 +48,10 @@ enum HashType {
     Sha3_512,
 }
 
-fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
+pub(crate) fn identify_key_type(
+    py: pyo3::Python<'_>,
+    private_key: &pyo3::PyAny,
+) -> pyo3::PyResult<KeyType> {
     if private_key.is_instance(types::RSA_PRIVATE_KEY.get(py)?)? {
         Ok(KeyType::Rsa)
     } else if private_key.is_instance(types::DSA_PRIVATE_KEY.get(py)?)? {
