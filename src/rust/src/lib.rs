@@ -24,6 +24,7 @@ mod x509;
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
     legacy: Option<provider::Provider>,
+    _default: provider::Provider,
 }
 
 #[pyo3::prelude::pyfunction]
@@ -42,7 +43,7 @@ fn is_fips_enabled() -> bool {
 }
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-fn _initialize_legacy_provider() -> CryptographyResult<LoadedProviders> {
+fn _initialize_providers() -> CryptographyResult<LoadedProviders> {
     // As of OpenSSL 3.0.0 we must register a legacy cipher provider
     // to get RC2 (needed for junk asymmetric private key
     // serialization), RC4, Blowfish, IDEA, SEED, etc. These things
@@ -52,13 +53,14 @@ fn _initialize_legacy_provider() -> CryptographyResult<LoadedProviders> {
         .map(|v| v.is_empty() || v == "0")
         .unwrap_or(true);
     let legacy = if load_legacy {
-        let legacy_result = provider::Provider::try_load(None, "legacy", true);
+        let legacy_result = provider::Provider::load(None, "legacy");
         _legacy_provider_error(legacy_result.is_ok())?;
         Some(legacy_result?)
     } else {
         None
     };
-    Ok(LoadedProviders { legacy })
+    let _default = provider::Provider::load(None, "default")?;
+    Ok(LoadedProviders { legacy, _default })
 }
 
 fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
@@ -99,13 +101,13 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
-            let providers = _initialize_legacy_provider()?;
+            let providers = _initialize_providers()?;
             if providers.legacy.is_some() {
                 openssl_mod.add("_legacy_provider_loaded", true)?;
-                openssl_mod.add("_providers", providers)?;
             } else {
                 openssl_mod.add("_legacy_provider_loaded", false)?;
             }
+            openssl_mod.add("_providers", providers)?;
         } else {
             // default value for non-openssl 3+
             openssl_mod.add("_legacy_provider_loaded", false)?;
