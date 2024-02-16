@@ -27,6 +27,14 @@ Changelog
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
   They will be removed from the ``cipher`` module in 48.0.0.
 
+.. _v42-0-3:
+
+42.0.3 - 2024-02-15
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed an initialization issue that caused key loading failures for some
+  users.
+
 .. _v42-0-2:
 
 42.0.2 - 2024-01-30
