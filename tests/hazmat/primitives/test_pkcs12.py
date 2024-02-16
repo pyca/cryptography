@@ -10,7 +10,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends.openssl.backend import _RC2
+from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -81,7 +81,7 @@ class TestPKCS12Loading:
         ],
     )
     @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(_RC2(), None),
+        only_if=lambda backend: backend.cipher_supported(RC2(b"0" * 16), None),
         skip_message="Does not support RC2",
     )
     def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
