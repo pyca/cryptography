@@ -18,6 +18,7 @@ from cryptography.hazmat.decrepit.ciphers.algorithms import (
     ARC4,
     CAST5,
     IDEA,
+    RC2,
     SEED,
     Blowfish,
     TripleDES,
@@ -66,11 +67,6 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
 )
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-
-
-# Not actually supported, just used as a marker for some serialization tests.
-class _RC2:
-    pass
 
 
 class Backend:
@@ -291,9 +287,8 @@ class Backend:
             self.register_cipher_adapter(
                 ARC4, type(None), GetCipherByName("rc4")
             )
-            # We don't actually support RC2, this is just used by some tests.
             self.register_cipher_adapter(
-                _RC2, type(None), GetCipherByName("rc2")
+                RC2, CBC, GetCipherByName("{cipher.name}-{mode.name}")
             )
 
     def create_symmetric_encryption_ctx(

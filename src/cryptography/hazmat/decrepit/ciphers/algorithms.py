@@ -90,3 +90,18 @@ class IDEA(BlockCipherAlgorithm):
     @property
     def key_size(self) -> int:
         return len(self.key) * 8
+
+
+# This class only allows RC2 with a 128-bit key. No support for
+# effective key bits or other key sizes is provided.
+class RC2(BlockCipherAlgorithm):
+    name = "RC2"
+    block_size = 64
+    key_sizes = frozenset([128])
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
+
+    @property
+    def key_size(self) -> int:
+        return len(self.key) * 8
