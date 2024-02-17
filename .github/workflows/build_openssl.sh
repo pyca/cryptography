@@ -60,7 +60,7 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
-  ./config -Wl -Wl,-Bsymbolic-functions -fPIC shared --prefix="${OSSL_PATH}"
+  ./config -Wl -Wl,-Bsymbolic-functions -fPIC no-shared --prefix="${OSSL_PATH}"
   shlib_sed
   make -j"$(nproc)" install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
