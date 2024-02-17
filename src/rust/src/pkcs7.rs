@@ -345,12 +345,14 @@ fn load_pem_pkcs7_certificates<'p>(
             })?;
             load_pkcs7_certificates(py, pkcs7_decoded)
         } else {
-            return Err(CryptographyError::from(
+            let _ = py;
+            let _ = data;
+            Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "PKCS#7 is not supported by this backend.",
                     exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                 )),
-            ));
+            ))
         }
     }
 }
@@ -369,12 +371,14 @@ fn load_der_pkcs7_certificates<'p>(
             })?;
             load_pkcs7_certificates(py, pkcs7_decoded)
         } else {
-            return Err(CryptographyError::from(
+            let _ = py;
+            let _ = data;
+            Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "PKCS#7 is not supported by this backend.",
                     exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                 )),
-            ));
+            ))
         }
     }
 }

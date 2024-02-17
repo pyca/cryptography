@@ -292,7 +292,7 @@ def local(session):
         "noxfile.py",
     )
 
-    install(session, "cryptography @ .")
+    install(session, ".")
 
     if session.posargs:
         tests = session.posargs
