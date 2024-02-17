@@ -243,9 +243,11 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
 
 #[cfg(test)]
 mod tests {
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     use super::public_key_from_pkey;
 
     #[test]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn test_public_key_from_pkey_unknown_key() {
         pyo3::prepare_freethreaded_python();
 

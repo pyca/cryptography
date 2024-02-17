@@ -22,6 +22,9 @@ unsafe impl Sync for Hmac {}
 unsafe impl Send for Hmac {}
 
 impl Hmac {
+    // On BoringSSL, the length is a size_t, so the length conversion is a
+    // no-op.
+    #[cfg_attr(CRYPTOGRAPHY_IS_BORINGSSL, allow(clippy::useless_conversion))]
     pub fn new(key: &[u8], md: openssl::hash::MessageDigest) -> OpenSSLResult<Hmac> {
         // SAFETY: All FFI conditions are handled.
         unsafe {

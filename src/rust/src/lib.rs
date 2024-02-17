@@ -4,9 +4,11 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use crate::error::CryptographyResult;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use std::env;
 
 mod asn1;
