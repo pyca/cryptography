@@ -20,5 +20,6 @@ fn main() {
 
     if env::var("DEP_OPENSSL_BORINGSSL").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
+        println!("cargo:rustc-link-lib=stdc++");
     }
 }
