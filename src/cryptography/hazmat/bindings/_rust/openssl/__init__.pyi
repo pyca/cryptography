@@ -6,6 +6,7 @@ import typing
 
 from cryptography.hazmat.bindings._rust.openssl import (
     aead,
+    ciphers,
     cmac,
     dh,
     dsa,
@@ -27,6 +28,7 @@ __all__ = [
     "openssl_version_text",
     "raise_openssl_error",
     "aead",
+    "ciphers",
     "cmac",
     "dh",
     "dsa",

@@ -8,18 +8,11 @@ import os
 
 import pytest
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...utils import load_nist_vectors
 from .utils import generate_aead_test
-
-
-def _advance(ctx, n):
-    ctx._bytes_processed += n
-
-
-def _advance_aad(ctx, n):
-    ctx._aad_bytes_processed += n
 
 
 @pytest.mark.supported(
@@ -80,7 +73,9 @@ class TestAESModeGCM:
             backend=backend,
         )
         encryptor = cipher.encryptor()
-        _advance(encryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16)
+        rust_openssl.ciphers._advance(
+            encryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        )
         encryptor.update(b"0" * 16)
         with pytest.raises(ValueError):
             encryptor.update(b"0")
@@ -88,7 +83,9 @@ class TestAESModeGCM:
             encryptor.update_into(b"0", bytearray(1))
 
         decryptor = cipher.decryptor()
-        _advance(decryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16)
+        rust_openssl.ciphers._advance(
+            decryptor, modes.GCM._MAX_ENCRYPTED_BYTES - 16
+        )
         decryptor.update(b"0" * 16)
         with pytest.raises(ValueError):
             decryptor.update(b"0")
@@ -102,44 +99,20 @@ class TestAESModeGCM:
             backend=backend,
         )
         encryptor = cipher.encryptor()
-        _advance_aad(encryptor, modes.GCM._MAX_AAD_BYTES - 16)
+        rust_openssl.ciphers._advance_aad(
+            encryptor, modes.GCM._MAX_AAD_BYTES - 16
+        )
         encryptor.authenticate_additional_data(b"0" * 16)
         with pytest.raises(ValueError):
             encryptor.authenticate_additional_data(b"0")
 
         decryptor = cipher.decryptor()
-        _advance_aad(decryptor, modes.GCM._MAX_AAD_BYTES - 16)
+        rust_openssl.ciphers._advance_aad(
+            decryptor, modes.GCM._MAX_AAD_BYTES - 16
+        )
         decryptor.authenticate_additional_data(b"0" * 16)
         with pytest.raises(ValueError):
             decryptor.authenticate_additional_data(b"0")
-
-    def test_gcm_ciphertext_increments(self, backend):
-        encryptor = base.Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.GCM(b"\x01" * 16),
-            backend=backend,
-        ).encryptor()
-        encryptor.update(b"0" * 8)
-        assert encryptor._bytes_processed == 8  # type: ignore[attr-defined]
-        encryptor.update(b"0" * 7)
-        assert encryptor._bytes_processed == 15  # type: ignore[attr-defined]
-        encryptor.update(b"0" * 18)
-        assert encryptor._bytes_processed == 33  # type: ignore[attr-defined]
-
-    def test_gcm_aad_increments(self, backend):
-        encryptor = base.Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.GCM(b"\x01" * 16),
-            backend=backend,
-        ).encryptor()
-        encryptor.authenticate_additional_data(b"0" * 8)
-        assert (
-            encryptor._aad_bytes_processed == 8  # type: ignore[attr-defined]
-        )
-        encryptor.authenticate_additional_data(b"0" * 18)
-        assert (
-            encryptor._aad_bytes_processed == 26  # type: ignore[attr-defined]
-        )
 
     def test_gcm_tag_decrypt_none(self, backend):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
