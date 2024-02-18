@@ -232,7 +232,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - uses: dawidd6/action-download-artifact@f6b0bace624032e30a85a8fd9c1a7f8f611f5737 # v3.1.0
+      - uses: dawidd6/action-download-artifact@72aaadce3bc708349fc665eee3785cbb1b6e51d0 # v3.1.1
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -329,7 +329,7 @@ jobs:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - uses: dawidd6/action-download-artifact@f6b0bace624032e30a85a8fd9c1a7f8f611f5737 # v3.1.0
+      - uses: dawidd6/action-download-artifact@72aaadce3bc708349fc665eee3785cbb1b6e51d0 # v3.1.1
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
