@@ -203,9 +203,9 @@ cryptography==42.0.3 \
     #   pyopenssl
     #   secretstorage
     #   sigstore
-dnspython==2.5.0 \
-    --hash=sha256:6facdf76b73c742ccf2d07add296f178e629da60be23ce4b0a9c927b1e02c3a6 \
-    --hash=sha256:a0034815a59ba9ae888946be7ccca8f7c157b286f8455b379c692efb51022a15
+dnspython==2.6.0 \
+    --hash=sha256:233f871ff384d84c33b2eaf4358ffe7f8927eae3b257ad8467f9bdba7e7ac6bc \
+    --hash=sha256:44c40af3bffed66e3307cea9ab667fd583e138ecc0777b18f262a9dae034e5fa
     # via email-validator
 docutils==0.20.1 \
     --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6 \
@@ -246,6 +246,10 @@ importlib-metadata==7.0.1 \
     # via
     #   keyring
     #   twine
+importlib-resources==5.13.0 \
+    --hash=sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528 \
+    --hash=sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2
+    # via sigstore
 jaraco-classes==3.3.1 \
     --hash=sha256:86b534de565381f6b3c1c830d13f931d7be1a75f0081c57dff615578676e2206 \
     --hash=sha256:cb28a5ebda8bc47d8c8015307d93163464f9f2b91ab4006e09ff0ce07e8bfb30
