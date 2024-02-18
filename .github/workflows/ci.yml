@@ -222,14 +222,14 @@ jobs:
       matrix:
         RUNNER:
           - {OS: 'macos-13', ARCH: 'x86_64'}
-          - {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+          - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.12", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
-            RUNNER: {OS: [self-hosted, macos, ARM64, tart], ARCH: 'arm64'}
+            RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
@@ -246,7 +246,6 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: 'x64' # we force this right now so that it will install the universal2 on arm64
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
