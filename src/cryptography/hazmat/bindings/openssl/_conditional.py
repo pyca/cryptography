@@ -120,7 +120,6 @@ def cryptography_has_providers() -> list[str]:
         "OSSL_PROVIDER_load",
         "OSSL_PROVIDER_unload",
         "ERR_LIB_PROV",
-        "PROV_R_WRONG_FINAL_BLOCK_LENGTH",
         "PROV_R_BAD_DECRYPT",
     ]
 
@@ -163,10 +162,6 @@ def cryptography_has_prime_checks() -> list[str]:
     return [
         "BN_prime_checks_for_size",
     ]
-
-
-def cryptography_has_300_evp_cipher() -> list[str]:
-    return ["EVP_CIPHER_fetch", "EVP_CIPHER_free"]
 
 
 def cryptography_has_unexpected_eof_while_reading() -> list[str]:
@@ -214,7 +209,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
-    "Cryptography_HAS_300_EVP_CIPHER": cryptography_has_300_evp_cipher,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
     ),

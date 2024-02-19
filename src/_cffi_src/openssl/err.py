@@ -16,7 +16,6 @@ static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 static const int EVP_R_BAD_DECRYPT;
 static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
 static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
-static const int EVP_R_XTS_DUPLICATED_KEYS;
 
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PROV;
@@ -48,10 +47,6 @@ CUSTOMIZATIONS = """
    removed if Cryptography_HAS_PROVIDERS is false */
 #ifndef ERR_LIB_PROV
 #define ERR_LIB_PROV 0
-#endif
-
-#ifndef EVP_R_XTS_DUPLICATED_KEYS
-static const int EVP_R_XTS_DUPLICATED_KEYS = 0;
 #endif
 
 #if CRYPTOGRAPHY_IS_BORINGSSL
