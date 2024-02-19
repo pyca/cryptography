@@ -380,11 +380,6 @@ pub static CALCULATE_MAX_PSS_SALT_LENGTH: LazyPyImport = LazyPyImport::new(
     &["calculate_max_pss_salt_length"],
 );
 
-pub static BACKEND_HANDLE_KEY_LOADING_ERROR: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.backends.openssl.backend",
-    &["backend", "_handle_key_loading_error"],
-);
-
 pub static RSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.rsa",
     &["RSAPrivateKey"],

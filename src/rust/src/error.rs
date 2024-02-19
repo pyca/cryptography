@@ -174,10 +174,6 @@ impl OpenSSLError {
         self.e.reason().unwrap_or("").as_bytes()
     }
 
-    fn _lib_reason_match(&self, lib: i32, reason: i32) -> bool {
-        self.e.library_code() == lib && self.e.reason_code() == reason
-    }
-
     fn __repr__(&self) -> pyo3::PyResult<String> {
         Ok(format!(
             "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",

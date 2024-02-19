@@ -5,6 +5,7 @@
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
+use pyo3::ToPyObject;
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
@@ -431,10 +432,10 @@ pub(crate) fn handle_key_load_result<T>(
         (Err(e), _, _) => {
             let errors = error::list_from_openssl_error(py, e);
             Err(CryptographyError::from(
-                types::BACKEND_HANDLE_KEY_LOADING_ERROR
-                    .get(py)?
-                    .call1((errors,))
-                    .unwrap_err(),
+                pyo3::exceptions::PyValueError::new_err((
+                    "Could not deserialize key data. The data may be in an incorrect format, the provided password may be incorrect, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters).",
+                    errors.to_object(py),
+                ))
             ))
         }
     }
