@@ -22,8 +22,6 @@ static const int EVP_PKEY_DH;
 static const int EVP_PKEY_EC;
 static const int EVP_PKEY_X25519;
 static const int EVP_PKEY_ED25519;
-static const int EVP_PKEY_X448;
-static const int EVP_PKEY_ED448;
 static const int EVP_MAX_MD_SIZE;
 
 static const int Cryptography_HAS_EVP_PKEY_DHX;
@@ -71,19 +69,6 @@ CUSTOMIZATIONS = """
 const long Cryptography_HAS_EVP_PKEY_DHX = 1;
 #else
 const long Cryptography_HAS_EVP_PKEY_DHX = 0;
-#endif
-
-/* This is tied to X448 support so we reuse the Cryptography_HAS_X448
-   conditional to remove it. OpenSSL 1.1.1 adds this define.  We can remove
-   this in the distant future when we drop 1.1.0 support. */
-#ifndef EVP_PKEY_X448
-#define EVP_PKEY_X448 NID_X448
-#endif
-
-/* This is tied to ED448 support so we reuse the Cryptography_HAS_ED448
-   conditional to remove it. */
-#ifndef EVP_PKEY_ED448
-#define EVP_PKEY_ED448 0
 #endif
 
 #if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
