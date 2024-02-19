@@ -67,7 +67,7 @@ class Binding:
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
-        _openssl_assert(self.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
+        _openssl_assert(openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
         self.lib._fips_provider = self.lib.OSSL_PROVIDER_load(
             self.ffi.NULL, b"fips"
         )

@@ -11,6 +11,7 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
@@ -148,7 +149,7 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
     backend.openssl_assert(res == 1)
     # OpenSSL 3.0 leaves a random bio error on the stack:
     # https://github.com/openssl/openssl/issues/16681
-    if backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+    if rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
         backend._consume_errors()
 
 
