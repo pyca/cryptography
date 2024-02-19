@@ -11,5 +11,5 @@ rust-version = "1.63.0"
 asn1 = { version = "0.16.0", default-features = false }
 cfg-if = "1"
 openssl = "0.10.63"
-openssl-sys = "0.9.99"
+openssl-sys = "0.9.100"
 cryptography-x509 = { path = "../cryptography-x509" }
