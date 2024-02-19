@@ -16,8 +16,6 @@ static const long Cryptography_HAS_PROVIDERS;
 
 typedef ... OSSL_PROVIDER;
 typedef ... OSSL_LIB_CTX;
-
-static const long PROV_R_BAD_DECRYPT;
 """
 
 FUNCTIONS = """
@@ -32,7 +30,6 @@ static const long Cryptography_HAS_PROVIDERS = 1;
 static const long Cryptography_HAS_PROVIDERS = 0;
 typedef void OSSL_PROVIDER;
 typedef void OSSL_LIB_CTX;
-static const long PROV_R_BAD_DECRYPT = 0;
 OSSL_PROVIDER *(*OSSL_PROVIDER_load)(OSSL_LIB_CTX *, const char *) = NULL;
 int (*OSSL_PROVIDER_unload)(OSSL_PROVIDER *) = NULL;
 #endif

@@ -13,7 +13,6 @@ static const int EVP_F_EVP_ENCRYPTFINAL_EX;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
 
 static const int ERR_LIB_EVP;
-static const int ERR_LIB_PROV;
 
 static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
@@ -37,12 +36,6 @@ int ERR_GET_REASON(unsigned long);
 """
 
 CUSTOMIZATIONS = """
-/* This define is tied to provider support and is conditionally
-   removed if Cryptography_HAS_PROVIDERS is false */
-#ifndef ERR_LIB_PROV
-#define ERR_LIB_PROV 0
-#endif
-
 #if CRYPTOGRAPHY_IS_BORINGSSL
 static const int EVP_F_EVP_ENCRYPTFINAL_EX = 0;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH = 0;

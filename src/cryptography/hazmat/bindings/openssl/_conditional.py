@@ -28,12 +28,6 @@ def cryptography_has_tls_st() -> list[str]:
     ]
 
 
-def cryptography_has_ed448() -> list[str]:
-    return [
-        "EVP_PKEY_ED448",
-    ]
-
-
 def cryptography_has_ssl_sigalgs() -> list[str]:
     return [
         "SSL_CTX_set1_sigalgs_list",
@@ -119,8 +113,6 @@ def cryptography_has_providers() -> list[str]:
     return [
         "OSSL_PROVIDER_load",
         "OSSL_PROVIDER_unload",
-        "ERR_LIB_PROV",
-        "PROV_R_BAD_DECRYPT",
     ]
 
 
@@ -191,7 +183,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
