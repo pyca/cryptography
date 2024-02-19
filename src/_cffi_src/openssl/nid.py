@@ -10,7 +10,6 @@ INCLUDES = """
 
 TYPES = """
 static const int Cryptography_HAS_ED448;
-static const int Cryptography_HAS_POLY1305;
 
 static const int NID_undef;
 static const int NID_aes_256_cbc;
@@ -30,10 +29,5 @@ CUSTOMIZATIONS = """
 static const long Cryptography_HAS_ED448 = 0;
 #else
 static const long Cryptography_HAS_ED448 = 1;
-#endif
-#ifndef NID_poly1305
-static const long Cryptography_HAS_POLY1305 = 0;
-#else
-static const long Cryptography_HAS_POLY1305 = 1;
 #endif
 """
