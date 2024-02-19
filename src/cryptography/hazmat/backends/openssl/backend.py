@@ -299,52 +299,6 @@ class Backend:
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
-    def _handle_key_loading_error(
-        self, errors: list[rust_openssl.OpenSSLError]
-    ) -> typing.NoReturn:
-        if not errors:
-            raise ValueError(
-                "Could not deserialize key data. The data may be in an "
-                "incorrect format or it may be encrypted with an unsupported "
-                "algorithm."
-            )
-
-        elif (
-            errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
-            )
-            or errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_PKCS12,
-                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
-            )
-            or (
-                self._lib.Cryptography_HAS_PROVIDERS
-                and errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_PROV,
-                    self._lib.PROV_R_BAD_DECRYPT,
-                )
-            )
-        ):
-            raise ValueError("Bad decrypt. Incorrect password?")
-
-        elif any(
-            error._lib_reason_match(
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM,
-            )
-            for error in errors
-        ):
-            raise ValueError("Unsupported public key algorithm.")
-
-        else:
-            raise ValueError(
-                "Could not deserialize key data. The data may be in an "
-                "incorrect format, it may be encrypted with an unsupported "
-                "algorithm, or it may be an unsupported key type (e.g. EC "
-                "curves with explicit parameters).",
-                errors,
-            )
-
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
         if self._fips_enabled and not isinstance(
             curve, self._fips_ecdh_curves
