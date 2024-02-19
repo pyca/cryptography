@@ -660,6 +660,24 @@ class TestPKCS12Creation:
                 b"name", cakey, cacert, [], algorithm
             )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend._lib.Cryptography_HAS_PKCS12_SET_MAC,
+        skip_message="Requires OpenSSL with PKCS12_set_mac",
+    )
+    def test_set_mac_key_certificate_mismatch(self, backend):
+        cacert, _ = _load_ca(backend)
+        key = ec.generate_private_key(ec.SECP256R1())
+        encryption = (
+            serialization.PrivateFormat.PKCS12.encryption_builder()
+            .hmac_hash(hashes.SHA256())
+            .build(b"password")
+        )
+
+        with pytest.raises(ValueError):
+            serialize_key_and_certificates(
+                b"name", key, cacert, [], encryption
+            )
+
 
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
