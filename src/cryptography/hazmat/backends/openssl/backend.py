@@ -256,7 +256,8 @@ class Backend:
 
     def dsa_supported(self) -> bool:
         return (
-            not self._lib.CRYPTOGRAPHY_IS_BORINGSSL and not self._fips_enabled
+            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not self._fips_enabled
         )
 
     def dsa_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
@@ -374,7 +375,7 @@ class Backend:
         )
 
     def dh_supported(self) -> bool:
-        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
@@ -383,7 +384,7 @@ class Backend:
         # Beginning with OpenSSL 3.2.0, X25519 is considered FIPS.
         if (
             self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
         ):
             return False
         return True
@@ -392,12 +393,12 @@ class Backend:
         # Beginning with OpenSSL 3.2.0, X448 is considered FIPS.
         if (
             self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
         ):
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
     def ed25519_supported(self) -> bool:
@@ -409,8 +410,8 @@ class Backend:
         if self._fips_enabled:
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
     def _zero_data(self, data, length: int) -> None:
@@ -511,8 +512,8 @@ class Backend:
             # certificates.
             indices: typing.Iterable[int]
             if (
-                self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-                or self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+                rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+                or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             ):
                 indices = range(num)
             else:
@@ -557,7 +558,7 @@ class Backend:
             # PKCS12 encryption is hopeless trash and can never be fixed.
             # OpenSSL 3 supports PBESv2, but Libre and Boring do not, so
             # we use PBESv1 with 3DES on the older paths.
-            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            if rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
                 nid_cert = self._lib.NID_aes_256_cbc
                 nid_key = self._lib.NID_aes_256_cbc
             else:
@@ -593,7 +594,7 @@ class Backend:
                 nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
                 nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             elif keycertalg is PBES.PBESv2SHA256AndAES256CBC:
-                if not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                if not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
                     raise UnsupportedAlgorithm(
                         "PBESv2 is not supported by this version of OpenSSL"
                     )
@@ -695,15 +696,15 @@ class Backend:
         if self._fips_enabled:
             return False
         elif (
-            self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            or self._lib.CRYPTOGRAPHY_IS_LIBRESSL
+            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         ):
             return True
         else:
             return self._lib.Cryptography_HAS_POLY1305 == 1
 
     def pkcs7_supported(self) -> bool:
-        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
 
 backend = Backend()
