@@ -101,6 +101,18 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_submodule(cryptography_cffi::create_module(py)?)?;
 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
+    openssl_mod.add(
+        "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
+        cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+    )?;
+    openssl_mod.add(
+        "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
+        cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
+    )?;
+
+    openssl_mod.add("CRYPTOGRAPHY_IS_LIBRESSL", cfg!(CRYPTOGRAPHY_IS_LIBRESSL))?;
+    openssl_mod.add("CRYPTOGRAPHY_IS_BORINGSSL", cfg!(CRYPTOGRAPHY_IS_BORINGSSL))?;
+
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
             let providers = _initialize_providers()?;

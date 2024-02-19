@@ -45,6 +45,11 @@ __all__ = [
     "x25519",
 ]
 
+CRYPTOGRAPHY_IS_LIBRESSL: bool
+CRYPTOGRAPHY_IS_BORINGSSL: bool
+CRYPTOGRAPHY_OPENSSL_300_OR_GREATER: bool
+CRYPTOGRAPHY_OPENSSL_320_OR_GREATER: bool
+
 _legacy_provider_loaded: bool
 
 def openssl_version() -> int: ...
