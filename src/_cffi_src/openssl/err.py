@@ -9,17 +9,11 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int CIPHER_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
-
 static const int EVP_F_EVP_ENCRYPTFINAL_EX;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
-static const int EVP_R_BAD_DECRYPT;
-static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
-static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
 
 static const int ERR_LIB_EVP;
 static const int ERR_LIB_PROV;
-static const int ERR_LIB_PKCS12;
 
 static const int SSL_TLSEXT_ERR_OK;
 static const int SSL_TLSEXT_ERR_ALERT_FATAL;
@@ -50,14 +44,8 @@ CUSTOMIZATIONS = """
 #endif
 
 #if CRYPTOGRAPHY_IS_BORINGSSL
-static const int ERR_LIB_PKCS12 = 0;
 static const int EVP_F_EVP_ENCRYPTFINAL_EX = 0;
-static const int EVP_R_BAD_DECRYPT = 0;
 static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH = 0;
-static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM = 0;
-static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR = 0;
-#else
-static const int CIPHER_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH = 0;
 #endif
 
 /* SSL_R_UNEXPECTED_EOF_WHILE_READING is needed for pyOpenSSL

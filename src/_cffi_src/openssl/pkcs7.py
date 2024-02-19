@@ -10,33 +10,7 @@ INCLUDES = """
 
 TYPES = """
 static const long Cryptography_HAS_PKCS7_FUNCS;
-
-typedef struct {
-    Cryptography_STACK_OF_X509 *cert;
-    ...;
-} PKCS7_SIGNED;
-
-typedef ... PKCS7_SIGN_ENVELOPE;
-typedef ... PKCS7_DIGEST;
-typedef ... PKCS7_ENCRYPT;
-typedef ... PKCS7_ENVELOPE;
-typedef ... PKCS7_SIGNER_INFO;
-
-typedef struct {
-    ASN1_OBJECT *type;
-    union {
-        char *ptr;
-        ASN1_OCTET_STRING *data;
-        PKCS7_SIGNED *sign;
-        PKCS7_ENVELOPE *enveloped;
-        PKCS7_SIGN_ENVELOPE *signed_and_enveloped;
-        PKCS7_DIGEST *digest;
-        PKCS7_ENCRYPT *encrypted;
-        ASN1_TYPE *other;
-     } d;
-    ...;
-} PKCS7;
-
+typedef ... PKCS7;
 static const int PKCS7_TEXT;
 """
 
