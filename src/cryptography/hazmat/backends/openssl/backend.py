@@ -649,13 +649,7 @@ class Backend:
     def poly1305_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        elif (
-            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            return True
-        else:
-            return self._lib.Cryptography_HAS_POLY1305 == 1
+        return True
 
     def pkcs7_supported(self) -> bool:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
