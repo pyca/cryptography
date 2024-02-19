@@ -7,6 +7,7 @@ from __future__ import annotations
 import typing
 
 from cryptography import x509
+from cryptography.hazmat.bindings._rust import pkcs12 as rust_pkcs12
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives._serialization import PBES as PBES
 from cryptography.hazmat.primitives.asymmetric import (
@@ -143,28 +144,8 @@ class PKCS12KeyAndCertificates:
         return fmt.format(self.key, self.cert, self.additional_certs)
 
 
-def load_key_and_certificates(
-    data: bytes,
-    password: bytes | None,
-    backend: typing.Any = None,
-) -> tuple[
-    PrivateKeyTypes | None,
-    x509.Certificate | None,
-    list[x509.Certificate],
-]:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_key_and_certificates_from_pkcs12(data, password)
-
-
-def load_pkcs12(
-    data: bytes,
-    password: bytes | None,
-    backend: typing.Any = None,
-) -> PKCS12KeyAndCertificates:
-    from cryptography.hazmat.backends.openssl.backend import backend as ossl
-
-    return ossl.load_pkcs12(data, password)
+load_key_and_certificates = rust_pkcs12.load_key_and_certificates
+load_pkcs12 = rust_pkcs12.load_pkcs12
 
 
 _PKCS12CATypes = typing.Union[

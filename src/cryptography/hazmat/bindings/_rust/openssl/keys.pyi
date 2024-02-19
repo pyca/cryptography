@@ -9,10 +9,6 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     PublicKeyTypes,
 )
 
-def private_key_from_ptr(
-    ptr: int,
-    unsafe_skip_rsa_key_validation: bool,
-) -> PrivateKeyTypes: ...
 def load_der_private_key(
     data: bytes,
     password: bytes | None,

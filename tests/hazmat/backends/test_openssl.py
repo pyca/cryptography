@@ -201,15 +201,6 @@ class TestOpenSSLRSA:
 
 
 class TestOpenSSLSerializationWithOpenSSL:
-    def test_unsupported_evp_pkey_type(self):
-        key = backend._lib.EVP_PKEY_new()
-        key = backend._ffi.gc(key, backend._lib.EVP_PKEY_free)
-        with raises_unsupported_algorithm(None):
-            rust_openssl.keys.private_key_from_ptr(
-                int(backend._ffi.cast("uintptr_t", key)),
-                unsafe_skip_rsa_key_validation=False,
-            )
-
     def test_very_long_pem_serialization_password(self):
         password = b"x" * 1025
 

@@ -91,7 +91,7 @@ class TestPKCS12Loading:
     def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
         self._test_load_pkcs12_ec_keys(filename, password, backend)
 
-    def test_load_pkcs12_cert_only(self, backend):
+    def test_load_key_and_cert_cert_only(self, backend):
         cert, _ = _load_ca(backend)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
             os.path.join("pkcs12", "cert-aes256cbc-no-key.p12"),
@@ -104,7 +104,7 @@ class TestPKCS12Loading:
         assert parsed_key is None
         assert parsed_more_certs == [cert]
 
-    def test_load_pkcs12_key_only(self, backend):
+    def test_load_key_and_certificates_key_only(self, backend):
         _, key = _load_ca(backend)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         parsed_key, parsed_cert, parsed_more_certs = load_vectors_from_file(
@@ -118,6 +118,19 @@ class TestPKCS12Loading:
         assert parsed_key.private_numbers() == key.private_numbers()
         assert parsed_cert is None
         assert parsed_more_certs == []
+
+    def test_load_pkcs12_key_only(self, backend):
+        _, key = _load_ca(backend)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+        p12 = load_vectors_from_file(
+            os.path.join("pkcs12", "no-cert-key-aes256cbc.p12"),
+            lambda data: load_pkcs12(data.read(), b"cryptography", backend),
+            mode="rb",
+        )
+        assert isinstance(p12.key, ec.EllipticCurvePrivateKey)
+        assert p12.key.private_numbers() == key.private_numbers()
+        assert p12.cert is None
+        assert p12.additional_certs == []
 
     def test_non_bytes(self, backend):
         with pytest.raises(TypeError):

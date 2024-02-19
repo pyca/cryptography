@@ -327,6 +327,15 @@ pub static SMIME_ENCODE: LazyPyImport = LazyPyImport::new(
     &["_smime_encode"],
 );
 
+pub static PKCS12CERTIFICATE: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs12",
+    &["PKCS12Certificate"],
+);
+pub static PKCS12KEYANDCERTIFICATES: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs12",
+    &["PKCS12KeyAndCertificates"],
+);
+
 pub static HASHES_MODULE: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &[]);
 pub static HASH_ALGORITHM: LazyPyImport =
