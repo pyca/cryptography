@@ -13,6 +13,7 @@ from binascii import hexlify
 import pytest
 
 from cryptography import exceptions, utils, x509
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -133,7 +134,7 @@ def test_derive_point_at_infinity(backend):
     # BoringSSL rejects infinity points before it ever gets to us, so it
     # uses a more generic error message.
     match = (
-        "infinity" if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL else "Invalid"
+        "infinity" if not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL else "Invalid"
     )
     with pytest.raises(ValueError, match=match):
         ec.derive_private_key(q, ec.SECP256R1())
@@ -423,7 +424,7 @@ class TestECDSAVectors:
         # uses a more generic error message.
         match = (
             r"infinity|invalid form"
-            if not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            if not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             else None
         )
         with pytest.raises(ValueError, match=match):
