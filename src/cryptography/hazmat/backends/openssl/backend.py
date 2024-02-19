@@ -826,6 +826,15 @@ class Backend:
                     mac_iter,
                     0,
                 )
+                if p12 == self._ffi.NULL:
+                    errors = self._consume_errors()
+                    raise ValueError(
+                        (
+                            "Failed to create PKCS12 (does the key match the "
+                            "certificate?)"
+                        ),
+                        errors,
+                    )
 
             if (
                 self._lib.Cryptography_HAS_PKCS12_SET_MAC
