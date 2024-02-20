@@ -64,9 +64,6 @@ class Binding:
     def __init__(self) -> None:
         self._ensure_ffi_initialized()
 
-    def _enable_fips(self) -> None:
-        openssl.enable_fips(openssl._providers)
-
     @classmethod
     def _ensure_ffi_initialized(cls) -> None:
         with cls._init_lock:

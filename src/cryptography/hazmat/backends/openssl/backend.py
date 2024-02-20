@@ -99,7 +99,7 @@ class Backend:
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
-        self._binding._enable_fips()
+        rust_openssl.enable_fips(rust_openssl._providers)
         assert rust_openssl.is_fips_enabled()
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
