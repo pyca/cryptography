@@ -16,6 +16,10 @@ from cryptography import exceptions, utils, x509
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.ec import (
+    EllipticCurvePrivateKey,
+    EllipticCurvePublicKey,
+)
 from cryptography.hazmat.primitives.asymmetric.utils import (
     Prehashed,
     encode_dss_signature,
@@ -27,6 +31,7 @@ from ...utils import (
     load_fips_ecdsa_signing_vectors,
     load_kasvs_ecdh_vectors,
     load_nist_vectors,
+    load_rfc6979_vectors,
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
@@ -507,6 +512,70 @@ class TestECDSAVectors:
                     key.verify(
                         signature, vector["message"], ec.ECDSA(hash_type())
                     )
+
+    def test_unsupported_deterministic_nonce(self, backend, subtests):
+        if backend.ecdsa_deterministic_supported():
+            pytest.skip(
+                f"ECDSA deterministic signing is supported by this"
+                f" backend {backend}"
+            )
+        with pytest.raises(exceptions.UnsupportedAlgorithm):
+            ec.ECDSA(hashes.SHA256(), deterministic_signing=True)
+
+    def test_deterministic_nonce(self, backend, subtests):
+        if not backend.ecdsa_deterministic_supported():
+            pytest.skip(
+                f"ECDSA deterministic signing is not supported by this"
+                f" backend {backend}"
+            )
+
+        supported_hash_algorithms: typing.Dict[
+            str, typing.Type[hashes.HashAlgorithm]
+        ] = {
+            "SHA1": hashes.SHA1,
+            "SHA224": hashes.SHA224,
+            "SHA256": hashes.SHA256,
+            "SHA384": hashes.SHA384,
+            "SHA512": hashes.SHA512,
+        }
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "ECDSA", "RFC6979", "evppkey_ecdsa_rfc6979.txt"
+            ),
+            load_rfc6979_vectors,
+        )
+
+        for vector in vectors:
+            input = bytes(vector["input"], "utf-8")
+            output = bytes.fromhex(vector["output"])
+            key = bytes("\n".join(vector["key"]), "utf-8")
+            if "digest_sign" in vector:
+                algorithm = vector["digest_sign"]
+                assert algorithm in supported_hash_algorithms
+                hash_algorithm = supported_hash_algorithms[algorithm]
+                algorithm = ec.ECDSA(
+                    hash_algorithm(),
+                    deterministic_signing=vector["deterministic_nonce"],
+                )
+                private_key = serialization.load_pem_private_key(
+                    key, password=None
+                )
+                assert isinstance(private_key, EllipticCurvePrivateKey)
+                signature = private_key.sign(input, algorithm)
+                assert signature == output
+            else:
+                assert "digest_verify" in vector
+                algorithm = vector["digest_verify"]
+                assert algorithm in supported_hash_algorithms
+                hash_algorithm = supported_hash_algorithms[algorithm]
+                algorithm = ec.ECDSA(hash_algorithm())
+                public_key = serialization.load_pem_public_key(key)
+                assert isinstance(public_key, EllipticCurvePublicKey)
+                if vector["verify_error"]:
+                    with pytest.raises(exceptions.InvalidSignature):
+                        public_key.verify(output, input, algorithm)
+                else:
+                    public_key.verify(output, input, algorithm)
 
     def test_sign(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())

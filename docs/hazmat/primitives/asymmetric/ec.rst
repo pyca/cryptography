@@ -47,6 +47,16 @@ Elliptic Curve Signature Algorithms
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
 
+    :param bool deterministic_signing: A boolean flag defaulting to ``False``
+        that specifies whether the signing procedure should be deterministic
+        or not, as defined in :rfc:`6979`.
+
+        .. versionadded:: 43.0.0
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If
+        ``deterministic_signing`` is set to ``True`` and the version of
+        OpenSSL does not support ECDSA with deterministic signing.
+
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import hashes
