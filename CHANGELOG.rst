@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v42-0-4:
+
+42.0.4 - 2024-02-20
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed ASN.1 encoding for PKCS7/SMIME signed messages. The fields ``SMIMECapabilities``
+  and ``SignatureAlgorithmIdentifier`` should now be correctly encoded according to the
+  definitions in :rfc:`2633` :rfc:`3370`.
+
 .. _v42-0-3:
 
 42.0.3 - 2024-02-15
