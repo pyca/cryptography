@@ -22,9 +22,6 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PSS,
     PKCS1v15,
 )
-from cryptography.hazmat.primitives.asymmetric.types import (
-    PrivateKeyTypes,
-)
 from cryptography.hazmat.primitives.ciphers import (
     CipherAlgorithm,
 )
@@ -38,7 +35,6 @@ from cryptography.hazmat.primitives.ciphers.modes import (
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
     PKCS12Certificate,
-    PKCS12KeyAndCertificates,
     PKCS12PrivateKeyTypes,
     _PKCS12CATypes,
 )
@@ -278,12 +274,6 @@ class Backend:
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return x509
 
-    def _ossl2cert(self, x509_ptr: typing.Any) -> x509.Certificate:
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_bio(bio, x509_ptr)
-        self.openssl_assert(res == 1)
-        return x509.load_der_x509_certificate(self._read_mem_bio(bio))
-
     def _key2ossl(self, key: PKCS12PrivateKeyTypes) -> typing.Any:
         data = key.private_bytes(
             serialization.Encoding.DER,
@@ -397,96 +387,6 @@ class Backend:
             finally:
                 # Cast to a uint8_t * so we can assign by integer
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
-
-    def load_key_and_certificates_from_pkcs12(
-        self, data: bytes, password: bytes | None
-    ) -> tuple[
-        PrivateKeyTypes | None,
-        x509.Certificate | None,
-        list[x509.Certificate],
-    ]:
-        pkcs12 = self.load_pkcs12(data, password)
-        return (
-            pkcs12.key,
-            pkcs12.cert.certificate if pkcs12.cert else None,
-            [cert.certificate for cert in pkcs12.additional_certs],
-        )
-
-    def load_pkcs12(
-        self, data: bytes, password: bytes | None
-    ) -> PKCS12KeyAndCertificates:
-        if password is not None:
-            utils._check_byteslike("password", password)
-
-        bio = self._bytes_to_bio(data)
-        p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
-        if p12 == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Could not deserialize PKCS12 data")
-
-        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
-        evp_pkey_ptr = self._ffi.new("EVP_PKEY **")
-        x509_ptr = self._ffi.new("X509 **")
-        sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
-        with self._zeroed_null_terminated_buf(password) as password_buf:
-            res = self._lib.PKCS12_parse(
-                p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
-            )
-        if res == 0:
-            self._consume_errors()
-            raise ValueError("Invalid password or PKCS12 data")
-
-        cert = None
-        key = None
-        additional_certificates = []
-
-        if evp_pkey_ptr[0] != self._ffi.NULL:
-            evp_pkey = self._ffi.gc(evp_pkey_ptr[0], self._lib.EVP_PKEY_free)
-            # We don't support turning off RSA key validation when loading
-            # PKCS12 keys
-            key = rust_openssl.keys.private_key_from_ptr(
-                int(self._ffi.cast("uintptr_t", evp_pkey)),
-                unsafe_skip_rsa_key_validation=False,
-            )
-
-        if x509_ptr[0] != self._ffi.NULL:
-            x509 = self._ffi.gc(x509_ptr[0], self._lib.X509_free)
-            cert_obj = self._ossl2cert(x509)
-            name = None
-            maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
-            if maybe_name != self._ffi.NULL:
-                name = self._ffi.string(maybe_name)
-            cert = PKCS12Certificate(cert_obj, name)
-
-        if sk_x509_ptr[0] != self._ffi.NULL:
-            sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
-            num = self._lib.sk_X509_num(sk_x509_ptr[0])
-
-            # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
-            # certificates.
-            indices: typing.Iterable[int]
-            if (
-                rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-                or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            ):
-                indices = range(num)
-            else:
-                indices = reversed(range(num))
-
-            for i in indices:
-                x509 = self._lib.sk_X509_value(sk_x509, i)
-                self.openssl_assert(x509 != self._ffi.NULL)
-                x509 = self._ffi.gc(x509, self._lib.X509_free)
-                addl_cert = self._ossl2cert(x509)
-                addl_name = None
-                maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
-                if maybe_name != self._ffi.NULL:
-                    addl_name = self._ffi.string(maybe_name)
-                additional_certificates.append(
-                    PKCS12Certificate(addl_cert, addl_name)
-                )
-
-        return PKCS12KeyAndCertificates(key, cert, additional_certificates)
 
     def serialize_key_and_certificates_to_pkcs12(
         self,

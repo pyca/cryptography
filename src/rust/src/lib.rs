@@ -18,6 +18,7 @@ mod error;
 mod exceptions;
 pub(crate) mod oid;
 mod padding;
+mod pkcs12;
 mod pkcs7;
 pub(crate) mod types;
 mod x509;
@@ -82,6 +83,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
 
     m.add_submodule(asn1::create_submodule(py)?)?;
     m.add_submodule(pkcs7::create_submodule(py)?)?;
+    m.add_submodule(pkcs12::create_submodule(py)?)?;
     m.add_submodule(exceptions::create_submodule(py)?)?;
 
     let x509_mod = pyo3::prelude::PyModule::new(py, "x509")?;
