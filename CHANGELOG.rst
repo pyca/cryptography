@@ -26,6 +26,9 @@ Changelog
   and :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ARC4` into
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
   They will be removed from the ``cipher`` module in 48.0.0.
+* Fixed ASN.1 encoding for PKCS7/SMIME signed messages. The fields ``SMIMECapabilities``
+  and ``SignatureAlgorithmIdentifier`` should now be correctly encoded according to the
+  definitions in :rfc:`2633` :rfc:`3370`.
 
 .. _v42-0-3:
 

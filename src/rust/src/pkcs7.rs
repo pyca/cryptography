@@ -104,9 +104,9 @@ fn sign_and_serialize<'p>(
         // Subset of values OpenSSL provides:
         // https://github.com/openssl/openssl/blob/667a8501f0b6e5705fd611d5bb3ca24848b07154/crypto/pkcs7/pk7_smime.c#L150
         // removing all the ones that are bad cryptography
-        AES_256_CBC_OID,
-        AES_192_CBC_OID,
-        AES_128_CBC_OID,
+        &asn1::SequenceOfWriter::new([AES_256_CBC_OID]),
+        &asn1::SequenceOfWriter::new([AES_192_CBC_OID]),
+        &asn1::SequenceOfWriter::new([AES_128_CBC_OID]),
     ]))?;
 
     let py_signers: Vec<(
@@ -205,7 +205,7 @@ fn sign_and_serialize<'p>(
             },
             digest_algorithm: digest_alg,
             authenticated_attributes: authenticated_attrs,
-            digest_encryption_algorithm: x509::sign::compute_signature_algorithm(
+            digest_encryption_algorithm: compute_pkcs7_signature_algorithm(
                 py,
                 py_private_key,
                 py_hash_alg,
@@ -259,6 +259,26 @@ fn sign_and_serialize<'p>(
     } else {
         // Handles the DER, PEM, and error cases
         encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
+    }
+}
+
+fn compute_pkcs7_signature_algorithm<'p>(
+    py: pyo3::Python<'p>,
+    private_key: &'p pyo3::PyAny,
+    hash_algorithm: &'p pyo3::PyAny,
+    rsa_padding: &'p pyo3::PyAny,
+) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
+    let key_type = x509::sign::identify_key_type(py, private_key)?;
+    let has_pss_padding = rsa_padding.is_instance(types::PSS.get(py)?)?;
+    // For RSA signatures (with no PSS padding), the OID is always the same no matter the
+    // digest algorithm. See RFC 3370 (section 3.2).
+    if key_type == x509::sign::KeyType::Rsa && !has_pss_padding {
+        Ok(common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Rsa(Some(())),
+        })
+    } else {
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)
     }
 }
 
