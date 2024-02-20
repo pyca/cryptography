@@ -8,11 +8,12 @@ import os
 
 import pytest
 
+from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...doubles import DummyMode
-from ...utils import load_nist_vectors
+from ...utils import load_nist_vectors, raises_unsupported_algorithm
 from .utils import _load_all_params, generate_encrypt_test
 
 
@@ -305,3 +306,43 @@ def test_alternate_aes_classes(mode, alg_cls, backend):
     dec = cipher.decryptor()
     pt = dec.update(ct) + dec.finalize()
     assert pt == data
+
+
+def test_reset_nonce(backend):
+    data = b"helloworld" * 10
+    nonce = b"\x00" * 16
+    c = base.Cipher(
+        algorithms.AES(b"\x00" * 16),
+        modes.CTR(nonce),
+    )
+    enc = c.encryptor()
+    ct1 = enc.update(data)
+    assert len(ct1) == len(data)
+    for _ in range(2):
+        enc.reset_nonce(nonce)
+        assert enc.update(data) == ct1
+    enc.finalize()
+    with pytest.raises(AlreadyFinalized):
+        enc.reset_nonce(nonce)
+    dec = c.decryptor()
+    assert dec.update(ct1) == data
+    for _ in range(2):
+        dec.reset_nonce(nonce)
+        assert dec.update(ct1) == data
+    dec.finalize()
+    with pytest.raises(AlreadyFinalized):
+        dec.reset_nonce(nonce)
+
+
+def test_reset_nonce_invalid_mode(backend):
+    iv = b"\x00" * 16
+    c = base.Cipher(
+        algorithms.AES(b"\x00" * 16),
+        modes.CBC(iv),
+    )
+    enc = c.encryptor()
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        enc.reset_nonce(iv)
+    dec = c.decryptor()
+    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+        dec.reset_nonce(iv)

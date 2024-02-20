@@ -9,6 +9,7 @@ import struct
 
 import pytest
 
+from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
 
 from ...utils import load_nist_vectors
@@ -90,3 +91,36 @@ class TestChaCha20:
         ct_partial_3 = enc_partial.update(pt[len_partial * 2 :])
 
         assert ct_full == ct_partial_1 + ct_partial_2 + ct_partial_3
+
+    def test_reset_nonce(self, backend):
+        data = b"helloworld" * 10
+        key = b"\x00" * 32
+        nonce = b"\x00" * 16
+        cipher = Cipher(algorithms.ChaCha20(key, nonce), None)
+        enc = cipher.encryptor()
+        ct1 = enc.update(data)
+        assert len(ct1) == len(data)
+        for _ in range(2):
+            enc.reset_nonce(nonce)
+            assert enc.update(data) == ct1
+        enc.finalize()
+        with pytest.raises(AlreadyFinalized):
+            enc.reset_nonce(nonce)
+        dec = cipher.decryptor()
+        assert dec.update(ct1) == data
+        for _ in range(2):
+            dec.reset_nonce(nonce)
+            assert dec.update(ct1) == data
+        dec.finalize()
+        with pytest.raises(AlreadyFinalized):
+            dec.reset_nonce(nonce)
+
+    def test_nonce_reset_invalid_length(self, backend):
+        key = b"\x00" * 32
+        nonce = b"\x00" * 16
+        cipher = Cipher(algorithms.ChaCha20(key, nonce), None)
+        enc = cipher.encryptor()
+        with pytest.raises(ValueError):
+            enc.reset_nonce(nonce[:-1])
+        with pytest.raises(ValueError):
+            enc.reset_nonce(nonce + b"\x00")
