@@ -24,10 +24,12 @@ pub(crate) mod types;
 mod x509;
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
+#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
     legacy: Option<provider::Provider>,
     _default: provider::Provider,
+
+    fips: Option<provider::Provider>,
 }
 
 #[pyo3::prelude::pyfunction]
@@ -63,7 +65,11 @@ fn _initialize_providers() -> CryptographyResult<LoadedProviders> {
         None
     };
     let _default = provider::Provider::load(None, "default")?;
-    Ok(LoadedProviders { legacy, _default })
+    Ok(LoadedProviders {
+        legacy,
+        _default,
+        fips: None,
+    })
 }
 
 fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
@@ -72,6 +78,14 @@ fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
             "OpenSSL 3.0's legacy provider failed to load. This is a fatal error by default, but cryptography supports running without legacy algorithms by setting the environment variable CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error, you have likely made a mistake with your OpenSSL configuration."
         ));
     }
+    Ok(())
+}
+
+#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[pyo3::prelude::pyfunction]
+fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
+    providers.fips = Some(provider::Provider::load(None, "fips")?);
+    cryptography_openssl::fips::enable()?;
     Ok(())
 }
 
@@ -124,6 +138,8 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
                 openssl_mod.add("_legacy_provider_loaded", false)?;
             }
             openssl_mod.add("_providers", providers)?;
+
+            openssl_mod.add_function(pyo3::wrap_pyfunction!(enable_fips, m)?)?;
         } else {
             // default value for non-openssl 3+
             openssl_mod.add("_legacy_provider_loaded", false)?;

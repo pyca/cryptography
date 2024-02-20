@@ -25,7 +25,6 @@ static const int EVP_PKEY_ED25519;
 static const int EVP_MAX_MD_SIZE;
 
 static const int Cryptography_HAS_EVP_PKEY_DHX;
-static const long Cryptography_HAS_300_FIPS;
 """
 
 FUNCTIONS = """
@@ -60,8 +59,6 @@ void EVP_MD_CTX_free(EVP_MD_CTX *);
 int EVP_PKEY_bits(const EVP_PKEY *);
 
 int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
-
-int EVP_default_properties_enable_fips(OSSL_LIB_CTX *, int);
 """
 
 CUSTOMIZATIONS = """
@@ -69,12 +66,5 @@ CUSTOMIZATIONS = """
 const long Cryptography_HAS_EVP_PKEY_DHX = 1;
 #else
 const long Cryptography_HAS_EVP_PKEY_DHX = 0;
-#endif
-
-#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-static const long Cryptography_HAS_300_FIPS = 1;
-#else
-static const long Cryptography_HAS_300_FIPS = 0;
-int (*EVP_default_properties_enable_fips)(OSSL_LIB_CTX *, int) = NULL;
 #endif
 """
