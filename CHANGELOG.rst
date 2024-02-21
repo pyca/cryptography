@@ -6,6 +6,9 @@ Changelog
 42.0.4 - 2024-02-20
 ~~~~~~~~~~~~~~~~~~~
 
+* Fixed a null-pointer-dereference and segfault that could occur when creating
+  a PKCS#12 bundle. Credit to **Alexander-Programming** for reporting the
+  issue. **CVE-2024-26130**
 * Fixed ASN.1 encoding for PKCS7/SMIME signed messages. The fields ``SMIMECapabilities``
   and ``SignatureAlgorithmIdentifier`` should now be correctly encoded according to the
   definitions in :rfc:`2633` :rfc:`3370`.
