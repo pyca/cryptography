@@ -273,7 +273,6 @@ impl ECPrivateKey {
                 )),
             ));
         }
-
         let (data, _algo) = utils::calculate_digest_and_algorithm(
             py,
             data.as_bytes(),
@@ -287,17 +286,18 @@ impl ECPrivateKey {
             .extract()?;
         cfg_if::cfg_if! {
             if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]{
-                match deterministic {
-                    true => {
-                        let hash_function_name = _algo.getattr(pyo3::intern!(py, "name"))?.extract::<&str>()?;
-                        let hash_function = openssl::md::Md::fetch(None, hash_function_name, None)?;
-                        // Setting a deterministic nonce type requires to explicitly set the hash function.
-                        // See https://github.com/openssl/openssl/issues/23205
-                        signer.set_signature_md(&hash_function)?;
-                        signer.set_nonce_type(openssl::pkey_ctx::NonceType::DETERMINISTIC_K)?;
-                        },
-                    false => signer.set_nonce_type(openssl::pkey_ctx::NonceType::RANDOM_K)?,
-                };
+                if deterministic {
+                    let hash_function_name = _algo
+                        .getattr(pyo3::intern!(py, "name"))?
+                        .extract::<&str>()?;
+                    let hash_function = openssl::md::Md::fetch(None, hash_function_name, None)?;
+                    // Setting a deterministic nonce type requires to explicitly set the hash function.
+                    // See https://github.com/openssl/openssl/issues/23205
+                    signer.set_signature_md(&hash_function)?;
+                    signer.set_nonce_type(openssl::pkey_ctx::NonceType::DETERMINISTIC_K)?;
+                } else {
+                    signer.set_nonce_type(openssl::pkey_ctx::NonceType::RANDOM_K)?;
+                }
             } else {
                 assert!(!deterministic);
             }

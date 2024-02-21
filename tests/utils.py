@@ -747,7 +747,7 @@ def load_rfc6979_vectors(vector_data):
         elif not line:
             if data:
                 vectors.append(data)
-                data = dict()
+                data = {}
 
     return vectors
 

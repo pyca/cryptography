@@ -49,7 +49,10 @@ Elliptic Curve Signature Algorithms
 
     :param bool deterministic_signing: A boolean flag defaulting to ``False``
         that specifies whether the signing procedure should be deterministic
-        or not, as defined in :rfc:`6979`.
+        or not, as defined in :rfc:`6979`. This only impacts the signing
+        process, verification is not affected (the verification process
+        is the same for both deterministic and non-deterministic signed
+        messages).
 
         .. versionadded:: 43.0.0
 
