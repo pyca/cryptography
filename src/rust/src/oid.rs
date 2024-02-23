@@ -41,17 +41,12 @@ impl ObjectIdentifier {
         slf
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        let self_clone = pyo3::PyCell::new(
-            py,
-            ObjectIdentifier {
-                oid: self.oid.clone(),
-            },
-        )?;
-        let name = ObjectIdentifier::_name(self_clone.borrow(), py)?.extract::<&str>()?;
+    fn __repr__(slf: &pyo3::PyCell<Self>, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        let name = Self::_name(slf.borrow(), py)?.extract::<&str>()?;
         Ok(format!(
             "<ObjectIdentifier(oid={}, name={})>",
-            self.oid, name
+            slf.get().oid,
+            name
         ))
     }
 
