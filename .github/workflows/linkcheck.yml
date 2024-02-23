@@ -4,9 +4,9 @@ on:
     paths:
       - docs/conf.py
       - .github/workflows/linkcheck.yml
-  push:
-    branches:
-      - main
+  schedule:
+    # Run once a week on Fridays
+    - cron: "0 0 * * FRI"
 
 permissions:
   contents: read
