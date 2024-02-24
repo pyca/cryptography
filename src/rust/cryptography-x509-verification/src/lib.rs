@@ -33,7 +33,33 @@ pub enum ValidationError {
     CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
     DuplicateExtension(DuplicateExtensionsError),
+    FatalError(&'static str),
     Other(String),
+}
+
+struct Budget {
+    name_constraint_checks: usize,
+}
+
+impl Budget {
+    // Same limit as other validators
+    const DEFAULT_NAME_CONSTRAINT_CHECK_LIMIT: usize = 1 << 20;
+
+    fn new() -> Budget {
+        Budget {
+            name_constraint_checks: Self::DEFAULT_NAME_CONSTRAINT_CHECK_LIMIT,
+        }
+    }
+
+    fn name_constraint_check(&mut self) -> Result<(), ValidationError> {
+        self.name_constraint_checks =
+            self.name_constraint_checks
+                .checked_sub(1)
+                .ok_or(ValidationError::FatalError(
+                    "Exceeded maximum name constraint check limit",
+                ))?;
+        Ok(())
+    }
 }
 
 impl From<asn1::ParseError> for ValidationError {
@@ -76,7 +102,10 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         &self,
         constraint: &GeneralName<'chain>,
         san: &GeneralName<'chain>,
+        budget: &mut Budget,
     ) -> Result<ApplyNameConstraintStatus, ValidationError> {
+        budget.name_constraint_check()?;
+
         match (constraint, san) {
             (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
                 match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
@@ -114,9 +143,10 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
     fn evaluate_constraints(
         &self,
         constraints: &NameConstraints<'chain>,
+        budget: &mut Budget,
     ) -> Result<(), ValidationError> {
         if let Some(child) = self.child {
-            child.evaluate_constraints(constraints)?;
+            child.evaluate_constraints(constraints, budget)?;
         }
 
         for san in self.sans.clone() {
@@ -124,7 +154,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             let mut permit = true;
             if let Some(permitted_subtrees) = &constraints.permitted_subtrees {
                 for p in permitted_subtrees.unwrap_read().clone() {
-                    let status = self.evaluate_single_constraint(&p.base, &san)?;
+                    let status = self.evaluate_single_constraint(&p.base, &san, budget)?;
                     if status.is_applied() {
                         permit = status.is_match();
                         if permit {
@@ -142,7 +172,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
             if let Some(excluded_subtrees) = &constraints.excluded_subtrees {
                 for e in excluded_subtrees.unwrap_read().clone() {
-                    let status = self.evaluate_single_constraint(&e.base, &san)?;
+                    let status = self.evaluate_single_constraint(&e.base, &san, budget)?;
                     if status.is_match() {
                         return Err(ValidationError::Other(
                             "excluded name constraint matched SAN".into(),
@@ -166,7 +196,8 @@ pub fn verify<'chain, B: CryptoOps>(
 ) -> Result<Chain<'chain, B>, ValidationError> {
     let builder = ChainBuilder::new(intermediates.into_iter().collect(), policy, store);
 
-    builder.build_chain(leaf)
+    let mut budget = Budget::new();
+    builder.build_chain(leaf, &mut budget)
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
@@ -227,9 +258,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         current_depth: u8,
         working_cert_extensions: &Extensions<'chain>,
         name_chain: NameChain<'_, 'chain>,
+        budget: &mut Budget,
     ) -> Result<Chain<'chain, B>, ValidationError> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            name_chain.evaluate_constraints(&nc.value()?)?;
+            name_chain.evaluate_constraints(&nc.value()?, budget)?;
         }
 
         // Look in the store's root set to see if the working cert is listed.
@@ -295,11 +327,14 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                             // candidate (which is a non-leaf by definition) isn't self-issued.
                             cert_is_self_issued(issuing_cert_candidate.certificate()),
                         )?,
+                        budget,
                     ) {
                         Ok(mut chain) => {
                             chain.push(working_cert.clone());
                             return Ok(chain);
                         }
+                        // Immediately return on fatal error.
+                        Err(e @ ValidationError::FatalError(..)) => return Err(e),
                         Err(e) => last_err = Some(e),
                     };
                 }
@@ -326,6 +361,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn build_chain(
         &self,
         leaf: &VerificationCertificate<'chain, B>,
+        budget: &mut Budget,
     ) -> Result<Chain<'chain, B>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
@@ -342,6 +378,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             0,
             &leaf_extensions,
             NameChain::new(None, &leaf_extensions, false)?,
+            budget,
         )?;
         // We build the chain in reverse order, fix it now.
         chain.reverse();
