@@ -27,6 +27,16 @@ Changelog
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
   They will be removed from the ``cipher`` module in 48.0.0.
 
+.. _v42-0-5:
+
+42.0.5 - 2024-02-23
+~~~~~~~~~~~~~~~~~~~
+
+* Limit the number of name constraint checks that will be performed in
+  :mod:`X.509 path validation <cryptography.x509.verification>` to protect
+  against denial of service attacks.
+* Upgrade ``pyo3`` version, which fixes building on PowerPC.
+
 .. _v42-0-4:
 
 42.0.4 - 2024-02-20
