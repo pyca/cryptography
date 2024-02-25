@@ -47,11 +47,8 @@ jobs:
           # Latest commit on the OpenSSL master branch, as of Feb 23, 2024.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "11adf9a75d6b34723d1a20a0da4e4100ea6ca593"}}
           # Builds with various Rust versions. Includes MSRV and next
-          # potential future MSRV:
-          # 1.64 - maturin, workspace inheritance
-          # 1.65 - Generic associated types (GATs), std::backtrace
-          - {VERSION: "3.12", NOXSESSION: "rust-noclippy,tests", RUST: "1.63.0"}
-          - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.64.0"}
+          # potential future MSRV.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.65.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15
