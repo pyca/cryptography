@@ -90,7 +90,7 @@ pep8test = ["ruff", "mypy", "check-sdist", "click"]
 target = "cryptography.hazmat.bindings._rust"
 path = "src/rust/Cargo.toml"
 py-limited-api = "auto"
-rust-version = ">=1.63.0"
+rust-version = ">=1.65.0"
 
 
 [tool.pytest.ini_options]
