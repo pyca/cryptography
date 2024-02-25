@@ -1,5 +1,6 @@
 [build-system]
-# These requirements must be kept sync with the requirements on ./github/requirements/build-requirements files
+# These requirements must be kept sync with the requirements in
+# ./github/requirements/build-requirements.{in,txt}
 requires = [
     # First version of setuptools to support pyproject.toml configuration
     "setuptools>=61.0.0",
