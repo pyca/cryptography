@@ -347,7 +347,7 @@ impl<'a> RFC822Name<'a> {
     }
 
     pub fn mailbox(&self) -> &str {
-        &(self.0).0.as_str()
+        (self.0).0.as_str()
     }
 
     pub fn domain(&self) -> &DNSName<'_> {
