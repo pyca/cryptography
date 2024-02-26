@@ -318,13 +318,8 @@ impl<'a> RFC822Name<'a> {
     pub fn new(value: &'a str) -> Option<Self> {
         // Mailbox = Local-part "@" Domain
         // Both must be present.
-        let Some((local_part, domain)) = value.split_once('@') else {
-            return None;
-        };
-
-        let Some(local_part) = IA5String::new(local_part) else {
-            return None;
-        };
+        let (local_part, domain) = value.split_once('@')?;
+        let local_part = IA5String::new(local_part)?;
 
         // Local-part = Dot-string / Quoted-string
         // NOTE(ww): We do not support the Quoted-string form, for now.
