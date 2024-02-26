@@ -543,36 +543,37 @@ class TestECDSAVectors:
             load_rfc6979_vectors,
         )
 
-        for vector in vectors:
-            input = bytes(vector["input"], "utf-8")
-            output = bytes.fromhex(vector["output"])
-            key = bytes("\n".join(vector["key"]), "utf-8")
-            if "digest_sign" in vector:
-                algorithm = vector["digest_sign"]
-                hash_algorithm = supported_hash_algorithms[algorithm]
-                algorithm = ec.ECDSA(
-                    hash_algorithm,
-                    deterministic_signing=vector["deterministic_nonce"],
-                )
-                private_key = serialization.load_pem_private_key(
-                    key, password=None
-                )
-                assert isinstance(private_key, EllipticCurvePrivateKey)
-                signature = private_key.sign(input, algorithm)
-                assert signature == output
-            else:
-                assert "digest_verify" in vector
-                algorithm = vector["digest_verify"]
-                assert algorithm in supported_hash_algorithms
-                hash_algorithm = supported_hash_algorithms[algorithm]
-                algorithm = ec.ECDSA(hash_algorithm)
-                public_key = serialization.load_pem_public_key(key)
-                assert isinstance(public_key, EllipticCurvePublicKey)
-                if vector["verify_error"]:
-                    with pytest.raises(exceptions.InvalidSignature):
-                        public_key.verify(output, input, algorithm)
+        with subtests.test():
+            for vector in vectors:
+                input = bytes(vector["input"], "utf-8")
+                output = bytes.fromhex(vector["output"])
+                key = bytes("\n".join(vector["key"]), "utf-8")
+                if "digest_sign" in vector:
+                    algorithm = vector["digest_sign"]
+                    hash_algorithm = supported_hash_algorithms[algorithm]
+                    algorithm = ec.ECDSA(
+                        hash_algorithm,
+                        deterministic_signing=vector["deterministic_nonce"],
+                    )
+                    private_key = serialization.load_pem_private_key(
+                        key, password=None
+                    )
+                    assert isinstance(private_key, EllipticCurvePrivateKey)
+                    signature = private_key.sign(input, algorithm)
+                    assert signature == output
                 else:
-                    public_key.verify(output, input, algorithm)
+                    assert "digest_verify" in vector
+                    algorithm = vector["digest_verify"]
+                    assert algorithm in supported_hash_algorithms
+                    hash_algorithm = supported_hash_algorithms[algorithm]
+                    algorithm = ec.ECDSA(hash_algorithm)
+                    public_key = serialization.load_pem_public_key(key)
+                    assert isinstance(public_key, EllipticCurvePublicKey)
+                    if vector["verify_error"]:
+                        with pytest.raises(exceptions.InvalidSignature):
+                            public_key.verify(output, input, algorithm)
+                    else:
+                        public_key.verify(output, input, algorithm)
 
     def test_sign(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
