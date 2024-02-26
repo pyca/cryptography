@@ -300,7 +300,12 @@ impl ECPrivateKey {
                 }
             } else {
                 let _ = algo;
-                assert!(!deterministic);
+                return Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err((
+                        "ECDSA with deterministic signature (RFC 6979) is not supported by this version of OpenSSL.",
+                        exceptions::Reasons::UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
+                    )),
+                ));
             }
         }
 
