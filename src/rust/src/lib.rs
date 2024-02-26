@@ -3,6 +3,7 @@
 // for complete details.
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
+#![allow(unknown_lints, non_local_definitions)]
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use crate::error::CryptographyResult;
