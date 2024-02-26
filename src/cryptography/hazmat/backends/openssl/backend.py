@@ -358,6 +358,12 @@ class Backend:
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
+    def ecdsa_deterministic_supported(self) -> bool:
+        return (
+            rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not self._fips_enabled
+        )
+
     def _zero_data(self, data, length: int) -> None:
         # We clear things this way because at the moment we're not
         # sure of a better way that can guarantee it overwrites the
