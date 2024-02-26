@@ -25,8 +25,6 @@ size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 void EC_KEY_free(EC_KEY *);
 
 EC_KEY *EC_KEY_new_by_curve_name(int);
-
-const char *EC_curve_nid2nist(int);
 """
 
 CUSTOMIZATIONS = """

@@ -48,7 +48,10 @@ enum HashType {
     Sha3_512,
 }
 
-fn identify_key_type(py: pyo3::Python<'_>, private_key: &pyo3::PyAny) -> pyo3::PyResult<KeyType> {
+pub(crate) fn identify_key_type(
+    py: pyo3::Python<'_>,
+    private_key: &pyo3::PyAny,
+) -> pyo3::PyResult<KeyType> {
     if private_key.is_instance(types::RSA_PRIVATE_KEY.get(py)?)? {
         Ok(KeyType::Rsa)
     } else if private_key.is_instance(types::DSA_PRIVATE_KEY.get(py)?)? {
@@ -134,7 +137,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
     // If this is RSA-PSS we need to compute the signature algorithm from the
     // parameters provided in rsa_padding.
-    if !rsa_padding.is_none() && rsa_padding.is_instance(types::PSS.get(py)?)? {
+    if rsa_padding.is_instance(types::PSS.get(py)?)? {
         let hash_alg_params = identify_alg_params_for_hash_type(hash_type)?;
         let hash_algorithm_id = common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),

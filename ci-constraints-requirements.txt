@@ -25,7 +25,7 @@ click==8.1.7
     # via cryptography (pyproject.toml)
 colorlog==6.8.2
     # via nox
-coverage==7.4.1; python_version >= "3.8"
+coverage==7.4.3; python_version >= "3.8"
     # via
     #   coverage
     #   pytest-cov
@@ -86,7 +86,7 @@ pygments==2.17.2
     #   sphinx
 pyproject-hooks==1.0.0
     # via build
-pytest==8.0.0; python_version >= "3.8"
+pytest==8.0.2; python_version >= "3.8"
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
@@ -105,7 +105,7 @@ readme-renderer==42.0
     # via cryptography (pyproject.toml)
 requests==2.31.0
     # via sphinx
-ruff==0.2.1
+ruff==0.2.2
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx
@@ -146,11 +146,11 @@ tomli==2.0.1
     #   mypy
     #   pyproject-hooks
     #   pytest
-typing-extensions==4.9.0; python_version >= "3.8"
+typing-extensions==4.10.0; python_version >= "3.8"
     # via mypy
-urllib3==2.2.0
+urllib3==2.2.1
     # via requests
-virtualenv==20.25.0
+virtualenv==20.25.1
     # via nox
 
 # The following packages are considered to be unsafe in a requirements file:

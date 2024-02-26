@@ -8,6 +8,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...doubles import DummyMode
@@ -61,7 +62,7 @@ class TestAESModeXTS:
             enc.update(b"0" * 15)
 
     @pytest.mark.supported(
-        only_if=lambda backend: (not backend._lib.CRYPTOGRAPHY_IS_LIBRESSL),
+        only_if=lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL,
         skip_message="duplicate key encryption error added in OpenSSL 1.1.1d",
     )
     def test_xts_no_duplicate_keys_encryption(self, backend):

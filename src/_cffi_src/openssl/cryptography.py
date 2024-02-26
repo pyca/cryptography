@@ -53,11 +53,6 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int CRYPTOGRAPHY_OPENSSL_300_OR_GREATER;
-static const int CRYPTOGRAPHY_OPENSSL_320_OR_GREATER;
-
-static const int CRYPTOGRAPHY_IS_LIBRESSL;
-static const int CRYPTOGRAPHY_IS_BORINGSSL;
 """
 
 FUNCTIONS = """

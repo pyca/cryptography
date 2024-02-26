@@ -15,6 +15,7 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -251,7 +252,7 @@ class TestRSA:
         assert public_num.e == public_num2.e
 
     @pytest.mark.supported(
-        only_if=lambda backend: not backend._lib.CRYPTOGRAPHY_IS_BORINGSSL,
+        only_if=lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RSA PSS loading",
     )
     @pytest.mark.parametrize(
@@ -302,7 +303,7 @@ class TestRSA:
             )
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend._lib.CRYPTOGRAPHY_IS_BORINGSSL,
+        only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Test requires a backend without RSA-PSS key support",
     )
     def test_load_pss_unsupported(self, backend):

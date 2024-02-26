@@ -1,5 +1,6 @@
 [build-system]
-# These requirements must be kept sync with the requirements on ./github/requirements/build-requirements files
+# These requirements must be kept sync with the requirements in
+# ./github/requirements/build-requirements.{in,txt}
 requires = [
     # First version of setuptools to support pyproject.toml configuration
     "setuptools>=61.0.0",
@@ -89,7 +90,7 @@ pep8test = ["ruff", "mypy", "check-sdist", "click"]
 target = "cryptography.hazmat.bindings._rust"
 path = "src/rust/Cargo.toml"
 py-limited-api = "auto"
-rust-version = ">=1.63.0"
+rust-version = ">=1.65.0"
 
 
 [tool.pytest.ini_options]

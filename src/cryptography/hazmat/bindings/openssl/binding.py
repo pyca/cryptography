@@ -17,13 +17,9 @@ from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
-def _openssl_assert(
-    ok: bool,
-    errors: list[openssl.OpenSSLError] | None = None,
-) -> None:
+def _openssl_assert(ok: bool) -> None:
     if not ok:
-        if errors is None:
-            errors = openssl.capture_error_stack()
+        errors = openssl.capture_error_stack()
 
         raise InternalError(
             "Unknown OpenSSL error. This error is commonly encountered when "
@@ -67,22 +63,6 @@ class Binding:
 
     def __init__(self) -> None:
         self._ensure_ffi_initialized()
-
-    def _enable_fips(self) -> None:
-        # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
-        # have the FIPS provider installed properly.
-        _openssl_assert(self.lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)
-        self._base_provider = self.lib.OSSL_PROVIDER_load(
-            self.ffi.NULL, b"base"
-        )
-        _openssl_assert(self._base_provider != self.ffi.NULL)
-        self.lib._fips_provider = self.lib.OSSL_PROVIDER_load(
-            self.ffi.NULL, b"fips"
-        )
-        _openssl_assert(self.lib._fips_provider != self.ffi.NULL)
-
-        res = self.lib.EVP_default_properties_enable_fips(self.ffi.NULL, 1)
-        _openssl_assert(res == 1)
 
     @classmethod
     def _ensure_ffi_initialized(cls) -> None:

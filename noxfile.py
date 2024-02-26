@@ -250,11 +250,15 @@ def rust(session: nox.Session) -> None:
 @nox.session
 def local(session):
     pyproject_data = load_pyproject_toml()
+    test_dependencies = pyproject_data["project"]["optional-dependencies"][
+        "test"
+    ]
+    test_dependencies.remove("cryptography_vectors")
     install(
         session,
         *pyproject_data["build-system"]["requires"],
         *pyproject_data["project"]["optional-dependencies"]["pep8test"],
-        *pyproject_data["project"]["optional-dependencies"]["test"],
+        *test_dependencies,
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
         "flit",
@@ -288,7 +292,7 @@ def local(session):
         "noxfile.py",
     )
 
-    install(session, ".[test]")
+    install(session, ".")
 
     if session.posargs:
         tests = session.posargs

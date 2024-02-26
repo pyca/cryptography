@@ -2,7 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use foreign_types_shared::ForeignTypeRef;
 use pyo3::IntoPy;
 
 use crate::backend::utils;
@@ -61,18 +60,7 @@ fn load_pem_private_key(
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
-#[pyo3::prelude::pyfunction]
-fn private_key_from_ptr(
-    py: pyo3::Python<'_>,
-    ptr: usize,
-    unsafe_skip_rsa_key_validation: bool,
-) -> CryptographyResult<pyo3::PyObject> {
-    // SAFETY: Caller is responsible for passing a valid pointer.
-    let pkey = unsafe { openssl::pkey::PKeyRef::from_ptr(ptr as *mut _) };
-    private_key_from_pkey(py, pkey, unsafe_skip_rsa_key_validation)
-}
-
-fn private_key_from_pkey(
+pub(crate) fn private_key_from_pkey(
     py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     unsafe_skip_rsa_key_validation: bool,
@@ -236,16 +224,16 @@ pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelu
     m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(load_pem_public_key, m)?)?;
 
-    m.add_function(pyo3::wrap_pyfunction!(private_key_from_ptr, m)?)?;
-
     Ok(m)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::public_key_from_pkey;
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    use super::{private_key_from_pkey, public_key_from_pkey};
 
     #[test]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn test_public_key_from_pkey_unknown_key() {
         pyo3::prepare_freethreaded_python();
 
@@ -256,6 +244,17 @@ mod tests {
             // Pass a nonsense id for this key to test the unsupported
             // algorithm path.
             assert!(public_key_from_pkey(py, &pkey, openssl::pkey::Id::CMAC).is_err());
+        });
+    }
+
+    #[test]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    fn test_private_key_from_pkey_unknown_key() {
+        pyo3::prepare_freethreaded_python();
+
+        pyo3::Python::with_gil(|py| {
+            let pkey = openssl::pkey::PKey::hmac(&[0; 32]).unwrap();
+            assert!(private_key_from_pkey(py, &pkey, false).is_err());
         });
     }
 }

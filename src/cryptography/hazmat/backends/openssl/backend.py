@@ -6,22 +6,12 @@ from __future__ import annotations
 
 import collections
 import contextlib
-import itertools
 import typing
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
-from cryptography.hazmat.decrepit.ciphers.algorithms import (
-    ARC4,
-    CAST5,
-    IDEA,
-    SEED,
-    Blowfish,
-    TripleDES,
-)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -32,45 +22,24 @@ from cryptography.hazmat.primitives.asymmetric.padding import (
     PSS,
     PKCS1v15,
 )
-from cryptography.hazmat.primitives.asymmetric.types import (
-    PrivateKeyTypes,
-)
 from cryptography.hazmat.primitives.ciphers import (
     CipherAlgorithm,
 )
 from cryptography.hazmat.primitives.ciphers.algorithms import (
     AES,
-    AES128,
-    AES256,
-    SM4,
-    Camellia,
-    ChaCha20,
 )
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,
-    CFB,
-    CFB8,
-    CTR,
-    ECB,
-    GCM,
-    OFB,
-    XTS,
     Mode,
 )
 from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PBES,
     PKCS12Certificate,
-    PKCS12KeyAndCertificates,
     PKCS12PrivateKeyTypes,
     _PKCS12CATypes,
 )
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-
-
-# Not actually supported, just used as a marker for some serialization tests.
-class _RC2:
-    pass
 
 
 class Backend:
@@ -117,12 +86,6 @@ class Backend:
         self._lib = self._binding.lib
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
-        self._cipher_registry: dict[
-            tuple[type[CipherAlgorithm], type[Mode]],
-            typing.Callable,
-        ] = {}
-        self._register_default_ciphers()
-
     def __repr__(self) -> str:
         return "<OpenSSLBackend(version: {}, FIPS: {}, Legacy: {})>".format(
             self.openssl_version_text(),
@@ -130,17 +93,13 @@ class Backend:
             rust_openssl._legacy_provider_loaded,
         )
 
-    def openssl_assert(
-        self,
-        ok: bool,
-        errors: list[rust_openssl.OpenSSLError] | None = None,
-    ) -> None:
-        return binding._openssl_assert(ok, errors=errors)
+    def openssl_assert(self, ok: bool) -> None:
+        return binding._openssl_assert(ok)
 
     def _enable_fips(self) -> None:
         # This function enables FIPS mode for OpenSSL 3.0.0 on installs that
         # have the FIPS provider installed properly.
-        self._binding._enable_fips()
+        rust_openssl.enable_fips(rust_openssl._providers)
         assert rust_openssl.is_fips_enabled()
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
@@ -151,12 +110,10 @@ class Backend:
 
         Example: OpenSSL 3.2.1 30 Jan 2024
         """
-        return self._ffi.string(
-            self._lib.OpenSSL_version(self._lib.OPENSSL_VERSION)
-        ).decode("ascii")
+        return rust_openssl.openssl_version_text()
 
     def openssl_version_number(self) -> int:
-        return self._lib.OpenSSL_version_num()
+        return rust_openssl.openssl_version()
 
     def _evp_md_from_algorithm(self, algorithm: hashes.HashAlgorithm):
         if algorithm.name in ("blake2b", "blake2s"):
@@ -194,7 +151,7 @@ class Backend:
         if self._fips_enabled:
             return False
         else:
-            return self._lib.Cryptography_HAS_SCRYPT == 1
+            return hasattr(rust_openssl.kdf, "derive_scrypt")
 
     def hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         # FIPS mode still allows SHA1 for HMAC
@@ -210,103 +167,7 @@ class Backend:
             if not isinstance(cipher, self._fips_ciphers):
                 return False
 
-        try:
-            adapter = self._cipher_registry[type(cipher), type(mode)]
-        except KeyError:
-            return False
-        evp_cipher = adapter(self, cipher, mode)
-        return self._ffi.NULL != evp_cipher
-
-    def register_cipher_adapter(self, cipher_cls, mode_cls, adapter) -> None:
-        if (cipher_cls, mode_cls) in self._cipher_registry:
-            raise ValueError(
-                f"Duplicate registration for: {cipher_cls} {mode_cls}."
-            )
-        self._cipher_registry[cipher_cls, mode_cls] = adapter
-
-    def _register_default_ciphers(self) -> None:
-        for cipher_cls in [AES, AES128, AES256]:
-            for mode_cls in [CBC, CTR, ECB, OFB, CFB, CFB8, GCM]:
-                self.register_cipher_adapter(
-                    cipher_cls,
-                    mode_cls,
-                    GetCipherByName(
-                        "{cipher.name}-{cipher.key_size}-{mode.name}"
-                    ),
-                )
-        for mode_cls in [CBC, CTR, ECB, OFB, CFB]:
-            self.register_cipher_adapter(
-                Camellia,
-                mode_cls,
-                GetCipherByName("{cipher.name}-{cipher.key_size}-{mode.name}"),
-            )
-        for mode_cls in [CBC, CFB, CFB8, OFB]:
-            self.register_cipher_adapter(
-                TripleDES, mode_cls, GetCipherByName("des-ede3-{mode.name}")
-            )
-        self.register_cipher_adapter(
-            TripleDES, ECB, GetCipherByName("des-ede3")
-        )
-        # ChaCha20 uses the Long Name "chacha20" in OpenSSL, but in LibreSSL
-        # it uses "chacha"
-        self.register_cipher_adapter(
-            ChaCha20,
-            type(None),
-            GetCipherByName(
-                "chacha" if self._lib.CRYPTOGRAPHY_IS_LIBRESSL else "chacha20"
-            ),
-        )
-        self.register_cipher_adapter(AES, XTS, _get_xts_cipher)
-        for mode_cls in [ECB, CBC, OFB, CFB, CTR, GCM]:
-            self.register_cipher_adapter(
-                SM4, mode_cls, GetCipherByName("sm4-{mode.name}")
-            )
-        # Don't register legacy ciphers if they're unavailable. Hypothetically
-        # this wouldn't be necessary because we test availability by seeing if
-        # we get an EVP_CIPHER * in the _CipherContext __init__, but OpenSSL 3
-        # will return a valid pointer even though the cipher is unavailable.
-        if (
-            rust_openssl._legacy_provider_loaded
-            or not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-        ):
-            for mode_cls in [CBC, CFB, OFB, ECB]:
-                self.register_cipher_adapter(
-                    Blowfish,
-                    mode_cls,
-                    GetCipherByName("bf-{mode.name}"),
-                )
-            for mode_cls in [CBC, CFB, OFB, ECB]:
-                self.register_cipher_adapter(
-                    SEED,
-                    mode_cls,
-                    GetCipherByName("seed-{mode.name}"),
-                )
-            for cipher_cls, mode_cls in itertools.product(
-                [CAST5, IDEA],
-                [CBC, OFB, CFB, ECB],
-            ):
-                self.register_cipher_adapter(
-                    cipher_cls,
-                    mode_cls,
-                    GetCipherByName("{cipher.name}-{mode.name}"),
-                )
-            self.register_cipher_adapter(
-                ARC4, type(None), GetCipherByName("rc4")
-            )
-            # We don't actually support RC2, this is just used by some tests.
-            self.register_cipher_adapter(
-                _RC2, type(None), GetCipherByName("rc2")
-            )
-
-    def create_symmetric_encryption_ctx(
-        self, cipher: CipherAlgorithm, mode: Mode
-    ) -> _CipherContext:
-        return _CipherContext(self, cipher, mode, _CipherContext._ENCRYPT)
-
-    def create_symmetric_decryption_ctx(
-        self, cipher: CipherAlgorithm, mode: Mode
-    ) -> _CipherContext:
-        return _CipherContext(self, cipher, mode, _CipherContext._DECRYPT)
+        return rust_openssl.ciphers.cipher_supported(cipher, mode)
 
     def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         return self.hmac_supported(algorithm)
@@ -391,7 +252,8 @@ class Backend:
 
     def dsa_supported(self) -> bool:
         return (
-            not self._lib.CRYPTOGRAPHY_IS_BORINGSSL and not self._fips_enabled
+            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not self._fips_enabled
         )
 
     def dsa_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
@@ -412,12 +274,6 @@ class Backend:
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return x509
 
-    def _ossl2cert(self, x509_ptr: typing.Any) -> x509.Certificate:
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_X509_bio(bio, x509_ptr)
-        self.openssl_assert(res == 1)
-        return x509.load_der_x509_certificate(self._read_mem_bio(bio))
-
     def _key2ossl(self, key: PKCS12PrivateKeyTypes) -> typing.Any:
         data = key.private_bytes(
             serialization.Encoding.DER,
@@ -432,52 +288,6 @@ class Backend:
         )
         self.openssl_assert(evp_pkey != self._ffi.NULL)
         return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
-
-    def _handle_key_loading_error(
-        self, errors: list[rust_openssl.OpenSSLError]
-    ) -> typing.NoReturn:
-        if not errors:
-            raise ValueError(
-                "Could not deserialize key data. The data may be in an "
-                "incorrect format or it may be encrypted with an unsupported "
-                "algorithm."
-            )
-
-        elif (
-            errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_EVP, self._lib.EVP_R_BAD_DECRYPT
-            )
-            or errors[0]._lib_reason_match(
-                self._lib.ERR_LIB_PKCS12,
-                self._lib.PKCS12_R_PKCS12_CIPHERFINAL_ERROR,
-            )
-            or (
-                self._lib.Cryptography_HAS_PROVIDERS
-                and errors[0]._lib_reason_match(
-                    self._lib.ERR_LIB_PROV,
-                    self._lib.PROV_R_BAD_DECRYPT,
-                )
-            )
-        ):
-            raise ValueError("Bad decrypt. Incorrect password?")
-
-        elif any(
-            error._lib_reason_match(
-                self._lib.ERR_LIB_EVP,
-                self._lib.EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM,
-            )
-            for error in errors
-        ):
-            raise ValueError("Unsupported public key algorithm.")
-
-        else:
-            raise ValueError(
-                "Could not deserialize key data. The data may be in an "
-                "incorrect format, it may be encrypted with an unsupported "
-                "algorithm, or it may be an unsupported key type (e.g. EC "
-                "curves with explicit parameters).",
-                errors,
-            )
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
         if self._fips_enabled and not isinstance(
@@ -509,7 +319,7 @@ class Backend:
         )
 
     def dh_supported(self) -> bool:
-        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
@@ -518,7 +328,7 @@ class Backend:
         # Beginning with OpenSSL 3.2.0, X25519 is considered FIPS.
         if (
             self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
         ):
             return False
         return True
@@ -527,12 +337,12 @@ class Backend:
         # Beginning with OpenSSL 3.2.0, X448 is considered FIPS.
         if (
             self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
         ):
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
         )
 
     def ed25519_supported(self) -> bool:
@@ -544,8 +354,14 @@ class Backend:
         if self._fips_enabled:
             return False
         return (
-            not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-            and not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
+            not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        )
+
+    def ecdsa_deterministic_supported(self) -> bool:
+        return (
+            rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+            and not self._fips_enabled
         )
 
     def _zero_data(self, data, length: int) -> None:
@@ -578,96 +394,6 @@ class Backend:
                 # Cast to a uint8_t * so we can assign by integer
                 self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
 
-    def load_key_and_certificates_from_pkcs12(
-        self, data: bytes, password: bytes | None
-    ) -> tuple[
-        PrivateKeyTypes | None,
-        x509.Certificate | None,
-        list[x509.Certificate],
-    ]:
-        pkcs12 = self.load_pkcs12(data, password)
-        return (
-            pkcs12.key,
-            pkcs12.cert.certificate if pkcs12.cert else None,
-            [cert.certificate for cert in pkcs12.additional_certs],
-        )
-
-    def load_pkcs12(
-        self, data: bytes, password: bytes | None
-    ) -> PKCS12KeyAndCertificates:
-        if password is not None:
-            utils._check_byteslike("password", password)
-
-        bio = self._bytes_to_bio(data)
-        p12 = self._lib.d2i_PKCS12_bio(bio.bio, self._ffi.NULL)
-        if p12 == self._ffi.NULL:
-            self._consume_errors()
-            raise ValueError("Could not deserialize PKCS12 data")
-
-        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
-        evp_pkey_ptr = self._ffi.new("EVP_PKEY **")
-        x509_ptr = self._ffi.new("X509 **")
-        sk_x509_ptr = self._ffi.new("Cryptography_STACK_OF_X509 **")
-        with self._zeroed_null_terminated_buf(password) as password_buf:
-            res = self._lib.PKCS12_parse(
-                p12, password_buf, evp_pkey_ptr, x509_ptr, sk_x509_ptr
-            )
-        if res == 0:
-            self._consume_errors()
-            raise ValueError("Invalid password or PKCS12 data")
-
-        cert = None
-        key = None
-        additional_certificates = []
-
-        if evp_pkey_ptr[0] != self._ffi.NULL:
-            evp_pkey = self._ffi.gc(evp_pkey_ptr[0], self._lib.EVP_PKEY_free)
-            # We don't support turning off RSA key validation when loading
-            # PKCS12 keys
-            key = rust_openssl.keys.private_key_from_ptr(
-                int(self._ffi.cast("uintptr_t", evp_pkey)),
-                unsafe_skip_rsa_key_validation=False,
-            )
-
-        if x509_ptr[0] != self._ffi.NULL:
-            x509 = self._ffi.gc(x509_ptr[0], self._lib.X509_free)
-            cert_obj = self._ossl2cert(x509)
-            name = None
-            maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
-            if maybe_name != self._ffi.NULL:
-                name = self._ffi.string(maybe_name)
-            cert = PKCS12Certificate(cert_obj, name)
-
-        if sk_x509_ptr[0] != self._ffi.NULL:
-            sk_x509 = self._ffi.gc(sk_x509_ptr[0], self._lib.sk_X509_free)
-            num = self._lib.sk_X509_num(sk_x509_ptr[0])
-
-            # In OpenSSL < 3.0.0 PKCS12 parsing reverses the order of the
-            # certificates.
-            indices: typing.Iterable[int]
-            if (
-                self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-                or self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            ):
-                indices = range(num)
-            else:
-                indices = reversed(range(num))
-
-            for i in indices:
-                x509 = self._lib.sk_X509_value(sk_x509, i)
-                self.openssl_assert(x509 != self._ffi.NULL)
-                x509 = self._ffi.gc(x509, self._lib.X509_free)
-                addl_cert = self._ossl2cert(x509)
-                addl_name = None
-                maybe_name = self._lib.X509_alias_get0(x509, self._ffi.NULL)
-                if maybe_name != self._ffi.NULL:
-                    addl_name = self._ffi.string(maybe_name)
-                additional_certificates.append(
-                    PKCS12Certificate(addl_cert, addl_name)
-                )
-
-        return PKCS12KeyAndCertificates(key, cert, additional_certificates)
-
     def serialize_key_and_certificates_to_pkcs12(
         self,
         name: bytes | None,
@@ -692,7 +418,7 @@ class Backend:
             # PKCS12 encryption is hopeless trash and can never be fixed.
             # OpenSSL 3 supports PBESv2, but Libre and Boring do not, so
             # we use PBESv1 with 3DES on the older paths.
-            if self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+            if rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
                 nid_cert = self._lib.NID_aes_256_cbc
                 nid_key = self._lib.NID_aes_256_cbc
             else:
@@ -728,7 +454,7 @@ class Backend:
                 nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
                 nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             elif keycertalg is PBES.PBESv2SHA256AndAES256CBC:
-                if not self._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+                if not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
                     raise UnsupportedAlgorithm(
                         "PBESv2 is not supported by this version of OpenSSL"
                     )
@@ -803,6 +529,15 @@ class Backend:
                     mac_iter,
                     0,
                 )
+                if p12 == self._ffi.NULL:
+                    errors = self._consume_errors()
+                    raise ValueError(
+                        (
+                            "Failed to create PKCS12 (does the key match the "
+                            "certificate?)"
+                        ),
+                        errors,
+                    )
 
             if (
                 self._lib.Cryptography_HAS_PKCS12_SET_MAC
@@ -829,46 +564,10 @@ class Backend:
     def poly1305_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        elif (
-            self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-            or self._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        ):
-            return True
-        else:
-            return self._lib.Cryptography_HAS_POLY1305 == 1
+        return True
 
     def pkcs7_supported(self) -> bool:
-        return not self._lib.CRYPTOGRAPHY_IS_BORINGSSL
-
-
-class GetCipherByName:
-    def __init__(self, fmt: str):
-        self._fmt = fmt
-
-    def __call__(self, backend: Backend, cipher: CipherAlgorithm, mode: Mode):
-        cipher_name = self._fmt.format(cipher=cipher, mode=mode).lower()
-        evp_cipher = backend._lib.EVP_get_cipherbyname(
-            cipher_name.encode("ascii")
-        )
-
-        # try EVP_CIPHER_fetch if present
-        if (
-            evp_cipher == backend._ffi.NULL
-            and backend._lib.Cryptography_HAS_300_EVP_CIPHER
-        ):
-            evp_cipher = backend._lib.EVP_CIPHER_fetch(
-                backend._ffi.NULL,
-                cipher_name.encode("ascii"),
-                backend._ffi.NULL,
-            )
-
-        backend._consume_errors()
-        return evp_cipher
-
-
-def _get_xts_cipher(backend: Backend, cipher: AES, mode):
-    cipher_name = f"aes-{cipher.key_size // 2}-xts"
-    return backend._lib.EVP_get_cipherbyname(cipher_name.encode("ascii"))
+        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
 
 backend = Backend()

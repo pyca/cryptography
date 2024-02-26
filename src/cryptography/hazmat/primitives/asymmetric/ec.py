@@ -8,6 +8,7 @@ import abc
 import typing
 
 from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat._oid import ObjectIdentifier
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
@@ -319,14 +320,33 @@ class ECDSA(EllipticCurveSignatureAlgorithm):
     def __init__(
         self,
         algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+        deterministic_signing: bool = False,
     ):
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        if (
+            deterministic_signing
+            and not backend.ecdsa_deterministic_supported()
+        ):
+            raise UnsupportedAlgorithm(
+                "ECDSA with deterministic signature (RFC 6979) is not "
+                "supported by this version of OpenSSL.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
+            )
         self._algorithm = algorithm
+        self._deterministic_signing = deterministic_signing
 
     @property
     def algorithm(
         self,
     ) -> asym_utils.Prehashed | hashes.HashAlgorithm:
         return self._algorithm
+
+    @property
+    def deterministic_signing(
+        self,
+    ) -> bool:
+        return self._deterministic_signing
 
 
 generate_private_key = rust_openssl.ec.generate_private_key

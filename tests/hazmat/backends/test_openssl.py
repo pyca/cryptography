@@ -14,9 +14,6 @@ from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 from ...doubles import (
     DummyAsymmetricPadding,
@@ -62,13 +59,13 @@ class TestOpenSSL:
         # Verify the correspondence between these two. And do it in a way that
         # ensures coverage.
         if version.startswith("LibreSSL"):
-            assert backend._lib.CRYPTOGRAPHY_IS_LIBRESSL
-        if backend._lib.CRYPTOGRAPHY_IS_LIBRESSL:
+            assert rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+        if rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL:
             assert version.startswith("LibreSSL")
 
         if version.startswith("BoringSSL"):
-            assert backend._lib.CRYPTOGRAPHY_IS_BORINGSSL
-        if backend._lib.CRYPTOGRAPHY_IS_BORINGSSL:
+            assert rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        if rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
             assert version.startswith("BoringSSL")
 
     def test_openssl_version_number(self):
@@ -79,26 +76,6 @@ class TestOpenSSL:
             backend.cipher_supported(DummyCipherAlgorithm(), DummyMode())
             is False
         )
-
-    def test_register_duplicate_cipher_adapter(self):
-        with pytest.raises(ValueError):
-            backend.register_cipher_adapter(AES, CBC, None)
-
-    @pytest.mark.parametrize("mode", [DummyMode(), None])
-    def test_nonexistent_cipher(self, mode, backend, monkeypatch):
-        # We can't use register_cipher_adapter because backend is a
-        # global singleton and we want to revert the change after the test
-        monkeypatch.setitem(
-            backend._cipher_registry,
-            (DummyCipherAlgorithm, type(mode)),
-            lambda backend, cipher, mode: backend._ffi.NULL,
-        )
-        cipher = Cipher(
-            DummyCipherAlgorithm(),
-            mode,
-        )
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            cipher.encryptor()
 
     def test_openssl_assert(self):
         backend.openssl_assert(True)
@@ -127,14 +104,6 @@ class TestOpenSSL:
     def test_evp_ciphers_registered(self):
         cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
         assert cipher != backend._ffi.NULL
-
-    def test_unknown_error_in_cipher_finalize(self):
-        cipher = Cipher(AES(b"\0" * 16), CBC(b"\0" * 16), backend=backend)
-        enc = cipher.encryptor()
-        enc.update(b"\0")
-        backend._lib.ERR_put_error(0, 0, 1, b"test_openssl.py", -1)
-        with pytest.raises(InternalError):
-            enc.finalize()
 
 
 class TestOpenSSLRSA:
@@ -232,15 +201,6 @@ class TestOpenSSLRSA:
 
 
 class TestOpenSSLSerializationWithOpenSSL:
-    def test_unsupported_evp_pkey_type(self):
-        key = backend._lib.EVP_PKEY_new()
-        key = backend._ffi.gc(key, backend._lib.EVP_PKEY_free)
-        with raises_unsupported_algorithm(None):
-            rust_openssl.keys.private_key_from_ptr(
-                int(backend._ffi.cast("uintptr_t", key)),
-                unsafe_skip_rsa_key_validation=False,
-            )
-
     def test_very_long_pem_serialization_password(self):
         password = b"x" * 1025
 

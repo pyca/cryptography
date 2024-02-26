@@ -31,6 +31,9 @@ jobs:
     permissions:
       id-token: "write"
     steps:
+      - run: echo "$EVENT_CONTEXT"
+        env:
+          EVENT_CONTEXT: ${{ toJson(github.event) }}
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: "3.11"
@@ -44,7 +47,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install --require-hashes -r ${{ env.PUBLISH_REQUIREMENTS_PATH }}
 
-      - uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d # v3.0.0
+      - uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # v3.1.2
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}

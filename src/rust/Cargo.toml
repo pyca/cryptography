@@ -5,7 +5,7 @@ authors = ["The cryptography developers <cryptography-dev@python.org>"]
 edition = "2021"
 publish = false
 # This specifies the MSRV
-rust-version = "1.63.0"
+rust-version = "1.65.0"
 
 [dependencies]
 once_cell = "1"
@@ -18,8 +18,8 @@ cryptography-x509 = { path = "cryptography-x509" }
 cryptography-x509-verification = { path = "cryptography-x509-verification" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
-openssl = "0.10.63"
-openssl-sys = "0.9.99"
+openssl = "0.10.64"
+openssl-sys = "0.9.101"
 foreign-types-shared = "0.1"
 self_cell = "1"
 

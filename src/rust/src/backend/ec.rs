@@ -273,8 +273,7 @@ impl ECPrivateKey {
                 )),
             ));
         }
-
-        let (data, _) = utils::calculate_digest_and_algorithm(
+        let (data, algo) = utils::calculate_digest_and_algorithm(
             py,
             data.as_bytes(),
             signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
@@ -282,6 +281,28 @@ impl ECPrivateKey {
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]{
+                let deterministic: bool = signature_algorithm
+                    .getattr(pyo3::intern!(py, "deterministic_signing"))?
+                    .extract()?;
+                if deterministic {
+                    let hash_function_name = algo
+                        .getattr(pyo3::intern!(py, "name"))?
+                        .extract::<&str>()?;
+                    let hash_function = openssl::md::Md::fetch(None, hash_function_name, None)?;
+                    // Setting a deterministic nonce type requires to explicitly set the hash function.
+                    // See https://github.com/openssl/openssl/issues/23205
+                    signer.set_signature_md(&hash_function)?;
+                    signer.set_nonce_type(openssl::pkey_ctx::NonceType::DETERMINISTIC_K)?;
+                } else {
+                    signer.set_nonce_type(openssl::pkey_ctx::NonceType::RANDOM_K)?;
+                }
+            } else {
+                let _ = algo;
+            }
+        }
+
         // TODO: This does an extra allocation and copy. This can't easily use
         // `PyBytes::new_with` because the exact length of the signature isn't
         // easily known a priori (if `r` or `s` has a leading 0, the signature

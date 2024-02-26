@@ -276,6 +276,7 @@ struct LazyEvpCipherAead {
 }
 
 impl LazyEvpCipherAead {
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn new(
         cipher: &'static openssl::cipher::CipherRef,
         key: pyo3::Py<pyo3::PyAny>,
@@ -706,12 +707,15 @@ impl AesCcm {
     ) -> CryptographyResult<AesCcm> {
         cfg_if::cfg_if! {
             if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-                return Err(CryptographyError::from(
+                let _ = py;
+                let _ = key;
+                let _ = tag_length;
+                Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "AES-CCM is not supported by this version of OpenSSL",
                         exceptions::Reasons::UNSUPPORTED_CIPHER,
                     )),
-                ));
+                ))
             } else {
                 let key_buf = key.extract::<CffiBuf<'_>>(py)?;
                 let cipher = match key_buf.as_bytes().len() {

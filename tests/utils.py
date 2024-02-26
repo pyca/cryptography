@@ -701,6 +701,57 @@ def load_kasvs_ecdh_vectors(vector_data):
     return vectors
 
 
+def load_rfc6979_vectors(vector_data):
+    """
+    Loads data out of the ECDSA and DSA RFC6979 vector files.
+    """
+    vectors = []
+    keys: typing.Dict[str, typing.List[str]] = dict()
+    reading_key = False
+    current_key_name = None
+
+    data: typing.Dict[str, object] = dict()
+    for line in vector_data:
+        line = line.strip()
+
+        if reading_key and current_key_name:
+            keys[current_key_name].append(line)
+            if line.startswith("-----END"):
+                reading_key = False
+                current_key_name = None
+
+        if line.startswith("PrivateKey=") or line.startswith("PublicKey="):
+            reading_key = True
+            current_key_name = line.split("=")[1].strip()
+            keys[current_key_name] = []
+        elif line.startswith("DigestSign = "):
+            data["digest_sign"] = line.split("=")[1].strip()
+            data["deterministic_nonce"] = False
+        elif line.startswith("DigestVerify = "):
+            data["digest_verify"] = line.split("=")[1].strip()
+            data["verify_error"] = False
+        elif line.startswith("Key = "):
+            key_name = line.split("=")[1].strip()
+            assert key_name in keys
+            data["key"] = keys[key_name]
+        elif line.startswith("NonceType = "):
+            nonce_type = line.split("=")[1].strip()
+            data["deterministic_nonce"] = nonce_type == "deterministic"
+        elif line.startswith("Input = "):
+            data["input"] = line.split("=")[1].strip(' "')
+        elif line.startswith("Output = "):
+            data["output"] = line.split("=")[1].strip()
+        elif line.startswith("Result = "):
+            data["verify_error"] = line.split("=")[1].strip() == "VERIFY_ERROR"
+
+        elif not line:
+            if data:
+                vectors.append(data)
+                data = {}
+
+    return vectors
+
+
 def load_x963_vectors(vector_data):
     """
     Loads data out of the X9.63 vector data

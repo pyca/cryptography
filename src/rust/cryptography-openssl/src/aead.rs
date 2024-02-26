@@ -17,15 +17,19 @@ foreign_types::foreign_type! {
     pub struct AeadCtxRef;
 }
 
+// SAFETY: Can safely be used from multiple threads concurrently.
 unsafe impl Sync for AeadCtx {}
+// SAFETY: Can safely be sent between threads.
 unsafe impl Send for AeadCtx {}
 
 impl AeadCtx {
     pub fn new(aead: AeadType, key: &[u8]) -> OpenSSLResult<AeadCtx> {
         let aead = match aead {
+            // SAFETY: No preconditions.
             AeadType::ChaCha20Poly1305 => unsafe { ffi::EVP_aead_chacha20_poly1305() },
         };
 
+        // SAFETY: We're passing a valid key and aead.
         unsafe {
             let ctx = cvt_p(ffi::EVP_AEAD_CTX_new(
                 aead,
@@ -47,6 +51,7 @@ impl AeadCtxRef {
         out: &mut [u8],
     ) -> OpenSSLResult<()> {
         let mut out_len = out.len();
+        // SAFETY: All the lengths and pointers are known valid.
         unsafe {
             cvt(ffi::EVP_AEAD_CTX_seal(
                 self.as_ptr(),
@@ -72,6 +77,7 @@ impl AeadCtxRef {
         out: &mut [u8],
     ) -> OpenSSLResult<()> {
         let mut out_len = out.len();
+        // SAFETY: All the lengths and pointers are known valid.
         unsafe {
             cvt(ffi::EVP_AEAD_CTX_open(
                 self.as_ptr(),

@@ -11,6 +11,7 @@ import typing
 
 import pytest
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
 
@@ -379,7 +380,7 @@ class TestDH:
     @pytest.mark.skip_fips(reason="key_size too small for FIPS")
     @pytest.mark.supported(
         only_if=lambda backend: (
-            not backend._lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+            not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
         ),
         skip_message="256-bit DH keys are not supported in OpenSSL 3.0.0+",
     )

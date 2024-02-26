@@ -40,18 +40,15 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.2.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
           - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.1.5"}}
           - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.2.1"}}
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.2"}}
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.2"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Feb 11, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "boringssl", VERSION: "c39e6cd9ec5acebb6de2adffc03cfe03b07f08ab"}}
-          # Latest commit on the OpenSSL master branch, as of Feb 11, 2024.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "925118e8c3b1041ce7f9840c2d67e7f878123e6b"}}
+          # Latest commit on the BoringSSL master branch, as of Feb 24, 2024.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "9d7535f51f84a079c05b27134fcf6111649c56c9"}}
+          # Latest commit on the OpenSSL master branch, as of Feb 26, 2024.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "2d70cc9cecf8b322d795985efecee06242b203b3"}}
           # Builds with various Rust versions. Includes MSRV and next
-          # potential future MSRV:
-          # 1.64 - maturin, workspace inheritance
-          # 1.65 - Generic associated types (GATs), std::backtrace
-          - {VERSION: "3.12", NOXSESSION: "rust-noclippy,tests", RUST: "1.63.0"}
-          - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.64.0"}
+          # potential future MSRV.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.65.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15
@@ -102,7 +99,7 @@ jobs:
           # When altering the openssl build process you may need to increment
           # the value on the end of this cache key so that you can prevent it
           # from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-9
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-11
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/workflows/build_openssl.sh
@@ -256,7 +253,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d # v3.0.0
+      - uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # v3.1.2
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -316,7 +313,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox" "tomli; python_version < '3.11'"
 
-      - uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d # v3.0.0
+      - uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # v3.1.2
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml

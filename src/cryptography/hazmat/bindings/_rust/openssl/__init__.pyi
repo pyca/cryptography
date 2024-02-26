@@ -6,6 +6,7 @@ import typing
 
 from cryptography.hazmat.bindings._rust.openssl import (
     aead,
+    ciphers,
     cmac,
     dh,
     dsa,
@@ -24,8 +25,10 @@ from cryptography.hazmat.bindings._rust.openssl import (
 
 __all__ = [
     "openssl_version",
+    "openssl_version_text",
     "raise_openssl_error",
     "aead",
+    "ciphers",
     "cmac",
     "dh",
     "dsa",
@@ -42,12 +45,22 @@ __all__ = [
     "x25519",
 ]
 
+CRYPTOGRAPHY_IS_LIBRESSL: bool
+CRYPTOGRAPHY_IS_BORINGSSL: bool
+CRYPTOGRAPHY_OPENSSL_300_OR_GREATER: bool
+CRYPTOGRAPHY_OPENSSL_320_OR_GREATER: bool
+
+class Providers: ...
+
 _legacy_provider_loaded: bool
+_providers: Providers
 
 def openssl_version() -> int: ...
+def openssl_version_text() -> str: ...
 def raise_openssl_error() -> typing.NoReturn: ...
 def capture_error_stack() -> list[OpenSSLError]: ...
 def is_fips_enabled() -> bool: ...
+def enable_fips(providers: Providers) -> None: ...
 
 class OpenSSLError:
     @property
@@ -56,4 +69,3 @@ class OpenSSLError:
     def reason(self) -> int: ...
     @property
     def reason_text(self) -> bytes: ...
-    def _lib_reason_match(self, lib: int, reason: int) -> bool: ...

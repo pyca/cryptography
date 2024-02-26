@@ -5,11 +5,11 @@ authors = ["The cryptography developers <cryptography-dev@python.org>"]
 edition = "2021"
 publish = false
 # This specifies the MSRV
-rust-version = "1.63.0"
+rust-version = "1.65.0"
 
 [dependencies]
 asn1 = { version = "0.16.0", default-features = false }
 cfg-if = "1"
-openssl = "0.10.63"
-openssl-sys = "0.9.99"
+openssl = "0.10.64"
+openssl-sys = "0.9.101"
 cryptography-x509 = { path = "../cryptography-x509" }

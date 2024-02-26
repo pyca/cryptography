@@ -28,12 +28,6 @@ def cryptography_has_tls_st() -> list[str]:
     ]
 
 
-def cryptography_has_ed448() -> list[str]:
-    return [
-        "EVP_PKEY_ED448",
-    ]
-
-
 def cryptography_has_ssl_sigalgs() -> list[str]:
     return [
         "SSL_CTX_set1_sigalgs_list",
@@ -115,16 +109,6 @@ def cryptography_has_srtp() -> list[str]:
     ]
 
 
-def cryptography_has_providers() -> list[str]:
-    return [
-        "OSSL_PROVIDER_load",
-        "OSSL_PROVIDER_unload",
-        "ERR_LIB_PROV",
-        "PROV_R_WRONG_FINAL_BLOCK_LENGTH",
-        "PROV_R_BAD_DECRYPT",
-    ]
-
-
 def cryptography_has_op_no_renegotiation() -> list[str]:
     return [
         "SSL_OP_NO_RENEGOTIATION",
@@ -134,12 +118,6 @@ def cryptography_has_op_no_renegotiation() -> list[str]:
 def cryptography_has_dtls_get_data_mtu() -> list[str]:
     return [
         "DTLS_get_data_mtu",
-    ]
-
-
-def cryptography_has_300_fips() -> list[str]:
-    return [
-        "EVP_default_properties_enable_fips",
     ]
 
 
@@ -163,10 +141,6 @@ def cryptography_has_prime_checks() -> list[str]:
     return [
         "BN_prime_checks_for_size",
     ]
-
-
-def cryptography_has_300_evp_cipher() -> list[str]:
-    return ["EVP_CIPHER_fetch", "EVP_CIPHER_free"]
 
 
 def cryptography_has_unexpected_eof_while_reading() -> list[str]:
@@ -196,7 +170,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SET_CERT_CB": cryptography_has_set_cert_cb,
     "Cryptography_HAS_SSL_ST": cryptography_has_ssl_st,
     "Cryptography_HAS_TLS_ST": cryptography_has_tls_st,
-    "Cryptography_HAS_ED448": cryptography_has_ed448,
     "Cryptography_HAS_SIGALGS": cryptography_has_ssl_sigalgs,
     "Cryptography_HAS_PSK": cryptography_has_psk,
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
@@ -205,16 +178,13 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,
-    "Cryptography_HAS_PROVIDERS": cryptography_has_providers,
     "Cryptography_HAS_OP_NO_RENEGOTIATION": (
         cryptography_has_op_no_renegotiation
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
-    "Cryptography_HAS_300_FIPS": cryptography_has_300_fips,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
     "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
-    "Cryptography_HAS_300_EVP_CIPHER": cryptography_has_300_evp_cipher,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
     ),
