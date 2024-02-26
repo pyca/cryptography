@@ -543,8 +543,8 @@ class TestECDSAVectors:
             load_rfc6979_vectors,
         )
 
-        with subtests.test():
-            for vector in vectors:
+        for vector in vectors:
+            with subtests.test():
                 input = bytes(vector["input"], "utf-8")
                 output = bytes.fromhex(vector["output"])
                 key = bytes("\n".join(vector["key"]), "utf-8")
