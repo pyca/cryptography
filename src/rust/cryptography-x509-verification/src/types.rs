@@ -5,6 +5,11 @@
 use std::net::IpAddr;
 use std::str::FromStr;
 
+use asn1::IA5String;
+
+// RFC 2822 3.2.4
+static ATEXT_CHARS: &str = "!#$%&'*+-/=?^_`{|}~";
+
 /// A `DNSName` is an `asn1::IA5String` with additional invariant preservations
 /// per [RFC 5280 4.2.1.6], which in turn uses the preferred name syntax defined
 /// in [RFC 1034 3.5] and amended in [RFC 1123 2.1].
@@ -298,9 +303,61 @@ impl IPConstraint {
     }
 }
 
+/// An `RFC822Name` represents an email address, as defined in [RFC 822 6.1]
+/// and as amended by [RFC 2821 4.1.2]. In particular, it represents the `Mailbox`
+/// rule from RFC 2821's grammar.
+///
+/// This type does not currently support the quoted local-part form; email
+/// addresses that use this form will be rejected.
+///
+/// [RFC 822 6.1]: https://datatracker.ietf.org/doc/html/rfc822#section-6.1
+/// [RFC 2821 4.1.2]: https://datatracker.ietf.org/doc/html/rfc2821#section-4.1.2
+pub struct RFC822Name<'a>((IA5String<'a>, DNSName<'a>));
+
+impl<'a> RFC822Name<'a> {
+    pub fn new(value: &'a str) -> Option<Self> {
+        // Mailbox = Local-part "@" Domain
+        // Both must be present.
+        let Some((local_part, domain)) = value.split_once('@') else {
+            return None;
+        };
+
+        let Some(local_part) = IA5String::new(local_part) else {
+            return None;
+        };
+
+        // Local-part = Dot-string / Quoted-string
+        // NOTE(ww): We do not support the Quoted-string form, for now.
+        //
+        // Dot-string: Atom *("." Atom)
+        // Atom = 1*atext
+        //
+        // NOTE(ww): `atext`'s production is in RFC 2822 3.2.4.
+        for component in local_part.as_str().split('.') {
+            if component.is_empty()
+                || !component
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || ATEXT_CHARS.contains(c))
+            {
+                return None;
+            }
+        }
+
+        DNSName::new(domain).map(|domain| Self((local_part, domain)))
+    }
+
+    pub fn mailbox(&self) -> &str {
+        &(self.0).0.as_str()
+    }
+
+    pub fn domain(&self) -> &DNSName<'_> {
+        &(self.0).1
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint};
+    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint, RFC822Name};
 
     #[test]
     fn test_dnsname_debug_trait() {
@@ -586,5 +643,66 @@ mod tests {
         assert!(ipv6_128.matches(&IPAddress::from_str("2600:db8::ff00:dede").unwrap()));
         assert!(!ipv6_128.matches(&IPAddress::from_str("2600::ff00:dede").unwrap()));
         assert!(!ipv6_128.matches(&IPAddress::from_str("2600:db8::ff00:0").unwrap()));
+    }
+
+    #[test]
+    fn test_rfc822name() {
+        let bad_cases = &[
+            "",
+            // Missing local-part.
+            "@example.com",
+            " @example.com",
+            "  @example.com",
+            // Missing domain cases.
+            "foo",
+            "foo@",
+            "foo@ ",
+            "foo@  ",
+            // Invalid domains.
+            "foo@!!!",
+            "foo@white space",
+            "foo@🙈",
+            // Invalid local part (empty mailbox sections).
+            ".@example.com",
+            "foo.@example.com",
+            ".foo@example.com",
+            ".foo.@example.com",
+            ".f.o.o.@example.com",
+            // Invalid local part (@ in mailbox).
+            "lol@lol@example.com",
+            "lol\\@lol@example.com",
+            "example@example.com@example.com",
+            "@@example.com",
+            // Invalid local part (invalid characters).
+            "lol\"lol@example.com",
+            "lol;lol@example.com",
+            "🙈@example.com",
+            // Intentionally unsupported quoted local parts.
+            "\"validbutunsupported\"@example.com",
+        ];
+
+        for case in bad_cases {
+            assert!(RFC822Name::new(case).is_none());
+        }
+
+        // Each good case is (address, (mailbox, domain)).
+        let good_cases = &[
+            // Normal mailboxes.
+            ("foo@example.com", ("foo", "example.com")),
+            ("foo.bar@example.com", ("foo.bar", "example.com")),
+            ("foo.bar.baz@example.com", ("foo.bar.baz", "example.com")),
+            ("1.2.3.4.5@example.com", ("1.2.3.4.5", "example.com")),
+            // Mailboxes with special but valid characters.
+            ("{legal}@example.com", ("{legal}", "example.com")),
+            ("{&*.legal}@example.com", ("{&*.legal}", "example.com")),
+            ("``````````@example.com", ("``````````", "example.com")),
+            ("hello?@sub.example.com", ("hello?", "sub.example.com")),
+        ];
+
+        for (address, (mailbox, domain)) in good_cases {
+            let parsed = RFC822Name::new(&address).unwrap();
+            assert_eq!(&parsed.mailbox(), mailbox);
+            assert_eq!(&parsed.domain().as_str(), domain);
+        }
     }
 }
