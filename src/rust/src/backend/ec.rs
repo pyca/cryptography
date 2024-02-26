@@ -281,11 +281,11 @@ impl ECPrivateKey {
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
-        let deterministic: bool = signature_algorithm
-            .getattr(pyo3::intern!(py, "deterministic_signing"))?
-            .extract()?;
         cfg_if::cfg_if! {
             if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]{
+                let deterministic: bool = signature_algorithm
+                    .getattr(pyo3::intern!(py, "deterministic_signing"))?
+                    .extract()?;
                 if deterministic {
                     let hash_function_name = algo
                         .getattr(pyo3::intern!(py, "name"))?
