@@ -312,7 +312,10 @@ impl IPConstraint {
 ///
 /// [RFC 822 6.1]: https://datatracker.ietf.org/doc/html/rfc822#section-6.1
 /// [RFC 2821 4.1.2]: https://datatracker.ietf.org/doc/html/rfc2821#section-4.1.2
-pub struct RFC822Name<'a>((IA5String<'a>, DNSName<'a>));
+pub struct RFC822Name<'a> {
+    pub mailbox: IA5String<'a>,
+    pub domain: DNSName<'a>,
+}
 
 impl<'a> RFC822Name<'a> {
     pub fn new(value: &'a str) -> Option<Self> {
@@ -338,15 +341,10 @@ impl<'a> RFC822Name<'a> {
             }
         }
 
-        DNSName::new(domain).map(|domain| Self((local_part, domain)))
-    }
-
-    pub fn mailbox(&self) -> &str {
-        (self.0).0.as_str()
-    }
-
-    pub fn domain(&self) -> &DNSName<'_> {
-        &(self.0).1
+        Some(Self {
+            mailbox: local_part,
+            domain: DNSName::new(domain)?,
+        })
     }
 }
 
@@ -642,7 +640,7 @@ mod tests {
 
     #[test]
     fn test_rfc822name() {
-        let bad_cases = &[
+        for bad_case in &[
             "",
             // Missing local-part.
             "@example.com",
@@ -674,14 +672,12 @@ mod tests {
             "🙈@example.com",
             // Intentionally unsupported quoted local parts.
             "\"validbutunsupported\"@example.com",
-        ];
-
-        for case in bad_cases {
-            assert!(RFC822Name::new(case).is_none());
+        ] {
+            assert!(RFC822Name::new(bad_case).is_none());
         }
 
         // Each good case is (address, (mailbox, domain)).
-        let good_cases = &[
+        for (address, (mailbox, domain)) in &[
             // Normal mailboxes.
             ("foo@example.com", ("foo", "example.com")),
             ("foo.bar@example.com", ("foo.bar", "example.com")),
@@ -692,12 +688,10 @@ mod tests {
             ("{&*.legal}@example.com", ("{&*.legal}", "example.com")),
             ("``````````@example.com", ("``````````", "example.com")),
             ("hello?@sub.example.com", ("hello?", "sub.example.com")),
-        ];
-
-        for (address, (mailbox, domain)) in good_cases {
+        ] {
             let parsed = RFC822Name::new(&address).unwrap();
-            assert_eq!(&parsed.mailbox(), mailbox);
-            assert_eq!(&parsed.domain().as_str(), domain);
+            assert_eq!(&parsed.mailbox.as_str(), mailbox);
+            assert_eq!(&parsed.domain.as_str(), domain);
         }
     }
 }
