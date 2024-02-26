@@ -273,7 +273,7 @@ impl ECPrivateKey {
                 )),
             ));
         }
-        let (data, _algo) = utils::calculate_digest_and_algorithm(
+        let (data, algo) = utils::calculate_digest_and_algorithm(
             py,
             data.as_bytes(),
             signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
@@ -287,7 +287,7 @@ impl ECPrivateKey {
         cfg_if::cfg_if! {
             if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]{
                 if deterministic {
-                    let hash_function_name = _algo
+                    let hash_function_name = algo
                         .getattr(pyo3::intern!(py, "name"))?
                         .extract::<&str>()?;
                     let hash_function = openssl::md::Md::fetch(None, hash_function_name, None)?;
@@ -299,6 +299,7 @@ impl ECPrivateKey {
                     signer.set_nonce_type(openssl::pkey_ctx::NonceType::RANDOM_K)?;
                 }
             } else {
+                let _ = algo;
                 assert!(!deterministic);
             }
         }

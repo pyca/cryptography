@@ -27,7 +27,8 @@ Changelog
   and :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ARC4` into
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``cipher`` module.
   They will be removed from the ``cipher`` module in 48.0.0.
-* Added support for deterministic ECDSA (:rfc:`6979`)
+* Added support for deterministic
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSA` (:rfc:`6979`)
 
 .. _v42-0-5:
 

@@ -513,7 +513,7 @@ class TestECDSAVectors:
                         signature, vector["message"], ec.ECDSA(hash_type())
                     )
 
-    def test_unsupported_deterministic_nonce(self, backend, subtests):
+    def test_unsupported_deterministic_nonce(self, backend):
         if backend.ecdsa_deterministic_supported():
             pytest.skip(
                 f"ECDSA deterministic signing is supported by this"
@@ -529,14 +529,12 @@ class TestECDSAVectors:
                 f" backend {backend}"
             )
 
-        supported_hash_algorithms: typing.Dict[
-            str, typing.Type[hashes.HashAlgorithm]
-        ] = {
-            "SHA1": hashes.SHA1,
-            "SHA224": hashes.SHA224,
-            "SHA256": hashes.SHA256,
-            "SHA384": hashes.SHA384,
-            "SHA512": hashes.SHA512,
+        supported_hash_algorithms = {
+            "SHA1": hashes.SHA1(),
+            "SHA224": hashes.SHA224(),
+            "SHA256": hashes.SHA256(),
+            "SHA384": hashes.SHA384(),
+            "SHA512": hashes.SHA512(),
         }
         vectors = load_vectors_from_file(
             os.path.join(
@@ -551,10 +549,9 @@ class TestECDSAVectors:
             key = bytes("\n".join(vector["key"]), "utf-8")
             if "digest_sign" in vector:
                 algorithm = vector["digest_sign"]
-                assert algorithm in supported_hash_algorithms
                 hash_algorithm = supported_hash_algorithms[algorithm]
                 algorithm = ec.ECDSA(
-                    hash_algorithm(),
+                    hash_algorithm,
                     deterministic_signing=vector["deterministic_nonce"],
                 )
                 private_key = serialization.load_pem_private_key(
@@ -568,7 +565,7 @@ class TestECDSAVectors:
                 algorithm = vector["digest_verify"]
                 assert algorithm in supported_hash_algorithms
                 hash_algorithm = supported_hash_algorithms[algorithm]
-                algorithm = ec.ECDSA(hash_algorithm())
+                algorithm = ec.ECDSA(hash_algorithm)
                 public_key = serialization.load_pem_public_key(key)
                 assert isinstance(public_key, EllipticCurvePublicKey)
                 if vector["verify_error"]:
