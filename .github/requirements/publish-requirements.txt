@@ -211,9 +211,9 @@ docutils==0.20.1 \
     --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6 \
     --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b
     # via readme-renderer
-email-validator==2.1.0.post1 \
-    --hash=sha256:a4b0bd1cf55f073b924258d19321b1f3aa74b4b5a71a42c305575dba920e1a44 \
-    --hash=sha256:c973053efbeddfef924dc0bd93f6e77a1ea7ee0fce935aea7103c7a3d6d2d637
+email-validator==2.1.1 \
+    --hash=sha256:200a70680ba08904be6d1eef729205cc0d687634399a5924d842533efb824b84 \
+    --hash=sha256:97d882d174e2a65732fb43bfce81a3a834cbc1bde8bf419e30ef5ea976370a05
     # via pydantic
 grpclib==0.4.7 \
     --hash=sha256:2988ef57c02b22b7a2e8e961792c41ccf97efc2ace91ae7a5b0de03c363823c3
