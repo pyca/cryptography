@@ -246,6 +246,10 @@ importlib-metadata==7.0.1 \
     # via
     #   keyring
     #   twine
+importlib-resources==5.13.0 \
+    --hash=sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528 \
+    --hash=sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2
+    # via sigstore
 jaraco-classes==3.3.1 \
     --hash=sha256:86b534de565381f6b3c1c830d13f931d7be1a75f0081c57dff615578676e2206 \
     --hash=sha256:cb28a5ebda8bc47d8c8015307d93163464f9f2b91ab4006e09ff0ce07e8bfb30
@@ -522,9 +526,9 @@ python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
     # via betterproto
-readme-renderer==42.0 \
-    --hash=sha256:13d039515c1f24de668e2c93f2e877b9dbe6c6c32328b90a40a49d8b2b85f36d \
-    --hash=sha256:2d55489f83be4992fe4454939d1a051c33edbab778e82761d060c9fc6b308cd1
+readme-renderer==43.0 \
+    --hash=sha256:1818dd28140813509eeed8d62687f7cd4f7bad90d4db586001c5dc09d4fde311 \
+    --hash=sha256:19db308d86ecd60e5affa3b2a98f017af384678c63c88e5d4556a380e674f3f9
     # via twine
 requests==2.31.0 \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
