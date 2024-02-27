@@ -11,8 +11,6 @@ INCLUDES = """
 
 TYPES = """
 typedef ... EC_KEY;
-typedef ... EC_GROUP;
-typedef ... EC_POINT;
 typedef struct {
     int nid;
     const char *comment;
