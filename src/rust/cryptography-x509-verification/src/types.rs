@@ -80,6 +80,17 @@ impl<'a> DNSName<'a> {
     fn rlabels(&self) -> impl Iterator<Item = &'_ str> {
         self.as_str().rsplit('.')
     }
+
+    /// Returns true if this domain is a subdomain of the other domain.
+    fn is_subdomain_of(&self, other: &DNSName<'_>) -> bool {
+        // NOTE: This is nearly identical to `DNSConstraint::matches`,
+        // except that the subdomain must be strictly longer than the parent domain.
+        self.as_str().len() > other.as_str().len()
+            && self
+                .rlabels()
+                .zip(other.rlabels())
+                .all(|(a, o)| a.eq_ignore_ascii_case(o))
+    }
 }
 
 impl PartialEq for DNSName<'_> {
@@ -317,6 +328,14 @@ pub struct RFC822Name<'a> {
     pub domain: DNSName<'a>,
 }
 
+impl<'a> PartialEq for RFC822Name<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        // NOTE: DNS name comparison is case insensitive (handled in DNSName's Eq impl),
+        // but mailbox comparison is case sensitive.
+        self.mailbox == other.mailbox && self.domain == other.domain
+    }
+}
+
 impl<'a> RFC822Name<'a> {
     pub fn new(value: &'a str) -> Option<Self> {
         // Mailbox = Local-part "@" Domain
@@ -348,9 +367,44 @@ impl<'a> RFC822Name<'a> {
     }
 }
 
+/// An `RFC822Constraint` represents a Name Constraint on email addresses.
+pub enum RFC822Constraint<'a> {
+    /// A constraint for an exact match on a specific email address.
+    Exact(RFC822Name<'a>),
+    /// A constraint for any mailbox on a particular domain.
+    OnDomain(DNSName<'a>),
+    /// A constraint for any mailbox *within* a particular domain.
+    /// For example, `InDomain("example.com")` will match `foo@bar.example.com`
+    /// but not `foo@example.com`, since `bar.example.com` is in `example.com`
+    /// but `example.com` is not within itself.
+    InDomain(DNSName<'a>),
+}
+
+impl<'a> RFC822Constraint<'a> {
+    pub fn new(constraint: &'a str) -> Option<Self> {
+        if let Some(constraint) = constraint.strip_prefix('.') {
+            DNSName::new(constraint).map(Self::InDomain)
+        } else {
+            RFC822Name::new(constraint)
+                .map(Self::Exact)
+                .or_else(|| DNSName::new(constraint).map(Self::OnDomain))
+        }
+    }
+
+    pub fn matches(&self, email: &RFC822Name<'_>) -> bool {
+        match self {
+            Self::Exact(pat) => pat == email,
+            Self::OnDomain(pat) => &email.domain == pat,
+            Self::InDomain(pat) => email.domain.is_subdomain_of(pat),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint, RFC822Name};
+
+    use super::RFC822Constraint;
 
     #[test]
     fn test_dnsname_debug_trait() {
@@ -440,6 +494,33 @@ mod tests {
             DNSName::new("foo.example.com").unwrap().parent().unwrap(),
             DNSName::new("example.com").unwrap()
         );
+    }
+
+    #[test]
+    fn test_dnsname_is_subdomain_of() {
+        for (sup, sub, check) in &[
+            // good cases
+            ("example.com", "sub.example.com", true),
+            ("example.com", "a.b.example.com", true),
+            ("sub.example.com", "sub.sub.example.com", true),
+            ("sub.example.com", "sub.sub.sub.example.com", true),
+            ("com", "example.com", true),
+            ("example.com", "com.example.com", true),
+            ("example.com", "com.example.example.com", true),
+            // bad cases
+            ("example.com", "example.com", false),
+            ("example.com", "com", false),
+            ("sub.example.com", "example.com", false),
+            ("sub.sub.example.com", "sub.sub.example.com", false),
+            ("sub.sub.example.com", "example.com", false),
+            ("com.example.com", "com.example.com", false),
+            ("com.example.example.com", "com.example.example.com", false),
+        ] {
+            let sup = DNSName::new(sup).unwrap();
+            let sub = DNSName::new(sub).unwrap();
+
+            assert_eq!(sub.is_subdomain_of(&sup), *check);
+        }
     }
 
     #[test]
@@ -692,6 +773,98 @@ mod tests {
             let parsed = RFC822Name::new(&address).unwrap();
             assert_eq!(&parsed.mailbox.as_str(), mailbox);
             assert_eq!(&parsed.domain.as_str(), domain);
+        }
+    }
+
+    #[test]
+    fn test_rfc822constraint_new() {
+        for (case, valid) in &[
+            // good cases
+            ("foo@example.com", true),
+            ("foo.bar@example.com", true),
+            ("foo!bar@example.com", true),
+            ("example.com", true),
+            ("sub.example.com", true),
+            ("foo@sub.example.com", true),
+            ("foo.bar@sub.example.com", true),
+            ("foo!bar@sub.example.com", true),
+            (".example.com", true),
+            (".sub.example.com", true),
+            // bad cases
+            ("@example.com", false),
+            ("@@example.com", false),
+            ("foo@.example.com", false),
+            (".foo@example.com", false),
+            (".foo.@example.com", false),
+            ("foo.@example.com", false),
+            ("invaliddomain!", false),
+            ("..example.com", false),
+            ("foo..example.com", false),
+            (".foo..example.com", false),
+            ("..foo..example.com", false),
+        ] {
+            assert_eq!(RFC822Constraint::new(case).is_some(), *valid);
+        }
+    }
+
+    #[test]
+    fn test_rfc822constraint_matches() {
+        {
+            let exact = RFC822Constraint::new("foo@example.com").unwrap();
+
+            // Ordinary exact match.
+            assert!(exact.matches(&RFC822Name::new("foo@example.com").unwrap()));
+            // Case changes are okay in the domain.
+            assert!(exact.matches(&RFC822Name::new("foo@EXAMPLE.com").unwrap()));
+
+            // Case changes are not okay in the mailbox.
+            assert!(!exact.matches(&RFC822Name::new("Foo@example.com").unwrap()));
+            assert!(!exact.matches(&RFC822Name::new("FOO@example.com").unwrap()));
+
+            // Different mailboxes and domains do not match.
+            assert!(!exact.matches(&RFC822Name::new("foo.bar@example.com").unwrap()));
+            assert!(!exact.matches(&RFC822Name::new("foo@sub.example.com").unwrap()));
+        }
+
+        {
+            let on_domain = RFC822Constraint::new("example.com").unwrap();
+
+            // Ordinary domain matches.
+            assert!(on_domain.matches(&RFC822Name::new("foo@example.com").unwrap()));
+            assert!(on_domain.matches(&RFC822Name::new("bar@example.com").unwrap()));
+            assert!(on_domain.matches(&RFC822Name::new("foo.bar@example.com").unwrap()));
+            assert!(on_domain.matches(&RFC822Name::new("foo!bar@example.com").unwrap()));
+            // Case changes are okay in the domain and in the mailbox,
+            // since any mailbox on the domain is okay.
+            assert!(on_domain.matches(&RFC822Name::new("foo@EXAMPLE.com").unwrap()));
+            assert!(on_domain.matches(&RFC822Name::new("FOO@example.com").unwrap()));
+
+            // Subdomains and other domains do not match.
+            assert!(!on_domain.matches(&RFC822Name::new("foo@sub.example.com").unwrap()));
+            assert!(!on_domain.matches(&RFC822Name::new("foo@localhost").unwrap()));
+        }
+
+        {
+            let in_domain = RFC822Constraint::new(".example.com").unwrap();
+
+            // Any subdomain and mailbox matches.
+            assert!(in_domain.matches(&RFC822Name::new("foo@sub.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo@sub.sub.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo@com.example.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo.bar@com.example.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo!bar@com.example.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("bar@com.example.example.com").unwrap()));
+            // Case changes are okay in the subdomains and in the mailbox, since any mailbox
+            // in the domain is okay.
+            assert!(in_domain.matches(&RFC822Name::new("foo@SUB.example.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo@sub.EXAMPLE.com").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("foo@sub.example.COM").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("FOO@sub.example.COM").unwrap()));
+            assert!(in_domain.matches(&RFC822Name::new("FOO@sub.example.com").unwrap()));
+
+            // Superdomains and other domains do not match.
+            assert!(!in_domain.matches(&RFC822Name::new("foo@example.com").unwrap()));
+            assert!(!in_domain.matches(&RFC822Name::new("foo@com").unwrap()));
         }
     }
 }
