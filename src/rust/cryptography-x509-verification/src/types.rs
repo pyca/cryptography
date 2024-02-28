@@ -377,10 +377,10 @@ impl<'a> RFC822Constraint<'a> {
     pub fn new(constraint: &'a str) -> Option<Self> {
         if let Some(constraint) = constraint.strip_prefix('.') {
             Some(Self::InDomain(DNSName::new(constraint)?))
+        } else if let Some(email) = RFC822Name::new(constraint) {
+            Some(Self::Exact(email))
         } else {
-            RFC822Name::new(constraint)
-                .map(Self::Exact)
-                .or_else(|| DNSName::new(constraint).map(Self::OnDomain))
+            Some(Self::OnDomain(DNSName::new(constraint)?))
         }
     }
 
