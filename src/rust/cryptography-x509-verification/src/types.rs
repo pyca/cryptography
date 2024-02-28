@@ -323,17 +323,10 @@ impl IPConstraint {
 ///
 /// [RFC 822 6.1]: https://datatracker.ietf.org/doc/html/rfc822#section-6.1
 /// [RFC 2821 4.1.2]: https://datatracker.ietf.org/doc/html/rfc2821#section-4.1.2
+#[derive(PartialEq)]
 pub struct RFC822Name<'a> {
     pub mailbox: IA5String<'a>,
     pub domain: DNSName<'a>,
-}
-
-impl<'a> PartialEq for RFC822Name<'a> {
-    fn eq(&self, other: &Self) -> bool {
-        // NOTE: DNS name comparison is case insensitive (handled in DNSName's Eq impl),
-        // but mailbox comparison is case sensitive.
-        self.mailbox == other.mailbox && self.domain == other.domain
-    }
 }
 
 impl<'a> RFC822Name<'a> {
@@ -383,7 +376,7 @@ pub enum RFC822Constraint<'a> {
 impl<'a> RFC822Constraint<'a> {
     pub fn new(constraint: &'a str) -> Option<Self> {
         if let Some(constraint) = constraint.strip_prefix('.') {
-            DNSName::new(constraint).map(Self::InDomain)
+            Some(Self::InDomain(DNSName::new(constraint)?))
         } else {
             RFC822Name::new(constraint)
                 .map(Self::Exact)
