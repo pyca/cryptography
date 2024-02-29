@@ -88,14 +88,12 @@ class Cipher(typing.Generic[Mode]):
     @typing.overload
     def encryptor(
         self: Cipher[modes.ModeWithAuthenticationTag],
-    ) -> AEADEncryptionContext:
-        ...
+    ) -> AEADEncryptionContext: ...
 
     @typing.overload
     def encryptor(
         self: _CIPHER_TYPE,
-    ) -> CipherContext:
-        ...
+    ) -> CipherContext: ...
 
     def encryptor(self):
         if isinstance(self.mode, modes.ModeWithAuthenticationTag):
@@ -111,14 +109,12 @@ class Cipher(typing.Generic[Mode]):
     @typing.overload
     def decryptor(
         self: Cipher[modes.ModeWithAuthenticationTag],
-    ) -> AEADDecryptionContext:
-        ...
+    ) -> AEADDecryptionContext: ...
 
     @typing.overload
     def decryptor(
         self: _CIPHER_TYPE,
-    ) -> CipherContext:
-        ...
+    ) -> CipherContext: ...
 
     def decryptor(self):
         return rust_openssl.ciphers.create_decryption_ctx(

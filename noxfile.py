@@ -175,7 +175,7 @@ def flake(session: nox.Session) -> None:
     )
     install(session, "-e", "vectors/")
 
-    session.run("ruff", ".")
+    session.run("ruff", "check", ".")
     session.run("ruff", "format", "--check", ".")
     session.run(
         "mypy",

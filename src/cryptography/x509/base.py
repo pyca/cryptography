@@ -503,12 +503,10 @@ class CertificateRevocationList(metaclass=abc.ABCMeta):
         """
 
     @typing.overload
-    def __getitem__(self, idx: int) -> RevokedCertificate:
-        ...
+    def __getitem__(self, idx: int) -> RevokedCertificate: ...
 
     @typing.overload
-    def __getitem__(self, idx: slice) -> list[RevokedCertificate]:
-        ...
+    def __getitem__(self, idx: slice) -> list[RevokedCertificate]: ...
 
     @abc.abstractmethod
     def __getitem__(
