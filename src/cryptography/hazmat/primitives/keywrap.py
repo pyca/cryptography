@@ -86,7 +86,7 @@ def aes_key_wrap_with_padding(
     if len(wrapping_key) not in [16, 24, 32]:
         raise ValueError("The wrapping key must be a valid AES key length")
 
-    aiv = b"\xA6\x59\x59\xA6" + len(key_to_wrap).to_bytes(
+    aiv = b"\xa6\x59\x59\xa6" + len(key_to_wrap).to_bytes(
         length=4, byteorder="big"
     )
     # pad the key to wrap if necessary

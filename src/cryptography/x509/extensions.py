@@ -1456,32 +1456,29 @@ class GeneralNames:
         type: type[DNSName]
         | type[UniformResourceIdentifier]
         | type[RFC822Name],
-    ) -> list[str]:
-        ...
+    ) -> list[str]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[DirectoryName],
-    ) -> list[Name]:
-        ...
+    ) -> list[Name]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[RegisteredID],
-    ) -> list[ObjectIdentifier]:
-        ...
+    ) -> list[ObjectIdentifier]: ...
 
     @typing.overload
     def get_values_for_type(
         self, type: type[IPAddress]
-    ) -> list[_IPAddressTypes]:
-        ...
+    ) -> list[_IPAddressTypes]: ...
 
     @typing.overload
-    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
-        ...
+    def get_values_for_type(
+        self, type: type[OtherName]
+    ) -> list[OtherName]: ...
 
     def get_values_for_type(
         self,
@@ -1534,32 +1531,29 @@ class SubjectAlternativeName(ExtensionType):
         type: type[DNSName]
         | type[UniformResourceIdentifier]
         | type[RFC822Name],
-    ) -> list[str]:
-        ...
+    ) -> list[str]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[DirectoryName],
-    ) -> list[Name]:
-        ...
+    ) -> list[Name]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[RegisteredID],
-    ) -> list[ObjectIdentifier]:
-        ...
+    ) -> list[ObjectIdentifier]: ...
 
     @typing.overload
     def get_values_for_type(
         self, type: type[IPAddress]
-    ) -> list[_IPAddressTypes]:
-        ...
+    ) -> list[_IPAddressTypes]: ...
 
     @typing.overload
-    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
-        ...
+    def get_values_for_type(
+        self, type: type[OtherName]
+    ) -> list[OtherName]: ...
 
     def get_values_for_type(
         self,
@@ -1609,32 +1603,29 @@ class IssuerAlternativeName(ExtensionType):
         type: type[DNSName]
         | type[UniformResourceIdentifier]
         | type[RFC822Name],
-    ) -> list[str]:
-        ...
+    ) -> list[str]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[DirectoryName],
-    ) -> list[Name]:
-        ...
+    ) -> list[Name]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[RegisteredID],
-    ) -> list[ObjectIdentifier]:
-        ...
+    ) -> list[ObjectIdentifier]: ...
 
     @typing.overload
     def get_values_for_type(
         self, type: type[IPAddress]
-    ) -> list[_IPAddressTypes]:
-        ...
+    ) -> list[_IPAddressTypes]: ...
 
     @typing.overload
-    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
-        ...
+    def get_values_for_type(
+        self, type: type[OtherName]
+    ) -> list[OtherName]: ...
 
     def get_values_for_type(
         self,
@@ -1684,32 +1675,29 @@ class CertificateIssuer(ExtensionType):
         type: type[DNSName]
         | type[UniformResourceIdentifier]
         | type[RFC822Name],
-    ) -> list[str]:
-        ...
+    ) -> list[str]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[DirectoryName],
-    ) -> list[Name]:
-        ...
+    ) -> list[Name]: ...
 
     @typing.overload
     def get_values_for_type(
         self,
         type: type[RegisteredID],
-    ) -> list[ObjectIdentifier]:
-        ...
+    ) -> list[ObjectIdentifier]: ...
 
     @typing.overload
     def get_values_for_type(
         self, type: type[IPAddress]
-    ) -> list[_IPAddressTypes]:
-        ...
+    ) -> list[_IPAddressTypes]: ...
 
     @typing.overload
-    def get_values_for_type(self, type: type[OtherName]) -> list[OtherName]:
-        ...
+    def get_values_for_type(
+        self, type: type[OtherName]
+    ) -> list[OtherName]: ...
 
     def get_values_for_type(
         self,

@@ -390,7 +390,7 @@ class TestOpenSSHSerialization:
             b"\x04" * 65,
         ),
         priv_type=None,
-        priv_fields=(b"nistp256", b"\x04" * 65, b"\x7F" * 32),
+        priv_fields=(b"nistp256", b"\x04" * 65, b"\x7f" * 32),
         comment=b"comment",
         checkval1=b"1234",
         checkval2=b"1234",
