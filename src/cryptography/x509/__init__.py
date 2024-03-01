@@ -97,6 +97,7 @@ from cryptography.x509.oid import (
     ExtensionOID,
     NameOID,
     ObjectIdentifier,
+    PublicKeyAlgorithmOID,
     SignatureAlgorithmOID,
 )
 
@@ -250,6 +251,7 @@ __all__ = [
     "PrecertificateSignedCertificateTimestamps",
     "PrecertPoison",
     "OCSPNonce",
+    "PublicKeyAlgorithmOID",
     "SignedCertificateTimestamps",
     "SignatureAlgorithmOID",
     "NameOID",

@@ -154,6 +154,17 @@ _SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
 }
 
 
+class PublicKeyAlgorithmOID:
+    DSA = ObjectIdentifier("1.2.840.10040.4.1")
+    EC_PUBLIC_KEY = ObjectIdentifier("1.2.840.10045.2.1")
+    RSAES_PKCS1_v1_5 = ObjectIdentifier("1.2.840.113549.1.1.1")
+    RSASSA_PSS = ObjectIdentifier("1.2.840.113549.1.1.10")
+    X25519 = ObjectIdentifier("1.3.101.110")
+    X448 = ObjectIdentifier("1.3.101.111")
+    ED25519 = ObjectIdentifier("1.3.101.112")
+    ED448 = ObjectIdentifier("1.3.101.113")
+
+
 class ExtendedKeyUsageOID:
     SERVER_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.1")
     CLIENT_AUTH = ObjectIdentifier("1.3.6.1.5.5.7.3.2")
@@ -245,6 +256,12 @@ _OID_NAMES = {
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: (
         "GOST R 34.10-2012 with GOST R 34.11-2012 (512 bit)"
     ),
+    PublicKeyAlgorithmOID.DSA: "dsaEncryption",
+    PublicKeyAlgorithmOID.EC_PUBLIC_KEY: "id-ecPublicKey",
+    PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5: "rsaEncryption",
+    PublicKeyAlgorithmOID.RSASSA_PSS: "rsassaPss",
+    PublicKeyAlgorithmOID.X25519: "X25519",
+    PublicKeyAlgorithmOID.X448: "X448",
     ExtendedKeyUsageOID.SERVER_AUTH: "serverAuth",
     ExtendedKeyUsageOID.CLIENT_AUTH: "clientAuth",
     ExtendedKeyUsageOID.CODE_SIGNING: "codeSigning",

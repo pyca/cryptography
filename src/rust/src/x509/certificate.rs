@@ -72,6 +72,17 @@ impl Certificate {
         )
     }
 
+    #[getter]
+    fn public_key_algorithm_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        oid_to_py_oid(
+            py,
+            self.raw.borrow_dependent().tbs_cert.spki.algorithm.oid(),
+        )
+    }
+
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,

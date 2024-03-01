@@ -35,6 +35,12 @@ Changelog
   :class:`~cryptography.x509.verification.VerifiedClient`, and
   ``PolicyBuilder``
   :meth:`~cryptography.x509.verification.PolicyBuilder.build_client_verifier`.
+* Added Certificate
+  :attr:`~cryptography.x509.Certificate.public_key_algorithm_oid`
+  and Certificate Signing Request
+  :attr:`~cryptography.x509.CertificateSigningRequest.public_key_algorithm_oid`
+  to determine the :class:`~cryptography.hazmat._oid.PublicKeyAlgorithmOID`
+  Object Identifier of the public key found inside the certificate.
 
 .. _v42-0-5:
 
