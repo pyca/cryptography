@@ -58,6 +58,7 @@ class EllipticCurve(metaclass=abc.ABCMeta):
         The order of the curve's group
         """
         from cryptography.hazmat.backends.openssl.backend import backend
+
         return backend.elliptic_curve_group_order(self)
 
 

@@ -319,7 +319,9 @@ class Backend:
         )
 
     def elliptic_curve_group_order(self, curve: ec.EllipticCurve) -> int:
-        group = self._lib.EC_GROUP_new_by_curve_name(self._lib.OBJ_txt2nid(curve.name.encode()))
+        group = self._lib.EC_GROUP_new_by_curve_name(
+            self._lib.OBJ_txt2nid(curve.name.encode())
+        )
 
         if not group:
             raise Exception("EC_GROUP_new_by_curve_name failed")
