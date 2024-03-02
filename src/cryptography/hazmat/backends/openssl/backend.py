@@ -318,6 +318,30 @@ class Backend:
             algorithm, ec.ECDH
         )
 
+    def elliptic_curve_group_order(self, curve: ec.EllipticCurve) -> int:
+        group = self._lib.EC_GROUP_new_by_curve_name(self._lib.OBJ_txt2nid(curve.name.encode()))
+
+        if not group:
+            raise Exception("EC_GROUP_new_by_curve_name failed")
+
+        bn = self._lib.BN_new()
+
+        if not bn:
+            self._lib.EC_GROUP_free(group)
+            raise Exception("BN_new failed")
+
+        if self._lib.EC_GROUP_get_order(group, bn, self._ffi.NULL) != 1:
+            self._lib.BN_free(bn)
+            self._lib.EC_GROUP_free(group)
+            raise Exception("EC_GROUP_get_order failed")
+
+        group_order = int(backend._ffi.string(self._lib.BN_bn2hex(bn)), 16)
+
+        self._lib.BN_free(bn)
+        self._lib.EC_GROUP_free(group)
+        return group_order
+
+
     def dh_supported(self) -> bool:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
