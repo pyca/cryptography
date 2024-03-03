@@ -5,8 +5,72 @@
 use crate::backend::keys;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use pyo3::IntoPy;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+#[pyo3::prelude::pyclass]
+struct PKCS12Certificate {
+    #[pyo3(get)]
+    certificate: pyo3::Py<Certificate>,
+    #[pyo3(get)]
+    friendly_name: Option<pyo3::Py<pyo3::types::PyBytes>>,
+}
+
+#[pyo3::prelude::pymethods]
+impl PKCS12Certificate {
+    #[new]
+    fn new(
+        cert: pyo3::Py<Certificate>,
+        friendly_name: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> PKCS12Certificate {
+        PKCS12Certificate {
+            certificate: cert,
+            friendly_name,
+        }
+    }
+
+    fn __eq__(
+        &self,
+        py: pyo3::Python<'_>,
+        other: pyo3::PyRef<'_, Self>,
+    ) -> CryptographyResult<bool> {
+        let friendly_name_eq = match (&self.friendly_name, &other.friendly_name) {
+            (Some(a), Some(b)) => a.as_ref(py).eq(b.as_ref(py))?,
+            (None, None) => true,
+            _ => false,
+        };
+        Ok(friendly_name_eq
+            && self
+                .certificate
+                .as_ref(py)
+                .eq(other.certificate.as_ref(py))?)
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> CryptographyResult<u64> {
+        let mut hasher = DefaultHasher::new();
+        self.certificate.as_ref(py).hash()?.hash(&mut hasher);
+        match &self.friendly_name {
+            Some(v) => v.as_ref(py).hash()?.hash(&mut hasher),
+            None => None::<u32>.hash(&mut hasher),
+        };
+        Ok(hasher.finish())
+    }
+
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        let friendly_name_repr = match &self.friendly_name {
+            Some(v) => v.as_ref(py).repr()?.extract()?,
+            None => "None",
+        };
+        Ok(format!(
+            "<PKCS12Certificate({}, friendly_name={})>",
+            self.certificate.as_ref(py).str()?,
+            friendly_name_repr
+        ))
+    }
+}
 
 fn decode_p12(
     data: CffiBuf<'_>,
@@ -101,12 +165,11 @@ fn load_pkcs12<'p>(
     let cert = if let Some(ossl_cert) = p12.cert {
         let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).into_py(py);
         let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-        let alias = ossl_cert.alias();
+        let alias = ossl_cert
+            .alias()
+            .map(|a| pyo3::types::PyBytes::new(py, a).into_py(py));
 
-        types::PKCS12CERTIFICATE
-            .get(py)?
-            .call1((cert, alias))?
-            .into_py(py)
+        PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias).into_py(py)
     } else {
         py.None()
     };
@@ -125,12 +188,11 @@ fn load_pkcs12<'p>(
         for ossl_cert in it {
             let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).into_py(py);
             let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-            let alias = ossl_cert.alias();
+            let alias = ossl_cert
+                .alias()
+                .map(|a| pyo3::types::PyBytes::new(py, a).into_py(py));
 
-            let p12_cert = types::PKCS12CERTIFICATE
-                .get(py)?
-                .call1((cert, alias))?
-                .into_py(py);
+            let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias).into_py(py);
             additional_certs.append(p12_cert)?;
         }
     }
@@ -145,6 +207,8 @@ pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::pr
 
     submod.add_function(pyo3::wrap_pyfunction!(load_key_and_certificates, submod)?)?;
     submod.add_function(pyo3::wrap_pyfunction!(load_pkcs12, submod)?)?;
+
+    submod.add_class::<PKCS12Certificate>()?;
 
     Ok(submod)
 }
