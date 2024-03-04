@@ -5,6 +5,7 @@
 use crate::pkcs7;
 
 pub const CERT_BAG_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 3);
+pub const KEY_BAG_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 1);
 pub const X509_CERTIFICATE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 22, 1);
 pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 20);
 
@@ -48,6 +49,9 @@ pub enum AttributeSet<'a> {
 pub enum BagValue<'a> {
     // #[defined_by(CERT_BAG_OID)]
     CertBag(CertBag<'a>),
+
+    // #[defined_by(KEY_BAG_OID)]
+    KeyBag(asn1::Tlv<'a>),
 }
 
 // #[derive(asn1::Asn1Write)]
