@@ -11,7 +11,7 @@ use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[pyo3::prelude::pyclass]
+#[pyo3::prelude::pyclass(frozen)]
 struct PKCS12Certificate {
     #[pyo3(get)]
     certificate: pyo3::Py<Certificate>,
