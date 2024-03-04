@@ -2,6 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#![forbid(unsafe_code)]
+#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
+#![allow(unknown_lints, clippy::result_large_err)]
+
 pub mod rsa;
 pub mod spki;
 

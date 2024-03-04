@@ -13,7 +13,7 @@ pub struct Pksc1RsaPublicKey<'a> {
 pub fn parse_pkcs1_public_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Public>> {
-    let k = asn1::parse_single::<Pksc1RsaPublicKey>(data)?;
+    let k = asn1::parse_single::<Pksc1RsaPublicKey<'_>>(data)?;
 
     let n = openssl::bn::BigNum::from_slice(k.n.as_bytes())?;
     let e = openssl::bn::BigNum::from_slice(k.e.as_bytes())?;
