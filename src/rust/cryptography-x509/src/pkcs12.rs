@@ -4,6 +4,10 @@
 
 use crate::pkcs7;
 
+pub const CERT_BAG_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 3);
+pub const X509_CERTIFICATE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 22, 1);
+pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 20);
+
 // #[derive(asn1::Asn1Write)]
 pub struct Pfx<'a> {
     pub version: u8,
@@ -15,6 +19,46 @@ pub struct Pfx<'a> {
 pub struct MacData<'a> {
     pub mac: pkcs7::DigestInfo<'a>,
     pub salt: &'a [u8],
-    // #[default(1)]
+    // #[default(1u64)]
     pub iterations: u64,
+}
+
+// #[derive(asn1::Asn1Write)]
+pub struct SafeBag<'a> {
+    pub _bag_id: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    // #[defined_by(_bag_id)]
+    pub bag_value: asn1::Explicit<BagValue<'a>, 0>,
+    // pub attributes: Option<asn1::SetOfWriter<'a, Attribute<'a>>>,
+}
+
+// #[derive(asn1::Asn1Write)]
+pub struct Attribute<'a> {
+    pub _attr_id: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    // #[defined_by(_attr_id)]
+    pub attr_values: AttributeSet<'a>,
+}
+
+// #[derive(asn1::Asn1DefinedByWrite)]
+pub enum AttributeSet<'a> {
+    // #[defined_by(FRIENDLY_NAME_OID)]
+    FriendlyName(asn1::SetOfWriter<'a, asn1::BMPString<'a>>),
+}
+
+// #[derive(asn1::Asn1DefinedByWrite)]
+pub enum BagValue<'a> {
+    // #[defined_by(CERT_BAG_OID)]
+    CertBag(CertBag<'a>),
+}
+
+// #[derive(asn1::Asn1Write)]
+pub struct CertBag<'a> {
+    pub _cert_id: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    // #[defined_by(_cert_id)]
+    pub cert_value: asn1::Explicit<CertType<'a>, 0>,
+}
+
+// #[derive(asn1::Asn1DefinedByWrite)]
+pub enum CertType<'a> {
+    // #[defined_by(X509_CERTIFICATE_OID)]
+    X509(asn1::OctetStringEncoded<crate::certificate::Certificate<'a>>),
 }
