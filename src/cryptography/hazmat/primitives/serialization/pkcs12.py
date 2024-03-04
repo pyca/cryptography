@@ -38,43 +38,7 @@ PKCS12PrivateKeyTypes = typing.Union[
 ]
 
 
-class PKCS12Certificate:
-    def __init__(
-        self,
-        cert: x509.Certificate,
-        friendly_name: bytes | None,
-    ):
-        if not isinstance(cert, x509.Certificate):
-            raise TypeError("Expecting x509.Certificate object")
-        if friendly_name is not None and not isinstance(friendly_name, bytes):
-            raise TypeError("friendly_name must be bytes or None")
-        self._cert = cert
-        self._friendly_name = friendly_name
-
-    @property
-    def friendly_name(self) -> bytes | None:
-        return self._friendly_name
-
-    @property
-    def certificate(self) -> x509.Certificate:
-        return self._cert
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, PKCS12Certificate):
-            return NotImplemented
-
-        return (
-            self.certificate == other.certificate
-            and self.friendly_name == other.friendly_name
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.certificate, self.friendly_name))
-
-    def __repr__(self) -> str:
-        return "<PKCS12Certificate({}, friendly_name={!r})>".format(
-            self.certificate, self.friendly_name
-        )
+PKCS12Certificate = rust_pkcs12.PKCS12Certificate
 
 
 class PKCS12KeyAndCertificates:
