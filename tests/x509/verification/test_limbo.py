@@ -73,6 +73,9 @@ LIMBO_SKIP_TESTCASES = {
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.
     "rfc5280::ca-as-leaf",
     "pathlen::validation-ignores-pathlen-in-leaf",
+    # Client testcases are not supported yet.
+    "rfc5280::nc::nc-permits-email-exact",
+    "rfc5280::nc::nc-permits-email-domain",
 }
 
 
