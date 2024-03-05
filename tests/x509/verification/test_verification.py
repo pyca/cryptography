@@ -106,6 +106,12 @@ class TestStore:
 
 
 class TestClientVerifier:
+    def test_build_client_verifier_missing_store(self):
+        with pytest.raises(
+            ValueError, match="A client verifier must have a trust store"
+        ):
+            PolicyBuilder().build_client_verifier()
+
     def test_verify(self):
         # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
@@ -115,11 +121,15 @@ class TestClientVerifier:
 
         store = Store([leaf])
 
-        builder = PolicyBuilder().store(store)
-        builder = builder.time(
-            datetime.datetime.fromisoformat("2018-11-16T00:00:00+00:00")
+        validation_time = datetime.datetime.fromisoformat(
+            "2018-11-16T00:00:00+00:00"
         )
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
+
+        assert verifier.validation_time == validation_time.replace(tzinfo=None)
+        assert verifier.max_chain_depth == 16
 
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
