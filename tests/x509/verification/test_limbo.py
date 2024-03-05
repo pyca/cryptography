@@ -73,9 +73,6 @@ LIMBO_SKIP_TESTCASES = {
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.
     "rfc5280::ca-as-leaf",
     "pathlen::validation-ignores-pathlen-in-leaf",
-    # Client testcases are not supported yet.
-    "rfc5280::nc::nc-permits-email-exact",
-    "rfc5280::nc::nc-permits-email-domain",
 }
 
 
@@ -91,12 +88,16 @@ def _get_limbo_peer(expected_peer):
 
 def _limbo_testcase(id_, testcase):
     if id_ in LIMBO_SKIP_TESTCASES:
-        return
+        pytest.skip(f"explicitly skipped testcase: {id_}")
 
     features = testcase["features"]
-    if LIMBO_UNSUPPORTED_FEATURES.intersection(features):
-        return
-    assert testcase["validation_kind"] == "SERVER"
+    unsupported = LIMBO_UNSUPPORTED_FEATURES.intersection(features)
+    if unsupported:
+        pytest.skip(f"explicitly skipped features: {unsupported}")
+
+    if testcase["validation_kind"] != "SERVER":
+        pytest.skip("non-SERVER testcase")
+
     assert testcase["signature_algorithms"] == []
     assert testcase["extended_key_usage"] == [] or testcase[
         "extended_key_usage"
