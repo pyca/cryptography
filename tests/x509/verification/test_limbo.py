@@ -12,6 +12,7 @@ import pytest
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.verification import (
+    ClientVerifier,
     PolicyBuilder,
     ServerVerifier,
     Store,
@@ -129,6 +130,7 @@ def _limbo_testcase(id_, testcase):
     if max_chain_depth is not None:
         builder = builder.max_chain_depth(max_chain_depth)
 
+    verifier: ServerVerifier | ClientVerifier
     if testcase["validation_kind"] == "SERVER":
         peer_name = _get_limbo_peer(testcase["expected_peer_name"])
         verifier = builder.build_server_verifier(peer_name)
