@@ -263,14 +263,12 @@ class RelativeDistinguishedName:
 
 class Name:
     @typing.overload
-    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None:
-        ...
+    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None: ...
 
     @typing.overload
     def __init__(
         self, attributes: typing.Iterable[RelativeDistinguishedName]
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,

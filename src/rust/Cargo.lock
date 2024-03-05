@@ -4,18 +4,18 @@ version = 3
 
 [[package]]
 name = "asn1"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a227d599843d72985b747c71958d16d670a6e6bc06fadf064570cae70c11fd0a"
+checksum = "889adc8fd6c1344619926529e605cccad1f832b3a2a5a3fe6d7c8557c8f05368"
 dependencies = [
  "asn1_derive",
 ]
 
 [[package]]
 name = "asn1_derive"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87132221a3cb3794c8def2208c723276686e0cd771541deb7768905ce13dc603"
+checksum = "e2271cec9b830009b9c3b9e21767083c553f51f996b690c476c27f541199aa99"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -48,9 +48,9 @@ checksum = "ed570934406eb16438a4e976b1b4500774099c13b8cb96eec99f620f05090ddf"
 
 [[package]]
 name = "cc"
-version = "1.0.88"
+version = "1.0.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02f341c093d19155a6e41631ce5971aac4e9a868262212153124c15fa22d1cdc"
+checksum = "a0ba8f7aaa012f30d5b2861462f6708eccd49c3c39863fe083a308035f63d723"
 
 [[package]]
 name = "cfg-if"
@@ -377,9 +377,9 @@ checksum = "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
 
 [[package]]
 name = "syn"
-version = "2.0.51"
+version = "2.0.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab617d94515e94ae53b8406c628598680aa0c9587474ecbe58188f7b345d66c"
+checksum = "b699d15b36d1f02c3e7c69f8ffef53de37aefae075d8488d4ba1a7788d574a07"
 dependencies = [
  "proc-macro2",
  "quote",

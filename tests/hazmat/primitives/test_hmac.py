@@ -33,7 +33,7 @@ class TestHMAC:
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update("\u00FC")  # type: ignore[arg-type]
+            h.update("\u00fc")  # type: ignore[arg-type]
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):

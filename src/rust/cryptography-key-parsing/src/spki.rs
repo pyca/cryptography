@@ -9,7 +9,7 @@ use crate::{KeyParsingError, KeyParsingResult};
 pub fn parse_public_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Public>> {
-    let k = asn1::parse_single::<SubjectPublicKeyInfo>(data)?;
+    let k = asn1::parse_single::<SubjectPublicKeyInfo<'_>>(data)?;
 
     match k.algorithm.params {
         AlgorithmParameters::Ec(ec_params) => match ec_params {

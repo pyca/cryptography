@@ -19,7 +19,7 @@ class TestHashContext:
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            m.update("\u00FC")  # type: ignore[arg-type]
+            m.update("\u00fc")  # type: ignore[arg-type]
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):

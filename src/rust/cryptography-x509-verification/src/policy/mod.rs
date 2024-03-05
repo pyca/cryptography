@@ -9,7 +9,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use asn1::ObjectIdentifier;
-use cryptography_key_parsing::rsa::Pksc1RsaPublicKey;
+use cryptography_key_parsing::rsa::Pkcs1RsaPublicKey;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, Time,
@@ -539,7 +539,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             issuer_spki.algorithm.params,
             AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_)
         ) {
-            let rsa_key: Pksc1RsaPublicKey<'_> =
+            let rsa_key: Pkcs1RsaPublicKey<'_> =
                 asn1::parse_single(issuer_spki.subject_public_key.as_bytes())?;
 
             if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {

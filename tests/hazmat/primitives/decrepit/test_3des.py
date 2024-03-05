@@ -6,7 +6,6 @@
 Test using the NIST Test Vectors
 """
 
-
 import binascii
 import os
 

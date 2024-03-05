@@ -175,7 +175,7 @@ def flake(session: nox.Session) -> None:
     )
     install(session, "-e", "vectors/")
 
-    session.run("ruff", ".")
+    session.run("ruff", "check", ".")
     session.run("ruff", "format", "--check", ".")
     session.run(
         "mypy",
@@ -268,7 +268,7 @@ def local(session):
         session.run("flit", "install", "-s", silent=True)
 
     session.run("ruff", "format", ".")
-    session.run("ruff", ".")
+    session.run("ruff", "check", ".")
 
     with session.chdir("src/rust/"):
         session.run("cargo", "fmt", "--all", external=True)

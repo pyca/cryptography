@@ -781,7 +781,7 @@ class TestPKCS12Objects:
         assert c2a != c2b
         assert c2a != c3a
 
-        assert c2n != "test"
+        assert c2n != "test"  # type: ignore[comparison-overlap]
 
     def test_certificate_hash(self, backend):
         cert2 = _load_cert(

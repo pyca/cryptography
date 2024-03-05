@@ -10,6 +10,15 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12KeyAndCertificates,
 )
 
+class PKCS12Certificate:
+    def __init__(
+        self, cert: x509.Certificate, friendly_name: bytes | None
+    ) -> None: ...
+    @property
+    def friendly_name(self) -> bytes | None: ...
+    @property
+    def certificate(self) -> x509.Certificate: ...
+
 def load_key_and_certificates(
     data: bytes,
     password: bytes | None,

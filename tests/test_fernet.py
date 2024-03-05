@@ -138,7 +138,7 @@ class TestFernet:
                 current_time=int(time.time()),
             )
 
-    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xFF\x00\x80"])
+    @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xff\x00\x80"])
     def test_roundtrips(self, message, backend):
         f = Fernet(Fernet.generate_key(), backend=backend)
         assert f.decrypt(f.encrypt(message)) == message

@@ -91,7 +91,7 @@ class TestPKCS7Loading:
             )
 
     def test_load_pkcs7_empty_certificates(self):
-        der = b"\x30\x0B\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x07\x02"
+        der = b"\x30\x0b\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x07\x02"
 
         with pytest.raises(ValueError):
             pkcs7.load_der_pkcs7_certificates(der)
@@ -573,7 +573,7 @@ class TestPKCS7Builder:
         assert b"\x06\t*\x86H\x86\xf7\r\x01\t\x0f" in sig_binary
 
         # 2.16.840.1.101.3.4.1.42 (aes256-CBC-PAD) as an ASN.1 DER encoded OID
-        aes256_cbc_pad_oid = b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x2A"
+        aes256_cbc_pad_oid = b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x2a"
         # 2.16.840.1.101.3.4.1.22 (aes192-CBC-PAD) as an ASN.1 DER encoded OID
         aes192_cbc_pad_oid = b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x16"
         # 2.16.840.1.101.3.4.1.2 (aes128-CBC-PAD) as an ASN.1 DER encoded OID
@@ -730,7 +730,7 @@ class TestPKCS7Builder:
             # another in the SignerInfo data structure in the
             # `digest_encryption_algorithm` field.
             assert (
-                sig.count(b"\x06\x09\x2A\x86\x48\x86\xF7\x0D\x01\x01\x01") == 2
+                sig.count(b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01") == 2
             )
             _pkcs7_verify(
                 serialization.Encoding.DER,

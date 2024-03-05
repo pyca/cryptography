@@ -5732,7 +5732,7 @@ class TestNameAttribute:
 
         # unicode string of length 2, but > 2 bytes
         with pytest.raises(ValueError):
-            x509.NameAttribute(NameOID.COUNTRY_NAME, "\U0001F37A\U0001F37A")
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "\U0001f37a\U0001f37a")
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
