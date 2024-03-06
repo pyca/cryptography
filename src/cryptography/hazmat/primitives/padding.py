@@ -12,6 +12,7 @@ from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings._rust import (
     check_ansix923_padding,
     check_pkcs7_padding,
+    check_zero_padding,
 )
 
 
@@ -220,6 +221,65 @@ class _ANSIX923UnpaddingContext(PaddingContext):
             self._buffer,
             self.block_size,
             check_ansix923_padding,
+        )
+        self._buffer = None
+        return result
+
+
+class Zero:
+    def __init__(self, block_size: int):
+        _byte_padding_check(block_size)
+        self.block_size = block_size
+
+    def padder(self) -> PaddingContext:
+        return _ZeroPaddingContext(self.block_size)
+
+    def unpadder(self) -> PaddingContext:
+        return _ZeroUnpaddingContext(self.block_size)
+
+
+class _ZeroPaddingContext(PaddingContext):
+    _buffer: bytes | None
+
+    def __init__(self, block_size: int):
+        self.block_size = block_size
+        # TODO: more copies than necessary, we should use zero-buffer (#193)
+        self._buffer = b""
+
+    def update(self, data: bytes) -> bytes:
+        self._buffer, result = _byte_padding_update(
+            self._buffer, data, self.block_size
+        )
+        return result
+
+    def _padding(self, size: int) -> bytes:
+        return b"\0" * size
+
+    def finalize(self) -> bytes:
+        result = _byte_padding_pad(
+            self._buffer, self.block_size, self._padding
+        )
+        self._buffer = None
+        return result
+
+
+class _ZeroUnpaddingContext(PaddingContext):
+    _buffer: bytes | None
+
+    def __init__(self, block_size: int):
+        self.block_size = block_size
+        # TODO: more copies than necessary, we should use zero-buffer (#193)
+        self._buffer = b""
+
+    def update(self, data: bytes) -> bytes:
+        self._buffer, result = _byte_unpadding_update(
+            self._buffer, data, self.block_size
+        )
+        return result
+
+    def finalize(self) -> bytes:
+        result = _byte_unpadding_check(
+            self._buffer, self.block_size, check_zero_padding
         )
         self._buffer = None
         return result

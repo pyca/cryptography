@@ -94,6 +94,7 @@ fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(padding::check_pkcs7_padding, m)?)?;
     m.add_function(pyo3::wrap_pyfunction!(padding::check_ansix923_padding, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(padding::check_zero_padding, m)?)?;
     m.add_class::<oid::ObjectIdentifier>()?;
 
     m.add_submodule(asn1::create_submodule(py)?)?;

@@ -63,6 +63,20 @@ pub(crate) fn check_ansix923_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
+#[pyo3::prelude::pyfunction]
+pub(crate) fn check_zero_padding(data: &[u8]) -> bool {
+    if data.is_empty() {
+        return true;
+    }
+
+    let non_zero_index = data.iter().position(|&byte| byte != 0);
+
+    match non_zero_index {
+        None => true,
+        Some(index) => data[index..].iter().all(|&byte| byte == 0),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::constant_time_lt;
