@@ -87,10 +87,10 @@ class Backend:
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def __repr__(self) -> str:
-        return "<OpenSSLBackend(version: {}, FIPS: {}, Legacy: {})>".format(
-            self.openssl_version_text(),
-            self._fips_enabled,
-            rust_openssl._legacy_provider_loaded,
+        return (
+            f"<OpenSSLBackend(version: {self.openssl_version_text()}, "
+            f"FIPS: {self._fips_enabled}, "
+            f"Legacy: {rust_openssl._legacy_provider_loaded})>"
         )
 
     def openssl_assert(self, ok: bool) -> None:
