@@ -6,6 +6,7 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
+use pyo3::prelude::PyModuleMethods;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
@@ -167,14 +168,16 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyEr
     })
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let submod = pyo3::prelude::PyModule::new(py, "asn1")?;
-    submod.add_function(pyo3::wrap_pyfunction!(parse_spki_for_data, submod)?)?;
+pub(crate) fn create_submodule(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let submod = pyo3::prelude::PyModule::new_bound(py, "asn1")?;
+    submod.add_function(pyo3::wrap_pyfunction!(parse_spki_for_data, &submod)?)?;
 
-    submod.add_function(pyo3::wrap_pyfunction!(decode_dss_signature, submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(encode_dss_signature, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(decode_dss_signature, &submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(encode_dss_signature, &submod)?)?;
 
-    submod.add_function(pyo3::wrap_pyfunction!(test_parse_certificate, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(test_parse_certificate, &submod)?)?;
 
     Ok(submod)
 }

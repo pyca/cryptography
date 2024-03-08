@@ -50,7 +50,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1967539e212c17139dc810096da987c8100b1ba2"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
-          - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.65.0"}
+          - {VERSION: "3.12", NOXSESSION: "rust,tests-nocoverage", RUST: "1.65.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
     timeout-minutes: 15

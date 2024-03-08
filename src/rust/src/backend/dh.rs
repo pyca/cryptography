@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use cryptography_x509::common;
 
@@ -545,11 +546,13 @@ impl DHParameterNumbers {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "dh")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "dh")?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_parameters, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, &m)?)?;
 
     m.add_class::<DHPrivateKey>()?;
     m.add_class::<DHPublicKey>()?;

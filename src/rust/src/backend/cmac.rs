@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use crate::backend::cipher_registry;
 use crate::backend::hashes::already_finalized_error;
@@ -97,8 +98,10 @@ impl Cmac {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "cmac")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "cmac")?;
 
     m.add_class::<Cmac>()?;
 

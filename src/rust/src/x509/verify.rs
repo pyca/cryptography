@@ -13,6 +13,8 @@ use cryptography_x509_verification::{
 };
 use pyo3::IntoPy;
 
+use pyo3::prelude::PyModuleMethods;
+
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
@@ -450,7 +452,9 @@ impl PyStore {
     }
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_class::<PyVerifiedClient>()?;
     module.add_class::<PyClientVerifier>()?;
     module.add_class::<PyServerVerifier>()?;

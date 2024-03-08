@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -815,9 +816,11 @@ impl RsaPublicNumbers {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "rsa")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_private_key, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "rsa")?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_private_key, &m)?)?;
 
     m.add_class::<RsaPrivateKey>()?;
     m.add_class::<RsaPublicKey>()?;
