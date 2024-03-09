@@ -10,7 +10,6 @@ use once_cell::sync::Lazy;
 
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
-use crate::x509;
 use crate::x509::certificate::Certificate;
 
 pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
@@ -93,7 +92,7 @@ pub(crate) fn certid_new<'p>(
     )?;
 
     Ok(CertID {
-        hash_algorithm: x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
+        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
             .getattr(pyo3::intern!(py, "name"))?
             .extract::<&str>()?]
         .clone(),
@@ -111,7 +110,7 @@ pub(crate) fn certid_new_from_hash<'p>(
     hash_algorithm: &'p pyo3::PyAny,
 ) -> CryptographyResult<CertID<'p>> {
     Ok(CertID {
-        hash_algorithm: x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
+        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
             .getattr(pyo3::intern!(py, "name"))?
             .extract::<&str>()?]
         .clone(),
