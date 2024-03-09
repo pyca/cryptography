@@ -316,11 +316,15 @@ class TestPKCS7Builder:
         # Parse the message to get the signed data, which is the
         # first payload in the message
         message = email.parser.BytesParser().parsebytes(sig)
-        signed_data = message.get_payload()[0].get_payload().encode()
+        payload = message.get_payload()
+        assert isinstance(payload, list)
+        assert isinstance(payload[0], email.message.Message)
+        signed_data = payload[0].get_payload()
+        assert isinstance(signed_data, str)
         _pkcs7_verify(
             serialization.Encoding.SMIME,
             sig,
-            signed_data,
+            signed_data.encode(),
             [cert],
             options,
             backend,
@@ -546,7 +550,10 @@ class TestPKCS7Builder:
         # Parse the message to get the signed data, which is the
         # first payload in the message
         message = email.parser.BytesParser().parsebytes(sig_pem)
-        signed_data = message.get_payload()[0].as_bytes(
+        payload = message.get_payload()
+        assert isinstance(payload, list)
+        assert isinstance(payload[0], email.message.Message)
+        signed_data = payload[0].as_bytes(
             policy=message.policy.clone(linesep="\r\n")
         )
         _pkcs7_verify(
