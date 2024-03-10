@@ -3,7 +3,8 @@
 // for complete details.
 
 use cryptography_x509::{
-    certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
+    certificate::Certificate, extensions::SubjectAlternativeName, name::GeneralName,
+    oid::SUBJECT_ALTERNATIVE_NAME_OID,
 };
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
@@ -14,14 +15,13 @@ use cryptography_x509_verification::{
 use pyo3::IntoPy;
 
 use crate::backend::keys;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
-use crate::{
-    error::{CryptographyError, CryptographyResult},
-    x509,
-};
+
+use super::parse_general_name;
 
 pub(crate) struct PyCryptoOps {}
 
@@ -279,7 +279,7 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        // NOTE: These `unwrap()` cannot fail, since the underlying policy
+        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
         // enforces the presence of a SAN and the well-formedness of the
         // extension set.
         let leaf_san = &chain[0]
@@ -289,11 +289,24 @@ impl PyClientVerifier {
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
             .unwrap();
 
-        let py_gns =
-            x509::parse_general_names(py, &leaf_san.value::<SubjectAlternativeName<'_>>()?)?;
+        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+
+        // Instead of returning all general names, we return only ones
+        // that we currently have name constraint implementations for.
+        let filtered_gns = leaf_gns.filter(|gn| {
+            matches!(
+                gn,
+                GeneralName::DNSName(_) | GeneralName::IPAddress(_) | GeneralName::RFC822Name(_)
+            )
+        });
+
+        let filtered_py_gns = pyo3::types::PyList::empty(py);
+        for filtered_gn in filtered_gns {
+            filtered_py_gns.append(parse_general_name(py, filtered_gn)?)?;
+        }
 
         Ok(PyVerifiedClient {
-            subjects: py_gns,
+            subjects: filtered_py_gns.into(),
             chain: py_chain.into_py(py),
         })
     }
