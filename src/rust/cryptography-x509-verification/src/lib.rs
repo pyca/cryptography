@@ -151,6 +151,18 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     ))),
                 }
             }
+            // All other matching pairs of (constraint, name) are currently unsupported.
+            (GeneralName::OtherName(_), GeneralName::OtherName(_))
+            | (GeneralName::X400Address(_), GeneralName::X400Address(_))
+            | (GeneralName::DirectoryName(_), GeneralName::DirectoryName(_))
+            | (GeneralName::EDIPartyName(_), GeneralName::EDIPartyName(_))
+            | (
+                GeneralName::UniformResourceIdentifier(_),
+                GeneralName::UniformResourceIdentifier(_),
+            )
+            | (GeneralName::RegisteredID(_), GeneralName::RegisteredID(_)) => Err(
+                ValidationError::Other("unsupported name constraint".to_string()),
+            ),
             _ => Ok(Skipped),
         }
     }
