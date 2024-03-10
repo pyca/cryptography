@@ -33,3 +33,8 @@ def load_pkcs12(
     password: bytes | None,
     backend: typing.Any = None,
 ) -> PKCS12KeyAndCertificates: ...
+def serialize_key_and_certificates(
+    name: bytes | None,
+    cert: x509.Certificate | None,
+    cas: typing.Iterable[x509.Certificate | PKCS12Certificate] | None,
+) -> bytes: ...
