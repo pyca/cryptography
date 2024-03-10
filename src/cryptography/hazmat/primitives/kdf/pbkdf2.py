@@ -33,9 +33,7 @@ class PBKDF2HMAC(KeyDerivationFunction):
 
         if not ossl.pbkdf2_hmac_supported(algorithm):
             raise UnsupportedAlgorithm(
-                "{} is not supported for PBKDF2 by this backend.".format(
-                    algorithm.name
-                ),
+                f"{algorithm.name} is not supported for PBKDF2.",
                 _Reasons.UNSUPPORTED_HASH,
             )
         self._used = False

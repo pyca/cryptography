@@ -80,9 +80,8 @@ def _build_vectors():
                 output.append(f"OFFSET = {offset}")
                 output.append(f"PLAINTEXT = {binascii.hexlify(plaintext)}")
                 output.append(
-                    "CIPHERTEXT = {}".format(
-                        binascii.hexlify(encryptor.update(plaintext))
-                    )
+                    f"CIPHERTEXT = "
+                    f"{binascii.hexlify(encryptor.update(plaintext))}"
                 )
                 current_offset += len(plaintext)
             assert not encryptor.finalize()
