@@ -46,7 +46,7 @@ jobs:
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the wycheproof main branch.*/Latest commit on the wycheproof main branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
+          sed -E -i "s/Latest commit on the wycheproof master branch.*/Latest commit on the wycheproof main branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
           sed -E -i "s/ref: \"[0-9a-f]{40}\" # wycheproof-ref/ref: \"${{ steps.check-sha-wycheproof.outputs.COMMIT_SHA }}\" # wycheproof-ref/" .github/actions/fetch-vectors/action.yml
           git status
         if: steps.check-sha-wycheproof.outputs.COMMIT_SHA
