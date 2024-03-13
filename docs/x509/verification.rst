@@ -113,10 +113,7 @@ the root of trust:
         :type: list of :class:`~cryptography.x509.GeneralName`
 
         The subjects presented in the verified client's Subject Alternative Name
-        extension. This list only contains subjects that currently have
-        Name Constraint support, meaning that it only contains DNS names,
-        email addresses and IP addresses even if the Subject Alternative Name
-        contains additional types.
+        extension.
 
     .. attribute:: chain
 
