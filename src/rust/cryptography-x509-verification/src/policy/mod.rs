@@ -19,7 +19,8 @@ use cryptography_x509::common::{
 use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_SERVER_AUTH_OID,
+    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
+    EKU_SERVER_AUTH_OID,
 };
 use once_cell::sync::Lazy;
 
@@ -239,6 +240,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         subject: Option<Subject<'a>>,
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
+        extended_key_usage: ObjectIdentifier,
     ) -> Self {
         let has_subject = subject.is_some();
         Self {
@@ -246,7 +248,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
             subject,
             validation_time: time,
-            extended_key_usage: EKU_SERVER_AUTH_OID.clone(),
+            extended_key_usage,
             minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
             permitted_public_key_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SPKI_ALGORITHMS),
             permitted_signature_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS),
@@ -350,7 +352,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// website (i.e. server) certificates. For that, you **must** use
     /// [`Policy::server`].
     pub fn client(ops: B, time: asn1::DateTime, max_chain_depth: Option<u8>) -> Self {
-        Self::new(ops, None, time, max_chain_depth)
+        Self::new(
+            ops,
+            None,
+            time,
+            max_chain_depth,
+            EKU_CLIENT_AUTH_OID.clone(),
+        )
     }
 
     /// Create a new policy with defaults for the server certificate profile
@@ -361,7 +369,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
     ) -> Self {
-        Self::new(ops, Some(subject), time, max_chain_depth)
+        Self::new(
+            ops,
+            Some(subject),
+            time,
+            max_chain_depth,
+            EKU_SERVER_AUTH_OID.clone(),
+        )
     }
 
     fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {
