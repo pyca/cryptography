@@ -343,7 +343,6 @@ class Backend:
         self._lib.EC_GROUP_free(group)
         return group_order
 
-
     def dh_supported(self) -> bool:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 

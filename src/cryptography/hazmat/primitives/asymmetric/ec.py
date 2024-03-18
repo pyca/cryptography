@@ -62,7 +62,6 @@ class EllipticCurve(metaclass=abc.ABCMeta):
         return backend.elliptic_curve_group_order(self)
 
 
-
 class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
