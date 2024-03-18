@@ -87,10 +87,10 @@ class Backend:
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def __repr__(self) -> str:
-        return "<OpenSSLBackend(version: {}, FIPS: {}, Legacy: {})>".format(
-            self.openssl_version_text(),
-            self._fips_enabled,
-            rust_openssl._legacy_provider_loaded,
+        return (
+            f"<OpenSSLBackend(version: {self.openssl_version_text()}, "
+            f"FIPS: {self._fips_enabled}, "
+            f"Legacy: {rust_openssl._legacy_provider_loaded})>"
         )
 
     def openssl_assert(self, ok: bool) -> None:
@@ -436,6 +436,7 @@ class Backend:
             nid_cert = -1
             nid_key = -1
             pkcs12_iter = 0
+            # mac_iter of 0 uses OpenSSL's default value
             mac_iter = 0
             mac_alg = self._ffi.NULL
         elif isinstance(
@@ -452,10 +453,7 @@ class Backend:
                 nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
             # At least we can set this higher than OpenSSL's default
             pkcs12_iter = 20000
-            # mac_iter chosen for compatibility reasons, see:
-            # https://www.openssl.org/docs/man1.1.1/man3/PKCS12_create.html
-            # Did we mention how lousy PKCS12 encryption is?
-            mac_iter = 1
+            mac_iter = 0
             # MAC algorithm can only be set on OpenSSL 3.0.0+
             mac_alg = self._ffi.NULL
             password = encryption_algorithm.password
@@ -472,8 +470,7 @@ class Backend:
             nid_key = 0
             # Use the default iters we use in best available
             pkcs12_iter = 20000
-            # See the Best Available comment for why this is 1
-            mac_iter = 1
+            mac_iter = 0
             password = encryption_algorithm.password
             keycertalg = encryption_algorithm._key_cert_algorithm
             if keycertalg is PBES.PBESv1SHA1And3KeyTripleDESCBC:

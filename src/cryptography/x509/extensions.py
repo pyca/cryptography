@@ -401,8 +401,8 @@ class AccessDescription:
 
     def __repr__(self) -> str:
         return (
-            "<AccessDescription(access_method={0.access_method}, access_locati"
-            "on={0.access_location})>".format(self)
+            f"<AccessDescription(access_method={self.access_method}, "
+            f"access_location={self.access_location})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -456,8 +456,9 @@ class BasicConstraints(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            "<BasicConstraints(ca={0.ca}, " "path_length={0.path_length})>"
-        ).format(self)
+            f"<BasicConstraints(ca={self.ca}, "
+            f"path_length={self.path_length})>"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BasicConstraints):
@@ -876,8 +877,8 @@ class PolicyInformation:
 
     def __repr__(self) -> str:
         return (
-            "<PolicyInformation(policy_identifier={0.policy_identifier}, polic"
-            "y_qualifiers={0.policy_qualifiers})>".format(self)
+            f"<PolicyInformation(policy_identifier={self.policy_identifier}, "
+            f"policy_qualifiers={self.policy_qualifiers})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -928,8 +929,8 @@ class UserNotice:
 
     def __repr__(self) -> str:
         return (
-            "<UserNotice(notice_reference={0.notice_reference}, explicit_text="
-            "{0.explicit_text!r})>".format(self)
+            f"<UserNotice(notice_reference={self.notice_reference}, "
+            f"explicit_text={self.explicit_text!r})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -968,8 +969,8 @@ class NoticeReference:
 
     def __repr__(self) -> str:
         return (
-            "<NoticeReference(organization={0.organization!r}, notice_numbers="
-            "{0.notice_numbers})>".format(self)
+            f"<NoticeReference(organization={self.organization!r}, "
+            f"notice_numbers={self.notice_numbers})>"
         )
 
     def __eq__(self, other: object) -> bool:

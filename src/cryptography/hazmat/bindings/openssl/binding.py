@@ -95,9 +95,8 @@ def _verify_package_version(version: str) -> None:
             "shared object. This can happen if you have multiple copies of "
             "cryptography installed in your Python path. Please try creating "
             "a new virtual environment to resolve this issue. "
-            "Loaded python version: {}, shared object version: {}".format(
-                version, so_package_version
-            )
+            f"Loaded python version: {version}, "
+            f"shared object version: {so_package_version}"
         )
 
     _openssl_assert(

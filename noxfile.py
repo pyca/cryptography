@@ -22,14 +22,18 @@ except ImportError:
 nox.options.reuse_existing_virtualenvs = True
 
 
-def install(session: nox.Session, *args: str, silent: bool = False) -> None:
-    if not silent:
+def install(
+    session: nox.Session,
+    *args: str,
+    verbose: bool = True,
+) -> None:
+    if verbose:
         args += ("-v",)
     session.install(
         "-c",
         "ci-constraints-requirements.txt",
         *args,
-        silent=silent,
+        silent=False,
     )
 
 
@@ -247,7 +251,7 @@ def rust(session: nox.Session) -> None:
         process_rust_coverage(session, rust_tests, prof_location)
 
 
-@nox.session
+@nox.session(venv_backend="uv")
 def local(session):
     pyproject_data = load_pyproject_toml()
     test_dependencies = pyproject_data["project"]["optional-dependencies"][
@@ -261,11 +265,9 @@ def local(session):
         *test_dependencies,
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
-        "flit",
-        silent=True,
+        "cryptography_vectors @ ./vectors/",
+        verbose=False,
     )
-    with session.cd("vectors/"):
-        session.run("flit", "install", "-s", silent=True)
 
     session.run("ruff", "format", ".")
     session.run("ruff", "check", ".")
@@ -292,7 +294,15 @@ def local(session):
         "noxfile.py",
     )
 
-    install(session, ".")
+    install(
+        session,
+        # Needed until https://github.com/astral-sh/uv/issues/2152 is fixed
+        "--reinstall-package",
+        "cryptography",
+        "--refresh-package",
+        "cryptography",
+        "cryptography @ .",
+    )
 
     if session.posargs:
         tests = session.posargs

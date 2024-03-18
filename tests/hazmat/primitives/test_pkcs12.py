@@ -781,7 +781,7 @@ class TestPKCS12Objects:
         assert c2a != c2b
         assert c2a != c3a
 
-        assert c2n != "test"
+        assert c2n != "test"  # type: ignore[comparison-overlap]
 
     def test_certificate_hash(self, backend):
         cert2 = _load_cert(
@@ -954,19 +954,15 @@ class TestPKCS12Objects:
         cert2 = _load_cert(
             backend, os.path.join("x509", "cryptography.io.pem")
         )
-        assert (
-            repr(
-                PKCS12KeyAndCertificates(
-                    key,
-                    PKCS12Certificate(cert, None),
-                    [PKCS12Certificate(cert2, b"name2")],
-                )
-            )
-            == "<PKCS12KeyAndCertificates(key={}, cert=<PKCS12Certificate("
-            "{}, friendly_name=None)>, additional_certs=[<PKCS12Certificate"
-            "({}, friendly_name=b'name2')>])>".format(
+        assert repr(
+            PKCS12KeyAndCertificates(
                 key,
-                cert,
-                cert2,
+                PKCS12Certificate(cert, None),
+                [PKCS12Certificate(cert2, b"name2")],
             )
+        ) == (
+            f"<PKCS12KeyAndCertificates(key={key}, "
+            f"cert=<PKCS12Certificate({cert}, friendly_name=None)>, "
+            f"additional_certs=["
+            f"<PKCS12Certificate({cert2}, friendly_name=b'name2')>])>"
         )

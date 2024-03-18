@@ -52,9 +52,8 @@ def _skip_ecdsa_vector(backend, curve: ec.EllipticCurve, hash_type):
         ec.ECDSA(hash_type()), curve
     ):
         pytest.skip(
-            "ECDSA not supported with this hash {} and curve {}.".format(
-                hash_type().name, curve.name
-            )
+            f"ECDSA not supported with this hash {hash_type().name} and "
+            f"curve {curve.name}."
         )
 
 

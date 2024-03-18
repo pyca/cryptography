@@ -7,7 +7,7 @@
 
 alabaster==0.7.16
     # via sphinx
-argcomplete==3.2.2; python_version >= "3.8"
+argcomplete==3.2.3; python_version >= "3.8"
     # via nox
 babel==2.14.0
     # via sphinx
@@ -25,7 +25,7 @@ click==8.1.7
     # via cryptography (pyproject.toml)
 colorlog==6.8.2
     # via nox
-coverage==7.4.3; python_version >= "3.8"
+coverage==7.4.4; python_version >= "3.8"
     # via
     #   coverage
     #   pytest-cov
@@ -52,15 +52,15 @@ jinja2==3.1.3
     # via sphinx
 markupsafe==2.1.5
     # via jinja2
-mypy==1.8.0
+mypy==1.9.0
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
 nh3==0.2.15
     # via readme-renderer
-nox==2023.4.22
+nox==2024.3.2
     # via cryptography (pyproject.toml)
-packaging==23.2
+packaging==24.0
     # via
     #   build
     #   nox
@@ -86,7 +86,7 @@ pygments==2.17.2
     #   sphinx
 pyproject-hooks==1.0.0
     # via build
-pytest==8.0.2; python_version >= "3.8"
+pytest==8.1.1; python_version >= "3.8"
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
@@ -105,7 +105,7 @@ readme-renderer==43.0
     # via cryptography (pyproject.toml)
 requests==2.31.0
     # via sphinx
-ruff==0.3.0
+ruff==0.3.3
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx

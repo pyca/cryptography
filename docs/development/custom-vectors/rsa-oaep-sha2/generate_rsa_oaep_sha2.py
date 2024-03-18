@@ -82,9 +82,8 @@ def build_vectors(mgf1alg, hashalg, filename):
                 ),
             )
             output.append(
-                "# OAEP Example {} alg={} mgf1={}".format(
-                    count, hashalg.name, mgf1alg.name
-                )
+                f"# OAEP Example {count} alg={hashalg.name} "
+                f"mgf1={mgf1alg.name}"
             )
             count += 1
             output.append("# Message:")
