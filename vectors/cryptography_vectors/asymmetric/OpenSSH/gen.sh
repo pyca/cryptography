@@ -35,8 +35,7 @@ genkey() {
 }
 
 # generate private key files
-#for ktype in rsa dsa ecdsa sk-ecdsa ed25519 sk-ed25519; do
-for ktype in sk-ecdsa sk-ed25519; do
+for ktype in rsa dsa ecdsa sk-ecdsa ed25519 sk-ed25519; do
     for psw in nopsw psw; do
         genkey "${ktype}-${psw}.key"
     done
