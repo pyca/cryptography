@@ -87,8 +87,10 @@ class TestOpenSSHSerialization:
             if not key_file.startswith("sk-"):
                 # sk U2F keys do not serialize
                 assert (
-                    public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
-                    == nocomment_data
+                    public_key.public_bytes(
+                        Encoding.OpenSSH,
+                        PublicFormat.OpenSSH
+                    ) == nocomment_data
                 )
 
         self.run_partial_pubkey(pub_data, backend)
