@@ -88,9 +88,9 @@ class TestOpenSSHSerialization:
                 # sk U2F keys do not serialize
                 assert (
                     public_key.public_bytes(
-                        Encoding.OpenSSH,
-                        PublicFormat.OpenSSH
-                    ) == nocomment_data
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
                 )
 
         self.run_partial_pubkey(pub_data, backend)
