@@ -25,7 +25,7 @@ click==8.1.7
     # via cryptography (pyproject.toml)
 colorlog==6.8.2
     # via nox
-coverage==7.4.3; python_version >= "3.8"
+coverage==7.4.4; python_version >= "3.8"
     # via
     #   coverage
     #   pytest-cov
@@ -105,7 +105,7 @@ readme-renderer==43.0
     # via cryptography (pyproject.toml)
 requests==2.31.0
     # via sphinx
-ruff==0.3.2
+ruff==0.3.3
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx

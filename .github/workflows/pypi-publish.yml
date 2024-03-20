@@ -47,7 +47,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install --require-hashes -r ${{ env.PUBLISH_REQUIREMENTS_PATH }}
 
-      - uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # v3.1.2
+      - uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
         with:
           path: dist/
           run_id: ${{ github.event.inputs.run_id || github.event.workflow_run.id }}
