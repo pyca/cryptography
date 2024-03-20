@@ -577,7 +577,7 @@ class _SSHFormatEd25519:
 
 
 class _SSHFormatSK:
-    def load_application(self, data) -> tuple[bytes, memoryview]:
+    def load_application(self, data) -> tuple[memoryview, memoryview]:
         application, data = _get_sshstr(data)
         return application, data
 
