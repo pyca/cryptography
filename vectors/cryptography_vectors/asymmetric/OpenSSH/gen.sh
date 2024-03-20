@@ -19,12 +19,13 @@ getecbits() {
 genkey() {
     fn="$1"
     args="-f $fn -C $fn"
+    sk="-O application=ssh:the-application-string"
     case "$fn" in
-    sk-ecdsa-*) args="$args -t ecdsa-sk -b $(getecbits)" ;;
+    sk-ecdsa-*) args="$args -t ecdsa-sk -b $(getecbits) $sk" ;;
     ecdsa-*) args="$args -t ecdsa -b $(getecbits)" ;;
     rsa-*) args="$args -t rsa" ;;
     dsa-*) args="$args -t dsa" ;;
-    sk-ed25519-*) args="$args -t ed25519-sk" ;;
+    sk-ed25519-*) args="$args -t ed25519-sk $sk" ;;
     ed25519-*) args="$args -t ed25519" ;;
     esac
     password=''
