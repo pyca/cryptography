@@ -100,9 +100,6 @@ def _limbo_testcase(id_, testcase):
         pytest.skip(f"explicitly skipped features: {unsupported}")
 
     assert testcase["signature_algorithms"] == []
-    assert testcase["extended_key_usage"] == [] or testcase[
-        "extended_key_usage"
-    ] == ["serverAuth"]
 
     trusted_certs = [
         load_pem_x509_certificate(cert.encode())
@@ -132,9 +129,13 @@ def _limbo_testcase(id_, testcase):
 
     verifier: ServerVerifier | ClientVerifier
     if testcase["validation_kind"] == "SERVER":
+        assert testcase["extended_key_usage"] == [] or testcase[
+            "extended_key_usage"
+        ] == ["serverAuth"]
         peer_name = _get_limbo_peer(testcase["expected_peer_name"])
         verifier = builder.build_server_verifier(peer_name)
     else:
+        assert testcase["extended_key_usage"] == ["clientAuth"]
         verifier = builder.build_client_verifier()
 
     if should_pass:
