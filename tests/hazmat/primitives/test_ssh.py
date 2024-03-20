@@ -55,6 +55,10 @@ class TestOpenSSHSerialization:
             ("ecdsa-nopsw.key.pub", "ecdsa-nopsw.key-cert.pub"),
             ("ed25519-psw.key.pub", None),
             ("ed25519-nopsw.key.pub", "ed25519-nopsw.key-cert.pub"),
+            ("sk-ecdsa-psw.key.pub", None),
+            ("sk-ecdsa-nopsw.key.pub", None),
+            ("sk-ed25519-psw.key.pub", None),
+            ("sk-ed25519-nopsw.key.pub", None),
         ],
     )
     def test_load_ssh_public_key(self, key_file, cert_file, backend):
@@ -78,6 +82,9 @@ class TestOpenSSHSerialization:
                     )
                     == nocomment_data
                 )
+        elif key_file.startswith("sk-"):
+            # sk U2F keys do not serialize
+            pass
         else:
             public_key = load_ssh_public_key(pub_data, backend)
             assert (

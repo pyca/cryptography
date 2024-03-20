@@ -20,9 +20,11 @@ genkey() {
     fn="$1"
     args="-f $fn -C $fn"
     case "$fn" in
+    sk-ecdsa-*) args="$args -t ecdsa-sk -b $(getecbits)" ;;
     ecdsa-*) args="$args -t ecdsa -b $(getecbits)" ;;
     rsa-*) args="$args -t rsa" ;;
     dsa-*) args="$args -t dsa" ;;
+    sk-ed25519-*) args="$args -t ed25519-sk" ;;
     ed25519-*) args="$args -t ed25519" ;;
     esac
     password=''
@@ -33,11 +35,13 @@ genkey() {
 }
 
 # generate private key files
-for ktype in rsa dsa ecdsa ed25519; do
+#for ktype in rsa dsa ecdsa sk-ecdsa ed25519 sk-ed25519; do
+for ktype in sk-ecdsa sk-ed25519; do
     for psw in nopsw psw; do
         genkey "${ktype}-${psw}.key"
     done
 done
+
 
 # generate public key files
 for fn in *.key; do
