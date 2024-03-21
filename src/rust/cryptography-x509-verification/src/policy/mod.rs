@@ -242,7 +242,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         max_chain_depth: Option<u8>,
         extended_key_usage: ObjectIdentifier,
     ) -> Self {
-        let has_subject = subject.is_some();
         Self {
             ops,
             max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
@@ -316,18 +315,14 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     Criticality::Agnostic,
                     Some(ee::key_usage),
                 ),
-                subject_alternative_name: if has_subject {
-                    // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-                    ExtensionValidator::present(
-                        Criticality::Agnostic,
-                        Some(ee::subject_alternative_name),
-                    )
-                } else {
-                    // Under client validation, we return the SAN rather than verifying
-                    // it directly against the profile. As such, we require it here
-                    // but don't supply any custom validator logic.
-                    ExtensionValidator::present(Criticality::Agnostic, None)
-                },
+                // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+                // This validator handles both client and server cases by only matching against
+                // the SAN if the profile contains a subject, which it won't in the client
+                // validation case.
+                subject_alternative_name: ExtensionValidator::present(
+                    Criticality::Agnostic,
+                    Some(ee::subject_alternative_name),
+                ),
                 // 5280 4.2.1.9: Basic Constraints
                 basic_constraints: ExtensionValidator::maybe_present(
                     Criticality::Agnostic,
