@@ -66,7 +66,7 @@ _CERT_SUFFIX = b"-cert-v01@openssh.com"
 
 # U2F application string suffixed pubkey
 _SK_SSH_ED25519 = b"sk-ssh-ed25519@openssh.com"
-_SK_SSH_ECDSA = b"sk-ecdsa-sha2-nistp256@openssh.com"
+_SK_SSH_ECDSA_NISTP256 = b"sk-ecdsa-sha2-nistp256@openssh.com"
 
 # These are not key types, only algorithms, so they cannot appear
 # as a public key type
