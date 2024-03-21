@@ -602,7 +602,7 @@ class _SSHFormatSKEd25519:
         self, data: memoryview
     ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
-        public_key, data = _lookup_kformat(SSH_ED25519).load_public(data)
+        public_key, data = _lookup_kformat(_SSH_ED25519).load_public(data)
         application, data = load_application(data)
         return public_key, data
 
