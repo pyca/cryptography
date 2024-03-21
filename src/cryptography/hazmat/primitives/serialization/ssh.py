@@ -589,7 +589,7 @@ def load_application(data) -> tuple[memoryview, memoryview]:
     return application, data
 
 
-class _SSHFormatSKEd25519(_SSHFormatEd25519):
+class _SSHFormatSKEd25519:
     """
     The format of a sk-ssh-ed25519@openssh.com public key is:
 
@@ -602,12 +602,13 @@ class _SSHFormatSKEd25519(_SSHFormatEd25519):
         self, data: memoryview
     ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
-        public_key, data = super().load_public(data)
+        global _KEY_FORMATS
+        public_key, data = _KEY_FORMATS[_SSH_ED25519].load_public(data)
         application, data = load_application(data)
         return public_key, data
 
 
-class _SSHFormatSKECDSA(_SSHFormatECDSA):
+class _SSHFormatSKECDSA:
     """
     The format of a sk-ecdsa-sha2-nistp256@openssh.com public key is:
 
@@ -621,12 +622,13 @@ class _SSHFormatSKECDSA(_SSHFormatECDSA):
         self, data: memoryview
     ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make Ed25519 public key from data."""
-        public_key, data = super().load_public(data)
+        global _KEY_FORMATS
+        public_key, data = _KEY_FORMATS[_ECDSA_NISTP256].load_public(data)
         application, data = load_application(data)
         return public_key, data
 
 
-_KEY_FORMATS = {
+_KEY_FORMATS: dict[bytes, typing.Any] = {
     _SSH_RSA: _SSHFormatRSA(),
     _SSH_DSA: _SSHFormatDSA(),
     _SSH_ED25519: _SSHFormatEd25519(),
@@ -634,7 +636,7 @@ _KEY_FORMATS = {
     _ECDSA_NISTP384: _SSHFormatECDSA(b"nistp384", ec.SECP384R1()),
     _ECDSA_NISTP521: _SSHFormatECDSA(b"nistp521", ec.SECP521R1()),
     _SK_SSH_ED25519: _SSHFormatSKEd25519(),
-    _SK_SSH_ECDSA: _SSHFormatSKECDSA(b"nistp256", ec.SECP256R1()),
+    _SK_SSH_ECDSA: _SSHFormatSKECDSA(),
 }
 
 
