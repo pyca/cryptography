@@ -1808,3 +1808,20 @@ class TestSSHCertificateBuilder:
             b"t8yRa8IRbxvOyA9TZYDGG1dRE3DiR0fuudU20v6vqfTd1gx0S5QyEdECXLl9ZI3"
             b"AwZgc="
         )
+
+
+class TestSSHSK:
+    @staticmethod
+    def ssh_str(application):
+        data = (
+            len(application).to_bytes(length=4, byteorder="big")
+            + application.encode()
+        )
+        return memoryview(data)
+
+    def test_load_application(self):
+        ssh.load_application(self.ssh_str("ssh:test"))
+
+    def test_load_application_valueerror(self):
+        with pytest.raises(ValueError):
+            ssh.load_application(self.ssh_str("hss:test"))

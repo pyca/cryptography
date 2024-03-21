@@ -576,13 +576,20 @@ class _SSHFormatEd25519:
         f_priv.put_sshstr(f_keypair)
 
 
-class _SSHFormatSK:
-    def load_application(self, data) -> tuple[memoryview, memoryview]:
-        application, data = _get_sshstr(data)
-        return application, data
+def load_application(data) -> tuple[memoryview, memoryview]:
+    """
+    U2F application strings
+    """
+    application, data = _get_sshstr(data)
+    if not application.tobytes().startswith(b"ssh:"):
+        raise ValueError(
+            "U2F application string does not start with b'ssh:' "
+            f"({application})"
+        )
+    return application, data
 
 
-class _SSHFormatSKEd25519(_SSHFormatEd25519, _SSHFormatSK):
+class _SSHFormatSKEd25519(_SSHFormatEd25519):
     """
     The format of a sk-ssh-ed25519@openssh.com public key is:
 
@@ -596,11 +603,11 @@ class _SSHFormatSKEd25519(_SSHFormatEd25519, _SSHFormatSK):
     ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
         public_key, data = super().load_public(data)
-        application, data = self.load_application(data)
+        application, data = load_application(data)
         return public_key, data
 
 
-class _SSHFormatSKECDSA(_SSHFormatECDSA, _SSHFormatSK):
+class _SSHFormatSKECDSA(_SSHFormatECDSA):
     """
     The format of a sk-ecdsa-sha2-nistp256@openssh.com public key is:
 
@@ -615,7 +622,7 @@ class _SSHFormatSKECDSA(_SSHFormatECDSA, _SSHFormatSK):
     ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make Ed25519 public key from data."""
         public_key, data = super().load_public(data)
-        application, data = self.load_application(data)
+        application, data = load_application(data)
         return public_key, data
 
 
