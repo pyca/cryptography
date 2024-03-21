@@ -29,6 +29,12 @@ Changelog
   They will be removed from the ``cipher`` module in 48.0.0.
 * Added support for deterministic
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDSA` (:rfc:`6979`)
+* Added support for client certificate verification to the
+  :mod:`X.509 path validation <cryptography.x509.verification>` APIs in the
+  form of :class:`~cryptography.x509.verification.ClientVerifier`,
+  :class:`~cryptography.x509.verification.VerifiedClient`, and
+  ``PolicyBuilder``
+  :meth:`~cryptography.x509.verification.PolicyBuilder.build_client_verifier`.
 
 .. _v42-0-5:
 
