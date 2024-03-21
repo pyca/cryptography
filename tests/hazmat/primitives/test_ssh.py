@@ -85,7 +85,7 @@ class TestOpenSSHSerialization:
         else:
             public_key = load_ssh_public_key(pub_data, backend)
             if not key_file.startswith("sk-"):
-                # sk U2F keys do not serialize
+                # SK keys do not round-trip
                 assert (
                     public_key.public_bytes(
                         Encoding.OpenSSH, PublicFormat.OpenSSH
