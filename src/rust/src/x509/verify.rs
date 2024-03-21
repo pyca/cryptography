@@ -2,13 +2,16 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::certificate::Certificate;
+use cryptography_x509::{
+    certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
+};
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
     policy::{Policy, Subject},
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
+use pyo3::IntoPy;
 
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -16,6 +19,8 @@ use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
+
+use super::parse_general_names;
 
 pub(crate) struct PyCryptoOps {}
 
@@ -118,6 +123,28 @@ impl PolicyBuilder {
         })
     }
 
+    fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
+        let store = match self.store.as_ref() {
+            Some(s) => s.clone_ref(py),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "A client verifier must have a trust store.",
+                    ),
+                ));
+            }
+        };
+
+        let time = match self.time.as_ref() {
+            Some(t) => t.clone(),
+            None => datetime_now(py)?,
+        };
+
+        let policy = PyCryptoPolicy(Policy::client(PyCryptoOps {}, time, self.max_chain_depth));
+
+        Ok(PyClientVerifier { policy, store })
+    }
+
     fn build_server_verifier(
         &self,
         py: pyo3::Python<'_>,
@@ -179,6 +206,97 @@ self_cell::self_cell!(
         dependent: PyCryptoPolicy,
     }
 );
+
+#[pyo3::pyclass(
+    frozen,
+    name = "VerifiedClient",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyVerifiedClient {
+    #[pyo3(get)]
+    subjects: pyo3::Py<pyo3::PyAny>,
+    #[pyo3(get)]
+    chain: pyo3::Py<pyo3::types::PyList>,
+}
+
+#[pyo3::pyclass(
+    frozen,
+    name = "ClientVerifier",
+    module = "cryptography.hazmat.bindings._rust.x509"
+)]
+struct PyClientVerifier {
+    policy: PyCryptoPolicy<'static>,
+    #[pyo3(get)]
+    store: pyo3::Py<PyStore>,
+}
+
+impl PyClientVerifier {
+    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
+        &self.policy.0
+    }
+}
+
+#[pyo3::pymethods]
+impl PyClientVerifier {
+    #[getter]
+    fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        datetime_to_py(py, &self.as_policy().validation_time)
+    }
+
+    #[getter]
+    fn max_chain_depth(&self) -> u8 {
+        self.as_policy().max_chain_depth
+    }
+
+    fn verify(
+        &self,
+        py: pyo3::Python<'_>,
+        leaf: pyo3::Py<PyCertificate>,
+        intermediates: Vec<pyo3::Py<PyCertificate>>,
+    ) -> CryptographyResult<PyVerifiedClient> {
+        let policy = self.as_policy();
+        let store = self.store.get();
+
+        let chain = cryptography_x509_verification::verify(
+            &VerificationCertificate::new(
+                leaf.get().raw.borrow_dependent().clone(),
+                leaf.clone_ref(py),
+            ),
+            intermediates.iter().map(|i| {
+                VerificationCertificate::new(
+                    i.get().raw.borrow_dependent().clone(),
+                    i.clone_ref(py),
+                )
+            }),
+            policy,
+            store.raw.borrow_dependent(),
+        )
+        .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
+
+        let py_chain = pyo3::types::PyList::empty(py);
+        for c in &chain {
+            py_chain.append(c.extra())?;
+        }
+
+        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
+        // enforces the presence of a SAN and the well-formedness of the
+        // extension set.
+        let leaf_san = &chain[0]
+            .certificate()
+            .extensions()
+            .unwrap()
+            .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
+            .unwrap();
+
+        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+        let py_gns = parse_general_names(py, &leaf_gns)?;
+
+        Ok(PyVerifiedClient {
+            subjects: py_gns,
+            chain: py_chain.into_py(py),
+        })
+    }
+}
 
 #[pyo3::pyclass(
     frozen,
@@ -333,6 +451,8 @@ impl PyStore {
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+    module.add_class::<PyVerifiedClient>()?;
+    module.add_class::<PyClientVerifier>()?;
     module.add_class::<PyServerVerifier>()?;
     module.add_class::<PyStore>()?;
     module.add_class::<PolicyBuilder>()?;

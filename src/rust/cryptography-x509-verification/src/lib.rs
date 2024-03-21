@@ -20,6 +20,7 @@ use cryptography_x509::{
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
+use types::{RFC822Constraint, RFC822Name};
 
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
@@ -134,6 +135,19 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     (None, _) => Err(ValidationError::Other(format!(
                         "malformed IP name constraints: {:?}",
                         pattern
+                    ))),
+                }
+            }
+            (GeneralName::RFC822Name(pattern), GeneralName::RFC822Name(name)) => {
+                match (RFC822Constraint::new(pattern.0), RFC822Name::new(name.0)) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (_, None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable RFC822 name constraint: malformed SAN {:?}",
+                        name.0,
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed RFC822 name constraints: {:?}",
+                        pattern.0
                     ))),
                 }
             }

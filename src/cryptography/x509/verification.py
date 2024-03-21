@@ -12,6 +12,8 @@ from cryptography.x509.general_name import DNSName, IPAddress
 __all__ = [
     "Store",
     "Subject",
+    "VerifiedClient",
+    "ClientVerifier",
     "ServerVerifier",
     "PolicyBuilder",
     "VerificationError",
@@ -19,6 +21,8 @@ __all__ = [
 
 Store = rust_x509.Store
 Subject = typing.Union[DNSName, IPAddress]
+VerifiedClient = rust_x509.VerifiedClient
+ClientVerifier = rust_x509.ClientVerifier
 ServerVerifier = rust_x509.ServerVerifier
 PolicyBuilder = rust_x509.PolicyBuilder
 VerificationError = rust_x509.VerificationError
