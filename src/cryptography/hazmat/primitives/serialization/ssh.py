@@ -602,8 +602,7 @@ class _SSHFormatSKEd25519:
         self, data: memoryview
     ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
         """Make Ed25519 public key from data."""
-        global _KEY_FORMATS
-        public_key, data = _KEY_FORMATS[_SSH_ED25519].load_public(data)
+        public_key, data = _lookup_kformat(SSH_ED25519).load_public(data)
         application, data = load_application(data)
         return public_key, data
 
@@ -622,13 +621,12 @@ class _SSHFormatSKECDSA:
         self, data: memoryview
     ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
         """Make Ed25519 public key from data."""
-        global _KEY_FORMATS
-        public_key, data = _KEY_FORMATS[_ECDSA_NISTP256].load_public(data)
+        public_key, data = _lookup_kformat(_ECDSA_NISTP256).load_public(data)
         application, data = load_application(data)
         return public_key, data
 
 
-_KEY_FORMATS: dict[bytes, typing.Any] = {
+_KEY_FORMATS = {
     _SSH_RSA: _SSHFormatRSA(),
     _SSH_DSA: _SSHFormatDSA(),
     _SSH_ED25519: _SSHFormatEd25519(),
