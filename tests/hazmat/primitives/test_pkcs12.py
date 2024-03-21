@@ -414,7 +414,33 @@ class TestPKCS12Creation:
 
         p12_cert = load_pkcs12(p12, None, backend)
         cas = p12_cert.additional_certs
+        assert cas[0].certificate == cert2
         assert cas[0].friendly_name == b"cert2"
+        assert cas[1].certificate == cert3
+        assert cas[1].friendly_name is None
+
+    def test_generate_cas_friendly_names_no_key(self, backend):
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_key_and_certificates(
+            None,
+            None,
+            None,
+            [
+                PKCS12Certificate(cert2, b"cert2"),
+                PKCS12Certificate(cert3, None),
+            ],
+            encryption,
+        )
+
+        p12_cert = load_pkcs12(p12, None, backend)
+        cas = p12_cert.additional_certs
+        assert cas[0].certificate == cert2
+        assert cas[0].friendly_name == b"cert2"
+        assert cas[1].certificate == cert3
         assert cas[1].friendly_name is None
 
     def test_generate_wrong_types(self, backend):
