@@ -64,6 +64,10 @@ _ECDSA_NISTP384 = b"ecdsa-sha2-nistp384"
 _ECDSA_NISTP521 = b"ecdsa-sha2-nistp521"
 _CERT_SUFFIX = b"-cert-v01@openssh.com"
 
+# U2F application string suffixed pubkey
+_SK_SSH_ED25519 = b"sk-ssh-ed25519@openssh.com"
+_SK_SSH_ECDSA_NISTP256 = b"sk-ecdsa-sha2-nistp256@openssh.com"
+
 # These are not key types, only algorithms, so they cannot appear
 # as a public key type
 _SSH_RSA_SHA256 = b"rsa-sha2-256"
@@ -572,6 +576,56 @@ class _SSHFormatEd25519:
         f_priv.put_sshstr(f_keypair)
 
 
+def load_application(data) -> tuple[memoryview, memoryview]:
+    """
+    U2F application strings
+    """
+    application, data = _get_sshstr(data)
+    if not application.tobytes().startswith(b"ssh:"):
+        raise ValueError(
+            "U2F application string does not start with b'ssh:' "
+            f"({application})"
+        )
+    return application, data
+
+
+class _SSHFormatSKEd25519:
+    """
+    The format of a sk-ssh-ed25519@openssh.com public key is:
+
+        string		"sk-ssh-ed25519@openssh.com"
+        string		public key
+        string		application (user-specified, but typically "ssh:")
+    """
+
+    def load_public(
+        self, data: memoryview
+    ) -> tuple[ed25519.Ed25519PublicKey, memoryview]:
+        """Make Ed25519 public key from data."""
+        public_key, data = _lookup_kformat(_SSH_ED25519).load_public(data)
+        application, data = load_application(data)
+        return public_key, data
+
+
+class _SSHFormatSKECDSA:
+    """
+    The format of a sk-ecdsa-sha2-nistp256@openssh.com public key is:
+
+        string		"sk-ecdsa-sha2-nistp256@openssh.com"
+        string		curve name
+        ec_point	Q
+        string		application (user-specified, but typically "ssh:")
+    """
+
+    def load_public(
+        self, data: memoryview
+    ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
+        """Make Ed25519 public key from data."""
+        public_key, data = _lookup_kformat(_ECDSA_NISTP256).load_public(data)
+        application, data = load_application(data)
+        return public_key, data
+
+
 _KEY_FORMATS = {
     _SSH_RSA: _SSHFormatRSA(),
     _SSH_DSA: _SSHFormatDSA(),
@@ -579,6 +633,8 @@ _KEY_FORMATS = {
     _ECDSA_NISTP256: _SSHFormatECDSA(b"nistp256", ec.SECP256R1()),
     _ECDSA_NISTP384: _SSHFormatECDSA(b"nistp384", ec.SECP384R1()),
     _ECDSA_NISTP521: _SSHFormatECDSA(b"nistp521", ec.SECP521R1()),
+    _SK_SSH_ED25519: _SSHFormatSKEd25519(),
+    _SK_SSH_ECDSA_NISTP256: _SSHFormatSKECDSA(),
 }
 
 
