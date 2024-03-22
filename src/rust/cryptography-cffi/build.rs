@@ -69,6 +69,13 @@ fn main() {
         .flag_if_supported("-Wno-error=sign-conversion")
         .flag_if_supported("-Wno-unused-parameter");
 
+    // We use the `-fmacro-prefix-map` option to replace the output directory in macros with a dot.
+    // This is because we don't want a potentially random build path to end up in the binary because
+    // CFFI generated code uses the __FILE__ macro in its debug messages.
+    if let Some(out_dir_str) = Path::new(&out_dir).to_str() {
+        build.flag_if_supported(format!("-fmacro-prefix-map={}=.", out_dir_str).as_str());
+    }
+
     for python_include in env::split_paths(&python_includes) {
         build.include(python_include);
     }
