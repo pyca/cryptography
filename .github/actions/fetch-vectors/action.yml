@@ -7,7 +7,7 @@ runs:
   steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
-        repository: "google/wycheproof"
+        repository: "C2SP/wycheproof"
         path: "wycheproof"
         # Latest commit on the wycheproof master branch, as of Mar 16, 2024.
         ref: "1621269c9f8e4a11f7de5dd2cb353400f054ce6f" # wycheproof-ref

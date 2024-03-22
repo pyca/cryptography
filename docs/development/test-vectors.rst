@@ -21,9 +21,6 @@ for various cryptographic algorithms. These are not included in the repository
 (or ``cryptography_vectors`` package), but rather cloned from Git in our
 continuous integration environments.
 
-We have ensured all test vectors are used as of commit
-``d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d``.
-
 Asymmetric ciphers
 ~~~~~~~~~~~~~~~~~~
 
@@ -1049,7 +1046,7 @@ header format (substituting the correct information):
 
 .. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
-.. _`Project Wycheproof`: https://github.com/google/wycheproof
+.. _`Project Wycheproof`: https://github.com/C2SP/wycheproof
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
