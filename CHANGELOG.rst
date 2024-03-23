@@ -1168,7 +1168,7 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey.from_encoded_point`,
   which immediately checks if the point is on the curve and supports compressed
   points. Deprecated the previous method
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+  ``cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point``.
 * Added :attr:`~cryptography.x509.ocsp.OCSPResponse.signature_hash_algorithm`
   to ``OCSPResponse``.
 * Updated :doc:`/hazmat/primitives/asymmetric/x25519` support to allow
@@ -1878,7 +1878,7 @@ Changelog
   form using
   ``cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.encode_point``
   and
-  :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point`.
+  ``cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicNumbers.from_encoded_point``.
 * Added :meth:`~cryptography.x509.Extensions.get_extension_for_class`.
 * :class:`~cryptography.x509.CertificatePolicies` are now supported in the
   :class:`~cryptography.x509.CertificateBuilder`.
