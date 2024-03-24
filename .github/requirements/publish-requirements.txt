@@ -246,9 +246,21 @@ importlib-metadata==7.1.0 \
     # via
     #   keyring
     #   twine
+importlib-resources==5.13.0 \
+    --hash=sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528 \
+    --hash=sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2
+    # via sigstore
 jaraco-classes==3.3.1 \
     --hash=sha256:86b534de565381f6b3c1c830d13f931d7be1a75f0081c57dff615578676e2206 \
     --hash=sha256:cb28a5ebda8bc47d8c8015307d93163464f9f2b91ab4006e09ff0ce07e8bfb30
+    # via keyring
+jaraco-context==4.3.0 \
+    --hash=sha256:4dad2404540b936a20acedec53355bdaea223acb88fd329fa6de9261c941566e \
+    --hash=sha256:5d9e95ca0faa78943ed66f6bc658dd637430f16125d86988e77844c741ff2f11
+    # via keyring
+jaraco-functools==4.0.0 \
+    --hash=sha256:c279cb24c93d694ef7270f970d499cab4d3813f4e08273f95398651a634f0925 \
+    --hash=sha256:daf276ddf234bea897ef14f43c4e1bf9eefeac7b7a82a4dd69228ac20acff68d
     # via keyring
 jeepney==0.8.0 \
     --hash=sha256:5efe48d255973902f6badc3ce55e2aa6c5c3b3bc642059ef3a91247bcfcc5806 \
@@ -256,9 +268,9 @@ jeepney==0.8.0 \
     # via
     #   keyring
     #   secretstorage
-keyring==24.3.1 \
-    --hash=sha256:c3327b6ffafc0e8befbdb597cacdb4928ffe5c1212f7645f186e6d9957a898db \
-    --hash=sha256:df38a4d7419a6a60fea5cef1e45a948a3e8430dd12ad88b0f423c5c143906218
+keyring==25.0.0 \
+    --hash=sha256:9a15cd280338920388e8c1787cb8792b9755dabb3e7c61af5ac1f8cd437cefde \
+    --hash=sha256:fc024ed53c7ea090e30723e6bd82f58a39dc25d9a6797d866203ecd0ee6306cb
     # via twine
 markdown-it-py==3.0.0 \
     --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 \
@@ -271,7 +283,9 @@ mdurl==0.1.2 \
 more-itertools==10.2.0 \
     --hash=sha256:686b06abe565edfab151cb8fd385a05651e1fdf8f0a14191e4439283421f8684 \
     --hash=sha256:8fccb480c43d3e99a00087634c06dd02b0d50fbf088b380de5a41a015ec239e1
-    # via jaraco-classes
+    # via
+    #   jaraco-classes
+    #   jaraco-functools
 multidict==6.0.5 \
     --hash=sha256:01265f5e40f5a17f8241d52656ed27192be03bfa8764d88e8220141d1e4b3556 \
     --hash=sha256:0275e35209c27a3f7951e1ce7aaf93ce0d163b28948444bec61dd7badc6d3f8c \
