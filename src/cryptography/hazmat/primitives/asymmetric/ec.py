@@ -52,6 +52,15 @@ class EllipticCurve(metaclass=abc.ABCMeta):
         Bit size of a secret scalar for the curve.
         """
 
+    @property
+    def group_order(self) -> int:
+        """
+        The order of the curve's group
+        """
+        from cryptography.hazmat.backends.openssl.backend import backend
+
+        return backend.elliptic_curve_group_order(self)
+
 
 class EllipticCurveSignatureAlgorithm(metaclass=abc.ABCMeta):
     @property

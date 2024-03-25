@@ -15,6 +15,7 @@ typedef struct {
     int nid;
     const char *comment;
 } EC_builtin_curve;
+typedef ... EC_GROUP;
 """
 
 FUNCTIONS = """
@@ -23,6 +24,12 @@ size_t EC_get_builtin_curves(EC_builtin_curve *, size_t);
 void EC_KEY_free(EC_KEY *);
 
 EC_KEY *EC_KEY_new_by_curve_name(int);
+
+EC_GROUP *EC_GROUP_new_by_curve_name(int);
+
+int EC_GROUP_get_order(const EC_GROUP *, BIGNUM *, BN_CTX *);
+
+void EC_GROUP_free(EC_GROUP *);
 """
 
 CUSTOMIZATIONS = """
