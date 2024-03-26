@@ -40,7 +40,7 @@ exceptiongroup==1.2.0
     # via pytest
 execnet==2.0.2
     # via pytest-xdist
-filelock==3.13.1; python_version >= "3.8"
+filelock==3.13.3; python_version >= "3.8"
     # via virtualenv
 idna==3.6
     # via requests
