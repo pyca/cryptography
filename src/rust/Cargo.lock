@@ -278,9 +278,8 @@ dependencies = [
 
 [[package]]
 name = "pyo3"
-version = "0.21.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d0c41d899f822e5f39186d6da130a822a0a43edb19992b51bf4ef6cd0b4cfd1"
+version = "0.21.0"
+source = "git+https://github.com/alex/pyo3?branch=add-to-module-auto#d7b4f5b54d37223ae2f2fa330f5b5822dd8a43be"
 dependencies = [
  "cfg-if",
  "indoc",
@@ -296,9 +295,8 @@ dependencies = [
 
 [[package]]
 name = "pyo3-build-config"
-version = "0.21.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5509c2aa78c7e770077e41ba86f806e60dcee812e924ccb2d6fe78c0a0128ce2"
+version = "0.21.0"
+source = "git+https://github.com/alex/pyo3?branch=add-to-module-auto#d7b4f5b54d37223ae2f2fa330f5b5822dd8a43be"
 dependencies = [
  "once_cell",
  "target-lexicon",
@@ -306,9 +304,8 @@ dependencies = [
 
 [[package]]
 name = "pyo3-ffi"
-version = "0.21.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6bb234a86ed619a661f3bb3c2493aaff9cb937e33e198d17f5f20a15881e155"
+version = "0.21.0"
+source = "git+https://github.com/alex/pyo3?branch=add-to-module-auto#d7b4f5b54d37223ae2f2fa330f5b5822dd8a43be"
 dependencies = [
  "libc",
  "pyo3-build-config",
@@ -316,9 +313,8 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros"
-version = "0.21.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0b787de2c6832eb1eb393c9f82f976a5a87bda979780d9b853878846a8d2e4b"
+version = "0.21.0"
+source = "git+https://github.com/alex/pyo3?branch=add-to-module-auto#d7b4f5b54d37223ae2f2fa330f5b5822dd8a43be"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -328,9 +324,8 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros-backend"
-version = "0.21.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e3b7beed357786d2afe845871964e824ad8af0df38a403f7d01cdc81aadb211"
+version = "0.21.0"
+source = "git+https://github.com/alex/pyo3?branch=add-to-module-auto#d7b4f5b54d37223ae2f2fa330f5b5822dd8a43be"
 dependencies = [
  "heck",
  "proc-macro2",
