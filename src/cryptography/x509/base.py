@@ -189,6 +189,13 @@ class Certificate(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def public_key_algorithm_oid(self) -> ObjectIdentifier:
+        """
+        Returns the ObjectIdentifier of the public key.
+        """
+
+    @property
+    @abc.abstractmethod
     def not_valid_before(self) -> datetime.datetime:
         """
         Not before time (represented as UTC datetime)

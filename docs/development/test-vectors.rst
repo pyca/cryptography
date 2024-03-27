@@ -496,6 +496,8 @@ Custom X.509 Vectors
   using ``ed448-pkcs8.pem`` as key.
 * ``ca/rsa_ca.pem`` - A self-signed RSA certificate with ``basicConstraints``
   set to true. Its private key is ``ca/rsa_key.pem``.
+* ``ca/rsae_ca.pem`` - A self-signed RSA certificate using a (non-PSS) RSA
+  public key and a RSA PSS signature. Its private key is ``ca/rsa_key.pem``.
 * ``invalid-sct-version.der`` - A certificate with an SCT with an unknown
   version.
 * ``invalid-sct-length.der`` - A certificate with an SCT with an internal
