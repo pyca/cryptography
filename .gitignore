@@ -14,3 +14,5 @@ htmlcov/
 .hypothesis/
 target/
 .rust-cov/
+*.lcov
+*.profdata

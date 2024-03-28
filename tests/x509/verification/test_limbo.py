@@ -12,7 +12,9 @@ import pytest
 from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.verification import (
+    ClientVerifier,
     PolicyBuilder,
+    ServerVerifier,
     Store,
     VerificationError,
 )
@@ -78,12 +80,14 @@ LIMBO_SKIP_TESTCASES = {
 
 def _get_limbo_peer(expected_peer):
     kind = expected_peer["kind"]
-    assert kind in ("DNS", "IP")
+    assert kind in ("DNS", "IP", "RFC822")
     value = expected_peer["value"]
     if kind == "DNS":
         return x509.DNSName(value)
-    else:
+    elif kind == "IP":
         return x509.IPAddress(ipaddress.ip_address(value))
+    else:
+        return x509.RFC822Name(value)
 
 
 def _limbo_testcase(id_, testcase):
@@ -95,14 +99,7 @@ def _limbo_testcase(id_, testcase):
     if unsupported:
         pytest.skip(f"explicitly skipped features: {unsupported}")
 
-    if testcase["validation_kind"] != "SERVER":
-        pytest.skip("non-SERVER testcase")
-
     assert testcase["signature_algorithms"] == []
-    assert testcase["extended_key_usage"] == [] or testcase[
-        "extended_key_usage"
-    ] == ["serverAuth"]
-    assert testcase["expected_peer_names"] == []
 
     trusted_certs = [
         load_pem_x509_certificate(cert.encode())
@@ -115,7 +112,6 @@ def _limbo_testcase(id_, testcase):
     peer_certificate = load_pem_x509_certificate(
         testcase["peer_certificate"].encode()
     )
-    peer_name = _get_limbo_peer(testcase["expected_peer_name"])
     validation_time = testcase["validation_time"]
     validation_time = (
         datetime.datetime.fromisoformat(validation_time)
@@ -131,12 +127,33 @@ def _limbo_testcase(id_, testcase):
     if max_chain_depth is not None:
         builder = builder.max_chain_depth(max_chain_depth)
 
-    verifier = builder.build_server_verifier(peer_name)
+    verifier: ServerVerifier | ClientVerifier
+    if testcase["validation_kind"] == "SERVER":
+        assert testcase["extended_key_usage"] == [] or testcase[
+            "extended_key_usage"
+        ] == ["serverAuth"]
+        peer_name = _get_limbo_peer(testcase["expected_peer_name"])
+        verifier = builder.build_server_verifier(peer_name)
+    else:
+        assert testcase["extended_key_usage"] == ["clientAuth"]
+        verifier = builder.build_client_verifier()
 
     if should_pass:
-        built_chain = verifier.verify(
-            peer_certificate, untrusted_intermediates
-        )
+        if isinstance(verifier, ServerVerifier):
+            built_chain = verifier.verify(
+                peer_certificate, untrusted_intermediates
+            )
+        else:
+            verified_client = verifier.verify(
+                peer_certificate, untrusted_intermediates
+            )
+
+            expected_subjects = [
+                _get_limbo_peer(p) for p in testcase["expected_peer_names"]
+            ]
+            assert expected_subjects == verified_client.subjects
+
+            built_chain = verified_client.chain
 
         # Assert that the verifier returns chains in [EE, ..., TA] order.
         assert built_chain[0] == peer_certificate

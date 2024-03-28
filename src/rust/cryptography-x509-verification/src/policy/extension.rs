@@ -303,15 +303,17 @@ pub(crate) mod ee {
             _ => (),
         };
 
-        let san: SubjectAlternativeName<'_> = extn.value()?;
-        if !policy
-            .subject
-            .as_ref()
-            .map_or_else(|| false, |sub| sub.matches(&san))
-        {
-            return Err(ValidationError::Other(
-                "leaf certificate has no matching subjectAltName".into(),
-            ));
+        // NOTE: We only verify the SAN against the policy's subject if the
+        // policy actually contains one. This enables both client and server
+        // profiles to use this validator, **with the expectation** that
+        // server profile construction requires a subject to be present.
+        if let Some(sub) = policy.subject.as_ref() {
+            let san: SubjectAlternativeName<'_> = extn.value()?;
+            if !sub.matches(&san) {
+                return Err(ValidationError::Other(
+                    "leaf certificate has no matching subjectAltName".into(),
+                ));
+            }
         }
 
         Ok(())

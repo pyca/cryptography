@@ -14,6 +14,7 @@ from cryptography.hazmat._oid import (
     NameOID,
     ObjectIdentifier,
     OCSPExtensionOID,
+    PublicKeyAlgorithmOID,
     SignatureAlgorithmOID,
     SubjectInformationAccessOID,
 )
@@ -28,6 +29,7 @@ __all__ = [
     "NameOID",
     "OCSPExtensionOID",
     "ObjectIdentifier",
+    "PublicKeyAlgorithmOID",
     "SignatureAlgorithmOID",
     "SubjectInformationAccessOID",
 ]

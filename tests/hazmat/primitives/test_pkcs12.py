@@ -414,7 +414,33 @@ class TestPKCS12Creation:
 
         p12_cert = load_pkcs12(p12, None, backend)
         cas = p12_cert.additional_certs
+        assert cas[0].certificate == cert2
         assert cas[0].friendly_name == b"cert2"
+        assert cas[1].certificate == cert3
+        assert cas[1].friendly_name is None
+
+    def test_generate_cas_friendly_names_no_key(self, backend):
+        cert2 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_key_and_certificates(
+            None,
+            None,
+            None,
+            [
+                PKCS12Certificate(cert2, b"cert2"),
+                PKCS12Certificate(cert3, None),
+            ],
+            encryption,
+        )
+
+        p12_cert = load_pkcs12(p12, None, backend)
+        cas = p12_cert.additional_certs
+        assert cas[0].certificate == cert2
+        assert cas[0].friendly_name == b"cert2"
+        assert cas[1].certificate == cert3
         assert cas[1].friendly_name is None
 
     def test_generate_wrong_types(self, backend):
@@ -502,6 +528,30 @@ class TestPKCS12Creation:
         assert parsed_cert is None
         assert parsed_key is None
         assert parsed_more_certs == [cert]
+
+    def test_generate_cert_only_none_cas(self, backend):
+        # Same as test_generate_cert_only, but passing None instead of an
+        # empty list for cas.
+        cert, _ = _load_ca(backend)
+        p12 = serialize_key_and_certificates(
+            None, None, cert, None, serialization.NoEncryption()
+        )
+        parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
+            p12, None
+        )
+        assert parsed_cert is None
+        assert parsed_key is None
+        assert parsed_more_certs == [cert]
+
+    def test_invalid_utf8_friendly_name(self, backend):
+        if rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL:
+            pytest.skip("Temporarily doesn't work on LibreSSL")
+
+        cert, _ = _load_ca(backend)
+        with pytest.raises(ValueError):
+            serialize_key_and_certificates(
+                b"\xc9", None, cert, None, serialization.NoEncryption()
+            )
 
     def test_must_supply_something(self):
         with pytest.raises(ValueError) as exc:

@@ -37,6 +37,7 @@ from cryptography.x509.oid import (
     ExtendedKeyUsageOID,
     ExtensionOID,
     NameOID,
+    PublicKeyAlgorithmOID,
     SignatureAlgorithmOID,
     SubjectInformationAccessOID,
 )
@@ -792,6 +793,42 @@ class TestRevokedCertificate:
         assert crl[2].serial_number == 3
 
 
+class TestRSAECertificate:
+    def test_load_cert_pub_key(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "ca", "rsae_ca.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        assert isinstance(cert, x509.Certificate)
+        expected_pub_key = load_vectors_from_file(
+            os.path.join("x509", "custom", "ca", "rsa_key.pem"),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read(), None, unsafe_skip_rsa_key_validation=True
+            ),
+            mode="rb",
+        ).public_key()
+        assert isinstance(expected_pub_key, rsa.RSAPublicKey)
+        pub_key = cert.public_key()
+        assert isinstance(pub_key, rsa.RSAPublicKey)
+        assert (
+            cert.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5
+        )
+        assert pub_key == expected_pub_key
+        pss = cert.signature_algorithm_parameters
+        assert isinstance(pss, padding.PSS)
+        assert isinstance(pss._mgf, padding.MGF1)
+        assert isinstance(pss._mgf._algorithm, hashes.SHA256)
+        assert pss._salt_length == 0x14
+        assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+        pub_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            pss,
+            cert.signature_hash_algorithm,
+        )
+
+
 class TestRSAPSSCertificate:
     def test_load_cert_pub_key(self, backend):
         cert = _load_cert(
@@ -806,6 +843,9 @@ class TestRSAPSSCertificate:
         assert isinstance(expected_pub_key, rsa.RSAPublicKey)
         pub_key = cert.public_key()
         assert isinstance(pub_key, rsa.RSAPublicKey)
+        assert (
+            cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.RSASSA_PSS
+        )
         assert pub_key == expected_pub_key
         pss = cert.signature_algorithm_parameters
         assert isinstance(pss, padding.PSS)
@@ -897,6 +937,11 @@ class TestRSACertificate:
         )
         assert isinstance(
             cert.signature_algorithm_parameters, padding.PKCS1v15
+        )
+        assert isinstance(cert.public_key(), rsa.RSAPublicKey)
+        assert (
+            cert.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5
         )
 
     def test_check_pkcs1_signature_algorithm_parameters(self, backend):
@@ -994,6 +1039,11 @@ class TestRSACertificate:
         assert (
             cert.signature_algorithm_oid
             == SignatureAlgorithmOID._RSA_WITH_SHA1
+        )
+        assert isinstance(cert.public_key(), rsa.RSAPublicKey)
+        assert (
+            cert.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5
         )
 
     def test_load_bmpstring_explicittext(self, backend):
@@ -1834,6 +1884,10 @@ class TestRSACertificateRequest:
         )
         public_key = request.public_key()
         assert isinstance(public_key, rsa.RSAPublicKey)
+        assert (
+            request.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5
+        )
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -2250,6 +2304,12 @@ class TestRSACertificateRequest:
         cert = builder.sign(issuer_private_key, hashalg(), backend)
 
         assert cert.version is x509.Version.v3
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert (
+            cert.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5
+        )
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
         _check_cert_times(
@@ -3308,6 +3368,9 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
+        public_key = cert.public_key()
+        assert isinstance(public_key, dsa.DSAPublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.DSA
         _check_cert_times(
             cert,
             not_valid_before=not_valid_before,
@@ -3380,6 +3443,12 @@ class TestCertificateBuilder:
         cert = builder.sign(issuer_private_key, hashalg(), backend)
 
         assert cert.version is x509.Version.v3
+        public_key = cert.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        assert (
+            cert.public_key_algorithm_oid
+            == PublicKeyAlgorithmOID.EC_PUBLIC_KEY
+        )
         assert cert.signature_algorithm_oid == hashalg_oid
         assert type(cert.signature_hash_algorithm) is hashalg
         _check_cert_times(
@@ -3480,6 +3549,7 @@ class TestCertificateBuilder:
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED25519
         assert cert.version is x509.Version.v3
         _check_cert_times(
             cert,
@@ -3542,6 +3612,7 @@ class TestCertificateBuilder:
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), ed25519.Ed25519PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED25519
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed448_supported(),
@@ -3583,6 +3654,7 @@ class TestCertificateBuilder:
         assert cert.signature_algorithm_oid == SignatureAlgorithmOID.ED448
         assert cert.signature_hash_algorithm is None
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED448
         assert cert.version is x509.Version.v3
         _check_cert_times(
             cert,
@@ -3645,6 +3717,7 @@ class TestCertificateBuilder:
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED448
 
     @pytest.mark.supported(
         only_if=lambda backend: (
@@ -3653,10 +3726,18 @@ class TestCertificateBuilder:
         skip_message="Requires OpenSSL with x25519 & x448 support",
     )
     @pytest.mark.parametrize(
-        ("priv_key_cls", "pub_key_cls"),
+        ("priv_key_cls", "pub_key_cls", "pub_key_oid"),
         [
-            (x25519.X25519PrivateKey, x25519.X25519PublicKey),
-            (x448.X448PrivateKey, x448.X448PublicKey),
+            (
+                x25519.X25519PrivateKey,
+                x25519.X25519PublicKey,
+                PublicKeyAlgorithmOID.X25519,
+            ),
+            (
+                x448.X448PrivateKey,
+                x448.X448PublicKey,
+                PublicKeyAlgorithmOID.X448,
+            ),
         ],
     )
     def test_build_cert_with_public_x25519_x448_rsa_sig(
@@ -3664,6 +3745,7 @@ class TestCertificateBuilder:
         rsa_key_2048: rsa.RSAPrivateKey,
         priv_key_cls,
         pub_key_cls,
+        pub_key_oid,
         backend,
     ):
         issuer_private_key = rsa_key_2048
@@ -3699,6 +3781,7 @@ class TestCertificateBuilder:
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), pub_key_cls)
+        assert cert.public_key_algorithm_oid == pub_key_oid
 
     def test_build_cert_with_rsa_key_too_small(
         self, rsa_key_512: rsa.RSAPrivateKey, backend
@@ -6169,6 +6252,7 @@ class TestEd25519Certificate:
         # self-signed, so this will work
         public_key = cert.public_key()
         assert isinstance(public_key, ed25519.Ed25519PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED25519
         public_key.verify(cert.signature, cert.tbs_certificate_bytes)
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 9579446940964433301
@@ -6215,6 +6299,7 @@ class TestEd448Certificate:
         # self-signed, so this will work
         public_key = cert.public_key()
         assert isinstance(public_key, ed448.Ed448PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED448
         public_key.verify(cert.signature, cert.tbs_certificate_bytes)
         assert isinstance(cert, x509.Certificate)
         assert cert.serial_number == 448

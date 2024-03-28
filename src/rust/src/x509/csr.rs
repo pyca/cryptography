@@ -55,6 +55,17 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
+    fn public_key_algorithm_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        oid_to_py_oid(
+            py,
+            self.raw.borrow_dependent().csr_info.spki.algorithm.oid(),
+        )
+    }
+
+    #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
         Ok(x509::parse_name(
             py,

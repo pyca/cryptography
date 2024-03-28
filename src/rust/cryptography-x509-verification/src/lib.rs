@@ -20,6 +20,7 @@ use cryptography_x509::{
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
+use types::{RFC822Constraint, RFC822Name};
 
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
@@ -137,6 +138,31 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     ))),
                 }
             }
+            (GeneralName::RFC822Name(pattern), GeneralName::RFC822Name(name)) => {
+                match (RFC822Constraint::new(pattern.0), RFC822Name::new(name.0)) {
+                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (_, None) => Err(ValidationError::Other(format!(
+                        "unsatisfiable RFC822 name constraint: malformed SAN {:?}",
+                        name.0,
+                    ))),
+                    (None, _) => Err(ValidationError::Other(format!(
+                        "malformed RFC822 name constraints: {:?}",
+                        pattern.0
+                    ))),
+                }
+            }
+            // All other matching pairs of (constraint, name) are currently unsupported.
+            (GeneralName::OtherName(_), GeneralName::OtherName(_))
+            | (GeneralName::X400Address(_), GeneralName::X400Address(_))
+            | (GeneralName::DirectoryName(_), GeneralName::DirectoryName(_))
+            | (GeneralName::EDIPartyName(_), GeneralName::EDIPartyName(_))
+            | (
+                GeneralName::UniformResourceIdentifier(_),
+                GeneralName::UniformResourceIdentifier(_),
+            )
+            | (GeneralName::RegisteredID(_), GeneralName::RegisteredID(_)) => Err(
+                ValidationError::Other("unsupported name constraint".to_string()),
+            ),
             _ => Ok(Skipped),
         }
     }

@@ -364,6 +364,21 @@ X.509 Certificate Object
             >>> isinstance(public_key, rsa.RSAPublicKey)
             True
 
+    .. attribute:: public_key_algorithm_oid
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the public key algorithm found
+        inside the certificate. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.PublicKeyAlgorithmOID`.
+
+        .. doctest::
+
+            >>> cert.public_key_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.1, name=rsaEncryption)>
+
     .. attribute:: not_valid_before
 
         :type: :class:`datetime.datetime`
@@ -1032,6 +1047,21 @@ X.509 CSR (Certificate Signing Request) Object
             >>> public_key = csr.public_key()
             >>> isinstance(public_key, rsa.RSAPublicKey)
             True
+
+    .. attribute:: public_key_algorithm_oid
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the :class:`ObjectIdentifier` of the public key algorithm found
+        inside the certificate. This will be one of the OIDs from
+        :class:`~cryptography.x509.oid.PublicKeyAlgorithmOID`.
+
+        .. doctest::
+
+            >>> csr.public_key_algorithm_oid
+            <ObjectIdentifier(oid=1.2.840.113549.1.1.1, name=rsaEncryption)>
 
     .. attribute:: subject
 
@@ -3839,6 +3869,65 @@ instances. The following common OIDs are available as constants.
     .. attribute:: UNSTRUCTURED_NAME
 
         Corresponds to the dotted string ``"1.2.840.113549.1.9.2"``.
+
+
+.. class:: PublicKeyAlgorithmOID
+    :canonical: cryptography.hazmat._oid.PublicKeyAlgorithmOID
+
+    .. versionadded:: 43.0.0
+
+    .. attribute:: DSA
+
+        Corresponds to the dotted string ``"1.2.840.10040.4.1"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`
+        public key.
+
+    .. attribute:: EC_PUBLIC_KEY
+
+        Corresponds to the dotted string ``"1.2.840.10045.2.1"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+        public key.
+
+    .. attribute:: RSAES_PKCS1_v1_5
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.1.1"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+        public key with
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
+        padding.
+
+    .. attribute:: RSASSA_PSS
+
+        Corresponds to the dotted string ``"1.2.840.113549.1.1.10"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
+        public key with
+        :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+        padding.
+
+    .. attribute:: X25519
+
+        Corresponds to the dotted string ``"1.3.101.110"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+        public key.
+
+    .. attribute:: X448
+
+        Corresponds to the dotted string ``"1.3.101.111"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`
+        public key.
+
+    .. attribute:: ED25519
+
+        Corresponds to the dotted string ``"1.3.101.112"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+        public key.
+
+    .. attribute:: ED448
+
+        Corresponds to the dotted string ``"1.3.101.113"``. This is a
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`
+        public key.
+
 
 Helper Functions
 ~~~~~~~~~~~~~~~~

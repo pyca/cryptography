@@ -105,6 +105,40 @@ class TestStore:
             Store(["not a cert"])  # type: ignore[list-item]
 
 
+class TestClientVerifier:
+    def test_build_client_verifier_missing_store(self):
+        with pytest.raises(
+            ValueError, match="A client verifier must have a trust store"
+        ):
+            PolicyBuilder().build_client_verifier()
+
+    def test_verify(self):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+
+        validation_time = datetime.datetime.fromisoformat(
+            "2018-11-16T00:00:00+00:00"
+        )
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(validation_time).max_chain_depth(16)
+        verifier = builder.build_client_verifier()
+
+        assert verifier.validation_time == validation_time.replace(tzinfo=None)
+        assert verifier.max_chain_depth == 16
+
+        verified_client = verifier.verify(leaf, [])
+        assert verified_client.chain == [leaf]
+
+        assert x509.DNSName("www.cryptography.io") in verified_client.subjects
+        assert x509.DNSName("cryptography.io") in verified_client.subjects
+        assert len(verified_client.subjects) == 2
+
+
 class TestServerVerifier:
     @pytest.mark.parametrize(
         ("validation_time", "valid"),

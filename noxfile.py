@@ -265,7 +265,7 @@ def local(session):
         *test_dependencies,
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
-        "cryptography_vectors @ ./vectors/",
+        "./vectors/",
         verbose=False,
     )
 
@@ -301,7 +301,7 @@ def local(session):
         "cryptography",
         "--refresh-package",
         "cryptography",
-        "cryptography @ .",
+        ".",
     )
 
     if session.posargs:

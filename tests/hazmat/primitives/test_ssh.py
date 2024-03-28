@@ -55,6 +55,10 @@ class TestOpenSSHSerialization:
             ("ecdsa-nopsw.key.pub", "ecdsa-nopsw.key-cert.pub"),
             ("ed25519-psw.key.pub", None),
             ("ed25519-nopsw.key.pub", "ed25519-nopsw.key-cert.pub"),
+            ("sk-ecdsa-psw.key.pub", None),
+            ("sk-ecdsa-nopsw.key.pub", None),
+            ("sk-ed25519-psw.key.pub", None),
+            ("sk-ed25519-nopsw.key.pub", None),
         ],
     )
     def test_load_ssh_public_key(self, key_file, cert_file, backend):
@@ -80,10 +84,14 @@ class TestOpenSSHSerialization:
                 )
         else:
             public_key = load_ssh_public_key(pub_data, backend)
-            assert (
-                public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
-                == nocomment_data
-            )
+            if not key_file.startswith("sk-"):
+                # SK keys do not round-trip
+                assert (
+                    public_key.public_bytes(
+                        Encoding.OpenSSH, PublicFormat.OpenSSH
+                    )
+                    == nocomment_data
+                )
 
         self.run_partial_pubkey(pub_data, backend)
 
@@ -1800,3 +1808,20 @@ class TestSSHCertificateBuilder:
             b"t8yRa8IRbxvOyA9TZYDGG1dRE3DiR0fuudU20v6vqfTd1gx0S5QyEdECXLl9ZI3"
             b"AwZgc="
         )
+
+
+class TestSSHSK:
+    @staticmethod
+    def ssh_str(application):
+        data = (
+            len(application).to_bytes(length=4, byteorder="big")
+            + application.encode()
+        )
+        return memoryview(data)
+
+    def test_load_application(self):
+        ssh.load_application(self.ssh_str("ssh:test"))
+
+    def test_load_application_valueerror(self):
+        with pytest.raises(ValueError):
+            ssh.load_application(self.ssh_str("hss:test"))
