@@ -43,8 +43,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.2.1"}}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.2"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          # Latest commit on the BoringSSL master branch, as of Mar 26, 2024.
-          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "ee4c2a38a05873b8812fed97efae0ffc5ff51d46"}}
+          # Latest commit on the BoringSSL master branch, as of Mar 28, 2024.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "54c956b2e668e11c75f1ee0367f1b3a0ad28eff9"}}
           # Latest commit on the OpenSSL master branch, as of Mar 27, 2024.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "1967539e212c17139dc810096da987c8100b1ba2"}}
           # Builds with various Rust versions. Includes MSRV and next
