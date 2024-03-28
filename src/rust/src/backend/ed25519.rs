@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -158,11 +159,13 @@ impl Ed25519PublicKey {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "ed25519")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "ed25519")?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, &m)?)?;
 
     m.add_class::<Ed25519PrivateKey>()?;
     m.add_class::<Ed25519PublicKey>()?;

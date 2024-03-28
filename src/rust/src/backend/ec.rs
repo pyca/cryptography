@@ -5,6 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use pyo3::prelude::PyModuleMethods;
 use pyo3::ToPyObject;
 
 use crate::backend::utils;
@@ -660,12 +661,14 @@ impl EllipticCurvePublicNumbers {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "ec")?;
-    m.add_function(pyo3::wrap_pyfunction!(curve_supported, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(derive_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "ec")?;
+    m.add_function(pyo3::wrap_pyfunction!(curve_supported, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(generate_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(derive_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, &m)?)?;
 
     m.add_class::<ECPrivateKey>()?;
     m.add_class::<ECPublicKey>()?;

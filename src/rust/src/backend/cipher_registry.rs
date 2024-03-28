@@ -259,7 +259,7 @@ fn get_cipher_registry(
         // this should't be necessary but OpenSSL 3 will return an EVP_CIPHER
         // even when the cipher is unavailable.
         if cfg!(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))
-            || types::LEGACY_PROVIDER_LOADED.get(py)?.is_true()?
+            || types::LEGACY_PROVIDER_LOADED.get(py)?.is_truthy()?
         {
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
             {

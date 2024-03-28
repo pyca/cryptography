@@ -11,6 +11,7 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
+use pyo3::prelude::PyModuleMethods;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
@@ -403,13 +404,21 @@ fn load_der_pkcs7_certificates<'p>(
     }
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let submod = pyo3::prelude::PyModule::new(py, "pkcs7")?;
+pub(crate) fn create_submodule(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let submod = pyo3::prelude::PyModule::new_bound(py, "pkcs7")?;
 
-    submod.add_function(pyo3::wrap_pyfunction!(serialize_certificates, submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(sign_and_serialize, submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(load_pem_pkcs7_certificates, submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(load_der_pkcs7_certificates, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(serialize_certificates, &submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(sign_and_serialize, &submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(
+        load_pem_pkcs7_certificates,
+        &submod
+    )?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(
+        load_der_pkcs7_certificates,
+        &submod
+    )?)?;
 
     Ok(submod)
 }

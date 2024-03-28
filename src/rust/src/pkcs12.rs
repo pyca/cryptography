@@ -7,6 +7,7 @@ use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -309,11 +310,13 @@ fn load_pkcs12<'p>(
         .call1((private_key, cert, additional_certs))?)
 }
 
-pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let submod = pyo3::prelude::PyModule::new(py, "pkcs12")?;
+pub(crate) fn create_submodule(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let submod = pyo3::prelude::PyModule::new_bound(py, "pkcs12")?;
 
-    submod.add_function(pyo3::wrap_pyfunction!(load_key_and_certificates, submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(load_pkcs12, submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(load_key_and_certificates, &submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction!(load_pkcs12, &submod)?)?;
 
     submod.add_class::<PKCS12Certificate>()?;
 

@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use crate::backend::hashes::{already_finalized_error, message_digest_from_algorithm};
 use crate::buf::CffiBuf;
@@ -104,8 +105,10 @@ impl Hmac {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "hmac")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "hmac")?;
     m.add_class::<Hmac>()?;
 
     Ok(m)

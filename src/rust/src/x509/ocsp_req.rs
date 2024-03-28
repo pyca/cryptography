@@ -7,6 +7,7 @@ use cryptography_x509::{
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
     oid,
 };
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
@@ -231,7 +232,9 @@ fn create_ocsp_request(
     load_der_ocsp_request(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction!(load_der_ocsp_request, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(create_ocsp_request, module)?)?;
 

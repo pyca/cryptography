@@ -13,6 +13,7 @@ use cryptography_x509::{
     },
     name, oid,
 };
+use pyo3::prelude::PyModuleMethods;
 use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{
@@ -675,7 +676,9 @@ fn create_x509_crl(
     load_der_x509_crl(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction!(load_der_x509_crl, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_crl, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(create_x509_crl, module)?)?;

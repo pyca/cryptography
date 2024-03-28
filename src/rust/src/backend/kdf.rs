@@ -1,6 +1,7 @@
 // This file is dual licensed under the terms of the Apache License, Version
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
+use pyo3::prelude::PyModuleMethods;
 
 use crate::backend::hashes;
 use crate::buf::CffiBuf;
@@ -48,12 +49,14 @@ fn derive_scrypt<'p>(
     })?)
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "kdf")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "kdf")?;
 
-    m.add_function(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac, &m)?)?;
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
-    m.add_function(pyo3::wrap_pyfunction!(derive_scrypt, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(derive_scrypt, &m)?)?;
 
     Ok(m)
 }

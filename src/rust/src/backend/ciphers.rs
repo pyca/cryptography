@@ -7,6 +7,7 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use crate::types;
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 
 struct CipherContext {
@@ -29,7 +30,7 @@ impl CipherContext {
                         format!(
                             "cipher {} in {} mode is not supported ",
                             algorithm.getattr(pyo3::intern!(py, "name"))?,
-                            if mode.is_true()? {
+                            if mode.is_truthy()? {
                                 mode.getattr(pyo3::intern!(py, "name"))?
                             } else {
                                 mode
@@ -550,14 +551,16 @@ fn _advance_aad(ctx: &pyo3::PyAny, n: u64) {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "ciphers")?;
-    m.add_function(pyo3::wrap_pyfunction!(create_encryption_ctx, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(create_decryption_ctx, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(cipher_supported, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "ciphers")?;
+    m.add_function(pyo3::wrap_pyfunction!(create_encryption_ctx, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(create_decryption_ctx, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(cipher_supported, &m)?)?;
 
-    m.add_function(pyo3::wrap_pyfunction!(_advance, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(_advance_aad, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(_advance, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(_advance_aad, &m)?)?;
 
     m.add_class::<PyCipherContext>()?;
     m.add_class::<PyAEADEncryptionContext>()?;
