@@ -414,6 +414,25 @@ impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
     }
 }
 
+/// A BMPString ASN.1 element, where it is stored as a UTF-8 string in memory.
+pub struct Utf8StoredBMPString<'a>(pub &'a str);
+
+impl<'a> Utf8StoredBMPString<'a> {
+    pub fn new(s: &'a str) -> Self {
+        Utf8StoredBMPString(s)
+    }
+}
+
+impl<'a> asn1::SimpleAsn1Writable for Utf8StoredBMPString<'a> {
+    const TAG: asn1::Tag = asn1::BMPString::TAG;
+    fn write_data(&self, writer: &mut asn1::WriteBuf) -> asn1::WriteResult {
+        for ch in self.0.encode_utf16() {
+            writer.push_slice(&ch.to_be_bytes())?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone)]
 pub struct WithTlv<'a, T> {
     tlv: asn1::Tlv<'a>,
