@@ -130,6 +130,7 @@ class TestClientVerifier:
 
         assert verifier.validation_time == validation_time.replace(tzinfo=None)
         assert verifier.max_chain_depth == 16
+        assert verifier.store is store
 
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
