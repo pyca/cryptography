@@ -8,7 +8,7 @@ use crate::common;
 use crate::crl;
 use crate::name;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 
 pub type RawExtensions<'a> = common::Asn1ReadableOrWritable<
