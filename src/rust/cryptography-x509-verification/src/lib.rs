@@ -30,7 +30,7 @@ use crate::types::DNSName;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum ValidationError {
     CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
