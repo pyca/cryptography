@@ -29,7 +29,7 @@ impl CipherContext {
                         format!(
                             "cipher {} in {} mode is not supported ",
                             algorithm.getattr(pyo3::intern!(py, "name"))?,
-                            if mode.is_true()? {
+                            if mode.is_truthy()? {
                                 mode.getattr(pyo3::intern!(py, "name"))?
                             } else {
                                 mode

@@ -115,7 +115,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
     m.add_submodule(ocsp_mod)?;
 
-    m.add_submodule(cryptography_cffi::create_module(py)?)?;
+    m.add_submodule(cryptography_cffi::create_module(py)?.into_gil_ref())?;
 
     let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
     openssl_mod.add(
