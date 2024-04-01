@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use pyo3::prelude::PyAnyMethods;
-use pyo3::ToPyObject;
+use pyo3::PyNativeType;
 
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -429,9 +429,12 @@ fn identify_alg_params_for_hash_type(
 fn hash_oid_py_hash(
     py: pyo3::Python<'_>,
     oid: asn1::ObjectIdentifier,
-) -> CryptographyResult<&pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
     match HASH_OIDS_TO_HASH.get(&oid) {
-        Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
+        Some(alg_name) => Ok(types::HASHES_MODULE
+            .get_bound(py)?
+            .getattr(*alg_name)?
+            .call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -451,15 +454,13 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
             let pss = opt_pss.as_ref().ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Invalid RSA PSS parameters")
             })?;
-            Ok(hash_oid_py_hash(py, pss.hash_algorithm.oid().clone())?
-                .to_object(py)
-                .into_bound(py))
+            hash_oid_py_hash(py, pss.hash_algorithm.oid().clone())
         }
         _ => {
             let py_sig_alg_oid = oid_to_py_oid(py, signature_algorithm.oid())?;
             let hash_alg = sig_oids_to_hash.get_item(py_sig_alg_oid);
             match hash_alg {
-                Ok(data) => Ok(data.to_object(py).into_bound(py)),
+                Ok(data) => Ok(data.as_borrowed().to_owned()),
                 Err(_) => Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(format!(
                         "Signature algorithm OID: {} not recognized",

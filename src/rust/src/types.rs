@@ -18,15 +18,7 @@ impl LazyPyImport {
     }
 
     pub fn get<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        self.value
-            .get_or_try_init(py, || {
-                let mut obj = py.import(self.module)?.as_ref();
-                for name in self.names {
-                    obj = obj.getattr(*name)?;
-                }
-                obj.extract()
-            })
-            .map(|p| p.as_ref(py))
+        Ok(self.get_bound(py)?.into_gil_ref())
     }
 
     pub fn get_bound<'p>(
