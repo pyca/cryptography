@@ -192,7 +192,7 @@ fn create_ocsp_request(
         let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
             &[u8],
             &[u8],
-            &pyo3::types::PyLong,
+            pyo3::Bound<'_, pyo3::types::PyLong>,
             &pyo3::PyAny,
         ) = builder
             .getattr(pyo3::intern!(py, "_request_hash"))?

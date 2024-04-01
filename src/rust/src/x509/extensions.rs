@@ -8,6 +8,7 @@ use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sct};
 use crate::{types, x509};
+use pyo3::PyNativeType;
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
@@ -39,7 +40,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     struct PyAuthorityKeyIdentifier<'a> {
         key_identifier: Option<&'a [u8]>,
         authority_cert_issuer: Option<&'a pyo3::PyAny>,
-        authority_cert_serial_number: Option<&'a pyo3::types::PyLong>,
+        authority_cert_serial_number: Option<pyo3::Bound<'a, pyo3::types::PyLong>>,
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
@@ -241,7 +242,7 @@ fn encode_certificate_policies(
                             .getattr(pyo3::intern!(py, "notice_numbers"))?
                             .iter()?
                         {
-                            let bytes = py_uint_to_big_endian_bytes(ext.py(), py_num?.downcast()?)?;
+                            let bytes = py_uint_to_big_endian_bytes(ext.py(), py_num?.extract()?)?;
                             notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
                         }
 
@@ -444,7 +445,7 @@ pub(crate) fn encode_extension(
             let intval = ext
                 .getattr(pyo3::intern!(py, "skip_certs"))?
                 .downcast::<pyo3::types::PyLong>()?;
-            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
+            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
             )?))
@@ -491,7 +492,7 @@ pub(crate) fn encode_extension(
             let intval = ext
                 .getattr(pyo3::intern!(py, "crl_number"))?
                 .downcast::<pyo3::types::PyLong>()?;
-            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
+            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
             )?))

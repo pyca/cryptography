@@ -6,6 +6,7 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
+use pyo3::prelude::PyAnyMethods;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
@@ -65,7 +66,7 @@ fn decode_dss_signature(
 
 pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
-    v: &'p pyo3::types::PyLong,
+    v: pyo3::Bound<'p, pyo3::types::PyLong>,
 ) -> pyo3::PyResult<&'p [u8]> {
     let zero = (0).to_object(py);
     if v.lt(zero)? {
@@ -114,8 +115,8 @@ pub(crate) fn encode_der_data<'p>(
 #[pyo3::prelude::pyfunction]
 fn encode_dss_signature(
     py: pyo3::Python<'_>,
-    r: &pyo3::types::PyLong,
-    s: &pyo3::types::PyLong,
+    r: pyo3::Bound<'_, pyo3::types::PyLong>,
+    s: pyo3::Bound<'_, pyo3::types::PyLong>,
 ) -> CryptographyResult<pyo3::PyObject> {
     let sig = DssSignature {
         r: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap(),
