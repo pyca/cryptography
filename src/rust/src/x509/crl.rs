@@ -207,7 +207,7 @@ impl CertificateRevocationList {
     fn signature_algorithm_parameters<'p>(
         &'p self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::PyAny> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         sign::identify_signature_algorithm_parameters(
             py,
             &self.owned.borrow_dependent().signature_algorithm,

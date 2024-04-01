@@ -28,6 +28,21 @@ impl LazyPyImport {
             })
             .map(|p| p.as_ref(py))
     }
+
+    pub fn get_bound<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let p = self.value.get_or_try_init(py, || {
+            let mut obj = py.import(self.module)?.as_ref();
+            for name in self.names {
+                obj = obj.getattr(*name)?;
+            }
+            obj.extract()
+        })?;
+
+        Ok(p.clone().into_bound(py))
+    }
 }
 
 pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
