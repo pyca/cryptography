@@ -60,9 +60,8 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
-  ./configure --disable-shared --prefix="${OSSL_PATH}"
-  shlib_sed
-  make -j"$(nproc)" install CFLAGS="-fPIC"
+  cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  make -C build -j"$(nproc)" install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
   rm -rf "${OSSL_PATH}/bin"
   rm -rf "${OSSL_PATH}/share"
@@ -73,8 +72,7 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   pushd boringssl
   git checkout "${VERSION}"
   cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
-  make -C build -j"$(nproc)"
-  make -C build install
+  make -C build -j"$(nproc)" install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
   popd
