@@ -91,7 +91,7 @@ impl CertificateSigningRequest {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
         sign::identify_signature_hash_algorithm(py, &self.raw.borrow_dependent().signature_alg)
     }
 
@@ -104,7 +104,7 @@ impl CertificateSigningRequest {
     fn signature_algorithm_parameters<'p>(
         &'p self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::PyAny> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         sign::identify_signature_algorithm_parameters(
             py,
             &self.raw.borrow_dependent().signature_alg,

@@ -6,6 +6,8 @@ use std::collections::HashMap;
 
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
+use pyo3::prelude::PyAnyMethods;
+use pyo3::PyNativeType;
 
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -427,9 +429,12 @@ fn identify_alg_params_for_hash_type(
 fn hash_oid_py_hash(
     py: pyo3::Python<'_>,
     oid: asn1::ObjectIdentifier,
-) -> CryptographyResult<&pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
     match HASH_OIDS_TO_HASH.get(&oid) {
-        Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
+        Some(alg_name) => Ok(types::HASHES_MODULE
+            .get_bound(py)?
+            .getattr(*alg_name)?
+            .call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -442,7 +447,7 @@ fn hash_oid_py_hash(
 pub(crate) fn identify_signature_hash_algorithm<'p>(
     py: pyo3::Python<'p>,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
-) -> CryptographyResult<&'p pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let sig_oids_to_hash = types::SIG_OIDS_TO_HASH.get(py)?;
     match &signature_algorithm.params {
         common::AlgorithmParameters::RsaPss(opt_pss) => {
@@ -455,7 +460,7 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
             let py_sig_alg_oid = oid_to_py_oid(py, signature_algorithm.oid())?;
             let hash_alg = sig_oids_to_hash.get_item(py_sig_alg_oid);
             match hash_alg {
-                Ok(data) => Ok(data),
+                Ok(data) => Ok(data.as_borrowed().to_owned()),
                 Err(_) => Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(format!(
                         "Signature algorithm OID: {} not recognized",
@@ -470,7 +475,7 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
 pub(crate) fn identify_signature_algorithm_parameters<'p>(
     py: pyo3::Python<'p>,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
-) -> CryptographyResult<&'p pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match &signature_algorithm.params {
         common::AlgorithmParameters::RsaPss(opt_pss) => {
             let pss = opt_pss.as_ref().ok_or_else(|| {
@@ -487,7 +492,7 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
             let py_mask_gen_hash_alg =
                 hash_oid_py_hash(py, pss.mask_gen_algorithm.params.oid().clone())?;
             let py_mgf = types::MGF1.get(py)?.call1((py_mask_gen_hash_alg,))?;
-            Ok(types::PSS.get(py)?.call1((py_mgf, pss.salt_length))?)
+            Ok(types::PSS.get_bound(py)?.call1((py_mgf, pss.salt_length))?)
         }
         common::AlgorithmParameters::RsaWithSha1(_)
         | common::AlgorithmParameters::RsaWithSha1Alt(_)
@@ -499,7 +504,7 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
         | common::AlgorithmParameters::RsaWithSha3_256(_)
         | common::AlgorithmParameters::RsaWithSha3_384(_)
         | common::AlgorithmParameters::RsaWithSha3_512(_) => {
-            Ok(types::PKCS1V15.get(py)?.call0()?)
+            Ok(types::PKCS1V15.get_bound(py)?.call0()?)
         }
         common::AlgorithmParameters::EcDsaWithSha224(_)
         | common::AlgorithmParameters::EcDsaWithSha256(_)
@@ -512,9 +517,11 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
             let signature_hash_algorithm =
                 identify_signature_hash_algorithm(py, signature_algorithm)?;
 
-            Ok(types::ECDSA.get(py)?.call1((signature_hash_algorithm,))?)
+            Ok(types::ECDSA
+                .get_bound(py)?
+                .call1((signature_hash_algorithm,))?)
         }
-        _ => Ok(py.None().into_ref(py)),
+        _ => Ok(py.None().into_bound(py)),
     }
 }
 
