@@ -23,8 +23,8 @@ impl ObjectIdentifier {
     }
 
     #[getter]
-    fn dotted_string<'p>(&self, py: pyo3::Python<'p>) -> &'p pyo3::types::PyString {
-        pyo3::types::PyString::new(py, &self.oid.to_string())
+    fn dotted_string(&self) -> String {
+        self.oid.to_string()
     }
 
     #[getter]
@@ -41,7 +41,7 @@ impl ObjectIdentifier {
         slf
     }
 
-    fn __repr__(slf: &pyo3::PyCell<Self>, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__(slf: &pyo3::Bound<'_, Self>, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let name = Self::_name(slf.borrow(), py)?.extract::<&str>()?;
         Ok(format!(
             "<ObjectIdentifier(oid={}, name={})>",
