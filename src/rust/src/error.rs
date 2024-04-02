@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::prelude::PyListMethods;
 use pyo3::ToPyObject;
 
 use crate::exceptions;
@@ -32,8 +33,8 @@ impl From<pyo3::PyErr> for CryptographyError {
     }
 }
 
-impl From<pyo3::PyDowncastError<'_>> for CryptographyError {
-    fn from(e: pyo3::PyDowncastError<'_>) -> CryptographyError {
+impl From<pyo3::DowncastError<'_, '_>> for CryptographyError {
+    fn from(e: pyo3::DowncastError<'_, '_>) -> CryptographyError {
         CryptographyError::Py(e.into())
     }
 }
@@ -83,12 +84,12 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
 pub(crate) fn list_from_openssl_error(
     py: pyo3::Python<'_>,
     error_stack: openssl::error::ErrorStack,
-) -> &pyo3::types::PyList {
-    let errors = pyo3::types::PyList::empty(py);
+) -> pyo3::Bound<'_, pyo3::types::PyList> {
+    let errors = pyo3::types::PyList::empty_bound(py);
     for e in error_stack.errors() {
         errors
             .append(
-                pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })
+                pyo3::Bound::new(py, OpenSSLError { e: e.clone() })
                     .expect("Failed to create OpenSSLError"),
             )
             .expect("Failed to append to list");
@@ -186,10 +187,12 @@ impl OpenSSLError {
 }
 
 #[pyo3::prelude::pyfunction]
-pub(crate) fn capture_error_stack(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::types::PyList> {
-    let errs = pyo3::types::PyList::empty(py);
+pub(crate) fn capture_error_stack(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
+    let errs = pyo3::types::PyList::empty_bound(py);
     for e in openssl::error::ErrorStack::get().errors() {
-        errs.append(pyo3::PyCell::new(py, OpenSSLError { e: e.clone() })?)?;
+        errs.append(pyo3::Bound::new(py, OpenSSLError { e: e.clone() })?)?;
     }
     Ok(errs)
 }
@@ -210,8 +213,7 @@ mod tests {
             let py_e: pyo3::PyErr = e.into();
             assert!(py_e.is_instance_of::<pyo3::exceptions::PyMemoryError>(py));
 
-            let e: CryptographyError =
-                pyo3::PyDowncastError::new(py.None().as_ref(py), "abc").into();
+            let e: CryptographyError = pyo3::DowncastError::new(py.None().bind(py), "abc").into();
             assert!(matches!(e, CryptographyError::Py(_)));
 
             let e = cryptography_key_parsing::KeyParsingError::OpenSSL(

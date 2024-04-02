@@ -8,6 +8,7 @@ use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sct};
 use crate::{types, x509};
+use pyo3::prelude::PyAnyMethods;
 use pyo3::PyNativeType;
 
 fn encode_general_subtrees<'a>(
@@ -375,16 +376,16 @@ fn encode_tls_features(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyR
 fn encode_scts(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
     let mut length = 0;
     for sct in ext.iter()? {
-        let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-        length += sct.borrow().sct_data.len() + 2;
+        let sct = sct?.as_borrowed().downcast::<sct::Sct>()?.clone();
+        length += sct.get().sct_data.len() + 2;
     }
 
     let mut result = vec![];
     result.extend_from_slice(&(length as u16).to_be_bytes());
     for sct in ext.iter()? {
-        let sct = sct?.downcast::<pyo3::PyCell<sct::Sct>>()?;
-        result.extend_from_slice(&(sct.borrow().sct_data.len() as u16).to_be_bytes());
-        result.extend_from_slice(&sct.borrow().sct_data);
+        let sct = sct?.as_borrowed().downcast::<sct::Sct>()?.clone();
+        result.extend_from_slice(&(sct.get().sct_data.len() as u16).to_be_bytes());
+        result.extend_from_slice(&sct.get().sct_data);
     }
     Ok(asn1::write_single(&result.as_slice())?)
 }
@@ -444,7 +445,9 @@ pub(crate) fn encode_extension(
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "skip_certs"))?
-                .downcast::<pyo3::types::PyLong>()?;
+                .as_borrowed()
+                .downcast::<pyo3::types::PyLong>()?
+                .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
@@ -491,7 +494,9 @@ pub(crate) fn encode_extension(
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "crl_number"))?
-                .downcast::<pyo3::types::PyLong>()?;
+                .as_borrowed()
+                .downcast::<pyo3::types::PyLong>()?
+                .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
