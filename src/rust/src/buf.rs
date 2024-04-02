@@ -3,31 +3,32 @@
 // for complete details.
 
 use crate::types;
+use pyo3::prelude::PyAnyMethods;
 use pyo3::types::IntoPyDict;
 use std::slice;
 
 pub(crate) struct CffiBuf<'p> {
-    _pyobj: &'p pyo3::PyAny,
-    _bufobj: &'p pyo3::PyAny,
+    _pyobj: pyo3::Bound<'p, pyo3::PyAny>,
+    _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
     buf: &'p [u8],
 }
 
-fn _extract_buffer_length(
-    pyobj: &pyo3::PyAny,
+fn _extract_buffer_length<'p>(
+    pyobj: &pyo3::Bound<'p, pyo3::PyAny>,
     mutable: bool,
-) -> pyo3::PyResult<(&pyo3::PyAny, usize)> {
+) -> pyo3::PyResult<(pyo3::Bound<'p, pyo3::PyAny>, usize)> {
     let py = pyobj.py();
     let bufobj = if mutable {
-        let kwargs = [(pyo3::intern!(py, "require_writable"), true)].into_py_dict(py);
+        let kwargs = [(pyo3::intern!(py, "require_writable"), true)].into_py_dict_bound(py);
         types::FFI_FROM_BUFFER
-            .get(py)?
-            .call((pyobj,), Some(kwargs))?
+            .get_bound(py)?
+            .call((pyobj,), Some(&kwargs))?
     } else {
-        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))?
+        types::FFI_FROM_BUFFER.get_bound(py)?.call1((pyobj,))?
     };
     let ptrval = types::FFI_CAST
         .get(py)?
-        .call1((pyo3::intern!(py, "uintptr_t"), bufobj))?
+        .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
         .call_method0(pyo3::intern!(py, "__int__"))?
         .extract::<usize>()?;
     Ok((bufobj, ptrval))
@@ -40,7 +41,7 @@ impl CffiBuf<'_> {
 }
 
 impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
-    fn extract(pyobj: &'a pyo3::PyAny) -> pyo3::PyResult<Self> {
+    fn extract_bound(pyobj: &pyo3::Bound<'a, pyo3::PyAny>) -> pyo3::PyResult<Self> {
         let (bufobj, ptrval) = _extract_buffer_length(pyobj, false)?;
         let len = bufobj.len()?;
         let buf = if len == 0 {
@@ -58,7 +59,7 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
         };
 
         Ok(CffiBuf {
-            _pyobj: pyobj,
+            _pyobj: pyobj.clone(),
             _bufobj: bufobj,
             buf,
         })
@@ -66,8 +67,8 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
 }
 
 pub(crate) struct CffiMutBuf<'p> {
-    _pyobj: &'p pyo3::PyAny,
-    _bufobj: &'p pyo3::PyAny,
+    _pyobj: pyo3::Bound<'p, pyo3::PyAny>,
+    _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
     buf: &'p mut [u8],
 }
 
@@ -78,7 +79,7 @@ impl CffiMutBuf<'_> {
 }
 
 impl<'a> pyo3::conversion::FromPyObject<'a> for CffiMutBuf<'a> {
-    fn extract(pyobj: &'a pyo3::PyAny) -> pyo3::PyResult<Self> {
+    fn extract_bound(pyobj: &pyo3::Bound<'a, pyo3::PyAny>) -> pyo3::PyResult<Self> {
         let (bufobj, ptrval) = _extract_buffer_length(pyobj, true)?;
 
         let len = bufobj.len()?;
@@ -97,7 +98,7 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiMutBuf<'a> {
         };
 
         Ok(CffiMutBuf {
-            _pyobj: pyobj,
+            _pyobj: pyobj.clone(),
             _bufobj: bufobj,
             buf,
         })
