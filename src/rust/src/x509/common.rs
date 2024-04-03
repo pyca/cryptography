@@ -7,8 +7,9 @@ use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
+use pyo3::prelude::PyAnyMethods;
 use pyo3::types::IntoPyDict;
-use pyo3::{IntoPy, ToPyObject};
+use pyo3::{IntoPy, PyNativeType, ToPyObject};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -75,7 +76,11 @@ pub(crate) fn encode_name_entry<'p>(
             .getattr(pyo3::intern!(py, "value"))?
             .extract()?
     };
-    let oid = py_oid_to_oid(py_name_entry.getattr(pyo3::intern!(py, "oid"))?)?;
+    let py_oid = py_name_entry
+        .getattr(pyo3::intern!(py, "oid"))?
+        .as_borrowed()
+        .to_owned();
+    let oid = py_oid_to_oid(py_oid)?;
 
     Ok(AttributeTypeValue {
         type_id: oid,
@@ -124,8 +129,12 @@ pub(crate) fn encode_general_name<'a>(
         let name = encode_name(py, gn_value)?;
         Ok(GeneralName::DirectoryName(name))
     } else if gn_type.is(types::OTHER_NAME.get(py)?) {
+        let py_oid = gn
+            .getattr(pyo3::intern!(py, "type_id"))?
+            .as_borrowed()
+            .to_owned();
         Ok(GeneralName::OtherName(OtherName {
-            type_id: py_oid_to_oid(gn.getattr(pyo3::intern!(py, "type_id"))?)?,
+            type_id: py_oid_to_oid(py_oid)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "OtherName value must be valid DER: {e:?}"
@@ -142,7 +151,7 @@ pub(crate) fn encode_general_name<'a>(
                 .extract::<&[u8]>()?,
         ))
     } else if gn_type.is(types::REGISTERED_ID.get(py)?) {
-        let oid = py_oid_to_oid(gn_value)?;
+        let oid = py_oid_to_oid(gn_value.as_borrowed().to_owned())?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
         Err(CryptographyError::from(
@@ -158,7 +167,11 @@ pub(crate) fn encode_access_descriptions<'a>(
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
-        let access_method = py_oid_to_oid(py_ad.getattr(pyo3::intern!(py, "access_method"))?)?;
+        let py_oid = py_ad
+            .getattr(pyo3::intern!(py, "access_method"))?
+            .as_borrowed()
+            .to_owned();
+        let access_method = py_oid_to_oid(py_oid)?;
         let access_location =
             encode_general_name(py, py_ad.getattr(pyo3::intern!(py, "access_location"))?)?;
         ads.push(AccessDescription {
@@ -412,7 +425,11 @@ pub(crate) fn encode_extensions<
     let mut exts = vec![];
     for py_ext in py_exts.iter()? {
         let py_ext = py_ext?;
-        let oid = py_oid_to_oid(py_ext.getattr(pyo3::intern!(py, "oid"))?)?;
+        let py_oid = py_ext
+            .getattr(pyo3::intern!(py, "oid"))?
+            .as_borrowed()
+            .to_owned();
+        let oid = py_oid_to_oid(py_oid)?;
 
         let ext_val = py_ext.getattr(pyo3::intern!(py, "value"))?;
         if ext_val.is_instance(types::UNRECOGNIZED_EXTENSION.get(py)?)? {
@@ -453,11 +470,11 @@ pub(crate) fn encode_extensions<
 #[pyo3::prelude::pyfunction]
 fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
-    py_ext: &'p pyo3::PyAny,
+    py_ext: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<&'p pyo3::types::PyBytes> {
     let oid = py_oid_to_oid(py_ext.getattr(pyo3::intern!(py, "oid"))?)?;
 
-    if let Some(data) = x509::extensions::encode_extension(py, &oid, py_ext)? {
+    if let Some(data) = x509::extensions::encode_extension(py, &oid, py_ext.into_gil_ref())? {
         // TODO: extra copy
         let py_data = pyo3::types::PyBytes::new(py, &data);
         return Ok(py_data);

@@ -13,10 +13,12 @@ use pyo3::ToPyObject;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 
-pub(crate) fn py_oid_to_oid(py_oid: &pyo3::PyAny) -> pyo3::PyResult<asn1::ObjectIdentifier> {
+pub(crate) fn py_oid_to_oid(
+    py_oid: pyo3::Bound<'_, pyo3::PyAny>,
+) -> pyo3::PyResult<asn1::ObjectIdentifier> {
     Ok(py_oid
-        .downcast::<pyo3::PyCell<crate::oid::ObjectIdentifier>>()?
-        .borrow()
+        .downcast::<crate::oid::ObjectIdentifier>()?
+        .get()
         .oid
         .clone())
 }
