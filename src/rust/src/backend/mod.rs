@@ -42,7 +42,7 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
 
     module.add_submodule(poly1305::create_module(module.py())?)?;
 
-    module.add_submodule(hashes::create_module(module.py())?)?;
+    module.add_submodule(hashes::create_module(module.py())?.into_gil_ref())?;
     module.add_submodule(hmac::create_module(module.py())?)?;
     module.add_submodule(kdf::create_module(module.py())?)?;
     module.add_submodule(rsa::create_module(module.py())?.into_gil_ref())?;

@@ -17,7 +17,7 @@ use cryptography_x509::extensions::{
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
-use pyo3::{IntoPy, ToPyObject};
+use pyo3::{IntoPy, PyNativeType, ToPyObject};
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -90,9 +90,9 @@ impl Certificate {
     ) -> CryptographyResult<&'p pyo3::PyAny> {
         let serialized = asn1::write_single(&self.raw.borrow_dependent())?;
 
-        let mut h = hashes::Hash::new(py, algorithm, None)?;
+        let mut h = hashes::Hash::new(py, &algorithm.as_borrowed(), None)?;
         h.update_bytes(&serialized)?;
-        Ok(h.finalize(py)?)
+        Ok(h.finalize(py)?.into_gil_ref())
     }
 
     fn public_bytes<'p>(

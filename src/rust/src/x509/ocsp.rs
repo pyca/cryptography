@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use cryptography_x509::common;
 use cryptography_x509::ocsp_req::CertID;
 use once_cell::sync::Lazy;
+use pyo3::PyNativeType;
 
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
@@ -125,7 +126,7 @@ pub(crate) fn hash_data<'p>(
     py_hash_alg: &'p pyo3::PyAny,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
-    let mut h = Hash::new(py, py_hash_alg, None)?;
+    let mut h = Hash::new(py, &py_hash_alg.as_borrowed(), None)?;
     h.update_bytes(data)?;
-    Ok(h.finalize(py)?.as_bytes())
+    Ok(h.finalize(py)?.into_gil_ref().as_bytes())
 }

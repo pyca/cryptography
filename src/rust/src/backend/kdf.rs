@@ -10,7 +10,7 @@ use crate::error::CryptographyResult;
 fn derive_pbkdf2_hmac<'p>(
     py: pyo3::Python<'p>,
     key_material: CffiBuf<'_>,
-    algorithm: &pyo3::PyAny,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     salt: &[u8],
     iterations: usize,
     length: usize,

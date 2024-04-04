@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::IntoPy;
 use std::borrow::Cow;
 
 use crate::buf::CffiBuf;
@@ -39,9 +41,9 @@ impl Hash {
 
 pub(crate) fn message_digest_from_algorithm(
     py: pyo3::Python<'_>,
-    algorithm: &pyo3::PyAny,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<openssl::hash::MessageDigest> {
-    if !algorithm.is_instance(types::HASH_ALGORITHM.get(py)?)? {
+    if !algorithm.is_instance(&types::HASH_ALGORITHM.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err("Expected instance of hashes.HashAlgorithm."),
         ));
@@ -83,8 +85,8 @@ impl Hash {
     #[pyo3(signature = (algorithm, backend=None))]
     pub(crate) fn new(
         py: pyo3::Python<'_>,
-        algorithm: &pyo3::PyAny,
-        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+        backend: Option<&pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Hash> {
         let _ = backend;
 
@@ -92,7 +94,7 @@ impl Hash {
         let ctx = openssl::hash::Hasher::new(md)?;
 
         Ok(Hash {
-            algorithm: algorithm.into(),
+            algorithm: algorithm.clone().into_py(py),
             ctx: Some(ctx),
         })
     }
@@ -104,17 +106,17 @@ impl Hash {
     pub(crate) fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
         {
             let algorithm = self.algorithm.clone_ref(py);
-            let algorithm = algorithm.as_ref(py);
-            if algorithm.is_instance(types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
+            let algorithm = algorithm.bind(py);
+            if algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get_bound(py)?)? {
                 let ctx = self.get_mut_ctx()?;
                 let digest_size = algorithm
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
-                let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
+                let result = pyo3::types::PyBytes::new_bound_with(py, digest_size, |b| {
                     ctx.finish_xof(b).unwrap();
                     Ok(())
                 })?;
@@ -125,7 +127,7 @@ impl Hash {
 
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
-        Ok(pyo3::types::PyBytes::new(py, &data))
+        Ok(pyo3::types::PyBytes::new_bound(py, &data))
     }
 
     fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hash> {
@@ -136,8 +138,10 @@ impl Hash {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "hashes")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "hashes")?;
     m.add_class::<Hash>()?;
 
     Ok(m)

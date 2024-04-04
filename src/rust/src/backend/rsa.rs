@@ -10,6 +10,7 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::PyNativeType;
 
 #[pyo3::prelude::pyclass(
     frozen,
@@ -80,9 +81,9 @@ fn oaep_hash_supported(md: &openssl::hash::MessageDigest) -> bool {
 fn setup_encryption_ctx(
     py: pyo3::Python<'_>,
     ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
-    padding: &pyo3::PyAny,
+    padding: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<()> {
-    if !padding.is_instance(types::ASYMMETRIC_PADDING.get(py)?)? {
+    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -90,12 +91,12 @@ fn setup_encryption_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(types::PKCS1V15.get(py)?)? {
+    let padding_enum = if padding.is_instance(&types::PKCS1V15.get_bound(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(types::OAEP.get(py)?)? {
+    } else if padding.is_instance(&types::OAEP.get_bound(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(types::MGF1.get(py)?)?
+            .is_instance(&types::MGF1.get_bound(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -123,13 +124,13 @@ fn setup_encryption_ctx(
     if padding_enum == openssl::rsa::Padding::PKCS1_OAEP {
         let mgf1_md = hashes::message_digest_from_algorithm(
             py,
-            padding
+            &padding
                 .getattr(pyo3::intern!(py, "_mgf"))?
                 .getattr(pyo3::intern!(py, "_algorithm"))?,
         )?;
         let oaep_md = hashes::message_digest_from_algorithm(
             py,
-            padding.getattr(pyo3::intern!(py, "_algorithm"))?,
+            &padding.getattr(pyo3::intern!(py, "_algorithm"))?,
         )?;
 
         if !oaep_hash_supported(&mgf1_md) || !oaep_hash_supported(&oaep_md) {
@@ -160,12 +161,12 @@ fn setup_encryption_ctx(
 fn setup_signature_ctx(
     py: pyo3::Python<'_>,
     ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
-    padding: &pyo3::PyAny,
-    algorithm: &pyo3::PyAny,
+    padding: &pyo3::Bound<'_, pyo3::PyAny>,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     key_size: usize,
     is_signing: bool,
 ) -> CryptographyResult<()> {
-    if !padding.is_instance(types::ASYMMETRIC_PADDING.get(py)?)? {
+    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -173,12 +174,12 @@ fn setup_signature_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(types::PKCS1V15.get(py)?)? {
+    let padding_enum = if padding.is_instance(&types::PKCS1V15.get_bound(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(types::PSS.get(py)?)? {
+    } else if padding.is_instance(&types::PSS.get_bound(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(types::MGF1.get(py)?)?
+            .is_instance(&types::MGF1.get_bound(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -189,7 +190,7 @@ fn setup_signature_ctx(
         }
 
         // PSS padding requires a hash algorithm
-        if !algorithm.is_instance(types::HASH_ALGORITHM.get(py)?)? {
+        if !algorithm.is_instance(&types::HASH_ALGORITHM.get_bound(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Expected instance of hashes.HashAlgorithm.",
@@ -250,11 +251,11 @@ fn setup_signature_ctx(
 
     if padding_enum == openssl::rsa::Padding::PKCS1_PSS {
         let salt = padding.getattr(pyo3::intern!(py, "_salt_length"))?;
-        if salt.is_instance(types::PADDING_MAX_LENGTH.get(py)?)? {
+        if salt.is_instance(&types::PADDING_MAX_LENGTH.get_bound(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
-        } else if salt.is_instance(types::PADDING_DIGEST_LENGTH.get(py)?)? {
+        } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get_bound(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::DIGEST_LENGTH)?;
-        } else if salt.is_instance(types::PADDING_AUTO.get(py)?)? {
+        } else if salt.is_instance(&types::PADDING_AUTO.get_bound(py)?)? {
             if is_signing {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -268,7 +269,7 @@ fn setup_signature_ctx(
 
         let mgf1_md = hashes::message_digest_from_algorithm(
             py,
-            padding
+            &padding
                 .getattr(pyo3::intern!(py, "_mgf"))?
                 .getattr(pyo3::intern!(py, "_algorithm"))?,
         )?;
@@ -284,17 +285,27 @@ impl RsaPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
-        padding: &pyo3::PyAny,
-        algorithm: &pyo3::PyAny,
+        padding: &pyo3::Bound<'p, pyo3::PyAny>,
+        algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyAny>> {
-        let (data, algorithm) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
+        let (data, algorithm) = utils::calculate_digest_and_algorithm(
+            py,
+            data.as_bytes(),
+            algorithm.clone().into_gil_ref(),
+        )?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.sign_init().map_err(|_| {
             pyo3::exceptions::PyValueError::new_err("Unable to sign/verify with this key")
         })?;
-        setup_signature_ctx(py, &mut ctx, padding, algorithm, self.pkey.size(), true)?;
+        setup_signature_ctx(
+            py,
+            &mut ctx,
+            padding,
+            &algorithm.as_borrowed(),
+            self.pkey.size(),
+            true,
+        )?;
 
         let length = ctx.sign(data, None)?;
         Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
@@ -312,7 +323,7 @@ impl RsaPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         ciphertext: &[u8],
-        padding: &pyo3::PyAny,
+        padding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let key_size_bytes =
             usize::try_from((self.pkey.rsa().unwrap().n().num_bits() + 7) / 8).unwrap();
@@ -424,15 +435,25 @@ impl RsaPublicKey {
         py: pyo3::Python<'_>,
         signature: CffiBuf<'_>,
         data: CffiBuf<'_>,
-        padding: &pyo3::PyAny,
-        algorithm: &pyo3::PyAny,
+        padding: &pyo3::Bound<'_, pyo3::PyAny>,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        let (data, algorithm) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
+        let (data, algorithm) = utils::calculate_digest_and_algorithm(
+            py,
+            data.as_bytes(),
+            algorithm.clone().into_gil_ref(),
+        )?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
-        setup_signature_ctx(py, &mut ctx, padding, algorithm, self.pkey.size(), false)?;
+        setup_signature_ctx(
+            py,
+            &mut ctx,
+            padding,
+            &algorithm.as_borrowed(),
+            self.pkey.size(),
+            false,
+        )?;
 
         let valid = ctx.verify(data, signature.as_bytes()).unwrap_or(false);
         if !valid {
@@ -448,7 +469,7 @@ impl RsaPublicKey {
         &self,
         py: pyo3::Python<'p>,
         plaintext: &[u8],
-        padding: &pyo3::PyAny,
+        padding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.encrypt_init()?;
@@ -469,10 +490,10 @@ impl RsaPublicKey {
         &self,
         py: pyo3::Python<'p>,
         signature: &[u8],
-        padding: &pyo3::PyAny,
-        algorithm: &pyo3::PyAny,
+        padding: &pyo3::Bound<'_, pyo3::PyAny>,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if algorithm.is_instance(types::PREHASHED.get(py)?)? {
+        if algorithm.is_instance(&types::PREHASHED.get(py)?.as_borrowed())? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Prehashed is only supported in the sign and verify methods. It cannot be used with recover_data_from_signature.",
