@@ -7,6 +7,7 @@ use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
+use pyo3::prelude::PyAnyMethods;
 
 #[pyo3::prelude::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.cmac",
@@ -37,12 +38,12 @@ impl Cmac {
     #[new]
     fn new(
         py: pyo3::Python<'_>,
-        algorithm: &pyo3::PyAny,
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         backend: Option<&pyo3::PyAny>,
     ) -> CryptographyResult<Self> {
         let _ = backend;
 
-        if !algorithm.is_instance(types::BLOCK_CIPHER_ALGORITHM.get(py)?)? {
+        if !algorithm.is_instance(&types::BLOCK_CIPHER_ALGORITHM.get_bound(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Expected instance of BlockCipherAlgorithm.",
@@ -50,8 +51,8 @@ impl Cmac {
             ));
         }
 
-        let cipher =
-            cipher_registry::get_cipher(py, algorithm, types::CBC.get(py)?)?.ok_or_else(|| {
+        let cipher = cipher_registry::get_cipher(py, algorithm.clone(), types::CBC.get_bound(py)?)?
+            .ok_or_else(|| {
                 exceptions::UnsupportedAlgorithm::new_err((
                     "CMAC is not supported with this algorithm",
                     exceptions::Reasons::UNSUPPORTED_CIPHER,

@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 
 use openssl::cipher::Cipher;
+use pyo3::prelude::PyAnyMethods;
 
 use crate::error::CryptographyResult;
 use crate::types;
@@ -305,8 +306,8 @@ fn get_cipher_registry(
 
 pub(crate) fn get_cipher<'py>(
     py: pyo3::Python<'py>,
-    algorithm: &pyo3::PyAny,
-    mode_cls: &pyo3::PyAny,
+    algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+    mode_cls: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Option<&'py openssl::cipher::CipherRef>> {
     let registry = get_cipher_registry(py)?;
 
