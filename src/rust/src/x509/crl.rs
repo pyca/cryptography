@@ -13,7 +13,7 @@ use cryptography_x509::{
     },
     name, oid,
 };
-use pyo3::{IntoPy, ToPyObject};
+use pyo3::{IntoPy, PyNativeType, ToPyObject};
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -178,9 +178,9 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<&'p pyo3::PyAny> {
         let data = self.public_bytes_der()?;
 
-        let mut h = Hash::new(py, algorithm, None)?;
+        let mut h = Hash::new(py, &algorithm.as_borrowed(), None)?;
         h.update_bytes(&data)?;
-        Ok(h.finalize(py)?)
+        Ok(h.finalize(py)?.into_gil_ref())
     }
 
     #[getter]

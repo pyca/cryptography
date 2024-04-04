@@ -6,6 +6,7 @@ use crate::backend::hashes::{already_finalized_error, message_digest_from_algori
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use pyo3::PyNativeType;
 
 #[pyo3::prelude::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.hmac",
@@ -23,7 +24,7 @@ impl Hmac {
         key: &[u8],
         algorithm: &pyo3::PyAny,
     ) -> CryptographyResult<Hmac> {
-        let md = message_digest_from_algorithm(py, algorithm)?;
+        let md = message_digest_from_algorithm(py, &algorithm.as_borrowed())?;
         let ctx = cryptography_openssl::hmac::Hmac::new(key, md).map_err(|_| {
             exceptions::UnsupportedAlgorithm::new_err((
                 "Digest is not supported for HMAC",

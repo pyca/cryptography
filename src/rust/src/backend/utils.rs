@@ -6,7 +6,7 @@ use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
 use pyo3::prelude::PyAnyMethods;
-use pyo3::ToPyObject;
+use pyo3::{PyNativeType, ToPyObject};
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
@@ -362,9 +362,9 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
     } else {
         // Potential optimization: rather than allocate a PyBytes in
         // `h.finalize()`, have a way to get the `DigestBytes` directly.
-        let mut h = Hash::new(py, algorithm, None)?;
+        let mut h = Hash::new(py, &algorithm.as_borrowed(), None)?;
         h.update_bytes(data)?;
-        data = h.finalize(py)?.as_bytes();
+        data = h.finalize(py)?.into_gil_ref().as_bytes();
     }
 
     if data.len() != algorithm.getattr("digest_size")?.extract()? {
