@@ -30,8 +30,8 @@ impl RegistryKey {
             algorithm: algorithm.clone_ref(py),
             mode: mode.clone_ref(py),
             key_size,
-            algorithm_hash: algorithm.as_ref(py).hash()?,
-            mode_hash: mode.as_ref(py).hash()?,
+            algorithm_hash: algorithm.bind(py).hash()?,
+            mode_hash: mode.bind(py).hash()?,
         })
     }
 }
@@ -87,13 +87,18 @@ impl<'p> RegistryBuilder<'p> {
 
     fn add(
         &mut self,
-        algorithm: &pyo3::PyAny,
-        mode: &pyo3::PyAny,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+        mode: &pyo3::Bound<'_, pyo3::PyAny>,
         key_size: Option<u16>,
         cipher: impl Into<RegistryCipher>,
     ) -> CryptographyResult<()> {
         self.m.insert(
-            RegistryKey::new(self.py, algorithm.into(), mode.into(), key_size)?,
+            RegistryKey::new(
+                self.py,
+                algorithm.clone().unbind(),
+                mode.clone().unbind(),
+                key_size,
+            )?,
             cipher.into(),
         );
 
@@ -114,147 +119,147 @@ fn get_cipher_registry(
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegistryBuilder::new(py);
 
-        let aes = types::AES.get(py)?;
-        let aes128 = types::AES128.get(py)?;
-        let aes256 = types::AES256.get(py)?;
-        let triple_des = types::TRIPLE_DES.get(py)?;
+        let aes = types::AES.get_bound(py)?;
+        let aes128 = types::AES128.get_bound(py)?;
+        let aes256 = types::AES256.get_bound(py)?;
+        let triple_des = types::TRIPLE_DES.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        let camellia = types::CAMELLIA.get(py)?;
+        let camellia = types::CAMELLIA.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
-        let blowfish = types::BLOWFISH.get(py)?;
+        let blowfish = types::BLOWFISH.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAST"))]
-        let cast5 = types::CAST5.get(py)?;
+        let cast5 = types::CAST5.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
-        let idea = types::IDEA.get(py)?;
+        let idea = types::IDEA.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
-        let sm4 = types::SM4.get(py)?;
+        let sm4 = types::SM4.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
-        let seed = types::SEED.get(py)?;
-        let arc4 = types::ARC4.get(py)?;
+        let seed = types::SEED.get_bound(py)?;
+        let arc4 = types::ARC4.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let chacha20 = types::CHACHA20.get(py)?;
-        let rc2 = types::RC2.get(py)?;
+        let chacha20 = types::CHACHA20.get_bound(py)?;
+        let rc2 = types::RC2.get_bound(py)?;
 
-        let cbc = types::CBC.get(py)?;
+        let cbc = types::CBC.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let cfb = types::CFB.get(py)?;
+        let cfb = types::CFB.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let cfb8 = types::CFB8.get(py)?;
-        let ofb = types::OFB.get(py)?;
-        let ecb = types::ECB.get(py)?;
-        let ctr = types::CTR.get(py)?;
-        let gcm = types::GCM.get(py)?;
+        let cfb8 = types::CFB8.get_bound(py)?;
+        let ofb = types::OFB.get_bound(py)?;
+        let ecb = types::ECB.get_bound(py)?;
+        let ctr = types::CTR.get_bound(py)?;
+        let gcm = types::GCM.get_bound(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let xts = types::XTS.get(py)?;
+        let xts = types::XTS.get_bound(py)?;
 
         let none = py.None();
-        let none_type = none.as_ref(py).get_type();
+        let none_type = none.bind(py).get_type();
 
-        m.add(aes, cbc, Some(128), Cipher::aes_128_cbc())?;
-        m.add(aes, cbc, Some(192), Cipher::aes_192_cbc())?;
-        m.add(aes, cbc, Some(256), Cipher::aes_256_cbc())?;
+        m.add(&aes, &cbc, Some(128), Cipher::aes_128_cbc())?;
+        m.add(&aes, &cbc, Some(192), Cipher::aes_192_cbc())?;
+        m.add(&aes, &cbc, Some(256), Cipher::aes_256_cbc())?;
 
-        m.add(aes, ofb, Some(128), Cipher::aes_128_ofb())?;
-        m.add(aes, ofb, Some(192), Cipher::aes_192_ofb())?;
-        m.add(aes, ofb, Some(256), Cipher::aes_256_ofb())?;
+        m.add(&aes, &ofb, Some(128), Cipher::aes_128_ofb())?;
+        m.add(&aes, &ofb, Some(192), Cipher::aes_192_ofb())?;
+        m.add(&aes, &ofb, Some(256), Cipher::aes_256_ofb())?;
 
-        m.add(aes, gcm, Some(128), Cipher::aes_128_gcm())?;
-        m.add(aes, gcm, Some(192), Cipher::aes_192_gcm())?;
-        m.add(aes, gcm, Some(256), Cipher::aes_256_gcm())?;
+        m.add(&aes, &gcm, Some(128), Cipher::aes_128_gcm())?;
+        m.add(&aes, &gcm, Some(192), Cipher::aes_192_gcm())?;
+        m.add(&aes, &gcm, Some(256), Cipher::aes_256_gcm())?;
 
-        m.add(aes, ctr, Some(128), Cipher::aes_128_ctr())?;
-        m.add(aes, ctr, Some(192), Cipher::aes_192_ctr())?;
-        m.add(aes, ctr, Some(256), Cipher::aes_256_ctr())?;
+        m.add(&aes, &ctr, Some(128), Cipher::aes_128_ctr())?;
+        m.add(&aes, &ctr, Some(192), Cipher::aes_192_ctr())?;
+        m.add(&aes, &ctr, Some(256), Cipher::aes_256_ctr())?;
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         {
-            m.add(aes, cfb8, Some(128), Cipher::aes_128_cfb8())?;
-            m.add(aes, cfb8, Some(192), Cipher::aes_192_cfb8())?;
-            m.add(aes, cfb8, Some(256), Cipher::aes_256_cfb8())?;
+            m.add(&aes, &cfb8, Some(128), Cipher::aes_128_cfb8())?;
+            m.add(&aes, &cfb8, Some(192), Cipher::aes_192_cfb8())?;
+            m.add(&aes, &cfb8, Some(256), Cipher::aes_256_cfb8())?;
 
-            m.add(aes, cfb, Some(128), Cipher::aes_128_cfb128())?;
-            m.add(aes, cfb, Some(192), Cipher::aes_192_cfb128())?;
-            m.add(aes, cfb, Some(256), Cipher::aes_256_cfb128())?;
+            m.add(&aes, &cfb, Some(128), Cipher::aes_128_cfb128())?;
+            m.add(&aes, &cfb, Some(192), Cipher::aes_192_cfb128())?;
+            m.add(&aes, &cfb, Some(256), Cipher::aes_256_cfb128())?;
         }
 
-        m.add(aes, ecb, Some(128), Cipher::aes_128_ecb())?;
-        m.add(aes, ecb, Some(192), Cipher::aes_192_ecb())?;
-        m.add(aes, ecb, Some(256), Cipher::aes_256_ecb())?;
+        m.add(&aes, &ecb, Some(128), Cipher::aes_128_ecb())?;
+        m.add(&aes, &ecb, Some(192), Cipher::aes_192_ecb())?;
+        m.add(&aes, &ecb, Some(256), Cipher::aes_256_ecb())?;
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         {
-            m.add(aes, xts, Some(256), Cipher::aes_128_xts())?;
-            m.add(aes, xts, Some(512), Cipher::aes_256_xts())?;
+            m.add(&aes, &xts, Some(256), Cipher::aes_128_xts())?;
+            m.add(&aes, &xts, Some(512), Cipher::aes_256_xts())?;
         }
 
-        m.add(aes128, cbc, Some(128), Cipher::aes_128_cbc())?;
-        m.add(aes256, cbc, Some(256), Cipher::aes_256_cbc())?;
+        m.add(&aes128, &cbc, Some(128), Cipher::aes_128_cbc())?;
+        m.add(&aes256, &cbc, Some(256), Cipher::aes_256_cbc())?;
 
-        m.add(aes128, ofb, Some(128), Cipher::aes_128_ofb())?;
-        m.add(aes256, ofb, Some(256), Cipher::aes_256_ofb())?;
+        m.add(&aes128, &ofb, Some(128), Cipher::aes_128_ofb())?;
+        m.add(&aes256, &ofb, Some(256), Cipher::aes_256_ofb())?;
 
-        m.add(aes128, gcm, Some(128), Cipher::aes_128_gcm())?;
-        m.add(aes256, gcm, Some(256), Cipher::aes_256_gcm())?;
+        m.add(&aes128, &gcm, Some(128), Cipher::aes_128_gcm())?;
+        m.add(&aes256, &gcm, Some(256), Cipher::aes_256_gcm())?;
 
-        m.add(aes128, ctr, Some(128), Cipher::aes_128_ctr())?;
-        m.add(aes256, ctr, Some(256), Cipher::aes_256_ctr())?;
+        m.add(&aes128, &ctr, Some(128), Cipher::aes_128_ctr())?;
+        m.add(&aes256, &ctr, Some(256), Cipher::aes_256_ctr())?;
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         {
-            m.add(aes128, cfb8, Some(128), Cipher::aes_128_cfb8())?;
-            m.add(aes256, cfb8, Some(256), Cipher::aes_256_cfb8())?;
+            m.add(&aes128, &cfb8, Some(128), Cipher::aes_128_cfb8())?;
+            m.add(&aes256, &cfb8, Some(256), Cipher::aes_256_cfb8())?;
 
-            m.add(aes128, cfb, Some(128), Cipher::aes_128_cfb128())?;
-            m.add(aes256, cfb, Some(256), Cipher::aes_256_cfb128())?;
+            m.add(&aes128, &cfb, Some(128), Cipher::aes_128_cfb128())?;
+            m.add(&aes256, &cfb, Some(256), Cipher::aes_256_cfb128())?;
         }
 
-        m.add(aes128, ecb, Some(128), Cipher::aes_128_ecb())?;
-        m.add(aes256, ecb, Some(256), Cipher::aes_256_ecb())?;
+        m.add(&aes128, &ecb, Some(128), Cipher::aes_128_ecb())?;
+        m.add(&aes256, &ecb, Some(256), Cipher::aes_256_ecb())?;
 
-        m.add(triple_des, cbc, Some(192), Cipher::des_ede3_cbc())?;
-        m.add(triple_des, ecb, Some(192), Cipher::des_ede3_ecb())?;
+        m.add(&triple_des, &cbc, Some(192), Cipher::des_ede3_cbc())?;
+        m.add(&triple_des, &ecb, Some(192), Cipher::des_ede3_ecb())?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         {
-            m.add(triple_des, cfb8, Some(192), Cipher::des_ede3_cfb8())?;
-            m.add(triple_des, cfb, Some(192), Cipher::des_ede3_cfb64())?;
-            m.add(triple_des, ofb, Some(192), Cipher::des_ede3_ofb())?;
+            m.add(&triple_des, &cfb8, Some(192), Cipher::des_ede3_cfb8())?;
+            m.add(&triple_des, &cfb, Some(192), Cipher::des_ede3_cfb64())?;
+            m.add(&triple_des, &ofb, Some(192), Cipher::des_ede3_ofb())?;
         }
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
         {
-            m.add(camellia, cbc, Some(128), Cipher::camellia128_cbc())?;
-            m.add(camellia, cbc, Some(192), Cipher::camellia192_cbc())?;
-            m.add(camellia, cbc, Some(256), Cipher::camellia256_cbc())?;
+            m.add(&camellia, &cbc, Some(128), Cipher::camellia128_cbc())?;
+            m.add(&camellia, &cbc, Some(192), Cipher::camellia192_cbc())?;
+            m.add(&camellia, &cbc, Some(256), Cipher::camellia256_cbc())?;
 
-            m.add(camellia, ecb, Some(128), Cipher::camellia128_ecb())?;
-            m.add(camellia, ecb, Some(192), Cipher::camellia192_ecb())?;
-            m.add(camellia, ecb, Some(256), Cipher::camellia256_ecb())?;
+            m.add(&camellia, &ecb, Some(128), Cipher::camellia128_ecb())?;
+            m.add(&camellia, &ecb, Some(192), Cipher::camellia192_ecb())?;
+            m.add(&camellia, &ecb, Some(256), Cipher::camellia256_ecb())?;
 
-            m.add(camellia, ofb, Some(128), Cipher::camellia128_ofb())?;
-            m.add(camellia, ofb, Some(192), Cipher::camellia192_ofb())?;
-            m.add(camellia, ofb, Some(256), Cipher::camellia256_ofb())?;
+            m.add(&camellia, &ofb, Some(128), Cipher::camellia128_ofb())?;
+            m.add(&camellia, &ofb, Some(192), Cipher::camellia192_ofb())?;
+            m.add(&camellia, &ofb, Some(256), Cipher::camellia256_ofb())?;
 
-            m.add(camellia, cfb, Some(128), Cipher::camellia128_cfb128())?;
-            m.add(camellia, cfb, Some(192), Cipher::camellia192_cfb128())?;
-            m.add(camellia, cfb, Some(256), Cipher::camellia256_cfb128())?;
+            m.add(&camellia, &cfb, Some(128), Cipher::camellia128_cfb128())?;
+            m.add(&camellia, &cfb, Some(192), Cipher::camellia192_cfb128())?;
+            m.add(&camellia, &cfb, Some(256), Cipher::camellia256_cfb128())?;
         }
 
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
         {
-            m.add(sm4, cbc, Some(128), Cipher::sm4_cbc())?;
-            m.add(sm4, ctr, Some(128), Cipher::sm4_ctr())?;
-            m.add(sm4, cfb, Some(128), Cipher::sm4_cfb128())?;
-            m.add(sm4, ofb, Some(128), Cipher::sm4_ofb())?;
-            m.add(sm4, ecb, Some(128), Cipher::sm4_ecb())?;
+            m.add(&sm4, &cbc, Some(128), Cipher::sm4_cbc())?;
+            m.add(&sm4, &ctr, Some(128), Cipher::sm4_ctr())?;
+            m.add(&sm4, &cfb, Some(128), Cipher::sm4_cfb128())?;
+            m.add(&sm4, &ofb, Some(128), Cipher::sm4_ofb())?;
+            m.add(&sm4, &ecb, Some(128), Cipher::sm4_ecb())?;
 
             #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
             if let Ok(c) = Cipher::fetch(None, "sm4-gcm", None) {
-                m.add(sm4, gcm, Some(128), c)?;
+                m.add(&sm4, &gcm, Some(128), c)?;
             }
         }
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        m.add(chacha20, none_type, None, Cipher::chacha20())?;
+        m.add(&chacha20, none_type.as_any(), None, Cipher::chacha20())?;
 
         // Don't register legacy ciphers if they're unavailable. In theory
         // this should't be necessary but OpenSSL 3 will return an EVP_CIPHER
@@ -264,39 +269,39 @@ fn get_cipher_registry(
         {
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
             {
-                m.add(blowfish, cbc, None, Cipher::bf_cbc())?;
-                m.add(blowfish, cfb, None, Cipher::bf_cfb64())?;
-                m.add(blowfish, ofb, None, Cipher::bf_ofb())?;
-                m.add(blowfish, ecb, None, Cipher::bf_ecb())?;
+                m.add(&blowfish, &cbc, None, Cipher::bf_cbc())?;
+                m.add(&blowfish, &cfb, None, Cipher::bf_cfb64())?;
+                m.add(&blowfish, &ofb, None, Cipher::bf_ofb())?;
+                m.add(&blowfish, &ecb, None, Cipher::bf_ecb())?;
             }
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
             {
-                m.add(seed, cbc, Some(128), Cipher::seed_cbc())?;
-                m.add(seed, cfb, Some(128), Cipher::seed_cfb128())?;
-                m.add(seed, ofb, Some(128), Cipher::seed_ofb())?;
-                m.add(seed, ecb, Some(128), Cipher::seed_ecb())?;
+                m.add(&seed, &cbc, Some(128), Cipher::seed_cbc())?;
+                m.add(&seed, &cfb, Some(128), Cipher::seed_cfb128())?;
+                m.add(&seed, &ofb, Some(128), Cipher::seed_ofb())?;
+                m.add(&seed, &ecb, Some(128), Cipher::seed_ecb())?;
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAST"))]
             {
-                m.add(cast5, cbc, None, Cipher::cast5_cbc())?;
-                m.add(cast5, ecb, None, Cipher::cast5_ecb())?;
-                m.add(cast5, ofb, None, Cipher::cast5_ofb())?;
-                m.add(cast5, cfb, None, Cipher::cast5_cfb64())?;
+                m.add(&cast5, &cbc, None, Cipher::cast5_cbc())?;
+                m.add(&cast5, &ecb, None, Cipher::cast5_ecb())?;
+                m.add(&cast5, &ofb, None, Cipher::cast5_ofb())?;
+                m.add(&cast5, &cfb, None, Cipher::cast5_cfb64())?;
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
             {
-                m.add(idea, cbc, Some(128), Cipher::idea_cbc())?;
-                m.add(idea, ecb, Some(128), Cipher::idea_ecb())?;
-                m.add(idea, ofb, Some(128), Cipher::idea_ofb())?;
-                m.add(idea, cfb, Some(128), Cipher::idea_cfb64())?;
+                m.add(&idea, &cbc, Some(128), Cipher::idea_cbc())?;
+                m.add(&idea, &ecb, Some(128), Cipher::idea_ecb())?;
+                m.add(&idea, &ofb, Some(128), Cipher::idea_ofb())?;
+                m.add(&idea, &cfb, Some(128), Cipher::idea_cfb64())?;
             }
 
-            m.add(arc4, none_type, None, Cipher::rc4())?;
+            m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
 
             if let Some(rc2_cbc) = Cipher::from_nid(openssl::nid::Nid::RC2_CBC) {
-                m.add(rc2, cbc, Some(128), rc2_cbc)?;
+                m.add(&rc2, &cbc, Some(128), rc2_cbc)?;
             }
         }
 
