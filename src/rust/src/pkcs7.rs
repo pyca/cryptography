@@ -44,7 +44,7 @@ fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
     encoding: &'p pyo3::PyAny,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if py_certs.is_empty() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "certs must be a list of certs with length >= 1",
@@ -84,7 +84,7 @@ fn sign_and_serialize<'p>(
     builder: &'p pyo3::PyAny,
     encoding: &'p pyo3::PyAny,
     options: &'p pyo3::types::PyList,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
     let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
     let (data_with_header, data_without_header) =
