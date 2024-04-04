@@ -11,6 +11,7 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
+use pyo3::prelude::PyAnyMethods;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
@@ -43,8 +44,8 @@ static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::ne
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
-    encoding: &'p pyo3::PyAny,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    encoding: pyo3::Bound<'p, pyo3::PyAny>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if py_certs.is_empty() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "certs must be a list of certs with length >= 1",
@@ -82,9 +83,9 @@ fn serialize_certificates<'p>(
 fn sign_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &'p pyo3::PyAny,
-    encoding: &'p pyo3::PyAny,
+    encoding: pyo3::Bound<'p, pyo3::PyAny>,
     options: &'p pyo3::types::PyList,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
     let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
     let (data_with_header, data_without_header) =
@@ -246,7 +247,7 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(types::ENCODING_SMIME.get(py)?) {
+    if encoding.is(&types::ENCODING_SMIME.get_bound(py)?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])

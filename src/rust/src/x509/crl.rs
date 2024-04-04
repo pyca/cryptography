@@ -231,8 +231,8 @@ impl CertificateRevocationList {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &'p pyo3::PyAny,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        encoding: pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(&self.owned.borrow_dependent())?;
 
         encode_der_data(py, "X509 CRL".to_string(), result, encoding)

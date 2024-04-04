@@ -31,7 +31,7 @@ struct DHParameters {
 fn generate_parameters(
     generator: u32,
     key_size: u32,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<DHParameters> {
     let _ = backend;
 
@@ -89,7 +89,7 @@ fn pkey_from_dh<T: openssl::pkey::HasParams>(
 #[pyo3::prelude::pyfunction]
 fn from_der_parameters(
     data: &[u8],
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<DHParameters> {
     let _ = backend;
     let asn1_params = asn1::parse_single::<common::DHParams<'_>>(data)?;
@@ -109,7 +109,7 @@ fn from_der_parameters(
 #[pyo3::prelude::pyfunction]
 fn from_pem_parameters(
     data: &[u8],
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<DHParameters> {
     let _ = backend;
     let parsed = x509::find_in_pem(
@@ -156,24 +156,28 @@ impl DHPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         peer_public_key: &DHPublicKey,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
         deriver
             .set_peer(&peer_public_key.pkey)
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
-        Ok(pyo3::types::PyBytes::new_with(py, deriver.len()?, |b| {
-            let n = deriver.derive(b).unwrap();
+        Ok(pyo3::types::PyBytes::new_bound_with(
+            py,
+            deriver.len()?,
+            |b| {
+                let n = deriver.derive(b).unwrap();
 
-            let pad = b.len() - n;
-            if pad > 0 {
-                b.copy_within(0..n, pad);
-                for c in b.iter_mut().take(pad) {
-                    *c = 0;
+                let pad = b.len() - n;
+                if pad > 0 {
+                    b.copy_within(0..n, pad);
+                    for c in b.iter_mut().take(pad) {
+                        *c = 0;
+                    }
                 }
-            }
-            Ok(())
-        })?)
+                Ok(())
+            },
+        )?)
     }
 
     fn private_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DHPrivateNumbers> {
@@ -341,9 +345,9 @@ impl DHParameters {
     fn parameter_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &'p pyo3::PyAny,
+        encoding: pyo3::Bound<'p, pyo3::PyAny>,
         format: &pyo3::PyAny,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if !format.is(types::PARAMETER_FORMAT_PKCS3.get(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
@@ -412,7 +416,7 @@ impl DHPrivateNumbers {
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DHPrivateKey> {
         let _ = backend;
 
@@ -464,7 +468,7 @@ impl DHPublicNumbers {
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DHPublicKey> {
         let _ = backend;
 
@@ -522,7 +526,7 @@ impl DHParameterNumbers {
     fn parameters(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DHParameters> {
         let _ = backend;
 
