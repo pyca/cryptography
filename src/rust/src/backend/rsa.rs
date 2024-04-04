@@ -288,11 +288,8 @@ impl RsaPrivateKey {
         padding: &pyo3::Bound<'p, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyAny>> {
-        let (data, algorithm) = utils::calculate_digest_and_algorithm(
-            py,
-            data.as_bytes(),
-            algorithm.clone().into_gil_ref(),
-        )?;
+        let (data, algorithm) =
+            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.sign_init().map_err(|_| {
@@ -438,11 +435,8 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        let (data, algorithm) = utils::calculate_digest_and_algorithm(
-            py,
-            data.as_bytes(),
-            algorithm.clone().into_gil_ref(),
-        )?;
+        let (data, algorithm) =
+            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
@@ -534,8 +528,8 @@ impl RsaPublicKey {
     fn public_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::PyAny,
-        format: &pyo3::PyAny,
+        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        format: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
     }

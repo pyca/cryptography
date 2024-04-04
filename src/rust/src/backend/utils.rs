@@ -6,7 +6,7 @@ use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
 use pyo3::prelude::PyAnyMethods;
-use pyo3::{PyNativeType, ToPyObject};
+use pyo3::ToPyObject;
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
@@ -240,19 +240,19 @@ pub(crate) fn pkey_public_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Public>,
-    encoding: &pyo3::PyAny,
-    format: &pyo3::PyAny,
+    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    format: &pyo3::Bound<'p, pyo3::PyAny>,
     openssh_allowed: bool,
     raw_allowed: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    if !encoding.is_instance(types::ENCODING.get(py)?)? {
+    if !encoding.is_instance(&types::ENCODING.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "encoding must be an item from the Encoding enum",
             ),
         ));
     }
-    if !format.is_instance(types::PUBLIC_FORMAT.get(py)?)? {
+    if !format.is_instance(&types::PUBLIC_FORMAT.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "format must be an item from the PublicFormat enum",
@@ -355,10 +355,11 @@ pub(crate) fn pkey_public_bytes<'p>(
 pub(crate) fn calculate_digest_and_algorithm<'p>(
     py: pyo3::Python<'p>,
     mut data: &'p [u8],
-    mut algorithm: &'p pyo3::PyAny,
-) -> CryptographyResult<(&'p [u8], &'p pyo3::PyAny)> {
-    if algorithm.is_instance(types::PREHASHED.get(py)?)? {
-        algorithm = algorithm.getattr("_algorithm")?;
+    algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+) -> CryptographyResult<(&'p [u8], pyo3::Bound<'p, pyo3::PyAny>)> {
+    let mut algorithm_result = algorithm.clone();
+    if algorithm.is_instance(&types::PREHASHED.get_bound(py)?)? {
+        algorithm_result = algorithm.getattr("_algorithm")?;
     } else {
         // Potential optimization: rather than allocate a PyBytes in
         // `h.finalize()`, have a way to get the `DigestBytes` directly.
@@ -375,7 +376,7 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
         ));
     }
 
-    Ok((data, algorithm))
+    Ok((data, algorithm_result))
 }
 
 pub(crate) enum PasswordCallbackStatus {
