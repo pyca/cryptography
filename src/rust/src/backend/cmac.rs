@@ -7,7 +7,7 @@ use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::prelude::PyAnyMethods;
+use pyo3::prelude::{PyAnyMethods, PyBytesMethods, PyModuleMethods};
 
 #[pyo3::prelude::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.cmac",
@@ -74,14 +74,15 @@ impl Cmac {
     fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
-        Ok(pyo3::types::PyBytes::new(py, &data))
+        Ok(pyo3::types::PyBytes::new_bound(py, &data))
     }
 
     fn verify(&mut self, py: pyo3::Python<'_>, signature: &[u8]) -> CryptographyResult<()> {
-        let actual = self.finalize(py)?.as_bytes();
+        let actual = self.finalize(py)?;
+        let actual = actual.as_bytes();
         if actual.len() != signature.len() || !openssl::memcmp::eq(actual, signature) {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err("Signature did not match digest."),
@@ -98,8 +99,10 @@ impl Cmac {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "cmac")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "cmac")?;
 
     m.add_class::<Cmac>()?;
 
