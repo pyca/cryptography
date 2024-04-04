@@ -46,27 +46,27 @@ pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Private>,
-    encoding: &pyo3::PyAny,
-    format: &pyo3::PyAny,
-    encryption_algorithm: &pyo3::PyAny,
+    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    format: &pyo3::Bound<'p, pyo3::PyAny>,
+    encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     openssh_allowed: bool,
     raw_allowed: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    if !encoding.is_instance(types::ENCODING.get(py)?)? {
+    if !encoding.is_instance(&types::ENCODING.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "encoding must be an item from the Encoding enum",
             ),
         ));
     }
-    if !format.is_instance(types::PRIVATE_FORMAT.get(py)?)? {
+    if !format.is_instance(&types::PRIVATE_FORMAT.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "format must be an item from the PrivateFormat enum",
             ),
         ));
     }
-    if !encryption_algorithm.is_instance(types::KEY_SERIALIZATION_ENCRYPTION.get(py)?)? {
+    if !encryption_algorithm.is_instance(&types::KEY_SERIALIZATION_ENCRYPTION.get_bound(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Encryption algorithm must be a KeySerializationEncryption instance",
@@ -80,7 +80,7 @@ pub(crate) fn pkey_private_bytes<'p>(
     {
         if !encoding.is(types::ENCODING_RAW.get(py)?)
             || !format.is(types::PRIVATE_FORMAT_RAW.get(py)?)
-            || !encryption_algorithm.is_instance(types::NO_ENCRYPTION.get(py)?)?
+            || !encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get_bound(py)?)?
         {
             return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                     "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()"
@@ -90,10 +90,10 @@ pub(crate) fn pkey_private_bytes<'p>(
         return Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes));
     }
 
-    let password = if encryption_algorithm.is_instance(types::NO_ENCRYPTION.get(py)?)? {
+    let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get_bound(py)?)? {
         b""
-    } else if encryption_algorithm.is_instance(types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?
-        || (encryption_algorithm.is_instance(types::ENCRYPTION_BUILDER.get(py)?)?
+    } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get_bound(py)?)?
+        || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get_bound(py)?)?
             && encryption_algorithm
                 .getattr(pyo3::intern!(py, "_format"))?
                 .is(format))
@@ -144,7 +144,7 @@ pub(crate) fn pkey_private_bytes<'p>(
 
     if format.is(types::PRIVATE_FORMAT_TRADITIONAL_OPENSSL.get(py)?) {
         if let Ok(rsa) = pkey.rsa() {
-            if encoding.is(types::ENCODING_PEM.get(py)?) {
+            if encoding.is(&types::ENCODING_PEM.get_bound(py)?) {
                 let pem_bytes = if password.is_empty() {
                     rsa.private_key_to_pem()?
                 } else {
@@ -154,7 +154,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                     )?
                 };
                 return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
-            } else if encoding.is(types::ENCODING_DER.get(py)?) {
+            } else if encoding.is(&types::ENCODING_DER.get_bound(py)?) {
                 if !password.is_empty() {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
@@ -167,7 +167,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
             }
         } else if let Ok(dsa) = pkey.dsa() {
-            if encoding.is(types::ENCODING_PEM.get(py)?) {
+            if encoding.is(&types::ENCODING_PEM.get_bound(py)?) {
                 let pem_bytes = if password.is_empty() {
                     dsa.private_key_to_pem()?
                 } else {
@@ -177,7 +177,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                     )?
                 };
                 return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
-            } else if encoding.is(types::ENCODING_DER.get(py)?) {
+            } else if encoding.is(&types::ENCODING_DER.get_bound(py)?) {
                 if !password.is_empty() {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(

@@ -147,10 +147,10 @@ fn setup_encryption_ctx(
 
         if let Some(label) = padding
             .getattr(pyo3::intern!(py, "_label"))?
-            .extract::<Option<&[u8]>>()?
+            .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?
         {
             if !label.is_empty() {
-                ctx.set_rsa_oaep_label(label)?;
+                ctx.set_rsa_oaep_label(&label)?;
             }
         }
     }
@@ -411,9 +411,9 @@ impl RsaPrivateKey {
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::PyAny,
-        format: &pyo3::PyAny,
-        encryption_algorithm: &pyo3::PyAny,
+        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        format: &pyo3::Bound<'p, pyo3::PyAny>,
+        encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         utils::pkey_private_bytes(
             py,
