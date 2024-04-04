@@ -10,6 +10,7 @@ use cryptography_x509::{
     ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
     oid,
 };
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
@@ -721,9 +722,17 @@ fn create_ocsp_response(
     load_der_ocsp_response(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction!(load_der_ocsp_response, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction!(create_ocsp_response, module)?)?;
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
+    module.add_function(pyo3::wrap_pyfunction_bound!(
+        load_der_ocsp_response,
+        module.py()
+    )?)?;
+    module.add_function(pyo3::wrap_pyfunction_bound!(
+        create_ocsp_response,
+        module.py()
+    )?)?;
 
     Ok(())
 }

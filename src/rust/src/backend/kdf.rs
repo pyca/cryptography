@@ -6,6 +6,8 @@ use crate::backend::hashes;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
 
+use pyo3::prelude::PyModuleMethods;
+
 #[pyo3::prelude::pyfunction]
 fn derive_pbkdf2_hmac<'p>(
     py: pyo3::Python<'p>,
@@ -48,12 +50,14 @@ fn derive_scrypt<'p>(
     })?)
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "kdf")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "kdf")?;
 
-    m.add_function(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(derive_pbkdf2_hmac, &m)?)?;
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
-    m.add_function(pyo3::wrap_pyfunction!(derive_scrypt, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(derive_scrypt, &m)?)?;
 
     Ok(m)
 }

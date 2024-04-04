@@ -17,7 +17,7 @@ use cryptography_x509::extensions::{
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
-use pyo3::prelude::{PyAnyMethods, PyListMethods};
+use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 use pyo3::{IntoPy, PyNativeType, ToPyObject};
 
 use crate::asn1::{
@@ -999,7 +999,9 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     }
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction!(load_der_x509_certificate, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_certificate, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_certificates, module)?)?;

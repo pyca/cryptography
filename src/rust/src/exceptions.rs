@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::prelude::PyModuleMethods;
+
 #[pyo3::prelude::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.exceptions",
@@ -35,8 +37,10 @@ pyo3::import_exception!(cryptography.x509, DuplicateExtension);
 pyo3::import_exception!(cryptography.x509, UnsupportedGeneralNameType);
 pyo3::import_exception!(cryptography.x509, InvalidVersion);
 
-pub(crate) fn create_submodule(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let submod = pyo3::prelude::PyModule::new(py, "exceptions")?;
+pub(crate) fn create_submodule(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let submod = pyo3::prelude::PyModule::new_bound(py, "exceptions")?;
 
     submod.add_class::<Reasons>()?;
 

@@ -8,6 +8,8 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use pyo3::PyNativeType;
 
+use pyo3::prelude::PyModuleMethods;
+
 #[pyo3::prelude::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.hmac",
     name = "HMAC"
@@ -105,8 +107,10 @@ impl Hmac {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "hmac")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "hmac")?;
     m.add_class::<Hmac>()?;
 
     Ok(m)

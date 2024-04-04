@@ -7,7 +7,7 @@ use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
-use pyo3::prelude::PyAnyMethods;
+use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
 use pyo3::types::IntoPyDict;
 use pyo3::{IntoPy, PyNativeType, ToPyObject};
 
@@ -551,7 +551,9 @@ pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTim
     )
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction!(encode_extension_value, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(encode_name_bytes, module)?)?;
 

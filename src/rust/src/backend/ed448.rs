@@ -7,6 +7,8 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
+use pyo3::prelude::PyModuleMethods;
+
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
 pub(crate) struct Ed448PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
@@ -155,11 +157,13 @@ impl Ed448PublicKey {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "ed448")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "ed448")?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
 
     m.add_class::<Ed448PrivateKey>()?;
     m.add_class::<Ed448PublicKey>()?;

@@ -8,6 +8,7 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
@@ -216,13 +217,15 @@ fn public_key_from_pkey(
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "keys")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "keys")?;
 
-    m.add_function(pyo3::wrap_pyfunction!(load_pem_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_der_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_pem_public_key, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_public_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_public_key, &m)?)?;
 
     Ok(m)
 }

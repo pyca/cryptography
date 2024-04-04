@@ -8,6 +8,7 @@ use std::hash::{Hash, Hasher};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
@@ -361,7 +362,9 @@ fn create_x509_csr(
     load_der_x509_csr(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction!(load_der_x509_csr, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_csr, module)?)?;
     module.add_function(pyo3::wrap_pyfunction!(create_x509_csr, module)?)?;

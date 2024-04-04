@@ -8,7 +8,7 @@ use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
-use pyo3::prelude::PyAnyMethods;
+use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
@@ -546,11 +546,13 @@ impl DHParameterNumbers {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "dh")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_der_parameters, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_pem_parameters, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "dh")?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_parameters, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_der_parameters, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_pem_parameters, &m)?)?;
 
     m.add_class::<DHPrivateKey>()?;
     m.add_class::<DHPublicKey>()?;
