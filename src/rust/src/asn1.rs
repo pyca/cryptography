@@ -26,8 +26,8 @@ pub(crate) fn py_oid_to_oid(
 pub(crate) fn oid_to_py_oid<'p>(
     py: pyo3::Python<'p>,
     oid: &asn1::ObjectIdentifier,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    Ok(pyo3::Py::new(py, crate::oid::ObjectIdentifier { oid: oid.clone() })?.into_ref(py))
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    Ok(pyo3::Bound::new(py, crate::oid::ObjectIdentifier { oid: oid.clone() })?.into_any())
 }
 
 #[pyo3::prelude::pyfunction]

@@ -184,7 +184,10 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn signature_algorithm_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         oid_to_py_oid(py, self.owned.borrow_dependent().signature_algorithm.oid())
     }
 
