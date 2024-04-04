@@ -295,15 +295,10 @@ fn check_dsa_private_numbers(
         ));
     }
 
-    if numbers
-        .public_numbers
-        .get()
-        .y
-        .as_ref(py)
-        .ne(params.g.as_ref(py).call_method1(
-            pyo3::intern!(py, "__pow__"),
-            (numbers.x.as_ref(py), params.p.as_ref(py)),
-        )?)?
+    if numbers.public_numbers.get().y.as_ref(py).ne(params
+        .g
+        .bind(py)
+        .pow(numbers.x.as_ref(py), Some(params.p.as_ref(py)))?)?
     {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("y must be equal to (g ** x % p)."),
