@@ -521,7 +521,10 @@ struct RevokedCertificate {
 #[pyo3::prelude::pymethods]
 impl RevokedCertificate {
     #[getter]
-    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn serial_number<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         big_byte_slice_to_py_int(
             py,
             self.owned.borrow_dependent().user_certificate.as_bytes(),

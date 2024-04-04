@@ -31,25 +31,28 @@ pub(crate) fn oid_to_py_oid<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
-fn parse_spki_for_data(
-    py: pyo3::Python<'_>,
+fn parse_spki_for_data<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> Result<pyo3::Bound<'p, pyo3::types::PyBytes>, CryptographyError> {
     let spki = asn1::parse_single::<SubjectPublicKeyInfo<'_>>(data)?;
     if spki.subject_public_key.padding_bits() != 0 {
         return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
     }
 
-    Ok(pyo3::types::PyBytes::new(py, spki.subject_public_key.as_bytes()).to_object(py))
+    Ok(pyo3::types::PyBytes::new_bound(
+        py,
+        spki.subject_public_key.as_bytes(),
+    ))
 }
 
 pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
     v: &'_ [u8],
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let int_type = py.get_type::<pyo3::types::PyLong>();
-    let kwargs = [("signed", true)].into_py_dict(py);
-    int_type.call_method(pyo3::intern!(py, "from_bytes"), (v, "big"), Some(kwargs))
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let int_type = py.get_type_bound::<pyo3::types::PyLong>();
+    let kwargs = [("signed", true)].into_py_dict_bound(py);
+    int_type.call_method(pyo3::intern!(py, "from_bytes"), (v, "big"), Some(&kwargs))
 }
 
 #[pyo3::prelude::pyfunction]

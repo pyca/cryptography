@@ -256,7 +256,10 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn serial_number<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_serial_number(&single_resp, py)
@@ -461,7 +464,7 @@ fn single_response<'a>(
 fn singleresp_py_serial_number<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     big_byte_slice_to_py_int(py, resp.cert_id.serial_number.as_bytes())
 }
 
@@ -781,7 +784,10 @@ impl OCSPSingleResponse {
 #[pyo3::prelude::pymethods]
 impl OCSPSingleResponse {
     #[getter]
-    fn serial_number<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn serial_number<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         singleresp_py_serial_number(self.single_response(), py)
     }
 
