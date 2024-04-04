@@ -129,7 +129,7 @@ impl DsaPrivateKey {
     }
 
     fn private_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -202,7 +202,7 @@ impl DsaPublicKey {
     }
 
     fn public_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -371,11 +371,11 @@ impl DsaPrivateNumbers {
         check_dsa_private_numbers(py, self)?;
 
         let dsa = openssl::dsa::Dsa::from_private_components(
-            utils::py_int_to_bn(py, parameter_numbers.p.as_ref(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.q.as_ref(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.g.as_ref(py))?,
-            utils::py_int_to_bn(py, self.x.as_ref(py))?,
-            utils::py_int_to_bn(py, public_numbers.y.as_ref(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.p.bind(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.q.bind(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.g.bind(py))?,
+            utils::py_int_to_bn(py, self.x.bind(py))?,
+            utils::py_int_to_bn(py, public_numbers.y.bind(py))?,
         )
         .unwrap();
         let pkey = openssl::pkey::PKey::from_dsa(dsa)?;
@@ -420,10 +420,10 @@ impl DsaPublicNumbers {
         check_dsa_parameters(py, parameter_numbers)?;
 
         let dsa = openssl::dsa::Dsa::from_public_components(
-            utils::py_int_to_bn(py, parameter_numbers.p.as_ref(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.q.as_ref(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.g.as_ref(py))?,
-            utils::py_int_to_bn(py, self.y.as_ref(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.p.bind(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.q.bind(py))?,
+            utils::py_int_to_bn(py, parameter_numbers.g.bind(py))?,
+            utils::py_int_to_bn(py, self.y.bind(py))?,
         )
         .unwrap();
         let pkey = openssl::pkey::PKey::from_dsa(dsa)?;
@@ -472,9 +472,9 @@ impl DsaParameterNumbers {
         check_dsa_parameters(py, self)?;
 
         let dsa = openssl::dsa::Dsa::from_pqg(
-            utils::py_int_to_bn(py, self.p.as_ref(py))?,
-            utils::py_int_to_bn(py, self.q.as_ref(py))?,
-            utils::py_int_to_bn(py, self.g.as_ref(py))?,
+            utils::py_int_to_bn(py, self.p.bind(py))?,
+            utils::py_int_to_bn(py, self.q.bind(py))?,
+            utils::py_int_to_bn(py, self.g.bind(py))?,
         )
         .unwrap();
         Ok(DsaParameters { dsa })

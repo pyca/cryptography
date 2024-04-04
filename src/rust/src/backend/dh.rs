@@ -125,13 +125,13 @@ fn dh_parameters_from_numbers(
     py: pyo3::Python<'_>,
     numbers: &DHParameterNumbers,
 ) -> CryptographyResult<openssl::dh::Dh<openssl::pkey::Params>> {
-    let p = utils::py_int_to_bn(py, numbers.p.as_ref(py))?;
+    let p = utils::py_int_to_bn(py, numbers.p.bind(py))?;
     let q = numbers
         .q
         .as_ref()
-        .map(|v| utils::py_int_to_bn(py, v.as_ref(py)))
+        .map(|v| utils::py_int_to_bn(py, v.bind(py)))
         .transpose()?;
-    let g = utils::py_int_to_bn(py, numbers.g.as_ref(py))?;
+    let g = utils::py_int_to_bn(py, numbers.g.bind(py))?;
 
     Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
 }
@@ -222,7 +222,7 @@ impl DHPrivateKey {
     }
 
     fn private_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -257,7 +257,7 @@ impl DHPublicKey {
     }
 
     fn public_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -418,8 +418,8 @@ impl DHPrivateNumbers {
 
         let dh = dh_parameters_from_numbers(py, self.public_numbers.get().parameter_numbers.get())?;
 
-        let pub_key = utils::py_int_to_bn(py, self.public_numbers.get().y.as_ref(py))?;
-        let priv_key = utils::py_int_to_bn(py, self.x.as_ref(py))?;
+        let pub_key = utils::py_int_to_bn(py, self.public_numbers.get().y.bind(py))?;
+        let priv_key = utils::py_int_to_bn(py, self.x.bind(py))?;
 
         let dh = dh.set_key(pub_key, priv_key)?;
         if !dh.check_key()? {
@@ -470,7 +470,7 @@ impl DHPublicNumbers {
 
         let dh = dh_parameters_from_numbers(py, self.parameter_numbers.get())?;
 
-        let pub_key = utils::py_int_to_bn(py, self.y.as_ref(py))?;
+        let pub_key = utils::py_int_to_bn(py, self.y.bind(py))?;
 
         let pkey = pkey_from_dh(dh.set_public_key(pub_key)?)?;
 

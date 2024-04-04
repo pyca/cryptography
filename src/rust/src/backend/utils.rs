@@ -10,7 +10,7 @@ use pyo3::ToPyObject;
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
-    v: &pyo3::PyAny,
+    v: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<openssl::bn::BigNum> {
     let n = v
         .call_method0(pyo3::intern!(py, "bit_length"))?
@@ -44,7 +44,7 @@ pub(crate) fn bn_to_big_endian_bytes(b: &openssl::bn::BigNumRef) -> Cryptography
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
-    key_obj: &pyo3::PyAny,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Private>,
     encoding: &pyo3::PyAny,
     format: &pyo3::PyAny,
@@ -238,7 +238,7 @@ pub(crate) fn pkey_private_bytes<'p>(
 
 pub(crate) fn pkey_public_bytes<'p>(
     py: pyo3::Python<'p>,
-    key_obj: &pyo3::PyAny,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Public>,
     encoding: &pyo3::PyAny,
     format: &pyo3::PyAny,

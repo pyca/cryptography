@@ -175,7 +175,7 @@ fn generate_private_key(
 #[pyo3::prelude::pyfunction]
 fn derive_private_key(
     py: pyo3::Python<'_>,
-    py_private_value: &pyo3::types::PyLong,
+    py_private_value: &pyo3::Bound<'_, pyo3::types::PyLong>,
     py_curve: &pyo3::PyAny,
 ) -> CryptographyResult<ECPrivateKey> {
     let curve = curve_from_py_curve(py, py_curve, false)?;
@@ -353,7 +353,7 @@ impl ECPrivateKey {
     }
 
     fn private_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -435,7 +435,7 @@ impl ECPublicKey {
     }
 
     fn public_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -484,8 +484,8 @@ fn public_key_from_numbers(
         ));
     }
 
-    let x = utils::py_int_to_bn(py, numbers.x.as_ref(py))?;
-    let y = utils::py_int_to_bn(py, numbers.y.as_ref(py))?;
+    let x = utils::py_int_to_bn(py, numbers.x.bind(py))?;
+    let y = utils::py_int_to_bn(py, numbers.y.bind(py))?;
 
     let mut point = openssl::ec::EcPoint::new(curve)?;
     let mut bn_ctx = openssl::bn::BigNumContext::new()?;
@@ -522,7 +522,7 @@ impl EllipticCurvePrivateNumbers {
 
         let curve = curve_from_py_curve(py, self.public_numbers.get().curve.as_ref(py), false)?;
         let public_key = public_key_from_numbers(py, self.public_numbers.get(), &curve)?;
-        let private_value = utils::py_int_to_bn(py, self.private_value.as_ref(py))?;
+        let private_value = utils::py_int_to_bn(py, self.private_value.bind(py))?;
 
         let mut bn_ctx = openssl::bn::BigNumContext::new()?;
         let mut expected_pub = openssl::ec::EcPoint::new(&curve)?;

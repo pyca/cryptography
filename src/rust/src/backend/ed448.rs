@@ -95,7 +95,7 @@ impl Ed448PrivateKey {
     }
 
     fn private_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
@@ -138,7 +138,7 @@ impl Ed448PublicKey {
     }
 
     fn public_bytes<'p>(
-        slf: &pyo3::PyCell<Self>,
+        slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: &pyo3::PyAny,
         format: &pyo3::PyAny,
