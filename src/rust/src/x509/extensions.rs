@@ -107,7 +107,8 @@ pub(crate) fn encode_distribution_points<'p>(
             None
         };
         let reasons = if let Some(py_reasons) = py_dp.reasons {
-            let reasons = certificate::encode_distribution_point_reasons(py, py_reasons)?;
+            let reasons =
+                certificate::encode_distribution_point_reasons(py, &py_reasons.as_borrowed())?;
             Some(common::Asn1ReadableOrWritable::new_write(reasons))
         } else {
             None
@@ -308,7 +309,8 @@ fn encode_issuing_distribution_point(
         .is_truthy()?
     {
         let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
-        let reasons = certificate::encode_distribution_point_reasons(ext.py(), py_reasons)?;
+        let reasons =
+            certificate::encode_distribution_point_reasons(ext.py(), &py_reasons.as_borrowed())?;
         Some(common::Asn1ReadableOrWritable::new_write(reasons))
     } else {
         None
