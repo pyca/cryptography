@@ -339,9 +339,9 @@ impl CertificateRevocationList {
                         types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
                     ))
                 }
-                oid::AUTHORITY_KEY_IDENTIFIER_OID => {
-                    Ok(Some(certificate::parse_authority_key_identifier(py, ext)?))
-                }
+                oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(
+                    certificate::parse_authority_key_identifier(py, ext)?.into_gil_ref(),
+                )),
                 oid::ISSUING_DISTRIBUTION_POINT_OID => {
                     let idp = ext.value::<crl::IssuingDistributionPoint<'_>>()?;
                     let (full_name, relative_name) = match idp.distribution_point {
@@ -638,7 +638,10 @@ fn create_x509_crl(
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),
-            revocation_date: x509::certificate::time_from_py(py, py_revocation_date)?,
+            revocation_date: x509::certificate::time_from_py(
+                py,
+                &py_revocation_date.as_borrowed(),
+            )?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
@@ -654,8 +657,11 @@ fn create_x509_crl(
         version: Some(1),
         signature: sigalg.clone(),
         issuer: x509::common::encode_name(py, py_issuer_name)?,
-        this_update: x509::certificate::time_from_py(py, py_this_update)?,
-        next_update: Some(x509::certificate::time_from_py(py, py_next_update)?),
+        this_update: x509::certificate::time_from_py(py, &py_this_update.as_borrowed())?,
+        next_update: Some(x509::certificate::time_from_py(
+            py,
+            &py_next_update.as_borrowed(),
+        )?),
         revoked_certificates: if revoked_certs.is_empty() {
             None
         } else {
