@@ -159,7 +159,7 @@ pub(crate) fn public_key_from_pkey(
 fn generate_private_key(
     py: pyo3::Python<'_>,
     curve: &pyo3::PyAny,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<ECPrivateKey> {
     let _ = backend;
 
@@ -516,7 +516,7 @@ impl EllipticCurvePrivateNumbers {
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<ECPrivateKey> {
         let _ = backend;
 
@@ -597,7 +597,7 @@ impl EllipticCurvePublicNumbers {
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<ECPublicKey> {
         let _ = backend;
 

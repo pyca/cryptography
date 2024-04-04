@@ -27,7 +27,7 @@ use crate::{exceptions, types, x509};
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
     let _ = backend;
 
@@ -56,7 +56,7 @@ fn load_der_x509_crl(
 fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> Result<CertificateRevocationList, CryptographyError> {
     let _ = backend;
 

@@ -65,7 +65,7 @@ impl Hmac {
         py: pyo3::Python<'_>,
         key: CffiBuf<'_>,
         algorithm: &pyo3::PyAny,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Hmac> {
         let _ = backend;
 

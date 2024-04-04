@@ -361,7 +361,7 @@ impl DsaPrivateNumbers {
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DsaPrivateKey> {
         let _ = backend;
 
@@ -411,7 +411,7 @@ impl DsaPublicNumbers {
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DsaPublicKey> {
         let _ = backend;
 
@@ -465,7 +465,7 @@ impl DsaParameterNumbers {
     fn parameters(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<DsaParameters> {
         let _ = backend;
 

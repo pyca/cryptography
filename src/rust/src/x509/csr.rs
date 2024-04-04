@@ -235,7 +235,7 @@ impl CertificateSigningRequest {
 fn load_pem_x509_csr(
     py: pyo3::Python<'_>,
     data: &[u8],
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<CertificateSigningRequest> {
     let _ = backend;
 
@@ -257,7 +257,7 @@ fn load_pem_x509_csr(
 fn load_der_x509_csr(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<CertificateSigningRequest> {
     let _ = backend;
 
