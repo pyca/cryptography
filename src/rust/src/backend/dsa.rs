@@ -7,7 +7,7 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use pyo3::prelude::PyAnyMethods;
-use pyo3::PyNativeType;
+use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyclass(
     frozen,
@@ -70,8 +70,8 @@ impl DsaPrivateKey {
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
-        algorithm: &pyo3::PyAny,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let (data, _) =
             utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm.as_borrowed())?;
 
@@ -79,7 +79,7 @@ impl DsaPrivateKey {
         signer.sign_init()?;
         let mut sig = vec![];
         signer.sign_to_vec(data, &mut sig)?;
-        Ok(pyo3::types::PyBytes::new(py, &sig))
+        Ok(pyo3::types::PyBytes::new_bound(py, &sig))
     }
 
     #[getter]
@@ -157,7 +157,7 @@ impl DsaPublicKey {
         py: pyo3::Python<'_>,
         signature: CffiBuf<'_>,
         data: CffiBuf<'_>,
-        algorithm: &pyo3::PyAny,
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
         let (data, _) =
             utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm.as_borrowed())?;
@@ -250,7 +250,7 @@ fn check_dsa_parameters(
     if ![1024, 2048, 3072, 4096].contains(
         &parameters
             .p
-            .as_ref(py)
+            .bind(py)
             .call_method0("bit_length")?
             .extract::<usize>()?,
     ) {
@@ -264,7 +264,7 @@ fn check_dsa_parameters(
     if ![160, 224, 256].contains(
         &parameters
             .q
-            .as_ref(py)
+            .bind(py)
             .call_method0("bit_length")?
             .extract::<usize>()?,
     ) {
@@ -273,7 +273,7 @@ fn check_dsa_parameters(
         ));
     }
 
-    if parameters.g.as_ref(py).le(1)? || parameters.g.as_ref(py).ge(parameters.p.as_ref(py))? {
+    if parameters.g.bind(py).le(1)? || parameters.g.bind(py).ge(parameters.p.bind(py))? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("g, p don't satisfy 1 < g < p."),
         ));
@@ -289,16 +289,16 @@ fn check_dsa_private_numbers(
     let params = numbers.public_numbers.get().parameter_numbers.get();
     check_dsa_parameters(py, params)?;
 
-    if numbers.x.as_ref(py).le(0)? || numbers.x.as_ref(py).ge(params.q.as_ref(py))? {
+    if numbers.x.bind(py).le(0)? || numbers.x.bind(py).ge(params.q.bind(py))? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("x must be > 0 and < q."),
         ));
     }
 
-    if numbers.public_numbers.get().y.as_ref(py).ne(params
+    if numbers.public_numbers.get().y.bind(py).ne(params
         .g
         .bind(py)
-        .pow(numbers.x.as_ref(py), Some(params.p.as_ref(py)))?)?
+        .pow(numbers.x.bind(py), Some(params.p.bind(py)))?)?
     {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("y must be equal to (g ** x % p)."),
@@ -385,11 +385,11 @@ impl DsaPrivateNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.x.as_ref(py).eq(other.x.as_ref(py))?
+        Ok(self.x.bind(py).eq(other.x.bind(py))?
             && self
                 .public_numbers
-                .as_ref(py)
-                .eq(other.public_numbers.as_ref(py))?)
+                .bind(py)
+                .eq(other.public_numbers.bind(py))?)
     }
 }
 
@@ -433,16 +433,16 @@ impl DsaPublicNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.y.as_ref(py).eq(other.y.as_ref(py))?
+        Ok(self.y.bind(py).eq(other.y.bind(py))?
             && self
                 .parameter_numbers
-                .as_ref(py)
-                .eq(other.parameter_numbers.as_ref(py))?)
+                .bind(py)
+                .eq(other.parameter_numbers.bind(py))?)
     }
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        let y = self.y.as_ref(py);
-        let parameter_numbers = self.parameter_numbers.as_ref(py).repr()?;
+        let y = self.y.bind(py);
+        let parameter_numbers = self.parameter_numbers.bind(py).repr()?;
         Ok(format!(
             "<DSAPublicNumbers(y={y}, parameter_numbers={parameter_numbers})>"
         ))
@@ -483,22 +483,24 @@ impl DsaParameterNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.p.as_ref(py).eq(other.p.as_ref(py))?
-            && self.q.as_ref(py).eq(other.q.as_ref(py))?
-            && self.g.as_ref(py).eq(other.g.as_ref(py))?)
+        Ok(self.p.bind(py).eq(other.p.bind(py))?
+            && self.q.bind(py).eq(other.q.bind(py))?
+            && self.g.bind(py).eq(other.g.bind(py))?)
     }
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        let p = self.p.as_ref(py);
-        let q = self.q.as_ref(py);
-        let g = self.g.as_ref(py);
+        let p = self.p.bind(py);
+        let q = self.q.bind(py);
+        let g = self.g.bind(py);
         Ok(format!("<DSAParameterNumbers(p={p}, q={q}, g={g})>"))
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "dsa")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_parameters, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "dsa")?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_parameters, &m)?)?;
 
     m.add_class::<DsaPrivateKey>()?;
     m.add_class::<DsaPublicKey>()?;
