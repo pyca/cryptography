@@ -5,6 +5,7 @@
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
+use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -21,7 +22,7 @@ fn check_length(data: &[u8]) -> CryptographyResult<()> {
 
 enum Aad<'a> {
     Single(CffiBuf<'a>),
-    List(&'a pyo3::types::PyList),
+    List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
 struct EvpCipherAead {
@@ -131,7 +132,7 @@ impl EvpCipherAead {
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_encryption_ctx)?;
         Self::encrypt_with_context(
@@ -156,7 +157,7 @@ impl EvpCipherAead {
         tag_len: usize,
         tag_first: bool,
         is_ccm: bool,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         check_length(plaintext)?;
 
         if !is_ccm {
@@ -171,7 +172,7 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_with(
+        Ok(pyo3::types::PyBytes::new_bound_with(
             py,
             plaintext.len() + tag_len,
             |b| {
@@ -198,7 +199,7 @@ impl EvpCipherAead {
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_decryption_ctx)?;
         Self::decrypt_with_context(
@@ -223,7 +224,7 @@ impl EvpCipherAead {
         tag_len: usize,
         tag_first: bool,
         is_ccm: bool,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if ciphertext.len() < tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
@@ -253,7 +254,7 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_with(
+        Ok(pyo3::types::PyBytes::new_bound_with(
             py,
             ciphertext_data.len(),
             |b| {
@@ -299,8 +300,8 @@ impl LazyEvpCipherAead {
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
 
         let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if self.is_ccm {
@@ -330,8 +331,8 @@ impl LazyEvpCipherAead {
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        let key_buf = self.key.as_ref(py).extract::<CffiBuf<'_>>()?;
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
 
         let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if self.is_ccm {
@@ -388,7 +389,7 @@ impl EvpAead {
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         check_length(plaintext)?;
 
         let ad = if let Some(Aad::Single(ad)) = &aad {
@@ -398,7 +399,7 @@ impl EvpAead {
             assert!(aad.is_none());
             b""
         };
-        Ok(pyo3::types::PyBytes::new_with(
+        Ok(pyo3::types::PyBytes::new_bound_with(
             py,
             plaintext.len() + self.tag_len,
             |b| {
@@ -416,7 +417,7 @@ impl EvpAead {
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if ciphertext.len() < self.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
@@ -429,7 +430,7 @@ impl EvpAead {
             b""
         };
 
-        Ok(pyo3::types::PyBytes::new_with(
+        Ok(pyo3::types::PyBytes::new_bound_with(
             py,
             ciphertext.len() - self.tag_len,
             |b| {
@@ -541,7 +542,7 @@ impl ChaCha20Poly1305 {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -561,7 +562,7 @@ impl ChaCha20Poly1305 {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -653,7 +654,7 @@ impl AesGcm {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -673,7 +674,7 @@ impl AesGcm {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -761,7 +762,7 @@ impl AesCcm {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
@@ -794,7 +795,7 @@ impl AesCcm {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
@@ -890,8 +891,8 @@ impl AesSiv {
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
-        associated_data: Option<&pyo3::types::PyList>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        associated_data: Option<pyo3::Bound<'p, pyo3::types::PyList>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::List);
 
@@ -908,8 +909,8 @@ impl AesSiv {
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
-        associated_data: Option<&pyo3::types::PyList>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+        associated_data: Option<pyo3::Bound<'_, pyo3::types::PyList>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let aad = associated_data.map(Aad::List);
         self.ctx.decrypt(py, data.as_bytes(), aad, None)
     }
@@ -986,7 +987,7 @@ impl AesOcb3 {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -1007,7 +1008,7 @@ impl AesOcb3 {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
@@ -1092,7 +1093,7 @@ impl AesGcmSiv {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
@@ -1117,7 +1118,7 @@ impl AesGcmSiv {
         nonce: CffiBuf<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
         let aad = associated_data.map(Aad::Single);
         if nonce_bytes.len() != 12 {
@@ -1130,8 +1131,10 @@ impl AesGcmSiv {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "aead")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "aead")?;
 
     m.add_class::<AesGcm>()?;
     m.add_class::<ChaCha20Poly1305>()?;
