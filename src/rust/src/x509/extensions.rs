@@ -290,7 +290,7 @@ fn encode_certificate_policies(
         };
         let py_policy_id = py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
         policy_informations.push(extensions::PolicyInformation {
-            policy_identifier: py_oid_to_oid(py_policy_id)?,
+            policy_identifier: py_oid_to_oid(py_policy_id.as_borrowed().to_owned())?,
             policy_qualifiers: qualifiers,
         });
     }
@@ -354,7 +354,7 @@ fn encode_issuing_distribution_point(
 fn encode_oid_sequence(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
     let mut oids = vec![];
     for el in ext.iter()? {
-        let oid = py_oid_to_oid(el?)?;
+        let oid = py_oid_to_oid(el?.as_borrowed().to_owned())?;
         oids.push(oid);
     }
     Ok(asn1::write_single(&asn1::SequenceOfWriter::new(oids))?)
@@ -515,7 +515,7 @@ pub(crate) fn encode_extension(
         &oid::MS_CERTIFICATE_TEMPLATE => {
             let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
             let mstpl = extensions::MSCertificateTemplate {
-                template_id: py_oid_to_oid(py_template_id)?,
+                template_id: py_oid_to_oid(py_template_id.as_borrowed().to_owned())?,
                 major_version: ext.getattr(pyo3::intern!(py, "major_version"))?.extract()?,
                 minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,
             };
