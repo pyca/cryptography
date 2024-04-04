@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pyo3::prelude::PyAnyMethods;
-use pyo3::ToPyObject;
+use pyo3::{PyNativeType, ToPyObject};
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -274,11 +274,11 @@ impl ECPrivateKey {
                 )),
             ));
         }
-        let (data, algo) = utils::calculate_digest_and_algorithm(
-            py,
-            data.as_bytes(),
-            signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
-        )?;
+        let bound_algorithm = signature_algorithm
+            .getattr(pyo3::intern!(py, "algorithm"))?
+            .as_borrowed();
+        let (data, algo) =
+            utils::calculate_digest_and_algorithm(py, data.as_bytes(), &bound_algorithm)?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
@@ -398,7 +398,9 @@ impl ECPublicKey {
         let (data, _) = utils::calculate_digest_and_algorithm(
             py,
             data.as_bytes(),
-            signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
+            &signature_algorithm
+                .as_borrowed()
+                .getattr(pyo3::intern!(py, "algorithm"))?,
         )?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
@@ -437,8 +439,8 @@ impl ECPublicKey {
     fn public_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::PyAny,
-        format: &pyo3::PyAny,
+        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        format: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
     }
