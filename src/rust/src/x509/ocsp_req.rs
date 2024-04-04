@@ -105,7 +105,7 @@ impl OCSPRequest {
     fn serial_number<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
         let bytes = self.cert_id().serial_number.as_bytes();
         Ok(big_byte_slice_to_py_int(py, bytes)?)
     }
