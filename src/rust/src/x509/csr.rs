@@ -58,7 +58,7 @@ impl CertificateSigningRequest {
     fn public_key_algorithm_oid<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         oid_to_py_oid(
             py,
             self.raw.borrow_dependent().csr_info.spki.algorithm.oid(),
@@ -96,7 +96,10 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn signature_algorithm_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
     }
 

@@ -397,7 +397,7 @@ pub(crate) fn parse_and_cache_extensions<
                     Some(e) => e,
                     None => types::UNRECOGNIZED_EXTENSION
                         .get(py)?
-                        .call1((oid_obj, raw_ext.extn_value))?,
+                        .call1((oid_obj.clone(), raw_ext.extn_value))?,
                 };
                 let ext_obj =
                     types::EXTENSION

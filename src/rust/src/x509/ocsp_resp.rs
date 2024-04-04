@@ -172,7 +172,10 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn signature_algorithm_oid<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn signature_algorithm_oid<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         oid_to_py_oid(py, resp.signature_algorithm.oid())
     }
