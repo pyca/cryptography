@@ -96,7 +96,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
     m.add_function(pyo3::wrap_pyfunction!(padding::check_ansix923_padding, m)?)?;
     m.add_class::<oid::ObjectIdentifier>()?;
 
-    m.add_submodule(asn1::create_submodule(py)?)?;
+    m.add_submodule(asn1::create_submodule(py)?.into_gil_ref())?;
     m.add_submodule(pkcs7::create_submodule(py)?)?;
     m.add_submodule(pkcs12::create_submodule(py)?.into_gil_ref())?;
     m.add_submodule(exceptions::create_submodule(py)?)?;

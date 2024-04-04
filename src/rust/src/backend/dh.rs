@@ -343,7 +343,7 @@ impl DHParameters {
         py: pyo3::Python<'p>,
         encoding: &'p pyo3::PyAny,
         format: &pyo3::PyAny,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if !format.is(types::PARAMETER_FORMAT_PKCS3.get(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
