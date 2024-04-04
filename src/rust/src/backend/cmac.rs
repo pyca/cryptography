@@ -39,7 +39,7 @@ impl Cmac {
     fn new(
         py: pyo3::Python<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Self> {
         let _ = backend;
 

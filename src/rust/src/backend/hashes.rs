@@ -84,7 +84,7 @@ impl Hash {
     pub(crate) fn new(
         py: pyo3::Python<'_>,
         algorithm: &pyo3::PyAny,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Hash> {
         let _ = backend;
 

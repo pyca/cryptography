@@ -15,7 +15,7 @@ fn load_der_private_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::PyObject> {
     let _ = backend;
@@ -46,7 +46,7 @@ fn load_pem_private_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::PyObject> {
     let _ = backend;
@@ -119,7 +119,7 @@ pub(crate) fn private_key_from_pkey(
 fn load_der_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::PyObject> {
     let _ = backend;
     load_der_public_key_bytes(py, data.as_bytes())
@@ -147,7 +147,7 @@ pub(crate) fn load_der_public_key_bytes(
 fn load_pem_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
-    backend: Option<&pyo3::PyAny>,
+    backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::PyObject> {
     let _ = backend;
     let p = pem::parse(data.as_bytes())?;
