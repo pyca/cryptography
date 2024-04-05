@@ -103,14 +103,11 @@ impl Certificate {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
-        Ok(encode_der_data(
-            py,
-            "CERTIFICATE".to_string(),
-            result,
-            encoding.clone().into_gil_ref(),
-        )?
-        .as_borrowed()
-        .to_owned())
+        Ok(
+            encode_der_data(py, "CERTIFICATE".to_string(), result, encoding)?
+                .as_borrowed()
+                .to_owned(),
+        )
     }
 
     #[getter]
