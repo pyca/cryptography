@@ -212,27 +212,27 @@ fn parse_name_attribute(
     let py_tag = types::ASN1_TYPE_TO_ENUM.get(py)?.get_item(tag_val)?;
     let py_data = match attribute.value.tag().as_u8() {
         // BitString tag value
-        Some(3) => pyo3::types::PyBytes::new(py, attribute.value.data()),
+        Some(3) => pyo3::types::PyBytes::new_bound(py, attribute.value.data()).into_any(),
         // BMPString tag value
         Some(30) => {
-            let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
+            let py_bytes = pyo3::types::PyBytes::new_bound(py, attribute.value.data());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_16_be",))?
         }
         // UniversalString
         Some(28) => {
-            let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
+            let py_bytes = pyo3::types::PyBytes::new_bound(py, attribute.value.data());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_32_be",))?
         }
         _ => {
             let parsed = std::str::from_utf8(attribute.value.data())
                 .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
-            pyo3::types::PyString::new(py, parsed)
+            pyo3::types::PyString::new_bound(py, parsed).into_any()
         }
     };
-    let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict(py);
+    let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict_bound(py);
     Ok(types::NAME_ATTRIBUTE
-        .get(py)?
-        .call((oid, py_data, py_tag), Some(kwargs))?
+        .get_bound(py)?
+        .call((oid, py_data, py_tag), Some(&kwargs))?
         .to_object(py))
 }
 
@@ -259,33 +259,36 @@ pub(crate) fn parse_general_name(
         GeneralName::OtherName(data) => {
             let oid = oid_to_py_oid(py, &data.type_id)?.to_object(py);
             types::OTHER_NAME
-                .get(py)?
+                .get_bound(py)?
                 .call1((oid, data.value.full_data()))?
                 .to_object(py)
         }
         GeneralName::RFC822Name(data) => types::RFC822_NAME
-            .get(py)?
+            .get_bound(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DNSName(data) => types::DNS_NAME
-            .get(py)?
+            .get_bound(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::DirectoryName(data) => {
             let py_name = parse_name(py, data.unwrap_read())?;
             types::DIRECTORY_NAME
-                .get(py)?
+                .get_bound(py)?
                 .call1((py_name,))?
                 .to_object(py)
         }
         GeneralName::UniformResourceIdentifier(data) => types::UNIFORM_RESOURCE_IDENTIFIER
-            .get(py)?
+            .get_bound(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
             .to_object(py),
         GeneralName::IPAddress(data) => {
             if data.len() == 4 || data.len() == 16 {
                 let addr = types::IPADDRESS_IPADDRESS.get(py)?.call1((data,))?;
-                types::IP_ADDRESS.get(py)?.call1((addr,))?.to_object(py)
+                types::IP_ADDRESS
+                    .get_bound(py)?
+                    .call1((addr,))?
+                    .to_object(py)
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
                 // verify length in this function.
