@@ -117,7 +117,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
 
     m.add_submodule(cryptography_cffi::create_module(py)?.into_gil_ref())?;
 
-    let openssl_mod = pyo3::prelude::PyModule::new(py, "openssl")?;
+    let openssl_mod = pyo3::prelude::PyModule::new_bound(py, "openssl")?;
     openssl_mod.add(
         "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
         cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
@@ -140,20 +140,29 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::types::PyModule) -> pyo3::PyResult<()> 
             }
             openssl_mod.add("_providers", providers)?;
 
-            openssl_mod.add_function(pyo3::wrap_pyfunction!(enable_fips, m)?)?;
+            openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(enable_fips, &openssl_mod)?)?;
         } else {
             // default value for non-openssl 3+
             openssl_mod.add("_legacy_provider_loaded", false)?;
         }
     }
-    openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version, m)?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction!(openssl_version_text, m)?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction!(error::raise_openssl_error, m)?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction!(error::capture_error_stack, m)?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction!(is_fips_enabled, m)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(openssl_version, &openssl_mod)?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
+        openssl_version_text,
+        &openssl_mod
+    )?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
+        error::raise_openssl_error,
+        &openssl_mod
+    )?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
+        error::capture_error_stack,
+        &openssl_mod
+    )?)?;
+    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(is_fips_enabled, &openssl_mod)?)?;
     openssl_mod.add_class::<error::OpenSSLError>()?;
-    crate::backend::add_to_module(openssl_mod)?;
-    m.add_submodule(openssl_mod)?;
+    crate::backend::add_to_module(openssl_mod.clone().into_gil_ref())?;
+    m.add_submodule(openssl_mod.into_gil_ref())?;
 
     Ok(())
 }
