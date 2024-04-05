@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use cryptography_x509::common;
 use cryptography_x509::ocsp_req::CertID;
 use once_cell::sync::Lazy;
-use pyo3::PyNativeType;
+use pyo3::prelude::PyAnyMethods;
 
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
@@ -76,7 +76,7 @@ pub(crate) fn certid_new<'p>(
     py: pyo3::Python<'p>,
     cert: &'p Certificate,
     issuer: &'p Certificate,
-    hash_algorithm: &'p pyo3::PyAny,
+    hash_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<CertID<'p>> {
     let issuer_der = asn1::write_single(&cert.raw.borrow_dependent().tbs_cert.issuer)?;
     let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
@@ -123,10 +123,10 @@ pub(crate) fn certid_new_from_hash<'p>(
 
 pub(crate) fn hash_data<'p>(
     py: pyo3::Python<'p>,
-    py_hash_alg: &'p pyo3::PyAny,
+    py_hash_alg: &pyo3::Bound<'p, pyo3::PyAny>,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
-    let mut h = Hash::new(py, &py_hash_alg.as_borrowed(), None)?;
+    let mut h = Hash::new(py, py_hash_alg, None)?;
     h.update_bytes(data)?;
     Ok(h.finalize(py)?.into_gil_ref().as_bytes())
 }

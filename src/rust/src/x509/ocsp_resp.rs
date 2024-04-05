@@ -11,7 +11,6 @@ use cryptography_x509::{
     oid,
 };
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
-use pyo3::PyNativeType;
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -578,10 +577,10 @@ fn singleresp_py_revocation_time<'p>(
 #[pyo3::prelude::pyfunction]
 fn create_ocsp_response(
     py: pyo3::Python<'_>,
-    status: &pyo3::PyAny,
-    builder: &pyo3::PyAny,
-    private_key: &pyo3::PyAny,
-    hash_algorithm: &pyo3::PyAny,
+    status: &pyo3::Bound<'_, pyo3::PyAny>,
+    builder: &pyo3::Bound<'_, pyo3::PyAny>,
+    private_key: &pyo3::Bound<'_, pyo3::PyAny>,
+    hash_algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<OCSPResponse> {
     let response_status = status
         .getattr(pyo3::intern!(py, "value"))?
@@ -656,7 +655,7 @@ fn create_ocsp_response(
         )?)?;
 
         let responses = vec![SingleResponse {
-            cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
+            cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
             cert_status,
             next_update,
             this_update,
@@ -665,10 +664,10 @@ fn create_ocsp_response(
 
         borrowed_cert = responder_cert.borrow();
         let responder_id = if responder_encoding.is(types::OCSP_RESPONDER_ENCODING_HASH.get(py)?) {
-            let sha1 = types::SHA1.get(py)?.call0()?;
+            let sha1 = types::SHA1.get_bound(py)?.call0()?;
             ocsp_resp::ResponderId::ByKey(ocsp::hash_data(
                 py,
-                sha1,
+                &sha1,
                 borrowed_cert
                     .raw
                     .borrow_dependent()
@@ -697,7 +696,10 @@ fn create_ocsp_response(
             )),
             raw_response_extensions: x509::common::encode_extensions(
                 py,
-                builder.getattr(pyo3::intern!(py, "_extensions"))?,
+                builder
+                    .getattr(pyo3::intern!(py, "_extensions"))?
+                    .clone()
+                    .into_gil_ref(),
                 extensions::encode_extension,
             )?,
         };

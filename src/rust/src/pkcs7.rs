@@ -134,71 +134,73 @@ fn sign_and_serialize<'p>(
         .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
     for (cert, py_private_key, py_hash_alg, rsa_padding) in &py_signers {
-        let (authenticated_attrs, signature) = if options
-            .contains(types::PKCS7_NO_ATTRIBUTES.get(py)?)?
-        {
-            (
-                None,
-                x509::sign::sign_data(
+        let (authenticated_attrs, signature) =
+            if options.contains(types::PKCS7_NO_ATTRIBUTES.get(py)?)? {
+                (
+                    None,
+                    x509::sign::sign_data(
+                        py,
+                        py_private_key.as_borrowed().to_owned(),
+                        py_hash_alg.as_borrowed().to_owned(),
+                        rsa_padding.as_borrowed().to_owned(),
+                        &data_with_header,
+                    )?,
+                )
+            } else {
+                let mut authenticated_attrs = vec![
+                    Attribute {
+                        type_id: PKCS7_CONTENT_TYPE_OID,
+                        values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+                            [asn1::parse_single(&content_type_bytes).unwrap()],
+                        )),
+                    },
+                    Attribute {
+                        type_id: PKCS7_SIGNING_TIME_OID,
+                        values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+                            [asn1::parse_single(&signing_time_bytes).unwrap()],
+                        )),
+                    },
+                ];
+
+                let digest = asn1::write_single(&x509::ocsp::hash_data(
                     py,
-                    py_private_key.as_borrowed().to_owned(),
-                    py_hash_alg.as_borrowed().to_owned(),
-                    rsa_padding.as_borrowed().to_owned(),
+                    &py_hash_alg.as_borrowed(),
                     &data_with_header,
-                )?,
-            )
-        } else {
-            let mut authenticated_attrs = vec![
-                Attribute {
-                    type_id: PKCS7_CONTENT_TYPE_OID,
-                    values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                        asn1::parse_single(&content_type_bytes).unwrap(),
-                    ])),
-                },
-                Attribute {
-                    type_id: PKCS7_SIGNING_TIME_OID,
-                    values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                        asn1::parse_single(&signing_time_bytes).unwrap(),
-                    ])),
-                },
-            ];
-
-            let digest =
-                asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;
-            // Gross hack: copy to PyBytes to extend the lifetime to 'p
-            let digest_bytes = pyo3::types::PyBytes::new(py, &digest);
-            authenticated_attrs.push(Attribute {
-                type_id: PKCS7_MESSAGE_DIGEST_OID,
-                values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                    asn1::parse_single(digest_bytes.as_bytes()).unwrap(),
-                ])),
-            });
-
-            if !options.contains(types::PKCS7_NO_CAPABILITIES.get(py)?)? {
+                )?)?;
+                // Gross hack: copy to PyBytes to extend the lifetime to 'p
+                let digest_bytes = pyo3::types::PyBytes::new(py, &digest);
                 authenticated_attrs.push(Attribute {
-                    type_id: PKCS7_SMIME_CAP_OID,
+                    type_id: PKCS7_MESSAGE_DIGEST_OID,
                     values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                        asn1::parse_single(&smime_cap_bytes).unwrap(),
+                        asn1::parse_single(digest_bytes.as_bytes()).unwrap(),
                     ])),
                 });
-            }
 
-            let signed_data =
-                asn1::write_single(&asn1::SetOfWriter::new(authenticated_attrs.as_slice()))?;
+                if !options.contains(types::PKCS7_NO_CAPABILITIES.get(py)?)? {
+                    authenticated_attrs.push(Attribute {
+                        type_id: PKCS7_SMIME_CAP_OID,
+                        values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+                            [asn1::parse_single(&smime_cap_bytes).unwrap()],
+                        )),
+                    });
+                }
 
-            (
-                Some(common::Asn1ReadableOrWritable::new_write(
-                    asn1::SetOfWriter::new(authenticated_attrs),
-                )),
-                x509::sign::sign_data(
-                    py,
-                    py_private_key.as_borrowed().to_owned(),
-                    py_hash_alg.as_borrowed().to_owned(),
-                    rsa_padding.as_borrowed().to_owned(),
-                    &signed_data,
-                )?,
-            )
-        };
+                let signed_data =
+                    asn1::write_single(&asn1::SetOfWriter::new(authenticated_attrs.as_slice()))?;
+
+                (
+                    Some(common::Asn1ReadableOrWritable::new_write(
+                        asn1::SetOfWriter::new(authenticated_attrs),
+                    )),
+                    x509::sign::sign_data(
+                        py,
+                        py_private_key.as_borrowed().to_owned(),
+                        py_hash_alg.as_borrowed().to_owned(),
+                        rsa_padding.as_borrowed().to_owned(),
+                        &signed_data,
+                    )?,
+                )
+            };
 
         let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[py_hash_alg
             .getattr(pyo3::intern!(py, "name"))?
