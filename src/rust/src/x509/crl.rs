@@ -433,11 +433,11 @@ impl CertificateRevocationList {
 
         // Error on invalid public key -- below we treat any error as just
         // being an invalid signature.
-        sign::identify_public_key_type(py, public_key.clone().into_gil_ref())?;
+        sign::identify_public_key_type(py, public_key.clone())?;
 
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key.into_gil_ref(),
+            public_key,
             &slf.owned.borrow_dependent().signature_algorithm,
             slf.owned.borrow_dependent().signature_value.as_bytes(),
             &asn1::write_single(&slf.owned.borrow_dependent().tbs_cert_list)?,
@@ -646,8 +646,12 @@ fn create_x509_crl(
     hash_algorithm: &pyo3::PyAny,
     rsa_padding: &pyo3::PyAny,
 ) -> CryptographyResult<CertificateRevocationList> {
-    let sigalg =
-        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)?;
+    let sigalg = x509::sign::compute_signature_algorithm(
+        py,
+        private_key.as_borrowed().to_owned(),
+        hash_algorithm.as_borrowed().to_owned(),
+        rsa_padding.as_borrowed().to_owned(),
+    )?;
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder
         .getattr(pyo3::intern!(py, "_revoked_certificates"))?
@@ -701,8 +705,13 @@ fn create_x509_crl(
     };
 
     let tbs_bytes = asn1::write_single(&tbs_cert_list)?;
-    let signature =
-        x509::sign::sign_data(py, private_key, hash_algorithm, rsa_padding, &tbs_bytes)?;
+    let signature = x509::sign::sign_data(
+        py,
+        private_key.as_borrowed().to_owned(),
+        hash_algorithm.as_borrowed().to_owned(),
+        rsa_padding.as_borrowed().to_owned(),
+        &tbs_bytes,
+    )?;
     let data = asn1::write_single(&crl::CertificateRevocationList {
         tbs_cert_list,
         signature_algorithm: sigalg,

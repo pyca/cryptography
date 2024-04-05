@@ -52,17 +52,17 @@ enum HashType {
 
 pub(crate) fn identify_key_type(
     py: pyo3::Python<'_>,
-    private_key: &pyo3::PyAny,
+    private_key: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<KeyType> {
-    if private_key.is_instance(types::RSA_PRIVATE_KEY.get(py)?)? {
+    if private_key.is_instance(&types::RSA_PRIVATE_KEY.get_bound(py)?)? {
         Ok(KeyType::Rsa)
-    } else if private_key.is_instance(types::DSA_PRIVATE_KEY.get(py)?)? {
+    } else if private_key.is_instance(&types::DSA_PRIVATE_KEY.get_bound(py)?)? {
         Ok(KeyType::Dsa)
-    } else if private_key.is_instance(types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
+    } else if private_key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get_bound(py)?)? {
         Ok(KeyType::Ec)
-    } else if private_key.is_instance(types::ED25519_PRIVATE_KEY.get(py)?)? {
+    } else if private_key.is_instance(&types::ED25519_PRIVATE_KEY.get_bound(py)?)? {
         Ok(KeyType::Ed25519)
-    } else if private_key.is_instance(types::ED448_PRIVATE_KEY.get(py)?)? {
+    } else if private_key.is_instance(&types::ED448_PRIVATE_KEY.get_bound(py)?)? {
         Ok(KeyType::Ed448)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
@@ -73,13 +73,13 @@ pub(crate) fn identify_key_type(
 
 fn identify_hash_type(
     py: pyo3::Python<'_>,
-    hash_algorithm: &pyo3::PyAny,
+    hash_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<HashType> {
     if hash_algorithm.is_none() {
         return Ok(HashType::None);
     }
 
-    if !hash_algorithm.is_instance(types::HASH_ALGORITHM.get(py)?)? {
+    if !hash_algorithm.is_instance(&types::HASH_ALGORITHM.get_bound(py)?)? {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm.",
         ));
@@ -105,17 +105,17 @@ fn identify_hash_type(
 
 fn compute_pss_salt_length<'p>(
     py: pyo3::Python<'p>,
-    private_key: &'p pyo3::PyAny,
-    hash_algorithm: &'p pyo3::PyAny,
-    rsa_padding: &'p pyo3::PyAny,
+    private_key: pyo3::Bound<'p, pyo3::PyAny>,
+    hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
+    rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<u16> {
     let py_saltlen = rsa_padding.getattr(pyo3::intern!(py, "_salt_length"))?;
-    if py_saltlen.is_instance(types::PADDING_MAX_LENGTH.get(py)?)? {
+    if py_saltlen.is_instance(&types::PADDING_MAX_LENGTH.get_bound(py)?)? {
         types::CALCULATE_MAX_PSS_SALT_LENGTH
-            .get(py)?
+            .get_bound(py)?
             .call1((private_key, hash_algorithm))?
             .extract::<u16>()
-    } else if py_saltlen.is_instance(types::PADDING_DIGEST_LENGTH.get(py)?)? {
+    } else if py_saltlen.is_instance(&types::PADDING_DIGEST_LENGTH.get_bound(py)?)? {
         hash_algorithm
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<u16>()
@@ -130,26 +130,27 @@ fn compute_pss_salt_length<'p>(
 
 pub(crate) fn compute_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
-    private_key: &'p pyo3::PyAny,
-    hash_algorithm: &'p pyo3::PyAny,
-    rsa_padding: &'p pyo3::PyAny,
+    private_key: pyo3::Bound<'p, pyo3::PyAny>,
+    hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
+    rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
-    let key_type = identify_key_type(py, private_key)?;
-    let hash_type = identify_hash_type(py, hash_algorithm)?;
+    let key_type = identify_key_type(py, private_key.clone())?;
+    let hash_type = identify_hash_type(py, hash_algorithm.clone())?;
 
     // If this is RSA-PSS we need to compute the signature algorithm from the
     // parameters provided in rsa_padding.
-    if rsa_padding.is_instance(types::PSS.get(py)?)? {
+    if rsa_padding.is_instance(&types::PSS.get_bound(py)?)? {
         let hash_alg_params = identify_alg_params_for_hash_type(hash_type)?;
         let hash_algorithm_id = common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
             params: hash_alg_params,
         };
-        let salt_length = compute_pss_salt_length(py, private_key, hash_algorithm, rsa_padding)?;
+        let salt_length =
+            compute_pss_salt_length(py, private_key, hash_algorithm, rsa_padding.clone())?;
         let py_mgf_alg = rsa_padding
             .getattr(pyo3::intern!(py, "_mgf"))?
             .getattr(pyo3::intern!(py, "_algorithm"))?;
-        let mgf_hash_type = identify_hash_type(py, py_mgf_alg)?;
+        let mgf_hash_type = identify_hash_type(py, py_mgf_alg.as_borrowed().to_owned())?;
         let mgf_alg = common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
             params: identify_alg_params_for_hash_type(mgf_hash_type)?,
@@ -281,25 +282,25 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
 pub(crate) fn sign_data<'p>(
     py: pyo3::Python<'p>,
-    private_key: &'p pyo3::PyAny,
-    hash_algorithm: &'p pyo3::PyAny,
-    rsa_padding: &'p pyo3::PyAny,
+    private_key: pyo3::Bound<'p, pyo3::PyAny>,
+    hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
+    rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
     data: &[u8],
 ) -> pyo3::PyResult<&'p [u8]> {
-    let key_type = identify_key_type(py, private_key)?;
+    let key_type = identify_key_type(py, private_key.clone())?;
 
     let signature = match key_type {
         KeyType::Ed25519 | KeyType::Ed448 => {
             private_key.call_method1(pyo3::intern!(py, "sign"), (data,))?
         }
         KeyType::Ec => {
-            let ecdsa = types::ECDSA.get(py)?.call1((hash_algorithm,))?;
+            let ecdsa = types::ECDSA.get_bound(py)?.call1((hash_algorithm,))?;
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, ecdsa))?
         }
         KeyType::Rsa => {
             let mut padding = rsa_padding;
             if padding.is_none() {
-                padding = types::PKCS1V15.get(py)?.call0()?;
+                padding = types::PKCS1V15.get_bound(py)?.call0()?;
             }
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, padding, hash_algorithm))?
         }
@@ -312,12 +313,12 @@ pub(crate) fn sign_data<'p>(
 
 pub(crate) fn verify_signature_with_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
-    issuer_public_key: &'p pyo3::PyAny,
+    issuer_public_key: pyo3::Bound<'p, pyo3::PyAny>,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
     signature: &[u8],
     data: &[u8],
 ) -> CryptographyResult<()> {
-    let key_type = identify_public_key_type(py, issuer_public_key)?;
+    let key_type = identify_public_key_type(py, issuer_public_key.clone())?;
     let sig_key_type = identify_key_type_for_algorithm_params(&signature_algorithm.params)?;
     if key_type != sig_key_type {
         return Err(CryptographyError::from(
@@ -356,17 +357,17 @@ pub(crate) fn verify_signature_with_signature_algorithm<'p>(
 
 pub(crate) fn identify_public_key_type(
     py: pyo3::Python<'_>,
-    public_key: &pyo3::PyAny,
+    public_key: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<KeyType> {
-    if public_key.is_instance(types::RSA_PUBLIC_KEY.get(py)?)? {
+    if public_key.is_instance(&types::RSA_PUBLIC_KEY.get_bound(py)?)? {
         Ok(KeyType::Rsa)
-    } else if public_key.is_instance(types::DSA_PUBLIC_KEY.get(py)?)? {
+    } else if public_key.is_instance(&types::DSA_PUBLIC_KEY.get_bound(py)?)? {
         Ok(KeyType::Dsa)
-    } else if public_key.is_instance(types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
+    } else if public_key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get_bound(py)?)? {
         Ok(KeyType::Ec)
-    } else if public_key.is_instance(types::ED25519_PUBLIC_KEY.get(py)?)? {
+    } else if public_key.is_instance(&types::ED25519_PUBLIC_KEY.get_bound(py)?)? {
         Ok(KeyType::Ed25519)
-    } else if public_key.is_instance(types::ED448_PUBLIC_KEY.get(py)?)? {
+    } else if public_key.is_instance(&types::ED448_PUBLIC_KEY.get_bound(py)?)? {
         Ok(KeyType::Ed448)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
