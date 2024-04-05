@@ -532,8 +532,8 @@ impl ChaCha20Poly1305 {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<&pyo3::PyAny> {
-        Ok(types::OS_URANDOM.get(py)?.call1((32,))?)
+    fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((32,))?)
     }
 
     fn encrypt<'p>(
@@ -638,14 +638,17 @@ impl AesGcm {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(
@@ -746,14 +749,17 @@ impl AesCcm {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(
@@ -876,14 +882,17 @@ impl AesSiv {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         if bit_length != 256 && bit_length != 384 && bit_length != 512 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 256, 384, or 512"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (data, associated_data))]
@@ -970,14 +979,17 @@ impl AesOcb3 {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -1076,14 +1088,17 @@ impl AesGcmSiv {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>, bit_length: usize) -> CryptographyResult<&pyo3::PyAny> {
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
