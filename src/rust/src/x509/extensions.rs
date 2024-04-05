@@ -98,10 +98,8 @@ pub(crate) fn encode_distribution_points<'p>(
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
             for py_name_entry in py_relative_name.iter()? {
-                name_entries.push(x509::common::encode_name_entry(
-                    py,
-                    &py_name_entry?.as_borrowed(),
-                )?);
+                let bound_name_entry = &py_name_entry?.as_borrowed();
+                name_entries.push(x509::common::encode_name_entry(py, bound_name_entry)?);
             }
             Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
                 common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
