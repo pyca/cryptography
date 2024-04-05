@@ -8,7 +8,6 @@ use cryptography_x509::{
     oid,
 };
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
-use pyo3::PyNativeType;
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -174,37 +173,28 @@ fn create_ocsp_request(
     let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
 
     // Declare outside the if-block so the lifetimes are right.
-    let (py_cert, py_issuer, py_hash): (
+    let (py_cert, py_issuer, py_hash, issuer_name_hash, issuer_key_hash): (
         pyo3::PyRef<'_, x509::certificate::Certificate>,
         pyo3::PyRef<'_, x509::certificate::Certificate>,
-        &pyo3::PyAny,
+        pyo3::Bound<'_, pyo3::PyAny>,
+        pyo3::pybacked::PyBackedBytes,
+        pyo3::pybacked::PyBackedBytes,
     );
     let req_cert = if !builder_request.is_none() {
-        let tuple = builder_request.extract::<(
-            pyo3::PyRef<'_, x509::certificate::Certificate>,
-            pyo3::PyRef<'_, x509::certificate::Certificate>,
-            &pyo3::PyAny,
-        )>()?;
-        py_cert = tuple.0;
-        py_issuer = tuple.1;
-        py_hash = tuple.2;
-        ocsp::certid_new(py, &py_cert, &py_issuer, &py_hash.as_borrowed())?
+        (py_cert, py_issuer, py_hash) = builder_request.extract()?;
+        ocsp::certid_new(py, &py_cert, &py_issuer, &py_hash)?
     } else {
-        let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
-            &[u8],
-            &[u8],
-            pyo3::Bound<'_, pyo3::types::PyLong>,
-            &pyo3::PyAny,
-        ) = builder
+        let py_serial: pyo3::Bound<'_, pyo3::types::PyLong>;
+        (issuer_name_hash, issuer_key_hash, py_serial, py_hash) = builder
             .getattr(pyo3::intern!(py, "_request_hash"))?
             .extract()?;
         let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
         ocsp::certid_new_from_hash(
             py,
-            issuer_name_hash,
-            issuer_key_hash,
+            &issuer_name_hash,
+            &issuer_key_hash,
             serial_number,
-            py_hash,
+            py_hash.into_gil_ref(),
         )?
     };
 
