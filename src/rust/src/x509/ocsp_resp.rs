@@ -703,15 +703,15 @@ fn create_ocsp_response(
 
         let sigalg = x509::sign::compute_signature_algorithm(
             py,
-            private_key.as_borrowed().to_owned(),
-            hash_algorithm.as_borrowed().to_owned(),
+            private_key.clone(),
+            hash_algorithm.clone(),
             py.None().into_bound(py),
         )?;
         let tbs_bytes = asn1::write_single(&tbs_response_data)?;
         let signature = x509::sign::sign_data(
             py,
-            private_key.as_borrowed().to_owned(),
-            hash_algorithm.as_borrowed().to_owned(),
+            private_key.clone(),
+            hash_algorithm.clone(),
             py.None().into_bound(py),
             &tbs_bytes,
         )?;
