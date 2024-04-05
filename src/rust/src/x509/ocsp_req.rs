@@ -8,6 +8,7 @@ use cryptography_x509::{
     oid,
 };
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::PyNativeType;
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -187,7 +188,7 @@ fn create_ocsp_request(
         py_cert = tuple.0;
         py_issuer = tuple.1;
         py_hash = tuple.2;
-        ocsp::certid_new(py, &py_cert, &py_issuer, py_hash)?
+        ocsp::certid_new(py, &py_cert, &py_issuer, &py_hash.as_borrowed())?
     } else {
         let (issuer_name_hash, issuer_key_hash, py_serial, py_hash): (
             &[u8],
