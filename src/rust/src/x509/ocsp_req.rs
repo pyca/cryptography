@@ -210,10 +210,7 @@ fn create_ocsp_request(
 
     let extensions = x509::common::encode_extensions(
         py,
-        builder
-            .getattr(pyo3::intern!(py, "_extensions"))?
-            .clone()
-            .into_gil_ref(),
+        &builder.getattr(pyo3::intern!(py, "_extensions"))?,
         extensions::encode_extension,
     )?;
     let reqs = [ocsp_req::Request {

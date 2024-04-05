@@ -9,7 +9,7 @@ use cryptography_x509::extensions::{
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 use pyo3::types::IntoPyDict;
-use pyo3::{IntoPy, PyNativeType, ToPyObject};
+use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -418,11 +418,11 @@ pub(crate) fn encode_extensions<
     F: Fn(
         pyo3::Python<'_>,
         &asn1::ObjectIdentifier,
-        &pyo3::PyAny,
+        &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<Option<Vec<u8>>>,
 >(
     py: pyo3::Python<'p>,
-    py_exts: &'p pyo3::PyAny,
+    py_exts: &pyo3::Bound<'p, pyo3::PyAny>,
     encode_ext: F,
 ) -> pyo3::PyResult<Option<RawExtensions<'p>>> {
     let mut exts = vec![];
@@ -435,7 +435,7 @@ pub(crate) fn encode_extensions<
         let oid = py_oid_to_oid(py_oid)?;
 
         let ext_val = py_ext.getattr(pyo3::intern!(py, "value"))?;
-        if ext_val.is_instance(types::UNRECOGNIZED_EXTENSION.get(py)?)? {
+        if ext_val.is_instance(&types::UNRECOGNIZED_EXTENSION.get_bound(py)?)? {
             exts.push(Extension {
                 extn_id: oid,
                 critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
@@ -445,7 +445,7 @@ pub(crate) fn encode_extensions<
             });
             continue;
         }
-        match encode_ext(py, &oid, ext_val)? {
+        match encode_ext(py, &oid, &ext_val)? {
             Some(data) => {
                 // TODO: extra copy
                 let py_data = pyo3::types::PyBytes::new_bound(py, &data);
@@ -477,7 +477,7 @@ fn encode_extension_value<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let oid = py_oid_to_oid(py_ext.getattr(pyo3::intern!(py, "oid"))?)?;
 
-    if let Some(data) = x509::extensions::encode_extension(py, &oid, py_ext.into_gil_ref())? {
+    if let Some(data) = x509::extensions::encode_extension(py, &oid, &py_ext)? {
         // TODO: extra copy
         let py_data = pyo3::types::PyBytes::new_bound(py, &data);
         return Ok(py_data);

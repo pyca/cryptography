@@ -77,12 +77,7 @@ fn serialize_certificates<'p>(
     };
     let content_info_bytes = asn1::write_single(&content_info)?;
 
-    encode_der_data(
-        py,
-        "PKCS7".to_string(),
-        content_info_bytes,
-        encoding.clone().into_gil_ref(),
-    )
+    encode_der_data(py, "PKCS7".to_string(), content_info_bytes, encoding)
 }
 
 #[pyo3::prelude::pyfunction]
@@ -273,12 +268,7 @@ fn sign_and_serialize<'p>(
             .extract()?)
     } else {
         // Handles the DER, PEM, and error cases
-        encode_der_data(
-            py,
-            "PKCS7".to_string(),
-            ci_bytes,
-            encoding.clone().into_gil_ref(),
-        )
+        encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
     }
 }
 

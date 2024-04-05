@@ -97,7 +97,7 @@ pub(crate) fn encode_der_data<'p>(
     py: pyo3::Python<'p>,
     pem_tag: String,
     data: Vec<u8>,
-    encoding: &'p pyo3::PyAny,
+    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if encoding.is(&types::ENCODING_DER.get_bound(py)?) {
         Ok(pyo3::types::PyBytes::new_bound(py, &data))

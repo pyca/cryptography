@@ -103,14 +103,7 @@ impl Certificate {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
-        Ok(encode_der_data(
-            py,
-            "CERTIFICATE".to_string(),
-            result,
-            encoding.clone().into_gil_ref(),
-        )?
-        .as_borrowed()
-        .to_owned())
+        encode_der_data(py, "CERTIFICATE".to_string(), result, encoding)
     }
 
     #[getter]
@@ -963,10 +956,7 @@ fn create_x509_certificate(
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(
             py,
-            builder
-                .getattr(pyo3::intern!(py, "_extensions"))?
-                .clone()
-                .into_gil_ref(),
+            &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,
     };

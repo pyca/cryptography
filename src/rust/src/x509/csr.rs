@@ -123,12 +123,7 @@ impl CertificateSigningRequest {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
-        encode_der_data(
-            py,
-            "CERTIFICATE REQUEST".to_string(),
-            result,
-            encoding.clone().into_gil_ref(),
-        )
+        encode_der_data(py, "CERTIFICATE REQUEST".to_string(), result, encoding)
     }
 
     fn get_attribute_for_oid<'p>(
@@ -317,9 +312,7 @@ fn create_x509_csr(
     let ext_bytes;
     if let Some(exts) = x509::common::encode_extensions(
         py,
-        builder
-            .getattr(pyo3::intern!(py, "_extensions"))?
-            .into_gil_ref(),
+        &builder.getattr(pyo3::intern!(py, "_extensions"))?,
         x509::extensions::encode_extension,
     )? {
         ext_bytes = asn1::write_single(&exts)?;

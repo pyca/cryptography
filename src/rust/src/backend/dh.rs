@@ -369,7 +369,7 @@ impl DHParameters {
         } else {
             "X9.42 DH PARAMETERS"
         };
-        encode_der_data(py, tag.to_string(), data, encoding.into_gil_ref())
+        encode_der_data(py, tag.to_string(), data, &encoding)
     }
 }
 
