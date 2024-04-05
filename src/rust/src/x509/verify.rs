@@ -39,7 +39,7 @@ impl CryptoOps for PyCryptoOps {
         pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
             sign::verify_signature_with_signature_algorithm(
                 py,
-                key.as_ref(py),
+                key.bind(py).clone(),
                 &cert.signature_alg,
                 cert.signature.as_bytes(),
                 &asn1::write_single(&cert.tbs_cert)?,

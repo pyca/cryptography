@@ -14,6 +14,7 @@ use openssl::pkcs7::Pkcs7;
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
+use pyo3::PyNativeType;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
@@ -140,9 +141,9 @@ fn sign_and_serialize<'p>(
                 None,
                 x509::sign::sign_data(
                     py,
-                    py_private_key,
-                    py_hash_alg,
-                    rsa_padding,
+                    py_private_key.as_borrowed().to_owned(),
+                    py_hash_alg.as_borrowed().to_owned(),
+                    rsa_padding.as_borrowed().to_owned(),
                     &data_with_header,
                 )?,
             )
@@ -189,7 +190,13 @@ fn sign_and_serialize<'p>(
                 Some(common::Asn1ReadableOrWritable::new_write(
                     asn1::SetOfWriter::new(authenticated_attrs),
                 )),
-                x509::sign::sign_data(py, py_private_key, py_hash_alg, rsa_padding, &signed_data)?,
+                x509::sign::sign_data(
+                    py,
+                    py_private_key.as_borrowed().to_owned(),
+                    py_hash_alg.as_borrowed().to_owned(),
+                    rsa_padding.as_borrowed().to_owned(),
+                    &signed_data,
+                )?,
             )
         };
 
@@ -279,7 +286,7 @@ fn compute_pkcs7_signature_algorithm<'p>(
     hash_algorithm: &'p pyo3::PyAny,
     rsa_padding: &'p pyo3::PyAny,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
-    let key_type = x509::sign::identify_key_type(py, private_key)?;
+    let key_type = x509::sign::identify_key_type(py, private_key.as_borrowed().to_owned())?;
     let has_pss_padding = rsa_padding.is_instance(types::PSS.get(py)?)?;
     // For RSA signatures (with no PSS padding), the OID is always the same no matter the
     // digest algorithm. See RFC 3370 (section 3.2).
@@ -289,7 +296,12 @@ fn compute_pkcs7_signature_algorithm<'p>(
             params: common::AlgorithmParameters::Rsa(Some(())),
         })
     } else {
-        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)
+        x509::sign::compute_signature_algorithm(
+            py,
+            private_key.as_borrowed().to_owned(),
+            hash_algorithm.as_borrowed().to_owned(),
+            rsa_padding.as_borrowed().to_owned(),
+        )
     }
 }
 

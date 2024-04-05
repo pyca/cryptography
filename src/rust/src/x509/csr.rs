@@ -234,7 +234,7 @@ impl CertificateSigningRequest {
         let public_key = slf.public_key(py)?;
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key.bind(py).clone().into_gil_ref(),
+            public_key.bind(py).clone(),
             &slf.raw.borrow_dependent().signature_alg,
             slf.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
@@ -301,9 +301,9 @@ fn create_x509_csr(
 ) -> CryptographyResult<CertificateSigningRequest> {
     let sigalg = x509::sign::compute_signature_algorithm(
         py,
-        private_key.clone().into_gil_ref(),
-        hash_algorithm.clone().into_gil_ref(),
-        rsa_padding.clone().into_gil_ref(),
+        private_key.clone(),
+        hash_algorithm.clone(),
+        rsa_padding.clone(),
     )?;
 
     let der = types::ENCODING_DER.get(py)?;
@@ -368,9 +368,9 @@ fn create_x509_csr(
     let tbs_bytes = asn1::write_single(&csr_info)?;
     let signature = x509::sign::sign_data(
         py,
-        private_key.clone().into_gil_ref(),
-        hash_algorithm.clone().into_gil_ref(),
-        rsa_padding.clone().into_gil_ref(),
+        private_key.clone(),
+        hash_algorithm.clone(),
+        rsa_padding.clone(),
         &tbs_bytes,
     )?;
     let data = asn1::write_single(&Csr {

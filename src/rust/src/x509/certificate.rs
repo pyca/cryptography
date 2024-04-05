@@ -924,9 +924,9 @@ fn create_x509_certificate(
 ) -> CryptographyResult<Certificate> {
     let sigalg = x509::sign::compute_signature_algorithm(
         py,
-        private_key.clone().into_gil_ref(),
-        hash_algorithm.clone().into_gil_ref(),
-        rsa_padding.clone().into_gil_ref(),
+        private_key.clone(),
+        hash_algorithm.clone(),
+        rsa_padding.clone(),
     )?;
 
     let der = types::ENCODING_DER.get(py)?;
@@ -974,9 +974,9 @@ fn create_x509_certificate(
     let tbs_bytes = asn1::write_single(&tbs_cert)?;
     let signature = x509::sign::sign_data(
         py,
-        private_key.clone().into_gil_ref(),
-        hash_algorithm.clone().into_gil_ref(),
-        rsa_padding.clone().into_gil_ref(),
+        private_key.clone(),
+        hash_algorithm.clone(),
+        rsa_padding.clone(),
         &tbs_bytes,
     )?;
     let data = asn1::write_single(&cryptography_x509::certificate::Certificate {
