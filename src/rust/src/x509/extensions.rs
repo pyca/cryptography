@@ -328,10 +328,8 @@ fn encode_issuing_distribution_point(
     {
         let mut name_entries = vec![];
         for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
-            name_entries.push(x509::common::encode_name_entry(
-                ext.py(),
-                &py_name_entry?.as_borrowed(),
-            )?);
+            let bound_name_entry = &py_name_entry?.as_borrowed();
+            name_entries.push(x509::common::encode_name_entry(ext.py(), bound_name_entry)?);
         }
         Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
             common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
