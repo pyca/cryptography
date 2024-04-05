@@ -518,7 +518,7 @@ fn singleresp_py_revocation_reason<'p>(
 ) -> CryptographyResult<&'p pyo3::PyAny> {
     match &resp.cert_status {
         ocsp_resp::CertStatus::Revoked(revoked_info) => match revoked_info.revocation_reason {
-            Some(ref v) => crl::parse_crl_reason_flags(py, v),
+            Some(ref v) => Ok(crl::parse_crl_reason_flags(py, v)?.into_gil_ref()),
             None => Ok(py.None().into_ref(py)),
         },
         ocsp_resp::CertStatus::Good(_) | ocsp_resp::CertStatus::Unknown(_) => {
