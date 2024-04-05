@@ -6,6 +6,7 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
 pub(crate) struct Ed448PrivateKey {
@@ -65,9 +66,10 @@ impl Ed448PrivateKey {
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new_with(py, signer.len()?, |b| {
+        let len = signer.len()?;
+        Ok(pyo3::types::PyBytes::new_bound_with(py, len, |b| {
             let n = signer
                 .sign_oneshot(b, data.as_bytes())
                 .map_err(CryptographyError::from)?;
@@ -89,9 +91,9 @@ impl Ed448PrivateKey {
     fn private_bytes_raw<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_private_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
     }
 
     fn private_bytes<'p>(
@@ -132,9 +134,9 @@ impl Ed448PublicKey {
     fn public_bytes_raw<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
     }
 
     fn public_bytes<'p>(
@@ -155,11 +157,13 @@ impl Ed448PublicKey {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "ed448")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "ed448")?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
 
     m.add_class::<Ed448PrivateKey>()?;
     m.add_class::<Ed448PublicKey>()?;
