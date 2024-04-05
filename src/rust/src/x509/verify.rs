@@ -75,7 +75,7 @@ impl PolicyBuilder {
     fn time(
         &self,
         py: pyo3::Python<'_>,
-        new_time: &pyo3::Bound<'_, pyo3::PyAny>,
+        new_time: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<PolicyBuilder> {
         if self.time.is_some() {
             return Err(CryptographyError::from(
@@ -85,7 +85,7 @@ impl PolicyBuilder {
             ));
         }
         Ok(PolicyBuilder {
-            time: Some(py_to_datetime(py, new_time.clone().into_gil_ref())?),
+            time: Some(py_to_datetime(py, new_time)?),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: self.max_chain_depth,
         })
@@ -239,7 +239,10 @@ impl PyClientVerifier {
 #[pyo3::pymethods]
 impl PyClientVerifier {
     #[getter]
-    fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn validation_time<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         datetime_to_py(py, &self.as_policy().validation_time)
     }
 
@@ -320,7 +323,10 @@ impl PyServerVerifier {
 #[pyo3::pymethods]
 impl PyServerVerifier {
     #[getter]
-    fn validation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn validation_time<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         datetime_to_py(py, &self.as_policy().validation_time)
     }
 

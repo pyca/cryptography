@@ -10,7 +10,7 @@ use cryptography_x509::{
     ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
     oid,
 };
-use pyo3::IntoPy;
+use pyo3::{IntoPy, PyNativeType};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -166,7 +166,10 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn produced_at<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn produced_at<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         x509::datetime_to_py(py, resp.tbs_response_data.produced_at.as_datetime())
     }
@@ -297,7 +300,10 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn revocation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn revocation_time<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_revocation_time(&single_resp, py)
@@ -311,14 +317,20 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn this_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn this_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_this_update(&single_resp, py)
     }
 
     #[getter]
-    fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn next_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_next_update(&single_resp, py)
@@ -498,17 +510,17 @@ fn singleresp_py_hash_algorithm<'p>(
 fn singleresp_py_this_update<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     x509::datetime_to_py(py, resp.this_update.as_datetime())
 }
 
 fn singleresp_py_next_update<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match &resp.next_update {
         Some(v) => x509::datetime_to_py(py, v.as_datetime()),
-        None => Ok(py.None().into_ref(py)),
+        None => Ok(py.None().into_bound(py)),
     }
 }
 
@@ -530,13 +542,13 @@ fn singleresp_py_revocation_reason<'p>(
 fn singleresp_py_revocation_time<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match &resp.cert_status {
         ocsp_resp::CertStatus::Revoked(revoked_info) => {
             x509::datetime_to_py(py, revoked_info.revocation_time.as_datetime())
         }
         ocsp_resp::CertStatus::Good(_) | ocsp_resp::CertStatus::Unknown(_) => {
-            Ok(py.None().into_ref(py))
+            Ok(py.None().into_bound(py))
         }
     }
 }
@@ -594,8 +606,10 @@ fn create_ocsp_response(
             // REVOKED
             let py_revocation_time =
                 py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
-            let revocation_time =
-                asn1::GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
+            let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(
+                py,
+                py_revocation_time.as_borrowed().to_owned(),
+            )?)?;
             ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
                 revocation_time,
                 revocation_reason,
@@ -608,13 +622,16 @@ fn create_ocsp_response(
             let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
             Some(asn1::GeneralizedTime::new(py_to_datetime(
                 py,
-                py_next_update,
+                py_next_update.as_borrowed().to_owned(),
             )?)?)
         } else {
             None
         };
         let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
-        let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
+        let this_update = asn1::GeneralizedTime::new(py_to_datetime(
+            py,
+            py_this_update.as_borrowed().to_owned(),
+        )?)?;
 
         let responses = vec![SingleResponse {
             cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, py_cert_hash_algorithm)?,
@@ -819,7 +836,10 @@ impl OCSPSingleResponse {
     }
 
     #[getter]
-    fn revocation_time<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn revocation_time<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let single_resp = self.single_response();
         singleresp_py_revocation_time(single_resp, py)
     }
@@ -831,13 +851,19 @@ impl OCSPSingleResponse {
     }
 
     #[getter]
-    fn this_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn this_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let single_resp = self.single_response();
         singleresp_py_this_update(single_resp, py)
     }
 
     #[getter]
-    fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn next_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let single_resp = self.single_response();
         singleresp_py_next_update(single_resp, py)
     }

@@ -491,8 +491,8 @@ fn encode_extension_value<'p>(
 pub(crate) fn datetime_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    types::DATETIME_DATETIME.get(py)?.call1((
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    types::DATETIME_DATETIME.get_bound(py)?.call1((
         dt.year(),
         dt.month(),
         dt.day(),
@@ -505,9 +505,9 @@ pub(crate) fn datetime_to_py<'p>(
 pub(crate) fn datetime_to_py_utc<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
-) -> pyo3::PyResult<&'p pyo3::PyAny> {
-    let timezone = types::DATETIME_TIMEZONE_UTC.get(py)?;
-    types::DATETIME_DATETIME.get(py)?.call1((
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let timezone = types::DATETIME_TIMEZONE_UTC.get_bound(py)?;
+    types::DATETIME_DATETIME.get_bound(py)?.call1((
         dt.year(),
         dt.month(),
         dt.day(),
@@ -521,14 +521,14 @@ pub(crate) fn datetime_to_py_utc<'p>(
 
 pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
-    val: &pyo3::PyAny,
+    val: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<asn1::DateTime> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
     let val_utc = if val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
         val
     } else {
-        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+        let utc = types::DATETIME_TIMEZONE_UTC.get_bound(py)?;
         val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
     };
 
@@ -544,12 +544,12 @@ pub(crate) fn py_to_datetime(
 }
 
 pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
-    let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+    let utc = types::DATETIME_TIMEZONE_UTC.get_bound(py)?;
 
     py_to_datetime(
         py,
         types::DATETIME_DATETIME
-            .get(py)?
+            .get_bound(py)?
             .call_method1(pyo3::intern!(py, "now"), (utc,))?,
     )
 }

@@ -268,10 +268,8 @@ impl CertificateRevocationList {
                 1,
             )?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
-            Some(t) => Ok(x509::datetime_to_py(py, t.as_datetime())?
-                .as_borrowed()
-                .to_owned()),
-            None => Ok(py.None().bind(py).clone()),
+            Some(t) => x509::datetime_to_py(py, t.as_datetime()),
+            None => Ok(py.None().into_bound(py)),
         }
     }
 
@@ -281,10 +279,8 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
-            Some(t) => Ok(x509::datetime_to_py_utc(py, t.as_datetime())?
-                .as_borrowed()
-                .to_owned()),
-            None => Ok(py.None().bind(py).clone()),
+            Some(t) => x509::datetime_to_py_utc(py, t.as_datetime()),
+            None => Ok(py.None().into_bound(py)),
         }
     }
 
@@ -313,7 +309,10 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn last_update_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn last_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         x509::datetime_to_py_utc(
             py,
             self.owned
@@ -573,12 +572,10 @@ impl RevokedCertificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::datetime_to_py_utc(
+        x509::datetime_to_py_utc(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
-        )?
-        .as_borrowed()
-        .to_owned())
+        )
     }
 
     #[getter]
