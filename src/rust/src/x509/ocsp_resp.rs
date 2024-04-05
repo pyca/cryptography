@@ -148,7 +148,7 @@ impl OCSPResponse {
         let resp = self.requires_successful_response()?;
         match resp.tbs_response_data.responder_id {
             ocsp_resp::ResponderId::ByName(ref name) => {
-                Ok(x509::parse_name(py, name.unwrap_read())?)
+                Ok(x509::parse_name(py, name.unwrap_read())?.into_gil_ref())
             }
             ocsp_resp::ResponderId::ByKey(_) => Ok(py.None().into_ref(py)),
         }
