@@ -13,7 +13,8 @@ use cryptography_x509::{
     },
     name, oid,
 };
-use pyo3::{IntoPy, PyNativeType, ToPyObject};
+use pyo3::prelude::{PyAnyMethods, PyListMethods, PySliceMethods};
+use pyo3::{PyNativeType, ToPyObject};
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -67,7 +68,7 @@ fn load_pem_x509_crl(
     )?;
     load_der_x509_crl(
         py,
-        pyo3::types::PyBytes::new(py, block.contents()).into_py(py),
+        pyo3::types::PyBytes::new_bound(py, block.contents()).unbind(),
         None,
     )
 }
@@ -138,7 +139,7 @@ impl CertificateRevocationList {
     fn __getitem__(
         &self,
         py: pyo3::Python<'_>,
-        idx: &pyo3::PyAny,
+        idx: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::PyObject> {
         self.revoked_certs.get_or_init(py, || {
             let mut revoked_certs = vec![];
@@ -153,9 +154,9 @@ impl CertificateRevocationList {
             let indices = idx
                 .downcast::<pyo3::types::PySlice>()?
                 .indices(self.len().try_into().unwrap())?;
-            let result = pyo3::types::PyList::empty(py);
+            let result = pyo3::types::PyList::empty_bound(py);
             for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {
-                let revoked_cert = pyo3::PyCell::new(py, self.revoked_cert(py, i as usize))?;
+                let revoked_cert = pyo3::Bound::new(py, self.revoked_cert(py, i as usize))?;
                 result.append(revoked_cert)?;
             }
             Ok(result.to_object(py))
@@ -167,20 +168,20 @@ impl CertificateRevocationList {
             if idx >= (self.len() as isize) || idx < 0 {
                 return Err(pyo3::exceptions::PyIndexError::new_err(()));
             }
-            Ok(pyo3::PyCell::new(py, self.revoked_cert(py, idx as usize))?.to_object(py))
+            Ok(pyo3::Bound::new(py, self.revoked_cert(py, idx as usize))?.to_object(py))
         }
     }
 
     fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
-        algorithm: &pyo3::PyAny,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data = self.public_bytes_der()?;
 
         let mut h = Hash::new(py, &algorithm.as_borrowed(), None)?;
         h.update_bytes(&data)?;
-        Ok(h.finalize(py)?.into_gil_ref())
+        Ok(h.finalize(py)?)
     }
 
     #[getter]
@@ -226,19 +227,19 @@ impl CertificateRevocationList {
     fn tbs_certlist_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let b = asn1::write_single(&self.owned.borrow_dependent().tbs_cert_list)?;
-        Ok(pyo3::types::PyBytes::new(py, &b))
+        Ok(pyo3::types::PyBytes::new_bound(py, &b))
     }
 
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &'p pyo3::PyAny,
+        encoding: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(&self.owned.borrow_dependent())?;
 
-        encode_der_data(py, "X509 CRL".to_string(), result, encoding)
+        encode_der_data(py, "X509 CRL".to_string(), result, encoding.into_gil_ref())
     }
 
     #[getter]
@@ -255,45 +256,60 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn next_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        pyo3::PyErr::warn(
+    fn next_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        pyo3::PyErr::warn_bound(
                 py,
-                warning_cls,
+                &warning_cls,
                 "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.",
                 1,
             )?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
-            Some(t) => x509::datetime_to_py(py, t.as_datetime()),
-            None => Ok(py.None().into_ref(py)),
+            Some(t) => Ok(x509::datetime_to_py(py, t.as_datetime())?
+                .as_borrowed()
+                .to_owned()),
+            None => Ok(py.None().bind(py).clone()),
         }
     }
 
     #[getter]
-    fn next_update_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn next_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
-            Some(t) => x509::datetime_to_py_utc(py, t.as_datetime()),
-            None => Ok(py.None().into_ref(py)),
+            Some(t) => Ok(x509::datetime_to_py_utc(py, t.as_datetime())?
+                .as_borrowed()
+                .to_owned()),
+            None => Ok(py.None().bind(py).clone()),
         }
     }
 
     #[getter]
-    fn last_update<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        pyo3::PyErr::warn(
+    fn last_update<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        pyo3::PyErr::warn_bound(
                 py,
-                warning_cls,
+                &warning_cls,
                 "Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.",
                 1,
             )?;
-        x509::datetime_to_py(
+        Ok(x509::datetime_to_py(
             py,
             self.owned
                 .borrow_dependent()
                 .tbs_cert_list
                 .this_update
                 .as_datetime(),
-        )
+        )?
+        .as_borrowed()
+        .to_owned())
     }
 
     #[getter]
@@ -408,7 +424,7 @@ impl CertificateRevocationList {
     fn is_signature_valid<'p>(
         slf: pyo3::PyRef<'_, Self>,
         py: pyo3::Python<'p>,
-        public_key: &'p pyo3::PyAny,
+        public_key: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<bool> {
         if slf.owned.borrow_dependent().tbs_cert_list.signature
             != slf.owned.borrow_dependent().signature_algorithm
@@ -418,11 +434,11 @@ impl CertificateRevocationList {
 
         // Error on invalid public key -- below we treat any error as just
         // being an invalid signature.
-        sign::identify_public_key_type(py, public_key)?;
+        sign::identify_public_key_type(py, public_key.clone().into_gil_ref())?;
 
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key,
+            public_key.into_gil_ref(),
             &slf.owned.borrow_dependent().signature_algorithm,
             slf.owned.borrow_dependent().signature_value.as_bytes(),
             &asn1::write_single(&slf.owned.borrow_dependent().tbs_cert_list)?,
@@ -533,26 +549,36 @@ impl RevokedCertificate {
     }
 
     #[getter]
-    fn revocation_date<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        pyo3::PyErr::warn(
+    fn revocation_date<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        pyo3::PyErr::warn_bound(
                 py,
-                warning_cls,
+                &warning_cls,
                 "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.",
                 1,
             )?;
-        x509::datetime_to_py(
+        Ok(x509::datetime_to_py(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
-        )
+        )?
+        .as_borrowed()
+        .to_owned())
     }
 
     #[getter]
-    fn revocation_date_utc<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        x509::datetime_to_py_utc(
+    fn revocation_date_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        Ok(x509::datetime_to_py_utc(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
-        )
+        )?
+        .as_borrowed()
+        .to_owned())
     }
 
     #[getter]
@@ -569,7 +595,7 @@ impl RevokedCertificate {
 pub(crate) fn parse_crl_reason_flags<'p>(
     py: pyo3::Python<'p>,
     reason: &crl::CRLReason,
-) -> CryptographyResult<&'p pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let flag_name = match reason.value() {
         0 => "unspecified",
         1 => "key_compromise",
@@ -589,7 +615,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
             ))
         }
     };
-    Ok(types::REASON_FLAGS.get(py)?.getattr(flag_name)?)
+    Ok(types::REASON_FLAGS.get_bound(py)?.getattr(flag_name)?)
 }
 
 pub fn parse_crl_entry_ext<'p>(
@@ -685,7 +711,11 @@ fn create_x509_crl(
         signature_algorithm: sigalg,
         signature_value: asn1::BitString::new(signature, 0).unwrap(),
     })?;
-    load_der_x509_crl(py, pyo3::types::PyBytes::new(py, &data).into_py(py), None)
+    load_der_x509_crl(
+        py,
+        pyo3::types::PyBytes::new_bound(py, &data).unbind(),
+        None,
+    )
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
