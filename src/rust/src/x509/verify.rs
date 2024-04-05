@@ -379,7 +379,7 @@ fn build_subject_owner(
             .call0()?
             .downcast::<pyo3::types::PyBytes>()?
             .clone();
-        Ok(SubjectOwner::IPAddress(value.clone().unbind()))
+        Ok(SubjectOwner::IPAddress(value.unbind()))
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
             "unsupported subject type",
