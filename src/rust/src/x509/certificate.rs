@@ -960,10 +960,7 @@ fn create_x509_certificate(
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(
             py,
-            builder
-                .getattr(pyo3::intern!(py, "_extensions"))?
-                .clone()
-                .into_gil_ref(),
+            &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,
     };

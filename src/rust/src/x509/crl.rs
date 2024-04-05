@@ -672,10 +672,7 @@ fn create_x509_crl(
             )?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
-                py_revoked_cert
-                    .getattr(pyo3::intern!(py, "extensions"))?
-                    .clone()
-                    .into_gil_ref(),
+                &py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
                 extensions::encode_extension,
             )?,
         });
@@ -702,10 +699,7 @@ fn create_x509_crl(
         },
         raw_crl_extensions: x509::common::encode_extensions(
             py,
-            builder
-                .getattr(pyo3::intern!(py, "_extensions"))?
-                .clone()
-                .into_gil_ref(),
+            &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,
     };

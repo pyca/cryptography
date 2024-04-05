@@ -13,7 +13,7 @@ use pyo3::PyNativeType;
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
-    subtrees: &'a pyo3::PyAny,
+    subtrees: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<Option<extensions::SequenceOfSubtrees<'a>>, CryptographyError> {
     if subtrees.is_none() {
         Ok(None)
@@ -35,7 +35,7 @@ fn encode_general_subtrees<'a>(
 
 pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
-    py_aki: &'a pyo3::PyAny,
+    py_aki: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyAuthorityKeyIdentifier<'a> {
@@ -68,7 +68,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
 
 pub(crate) fn encode_distribution_points<'p>(
     py: pyo3::Python<'p>,
-    py_dps: &'p pyo3::PyAny,
+    py_dps: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyDistributionPoint<'a> {
@@ -123,7 +123,7 @@ pub(crate) fn encode_distribution_points<'p>(
     Ok(asn1::write_single(&asn1::SequenceOfWriter::new(dps))?)
 }
 
-fn encode_basic_constraints(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+fn encode_basic_constraints(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyBasicConstraints {
         ca: bool,
@@ -137,7 +137,10 @@ fn encode_basic_constraints(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
     Ok(asn1::write_single(&bc)?)
 }
 
-fn encode_key_usage(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+fn encode_key_usage(
+    py: pyo3::Python<'_>,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<Vec<u8>> {
     let mut bs = [0, 0];
     certificate::set_bit(
         &mut bs,
@@ -212,7 +215,7 @@ fn encode_key_usage(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyResu
 
 fn encode_certificate_policies(
     py: pyo3::Python<'_>,
-    ext: &pyo3::PyAny,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     let mut policy_informations = vec![];
     for py_policy_info in ext.iter()? {
@@ -303,7 +306,7 @@ fn encode_certificate_policies(
 
 fn encode_issuing_distribution_point(
     py: pyo3::Python<'_>,
-    ext: &pyo3::PyAny,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     let only_some_reasons = if ext
         .getattr(pyo3::intern!(py, "only_some_reasons"))?
@@ -328,8 +331,7 @@ fn encode_issuing_distribution_point(
     {
         let mut name_entries = vec![];
         for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
-            let bound_name_entry = &py_name_entry?.as_borrowed();
-            name_entries.push(x509::common::encode_name_entry(ext.py(), bound_name_entry)?);
+            name_entries.push(x509::common::encode_name_entry(ext.py(), &py_name_entry?)?);
         }
         Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
             common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
@@ -355,7 +357,7 @@ fn encode_issuing_distribution_point(
     Ok(asn1::write_single(&idp)?)
 }
 
-fn encode_oid_sequence(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+fn encode_oid_sequence(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut oids = vec![];
     for el in ext.iter()? {
         let oid = py_oid_to_oid(el?.as_borrowed().to_owned())?;
@@ -364,7 +366,10 @@ fn encode_oid_sequence(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
     Ok(asn1::write_single(&asn1::SequenceOfWriter::new(oids))?)
 }
 
-fn encode_tls_features(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+fn encode_tls_features(
+    py: pyo3::Python<'_>,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<Vec<u8>> {
     // Ideally we'd skip building up a vec and just write directly into the
     // writer. This isn't possible at the moment because the callback to write
     // an asn1::Sequence can't return an error, and we need to handle errors
@@ -377,7 +382,7 @@ fn encode_tls_features(py: pyo3::Python<'_>, ext: &pyo3::PyAny) -> CryptographyR
     Ok(asn1::write_single(&asn1::SequenceOfWriter::new(els))?)
 }
 
-fn encode_scts(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
+fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut length = 0;
     for sct in ext.iter()? {
         let sct = sct?.as_borrowed().downcast::<sct::Sct>()?.clone();
@@ -397,7 +402,7 @@ fn encode_scts(ext: &pyo3::PyAny) -> CryptographyResult<Vec<u8>> {
 pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
-    ext: &pyo3::PyAny,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Option<Vec<u8>>> {
     match oid {
         &oid::BASIC_CONSTRAINTS_OID => {
@@ -441,8 +446,8 @@ pub(crate) fn encode_extension(
             let permitted = ext.getattr(pyo3::intern!(py, "permitted_subtrees"))?;
             let excluded = ext.getattr(pyo3::intern!(py, "excluded_subtrees"))?;
             let nc = extensions::NameConstraints {
-                permitted_subtrees: encode_general_subtrees(ext.py(), permitted)?,
-                excluded_subtrees: encode_general_subtrees(ext.py(), excluded)?,
+                permitted_subtrees: encode_general_subtrees(ext.py(), &permitted)?,
+                excluded_subtrees: encode_general_subtrees(ext.py(), &excluded)?,
             };
             Ok(Some(asn1::write_single(&nc)?))
         }
