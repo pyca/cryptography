@@ -636,26 +636,25 @@ fn check_private_key_components(
         ));
     }
 
-    // No `bitand` method.
-    if public_exponent.call_method1("__and__", (1,))?.eq(0)? {
+    if public_exponent.bitand(1)?.eq(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("public_exponent must be odd."),
         ));
     }
 
-    if dmp1.call_method1("__and__", (1,))?.eq(0)? {
+    if dmp1.bitand(1)?.eq(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("dmp1 must be odd."),
         ));
     }
 
-    if dmq1.call_method1("__and__", (1,))?.eq(0)? {
+    if dmq1.bitand(1)?.eq(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("dmq1 must be odd."),
         ));
     }
 
-    if p.call_method1("__mul__", (q,))?.ne(modulus)? {
+    if p.mul(q)?.ne(modulus)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("p*q must equal modulus."),
         ));
@@ -771,8 +770,7 @@ fn check_public_key_components(
         ));
     }
 
-    // No `bitand` method.
-    if e.call_method1("__and__", (1,))?.eq(0)? {
+    if e.bitand(1)?.eq(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be odd."),
         ));
