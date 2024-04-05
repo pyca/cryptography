@@ -34,7 +34,7 @@ pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<
 
     module.add_submodule(ed25519::create_module(module.py())?.into_gil_ref())?;
     #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-    module.add_submodule(ed448::create_module(module.py())?)?;
+    module.add_submodule(ed448::create_module(module.py())?.into_gil_ref())?;
 
     module.add_submodule(x25519::create_module(module.py())?.into_gil_ref())?;
     #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
