@@ -690,7 +690,7 @@ impl RsaPrivateNumbers {
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<&pyo3::Bound<'_, pyo3::PyAny>>,
         unsafe_skip_rsa_key_validation: bool,
     ) -> CryptographyResult<RsaPrivateKey> {
         let _ = backend;
@@ -789,7 +789,7 @@ impl RsaPublicNumbers {
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
-        backend: Option<&pyo3::PyAny>,
+        backend: Option<&pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
