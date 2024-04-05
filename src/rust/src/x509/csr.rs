@@ -8,7 +8,7 @@ use std::hash::{Hash, Hasher};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
-use pyo3::IntoPy;
+use pyo3::{IntoPy, PyNativeType};
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
@@ -70,7 +70,8 @@ impl CertificateSigningRequest {
         Ok(x509::parse_name(
             py,
             self.raw.borrow_dependent().csr_info.subject.unwrap_read(),
-        )?)
+        )?
+        .into_gil_ref())
     }
 
     #[getter]
@@ -345,7 +346,7 @@ fn create_x509_csr(
 
     let csr_info = CertificationRequestInfo {
         version: 0,
-        subject: x509::common::encode_name(py, py_subject_name)?,
+        subject: x509::common::encode_name(py, &py_subject_name.as_borrowed())?,
         spki: asn1::parse_single(spki_bytes)?,
         attributes: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };

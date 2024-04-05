@@ -250,7 +250,8 @@ impl CertificateRevocationList {
                 .tbs_cert_list
                 .issuer
                 .unwrap_read(),
-        )?)
+        )?
+        .into_gil_ref())
     }
 
     #[getter]
@@ -656,7 +657,7 @@ fn create_x509_crl(
     let tbs_cert_list = crl::TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),
-        issuer: x509::common::encode_name(py, py_issuer_name)?,
+        issuer: x509::common::encode_name(py, &py_issuer_name.as_borrowed())?,
         this_update: x509::certificate::time_from_py(py, &py_this_update.as_borrowed())?,
         next_update: Some(x509::certificate::time_from_py(
             py,

@@ -20,7 +20,7 @@ fn encode_general_subtrees<'a>(
     } else {
         let mut subtree_seq = vec![];
         for name in subtrees.iter()? {
-            let gn = x509::common::encode_general_name(py, name?)?;
+            let gn = x509::common::encode_general_name(py, &name?.as_borrowed())?;
             subtree_seq.push(extensions::GeneralSubtree {
                 base: gn,
                 minimum: 0,
@@ -45,7 +45,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
-        let gns = x509::common::encode_general_names(py, authority_cert_issuer)?;
+        let gns = x509::common::encode_general_names(py, &authority_cert_issuer.as_borrowed())?;
         Some(common::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
@@ -83,7 +83,7 @@ pub(crate) fn encode_distribution_points<'p>(
         let py_dp = py_dp?.extract::<PyDistributionPoint<'_>>()?;
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
-            let gns = x509::common::encode_general_names(py, py_crl_issuer)?;
+            let gns = x509::common::encode_general_names(py, &py_crl_issuer.as_borrowed())?;
             Some(common::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(gns),
             ))
@@ -91,14 +91,15 @@ pub(crate) fn encode_distribution_points<'p>(
             None
         };
         let distribution_point = if let Some(py_full_name) = py_dp.full_name {
-            let gns = x509::common::encode_general_names(py, py_full_name)?;
+            let gns = x509::common::encode_general_names(py, &py_full_name.as_borrowed())?;
             Some(extensions::DistributionPointName::FullName(
                 common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
             ))
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
             for py_name_entry in py_relative_name.iter()? {
-                name_entries.push(x509::common::encode_name_entry(py, py_name_entry?)?);
+                let bound_name_entry = &py_name_entry?.as_borrowed();
+                name_entries.push(x509::common::encode_name_entry(py, bound_name_entry)?);
             }
             Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
                 common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
@@ -317,7 +318,7 @@ fn encode_issuing_distribution_point(
     };
     let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_truthy()? {
         let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
-        let gns = x509::common::encode_general_names(ext.py(), py_full_name)?;
+        let gns = x509::common::encode_general_names(ext.py(), &py_full_name.as_borrowed())?;
         Some(extensions::DistributionPointName::FullName(
             common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
         ))
@@ -327,7 +328,8 @@ fn encode_issuing_distribution_point(
     {
         let mut name_entries = vec![];
         for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
-            name_entries.push(x509::common::encode_name_entry(ext.py(), py_name_entry?)?);
+            let bound_name_entry = &py_name_entry?.as_borrowed();
+            name_entries.push(x509::common::encode_name_entry(ext.py(), bound_name_entry)?);
         }
         Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
             common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
@@ -413,7 +415,7 @@ pub(crate) fn encode_extension(
             Ok(Some(der))
         }
         &oid::AUTHORITY_INFORMATION_ACCESS_OID | &oid::SUBJECT_INFORMATION_ACCESS_OID => {
-            let der = x509::common::encode_access_descriptions(ext.py(), ext)?;
+            let der = x509::common::encode_access_descriptions(ext.py(), &ext.as_borrowed())?;
             Ok(Some(der))
         }
         &oid::EXTENDED_KEY_USAGE_OID | &oid::ACCEPTABLE_RESPONSES_OID => {
@@ -456,7 +458,7 @@ pub(crate) fn encode_extension(
             )?))
         }
         &oid::ISSUER_ALTERNATIVE_NAME_OID | &oid::SUBJECT_ALTERNATIVE_NAME_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), ext)?;
+            let gns = x509::common::encode_general_names(ext.py(), &ext.as_borrowed())?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::AUTHORITY_KEY_IDENTIFIER_OID => {
@@ -486,7 +488,7 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))
         }
         &oid::CERTIFICATE_ISSUER_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), ext)?;
+            let gns = x509::common::encode_general_names(ext.py(), &ext.as_borrowed())?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
