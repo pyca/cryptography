@@ -14,7 +14,7 @@ use cryptography_x509::{
     name, oid,
 };
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods, PySliceMethods};
-use pyo3::{PyNativeType, ToPyObject};
+use pyo3::ToPyObject;
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -641,16 +641,16 @@ pub fn parse_crl_entry_ext<'p>(
 #[pyo3::prelude::pyfunction]
 fn create_x509_crl(
     py: pyo3::Python<'_>,
-    builder: &pyo3::PyAny,
-    private_key: &pyo3::PyAny,
-    hash_algorithm: &pyo3::PyAny,
-    rsa_padding: &pyo3::PyAny,
+    builder: &pyo3::Bound<'_, pyo3::PyAny>,
+    private_key: &pyo3::Bound<'_, pyo3::PyAny>,
+    hash_algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+    rsa_padding: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<CertificateRevocationList> {
     let sigalg = x509::sign::compute_signature_algorithm(
         py,
-        private_key.as_borrowed().to_owned(),
-        hash_algorithm.as_borrowed().to_owned(),
-        rsa_padding.as_borrowed().to_owned(),
+        private_key.to_owned(),
+        hash_algorithm.to_owned(),
+        rsa_padding.to_owned(),
     )?;
     let mut revoked_certs = vec![];
     for py_revoked_cert in builder
@@ -672,7 +672,10 @@ fn create_x509_crl(
             )?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
-                py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
+                py_revoked_cert
+                    .getattr(pyo3::intern!(py, "extensions"))?
+                    .clone()
+                    .into_gil_ref(),
                 extensions::encode_extension,
             )?,
         });
@@ -699,7 +702,10 @@ fn create_x509_crl(
         },
         raw_crl_extensions: x509::common::encode_extensions(
             py,
-            builder.getattr(pyo3::intern!(py, "_extensions"))?,
+            builder
+                .getattr(pyo3::intern!(py, "_extensions"))?
+                .clone()
+                .into_gil_ref(),
             extensions::encode_extension,
         )?,
     };
