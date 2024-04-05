@@ -13,7 +13,7 @@ use cryptography_x509::{
     },
     name, oid,
 };
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PySliceMethods};
+use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods, PySliceMethods};
 use pyo3::{PyNativeType, ToPyObject};
 
 use crate::asn1::{
@@ -715,10 +715,10 @@ fn create_x509_crl(
     )
 }
 
-pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction!(load_der_x509_crl, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction!(load_pem_x509_crl, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction!(create_x509_crl, module)?)?;
+pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+    module.add_function(pyo3::wrap_pyfunction_bound!(load_der_x509_crl, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction_bound!(load_pem_x509_crl, module)?)?;
+    module.add_function(pyo3::wrap_pyfunction_bound!(create_x509_crl, module)?)?;
 
     module.add_class::<CertificateRevocationList>()?;
     module.add_class::<RevokedCertificate>()?;
