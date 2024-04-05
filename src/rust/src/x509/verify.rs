@@ -371,15 +371,15 @@ fn build_subject_owner(
     if subject.is_instance(&types::DNS_NAME.get_bound(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "value"))?
-            .downcast::<pyo3::types::PyString>()?;
-
+            .downcast::<pyo3::types::PyString>()?
+            .clone();
         Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
     } else if subject.is_instance(&types::IP_ADDRESS.get_bound(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "_packed"))?
             .call0()?
-            .downcast::<pyo3::types::PyBytes>()?;
-
+            .downcast::<pyo3::types::PyBytes>()?
+            .clone();
         Ok(SubjectOwner::IPAddress(value.clone().unbind()))
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(
