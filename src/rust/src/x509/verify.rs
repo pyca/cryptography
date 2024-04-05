@@ -371,6 +371,8 @@ fn build_subject_owner(
     if subject.is_instance(&types::DNS_NAME.get_bound(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "value"))?
+            // TODO: switch this to borrowing the string (using Bound::to_str) once our
+            // minimum Python version is 3.10
             .extract::<String>()?;
         Ok(SubjectOwner::DNSName(value))
     } else if subject.is_instance(&types::IP_ADDRESS.get_bound(py)?)? {
