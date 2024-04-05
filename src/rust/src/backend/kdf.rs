@@ -5,6 +5,7 @@
 use crate::backend::hashes;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyfunction]
 fn derive_pbkdf2_hmac<'p>(
@@ -14,10 +15,10 @@ fn derive_pbkdf2_hmac<'p>(
     salt: &[u8],
     iterations: usize,
     length: usize,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let md = hashes::message_digest_from_algorithm(py, algorithm)?;
 
-    Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
+    Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
         openssl::pkcs5::pbkdf2_hmac(key_material.as_bytes(), salt, iterations, md, b).unwrap();
         Ok(())
     })?)
@@ -35,8 +36,8 @@ fn derive_scrypt<'p>(
     p: u64,
     max_mem: u64,
     length: usize,
-) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-    Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
         openssl::pkcs5::scrypt(key_material.as_bytes(), salt, n, r, p, max_mem, b).map_err(|_| {
             // memory required formula explained here:
             // https://blog.filippo.io/the-scrypt-parameters/
@@ -48,12 +49,14 @@ fn derive_scrypt<'p>(
     })?)
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "kdf")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "kdf")?;
 
-    m.add_function(pyo3::wrap_pyfunction!(derive_pbkdf2_hmac, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(derive_pbkdf2_hmac, &m)?)?;
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
-    m.add_function(pyo3::wrap_pyfunction!(derive_scrypt, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(derive_scrypt, &m)?)?;
 
     Ok(m)
 }
