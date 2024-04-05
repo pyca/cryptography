@@ -39,8 +39,8 @@ pub(crate) fn encode_authority_key_identifier<'a>(
 ) -> CryptographyResult<Vec<u8>> {
     #[derive(pyo3::prelude::FromPyObject)]
     struct PyAuthorityKeyIdentifier<'a> {
-        key_identifier: Option<&'a [u8]>,
-        authority_cert_issuer: Option<&'a pyo3::PyAny>,
+        key_identifier: Option<pyo3::pybacked::PyBackedBytes>,
+        authority_cert_issuer: Option<pyo3::Bound<'a, pyo3::PyAny>>,
         authority_cert_serial_number: Option<pyo3::Bound<'a, pyo3::types::PyLong>>,
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
@@ -62,7 +62,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     Ok(asn1::write_single(&extensions::AuthorityKeyIdentifier {
         authority_cert_issuer,
         authority_cert_serial_number,
-        key_identifier: aki.key_identifier,
+        key_identifier: aki.key_identifier.as_deref(),
     })?)
 }
 
