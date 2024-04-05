@@ -7,7 +7,7 @@ use cryptography_x509::{
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
     oid,
 };
-use pyo3::IntoPy;
+use pyo3::prelude::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -132,7 +132,7 @@ impl OCSPRequest {
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
                         let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
-                        let py_oids = pyo3::types::PyList::empty(py);
+                        let py_oids = pyo3::types::PyList::empty_bound(py);
                         for oid in oids {
                             py_oids.append(oid_to_py_oid(py, &oid)?)?;
                         }
@@ -152,23 +152,23 @@ impl OCSPRequest {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::PyAny,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
-        if !encoding.is(types::ENCODING_DER.get(py)?) {
+        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if !encoding.is(&types::ENCODING_DER.get_bound(py)?) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )
             .into());
         }
         let result = asn1::write_single(self.raw.borrow_dependent())?;
-        Ok(pyo3::types::PyBytes::new(py, &result))
+        Ok(pyo3::types::PyBytes::new_bound(py, &result))
     }
 }
 
 #[pyo3::prelude::pyfunction]
 fn create_ocsp_request(
     py: pyo3::Python<'_>,
-    builder: &pyo3::PyAny,
+    builder: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<OCSPRequest> {
     let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
 
@@ -209,7 +209,10 @@ fn create_ocsp_request(
 
     let extensions = x509::common::encode_extensions(
         py,
-        builder.getattr(pyo3::intern!(py, "_extensions"))?,
+        builder
+            .getattr(pyo3::intern!(py, "_extensions"))?
+            .clone()
+            .into_gil_ref(),
         extensions::encode_extension,
     )?;
     let reqs = [ocsp_req::Request {
@@ -228,7 +231,7 @@ fn create_ocsp_request(
         optional_signature: None,
     };
     let data = asn1::write_single(&ocsp_req)?;
-    load_der_ocsp_request(py, pyo3::types::PyBytes::new(py, &data).into_py(py))
+    load_der_ocsp_request(py, pyo3::types::PyBytes::new_bound(py, &data).unbind())
 }
 
 pub(crate) fn add_to_module(module: &pyo3::prelude::PyModule) -> pyo3::PyResult<()> {
