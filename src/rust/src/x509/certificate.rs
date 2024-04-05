@@ -900,7 +900,7 @@ pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
     val: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<common::Time> {
-    let dt = x509::py_to_datetime(py, val.clone().into_gil_ref())?;
+    let dt = x509::py_to_datetime(py, val.clone())?;
     time_from_datetime(dt)
 }
 
