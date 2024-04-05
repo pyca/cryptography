@@ -5,6 +5,7 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x448")]
 pub(crate) struct X448PrivateKey {
@@ -65,17 +66,21 @@ impl X448PrivateKey {
         &self,
         py: pyo3::Python<'p>,
         peer_public_key: &X448PublicKey,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
         deriver.set_peer(&peer_public_key.pkey)?;
 
-        Ok(pyo3::types::PyBytes::new_with(py, deriver.len()?, |b| {
-            let n = deriver.derive(b).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-            })?;
-            assert_eq!(n, b.len());
-            Ok(())
-        })?)
+        Ok(pyo3::types::PyBytes::new_bound_with(
+            py,
+            deriver.len()?,
+            |b| {
+                let n = deriver.derive(b).map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
+                })?;
+                assert_eq!(n, b.len());
+                Ok(())
+            },
+        )?)
     }
 
     fn public_key(&self) -> CryptographyResult<X448PublicKey> {
@@ -91,9 +96,9 @@ impl X448PrivateKey {
     fn private_bytes_raw<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_private_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
     }
 
     fn private_bytes<'p>(
@@ -121,9 +126,9 @@ impl X448PublicKey {
     fn public_bytes_raw<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> CryptographyResult<&'p pyo3::types::PyBytes> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
     }
 
     fn public_bytes<'p>(
@@ -144,11 +149,13 @@ impl X448PublicKey {
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "x448")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_private_bytes, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(from_public_bytes, m)?)?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "x448")?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
 
     m.add_class::<X448PrivateKey>()?;
     m.add_class::<X448PublicKey>()?;
