@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::prelude::PyModuleMethods;
 use pyo3::IntoPy;
 
 use crate::backend::utils;
@@ -216,13 +217,15 @@ fn public_key_from_pkey(
     }
 }
 
-pub(crate) fn create_module(py: pyo3::Python<'_>) -> pyo3::PyResult<&pyo3::prelude::PyModule> {
-    let m = pyo3::prelude::PyModule::new(py, "keys")?;
+pub(crate) fn create_module(
+    py: pyo3::Python<'_>,
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
+    let m = pyo3::prelude::PyModule::new_bound(py, "keys")?;
 
-    m.add_function(pyo3::wrap_pyfunction!(load_pem_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_der_private_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_der_public_key, m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(load_pem_public_key, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_public_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_public_key, &m)?)?;
 
     Ok(m)
 }
