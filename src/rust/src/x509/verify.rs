@@ -11,7 +11,7 @@ use cryptography_x509_verification::{
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyStringMethods};
+use pyo3::prelude::{PyAnyMethods, PyListMethods};
 
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -371,9 +371,8 @@ fn build_subject_owner(
     if subject.is_instance(&types::DNS_NAME.get_bound(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "value"))?
-            .downcast::<pyo3::types::PyString>()?
-            .clone();
-        Ok(SubjectOwner::DNSName(value.to_str()?.to_owned()))
+            .extract::<String>()?;
+        Ok(SubjectOwner::DNSName(value))
     } else if subject.is_instance(&types::IP_ADDRESS.get_bound(py)?)? {
         let value = subject
             .getattr(pyo3::intern!(py, "_packed"))?
