@@ -229,7 +229,7 @@ impl DHPrivateKey {
         format: &pyo3::Bound<'p, pyo3::PyAny>,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(types::PRIVATE_FORMAT_PKCS8.get(py)?) {
+        if !format.is(&types::PRIVATE_FORMAT_PKCS8.get_bound(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH private keys support only PKCS8 serialization",
@@ -263,7 +263,7 @@ impl DHPublicKey {
         encoding: &pyo3::Bound<'p, pyo3::PyAny>,
         format: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
+        if !format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get_bound(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH public keys support only SubjectPublicKeyInfo serialization",
@@ -345,7 +345,7 @@ impl DHParameters {
         encoding: pyo3::Bound<'p, pyo3::PyAny>,
         format: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(types::PARAMETER_FORMAT_PKCS3.get(py)?) {
+        if !format.is(&types::PARAMETER_FORMAT_PKCS3.get_bound(py)?) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
             ));
