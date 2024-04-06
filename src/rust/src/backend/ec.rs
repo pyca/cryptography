@@ -44,8 +44,8 @@ fn curve_from_py_curve(
         }
     }
 
-    let curve_name = py_curve.getattr(pyo3::intern!(py, "name"))?.extract()?;
-    let nid = match curve_name {
+    let py_curve_name = py_curve.getattr(pyo3::intern!(py, "name"))?;
+    let nid = match py_curve_name.extract()? {
         "secp192r1" => openssl::nid::Nid::X9_62_PRIME192V1,
         "secp224r1" => openssl::nid::Nid::SECP224R1,
         "secp256r1" => openssl::nid::Nid::X9_62_PRIME256V1,
@@ -74,7 +74,7 @@ fn curve_from_py_curve(
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         "brainpoolP512r1" => openssl::nid::Nid::BRAINPOOL_P512R1,
 
-        _ => {
+        curve_name => {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     format!("Curve {curve_name} is not supported"),
@@ -292,8 +292,8 @@ impl ECPrivateKey {
                 if deterministic {
                     let hash_function_name = algo
                         .getattr(pyo3::intern!(py, "name"))?
-                        .extract::<&str>()?;
-                    let hash_function = openssl::md::Md::fetch(None, hash_function_name, None)?;
+                        .extract::<pyo3::pybacked::PyBackedStr>()?;
+                    let hash_function = openssl::md::Md::fetch(None, &hash_function_name, None)?;
                     // Setting a deterministic nonce type requires to explicitly set the hash function.
                     // See https://github.com/openssl/openssl/issues/23205
                     signer.set_signature_md(&hash_function)?;
