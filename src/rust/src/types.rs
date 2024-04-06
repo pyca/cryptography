@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::prelude::PyAnyMethods;
+
 pub struct LazyPyImport {
     module: &'static str,
     names: &'static [&'static str],
@@ -26,11 +28,11 @@ impl LazyPyImport {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let p = self.value.get_or_try_init(py, || {
-            let mut obj = py.import(self.module)?.as_ref();
+            let mut obj = py.import_bound(self.module)?.into_any();
             for name in self.names {
                 obj = obj.getattr(*name)?;
             }
-            obj.extract()
+            Ok::<_, pyo3::PyErr>(obj.unbind())
         })?;
 
         Ok(p.clone().into_bound(py))
