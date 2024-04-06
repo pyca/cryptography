@@ -412,8 +412,8 @@ pub(crate) fn encode_extension(
         &oid::SUBJECT_KEY_IDENTIFIER_OID => {
             let digest = ext
                 .getattr(pyo3::intern!(py, "digest"))?
-                .extract::<&[u8]>()?;
-            Ok(Some(asn1::write_single(&digest)?))
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            Ok(Some(asn1::write_single(&digest.as_ref())?))
         }
         &oid::KEY_USAGE_OID => {
             let der = encode_key_usage(py, ext)?;
@@ -522,8 +522,8 @@ pub(crate) fn encode_extension(
         &oid::NONCE_OID => {
             let nonce = ext
                 .getattr(pyo3::intern!(py, "nonce"))?
-                .extract::<&[u8]>()?;
-            Ok(Some(asn1::write_single(&nonce)?))
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            Ok(Some(asn1::write_single(&nonce.as_ref())?))
         }
         &oid::MS_CERTIFICATE_TEMPLATE => {
             let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
