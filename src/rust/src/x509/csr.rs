@@ -306,7 +306,7 @@ fn create_x509_csr(
     let spki_bytes = private_key
         .call_method0(pyo3::intern!(py, "public_key"))?
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
-        .extract::<&[u8]>()?;
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
     let mut attrs = vec![];
     let ext_bytes;
@@ -362,7 +362,7 @@ fn create_x509_csr(
     let csr_info = CertificationRequestInfo {
         version: 0,
         subject: x509::common::encode_name(py, &py_subject_name.as_borrowed())?,
-        spki: asn1::parse_single(spki_bytes)?,
+        spki: asn1::parse_single(&spki_bytes)?,
         attributes: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };
 
