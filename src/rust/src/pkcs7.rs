@@ -128,9 +128,21 @@ fn sign_and_serialize<'p>(
         .iter()
         .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
-    for (cert, py_private_key, py_hash_alg, rsa_padding) in &py_signers {
+
+    let mut digests = vec![];
+    if !options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
+        for (_, _, py_hash_alg, _) in &py_signers {
+            let digest = asn1::write_single(&x509::ocsp::hash_data(
+                py,
+                &py_hash_alg.as_borrowed(),
+                &data_with_header,
+            )?)?;
+            digests.push(digest);
+        }
+    }
+    for (i, (cert, py_private_key, py_hash_alg, rsa_padding)) in py_signers.iter().enumerate() {
         let (authenticated_attrs, signature) =
-            if options.contains(types::PKCS7_NO_ATTRIBUTES.get(py)?)? {
+            if options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
                 (
                     None,
                     x509::sign::sign_data(
@@ -157,17 +169,10 @@ fn sign_and_serialize<'p>(
                     },
                 ];
 
-                let digest = asn1::write_single(&x509::ocsp::hash_data(
-                    py,
-                    &py_hash_alg.as_borrowed(),
-                    &data_with_header,
-                )?)?;
-                // Gross hack: copy to PyBytes to extend the lifetime to 'p
-                let digest_bytes = pyo3::types::PyBytes::new(py, &digest);
                 authenticated_attrs.push(Attribute {
                     type_id: PKCS7_MESSAGE_DIGEST_OID,
                     values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                        asn1::parse_single(digest_bytes.as_bytes()).unwrap(),
+                        asn1::parse_single(&digests[i]).unwrap(),
                     ])),
                 });
 
