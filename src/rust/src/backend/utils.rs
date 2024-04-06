@@ -17,11 +17,11 @@ pub(crate) fn py_int_to_bn(
         .extract::<usize>()?
         / 8
         + 1;
-    let bytes: &[u8] = v
+    let bytes = v
         .call_method1(pyo3::intern!(py, "to_bytes"), (n, pyo3::intern!(py, "big")))?
-        .extract()?;
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
-    Ok(openssl::bn::BigNum::from_slice(bytes)?)
+    Ok(openssl::bn::BigNum::from_slice(&bytes)?)
 }
 
 pub(crate) fn bn_to_py_int<'p>(
@@ -90,17 +90,19 @@ pub(crate) fn pkey_private_bytes<'p>(
         return Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes));
     }
 
+    let py_password;
     let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get_bound(py)?)? {
-        b""
+        b"" as &[u8]
     } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get_bound(py)?)?
         || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get_bound(py)?)?
             && encryption_algorithm
                 .getattr(pyo3::intern!(py, "_format"))?
                 .is(format))
     {
-        encryption_algorithm
+        py_password = encryption_algorithm
             .getattr(pyo3::intern!(py, "password"))?
-            .extract::<&[u8]>()?
+            .extract::<pyo3::pybacked::PyBackedBytes>()?;
+        &py_password
     } else {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Unsupported encryption type"),
