@@ -58,7 +58,7 @@ impl Certificate {
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         let subject = self.subject(py)?;
-        let subject_repr = subject.repr()?.extract::<&str>()?;
+        let subject_repr = subject.repr()?.extract::<pyo3::pybacked::PyBackedStr>()?;
         Ok(format!("<Certificate(subject={subject_repr}, ...)>"))
     }
 
@@ -927,7 +927,7 @@ fn create_x509_certificate(
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
-        .extract::<&[u8]>()?;
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
     let py_serial = builder
         .getattr(pyo3::intern!(py, "_serial_number"))?
@@ -951,7 +951,7 @@ fn create_x509_certificate(
             not_after: time_from_py(py, &py_not_after)?,
         },
         subject: x509::common::encode_name(py, &py_subject_name)?,
-        spki: asn1::parse_single(spki_bytes)?,
+        spki: asn1::parse_single(&spki_bytes)?,
         issuer_unique_id: None,
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(
