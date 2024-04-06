@@ -324,14 +324,18 @@ fn create_x509_csr(
         });
     }
 
+    let mut attr_values = vec![];
     for py_attr in builder.getattr(pyo3::intern!(py, "_attributes"))?.iter()? {
-        let (py_oid, value, tag): (pyo3::Bound<'_, pyo3::PyAny>, &[u8], Option<u8>) =
-            py_attr?.extract()?;
+        let (py_oid, value, tag): (
+            pyo3::Bound<'_, pyo3::PyAny>,
+            pyo3::pybacked::PyBackedBytes,
+            Option<u8>,
+        ) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
         let tag = if let Some(tag) = tag {
             asn1::Tag::from_bytes(&[tag])?.0
         } else {
-            if std::str::from_utf8(value).is_err() {
+            if std::str::from_utf8(&value).is_err() {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
                         "Attribute values must be valid utf-8.",
@@ -341,10 +345,14 @@ fn create_x509_csr(
             asn1::Utf8String::TAG
         };
 
+        attr_values.push((oid, tag, value));
+    }
+
+    for (oid, tag, value) in &attr_values {
         attrs.push(Attribute {
-            type_id: oid,
+            type_id: oid.clone(),
             values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                common::RawTlv::new(tag, value),
+                common::RawTlv::new(*tag, value),
             ])),
         });
     }
