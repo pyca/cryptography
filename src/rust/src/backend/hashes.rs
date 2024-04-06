@@ -51,14 +51,14 @@ pub(crate) fn message_digest_from_algorithm(
 
     let name = algorithm
         .getattr(pyo3::intern!(py, "name"))?
-        .extract::<&str>()?;
+        .extract::<pyo3::pybacked::PyBackedStr>()?;
     let openssl_name = if name == "blake2b" || name == "blake2s" {
         let digest_size = algorithm
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
         Cow::Owned(format!("{}{}", name, digest_size * 8))
     } else {
-        Cow::Borrowed(name)
+        Cow::Borrowed(name.as_ref())
     };
 
     match openssl::hash::MessageDigest::from_name(&openssl_name) {
