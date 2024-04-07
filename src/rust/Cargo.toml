@@ -13,6 +13,7 @@ cfg-if = "1"
 pyo3 = { version = "0.21.1", features = ["abi3", "gil-refs"] }
 asn1 = { version = "0.16.1", default-features = false }
 cryptography-cffi = { path = "cryptography-cffi" }
+cryptography-keepalive = { path = "cryptography-keepalive" }
 cryptography-key-parsing = { path = "cryptography-key-parsing" }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-x509-verification = { path = "cryptography-x509-verification" }
@@ -37,6 +38,7 @@ overflow-checks = true
 [workspace]
 members = [
     "cryptography-cffi",
+    "cryptography-keepalive",
     "cryptography-key-parsing",
     "cryptography-openssl",
     "cryptography-x509",

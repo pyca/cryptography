@@ -68,6 +68,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "cryptography-keepalive"
+version = "0.1.0"
+
+[[package]]
 name = "cryptography-key-parsing"
 version = "0.1.0"
 dependencies = [
@@ -96,6 +100,7 @@ dependencies = [
  "asn1",
  "cfg-if",
  "cryptography-cffi",
+ "cryptography-keepalive",
  "cryptography-key-parsing",
  "cryptography-openssl",
  "cryptography-x509",
