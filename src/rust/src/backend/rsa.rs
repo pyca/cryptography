@@ -5,11 +5,12 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use pyo3::types::PyAnyMethods;
+
 use crate::backend::{hashes, utils};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::types::PyAnyMethods;
 
 #[pyo3::pyclass(
     frozen,

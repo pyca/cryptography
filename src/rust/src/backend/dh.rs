@@ -3,12 +3,12 @@
 // for complete details.
 
 use cryptography_x509::common;
+use pyo3::types::PyAnyMethods;
 
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
-use pyo3::types::PyAnyMethods;
 
 const MIN_MODULUS_SIZE: u32 = 512;
 

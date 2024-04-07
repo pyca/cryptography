@@ -92,8 +92,9 @@ impl std::ops::Deref for DigestBytes {
 
 #[cfg(test)]
 mod tests {
-    use super::DigestBytes;
     use openssl_sys as ffi;
+
+    use super::DigestBytes;
 
     #[test]
     fn test_digest_bytes() {

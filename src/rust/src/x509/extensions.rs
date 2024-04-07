@@ -2,14 +2,15 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::{common::Asn1Write, crl, extensions, oid};
+use cryptography_x509::common::Asn1Write;
+use cryptography_x509::{crl, extensions, oid};
+use pyo3::pybacked::PyBackedStr;
+use pyo3::types::PyAnyMethods;
 
 use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sct};
 use crate::{types, x509};
-use pyo3::pybacked::PyBackedStr;
-use pyo3::types::PyAnyMethods;
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'_>,
