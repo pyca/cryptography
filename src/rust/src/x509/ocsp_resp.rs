@@ -601,169 +601,171 @@ fn create_ocsp_response(
     let py_issuer: pyo3::PyRef<'_, x509::certificate::Certificate>;
     let borrowed_cert;
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::certificate::Certificate>>>;
-    let response_bytes = if response_status == SUCCESSFUL_RESPONSE {
-        let py_single_resp = builder.getattr(pyo3::intern!(py, "_response"))?;
-        py_cert = py_single_resp
-            .getattr(pyo3::intern!(py, "_cert"))?
-            .extract()?;
-        py_issuer = py_single_resp
-            .getattr(pyo3::intern!(py, "_issuer"))?
-            .extract()?;
-        let py_cert_hash_algorithm = py_single_resp.getattr(pyo3::intern!(py, "_algorithm"))?;
-        let (responder_cert, responder_encoding): (
-            pyo3::Bound<'_, x509::certificate::Certificate>,
-            &pyo3::PyAny,
-        ) = builder
-            .getattr(pyo3::intern!(py, "_responder_id"))?
-            .extract()?;
-
-        let py_cert_status = py_single_resp.getattr(pyo3::intern!(py, "_cert_status"))?;
-        let cert_status = if py_cert_status.is(types::OCSP_CERT_STATUS_GOOD.get(py)?) {
-            ocsp_resp::CertStatus::Good(())
-        } else if py_cert_status.is(types::OCSP_CERT_STATUS_UNKNOWN.get(py)?) {
-            ocsp_resp::CertStatus::Unknown(())
-        } else {
-            let revocation_reason = if !py_single_resp
-                .getattr(pyo3::intern!(py, "_revocation_reason"))?
-                .is_none()
-            {
-                let value = types::CRL_ENTRY_REASON_ENUM_TO_CODE
-                    .get(py)?
-                    .get_item(py_single_resp.getattr(pyo3::intern!(py, "_revocation_reason"))?)?
-                    .extract::<u32>()?;
-                Some(asn1::Enumerated::new(value))
-            } else {
-                None
-            };
-            // REVOKED
-            let py_revocation_time =
-                py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
-            let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(
-                py,
-                py_revocation_time.as_borrowed().to_owned(),
-            )?)?;
-            ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
-                revocation_time,
-                revocation_reason,
-            })
+    if response_status != SUCCESSFUL_RESPONSE {
+        let resp = ocsp_resp::OCSPResponse {
+            response_status: asn1::Enumerated::new(response_status),
+            response_bytes: None,
         };
-        let next_update = if !py_single_resp
-            .getattr(pyo3::intern!(py, "_next_update"))?
+        let data = asn1::write_single(&resp)?;
+        return load_der_ocsp_response(py, pyo3::types::PyBytes::new_bound(py, &data).unbind());
+    }
+
+    let py_single_resp = builder.getattr(pyo3::intern!(py, "_response"))?;
+    py_cert = py_single_resp
+        .getattr(pyo3::intern!(py, "_cert"))?
+        .extract()?;
+    py_issuer = py_single_resp
+        .getattr(pyo3::intern!(py, "_issuer"))?
+        .extract()?;
+    let py_cert_hash_algorithm = py_single_resp.getattr(pyo3::intern!(py, "_algorithm"))?;
+    let (responder_cert, responder_encoding): (
+        pyo3::Bound<'_, x509::certificate::Certificate>,
+        &pyo3::PyAny,
+    ) = builder
+        .getattr(pyo3::intern!(py, "_responder_id"))?
+        .extract()?;
+
+    let py_cert_status = py_single_resp.getattr(pyo3::intern!(py, "_cert_status"))?;
+    let cert_status = if py_cert_status.is(types::OCSP_CERT_STATUS_GOOD.get(py)?) {
+        ocsp_resp::CertStatus::Good(())
+    } else if py_cert_status.is(types::OCSP_CERT_STATUS_UNKNOWN.get(py)?) {
+        ocsp_resp::CertStatus::Unknown(())
+    } else {
+        let revocation_reason = if !py_single_resp
+            .getattr(pyo3::intern!(py, "_revocation_reason"))?
             .is_none()
         {
-            let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
-            Some(asn1::GeneralizedTime::new(py_to_datetime(
-                py,
-                py_next_update.as_borrowed().to_owned(),
-            )?)?)
+            let value = types::CRL_ENTRY_REASON_ENUM_TO_CODE
+                .get(py)?
+                .get_item(py_single_resp.getattr(pyo3::intern!(py, "_revocation_reason"))?)?
+                .extract::<u32>()?;
+            Some(asn1::Enumerated::new(value))
         } else {
             None
         };
-        let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
-        let this_update = asn1::GeneralizedTime::new(py_to_datetime(
+        // REVOKED
+        let py_revocation_time = py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
+        let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(
             py,
-            py_this_update.as_borrowed().to_owned(),
+            py_revocation_time.as_borrowed().to_owned(),
         )?)?;
-
-        let responses = vec![SingleResponse {
-            cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
-            cert_status,
-            next_update,
-            this_update,
-            raw_single_extensions: None,
-        }];
-
-        borrowed_cert = responder_cert.borrow();
-        let responder_id = if responder_encoding.is(types::OCSP_RESPONDER_ENCODING_HASH.get(py)?) {
-            let sha1 = types::SHA1.get_bound(py)?.call0()?;
-            ocsp_resp::ResponderId::ByKey(ocsp::hash_data(
-                py,
-                &sha1,
-                borrowed_cert
-                    .raw
-                    .borrow_dependent()
-                    .tbs_cert
-                    .spki
-                    .subject_public_key
-                    .as_bytes(),
-            )?)
-        } else {
-            ocsp_resp::ResponderId::ByName(
-                borrowed_cert
-                    .raw
-                    .borrow_dependent()
-                    .tbs_cert
-                    .subject
-                    .clone(),
-            )
-        };
-
-        let tbs_response_data = ocsp_resp::ResponseData {
-            version: 0,
-            produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
-            responder_id,
-            responses: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
-                responses,
-            )),
-            raw_response_extensions: x509::common::encode_extensions(
-                py,
-                &builder.getattr(pyo3::intern!(py, "_extensions"))?,
-                extensions::encode_extension,
-            )?,
-        };
-
-        let sigalg = x509::sign::compute_signature_algorithm(
-            py,
-            private_key.clone(),
-            hash_algorithm.clone(),
-            py.None().into_bound(py),
-        )?;
-        let tbs_bytes = asn1::write_single(&tbs_response_data)?;
-        let signature = x509::sign::sign_data(
-            py,
-            private_key.clone(),
-            hash_algorithm.clone(),
-            py.None().into_bound(py),
-            &tbs_bytes,
-        )?;
-
-        if !responder_cert
-            .call_method0(pyo3::intern!(py, "public_key"))?
-            .eq(private_key.call_method0(pyo3::intern!(py, "public_key"))?)?
-        {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Certificate public key and provided private key do not match",
-                ),
-            ));
-        }
-
-        py_certs = builder.getattr(pyo3::intern!(py, "_certs"))?.extract()?;
-        let certs = py_certs.as_ref().map(|py_certs| {
-            common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
-                py_certs
-                    .iter()
-                    .map(|c| c.raw.borrow_dependent().clone())
-                    .collect(),
-            ))
-        });
-
-        let basic_resp = ocsp_resp::BasicOCSPResponse {
-            tbs_response_data,
-            signature: asn1::BitString::new(signature, 0).unwrap(),
-            signature_algorithm: sigalg,
-            certs,
-        };
-        Some(ocsp_resp::ResponseBytes {
-            response_type: (BASIC_RESPONSE_OID).clone(),
-            response: asn1::OctetStringEncoded::new(basic_resp),
+        ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
+            revocation_time,
+            revocation_reason,
         })
+    };
+    let next_update = if !py_single_resp
+        .getattr(pyo3::intern!(py, "_next_update"))?
+        .is_none()
+    {
+        let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
+        Some(asn1::GeneralizedTime::new(py_to_datetime(
+            py,
+            py_next_update.as_borrowed().to_owned(),
+        )?)?)
     } else {
         None
     };
+    let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
+    let this_update =
+        asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update.as_borrowed().to_owned())?)?;
+
+    let responses = vec![SingleResponse {
+        cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
+        cert_status,
+        next_update,
+        this_update,
+        raw_single_extensions: None,
+    }];
+
+    borrowed_cert = responder_cert.borrow();
+    let responder_id = if responder_encoding.is(types::OCSP_RESPONDER_ENCODING_HASH.get(py)?) {
+        let sha1 = types::SHA1.get_bound(py)?.call0()?;
+        ocsp_resp::ResponderId::ByKey(ocsp::hash_data(
+            py,
+            &sha1,
+            borrowed_cert
+                .raw
+                .borrow_dependent()
+                .tbs_cert
+                .spki
+                .subject_public_key
+                .as_bytes(),
+        )?)
+    } else {
+        ocsp_resp::ResponderId::ByName(
+            borrowed_cert
+                .raw
+                .borrow_dependent()
+                .tbs_cert
+                .subject
+                .clone(),
+        )
+    };
+
+    let tbs_response_data = ocsp_resp::ResponseData {
+        version: 0,
+        produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
+        responder_id,
+        responses: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            responses,
+        )),
+        raw_response_extensions: x509::common::encode_extensions(
+            py,
+            &builder.getattr(pyo3::intern!(py, "_extensions"))?,
+            extensions::encode_extension,
+        )?,
+    };
+
+    let sigalg = x509::sign::compute_signature_algorithm(
+        py,
+        private_key.clone(),
+        hash_algorithm.clone(),
+        py.None().into_bound(py),
+    )?;
+    let tbs_bytes = asn1::write_single(&tbs_response_data)?;
+    let signature = x509::sign::sign_data(
+        py,
+        private_key.clone(),
+        hash_algorithm.clone(),
+        py.None().into_bound(py),
+        &tbs_bytes,
+    )?;
+
+    if !responder_cert
+        .call_method0(pyo3::intern!(py, "public_key"))?
+        .eq(private_key.call_method0(pyo3::intern!(py, "public_key"))?)?
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Certificate public key and provided private key do not match",
+            ),
+        ));
+    }
+
+    py_certs = builder.getattr(pyo3::intern!(py, "_certs"))?.extract()?;
+    let certs = py_certs.as_ref().map(|py_certs| {
+        common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
+            py_certs
+                .iter()
+                .map(|c| c.raw.borrow_dependent().clone())
+                .collect(),
+        ))
+    });
+
+    let basic_resp = ocsp_resp::BasicOCSPResponse {
+        tbs_response_data,
+        signature: asn1::BitString::new(signature, 0).unwrap(),
+        signature_algorithm: sigalg,
+        certs,
+    };
+    let response_bytes = Some(ocsp_resp::ResponseBytes {
+        response_type: (BASIC_RESPONSE_OID).clone(),
+        response: asn1::OctetStringEncoded::new(basic_resp),
+    });
 
     let resp = ocsp_resp::OCSPResponse {
-        response_status: asn1::Enumerated::new(response_status),
+        response_status: asn1::Enumerated::new(SUCCESSFUL_RESPONSE),
         response_bytes,
     };
     let data = asn1::write_single(&resp)?;
