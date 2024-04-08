@@ -146,7 +146,7 @@ tomli==2.0.1
     #   mypy
     #   pyproject-hooks
     #   pytest
-typing-extensions==4.10.0; python_version >= "3.8"
+typing-extensions==4.11.0; python_version >= "3.8"
     # via mypy
 urllib3==2.2.1
     # via requests
