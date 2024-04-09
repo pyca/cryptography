@@ -4,7 +4,7 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
-use pyo3::pybacked::PyBackedBytes;
+use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 use std::cell::UnsafeCell;
 use std::ops::Deref;
 
@@ -23,6 +23,10 @@ unsafe impl<T> StableDeref for Vec<T> {}
 // SAFETY: `PyBackedBytes`'s data is on the heap and `bytes` objects in
 // Python are immutable.
 unsafe impl StableDeref for PyBackedBytes {}
+
+// SAFETY: `PyBackedStr`'s data is on the heap and `str` objects in
+// Python are immutable.
+unsafe impl StableDeref for PyBackedStr {}
 
 #[allow(clippy::new_without_default)]
 impl<T: StableDeref> KeepAlive<T> {
