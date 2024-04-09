@@ -12,6 +12,11 @@ def serialize_certificates(
     certs: list[x509.Certificate],
     encoding: serialization.Encoding,
 ) -> bytes: ...
+def encrypt_and_serialize(
+    builder: pkcs7.PKCS7EnvelopeBuilder,
+    encoding: serialization.Encoding,
+    options: typing.Iterable[pkcs7.PKCS7Options],
+) -> bytes: ...
 def sign_and_serialize(
     builder: pkcs7.PKCS7SignatureBuilder,
     encoding: serialization.Encoding,

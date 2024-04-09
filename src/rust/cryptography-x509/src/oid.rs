@@ -74,6 +74,9 @@ pub const EC_BRAINPOOLP384R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3
 pub const EC_BRAINPOOLP512R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 13);
 
 pub const RSA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 1, 1);
+pub const AES_256_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 42);
+pub const AES_192_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 22);
+pub const AES_128_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 2);
 
 // Signing methods
 pub const ECDSA_WITH_SHA224_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 4, 3, 1);
