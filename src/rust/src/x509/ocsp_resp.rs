@@ -754,7 +754,7 @@ fn create_ocsp_response(
 
     let basic_resp = ocsp_resp::BasicOCSPResponse {
         tbs_response_data,
-        signature: asn1::BitString::new(signature, 0).unwrap(),
+        signature: asn1::BitString::new(&signature, 0).unwrap(),
         signature_algorithm: sigalg,
         certs,
     };

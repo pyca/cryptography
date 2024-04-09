@@ -129,7 +129,8 @@ fn sign_and_serialize<'p>(
         .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
 
-    let ka = cryptography_keepalive::KeepAlive::new();
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
     for (cert, py_private_key, py_hash_alg, rsa_padding) in py_signers.iter() {
         let (authenticated_attrs, signature) =
             if options.contains(&types::PKCS7_NO_ATTRIBUTES.get(py)?)? {
@@ -159,7 +160,7 @@ fn sign_and_serialize<'p>(
                     },
                 ];
 
-                let digest = ka.add(asn1::write_single(&x509::ocsp::hash_data(
+                let digest = ka_vec.add(asn1::write_single(&x509::ocsp::hash_data(
                     py,
                     py_hash_alg,
                     &data_with_header,
@@ -221,7 +222,7 @@ fn sign_and_serialize<'p>(
                 py_hash_alg.clone(),
                 rsa_padding.clone(),
             )?,
-            encrypted_digest: signature,
+            encrypted_digest: ka_bytes.add(signature),
             unauthenticated_attributes: None,
         });
     }
