@@ -8,6 +8,7 @@ use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
 use pyo3::prelude::PyAnyMethods;
 use pyo3::prelude::PyModuleMethods;
+use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::IntoPyDict;
 use pyo3::ToPyObject;
 
@@ -73,7 +74,7 @@ fn decode_dss_signature(
 pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyLong>,
-) -> pyo3::PyResult<&'p [u8]> {
+) -> pyo3::PyResult<PyBackedBytes> {
     let zero = (0).to_object(py);
     if v.lt(zero)? {
         return Err(pyo3::exceptions::PyValueError::new_err(
@@ -124,9 +125,11 @@ fn encode_dss_signature<'p>(
     r: pyo3::Bound<'_, pyo3::types::PyLong>,
     s: pyo3::Bound<'_, pyo3::types::PyLong>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let r_bytes = py_uint_to_big_endian_bytes(py, r)?;
+    let s_bytes = py_uint_to_big_endian_bytes(py, s)?;
     let sig = DssSignature {
-        r: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, r)?).unwrap(),
-        s: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, s)?).unwrap(),
+        r: asn1::BigUint::new(&r_bytes).unwrap(),
+        s: asn1::BigUint::new(&s_bytes).unwrap(),
     };
     let result = asn1::write_single(&sig)?;
     Ok(pyo3::types::PyBytes::new_bound(py, &result))

@@ -4,6 +4,7 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+use pyo3::pybacked::PyBackedBytes;
 use std::cell::UnsafeCell;
 use std::ops::Deref;
 
@@ -18,6 +19,10 @@ pub unsafe trait StableDeref: Deref {}
 // SAFETY: `Vec`'s data is on the heap, so as long as it's not mutated, the
 // slice returned by `deref` remains valid.
 unsafe impl<T> StableDeref for Vec<T> {}
+
+// SAFETY: `PyBackedBytes`'s data is on the heap, so as long as it's not mutated, the
+// slice returned by `deref` remains valid.
+unsafe impl StableDeref for PyBackedBytes {}
 
 #[allow(clippy::new_without_default)]
 impl<T: StableDeref> KeepAlive<T> {

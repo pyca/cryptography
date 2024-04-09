@@ -51,9 +51,13 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     } else {
         None
     };
+    let ka = cryptography_keepalive::KeepAlive::new();
     let authority_cert_serial_number =
         if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
-            let serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
+            let serial_bytes = ka.add(py_uint_to_big_endian_bytes(
+                py,
+                authority_cert_serial_number,
+            )?);
             Some(asn1::BigUint::new(serial_bytes).unwrap())
         } else {
             None
@@ -215,6 +219,7 @@ fn encode_certificate_policies(
     ext: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     let mut policy_informations = vec![];
+    let ka = cryptography_keepalive::KeepAlive::new();
     for py_policy_info in ext.iter()? {
         let py_policy_info = py_policy_info?;
         let py_policy_qualifiers =
@@ -245,7 +250,8 @@ fn encode_certificate_policies(
                             .getattr(pyo3::intern!(py, "notice_numbers"))?
                             .iter()?
                         {
-                            let bytes = py_uint_to_big_endian_bytes(ext.py(), py_num?.extract()?)?;
+                            let bytes =
+                                ka.add(py_uint_to_big_endian_bytes(ext.py(), py_num?.extract()?)?);
                             notice_numbers.push(asn1::BigUint::new(bytes).unwrap());
                         }
 
@@ -454,7 +460,7 @@ pub(crate) fn encode_extension(
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
-                &asn1::BigUint::new(bytes).unwrap(),
+                &asn1::BigUint::new(&bytes).unwrap(),
             )?))
         }
         &oid::ISSUER_ALTERNATIVE_NAME_OID | &oid::SUBJECT_ALTERNATIVE_NAME_OID => {
@@ -503,7 +509,7 @@ pub(crate) fn encode_extension(
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
-                &asn1::BigUint::new(bytes).unwrap(),
+                &asn1::BigUint::new(&bytes).unwrap(),
             )?))
         }
         &oid::ISSUING_DISTRIBUTION_POINT_OID => {
