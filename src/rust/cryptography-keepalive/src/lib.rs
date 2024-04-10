@@ -20,8 +20,8 @@ pub unsafe trait StableDeref: Deref {}
 // slice returned by `deref` remains valid.
 unsafe impl<T> StableDeref for Vec<T> {}
 
-// SAFETY: `PyBackedBytes`'s data is on the heap, so as long as it's not mutated, the
-// slice returned by `deref` remains valid.
+// SAFETY: `PyBackedBytes`'s data is on the heap and `bytes` objects in
+// Python are immutable.
 unsafe impl StableDeref for PyBackedBytes {}
 
 #[allow(clippy::new_without_default)]

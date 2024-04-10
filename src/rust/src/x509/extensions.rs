@@ -9,6 +9,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sct};
 use crate::{types, x509};
 use pyo3::prelude::PyAnyMethods;
+use pyo3::pybacked::PyBackedBytes;
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'a>,
@@ -51,14 +52,11 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     } else {
         None
     };
-    let ka = cryptography_keepalive::KeepAlive::new();
+    let serial_bytes: PyBackedBytes;
     let authority_cert_serial_number =
         if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
-            let serial_bytes = ka.add(py_uint_to_big_endian_bytes(
-                py,
-                authority_cert_serial_number,
-            )?);
-            Some(asn1::BigUint::new(serial_bytes).unwrap())
+            serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
+            Some(asn1::BigUint::new(&serial_bytes).unwrap())
         } else {
             None
         };
