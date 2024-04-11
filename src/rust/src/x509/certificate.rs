@@ -18,7 +18,7 @@ use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
-use pyo3::{IntoPy, PyNativeType, ToPyObject};
+use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -91,7 +91,7 @@ impl Certificate {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let serialized = asn1::write_single(&self.raw.borrow_dependent())?;
 
-        let mut h = hashes::Hash::new(py, &algorithm.as_borrowed(), None)?;
+        let mut h = hashes::Hash::new(py, algorithm, None)?;
         h.update_bytes(&serialized)?;
         Ok(h.finalize(py)?.into_any())
     }
@@ -128,17 +128,13 @@ impl Certificate {
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(x509::parse_name(py, self.raw.borrow_dependent().issuer())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?
-            .as_borrowed()
-            .to_owned())
+            .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?)
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?
-            .as_borrowed()
-            .to_owned())
+            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
     }
 
     #[getter]
@@ -218,7 +214,7 @@ impl Certificate {
             .validity
             .not_before
             .as_datetime();
-        Ok(x509::datetime_to_py(py, dt)?.as_borrowed().to_owned())
+        x509::datetime_to_py(py, dt)
     }
 
     #[getter]
@@ -233,7 +229,7 @@ impl Certificate {
             .validity
             .not_before
             .as_datetime();
-        Ok(x509::datetime_to_py_utc(py, dt)?.as_borrowed().to_owned())
+        x509::datetime_to_py_utc(py, dt)
     }
 
     #[getter]
@@ -255,7 +251,7 @@ impl Certificate {
             .validity
             .not_after
             .as_datetime();
-        Ok(x509::datetime_to_py(py, dt)?.as_borrowed().to_owned())
+        x509::datetime_to_py(py, dt)
     }
 
     #[getter]
@@ -270,7 +266,7 @@ impl Certificate {
             .validity
             .not_after
             .as_datetime();
-        Ok(x509::datetime_to_py_utc(py, dt)?.as_borrowed().to_owned())
+        x509::datetime_to_py_utc(py, dt)
     }
 
     #[getter]
@@ -712,11 +708,11 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
-    Ok(types::AUTHORITY_KEY_IDENTIFIER
-        .get(py)?
-        .call1((aki.key_identifier, issuer, serial))?
-        .as_borrowed()
-        .to_owned())
+    Ok(types::AUTHORITY_KEY_IDENTIFIER.get_bound(py)?.call1((
+        aki.key_identifier,
+        issuer,
+        serial,
+    ))?)
 }
 
 pub(crate) fn parse_access_descriptions(

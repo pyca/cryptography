@@ -14,7 +14,6 @@ use openssl::pkcs7::Pkcs7;
 use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
-use pyo3::PyNativeType;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
@@ -111,11 +110,12 @@ fn sign_and_serialize<'p>(
         &asn1::SequenceOfWriter::new([AES_128_CBC_OID]),
     ]))?;
 
+    #[allow(clippy::type_complexity)]
     let py_signers: Vec<(
         pyo3::PyRef<'p, x509::certificate::Certificate>,
-        &pyo3::PyAny,
-        &pyo3::PyAny,
-        &pyo3::PyAny,
+        pyo3::Bound<'_, pyo3::PyAny>,
+        pyo3::Bound<'_, pyo3::PyAny>,
+        pyo3::Bound<'_, pyo3::PyAny>,
     )> = builder.getattr(pyo3::intern!(py, "_signers"))?.extract()?;
 
     let py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>> = builder
@@ -132,11 +132,8 @@ fn sign_and_serialize<'p>(
     let mut digests = vec![];
     if !options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
         for (_, _, py_hash_alg, _) in &py_signers {
-            let digest = asn1::write_single(&x509::ocsp::hash_data(
-                py,
-                &py_hash_alg.as_borrowed(),
-                &data_with_header,
-            )?)?;
+            let digest =
+                asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;
             digests.push(digest);
         }
     }
@@ -147,9 +144,9 @@ fn sign_and_serialize<'p>(
                     None,
                     x509::sign::sign_data(
                         py,
-                        py_private_key.as_borrowed().to_owned(),
-                        py_hash_alg.as_borrowed().to_owned(),
-                        rsa_padding.as_borrowed().to_owned(),
+                        py_private_key.clone(),
+                        py_hash_alg.clone(),
+                        rsa_padding.clone(),
                         &data_with_header,
                     )?,
                 )
@@ -194,9 +191,9 @@ fn sign_and_serialize<'p>(
                     )),
                     x509::sign::sign_data(
                         py,
-                        py_private_key.as_borrowed().to_owned(),
-                        py_hash_alg.as_borrowed().to_owned(),
-                        rsa_padding.as_borrowed().to_owned(),
+                        py_private_key.clone(),
+                        py_hash_alg.clone(),
+                        rsa_padding.clone(),
                         &signed_data,
                     )?,
                 )
@@ -222,9 +219,9 @@ fn sign_and_serialize<'p>(
             authenticated_attributes: authenticated_attrs,
             digest_encryption_algorithm: compute_pkcs7_signature_algorithm(
                 py,
-                py_private_key,
-                py_hash_alg,
-                rsa_padding,
+                py_private_key.clone(),
+                py_hash_alg.clone(),
+                rsa_padding.clone(),
             )?,
             encrypted_digest: signature,
             unauthenticated_attributes: None,
@@ -279,12 +276,12 @@ fn sign_and_serialize<'p>(
 
 fn compute_pkcs7_signature_algorithm<'p>(
     py: pyo3::Python<'p>,
-    private_key: &'p pyo3::PyAny,
-    hash_algorithm: &'p pyo3::PyAny,
-    rsa_padding: &'p pyo3::PyAny,
+    private_key: pyo3::Bound<'p, pyo3::PyAny>,
+    hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
+    rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
     let key_type = x509::sign::identify_key_type(py, private_key.as_borrowed().to_owned())?;
-    let has_pss_padding = rsa_padding.is_instance(types::PSS.get(py)?)?;
+    let has_pss_padding = rsa_padding.is_instance(&types::PSS.get_bound(py)?)?;
     // For RSA signatures (with no PSS padding), the OID is always the same no matter the
     // digest algorithm. See RFC 3370 (section 3.2).
     if key_type == x509::sign::KeyType::Rsa && !has_pss_padding {
