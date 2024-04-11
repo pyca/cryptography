@@ -243,7 +243,7 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(x509::parse_name(
             py,
             self.owned
@@ -251,8 +251,7 @@ impl CertificateRevocationList {
                 .tbs_cert_list
                 .issuer
                 .unwrap_read(),
-        )?
-        .into_gil_ref())
+        )?)
     }
 
     #[getter]

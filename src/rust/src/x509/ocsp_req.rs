@@ -194,7 +194,7 @@ fn create_ocsp_request(
             &issuer_name_hash,
             &issuer_key_hash,
             serial_number,
-            py_hash.into_gil_ref(),
+            py_hash,
         )?
     };
 

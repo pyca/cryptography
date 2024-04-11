@@ -67,12 +67,11 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(x509::parse_name(
             py,
             self.raw.borrow_dependent().csr_info.subject.unwrap_read(),
-        )?
-        .into_gil_ref())
+        )?)
     }
 
     #[getter]
