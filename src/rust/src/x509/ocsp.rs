@@ -108,13 +108,13 @@ pub(crate) fn certid_new_from_hash<'p>(
     issuer_name_hash: &'p [u8],
     issuer_key_hash: &'p [u8],
     serial_number: asn1::BigInt<'p>,
-    hash_algorithm: &'p pyo3::PyAny,
+    hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<CertID<'p>> {
+    let hash_name = hash_algorithm
+        .getattr(pyo3::intern!(py, "name"))?
+        .extract::<pyo3::pybacked::PyBackedStr>()?;
     Ok(CertID {
-        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
-            .getattr(pyo3::intern!(py, "name"))?
-            .extract::<&str>()?]
-        .clone(),
+        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[&*hash_name].clone(),
         issuer_name_hash,
         issuer_key_hash,
         serial_number,
