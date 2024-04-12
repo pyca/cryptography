@@ -82,7 +82,7 @@ fn setup_encryption_ctx(
     ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
     padding: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<()> {
-    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get_bound(py)?)? {
+    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -90,12 +90,12 @@ fn setup_encryption_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(&types::PKCS1V15.get_bound(py)?)? {
+    let padding_enum = if padding.is_instance(&types::PKCS1V15.get(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(&types::OAEP.get_bound(py)?)? {
+    } else if padding.is_instance(&types::OAEP.get(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(&types::MGF1.get_bound(py)?)?
+            .is_instance(&types::MGF1.get(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -165,7 +165,7 @@ fn setup_signature_ctx(
     key_size: usize,
     is_signing: bool,
 ) -> CryptographyResult<()> {
-    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get_bound(py)?)? {
+    if !padding.is_instance(&types::ASYMMETRIC_PADDING.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Padding must be an instance of AsymmetricPadding.",
@@ -173,12 +173,12 @@ fn setup_signature_ctx(
         ));
     }
 
-    let padding_enum = if padding.is_instance(&types::PKCS1V15.get_bound(py)?)? {
+    let padding_enum = if padding.is_instance(&types::PKCS1V15.get(py)?)? {
         openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(&types::PSS.get_bound(py)?)? {
+    } else if padding.is_instance(&types::PSS.get(py)?)? {
         if !padding
             .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(&types::MGF1.get_bound(py)?)?
+            .is_instance(&types::MGF1.get(py)?)?
         {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -189,7 +189,7 @@ fn setup_signature_ctx(
         }
 
         // PSS padding requires a hash algorithm
-        if !algorithm.is_instance(&types::HASH_ALGORITHM.get_bound(py)?)? {
+        if !algorithm.is_instance(&types::HASH_ALGORITHM.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Expected instance of hashes.HashAlgorithm.",
@@ -250,11 +250,11 @@ fn setup_signature_ctx(
 
     if padding_enum == openssl::rsa::Padding::PKCS1_PSS {
         let salt = padding.getattr(pyo3::intern!(py, "_salt_length"))?;
-        if salt.is_instance(&types::PADDING_MAX_LENGTH.get_bound(py)?)? {
+        if salt.is_instance(&types::PADDING_MAX_LENGTH.get(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
-        } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get_bound(py)?)? {
+        } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get(py)?)? {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::DIGEST_LENGTH)?;
-        } else if salt.is_instance(&types::PADDING_AUTO.get_bound(py)?)? {
+        } else if salt.is_instance(&types::PADDING_AUTO.get(py)?)? {
             if is_signing {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -472,7 +472,7 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if algorithm.is_instance(&types::PREHASHED.get_bound(py)?)? {
+        if algorithm.is_instance(&types::PREHASHED.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Prehashed is only supported in the sign and verify methods. It cannot be used with recover_data_from_signature.",

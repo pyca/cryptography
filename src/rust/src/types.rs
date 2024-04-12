@@ -19,10 +19,7 @@ impl LazyPyImport {
         }
     }
 
-    pub fn get_bound<'p>(
-        &'p self,
-        py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    pub fn get<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let p = self.value.get_or_try_init(py, || {
             let mut obj = py.import_bound(self.module)?.into_any();
             for name in self.names {
@@ -563,7 +560,7 @@ mod tests {
 
         let v = LazyPyImport::new("foo", &["bar"]);
         pyo3::Python::with_gil(|py| {
-            assert!(v.get_bound(py).is_err());
+            assert!(v.get(py).is_err());
         });
     }
 }

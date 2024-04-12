@@ -43,7 +43,7 @@ impl Cmac {
     ) -> CryptographyResult<Self> {
         let _ = backend;
 
-        if !algorithm.is_instance(&types::BLOCK_CIPHER_ALGORITHM.get_bound(py)?)? {
+        if !algorithm.is_instance(&types::BLOCK_CIPHER_ALGORITHM.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Expected instance of BlockCipherAlgorithm.",
@@ -51,7 +51,7 @@ impl Cmac {
             ));
         }
 
-        let cipher = cipher_registry::get_cipher(py, algorithm.clone(), types::CBC.get_bound(py)?)?
+        let cipher = cipher_registry::get_cipher(py, algorithm.clone(), types::CBC.get(py)?)?
             .ok_or_else(|| {
                 exceptions::UnsupportedAlgorithm::new_err((
                     "CMAC is not supported with this algorithm",

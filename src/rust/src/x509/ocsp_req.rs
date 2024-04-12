@@ -91,10 +91,7 @@ impl OCSPRequest {
         let cert_id = self.cert_id();
 
         match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
-            Some(alg_name) => Ok(types::HASHES_MODULE
-                .get_bound(py)?
-                .getattr(*alg_name)?
-                .call0()?),
+            Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
             None => Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err(format!(
                     "Signature algorithm OID: {} not recognized",
@@ -131,7 +128,7 @@ impl OCSPRequest {
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
                         let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
-                        Ok(Some(types::OCSP_NONCE.get_bound(py)?.call1((nonce,))?))
+                        Ok(Some(types::OCSP_NONCE.get(py)?.call1((nonce,))?))
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
                         let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
@@ -142,7 +139,7 @@ impl OCSPRequest {
 
                         Ok(Some(
                             types::OCSP_ACCEPTABLE_RESPONSES
-                                .get_bound(py)?
+                                .get(py)?
                                 .call1((py_oids,))?,
                         ))
                     }
@@ -157,7 +154,7 @@ impl OCSPRequest {
         py: pyo3::Python<'p>,
         encoding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !encoding.is(&types::ENCODING_DER.get_bound(py)?) {
+        if !encoding.is(&types::ENCODING_DER.get(py)?) {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )

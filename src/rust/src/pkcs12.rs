@@ -305,11 +305,9 @@ fn load_pkcs12<'p>(
         }
     }
 
-    Ok(types::PKCS12KEYANDCERTIFICATES.get_bound(py)?.call1((
-        private_key,
-        cert,
-        additional_certs,
-    ))?)
+    Ok(types::PKCS12KEYANDCERTIFICATES
+        .get(py)?
+        .call1((private_key, cert, additional_certs))?)
 }
 
 pub(crate) fn create_submodule(

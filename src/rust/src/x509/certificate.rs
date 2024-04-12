@@ -200,7 +200,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
         pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -237,7 +237,7 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
         pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -305,14 +305,14 @@ impl Certificate {
             |ext| match ext.extn_id {
                 oid::PRECERT_POISON_OID => {
                     ext.value::<()>()?;
-                    Ok(Some(types::PRECERT_POISON.get_bound(py)?.call0()?))
+                    Ok(Some(types::PRECERT_POISON.get(py)?.call0()?))
                 }
                 oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = ext.value::<&[u8]>()?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
                         types::PRECERTIFICATE_SIGNED_CERTIFICATE_TIMESTAMPS
-                            .get_bound(py)?
+                            .get(py)?
                             .call1((scts,))?,
                     ))
                 }
@@ -353,8 +353,8 @@ fn cert_version(
     version: u8,
 ) -> Result<pyo3::Bound<'_, pyo3::PyAny>, CryptographyError> {
     match version {
-        0 => Ok(types::CERTIFICATE_VERSION_V1.get_bound(py)?),
-        2 => Ok(types::CERTIFICATE_VERSION_V3.get_bound(py)?),
+        0 => Ok(types::CERTIFICATE_VERSION_V1.get(py)?),
+        2 => Ok(types::CERTIFICATE_VERSION_V3.get(py)?),
         _ => Err(CryptographyError::from(
             exceptions::InvalidVersion::new_err((
                 format!("{version} is not a valid X509 version"),
@@ -441,7 +441,7 @@ pub(crate) fn load_der_x509_certificate(
 
 fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
-        let warning_cls = types::DEPRECATED_IN_36.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_36.get(py)?;
         pyo3::PyErr::warn_bound(
             py,
             &warning_cls,
@@ -465,7 +465,7 @@ fn warn_if_invalid_params(
         | AlgorithmParameters::DsaWithSha256(Some(..))
         | AlgorithmParameters::DsaWithSha384(Some(..))
         | AlgorithmParameters::DsaWithSha512(Some(..)) => {
-            let warning_cls = types::DEPRECATED_IN_41.get_bound(py)?;
+            let warning_cls = types::DEPRECATED_IN_41.get(py)?;
             pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -491,7 +491,7 @@ fn parse_display_text(
         }
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
-                let warning_cls = types::DEPRECATED_IN_41.get_bound(py)?;
+                let warning_cls = types::DEPRECATED_IN_41.get(py)?;
                 pyo3::PyErr::warn_bound(
                     py,
                     &warning_cls,
@@ -530,16 +530,13 @@ fn parse_user_notice(
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?.to_object(py))?;
             }
             types::NOTICE_REFERENCE
-                .get_bound(py)?
+                .get(py)?
                 .call1((org, numbers))?
                 .to_object(py)
         }
         None => py.None(),
     };
-    Ok(types::USER_NOTICE
-        .get_bound(py)?
-        .call1((nr, et))?
-        .to_object(py))
+    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.to_object(py))
 }
 
 fn parse_policy_qualifiers<'a>(
@@ -591,7 +588,7 @@ fn parse_cp(
             None => py.None(),
         };
         let pi = types::POLICY_INFORMATION
-            .get_bound(py)?
+            .get(py)?
             .call1((pi_oid, py_pqis))?
             .to_object(py);
         certificate_policies.append(pi)?;
@@ -640,7 +637,7 @@ fn parse_distribution_point(
         None => py.None(),
     };
     Ok(types::DISTRIBUTION_POINT
-        .get_bound(py)?
+        .get(py)?
         .call1((full_name, relative_name, reasons, crl_issuer))?
         .to_object(py))
 }
@@ -662,7 +659,7 @@ pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
     reasons: Option<&asn1::BitString<'_>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let reason_bit_mapping = types::REASON_BIT_MAPPING.get_bound(py)?;
+    let reason_bit_mapping = types::REASON_BIT_MAPPING.get(py)?;
 
     Ok(match reasons {
         Some(bs) => {
@@ -682,7 +679,7 @@ pub(crate) fn encode_distribution_point_reasons(
     py: pyo3::Python<'_>,
     py_reasons: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<asn1::OwnedBitString> {
-    let reason_flag_mapping = types::CRL_REASON_FLAGS.get_bound(py)?;
+    let reason_flag_mapping = types::CRL_REASON_FLAGS.get(py)?;
 
     let mut bits = vec![0, 0];
     for py_reason in py_reasons.iter()? {
@@ -711,11 +708,9 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
         None => py.None(),
     };
-    Ok(types::AUTHORITY_KEY_IDENTIFIER.get_bound(py)?.call1((
-        aki.key_identifier,
-        issuer,
-        serial,
-    ))?)
+    Ok(types::AUTHORITY_KEY_IDENTIFIER
+        .get(py)?
+        .call1((aki.key_identifier, issuer, serial))?)
 }
 
 pub(crate) fn parse_access_descriptions(
@@ -728,7 +723,7 @@ pub(crate) fn parse_access_descriptions(
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = types::ACCESS_DESCRIPTION
-            .get_bound(py)?
+            .get(py)?
             .call1((py_oid, gn))?
             .to_object(py);
         ads.append(ad)?;
@@ -745,35 +740,31 @@ pub fn parse_cert_ext<'p>(
             let gn_seq = ext.value::<SubjectAlternativeName<'_>>()?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
-                types::SUBJECT_ALTERNATIVE_NAME
-                    .get_bound(py)?
-                    .call1((sans,))?,
+                types::SUBJECT_ALTERNATIVE_NAME.get(py)?.call1((sans,))?,
             ))
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
             let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
-                types::ISSUER_ALTERNATIVE_NAME
-                    .get_bound(py)?
-                    .call1((ians,))?,
+                types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
             ))
         }
         oid::TLS_FEATURE_OID => {
-            let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get_bound(py)?;
+            let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get(py)?;
 
             let features = pyo3::types::PyList::empty_bound(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
                 let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
                 features.append(py_feature)?;
             }
-            Ok(Some(types::TLS_FEATURE.get_bound(py)?.call1((features,))?))
+            Ok(Some(types::TLS_FEATURE.get(py)?.call1((features,))?))
         }
         oid::SUBJECT_KEY_IDENTIFIER_OID => {
             let identifier = ext.value::<&[u8]>()?;
             Ok(Some(
                 types::SUBJECT_KEY_IDENTIFIER
-                    .get_bound(py)?
+                    .get(py)?
                     .call1((identifier,))?,
             ))
         }
@@ -783,14 +774,12 @@ pub fn parse_cert_ext<'p>(
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
             }
-            Ok(Some(
-                types::EXTENDED_KEY_USAGE.get_bound(py)?.call1((ekus,))?,
-            ))
+            Ok(Some(types::EXTENDED_KEY_USAGE.get(py)?.call1((ekus,))?))
         }
         oid::KEY_USAGE_OID => {
             let kus = ext.value::<KeyUsage<'_>>()?;
 
-            Ok(Some(types::KEY_USAGE.get_bound(py)?.call1((
+            Ok(Some(types::KEY_USAGE.get(py)?.call1((
                 kus.digital_signature(),
                 kus.content_comitment(),
                 kus.key_encipherment(),
@@ -805,61 +794,51 @@ pub fn parse_cert_ext<'p>(
         oid::AUTHORITY_INFORMATION_ACCESS_OID => {
             let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
-                types::AUTHORITY_INFORMATION_ACCESS
-                    .get_bound(py)?
-                    .call1((ads,))?,
+                types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
             ))
         }
         oid::SUBJECT_INFORMATION_ACCESS_OID => {
             let ads = parse_access_descriptions(py, ext)?;
             Ok(Some(
-                types::SUBJECT_INFORMATION_ACCESS
-                    .get_bound(py)?
-                    .call1((ads,))?,
+                types::SUBJECT_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
             ))
         }
         oid::CERTIFICATE_POLICIES_OID => {
             let cp = parse_cp(py, ext)?;
-            Ok(Some(
-                types::CERTIFICATE_POLICIES.get_bound(py)?.call1((cp,))?,
-            ))
+            Ok(Some(types::CERTIFICATE_POLICIES.get(py)?.call1((cp,))?))
         }
         oid::POLICY_CONSTRAINTS_OID => {
             let pc = ext.value::<PolicyConstraints>()?;
-            Ok(Some(types::POLICY_CONSTRAINTS.get_bound(py)?.call1((
+            Ok(Some(types::POLICY_CONSTRAINTS.get(py)?.call1((
                 pc.require_explicit_policy,
                 pc.inhibit_policy_mapping,
             ))?))
         }
         oid::OCSP_NO_CHECK_OID => {
             ext.value::<()>()?;
-            Ok(Some(types::OCSP_NO_CHECK.get_bound(py)?.call0()?))
+            Ok(Some(types::OCSP_NO_CHECK.get(py)?.call0()?))
         }
         oid::INHIBIT_ANY_POLICY_OID => {
             let bignum = ext.value::<asn1::BigUint<'_>>()?;
             let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-            Ok(Some(
-                types::INHIBIT_ANY_POLICY.get_bound(py)?.call1((pynum,))?,
-            ))
+            Ok(Some(types::INHIBIT_ANY_POLICY.get(py)?.call1((pynum,))?))
         }
         oid::BASIC_CONSTRAINTS_OID => {
             let bc = ext.value::<BasicConstraints>()?;
             Ok(Some(
                 types::BASIC_CONSTRAINTS
-                    .get_bound(py)?
+                    .get(py)?
                     .call1((bc.ca, bc.path_length))?,
             ))
         }
         oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(parse_authority_key_identifier(py, ext)?)),
         oid::CRL_DISTRIBUTION_POINTS_OID => {
             let dp = parse_distribution_points(py, ext)?;
-            Ok(Some(
-                types::CRL_DISTRIBUTION_POINTS.get_bound(py)?.call1((dp,))?,
-            ))
+            Ok(Some(types::CRL_DISTRIBUTION_POINTS.get(py)?.call1((dp,))?))
         }
         oid::FRESHEST_CRL_OID => {
             let dp = parse_distribution_points(py, ext)?;
-            Ok(Some(types::FRESHEST_CRL.get_bound(py)?.call1((dp,))?))
+            Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
         }
         oid::NAME_CONSTRAINTS_OID => {
             let nc = ext.value::<NameConstraints<'_>>()?;
@@ -873,16 +852,18 @@ pub fn parse_cert_ext<'p>(
             };
             Ok(Some(
                 types::NAME_CONSTRAINTS
-                    .get_bound(py)?
+                    .get(py)?
                     .call1((permitted_subtrees, excluded_subtrees))?,
             ))
         }
         oid::MS_CERTIFICATE_TEMPLATE => {
             let ms_cert_tpl = ext.value::<MSCertificateTemplate>()?;
             let py_oid = oid_to_py_oid(py, &ms_cert_tpl.template_id)?;
-            Ok(Some(types::MS_CERTIFICATE_TEMPLATE.get_bound(py)?.call1(
-                (py_oid, ms_cert_tpl.major_version, ms_cert_tpl.minor_version),
-            )?))
+            Ok(Some(types::MS_CERTIFICATE_TEMPLATE.get(py)?.call1((
+                py_oid,
+                ms_cert_tpl.major_version,
+                ms_cert_tpl.minor_version,
+            ))?))
         }
         _ => Ok(None),
     }
@@ -921,8 +902,8 @@ fn create_x509_certificate(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get_bound(py)?;
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get_bound(py)?;
+    let der = types::ENCODING_DER.get(py)?;
+    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?

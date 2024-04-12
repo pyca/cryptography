@@ -533,7 +533,7 @@ impl ChaCha20Poly1305 {
 
     #[staticmethod]
     fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((32,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((32,))?)
     }
 
     fn encrypt<'p>(
@@ -648,7 +648,7 @@ impl AesGcm {
             ));
         }
 
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(
@@ -759,7 +759,7 @@ impl AesCcm {
             ));
         }
 
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     fn encrypt<'p>(
@@ -892,7 +892,7 @@ impl AesSiv {
             ));
         }
 
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (data, associated_data))]
@@ -989,7 +989,7 @@ impl AesOcb3 {
             ));
         }
 
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -1098,7 +1098,7 @@ impl AesGcmSiv {
             ));
         }
 
-        Ok(types::OS_URANDOM.get_bound(py)?.call1((bit_length / 8,))?)
+        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]

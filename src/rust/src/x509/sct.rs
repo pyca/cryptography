@@ -155,7 +155,7 @@ impl Sct {
 
     #[getter]
     fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        types::CERTIFICATE_TRANSPARENCY_VERSION_V1.get_bound(py)
+        types::CERTIFICATE_TRANSPARENCY_VERSION_V1.get(py)
     }
 
     #[getter]
@@ -165,14 +165,14 @@ impl Sct {
 
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let utc = types::DATETIME_TIMEZONE_UTC.get_bound(py)?;
+        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
 
         let kwargs = pyo3::types::PyDict::new_bound(py);
         kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;
         kwargs.set_item("tzinfo", None::<Option<pyo3::PyAny>>)?;
 
         types::DATETIME_DATETIME
-            .get_bound(py)?
+            .get(py)?
             .call_method1(
                 pyo3::intern!(py, "fromtimestamp"),
                 (self.timestamp / 1000, utc),
@@ -183,8 +183,8 @@ impl Sct {
     #[getter]
     fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(match self.entry_type {
-            LogEntryType::Certificate => types::LOG_ENTRY_TYPE_X509_CERTIFICATE.get_bound(py)?,
-            LogEntryType::PreCertificate => types::LOG_ENTRY_TYPE_PRE_CERTIFICATE.get_bound(py)?,
+            LogEntryType::Certificate => types::LOG_ENTRY_TYPE_X509_CERTIFICATE.get(py)?,
+            LogEntryType::PreCertificate => types::LOG_ENTRY_TYPE_PRE_CERTIFICATE.get(py)?,
         })
     }
 
@@ -194,7 +194,7 @@ impl Sct {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::HASHES_MODULE
-            .get_bound(py)?
+            .get(py)?
             .call_method0(self.hash_algorithm.to_attr())
     }
 
@@ -204,7 +204,7 @@ impl Sct {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::SIGNATURE_ALGORITHM
-            .get_bound(py)?
+            .get(py)?
             .getattr(self.signature_algorithm.to_attr())
     }
 

@@ -32,9 +32,9 @@ fn curve_from_py_curve(
     py_curve: pyo3::Bound<'_, pyo3::PyAny>,
     allow_curve_class: bool,
 ) -> CryptographyResult<openssl::ec::EcGroup> {
-    if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get_bound(py)?)? {
+    if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get(py)?)? {
         if allow_curve_class {
-            let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+            let warning_cls = types::DEPRECATED_IN_42.get(py)?;
             let warning_msg = "Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.";
             pyo3::PyErr::warn_bound(py, &warning_cls, warning_msg, 1)?;
         } else {
@@ -102,7 +102,7 @@ fn py_curve_from_curve<'p>(
     let name = curve.curve_name().unwrap().short_name()?;
 
     types::CURVE_TYPES
-        .get_bound(py)?
+        .get(py)?
         .extract::<pyo3::Bound<'_, pyo3::types::PyDict>>()?
         .get_item(name)?
         .ok_or_else(|| {
@@ -231,7 +231,7 @@ impl ECPrivateKey {
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         peer_public_key: &ECPublicKey,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !algorithm.is_instance(&types::ECDH.get_bound(py)?)? {
+        if !algorithm.is_instance(&types::ECDH.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported EC exchange algorithm",
@@ -270,7 +270,7 @@ impl ECPrivateKey {
         data: CffiBuf<'_>,
         signature_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !signature_algorithm.is_instance(&types::ECDSA.get_bound(py)?)? {
+        if !signature_algorithm.is_instance(&types::ECDSA.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -391,7 +391,7 @@ impl ECPublicKey {
         data: CffiBuf<'_>,
         signature_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        if !signature_algorithm.is_instance(&types::ECDSA.get_bound(py)?)? {
+        if !signature_algorithm.is_instance(&types::ECDSA.get(py)?)? {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
                     "Unsupported elliptic curve signature algorithm",
@@ -588,7 +588,7 @@ impl EllipticCurvePublicNumbers {
     ) -> CryptographyResult<EllipticCurvePublicNumbers> {
         if !curve
             .bind(py)
-            .is_instance(&types::ELLIPTIC_CURVE.get_bound(py)?)?
+            .is_instance(&types::ELLIPTIC_CURVE.get(py)?)?
         {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
