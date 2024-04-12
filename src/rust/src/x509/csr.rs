@@ -360,7 +360,7 @@ fn create_x509_csr(
 
     let csr_info = CertificationRequestInfo {
         version: 0,
-        subject: x509::common::encode_name(py, &py_subject_name.as_borrowed())?,
+        subject: x509::common::encode_name(py, &py_subject_name)?,
         spki: asn1::parse_single(&spki_bytes)?,
         attributes: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(attrs)),
     };

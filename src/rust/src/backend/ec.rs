@@ -403,9 +403,7 @@ impl ECPublicKey {
         let (data, _) = utils::calculate_digest_and_algorithm(
             py,
             data.as_bytes(),
-            &signature_algorithm
-                .as_borrowed()
-                .getattr(pyo3::intern!(py, "algorithm"))?,
+            &signature_algorithm.getattr(pyo3::intern!(py, "algorithm"))?,
         )?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;

@@ -72,8 +72,7 @@ impl DsaPrivateKey {
         data: CffiBuf<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let (data, _) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm.as_borrowed())?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
@@ -159,8 +158,7 @@ impl DsaPublicKey {
         data: CffiBuf<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        let (data, _) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm.as_borrowed())?;
+        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;

@@ -179,7 +179,7 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data = self.public_bytes_der()?;
 
-        let mut h = Hash::new(py, &algorithm.as_borrowed(), None)?;
+        let mut h = Hash::new(py, &algorithm, None)?;
         h.update_bytes(&data)?;
         Ok(h.finalize(py)?)
     }
@@ -295,16 +295,14 @@ impl CertificateRevocationList {
                 "Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.",
                 1,
             )?;
-        Ok(x509::datetime_to_py(
+        x509::datetime_to_py(
             py,
             self.owned
                 .borrow_dependent()
                 .tbs_cert_list
                 .this_update
                 .as_datetime(),
-        )?
-        .as_borrowed()
-        .to_owned())
+        )
     }
 
     #[getter]
@@ -573,12 +571,10 @@ impl RevokedCertificate {
                 "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.",
                 1,
             )?;
-        Ok(x509::datetime_to_py(
+        x509::datetime_to_py(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
-        )?
-        .as_borrowed()
-        .to_owned())
+        )
     }
 
     #[getter]
@@ -682,10 +678,7 @@ fn create_x509_crl(
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: asn1::BigUint::new(py_uint_to_big_endian_bytes(py, serial_number)?)
                 .unwrap(),
-            revocation_date: x509::certificate::time_from_py(
-                py,
-                &py_revocation_date.as_borrowed(),
-            )?,
+            revocation_date: x509::certificate::time_from_py(py, &py_revocation_date)?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
                 &py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
@@ -700,12 +693,9 @@ fn create_x509_crl(
     let tbs_cert_list = crl::TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),
-        issuer: x509::common::encode_name(py, &py_issuer_name.as_borrowed())?,
-        this_update: x509::certificate::time_from_py(py, &py_this_update.as_borrowed())?,
-        next_update: Some(x509::certificate::time_from_py(
-            py,
-            &py_next_update.as_borrowed(),
-        )?),
+        issuer: x509::common::encode_name(py, &py_issuer_name)?,
+        this_update: x509::certificate::time_from_py(py, &py_this_update)?,
+        next_update: Some(x509::certificate::time_from_py(py, &py_next_update)?),
         revoked_certificates: if revoked_certs.is_empty() {
             None
         } else {
@@ -723,9 +713,9 @@ fn create_x509_crl(
     let tbs_bytes = asn1::write_single(&tbs_cert_list)?;
     let signature = x509::sign::sign_data(
         py,
-        private_key.as_borrowed().to_owned(),
-        hash_algorithm.as_borrowed().to_owned(),
-        rsa_padding.as_borrowed().to_owned(),
+        private_key.clone(),
+        hash_algorithm.clone(),
+        rsa_padding.clone(),
         &tbs_bytes,
     )?;
     let data = asn1::write_single(&crl::CertificateRevocationList {

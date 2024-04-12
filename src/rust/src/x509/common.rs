@@ -76,10 +76,7 @@ pub(crate) fn encode_name_entry<'p>(
             .getattr(pyo3::intern!(py, "value"))?
             .extract()?
     };
-    let py_oid = py_name_entry
-        .getattr(pyo3::intern!(py, "oid"))?
-        .as_borrowed()
-        .to_owned();
+    let py_oid = py_name_entry.getattr(pyo3::intern!(py, "oid"))?;
     let oid = py_oid_to_oid(py_oid)?;
 
     Ok(AttributeTypeValue {
@@ -129,10 +126,7 @@ pub(crate) fn encode_general_name<'a>(
         let name = encode_name(py, &gn_value)?;
         Ok(GeneralName::DirectoryName(name))
     } else if gn_type.is(types::OTHER_NAME.get(py)?) {
-        let py_oid = gn
-            .getattr(pyo3::intern!(py, "type_id"))?
-            .as_borrowed()
-            .to_owned();
+        let py_oid = gn.getattr(pyo3::intern!(py, "type_id"))?;
         Ok(GeneralName::OtherName(OtherName {
             type_id: py_oid_to_oid(py_oid)?,
             value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
@@ -151,7 +145,7 @@ pub(crate) fn encode_general_name<'a>(
                 .extract::<&[u8]>()?,
         ))
     } else if gn_type.is(types::REGISTERED_ID.get(py)?) {
-        let oid = py_oid_to_oid(gn_value.as_borrowed().to_owned())?;
+        let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
     } else {
         Err(CryptographyError::from(
@@ -167,10 +161,7 @@ pub(crate) fn encode_access_descriptions<'a>(
     let mut ads = vec![];
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
-        let py_oid = py_ad
-            .getattr(pyo3::intern!(py, "access_method"))?
-            .as_borrowed()
-            .to_owned();
+        let py_oid = py_ad.getattr(pyo3::intern!(py, "access_method"))?;
         let access_method = py_oid_to_oid(py_oid)?;
         let access_location =
             encode_general_name(py, &py_ad.getattr(pyo3::intern!(py, "access_location"))?)?;
@@ -429,10 +420,7 @@ pub(crate) fn encode_extensions<
     let mut exts = vec![];
     for py_ext in py_exts.iter()? {
         let py_ext = py_ext?;
-        let py_oid = py_ext
-            .getattr(pyo3::intern!(py, "oid"))?
-            .as_borrowed()
-            .to_owned();
+        let py_oid = py_ext.getattr(pyo3::intern!(py, "oid"))?;
         let oid = py_oid_to_oid(py_oid)?;
 
         let ext_val = py_ext.getattr(pyo3::intern!(py, "value"))?;
