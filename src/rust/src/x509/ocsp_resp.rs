@@ -651,10 +651,7 @@ fn create_ocsp_response(
         };
         // REVOKED
         let py_revocation_time = py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
-        let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(
-            py,
-            py_revocation_time.as_borrowed().to_owned(),
-        )?)?;
+        let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
         ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
             revocation_time,
             revocation_reason,
@@ -667,14 +664,13 @@ fn create_ocsp_response(
         let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
         Some(asn1::GeneralizedTime::new(py_to_datetime(
             py,
-            py_next_update.as_borrowed().to_owned(),
+            py_next_update,
         )?)?)
     } else {
         None
     };
     let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
-    let this_update =
-        asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update.as_borrowed().to_owned())?)?;
+    let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
     let responses = vec![SingleResponse {
         cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,

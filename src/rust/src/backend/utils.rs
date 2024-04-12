@@ -365,7 +365,7 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
     } else {
         // Potential optimization: rather than allocate a PyBytes in
         // `h.finalize()`, have a way to get the `DigestBytes` directly.
-        let mut h = Hash::new(py, &algorithm.as_borrowed(), None)?;
+        let mut h = Hash::new(py, algorithm, None)?;
         h.update_bytes(data)?;
         data = h.finalize(py)?.into_gil_ref().as_bytes();
     }

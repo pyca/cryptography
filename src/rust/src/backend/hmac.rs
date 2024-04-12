@@ -24,7 +24,7 @@ impl Hmac {
         key: &[u8],
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<Hmac> {
-        let md = message_digest_from_algorithm(py, &algorithm.as_borrowed())?;
+        let md = message_digest_from_algorithm(py, algorithm)?;
         let ctx = cryptography_openssl::hmac::Hmac::new(key, md).map_err(|_| {
             exceptions::UnsupportedAlgorithm::new_err((
                 "Digest is not supported for HMAC",

@@ -19,7 +19,7 @@ fn encode_general_subtrees<'a>(
     } else {
         let mut subtree_seq = vec![];
         for name in subtrees.iter()? {
-            let gn = x509::common::encode_general_name(py, &name?.as_borrowed())?;
+            let gn = x509::common::encode_general_name(py, &name?)?;
             subtree_seq.push(extensions::GeneralSubtree {
                 base: gn,
                 minimum: 0,
@@ -44,7 +44,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
-        let gns = x509::common::encode_general_names(py, &authority_cert_issuer.as_borrowed())?;
+        let gns = x509::common::encode_general_names(py, &authority_cert_issuer)?;
         Some(common::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
@@ -82,7 +82,7 @@ pub(crate) fn encode_distribution_points<'p>(
         let py_dp = py_dp?.extract::<PyDistributionPoint<'_>>()?;
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
-            let gns = x509::common::encode_general_names(py, &py_crl_issuer.as_borrowed())?;
+            let gns = x509::common::encode_general_names(py, &py_crl_issuer)?;
             Some(common::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(gns),
             ))
@@ -90,7 +90,7 @@ pub(crate) fn encode_distribution_points<'p>(
             None
         };
         let distribution_point = if let Some(py_full_name) = py_dp.full_name {
-            let gns = x509::common::encode_general_names(py, &py_full_name.as_borrowed())?;
+            let gns = x509::common::encode_general_names(py, &py_full_name)?;
             Some(extensions::DistributionPointName::FullName(
                 common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
             ))
@@ -106,8 +106,7 @@ pub(crate) fn encode_distribution_points<'p>(
             None
         };
         let reasons = if let Some(py_reasons) = py_dp.reasons {
-            let reasons =
-                certificate::encode_distribution_point_reasons(py, &py_reasons.as_borrowed())?;
+            let reasons = certificate::encode_distribution_point_reasons(py, &py_reasons)?;
             Some(common::Asn1ReadableOrWritable::new_write(reasons))
         } else {
             None
@@ -293,7 +292,7 @@ fn encode_certificate_policies(
         };
         let py_policy_id = py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
         policy_informations.push(extensions::PolicyInformation {
-            policy_identifier: py_oid_to_oid(py_policy_id.as_borrowed().to_owned())?,
+            policy_identifier: py_oid_to_oid(py_policy_id)?,
             policy_qualifiers: qualifiers,
         });
     }
@@ -311,15 +310,14 @@ fn encode_issuing_distribution_point(
         .is_truthy()?
     {
         let py_reasons = ext.getattr(pyo3::intern!(py, "only_some_reasons"))?;
-        let reasons =
-            certificate::encode_distribution_point_reasons(ext.py(), &py_reasons.as_borrowed())?;
+        let reasons = certificate::encode_distribution_point_reasons(ext.py(), &py_reasons)?;
         Some(common::Asn1ReadableOrWritable::new_write(reasons))
     } else {
         None
     };
     let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_truthy()? {
         let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
-        let gns = x509::common::encode_general_names(ext.py(), &py_full_name.as_borrowed())?;
+        let gns = x509::common::encode_general_names(ext.py(), &py_full_name)?;
         Some(extensions::DistributionPointName::FullName(
             common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
         ))
@@ -358,7 +356,7 @@ fn encode_issuing_distribution_point(
 fn encode_oid_sequence(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut oids = vec![];
     for el in ext.iter()? {
-        let oid = py_oid_to_oid(el?.as_borrowed().to_owned())?;
+        let oid = py_oid_to_oid(el?)?;
         oids.push(oid);
     }
     Ok(asn1::write_single(&asn1::SequenceOfWriter::new(oids))?)
@@ -383,14 +381,14 @@ fn encode_tls_features(
 fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut length = 0;
     for sct in ext.iter()? {
-        let sct = sct?.as_borrowed().downcast::<sct::Sct>()?.clone();
+        let sct = sct?.downcast::<sct::Sct>()?.clone();
         length += sct.get().sct_data.len() + 2;
     }
 
     let mut result = vec![];
     result.extend_from_slice(&(length as u16).to_be_bytes());
     for sct in ext.iter()? {
-        let sct = sct?.as_borrowed().downcast::<sct::Sct>()?.clone();
+        let sct = sct?.downcast::<sct::Sct>()?.clone();
         result.extend_from_slice(&(sct.get().sct_data.len() as u16).to_be_bytes());
         result.extend_from_slice(&sct.get().sct_data);
     }
@@ -418,7 +416,7 @@ pub(crate) fn encode_extension(
             Ok(Some(der))
         }
         &oid::AUTHORITY_INFORMATION_ACCESS_OID | &oid::SUBJECT_INFORMATION_ACCESS_OID => {
-            let der = x509::common::encode_access_descriptions(ext.py(), &ext.as_borrowed())?;
+            let der = x509::common::encode_access_descriptions(ext.py(), ext)?;
             Ok(Some(der))
         }
         &oid::EXTENDED_KEY_USAGE_OID | &oid::ACCEPTABLE_RESPONSES_OID => {
@@ -452,16 +450,15 @@ pub(crate) fn encode_extension(
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "skip_certs"))?
-                .as_borrowed()
                 .downcast::<pyo3::types::PyLong>()?
                 .clone();
-            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
+            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
             )?))
         }
         &oid::ISSUER_ALTERNATIVE_NAME_OID | &oid::SUBJECT_ALTERNATIVE_NAME_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), &ext.as_borrowed())?;
+            let gns = x509::common::encode_general_names(ext.py(), ext)?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::AUTHORITY_KEY_IDENTIFIER_OID => {
@@ -491,24 +488,20 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))
         }
         &oid::CERTIFICATE_ISSUER_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), &ext.as_borrowed())?;
+            let gns = x509::common::encode_general_names(ext.py(), ext)?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
-            let py_dt = ext
-                .getattr(pyo3::intern!(py, "invalidity_date"))?
-                .as_borrowed()
-                .to_owned();
+            let py_dt = ext.getattr(pyo3::intern!(py, "invalidity_date"))?;
             let dt = x509::py_to_datetime(py, py_dt)?;
             Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(dt)?)?))
         }
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "crl_number"))?
-                .as_borrowed()
                 .downcast::<pyo3::types::PyLong>()?
                 .clone();
-            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval.as_borrowed().to_owned())?;
+            let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
                 &asn1::BigUint::new(bytes).unwrap(),
             )?))
@@ -526,7 +519,7 @@ pub(crate) fn encode_extension(
         &oid::MS_CERTIFICATE_TEMPLATE => {
             let py_template_id = ext.getattr(pyo3::intern!(py, "template_id"))?;
             let mstpl = extensions::MSCertificateTemplate {
-                template_id: py_oid_to_oid(py_template_id.as_borrowed().to_owned())?,
+                template_id: py_oid_to_oid(py_template_id)?,
                 major_version: ext.getattr(pyo3::intern!(py, "major_version"))?.extract()?,
                 minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,
             };

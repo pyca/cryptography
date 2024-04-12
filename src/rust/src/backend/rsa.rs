@@ -10,7 +10,6 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
-use pyo3::PyNativeType;
 
 #[pyo3::prelude::pyclass(
     frozen,
@@ -295,14 +294,7 @@ impl RsaPrivateKey {
         ctx.sign_init().map_err(|_| {
             pyo3::exceptions::PyValueError::new_err("Unable to sign/verify with this key")
         })?;
-        setup_signature_ctx(
-            py,
-            &mut ctx,
-            padding,
-            &algorithm.as_borrowed(),
-            self.pkey.size(),
-            true,
-        )?;
+        setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), true)?;
 
         let length = ctx.sign(data, None)?;
         Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
@@ -440,14 +432,7 @@ impl RsaPublicKey {
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
-        setup_signature_ctx(
-            py,
-            &mut ctx,
-            padding,
-            &algorithm.as_borrowed(),
-            self.pkey.size(),
-            false,
-        )?;
+        setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), false)?;
 
         let valid = ctx.verify(data, signature.as_bytes()).unwrap_or(false);
         if !valid {
@@ -487,7 +472,7 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if algorithm.is_instance(&types::PREHASHED.get(py)?.as_borrowed())? {
+        if algorithm.is_instance(&types::PREHASHED.get_bound(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
                     "Prehashed is only supported in the sign and verify methods. It cannot be used with recover_data_from_signature.",

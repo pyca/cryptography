@@ -280,7 +280,7 @@ fn compute_pkcs7_signature_algorithm<'p>(
     hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
     rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
-    let key_type = x509::sign::identify_key_type(py, private_key.as_borrowed().to_owned())?;
+    let key_type = x509::sign::identify_key_type(py, private_key.clone())?;
     let has_pss_padding = rsa_padding.is_instance(&types::PSS.get_bound(py)?)?;
     // For RSA signatures (with no PSS padding), the OID is always the same no matter the
     // digest algorithm. See RFC 3370 (section 3.2).
@@ -290,12 +290,7 @@ fn compute_pkcs7_signature_algorithm<'p>(
             params: common::AlgorithmParameters::Rsa(Some(())),
         })
     } else {
-        x509::sign::compute_signature_algorithm(
-            py,
-            private_key.as_borrowed().to_owned(),
-            hash_algorithm.as_borrowed().to_owned(),
-            rsa_padding.as_borrowed().to_owned(),
-        )
+        x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)
     }
 }
 

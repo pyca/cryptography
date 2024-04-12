@@ -7,7 +7,6 @@ use std::collections::HashMap;
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use pyo3::prelude::PyAnyMethods;
-use pyo3::PyNativeType;
 
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -150,7 +149,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
         let py_mgf_alg = rsa_padding
             .getattr(pyo3::intern!(py, "_mgf"))?
             .getattr(pyo3::intern!(py, "_algorithm"))?;
-        let mgf_hash_type = identify_hash_type(py, py_mgf_alg.as_borrowed().to_owned())?;
+        let mgf_hash_type = identify_hash_type(py, py_mgf_alg)?;
         let mgf_alg = common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
             params: identify_alg_params_for_hash_type(mgf_hash_type)?,
@@ -449,7 +448,7 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
     py: pyo3::Python<'p>,
     signature_algorithm: &common::AlgorithmIdentifier<'_>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let sig_oids_to_hash = types::SIG_OIDS_TO_HASH.get(py)?;
+    let sig_oids_to_hash = types::SIG_OIDS_TO_HASH.get_bound(py)?;
     match &signature_algorithm.params {
         common::AlgorithmParameters::RsaPss(opt_pss) => {
             let pss = opt_pss.as_ref().ok_or_else(|| {
@@ -461,7 +460,7 @@ pub(crate) fn identify_signature_hash_algorithm<'p>(
             let py_sig_alg_oid = oid_to_py_oid(py, signature_algorithm.oid())?;
             let hash_alg = sig_oids_to_hash.get_item(py_sig_alg_oid);
             match hash_alg {
-                Ok(data) => Ok(data.as_borrowed().to_owned()),
+                Ok(data) => Ok(data),
                 Err(_) => Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(format!(
                         "Signature algorithm OID: {} not recognized",
