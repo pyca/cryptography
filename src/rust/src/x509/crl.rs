@@ -334,29 +334,35 @@ impl CertificateRevocationList {
                 oid::CRL_NUMBER_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(types::CRL_NUMBER.get(py)?.call1((pynum,))?))
+                    Ok(Some(types::CRL_NUMBER.get_bound(py)?.call1((pynum,))?))
                 }
                 oid::DELTA_CRL_INDICATOR_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(types::DELTA_CRL_INDICATOR.get(py)?.call1((pynum,))?))
+                    Ok(Some(
+                        types::DELTA_CRL_INDICATOR.get_bound(py)?.call1((pynum,))?,
+                    ))
                 }
                 oid::ISSUER_ALTERNATIVE_NAME_OID => {
                     let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
                     let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
-                        types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
+                        types::ISSUER_ALTERNATIVE_NAME
+                            .get_bound(py)?
+                            .call1((ians,))?,
                     ))
                 }
                 oid::AUTHORITY_INFORMATION_ACCESS_OID => {
                     let ads = certificate::parse_access_descriptions(py, ext)?;
                     Ok(Some(
-                        types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
+                        types::AUTHORITY_INFORMATION_ACCESS
+                            .get_bound(py)?
+                            .call1((ads,))?,
                     ))
                 }
-                oid::AUTHORITY_KEY_IDENTIFIER_OID => Ok(Some(
-                    certificate::parse_authority_key_identifier(py, ext)?.into_gil_ref(),
-                )),
+                oid::AUTHORITY_KEY_IDENTIFIER_OID => {
+                    Ok(Some(certificate::parse_authority_key_identifier(py, ext)?))
+                }
                 oid::ISSUING_DISTRIBUTION_POINT_OID => {
                     let idp = ext.value::<crl::IssuingDistributionPoint<'_>>()?;
                     let (full_name, relative_name) = match idp.distribution_point {
@@ -371,19 +377,21 @@ impl CertificateRevocationList {
                     } else {
                         py.None()
                     };
-                    Ok(Some(types::ISSUING_DISTRIBUTION_POINT.get(py)?.call1((
-                        full_name,
-                        relative_name,
-                        idp.only_contains_user_certs,
-                        idp.only_contains_ca_certs,
-                        py_reasons,
-                        idp.indirect_crl,
-                        idp.only_contains_attribute_certs,
-                    ))?))
+                    Ok(Some(
+                        types::ISSUING_DISTRIBUTION_POINT.get_bound(py)?.call1((
+                            full_name,
+                            relative_name,
+                            idp.only_contains_user_certs,
+                            idp.only_contains_ca_certs,
+                            py_reasons,
+                            idp.indirect_crl,
+                            idp.only_contains_attribute_certs,
+                        ))?,
+                    ))
                 }
                 oid::FRESHEST_CRL_OID => {
                     let dp = certificate::parse_distribution_points(py, ext)?;
-                    Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
+                    Ok(Some(types::FRESHEST_CRL.get_bound(py)?.call1((dp,))?))
                 }
                 _ => Ok(None),
             },
@@ -590,7 +598,7 @@ impl RevokedCertificate {
             py,
             &self.cached_extensions,
             &self.owned.borrow_dependent().raw_crl_entry_extensions,
-            |ext| parse_crl_entry_ext(py, ext).map(|v| v.map(|v| v.into_gil_ref())),
+            |ext| parse_crl_entry_ext(py, ext),
         )
     }
 }

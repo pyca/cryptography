@@ -131,7 +131,7 @@ impl OCSPRequest {
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
                         let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
-                        Ok(Some(types::OCSP_NONCE.get(py)?.call1((nonce,))?))
+                        Ok(Some(types::OCSP_NONCE.get_bound(py)?.call1((nonce,))?))
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
                         let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
@@ -142,7 +142,7 @@ impl OCSPRequest {
 
                         Ok(Some(
                             types::OCSP_ACCEPTABLE_RESPONSES
-                                .get(py)?
+                                .get_bound(py)?
                                 .call1((py_oids,))?,
                         ))
                     }

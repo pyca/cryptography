@@ -216,7 +216,7 @@ impl CertificateSigningRequest {
             })?;
 
         x509::parse_and_cache_extensions(py, &self.cached_extensions, &raw_exts, |ext| {
-            certificate::parse_cert_ext(py, ext).map(|x| x.map(|y| y.into_gil_ref()))
+            certificate::parse_cert_ext(py, ext)
         })
     }
 

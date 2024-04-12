@@ -372,7 +372,7 @@ fn ipv6_netmask(num: u128) -> Result<u32, CryptographyError> {
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
-    F: Fn(&Extension<'_>) -> Result<Option<&'p pyo3::PyAny>, CryptographyError>,
+    F: Fn(&Extension<'_>) -> Result<Option<pyo3::Bound<'p, pyo3::PyAny>>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &pyo3::sync::GILOnceCell<pyo3::PyObject>,
@@ -399,13 +399,14 @@ pub(crate) fn parse_and_cache_extensions<
                 let extn_value = match parse_ext(&raw_ext)? {
                     Some(e) => e,
                     None => types::UNRECOGNIZED_EXTENSION
-                        .get(py)?
+                        .get_bound(py)?
                         .call1((oid_obj.clone(), raw_ext.extn_value))?,
                 };
-                let ext_obj =
-                    types::EXTENSION
-                        .get(py)?
-                        .call1((oid_obj, raw_ext.critical, extn_value))?;
+                let ext_obj = types::EXTENSION.get_bound(py)?.call1((
+                    oid_obj,
+                    raw_ext.critical,
+                    extn_value,
+                ))?;
                 exts.append(ext_obj)?;
             }
             Ok(types::EXTENSIONS.get(py)?.call1((exts,))?.to_object(py))

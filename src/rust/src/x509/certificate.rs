@@ -305,18 +305,18 @@ impl Certificate {
             |ext| match ext.extn_id {
                 oid::PRECERT_POISON_OID => {
                     ext.value::<()>()?;
-                    Ok(Some(types::PRECERT_POISON.get(py)?.call0()?))
+                    Ok(Some(types::PRECERT_POISON.get_bound(py)?.call0()?))
                 }
                 oid::PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
                     let contents = ext.value::<&[u8]>()?;
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::PreCertificate)?;
                     Ok(Some(
                         types::PRECERTIFICATE_SIGNED_CERTIFICATE_TIMESTAMPS
-                            .get(py)?
+                            .get_bound(py)?
                             .call1((scts,))?,
                     ))
                 }
-                _ => parse_cert_ext(py, ext).map(|x| x.map(|y| y.into_gil_ref())),
+                _ => parse_cert_ext(py, ext),
             },
         )
     }
