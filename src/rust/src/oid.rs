@@ -42,11 +42,11 @@ impl ObjectIdentifier {
     }
 
     fn __repr__(slf: &pyo3::Bound<'_, Self>, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        let name = Self::_name(slf.borrow(), py)?.extract::<&str>()?;
+        let name = Self::_name(slf.borrow(), py)?;
         Ok(format!(
             "<ObjectIdentifier(oid={}, name={})>",
             slf.get().oid,
-            name
+            name.extract::<&str>()?
         ))
     }
 
