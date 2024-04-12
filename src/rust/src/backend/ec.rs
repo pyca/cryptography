@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::prelude::{PyAnyMethods, PyDictMethods, PyModuleMethods};
 use pyo3::ToPyObject;
 
 use crate::backend::utils;
@@ -90,7 +90,7 @@ fn curve_from_py_curve(
 fn py_curve_from_curve<'p>(
     py: pyo3::Python<'p>,
     curve: &openssl::ec::EcGroupRef,
-) -> CryptographyResult<&'p pyo3::PyAny> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     if curve.asn1_flag() == openssl::ec::Asn1Flag::EXPLICIT_CURVE {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
@@ -102,8 +102,8 @@ fn py_curve_from_curve<'p>(
     let name = curve.curve_name().unwrap().short_name()?;
 
     types::CURVE_TYPES
-        .get(py)?
-        .extract::<&pyo3::types::PyDict>()?
+        .get_bound(py)?
+        .extract::<pyo3::Bound<'_, pyo3::types::PyDict>>()?
         .get_item(name)?
         .ok_or_else(|| {
             CryptographyError::from(exceptions::UnsupportedAlgorithm::new_err((

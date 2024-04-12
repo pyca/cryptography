@@ -196,9 +196,9 @@ impl CertificateRevocationList {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let oid = self.signature_algorithm_oid(py)?;
-        match types::SIG_OIDS_TO_HASH.get(py)?.get_item(oid) {
+        match types::SIG_OIDS_TO_HASH.get_bound(py)?.get_item(oid) {
             Ok(v) => Ok(v),
             Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -590,7 +590,7 @@ impl RevokedCertificate {
             py,
             &self.cached_extensions,
             &self.owned.borrow_dependent().raw_crl_entry_extensions,
-            |ext| parse_crl_entry_ext(py, ext),
+            |ext| parse_crl_entry_ext(py, ext).map(|v| v.map(|v| v.into_gil_ref())),
         )
     }
 }
@@ -624,21 +624,23 @@ pub(crate) fn parse_crl_reason_flags<'p>(
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
-) -> CryptographyResult<Option<&'p pyo3::PyAny>> {
+) -> CryptographyResult<Option<pyo3::Bound<'p, pyo3::PyAny>>> {
     match ext.extn_id {
         oid::CRL_REASON_OID => {
             let flags = parse_crl_reason_flags(py, &ext.value::<crl::CRLReason>()?)?;
-            Ok(Some(types::CRL_REASON.get(py)?.call1((flags,))?))
+            Ok(Some(types::CRL_REASON.get_bound(py)?.call1((flags,))?))
         }
         oid::CERTIFICATE_ISSUER_OID => {
             let gn_seq = ext.value::<asn1::SequenceOf<'_, name::GeneralName<'_>>>()?;
             let gns = x509::parse_general_names(py, &gn_seq)?;
-            Ok(Some(types::CERTIFICATE_ISSUER.get(py)?.call1((gns,))?))
+            Ok(Some(
+                types::CERTIFICATE_ISSUER.get_bound(py)?.call1((gns,))?,
+            ))
         }
         oid::INVALIDITY_DATE_OID => {
             let time = ext.value::<asn1::GeneralizedTime>()?;
             let py_dt = x509::datetime_to_py(py, time.as_datetime())?;
-            Ok(Some(types::INVALIDITY_DATE.get(py)?.call1((py_dt,))?))
+            Ok(Some(types::INVALIDITY_DATE.get_bound(py)?.call1((py_dt,))?))
         }
         _ => Ok(None),
     }

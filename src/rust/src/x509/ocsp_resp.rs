@@ -124,7 +124,10 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn response_status<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn response_status<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let status = self.raw.borrow_dependent().response_status.value();
         let attr = if status == SUCCESSFUL_RESPONSE {
             "SUCCESSFUL"
@@ -140,7 +143,7 @@ impl OCSPResponse {
             assert_eq!(status, UNAUTHORIZED_RESPONSE);
             "UNAUTHORIZED"
         };
-        types::OCSP_RESPONSE_STATUS.get(py)?.getattr(attr)
+        types::OCSP_RESPONSE_STATUS.get_bound(py)?.getattr(attr)
     }
 
     #[getter]
@@ -193,9 +196,9 @@ impl OCSPResponse {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
         let hash_alg = types::SIG_OIDS_TO_HASH
-            .get(py)?
+            .get_bound(py)?
             .get_item(self.signature_algorithm_oid(py)?);
         match hash_alg {
             Ok(data) => Ok(data),
@@ -301,7 +304,7 @@ impl OCSPResponse {
     fn hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_hash_algorithm(&single_resp, py)
@@ -420,7 +423,7 @@ impl OCSPResponse {
                             .call1((scts,))?,
                     ))
                 }
-                _ => crl::parse_crl_entry_ext(py, ext),
+                _ => crl::parse_crl_entry_ext(py, ext).map(|v| v.map(|v| v.into_gil_ref())),
             },
         )
     }
@@ -527,9 +530,12 @@ fn singleresp_py_certificate_status<'p>(
 fn singleresp_py_hash_algorithm<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
-) -> Result<&'p pyo3::PyAny, CryptographyError> {
+) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
     match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&resp.cert_id.hash_algorithm.params) {
-        Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
+        Some(alg_name) => Ok(types::HASHES_MODULE
+            .get_bound(py)?
+            .getattr(*alg_name)?
+            .call0()?),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -620,7 +626,7 @@ fn create_ocsp_response(
     let py_cert_hash_algorithm = py_single_resp.getattr(pyo3::intern!(py, "_algorithm"))?;
     let (responder_cert, responder_encoding): (
         pyo3::Bound<'_, x509::certificate::Certificate>,
-        &pyo3::PyAny,
+        pyo3::Bound<'_, pyo3::PyAny>,
     ) = builder
         .getattr(pyo3::intern!(py, "_responder_id"))?
         .extract()?;
@@ -863,7 +869,7 @@ impl OCSPSingleResponse {
     fn hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> Result<&'p pyo3::PyAny, CryptographyError> {
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
         let single_resp = self.single_response();
         singleresp_py_hash_algorithm(single_resp, py)
     }

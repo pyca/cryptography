@@ -154,8 +154,8 @@ impl Sct {
     }
 
     #[getter]
-    fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        types::CERTIFICATE_TRANSPARENCY_VERSION_V1.get(py)
+    fn version<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        types::CERTIFICATE_TRANSPARENCY_VERSION_V1.get_bound(py)
     }
 
     #[getter]
@@ -181,10 +181,10 @@ impl Sct {
     }
 
     #[getter]
-    fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn entry_type<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         Ok(match self.entry_type {
-            LogEntryType::Certificate => types::LOG_ENTRY_TYPE_X509_CERTIFICATE.get(py)?,
-            LogEntryType::PreCertificate => types::LOG_ENTRY_TYPE_PRE_CERTIFICATE.get(py)?,
+            LogEntryType::Certificate => types::LOG_ENTRY_TYPE_X509_CERTIFICATE.get_bound(py)?,
+            LogEntryType::PreCertificate => types::LOG_ENTRY_TYPE_PRE_CERTIFICATE.get_bound(py)?,
         })
     }
 
@@ -192,16 +192,19 @@ impl Sct {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::HASHES_MODULE
-            .get(py)?
+            .get_bound(py)?
             .call_method0(self.hash_algorithm.to_attr())
     }
 
     #[getter]
-    fn signature_algorithm<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
+    fn signature_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::SIGNATURE_ALGORITHM
-            .get(py)?
+            .get_bound(py)?
             .getattr(self.signature_algorithm.to_attr())
     }
 
