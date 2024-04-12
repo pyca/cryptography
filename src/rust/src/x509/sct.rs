@@ -165,7 +165,7 @@ impl Sct {
 
     #[getter]
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+        let utc = types::DATETIME_TIMEZONE_UTC.get_bound(py)?;
 
         let kwargs = pyo3::types::PyDict::new_bound(py);
         kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;

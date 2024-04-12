@@ -19,10 +19,6 @@ impl LazyPyImport {
         }
     }
 
-    pub fn get<'p>(&'p self, py: pyo3::Python<'p>) -> pyo3::PyResult<&'p pyo3::PyAny> {
-        Ok(self.get_bound(py)?.into_gil_ref())
-    }
-
     pub fn get_bound<'p>(
         &'p self,
         py: pyo3::Python<'p>,
@@ -567,7 +563,7 @@ mod tests {
 
         let v = LazyPyImport::new("foo", &["bar"]);
         pyo3::Python::with_gil(|py| {
-            assert!(v.get(py).is_err());
+            assert!(v.get_bound(py).is_err());
         });
     }
 }

@@ -87,9 +87,9 @@ fn sign_and_serialize<'p>(
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
-    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
+    let text_mode = options.contains(types::PKCS7_TEXT.get_bound(py)?)?;
     let (data_with_header, data_without_header) =
-        if options.contains(types::PKCS7_BINARY.get(py)?)? {
+        if options.contains(types::PKCS7_BINARY.get_bound(py)?)? {
             (
                 Cow::Borrowed(raw_data.as_bytes()),
                 Cow::Borrowed(raw_data.as_bytes()),
@@ -173,7 +173,7 @@ fn sign_and_serialize<'p>(
                     ])),
                 });
 
-                if !options.contains(types::PKCS7_NO_CAPABILITIES.get(py)?)? {
+                if !options.contains(types::PKCS7_NO_CAPABILITIES.get_bound(py)?)? {
                     authenticated_attrs.push(Attribute {
                         type_id: PKCS7_SMIME_CAP_OID,
                         values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
@@ -229,7 +229,7 @@ fn sign_and_serialize<'p>(
     }
 
     let data_tlv_bytes;
-    let content = if options.contains(types::PKCS7_DETACHED_SIGNATURE.get(py)?)? {
+    let content = if options.contains(types::PKCS7_DETACHED_SIGNATURE.get_bound(py)?)? {
         None
     } else {
         data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
@@ -243,7 +243,7 @@ fn sign_and_serialize<'p>(
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
-        certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
+        certificates: if options.contains(types::PKCS7_NO_CERTS.get_bound(py)?)? {
             None
         } else {
             Some(asn1::SetOfWriter::new(&certs))
@@ -258,14 +258,14 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(types::ENCODING_SMIME.get(py)?) {
+    if encoding.is(&types::ENCODING_SMIME.get_bound(py)?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
             .collect::<Vec<_>>()
             .join(",");
         Ok(types::SMIME_ENCODE
-            .get(py)?
+            .get_bound(py)?
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
     } else {
