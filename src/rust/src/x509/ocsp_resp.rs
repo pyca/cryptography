@@ -388,7 +388,7 @@ impl OCSPResponse {
                         // the nonce. So we try parsing as a TLV and fall back to just using
                         // the raw value.
                         let nonce = ext.value::<&[u8]>().unwrap_or(ext.extn_value);
-                        Ok(Some(types::OCSP_NONCE.get(py)?.call1((nonce,))?))
+                        Ok(Some(types::OCSP_NONCE.get_bound(py)?.call1((nonce,))?))
                     }
                     _ => Ok(None),
                 }
@@ -419,11 +419,11 @@ impl OCSPResponse {
                     let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
                     Ok(Some(
                         types::SIGNED_CERTIFICATE_TIMESTAMPS
-                            .get(py)?
+                            .get_bound(py)?
                             .call1((scts,))?,
                     ))
                 }
-                _ => crl::parse_crl_entry_ext(py, ext).map(|v| v.map(|v| v.into_gil_ref())),
+                _ => crl::parse_crl_entry_ext(py, ext),
             },
         )
     }
