@@ -530,13 +530,16 @@ fn parse_user_notice(
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?.to_object(py))?;
             }
             types::NOTICE_REFERENCE
-                .get(py)?
+                .get_bound(py)?
                 .call1((org, numbers))?
                 .to_object(py)
         }
         None => py.None(),
     };
-    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.to_object(py))
+    Ok(types::USER_NOTICE
+        .get_bound(py)?
+        .call1((nr, et))?
+        .to_object(py))
 }
 
 fn parse_policy_qualifiers<'a>(
@@ -588,7 +591,7 @@ fn parse_cp(
             None => py.None(),
         };
         let pi = types::POLICY_INFORMATION
-            .get(py)?
+            .get_bound(py)?
             .call1((pi_oid, py_pqis))?
             .to_object(py);
         certificate_policies.append(pi)?;
@@ -637,7 +640,7 @@ fn parse_distribution_point(
         None => py.None(),
     };
     Ok(types::DISTRIBUTION_POINT
-        .get(py)?
+        .get_bound(py)?
         .call1((full_name, relative_name, reasons, crl_issuer))?
         .to_object(py))
 }
@@ -659,7 +662,7 @@ pub(crate) fn parse_distribution_point_reasons(
     py: pyo3::Python<'_>,
     reasons: Option<&asn1::BitString<'_>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let reason_bit_mapping = types::REASON_BIT_MAPPING.get(py)?;
+    let reason_bit_mapping = types::REASON_BIT_MAPPING.get_bound(py)?;
 
     Ok(match reasons {
         Some(bs) => {
@@ -679,7 +682,7 @@ pub(crate) fn encode_distribution_point_reasons(
     py: pyo3::Python<'_>,
     py_reasons: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<asn1::OwnedBitString> {
-    let reason_flag_mapping = types::CRL_REASON_FLAGS.get(py)?;
+    let reason_flag_mapping = types::CRL_REASON_FLAGS.get_bound(py)?;
 
     let mut bits = vec![0, 0];
     for py_reason in py_reasons.iter()? {
@@ -725,7 +728,7 @@ pub(crate) fn parse_access_descriptions(
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = types::ACCESS_DESCRIPTION
-            .get(py)?
+            .get_bound(py)?
             .call1((py_oid, gn))?
             .to_object(py);
         ads.append(ad)?;
@@ -757,7 +760,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::TLS_FEATURE_OID => {
-            let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get(py)?;
+            let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get_bound(py)?;
 
             let features = pyo3::types::PyList::empty_bound(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
@@ -918,8 +921,8 @@ fn create_x509_certificate(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get(py)?;
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
+    let der = types::ENCODING_DER.get_bound(py)?;
+    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get_bound(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?

@@ -491,7 +491,7 @@ pub(crate) fn identify_signature_algorithm_parameters<'p>(
             }
             let py_mask_gen_hash_alg =
                 hash_oid_py_hash(py, pss.mask_gen_algorithm.params.oid().clone())?;
-            let py_mgf = types::MGF1.get(py)?.call1((py_mask_gen_hash_alg,))?;
+            let py_mgf = types::MGF1.get_bound(py)?.call1((py_mask_gen_hash_alg,))?;
             Ok(types::PSS.get_bound(py)?.call1((py_mgf, pss.salt_length))?)
         }
         common::AlgorithmParameters::RsaWithSha1(_)

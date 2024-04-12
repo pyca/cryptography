@@ -482,7 +482,7 @@ pub(crate) fn encode_extension(
         }
         &oid::CRL_REASON_OID => {
             let value = types::CRL_ENTRY_REASON_ENUM_TO_CODE
-                .get(ext.py())?
+                .get_bound(ext.py())?
                 .get_item(ext.getattr(pyo3::intern!(py, "reason"))?)?
                 .extract::<u32>()?;
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))

@@ -27,7 +27,7 @@ fn _extract_buffer_length<'p>(
         types::FFI_FROM_BUFFER.get_bound(py)?.call1((pyobj,))?
     };
     let ptrval = types::FFI_CAST
-        .get(py)?
+        .get_bound(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
         .call_method0(pyo3::intern!(py, "__int__"))?
         .extract::<usize>()?;

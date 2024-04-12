@@ -632,9 +632,9 @@ fn create_ocsp_response(
         .extract()?;
 
     let py_cert_status = py_single_resp.getattr(pyo3::intern!(py, "_cert_status"))?;
-    let cert_status = if py_cert_status.is(types::OCSP_CERT_STATUS_GOOD.get(py)?) {
+    let cert_status = if py_cert_status.is(&types::OCSP_CERT_STATUS_GOOD.get_bound(py)?) {
         ocsp_resp::CertStatus::Good(())
-    } else if py_cert_status.is(types::OCSP_CERT_STATUS_UNKNOWN.get(py)?) {
+    } else if py_cert_status.is(&types::OCSP_CERT_STATUS_UNKNOWN.get_bound(py)?) {
         ocsp_resp::CertStatus::Unknown(())
     } else {
         let revocation_reason = if !py_single_resp
@@ -642,7 +642,7 @@ fn create_ocsp_response(
             .is_none()
         {
             let value = types::CRL_ENTRY_REASON_ENUM_TO_CODE
-                .get(py)?
+                .get_bound(py)?
                 .get_item(py_single_resp.getattr(pyo3::intern!(py, "_revocation_reason"))?)?
                 .extract::<u32>()?;
             Some(asn1::Enumerated::new(value))
@@ -681,7 +681,8 @@ fn create_ocsp_response(
     }];
 
     borrowed_cert = responder_cert.borrow();
-    let responder_id = if responder_encoding.is(types::OCSP_RESPONDER_ENCODING_HASH.get(py)?) {
+    let responder_id = if responder_encoding.is(&types::OCSP_RESPONDER_ENCODING_HASH.get_bound(py)?)
+    {
         let sha1 = types::SHA1.get_bound(py)?.call0()?;
         ocsp_resp::ResponderId::ByKey(ocsp::hash_data(
             py,
