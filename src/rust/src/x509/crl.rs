@@ -198,7 +198,7 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let oid = self.signature_algorithm_oid(py)?;
-        match types::SIG_OIDS_TO_HASH.get_bound(py)?.get_item(oid) {
+        match types::SIG_OIDS_TO_HASH.get(py)?.get_item(oid) {
             Ok(v) => Ok(v),
             Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
@@ -259,7 +259,7 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
         pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -288,7 +288,7 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
         pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -332,30 +332,24 @@ impl CertificateRevocationList {
                 oid::CRL_NUMBER_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(types::CRL_NUMBER.get_bound(py)?.call1((pynum,))?))
+                    Ok(Some(types::CRL_NUMBER.get(py)?.call1((pynum,))?))
                 }
                 oid::DELTA_CRL_INDICATOR_OID => {
                     let bignum = ext.value::<asn1::BigUint<'_>>()?;
                     let pynum = big_byte_slice_to_py_int(py, bignum.as_bytes())?;
-                    Ok(Some(
-                        types::DELTA_CRL_INDICATOR.get_bound(py)?.call1((pynum,))?,
-                    ))
+                    Ok(Some(types::DELTA_CRL_INDICATOR.get(py)?.call1((pynum,))?))
                 }
                 oid::ISSUER_ALTERNATIVE_NAME_OID => {
                     let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
                     let ians = x509::parse_general_names(py, &gn_seq)?;
                     Ok(Some(
-                        types::ISSUER_ALTERNATIVE_NAME
-                            .get_bound(py)?
-                            .call1((ians,))?,
+                        types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
                     ))
                 }
                 oid::AUTHORITY_INFORMATION_ACCESS_OID => {
                     let ads = certificate::parse_access_descriptions(py, ext)?;
                     Ok(Some(
-                        types::AUTHORITY_INFORMATION_ACCESS
-                            .get_bound(py)?
-                            .call1((ads,))?,
+                        types::AUTHORITY_INFORMATION_ACCESS.get(py)?.call1((ads,))?,
                     ))
                 }
                 oid::AUTHORITY_KEY_IDENTIFIER_OID => {
@@ -375,21 +369,19 @@ impl CertificateRevocationList {
                     } else {
                         py.None()
                     };
-                    Ok(Some(
-                        types::ISSUING_DISTRIBUTION_POINT.get_bound(py)?.call1((
-                            full_name,
-                            relative_name,
-                            idp.only_contains_user_certs,
-                            idp.only_contains_ca_certs,
-                            py_reasons,
-                            idp.indirect_crl,
-                            idp.only_contains_attribute_certs,
-                        ))?,
-                    ))
+                    Ok(Some(types::ISSUING_DISTRIBUTION_POINT.get(py)?.call1((
+                        full_name,
+                        relative_name,
+                        idp.only_contains_user_certs,
+                        idp.only_contains_ca_certs,
+                        py_reasons,
+                        idp.indirect_crl,
+                        idp.only_contains_attribute_certs,
+                    ))?))
                 }
                 oid::FRESHEST_CRL_OID => {
                     let dp = certificate::parse_distribution_points(py, ext)?;
-                    Ok(Some(types::FRESHEST_CRL.get_bound(py)?.call1((dp,))?))
+                    Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
                 }
                 _ => Ok(None),
             },
@@ -564,7 +556,7 @@ impl RevokedCertificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_42.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_42.get(py)?;
         pyo3::PyErr::warn_bound(
                 py,
                 &warning_cls,
@@ -622,7 +614,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
             ))
         }
     };
-    Ok(types::REASON_FLAGS.get_bound(py)?.getattr(flag_name)?)
+    Ok(types::REASON_FLAGS.get(py)?.getattr(flag_name)?)
 }
 
 pub fn parse_crl_entry_ext<'p>(
@@ -632,19 +624,17 @@ pub fn parse_crl_entry_ext<'p>(
     match ext.extn_id {
         oid::CRL_REASON_OID => {
             let flags = parse_crl_reason_flags(py, &ext.value::<crl::CRLReason>()?)?;
-            Ok(Some(types::CRL_REASON.get_bound(py)?.call1((flags,))?))
+            Ok(Some(types::CRL_REASON.get(py)?.call1((flags,))?))
         }
         oid::CERTIFICATE_ISSUER_OID => {
             let gn_seq = ext.value::<asn1::SequenceOf<'_, name::GeneralName<'_>>>()?;
             let gns = x509::parse_general_names(py, &gn_seq)?;
-            Ok(Some(
-                types::CERTIFICATE_ISSUER.get_bound(py)?.call1((gns,))?,
-            ))
+            Ok(Some(types::CERTIFICATE_ISSUER.get(py)?.call1((gns,))?))
         }
         oid::INVALIDITY_DATE_OID => {
             let time = ext.value::<asn1::GeneralizedTime>()?;
             let py_dt = x509::datetime_to_py(py, time.as_datetime())?;
-            Ok(Some(types::INVALIDITY_DATE.get_bound(py)?.call1((py_dt,))?))
+            Ok(Some(types::INVALIDITY_DATE.get(py)?.call1((py_dt,))?))
         }
         _ => Ok(None),
     }

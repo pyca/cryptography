@@ -87,9 +87,9 @@ fn sign_and_serialize<'p>(
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
-    let text_mode = options.contains(types::PKCS7_TEXT.get_bound(py)?)?;
+    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
     let (data_with_header, data_without_header) =
-        if options.contains(types::PKCS7_BINARY.get_bound(py)?)? {
+        if options.contains(types::PKCS7_BINARY.get(py)?)? {
             (
                 Cow::Borrowed(raw_data.as_bytes()),
                 Cow::Borrowed(raw_data.as_bytes()),
@@ -132,7 +132,7 @@ fn sign_and_serialize<'p>(
     let ka = cryptography_keepalive::KeepAlive::new();
     for (cert, py_private_key, py_hash_alg, rsa_padding) in py_signers.iter() {
         let (authenticated_attrs, signature) =
-            if options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
+            if options.contains(&types::PKCS7_NO_ATTRIBUTES.get(py)?)? {
                 (
                     None,
                     x509::sign::sign_data(
@@ -171,7 +171,7 @@ fn sign_and_serialize<'p>(
                     ])),
                 });
 
-                if !options.contains(types::PKCS7_NO_CAPABILITIES.get_bound(py)?)? {
+                if !options.contains(types::PKCS7_NO_CAPABILITIES.get(py)?)? {
                     authenticated_attrs.push(Attribute {
                         type_id: PKCS7_SMIME_CAP_OID,
                         values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
@@ -227,7 +227,7 @@ fn sign_and_serialize<'p>(
     }
 
     let data_tlv_bytes;
-    let content = if options.contains(types::PKCS7_DETACHED_SIGNATURE.get_bound(py)?)? {
+    let content = if options.contains(types::PKCS7_DETACHED_SIGNATURE.get(py)?)? {
         None
     } else {
         data_tlv_bytes = asn1::write_single(&data_with_header.deref())?;
@@ -241,7 +241,7 @@ fn sign_and_serialize<'p>(
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
-        certificates: if options.contains(types::PKCS7_NO_CERTS.get_bound(py)?)? {
+        certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
             Some(asn1::SetOfWriter::new(&certs))
@@ -256,14 +256,14 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(&types::ENCODING_SMIME.get_bound(py)?) {
+    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
             .collect::<Vec<_>>()
             .join(",");
         Ok(types::SMIME_ENCODE
-            .get_bound(py)?
+            .get(py)?
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
     } else {
@@ -279,7 +279,7 @@ fn compute_pkcs7_signature_algorithm<'p>(
     rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<common::AlgorithmIdentifier<'static>> {
     let key_type = x509::sign::identify_key_type(py, private_key.clone())?;
-    let has_pss_padding = rsa_padding.is_instance(&types::PSS.get_bound(py)?)?;
+    let has_pss_padding = rsa_padding.is_instance(&types::PSS.get(py)?)?;
     // For RSA signatures (with no PSS padding), the OID is always the same no matter the
     // digest algorithm. See RFC 3370 (section 3.2).
     if key_type == x509::sign::KeyType::Rsa && !has_pss_padding {

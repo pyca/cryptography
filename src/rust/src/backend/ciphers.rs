@@ -43,31 +43,30 @@ impl CipherContext {
                 }
             };
 
-        let iv_nonce =
-            if mode.is_instance(&types::MODE_WITH_INITIALIZATION_VECTOR.get_bound(py)?)? {
-                Some(
-                    mode.getattr(pyo3::intern!(py, "initialization_vector"))?
-                        .extract::<CffiBuf<'_>>()?,
-                )
-            } else if mode.is_instance(&types::MODE_WITH_TWEAK.get_bound(py)?)? {
-                Some(
-                    mode.getattr(pyo3::intern!(py, "tweak"))?
-                        .extract::<CffiBuf<'_>>()?,
-                )
-            } else if mode.is_instance(&types::MODE_WITH_NONCE.get_bound(py)?)? {
-                Some(
-                    mode.getattr(pyo3::intern!(py, "nonce"))?
-                        .extract::<CffiBuf<'_>>()?,
-                )
-            } else if algorithm.is_instance(&types::CHACHA20.get_bound(py)?)? {
-                Some(
-                    algorithm
-                        .getattr(pyo3::intern!(py, "nonce"))?
-                        .extract::<CffiBuf<'_>>()?,
-                )
-            } else {
-                None
-            };
+        let iv_nonce = if mode.is_instance(&types::MODE_WITH_INITIALIZATION_VECTOR.get(py)?)? {
+            Some(
+                mode.getattr(pyo3::intern!(py, "initialization_vector"))?
+                    .extract::<CffiBuf<'_>>()?,
+            )
+        } else if mode.is_instance(&types::MODE_WITH_TWEAK.get(py)?)? {
+            Some(
+                mode.getattr(pyo3::intern!(py, "tweak"))?
+                    .extract::<CffiBuf<'_>>()?,
+            )
+        } else if mode.is_instance(&types::MODE_WITH_NONCE.get(py)?)? {
+            Some(
+                mode.getattr(pyo3::intern!(py, "nonce"))?
+                    .extract::<CffiBuf<'_>>()?,
+            )
+        } else if algorithm.is_instance(&types::CHACHA20.get(py)?)? {
+            Some(
+                algorithm
+                    .getattr(pyo3::intern!(py, "nonce"))?
+                    .extract::<CffiBuf<'_>>()?,
+            )
+        } else {
+            None
+        };
 
         let key = algorithm
             .getattr(pyo3::intern!(py, "key"))?
@@ -88,7 +87,7 @@ impl CipherContext {
             }
         }
 
-        if mode.is_instance(&types::XTS.get_bound(py)?)? {
+        if mode.is_instance(&types::XTS.get(py)?)? {
             init_op(
                 &mut ctx,
                 None,
@@ -146,11 +145,7 @@ impl CipherContext {
         for chunk in buf.chunks(1 << 29) {
             // SAFETY: We ensure that outbuf is sufficiently large above.
             unsafe {
-                let n = if self
-                    .py_mode
-                    .bind(py)
-                    .is_instance(&types::XTS.get_bound(py)?)?
-                {
+                let n = if self.py_mode.bind(py).is_instance(&types::XTS.get(py)?)? {
                     self.ctx.cipher_update_unchecked(chunk, Some(&mut out_buf[total_written..])).map_err(|_| {
                     pyo3::exceptions::PyValueError::new_err(
                         "In XTS mode you must supply at least a full block in the first update call. For AES this is 16 bytes."
@@ -182,7 +177,7 @@ impl CipherContext {
                 && self
                     .py_mode
                     .bind(py)
-                    .is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get_bound(py)?)?
+                    .is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)?
             {
                 return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
             }
@@ -483,7 +478,7 @@ fn create_encryption_ctx(
 ) -> CryptographyResult<pyo3::PyObject> {
     let ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Encrypt)?;
 
-    if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get_bound(py)?)? {
+    if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         Ok(PyAEADEncryptionContext {
             ctx: Some(ctx),
             tag: None,
@@ -509,7 +504,7 @@ fn create_decryption_ctx(
 ) -> CryptographyResult<pyo3::PyObject> {
     let mut ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Decrypt)?;
 
-    if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get_bound(py)?)? {
+    if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         if let Some(tag) = mode
             .getattr(pyo3::intern!(py, "tag"))?
             .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?

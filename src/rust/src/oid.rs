@@ -33,7 +33,7 @@ impl ObjectIdentifier {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::OID_NAMES
-            .get_bound(py)?
+            .get(py)?
             .call_method1(pyo3::intern!(py, "get"), (slf, "Unknown OID"))
     }
 

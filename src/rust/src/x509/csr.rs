@@ -130,7 +130,7 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
         oid: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_36.get_bound(py)?;
+        let warning_cls = types::DEPRECATED_IN_36.get(py)?;
         let warning_msg = "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.";
         pyo3::PyErr::warn_bound(py, &warning_cls, warning_msg, 1)?;
 
@@ -194,12 +194,10 @@ impl CertificateSigningRequest {
                     "Long-form tags are not supported in CSR attribute values",
                 ))
             })?;
-            let pyattr = types::ATTRIBUTE
-                .get_bound(py)?
-                .call1((oid, serialized, tag))?;
+            let pyattr = types::ATTRIBUTE.get(py)?.call1((oid, serialized, tag))?;
             pyattrs.append(pyattr)?;
         }
-        types::ATTRIBUTES.get_bound(py)?.call1((pyattrs,))
+        types::ATTRIBUTES.get(py)?.call1((pyattrs,))
     }
 
     #[getter]
@@ -300,8 +298,8 @@ fn create_x509_csr(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get_bound(py)?;
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get_bound(py)?;
+    let der = types::ENCODING_DER.get(py)?;
+    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = private_key
         .call_method0(pyo3::intern!(py, "public_key"))?
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?

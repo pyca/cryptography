@@ -43,7 +43,7 @@ pub(crate) fn message_digest_from_algorithm(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<openssl::hash::MessageDigest> {
-    if !algorithm.is_instance(&types::HASH_ALGORITHM.get_bound(py)?)? {
+    if !algorithm.is_instance(&types::HASH_ALGORITHM.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err("Expected instance of hashes.HashAlgorithm."),
         ));
@@ -111,7 +111,7 @@ impl Hash {
         {
             let algorithm = self.algorithm.clone_ref(py);
             let algorithm = algorithm.bind(py);
-            if algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get_bound(py)?)? {
+            if algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
                 let ctx = self.get_mut_ctx()?;
                 let digest_size = algorithm
                     .getattr(pyo3::intern!(py, "digest_size"))?

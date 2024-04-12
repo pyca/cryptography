@@ -119,38 +119,38 @@ fn get_cipher_registry(
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegistryBuilder::new(py);
 
-        let aes = types::AES.get_bound(py)?;
-        let aes128 = types::AES128.get_bound(py)?;
-        let aes256 = types::AES256.get_bound(py)?;
-        let triple_des = types::TRIPLE_DES.get_bound(py)?;
+        let aes = types::AES.get(py)?;
+        let aes128 = types::AES128.get(py)?;
+        let aes256 = types::AES256.get(py)?;
+        let triple_des = types::TRIPLE_DES.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
-        let camellia = types::CAMELLIA.get_bound(py)?;
+        let camellia = types::CAMELLIA.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
-        let blowfish = types::BLOWFISH.get_bound(py)?;
+        let blowfish = types::BLOWFISH.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAST"))]
-        let cast5 = types::CAST5.get_bound(py)?;
+        let cast5 = types::CAST5.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
-        let idea = types::IDEA.get_bound(py)?;
+        let idea = types::IDEA.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SM4"))]
-        let sm4 = types::SM4.get_bound(py)?;
+        let sm4 = types::SM4.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
-        let seed = types::SEED.get_bound(py)?;
-        let arc4 = types::ARC4.get_bound(py)?;
+        let seed = types::SEED.get(py)?;
+        let arc4 = types::ARC4.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let chacha20 = types::CHACHA20.get_bound(py)?;
-        let rc2 = types::RC2.get_bound(py)?;
+        let chacha20 = types::CHACHA20.get(py)?;
+        let rc2 = types::RC2.get(py)?;
 
-        let cbc = types::CBC.get_bound(py)?;
+        let cbc = types::CBC.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let cfb = types::CFB.get_bound(py)?;
+        let cfb = types::CFB.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let cfb8 = types::CFB8.get_bound(py)?;
-        let ofb = types::OFB.get_bound(py)?;
-        let ecb = types::ECB.get_bound(py)?;
-        let ctr = types::CTR.get_bound(py)?;
-        let gcm = types::GCM.get_bound(py)?;
+        let cfb8 = types::CFB8.get(py)?;
+        let ofb = types::OFB.get(py)?;
+        let ecb = types::ECB.get(py)?;
+        let ctr = types::CTR.get(py)?;
+        let gcm = types::GCM.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        let xts = types::XTS.get_bound(py)?;
+        let xts = types::XTS.get(py)?;
 
         let none = py.None();
         let none_type = none.bind(py).get_type();
@@ -265,7 +265,7 @@ fn get_cipher_registry(
         // this should't be necessary but OpenSSL 3 will return an EVP_CIPHER
         // even when the cipher is unavailable.
         if cfg!(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))
-            || types::LEGACY_PROVIDER_LOADED.get_bound(py)?.is_truthy()?
+            || types::LEGACY_PROVIDER_LOADED.get(py)?.is_truthy()?
         {
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
             {
