@@ -129,15 +129,8 @@ fn sign_and_serialize<'p>(
         .map(|p| p.raw.borrow_dependent())
         .collect::<Vec<_>>();
 
-    let mut digests = vec![];
-    if !options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
-        for (_, _, py_hash_alg, _) in &py_signers {
-            let digest =
-                asn1::write_single(&x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?)?;
-            digests.push(digest);
-        }
-    }
-    for (i, (cert, py_private_key, py_hash_alg, rsa_padding)) in py_signers.iter().enumerate() {
+    let ka = cryptography_keepalive::KeepAlive::new();
+    for (cert, py_private_key, py_hash_alg, rsa_padding) in py_signers.iter() {
         let (authenticated_attrs, signature) =
             if options.contains(&types::PKCS7_NO_ATTRIBUTES.get_bound(py)?)? {
                 (
@@ -166,10 +159,15 @@ fn sign_and_serialize<'p>(
                     },
                 ];
 
+                let digest = ka.add(asn1::write_single(&x509::ocsp::hash_data(
+                    py,
+                    py_hash_alg,
+                    &data_with_header,
+                )?)?);
                 authenticated_attrs.push(Attribute {
                     type_id: PKCS7_MESSAGE_DIGEST_OID,
                     values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
-                        asn1::parse_single(&digests[i]).unwrap(),
+                        asn1::parse_single(digest).unwrap(),
                     ])),
                 });
 
