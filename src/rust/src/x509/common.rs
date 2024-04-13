@@ -32,8 +32,9 @@ pub(crate) fn find_in_pem(
 }
 
 pub(crate) fn encode_name<'p>(
-    py: pyo3::Python<'p>,
-    py_name: &pyo3::Bound<'p, pyo3::PyAny>,
+    py: pyo3::Python<'_>,
+    ka: &'p cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    py_name: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<Name<'p>> {
     let mut rdns = vec![];
 
@@ -42,7 +43,7 @@ pub(crate) fn encode_name<'p>(
         let mut attrs = vec![];
 
         for py_attr in py_rdn.iter()? {
-            attrs.push(encode_name_entry(py, &py_attr?)?);
+            attrs.push(encode_name_entry(py, ka, &py_attr?)?);
         }
         rdns.push(asn1::SetOfWriter::new(attrs));
     }
@@ -52,36 +53,38 @@ pub(crate) fn encode_name<'p>(
 }
 
 pub(crate) fn encode_name_entry<'p>(
-    py: pyo3::Python<'p>,
-    py_name_entry: &pyo3::Bound<'p, pyo3::PyAny>,
+    py: pyo3::Python<'_>,
+    ka: &'p cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    py_name_entry: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<AttributeTypeValue<'p>> {
     let attr_type = py_name_entry.getattr(pyo3::intern!(py, "_type"))?;
     let tag = attr_type
         .getattr(pyo3::intern!(py, "value"))?
         .extract::<u8>()?;
-    let value: &[u8] = if !attr_type.is(&types::ASN1_TYPE_BIT_STRING.get(py)?) {
-        let encoding = if attr_type.is(&types::ASN1_TYPE_BMP_STRING.get(py)?) {
-            "utf_16_be"
-        } else if attr_type.is(&types::ASN1_TYPE_UNIVERSAL_STRING.get(py)?) {
-            "utf_32_be"
+    let value: pyo3::pybacked::PyBackedBytes =
+        if !attr_type.is(&types::ASN1_TYPE_BIT_STRING.get(py)?) {
+            let encoding = if attr_type.is(&types::ASN1_TYPE_BMP_STRING.get(py)?) {
+                "utf_16_be"
+            } else if attr_type.is(&types::ASN1_TYPE_UNIVERSAL_STRING.get(py)?) {
+                "utf_32_be"
+            } else {
+                "utf8"
+            };
+            py_name_entry
+                .getattr(pyo3::intern!(py, "value"))?
+                .call_method1(pyo3::intern!(py, "encode"), (encoding,))?
+                .extract()?
         } else {
-            "utf8"
+            py_name_entry
+                .getattr(pyo3::intern!(py, "value"))?
+                .extract()?
         };
-        py_name_entry
-            .getattr(pyo3::intern!(py, "value"))?
-            .call_method1(pyo3::intern!(py, "encode"), (encoding,))?
-            .extract()?
-    } else {
-        py_name_entry
-            .getattr(pyo3::intern!(py, "value"))?
-            .extract()?
-    };
     let py_oid = py_name_entry.getattr(pyo3::intern!(py, "oid"))?;
     let oid = py_oid_to_oid(py_oid)?;
 
     Ok(AttributeTypeValue {
         type_id: oid,
-        value: RawTlv::new(asn1::Tag::from_bytes(&[tag])?.0, value),
+        value: RawTlv::new(asn1::Tag::from_bytes(&[tag])?.0, ka.add(value)),
     })
 }
 
@@ -90,25 +93,28 @@ fn encode_name_bytes<'p>(
     py: pyo3::Python<'p>,
     py_name: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let name = encode_name(py, py_name)?;
+    let ka = cryptography_keepalive::KeepAlive::new();
+    let name = encode_name(py, &ka, py_name)?;
     let result = asn1::write_single(&name)?;
     Ok(pyo3::types::PyBytes::new_bound(py, &result))
 }
 
 pub(crate) fn encode_general_names<'a>(
-    py: pyo3::Python<'a>,
+    py: pyo3::Python<'_>,
+    ka: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     py_gns: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<Vec<GeneralName<'a>>, CryptographyError> {
     let mut gns = vec![];
     for el in py_gns.iter()? {
-        let gn = encode_general_name(py, &el?)?;
+        let gn = encode_general_name(py, ka, &el?)?;
         gns.push(gn);
     }
     Ok(gns)
 }
 
 pub(crate) fn encode_general_name<'a>(
-    py: pyo3::Python<'a>,
+    py: pyo3::Python<'_>,
+    ka: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     gn: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<GeneralName<'a>, CryptographyError> {
     let gn_type = gn.get_type();
@@ -123,7 +129,7 @@ pub(crate) fn encode_general_name<'a>(
             gn_value.extract::<&str>()?,
         )))
     } else if gn_type.is(&types::DIRECTORY_NAME.get(py)?) {
-        let name = encode_name(py, &gn_value)?;
+        let name = encode_name(py, ka, &gn_value)?;
         Ok(GeneralName::DirectoryName(name))
     } else if gn_type.is(&types::OTHER_NAME.get(py)?) {
         let py_oid = gn.getattr(pyo3::intern!(py, "type_id"))?;
@@ -159,12 +165,13 @@ pub(crate) fn encode_access_descriptions<'a>(
     py_ads: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     let mut ads = vec![];
+    let ka = cryptography_keepalive::KeepAlive::new();
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
         let py_oid = py_ad.getattr(pyo3::intern!(py, "access_method"))?;
         let access_method = py_oid_to_oid(py_oid)?;
-        let access_location =
-            encode_general_name(py, &py_ad.getattr(pyo3::intern!(py, "access_location"))?)?;
+        let py_access_location = py_ad.getattr(pyo3::intern!(py, "access_location"))?;
+        let access_location = encode_general_name(py, &ka, &py_access_location)?;
         ads.push(AccessDescription {
             access_method,
             access_location,

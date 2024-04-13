@@ -12,7 +12,8 @@ use pyo3::prelude::PyAnyMethods;
 use pyo3::pybacked::PyBackedStr;
 
 fn encode_general_subtrees<'a>(
-    py: pyo3::Python<'a>,
+    py: pyo3::Python<'_>,
+    ka: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     subtrees: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<Option<extensions::SequenceOfSubtrees<'a>>, CryptographyError> {
     if subtrees.is_none() {
@@ -20,7 +21,7 @@ fn encode_general_subtrees<'a>(
     } else {
         let mut subtree_seq = vec![];
         for name in subtrees.iter()? {
-            let gn = x509::common::encode_general_name(py, &name?)?;
+            let gn = x509::common::encode_general_name(py, ka, &name?)?;
             subtree_seq.push(extensions::GeneralSubtree {
                 base: gn,
                 minimum: 0,
@@ -44,8 +45,10 @@ pub(crate) fn encode_authority_key_identifier<'a>(
         authority_cert_serial_number: Option<pyo3::Bound<'a, pyo3::types::PyLong>>,
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
+
+    let ka = cryptography_keepalive::KeepAlive::new();
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
-        let gns = x509::common::encode_general_names(py, &authority_cert_issuer)?;
+        let gns = x509::common::encode_general_names(py, &ka, &authority_cert_issuer)?;
         Some(common::Asn1ReadableOrWritable::new_write(
             asn1::SequenceOfWriter::new(gns),
         ))
@@ -79,12 +82,13 @@ pub(crate) fn encode_distribution_points<'p>(
         reasons: Option<pyo3::Bound<'a, pyo3::PyAny>>,
     }
 
+    let ka = cryptography_keepalive::KeepAlive::new();
     let mut dps = vec![];
     for py_dp in py_dps.iter()? {
         let py_dp = py_dp?.extract::<PyDistributionPoint<'_>>()?;
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
-            let gns = x509::common::encode_general_names(py, &py_crl_issuer)?;
+            let gns = x509::common::encode_general_names(py, &ka, &py_crl_issuer)?;
             Some(common::Asn1ReadableOrWritable::new_write(
                 asn1::SequenceOfWriter::new(gns),
             ))
@@ -92,14 +96,14 @@ pub(crate) fn encode_distribution_points<'p>(
             None
         };
         let distribution_point = if let Some(py_full_name) = py_dp.full_name {
-            let gns = x509::common::encode_general_names(py, &py_full_name)?;
+            let gns = x509::common::encode_general_names(py, &ka, &py_full_name)?;
             Some(extensions::DistributionPointName::FullName(
                 common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
             ))
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
             for py_name_entry in py_relative_name.iter()? {
-                name_entries.push(x509::common::encode_name_entry(py, &py_name_entry?)?);
+                name_entries.push(x509::common::encode_name_entry(py, &ka, &py_name_entry?)?);
             }
             Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
                 common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
@@ -313,6 +317,8 @@ fn encode_issuing_distribution_point(
     py: pyo3::Python<'_>,
     ext: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
+    let ka = cryptography_keepalive::KeepAlive::new();
+
     let only_some_reasons = if ext
         .getattr(pyo3::intern!(py, "only_some_reasons"))?
         .is_truthy()?
@@ -325,7 +331,7 @@ fn encode_issuing_distribution_point(
     };
     let distribution_point = if ext.getattr(pyo3::intern!(py, "full_name"))?.is_truthy()? {
         let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
-        let gns = x509::common::encode_general_names(ext.py(), &py_full_name)?;
+        let gns = x509::common::encode_general_names(ext.py(), &ka, &py_full_name)?;
         Some(extensions::DistributionPointName::FullName(
             common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
         ))
@@ -335,7 +341,8 @@ fn encode_issuing_distribution_point(
     {
         let mut name_entries = vec![];
         for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
-            name_entries.push(x509::common::encode_name_entry(ext.py(), &py_name_entry?)?);
+            let name_entry = x509::common::encode_name_entry(ext.py(), &ka, &py_name_entry?)?;
+            name_entries.push(name_entry);
         }
         Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
             common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
@@ -447,11 +454,13 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&pc)?))
         }
         &oid::NAME_CONSTRAINTS_OID => {
+            let ka = cryptography_keepalive::KeepAlive::new();
+
             let permitted = ext.getattr(pyo3::intern!(py, "permitted_subtrees"))?;
             let excluded = ext.getattr(pyo3::intern!(py, "excluded_subtrees"))?;
             let nc = extensions::NameConstraints {
-                permitted_subtrees: encode_general_subtrees(ext.py(), &permitted)?,
-                excluded_subtrees: encode_general_subtrees(ext.py(), &excluded)?,
+                permitted_subtrees: encode_general_subtrees(ext.py(), &ka, &permitted)?,
+                excluded_subtrees: encode_general_subtrees(ext.py(), &ka, &excluded)?,
             };
             Ok(Some(asn1::write_single(&nc)?))
         }
@@ -466,7 +475,8 @@ pub(crate) fn encode_extension(
             )?))
         }
         &oid::ISSUER_ALTERNATIVE_NAME_OID | &oid::SUBJECT_ALTERNATIVE_NAME_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), ext)?;
+            let ka = cryptography_keepalive::KeepAlive::new();
+            let gns = x509::common::encode_general_names(ext.py(), &ka, ext)?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::AUTHORITY_KEY_IDENTIFIER_OID => {
@@ -496,7 +506,8 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::Enumerated::new(value))?))
         }
         &oid::CERTIFICATE_ISSUER_OID => {
-            let gns = x509::common::encode_general_names(ext.py(), ext)?;
+            let ka = cryptography_keepalive::KeepAlive::new();
+            let gns = x509::common::encode_general_names(ext.py(), &ka, ext)?;
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
