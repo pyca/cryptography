@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
 use pyo3::prelude::PyAnyMethods;
+use pyo3::pybacked::PyBackedBytes;
 
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -285,7 +286,7 @@ pub(crate) fn sign_data<'p>(
     hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
     rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
     data: &[u8],
-) -> pyo3::PyResult<&'p [u8]> {
+) -> pyo3::PyResult<PyBackedBytes> {
     let key_type = identify_key_type(py, private_key.clone())?;
 
     let signature = match key_type {

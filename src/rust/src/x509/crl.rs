@@ -712,7 +712,7 @@ fn create_x509_crl(
     let data = asn1::write_single(&crl::CertificateRevocationList {
         tbs_cert_list,
         signature_algorithm: sigalg,
-        signature_value: asn1::BitString::new(signature, 0).unwrap(),
+        signature_value: asn1::BitString::new(&signature, 0).unwrap(),
     })?;
     load_der_x509_crl(
         py,

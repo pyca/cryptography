@@ -374,7 +374,7 @@ fn create_x509_csr(
     let data = asn1::write_single(&Csr {
         csr_info,
         signature_alg: sigalg,
-        signature: asn1::BitString::new(signature, 0).unwrap(),
+        signature: asn1::BitString::new(&signature, 0).unwrap(),
     })?;
     load_der_x509_csr(
         py,
