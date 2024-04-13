@@ -172,7 +172,6 @@ fn create_ocsp_request(
 ) -> CryptographyResult<OCSPRequest> {
     let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
     let serial_number_bytes;
-    //let ka = cryptography_keepalive::KeepAlive::new();
 
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash, issuer_name_hash, issuer_key_hash): (
