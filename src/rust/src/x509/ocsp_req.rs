@@ -171,6 +171,7 @@ fn create_ocsp_request(
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<OCSPRequest> {
     let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
+    let serial_number_bytes;
 
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash, issuer_name_hash, issuer_key_hash): (
@@ -188,7 +189,8 @@ fn create_ocsp_request(
         (issuer_name_hash, issuer_key_hash, py_serial, py_hash) = builder
             .getattr(pyo3::intern!(py, "_request_hash"))?
             .extract()?;
-        let serial_number = asn1::BigInt::new(py_uint_to_big_endian_bytes(py, py_serial)?).unwrap();
+        serial_number_bytes = py_uint_to_big_endian_bytes(py, py_serial)?;
+        let serial_number = asn1::BigInt::new(&serial_number_bytes).unwrap();
         ocsp::certid_new_from_hash(
             py,
             &issuer_name_hash,
