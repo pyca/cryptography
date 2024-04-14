@@ -681,13 +681,15 @@ fn create_x509_crl(
         });
     }
 
+    let ka = cryptography_keepalive::KeepAlive::new();
+
     let py_issuer_name = builder.getattr(pyo3::intern!(py, "_issuer_name"))?;
     let py_this_update = builder.getattr(pyo3::intern!(py, "_last_update"))?;
     let py_next_update = builder.getattr(pyo3::intern!(py, "_next_update"))?;
     let tbs_cert_list = crl::TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),
-        issuer: x509::common::encode_name(py, &py_issuer_name)?,
+        issuer: x509::common::encode_name(py, &ka, &py_issuer_name)?,
         this_update: x509::certificate::time_from_py(py, &py_this_update)?,
         next_update: Some(x509::certificate::time_from_py(py, &py_next_update)?),
         revoked_certificates: if revoked_certs.is_empty() {
