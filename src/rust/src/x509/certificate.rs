@@ -918,6 +918,9 @@ fn create_x509_certificate(
     let py_not_before = builder.getattr(pyo3::intern!(py, "_not_valid_before"))?;
     let py_not_after = builder.getattr(pyo3::intern!(py, "_not_valid_after"))?;
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     let serial_bytes = py_uint_to_big_endian_bytes(py, py_serial)?;
     let tbs_cert = cryptography_x509::certificate::TbsCertificate {
         version: builder
@@ -937,6 +940,8 @@ fn create_x509_certificate(
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(
             py,
+            &ka_vec,
+            &ka_bytes,
             &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,

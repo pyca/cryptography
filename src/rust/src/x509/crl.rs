@@ -655,7 +655,8 @@ fn create_x509_crl(
         rsa_padding.to_owned(),
     )?;
     let mut revoked_certs = vec![];
-    let ka = cryptography_keepalive::KeepAlive::new();
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
     for py_revoked_cert in builder
         .getattr(pyo3::intern!(py, "_revoked_certificates"))?
         .iter()?
@@ -666,12 +667,14 @@ fn create_x509_crl(
             .extract()?;
         let py_revocation_date =
             py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date_utc"))?;
-        let serial_bytes = ka.add(py_uint_to_big_endian_bytes(py, serial_number)?);
+        let serial_bytes = ka_bytes.add(py_uint_to_big_endian_bytes(py, serial_number)?);
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: asn1::BigUint::new(serial_bytes).unwrap(),
             revocation_date: x509::certificate::time_from_py(py, &py_revocation_date)?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
+                &ka_vec,
+                &ka_bytes,
                 &py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
                 extensions::encode_extension,
             )?,
@@ -696,6 +699,8 @@ fn create_x509_crl(
         },
         raw_crl_extensions: x509::common::encode_extensions(
             py,
+            &ka_vec,
+            &ka_bytes,
             &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,

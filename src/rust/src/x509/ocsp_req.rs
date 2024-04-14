@@ -200,8 +200,13 @@ fn create_ocsp_request(
         )?
     };
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     let extensions = x509::common::encode_extensions(
         py,
+        &ka_vec,
+        &ka_bytes,
         &builder.getattr(pyo3::intern!(py, "_extensions"))?,
         extensions::encode_extension,
     )?;

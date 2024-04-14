@@ -305,10 +305,15 @@ fn create_x509_csr(
         .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     let mut attrs = vec![];
     let ext_bytes;
     if let Some(exts) = x509::common::encode_extensions(
         py,
+        &ka_vec,
+        &ka_bytes,
         &builder.getattr(pyo3::intern!(py, "_extensions"))?,
         x509::extensions::encode_extension,
     )? {

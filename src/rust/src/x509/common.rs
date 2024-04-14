@@ -410,6 +410,8 @@ pub(crate) fn encode_extensions<
     ) -> CryptographyResult<Option<Vec<u8>>>,
 >(
     py: pyo3::Python<'p>,
+    ka_vec: &'p cryptography_keepalive::KeepAlive<Vec<u8>>,
+    ka_bytes: &'p cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     py_exts: &pyo3::Bound<'p, pyo3::PyAny>,
     encode_ext: F,
 ) -> pyo3::PyResult<Option<RawExtensions<'p>>> {
@@ -424,20 +426,16 @@ pub(crate) fn encode_extensions<
             exts.push(Extension {
                 extn_id: oid,
                 critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
-                extn_value: ext_val
-                    .getattr(pyo3::intern!(py, "value"))?
-                    .extract::<&[u8]>()?,
+                extn_value: ka_bytes.add(ext_val.getattr(pyo3::intern!(py, "value"))?.extract()?),
             });
             continue;
         }
         match encode_ext(py, &oid, &ext_val)? {
             Some(data) => {
-                // TODO: extra copy
-                let py_data = pyo3::types::PyBytes::new_bound(py, &data);
                 exts.push(Extension {
                     extn_id: oid,
                     critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
-                    extn_value: py_data.extract()?,
+                    extn_value: ka_vec.add(data),
                 });
             }
             None => {
