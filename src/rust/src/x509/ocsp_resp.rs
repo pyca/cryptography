@@ -702,6 +702,9 @@ fn create_ocsp_response(
         )
     };
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     let tbs_response_data = ocsp_resp::ResponseData {
         version: 0,
         produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
@@ -711,6 +714,8 @@ fn create_ocsp_response(
         )),
         raw_response_extensions: x509::common::encode_extensions(
             py,
+            &ka_vec,
+            &ka_bytes,
             &builder.getattr(pyo3::intern!(py, "_extensions"))?,
             extensions::encode_extension,
         )?,
