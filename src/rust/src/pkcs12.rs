@@ -318,8 +318,11 @@ pub(crate) fn create_submodule(
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
     let submod = pyo3::prelude::PyModule::new_bound(py, "pkcs12")?;
 
-    submod.add_function(pyo3::wrap_pyfunction!(load_key_and_certificates, &submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction!(load_pkcs12, &submod)?)?;
+    submod.add_function(pyo3::wrap_pyfunction_bound!(
+        load_key_and_certificates,
+        &submod
+    )?)?;
+    submod.add_function(pyo3::wrap_pyfunction_bound!(load_pkcs12, &submod)?)?;
 
     submod.add_class::<PKCS12Certificate>()?;
 

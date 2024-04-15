@@ -559,12 +559,12 @@ pub(crate) fn create_module(
     py: pyo3::Python<'_>,
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
     let m = pyo3::prelude::PyModule::new_bound(py, "ciphers")?;
-    m.add_function(pyo3::wrap_pyfunction!(create_encryption_ctx, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(create_decryption_ctx, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(cipher_supported, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(create_encryption_ctx, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(create_decryption_ctx, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(cipher_supported, &m)?)?;
 
-    m.add_function(pyo3::wrap_pyfunction!(_advance, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction!(_advance_aad, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(_advance, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(_advance_aad, &m)?)?;
 
     m.add_class::<PyCipherContext>()?;
     m.add_class::<PyAEADEncryptionContext>()?;

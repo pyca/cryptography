@@ -817,7 +817,7 @@ pub(crate) fn create_module(
     py: pyo3::Python<'_>,
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
     let m = pyo3::prelude::PyModule::new_bound(py, "rsa")?;
-    m.add_function(pyo3::wrap_pyfunction!(generate_private_key, &m)?)?;
+    m.add_function(pyo3::wrap_pyfunction_bound!(generate_private_key, &m)?)?;
 
     m.add_class::<RsaPrivateKey>()?;
     m.add_class::<RsaPublicKey>()?;
