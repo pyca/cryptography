@@ -296,9 +296,9 @@ impl RsaPrivateKey {
         })?;
         setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), true)?;
 
-        let length = ctx.sign(data, None)?;
+        let length = ctx.sign(data.as_bytes(), None)?;
         Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
-            let length = ctx.sign(data, Some(b)).map_err(|_| {
+            let length = ctx.sign(data.as_bytes(), Some(b)).map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err(
                     "Digest or salt length too long for key size. Use a larger key or shorter salt length if you are specifying a PSS salt",
                 )
@@ -434,7 +434,9 @@ impl RsaPublicKey {
         ctx.verify_init()?;
         setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), false)?;
 
-        let valid = ctx.verify(data, signature.as_bytes()).unwrap_or(false);
+        let valid = ctx
+            .verify(data.as_bytes(), signature.as_bytes())
+            .unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),

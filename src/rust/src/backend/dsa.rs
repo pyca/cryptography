@@ -77,7 +77,7 @@ impl DsaPrivateKey {
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
         let mut sig = vec![];
-        signer.sign_to_vec(data, &mut sig)?;
+        signer.sign_to_vec(data.as_bytes(), &mut sig)?;
         Ok(pyo3::types::PyBytes::new_bound(py, &sig))
     }
 
@@ -162,7 +162,9 @@ impl DsaPublicKey {
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
-        let valid = verifier.verify(data, signature.as_bytes()).unwrap_or(false);
+        let valid = verifier
+            .verify(data.as_bytes(), signature.as_bytes())
+            .unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
