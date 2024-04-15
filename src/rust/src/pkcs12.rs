@@ -60,8 +60,11 @@ impl PKCS12Certificate {
         let py_friendly_name_repr;
         let friendly_name_repr = match &self.friendly_name {
             Some(v) => {
-                py_friendly_name_repr = v.bind(py).repr()?;
-                py_friendly_name_repr.extract()?
+                py_friendly_name_repr = v
+                    .bind(py)
+                    .repr()?
+                    .extract::<pyo3::pybacked::PyBackedStr>()?;
+                &*py_friendly_name_repr
             }
             None => "None",
         };

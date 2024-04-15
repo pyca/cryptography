@@ -85,9 +85,9 @@ fn identify_hash_type(
         ));
     }
 
-    match hash_algorithm
+    match &*hash_algorithm
         .getattr(pyo3::intern!(py, "name"))?
-        .extract()?
+        .extract::<pyo3::pybacked::PyBackedStr>()?
     {
         "sha224" => Ok(HashType::Sha224),
         "sha256" => Ok(HashType::Sha256),

@@ -340,7 +340,7 @@ fn create_ip_network(
     let net = format!(
         "{}/{}",
         base.getattr(pyo3::intern!(py, "exploded"))?
-            .extract::<&str>()?,
+            .extract::<pyo3::pybacked::PyBackedStr>()?,
         prefix?
     );
     let addr = types::IPADDRESS_IPNETWORK.get(py)?.call1((net,))?;

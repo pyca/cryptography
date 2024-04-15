@@ -195,10 +195,10 @@ fn sign_and_serialize<'p>(
                 )
             };
 
-        let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[py_hash_alg
+        let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[&*py_hash_alg
             .getattr(pyo3::intern!(py, "name"))?
-            .extract::<&str>()?]
-        .clone();
+            .extract::<pyo3::pybacked::PyBackedStr>()?]
+            .clone();
         // Technically O(n^2), but no one will have that many signers.
         if !digest_algs.contains(&digest_alg) {
             digest_algs.push(digest_alg.clone());

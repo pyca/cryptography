@@ -45,7 +45,7 @@ fn curve_from_py_curve(
     }
 
     let py_curve_name = py_curve.getattr(pyo3::intern!(py, "name"))?;
-    let nid = match py_curve_name.extract()? {
+    let nid = match &*py_curve_name.extract::<pyo3::pybacked::PyBackedStr>()? {
         "secp192r1" => openssl::nid::Nid::X9_62_PRIME192V1,
         "secp224r1" => openssl::nid::Nid::SECP224R1,
         "secp256r1" => openssl::nid::Nid::X9_62_PRIME256V1,
