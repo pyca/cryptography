@@ -74,13 +74,15 @@ pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: Lazy<
 
 pub(crate) fn certid_new<'p>(
     py: pyo3::Python<'p>,
+    ka: &'p cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     cert: &'p Certificate,
     issuer: &'p Certificate,
     hash_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<CertID<'p>> {
     let issuer_der = asn1::write_single(&cert.raw.borrow_dependent().tbs_cert.issuer)?;
-    let issuer_name_hash = hash_data(py, hash_algorithm, &issuer_der)?;
-    let issuer_key_hash = hash_data(
+    let issuer_name_hash =
+        pyo3::pybacked::PyBackedBytes::from(hash_data(py, hash_algorithm, &issuer_der)?);
+    let issuer_key_hash = pyo3::pybacked::PyBackedBytes::from(hash_data(
         py,
         hash_algorithm,
         issuer
@@ -90,15 +92,15 @@ pub(crate) fn certid_new<'p>(
             .spki
             .subject_public_key
             .as_bytes(),
-    )?;
+    )?);
 
     Ok(CertID {
         hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
             .getattr(pyo3::intern!(py, "name"))?
             .extract::<&str>()?]
         .clone(),
-        issuer_name_hash,
-        issuer_key_hash,
+        issuer_name_hash: ka.add(issuer_name_hash),
+        issuer_key_hash: ka.add(issuer_key_hash),
         serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
     })
 }
@@ -125,8 +127,8 @@ pub(crate) fn hash_data<'p>(
     py: pyo3::Python<'p>,
     py_hash_alg: &pyo3::Bound<'p, pyo3::PyAny>,
     data: &[u8],
-) -> pyo3::PyResult<&'p [u8]> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let mut h = Hash::new(py, py_hash_alg, None)?;
     h.update_bytes(data)?;
-    Ok(h.finalize(py)?.into_gil_ref().as_bytes())
+    Ok(h.finalize(py)?)
 }
