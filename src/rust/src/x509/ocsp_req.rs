@@ -173,6 +173,9 @@ fn create_ocsp_request(
     let builder_request = builder.getattr(pyo3::intern!(py, "_request"))?;
     let serial_number_bytes;
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     // Declare outside the if-block so the lifetimes are right.
     let (py_cert, py_issuer, py_hash, issuer_name_hash, issuer_key_hash): (
         pyo3::PyRef<'_, x509::certificate::Certificate>,
@@ -183,7 +186,7 @@ fn create_ocsp_request(
     );
     let req_cert = if !builder_request.is_none() {
         (py_cert, py_issuer, py_hash) = builder_request.extract()?;
-        ocsp::certid_new(py, &py_cert, &py_issuer, &py_hash)?
+        ocsp::certid_new(py, &ka_bytes, &py_cert, &py_issuer, &py_hash)?
     } else {
         let py_serial: pyo3::Bound<'_, pyo3::types::PyLong>;
         (issuer_name_hash, issuer_key_hash, py_serial, py_hash) = builder
@@ -199,9 +202,6 @@ fn create_ocsp_request(
             py_hash,
         )?
     };
-
-    let ka_vec = cryptography_keepalive::KeepAlive::new();
-    let ka_bytes = cryptography_keepalive::KeepAlive::new();
 
     let extensions = x509::common::encode_extensions(
         py,

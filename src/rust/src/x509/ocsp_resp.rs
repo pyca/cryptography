@@ -10,7 +10,7 @@ use cryptography_x509::{
     ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
     oid,
 };
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::prelude::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -669,8 +669,11 @@ fn create_ocsp_response(
     let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
     let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+
     let responses = vec![SingleResponse {
-        cert_id: ocsp::certid_new(py, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
+        cert_id: ocsp::certid_new(py, &ka_bytes, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
         cert_status,
         next_update,
         this_update,
@@ -678,9 +681,10 @@ fn create_ocsp_response(
     }];
 
     borrowed_cert = responder_cert.borrow();
+    let by_key_hash;
     let responder_id = if responder_encoding.is(&types::OCSP_RESPONDER_ENCODING_HASH.get(py)?) {
         let sha1 = types::SHA1.get(py)?.call0()?;
-        ocsp_resp::ResponderId::ByKey(ocsp::hash_data(
+        by_key_hash = ocsp::hash_data(
             py,
             &sha1,
             borrowed_cert
@@ -690,7 +694,8 @@ fn create_ocsp_response(
                 .spki
                 .subject_public_key
                 .as_bytes(),
-        )?)
+        )?;
+        ocsp_resp::ResponderId::ByKey(by_key_hash.as_bytes())
     } else {
         ocsp_resp::ResponderId::ByName(
             borrowed_cert
@@ -701,9 +706,6 @@ fn create_ocsp_response(
                 .clone(),
         )
     };
-
-    let ka_vec = cryptography_keepalive::KeepAlive::new();
-    let ka_bytes = cryptography_keepalive::KeepAlive::new();
 
     let tbs_response_data = ocsp_resp::ResponseData {
         version: 0,
