@@ -5,7 +5,7 @@
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
-use pyo3::prelude::PyAnyMethods;
+use pyo3::prelude::{PyAnyMethods, PyBytesMethods};
 use pyo3::ToPyObject;
 
 pub(crate) fn py_int_to_bn(
@@ -354,23 +354,39 @@ pub(crate) fn pkey_public_bytes<'p>(
     ))
 }
 
+pub(crate) enum BytesOrPyBytes<'a> {
+    Bytes(&'a [u8]),
+    PyBytes(pyo3::Bound<'a, pyo3::types::PyBytes>),
+}
+
+impl BytesOrPyBytes<'_> {
+    pub(crate) fn as_bytes(&self) -> &[u8] {
+        match self {
+            BytesOrPyBytes::Bytes(v) => v,
+            BytesOrPyBytes::PyBytes(v) => v.as_bytes(),
+        }
+    }
+}
+
 pub(crate) fn calculate_digest_and_algorithm<'p>(
     py: pyo3::Python<'p>,
-    mut data: &'p [u8],
+    data: &'p [u8],
     algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
-) -> CryptographyResult<(&'p [u8], pyo3::Bound<'p, pyo3::PyAny>)> {
-    let mut algorithm_result = algorithm.clone();
-    if algorithm.is_instance(&types::PREHASHED.get(py)?)? {
-        algorithm_result = algorithm.getattr("_algorithm")?;
+) -> CryptographyResult<(BytesOrPyBytes<'p>, pyo3::Bound<'p, pyo3::PyAny>)> {
+    let (algorithm, data) = if algorithm.is_instance(&types::PREHASHED.get(py)?)? {
+        (
+            algorithm.getattr("_algorithm")?,
+            BytesOrPyBytes::Bytes(data),
+        )
     } else {
         // Potential optimization: rather than allocate a PyBytes in
         // `h.finalize()`, have a way to get the `DigestBytes` directly.
         let mut h = Hash::new(py, algorithm, None)?;
         h.update_bytes(data)?;
-        data = h.finalize(py)?.into_gil_ref().as_bytes();
-    }
+        (algorithm.clone(), BytesOrPyBytes::PyBytes(h.finalize(py)?))
+    };
 
-    if data.len() != algorithm.getattr("digest_size")?.extract()? {
+    if data.as_bytes().len() != algorithm.getattr("digest_size")?.extract()? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "The provided data must be the same length as the hash algorithm's digest size.",
@@ -378,7 +394,7 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
         ));
     }
 
-    Ok((data, algorithm_result))
+    Ok((data, algorithm))
 }
 
 pub(crate) enum PasswordCallbackStatus {
