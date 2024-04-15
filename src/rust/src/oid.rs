@@ -46,7 +46,7 @@ impl ObjectIdentifier {
         Ok(format!(
             "<ObjectIdentifier(oid={}, name={})>",
             slf.get().oid,
-            name.extract::<&str>()?
+            name.extract::<pyo3::pybacked::PyBackedStr>()?
         ))
     }
 

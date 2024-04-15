@@ -95,10 +95,10 @@ pub(crate) fn certid_new<'p>(
     )?);
 
     Ok(CertID {
-        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[hash_algorithm
+        hash_algorithm: HASH_NAME_TO_ALGORITHM_IDENTIFIERS[&*hash_algorithm
             .getattr(pyo3::intern!(py, "name"))?
-            .extract::<&str>()?]
-        .clone(),
+            .extract::<pyo3::pybacked::PyBackedStr>()?]
+            .clone(),
         issuer_name_hash: ka.add(issuer_name_hash),
         issuer_key_hash: ka.add(issuer_key_hash),
         serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
