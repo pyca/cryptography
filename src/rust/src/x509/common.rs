@@ -101,12 +101,13 @@ fn encode_name_bytes<'p>(
 
 pub(crate) fn encode_general_names<'a>(
     py: pyo3::Python<'_>,
-    ka: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_gns: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<Vec<GeneralName<'a>>, CryptographyError> {
     let mut gns = vec![];
     for el in py_gns.iter()? {
-        let gn = encode_general_name(py, ka, &el?)?;
+        let gn = encode_general_name(py, ka_bytes, ka_str, &el?)?;
         gns.push(gn);
     }
     Ok(gns)
@@ -114,7 +115,8 @@ pub(crate) fn encode_general_names<'a>(
 
 pub(crate) fn encode_general_name<'a>(
     py: pyo3::Python<'_>,
-    ka: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
+    ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     gn: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<GeneralName<'a>, CryptographyError> {
     let gn_type = gn.get_type();
@@ -122,20 +124,20 @@ pub(crate) fn encode_general_name<'a>(
 
     if gn_type.is(&types::DNS_NAME.get(py)?) {
         Ok(GeneralName::DNSName(UnvalidatedIA5String(
-            gn_value.extract::<&str>()?,
+            ka_str.add(gn_value.extract()?),
         )))
     } else if gn_type.is(&types::RFC822_NAME.get(py)?) {
         Ok(GeneralName::RFC822Name(UnvalidatedIA5String(
-            gn_value.extract::<&str>()?,
+            ka_str.add(gn_value.extract()?),
         )))
     } else if gn_type.is(&types::DIRECTORY_NAME.get(py)?) {
-        let name = encode_name(py, ka, &gn_value)?;
+        let name = encode_name(py, ka_bytes, &gn_value)?;
         Ok(GeneralName::DirectoryName(name))
     } else if gn_type.is(&types::OTHER_NAME.get(py)?) {
         let py_oid = gn.getattr(pyo3::intern!(py, "type_id"))?;
         Ok(GeneralName::OtherName(OtherName {
             type_id: py_oid_to_oid(py_oid)?,
-            value: asn1::parse_single(gn_value.extract::<&[u8]>()?).map_err(|e| {
+            value: asn1::parse_single(ka_bytes.add(gn_value.extract()?)).map_err(|e| {
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "OtherName value must be valid DER: {e:?}"
                 ))
@@ -143,13 +145,12 @@ pub(crate) fn encode_general_name<'a>(
         }))
     } else if gn_type.is(&types::UNIFORM_RESOURCE_IDENTIFIER.get(py)?) {
         Ok(GeneralName::UniformResourceIdentifier(
-            UnvalidatedIA5String(gn_value.extract::<&str>()?),
+            UnvalidatedIA5String(ka_str.add(gn_value.extract()?)),
         ))
     } else if gn_type.is(&types::IP_ADDRESS.get(py)?) {
-        Ok(GeneralName::IPAddress(
-            gn.call_method0(pyo3::intern!(py, "_packed"))?
-                .extract::<&[u8]>()?,
-        ))
+        Ok(GeneralName::IPAddress(ka_bytes.add(
+            gn.call_method0(pyo3::intern!(py, "_packed"))?.extract()?,
+        )))
     } else if gn_type.is(&types::REGISTERED_ID.get(py)?) {
         let oid = py_oid_to_oid(gn_value)?;
         Ok(GeneralName::RegisteredID(oid))
@@ -165,13 +166,14 @@ pub(crate) fn encode_access_descriptions<'a>(
     py_ads: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
     let mut ads = vec![];
-    let ka = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+    let ka_str = cryptography_keepalive::KeepAlive::new();
     for py_ad in py_ads.iter()? {
         let py_ad = py_ad?;
         let py_oid = py_ad.getattr(pyo3::intern!(py, "access_method"))?;
         let access_method = py_oid_to_oid(py_oid)?;
         let py_access_location = py_ad.getattr(pyo3::intern!(py, "access_location"))?;
-        let access_location = encode_general_name(py, &ka, &py_access_location)?;
+        let access_location = encode_general_name(py, &ka_bytes, &ka_str, &py_access_location)?;
         ads.push(AccessDescription {
             access_method,
             access_location,
