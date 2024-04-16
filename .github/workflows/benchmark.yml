@@ -36,7 +36,7 @@ jobs:
         with:
           repository: "pyca/cryptography"
           path: "cryptography-base"
-          ref: "${{ github.event.inputs.version || github.base_ref }}"
+          ref: "${{ github.event.inputs.base_commit || github.base_ref }}"
       - name: Clone test vectors
         timeout-minutes: 2
         uses: ./cryptography-base/.github/actions/fetch-vectors
