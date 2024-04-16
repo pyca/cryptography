@@ -8,7 +8,7 @@ publish = false
 rust-version = "1.65.0"
 
 [dependencies]
-pyo3 = { version = "0.21.1", features = ["abi3"] }
+pyo3 = { version = "0.21.2", features = ["abi3"] }
 openssl-sys = "0.9.102"
 
 [build-dependencies]
