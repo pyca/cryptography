@@ -157,6 +157,7 @@ jobs:
           - {IMAGE: "sid", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-focal", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-jammy", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-noble", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-rolling", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "fedora", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
