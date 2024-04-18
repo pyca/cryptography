@@ -41,6 +41,9 @@ Changelog
   :attr:`~cryptography.x509.CertificateSigningRequest.public_key_algorithm_oid`
   to determine the :class:`~cryptography.hazmat._oid.PublicKeyAlgorithmOID`
   Object Identifier of the public key found inside the certificate.
+* Added :attr:`~cryptography.x509.InvalidityDate.invalidity_date_utc`, a
+  timezone-aware alternative to the naïve ``datetime`` attribute
+  :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
 
 .. _v42-0-5:
 

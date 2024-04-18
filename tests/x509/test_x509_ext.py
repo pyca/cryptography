@@ -444,6 +444,26 @@ class TestInvalidityDate:
         ext = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
         assert ext.public_bytes() == b"\x18\x0f20150101010100Z"
 
+    def test_timezone_aware_api(self):
+        naive_date = datetime.datetime(2015, 1, 1, 1, 1)
+        ext_naive = x509.InvalidityDate(invalidity_date=naive_date)
+        assert ext_naive.invalidity_date_utc == datetime.datetime(
+            2015, 1, 1, 1, 1, tzinfo=datetime.timezone.utc
+        )
+
+        tz_aware_date = datetime.datetime(
+            2015,
+            1,
+            1,
+            1,
+            1,
+            tzinfo=datetime.timezone(datetime.timedelta(hours=-8)),
+        )
+        ext_aware = x509.InvalidityDate(invalidity_date=tz_aware_date)
+        assert ext_aware.invalidity_date_utc == datetime.datetime(
+            2015, 1, 1, 9, 1, tzinfo=datetime.timezone.utc
+        )
+
 
 class TestNoticeReference:
     def test_notice_numbers_not_all_int(self):

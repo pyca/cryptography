@@ -3148,6 +3148,14 @@ These extensions are only valid within a :class:`RevokedCertificate` object.
 
         :type: :class:`datetime.datetime`
 
+    .. attribute:: invalidity_date_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        The invalidity date in UTC as a timezone-aware datetime object.
+
 OCSP Extensions
 ~~~~~~~~~~~~~~~
 
