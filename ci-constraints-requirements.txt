@@ -36,7 +36,7 @@ docutils==0.20.1
     #   readme-renderer
     #   sphinx
     #   sphinx-rtd-theme
-exceptiongroup==1.2.0
+exceptiongroup==1.2.1
     # via pytest
 execnet==2.1.1; python_version >= "3.8"
     # via pytest-xdist
