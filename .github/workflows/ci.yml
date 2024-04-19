@@ -475,14 +475,14 @@ jobs:
         run: python -m coverage html
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload HTML report.
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
         with:
           name: _html-report
           path: htmlcov
           if-no-files-found: ignore
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload rust HTML report.
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
         with:
           name: _html-rust-report
           path: rust-coverage
