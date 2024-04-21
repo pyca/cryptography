@@ -77,11 +77,7 @@ fn pkey_from_dh<T: openssl::pkey::HasParams>(
         if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
             Ok(openssl::pkey::PKey::from_dh(dh)?)
         } else {
-            if dh.prime_q().is_some() {
-                Ok(openssl::pkey::PKey::from_dhx(dh)?)
-            } else {
-                Ok(openssl::pkey::PKey::from_dh(dh)?)
-            }
+            Ok(openssl::pkey::PKey::from_dh(dh)?)
         }
     }
 }

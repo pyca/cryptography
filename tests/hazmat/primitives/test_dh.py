@@ -7,6 +7,7 @@ import binascii
 import copy
 import itertools
 import os
+import textwrap
 import typing
 
 import pytest
@@ -472,6 +473,39 @@ class TestDH:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    def test_old_public_key_exchange(self, backend):
+        # This is a public key generated on cryptograpy version 41.0.7
+        key_data = textwrap.dedent(
+            """\
+        -----BEGIN PUBLIC KEY-----
+        MIICJTCCARcGCSqGSIb3DQEDATCCAQgCggEBAP//////////yQ/aoiFowjTExmKL
+        gNwc0SkCTgiKZ8x0Agu+pjsTmyJRSgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVt
+        bVHCReSFtXZiXn7G9ExC6aY37WsL/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR
+        7ORbPcIAfLihY78FmNpINhxV05ppFj+o/STPX4NlXSPco62WHGLzViCFUrue1SkH
+        cJaWbWcMNU5KvJgE8XRsCMoYIXwykF5GLjbOO+OedywYDoY DmyeDouwHoo+1xV3w
+        b0xSyd4ry/aVWBcYOZVJfOqVauUV0iYYmPoFEBVyjlqKrKpo//////////8CAQID
+        ggEGAAKCAQEAoely6vSHw+/Q3zGYLaJj7eeQkfd25K8SvtC+FMY9D7jwS4g71pyr
+        U3FJ98Fi45Wdksh+d4u7U089trF5Xbgui29bZ0HcQZtfHEEz0Mh69tkipCm2/QIj
+        6eDlo6sPk9hhhvgg4MMGiWKhCtHrub3x1FHdmf7KjOhrGeb5apiudo7blGFzGhZ3
+        NFnbff+ArVNd+rdVmSoZn0aMhXRConlDu/44IYe5/24VLl7G+BzZlIZO4P2M83fd
+        mBOvR13cmYssQjEFTbaZVQvQHa3t0+aywfdCgsXGmTTK6QDCBP8D+vf1bmhEswzs
+        oYn1GLtJ3VyYyMBPDBomd2ctchZgTzsX1w==
+        -----END PUBLIC KEY-----
+        """
+        ).encode()
+
+        public_key = serialization.load_pem_public_key(key_data, backend)
+
+        assert isinstance(public_key, dh.DHPublicKey)
+
+        params = public_key.parameters()
+
+        private_key = params.generate_private_key()
+
+        # test that we can do a key exchange with a public key
+        # generated with an older version
+        private_key.exchange(public_key)
 
 
 @pytest.mark.supported(
