@@ -530,7 +530,7 @@ pub(crate) fn encode_extension(
             Ok(Some(asn1::write_single(&asn1::SequenceOfWriter::new(gns))?))
         }
         &oid::INVALIDITY_DATE_OID => {
-            let py_dt = ext.getattr(pyo3::intern!(py, "invalidity_date"))?;
+            let py_dt = ext.getattr(pyo3::intern!(py, "invalidity_date_utc"))?;
             let dt = x509::py_to_datetime(py, py_dt)?;
             Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(dt)?)?))
         }

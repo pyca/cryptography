@@ -1788,6 +1788,13 @@ class InvalidityDate(ExtensionType):
     def invalidity_date(self) -> datetime.datetime:
         return self._invalidity_date
 
+    @property
+    def invalidity_date_utc(self) -> datetime.datetime:
+        if self._invalidity_date.tzinfo is None:
+            return self._invalidity_date.replace(tzinfo=datetime.timezone.utc)
+        else:
+            return self._invalidity_date.astimezone(tz=datetime.timezone.utc)
+
     def public_bytes(self) -> bytes:
         return rust_x509.encode_extension_value(self)
 
