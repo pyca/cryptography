@@ -70,7 +70,7 @@ pathspec==0.12.1
     # via check-sdist
 platformdirs==4.2.0; python_version >= "3.8"
     # via virtualenv
-pluggy==1.4.0; python_version >= "3.8"
+pluggy==1.5.0; python_version >= "3.8"
     # via pytest
 pretend==1.0.9
     # via cryptography (pyproject.toml)
