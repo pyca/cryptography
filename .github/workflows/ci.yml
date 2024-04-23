@@ -432,7 +432,7 @@ jobs:
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}
-        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
         with:
           pattern: coverage-data-*
           merge-multiple: true
