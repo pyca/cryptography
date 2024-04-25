@@ -26,7 +26,7 @@ pub fn create_module(
     // SAFETY: `PyInit__openssl` returns an owned reference.
     let openssl_mod = unsafe {
         let ptr = PyInit__openssl();
-        pyo3::Py::from_owned_ptr(py, ptr).bind(py).clone()
+        pyo3::Py::from_owned_ptr_or_err(py, ptr)?.bind(py).clone()
     };
 
     Ok(openssl_mod)
