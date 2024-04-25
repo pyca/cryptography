@@ -620,7 +620,7 @@ def load_kasvs_ecdh_vectors(vector_data):
             if len(parm) == 2:
                 names = parm[1].strip().split()
                 for n in names:
-                    tags.append("[%s]" % n)
+                    tags.append(f"[{n}]")
                 break
 
     # Sets Metadata
