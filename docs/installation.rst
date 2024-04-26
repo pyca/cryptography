@@ -21,7 +21,7 @@ operating systems.
 * x86-64 Fedora (latest)
 * x86-64 macOS 13 Ventura and ARM64 macOS 14 Sonoma
 * x86-64 Ubuntu 20.04, 22.04, 24.04, rolling
-* ARM64 Ubuntu 22.04
+* ARM64 Ubuntu rolling
 * x86-64 Debian Buster (10.x), Bullseye (11.x), Bookworm (12.x),
   Trixie (13.x), and Sid (unstable)
 * x86-64 and ARM64 Alpine (latest)
