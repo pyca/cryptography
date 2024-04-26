@@ -119,16 +119,14 @@ fn encrypt_and_serialize<'p>(
         .extract()?;
 
     let mut recipient_infos = vec![];
+    let padding = types::PKCS1V15.get(py)?.call0()?;
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
     for cert in py_recipients.iter() {
         // Currently, keys are encrypted with RSA (PKCS #1 v1.5), which the S/MIME v3.2 RFC
         // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.3)
         let encrypted_key = cert
             .call_method0(pyo3::intern!(py, "public_key"))?
-            .call_method1(
-                pyo3::intern!(py, "encrypt"),
-                (&key, types::PKCS1V15.get(py)?.call0()?),
-            )?
+            .call_method1(pyo3::intern!(py, "encrypt"), (&key, &padding))?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
         recipient_infos.push(pkcs7::RecipientInfo {

@@ -997,13 +997,21 @@ class TestPKCS7EnvelopeBuilder:
         with pytest.raises(ValueError):
             builder.encrypt(serialization.Encoding.DER, [invalid_option])
 
-    def test_smime_encrypt_smime_encoding(self, backend):
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+            [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_smime_encoding(self, backend, options):
         data = b"hello world\n"
         cert, _ = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
         )
-        enveloped = builder.encrypt(serialization.Encoding.SMIME, [])
+        enveloped = builder.encrypt(serialization.Encoding.SMIME, options)
         assert b"MIME-Version: 1.0\n" in enveloped
         assert b"Content-Transfer-Encoding: base64\n" in enveloped
         message = email.parser.BytesParser().parsebytes(enveloped)
@@ -1028,13 +1036,21 @@ class TestPKCS7EnvelopeBuilder:
             b"\x20\x43\x41"
         ) in payload
 
-    def test_smime_encrypt_der_encoding(self, backend):
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+            [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_der_encoding(self, backend, options):
         data = b"hello world\n"
         cert, _ = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
         )
-        enveloped = builder.encrypt(serialization.Encoding.DER, [])
+        enveloped = builder.encrypt(serialization.Encoding.DER, options)
 
         # We want to know if we've serialized something that has the parameters
         # we expect, so we match on specific byte strings of OIDs & DER values.
