@@ -12,6 +12,7 @@ import io
 import typing
 
 from cryptography import utils, x509
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
@@ -183,6 +184,16 @@ class PKCS7EnvelopeBuilder:
         data: bytes | None = None,
         recipients: list[x509.Certificate] | None = None,
     ):
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.rsa_encryption_supported(padding=padding.PKCS1v15()):
+            raise UnsupportedAlgorithm(
+                "RSA with PKCS1 v1.5 padding is not supported by this version"
+                " of OpenSSL.",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
         self._data = data
         self._recipients = recipients if recipients is not None else []
 
