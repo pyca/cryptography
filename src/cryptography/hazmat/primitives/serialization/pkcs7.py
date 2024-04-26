@@ -313,15 +313,7 @@ def _smime_enveloped_encode(data: bytes) -> bytes:
 
     m.set_payload(email.base64mime.body_encode(data, maxlinelen=65))
 
-    fp = io.BytesIO()
-    g = email.generator.BytesGenerator(
-        fp,
-        maxheaderlen=0,
-        mangle_from_=False,
-        policy=m.policy.clone(linesep="\n"),
-    )
-    g.flatten(m)
-    return fp.getvalue()
+    return m.as_bytes(policy=m.policy.clone(linesep="\n", max_line_length=0))
 
 
 class OpenSSLMimePart(email.message.MIMEPart):
