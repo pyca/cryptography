@@ -345,6 +345,8 @@ pub static EXTENDABLE_OUTPUT_FUNCTION: LazyPyImport = LazyPyImport::new(
 );
 pub static SHA1: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA1"]);
+pub static SHA256: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA256"]);
 
 pub static PREHASHED: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.utils",

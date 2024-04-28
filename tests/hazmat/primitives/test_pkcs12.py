@@ -544,9 +544,6 @@ class TestPKCS12Creation:
         assert parsed_more_certs == [cert]
 
     def test_invalid_utf8_friendly_name(self, backend):
-        if rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL:
-            pytest.skip("Temporarily doesn't work on LibreSSL")
-
         cert, _ = _load_ca(backend)
         with pytest.raises(ValueError):
             serialize_key_and_certificates(

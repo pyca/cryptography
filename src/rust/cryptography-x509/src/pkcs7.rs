@@ -59,7 +59,7 @@ pub struct IssuerAndSerialNumber<'a> {
     pub serial_number: asn1::BigInt<'a>,
 }
 
-// #[derive(asn1::Asn1Write)]
+#[derive(asn1::Asn1Write)]
 pub struct DigestInfo<'a> {
     pub algorithm: common::AlgorithmIdentifier<'a>,
     pub digest: &'a [u8],
