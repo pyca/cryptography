@@ -167,10 +167,8 @@ def serialize_key_and_certificates(
     if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
-    if key is None and isinstance(
-        encryption_algorithm, serialization.NoEncryption
-    ):
-        return rust_pkcs12.serialize_key_and_certificates(name, cert, cas)
+    if isinstance(encryption_algorithm, serialization.NoEncryption):
+        return rust_pkcs12.serialize_key_and_certificates(name, key, cert, cas)
 
     from cryptography.hazmat.backends.openssl.backend import backend
 

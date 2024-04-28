@@ -406,14 +406,8 @@ class Backend:
         if name is not None:
             utils._check_bytes("name", name)
 
-        if isinstance(encryption_algorithm, serialization.NoEncryption):
-            nid_cert = -1
-            nid_key = -1
-            pkcs12_iter = 0
-            # mac_iter of 0 uses OpenSSL's default value
-            mac_iter = 0
-            mac_alg = self._ffi.NULL
-        elif isinstance(
+        assert not isinstance(encryption_algorithm, serialization.NoEncryption)
+        if isinstance(
             encryption_algorithm, serialization.BestAvailableEncryption
         ):
             # PKCS12 encryption is hopeless trash and can never be fixed.
