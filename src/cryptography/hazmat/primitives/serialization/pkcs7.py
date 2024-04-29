@@ -308,9 +308,6 @@ def _smime_signed_encode(
 
 
 def _smime_enveloped_encode(data: bytes) -> bytes:
-    # This function works pretty hard to replicate what OpenSSL does
-    # precisely. For good and for ill.
-
     m = email.message.Message()
     m.add_header("MIME-Version", "1.0")
     m.add_header("Content-Disposition", "attachment", filename="smime.p7m")
