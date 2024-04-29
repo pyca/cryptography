@@ -99,7 +99,7 @@ pytest-cov==5.0.0; python_version >= "3.8"
     # via cryptography (pyproject.toml)
 pytest-randomly==3.15.0
     # via cryptography (pyproject.toml)
-pytest-xdist==3.5.0
+pytest-xdist==3.6.1; python_version >= "3.8"
     # via cryptography (pyproject.toml)
 readme-renderer==43.0
     # via cryptography (pyproject.toml)
