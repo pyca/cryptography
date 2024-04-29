@@ -84,7 +84,7 @@ pygments==2.17.2
     # via
     #   readme-renderer
     #   sphinx
-pyproject-hooks==1.0.0
+pyproject-hooks==1.1.0
     # via build
 pytest==8.2.0; python_version >= "3.8"
     # via
