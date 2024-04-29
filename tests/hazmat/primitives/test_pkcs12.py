@@ -419,12 +419,20 @@ class TestPKCS12Creation:
         assert cas[1].certificate == cert3
         assert cas[1].friendly_name is None
 
-    def test_generate_cas_friendly_names_no_key(self, backend):
+    @pytest.mark.parametrize(
+        ("encryption_algorithm", "password"),
+        [
+            (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (serialization.NoEncryption(), None),
+        ],
+    )
+    def test_generate_cas_friendly_names_no_key(
+        self, backend, encryption_algorithm, password
+    ):
         cert2 = _load_cert(
             backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
         )
         cert3 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
-        encryption = serialization.NoEncryption()
         p12 = serialize_key_and_certificates(
             None,
             None,
@@ -433,10 +441,10 @@ class TestPKCS12Creation:
                 PKCS12Certificate(cert2, b"cert2"),
                 PKCS12Certificate(cert3, None),
             ],
-            encryption,
+            encryption_algorithm,
         )
 
-        p12_cert = load_pkcs12(p12, None, backend)
+        p12_cert = load_pkcs12(p12, password, backend)
         cas = p12_cert.additional_certs
         assert cas[0].certificate == cert2
         assert cas[0].friendly_name == b"cert2"
