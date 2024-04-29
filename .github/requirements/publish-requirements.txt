@@ -268,9 +268,9 @@ jeepney==0.8.0 \
     # via
     #   keyring
     #   secretstorage
-keyring==25.1.0 \
-    --hash=sha256:26fc12e6a329d61d24aa47b22a7c5c3f35753df7d8f2860973cf94f4e1fb3427 \
-    --hash=sha256:7230ea690525133f6ad536a9b5def74a4bd52642abe594761028fc044d7c7893
+keyring==25.2.0 \
+    --hash=sha256:19f17d40335444aab84b19a0d16a77ec0758a9c384e3446ae2ed8bd6d53b67a5 \
+    --hash=sha256:7045f367268ce42dba44745050164b431e46f6e92f99ef2937dfadaef368d8cf
     # via twine
 markdown-it-py==3.0.0 \
     --hash=sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1 \
