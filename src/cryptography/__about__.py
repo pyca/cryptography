@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 __all__ = [
-    "__version__",
     "__author__",
     "__copyright__",
+    "__version__",
 ]
 
 __version__ = "43.0.0.dev1"

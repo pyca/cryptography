@@ -21,9 +21,9 @@ from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 
 __all__ = [
     "PBES",
-    "PKCS12PrivateKeyTypes",
     "PKCS12Certificate",
     "PKCS12KeyAndCertificates",
+    "PKCS12PrivateKeyTypes",
     "load_key_and_certificates",
     "load_pkcs12",
     "serialize_key_and_certificates",

@@ -17,11 +17,11 @@ from cryptography.hazmat.primitives.ciphers.base import (
 )
 
 __all__ = [
-    "Cipher",
-    "CipherAlgorithm",
-    "BlockCipherAlgorithm",
-    "CipherContext",
     "AEADCipherContext",
     "AEADDecryptionContext",
     "AEADEncryptionContext",
+    "BlockCipherAlgorithm",
+    "Cipher",
+    "CipherAlgorithm",
+    "CipherContext",
 ]
