@@ -7,12 +7,12 @@ from __future__ import annotations
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 __all__ = [
-    "ChaCha20Poly1305",
     "AESCCM",
     "AESGCM",
     "AESGCMSIV",
     "AESOCB3",
     "AESSIV",
+    "ChaCha20Poly1305",
 ]
 
 AESGCM = rust_openssl.aead.AESGCM

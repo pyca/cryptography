@@ -10,13 +10,13 @@ from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.x509.general_name import DNSName, IPAddress
 
 __all__ = [
+    "ClientVerifier",
+    "PolicyBuilder",
+    "ServerVerifier",
     "Store",
     "Subject",
-    "VerifiedClient",
-    "ClientVerifier",
-    "ServerVerifier",
-    "PolicyBuilder",
     "VerificationError",
+    "VerifiedClient",
 ]
 
 Store = rust_x509.Store
