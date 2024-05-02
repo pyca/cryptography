@@ -734,6 +734,7 @@ def load_rfc6979_vectors(vector_data):
             key_name = line.split("=")[1].strip()
             assert key_name in keys
             data["key"] = keys[key_name]
+            data["key_name"] = key_name
         elif line.startswith("NonceType = "):
             nonce_type = line.split("=")[1].strip()
             data["deterministic_nonce"] = nonce_type == "deterministic"

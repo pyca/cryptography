@@ -535,6 +535,23 @@ class TestECDSAVectors:
             "SHA384": hashes.SHA384(),
             "SHA512": hashes.SHA512(),
         }
+        curves = {
+            "B-163": ec.SECT163R2(),
+            "B-233": ec.SECT233R1(),
+            "B-283": ec.SECT283R1(),
+            "B-409": ec.SECT409R1(),
+            "B-571": ec.SECT571R1(),
+            "K-163": ec.SECT163K1(),
+            "K-233": ec.SECT233K1(),
+            "K-283": ec.SECT283K1(),
+            "K-409": ec.SECT409K1(),
+            "K-571": ec.SECT571K1(),
+            "P-192": ec.SECP192R1(),
+            "P-224": ec.SECP224R1(),
+            "P-256": ec.SECP256R1(),
+            "P-384": ec.SECP384R1(),
+            "P-521": ec.SECP521R1(),
+        }
         vectors = load_vectors_from_file(
             os.path.join(
                 "asymmetric", "ECDSA", "RFC6979", "evppkey_ecdsa_rfc6979.txt"
@@ -547,6 +564,9 @@ class TestECDSAVectors:
                 input = bytes(vector["input"], "utf-8")
                 output = bytes.fromhex(vector["output"])
                 key = bytes("\n".join(vector["key"]), "utf-8")
+                curve = curves[vector["key_name"].split("_")[0]]
+                _skip_curve_unsupported(backend, curve)
+
                 if "digest_sign" in vector:
                     algorithm = vector["digest_sign"]
                     hash_algorithm = supported_hash_algorithms[algorithm]
