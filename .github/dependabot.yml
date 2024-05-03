@@ -1,29 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "06:00"
-      timezone: "America/New_York"
-    open-pull-requests-limit: 1024
-
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/cache/"
-    schedule:
-      interval: "daily"
-      time: "06:00"
-      timezone: "America/New_York"
-    open-pull-requests-limit: 1024
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/upload-coverage/"
-    schedule:
-      interval: "daily"
-      time: "06:00"
-      timezone: "America/New_York"
-    open-pull-requests-limit: 1024
-  - package-ecosystem: "github-actions"
-    directory: "/.github/actions/fetch-vectors/"
+    directories:
+      - "/"
+      - "/.github/actions/cache/"
+      - "/.github/actions/upload-coverage/"
+      - "/.github/actions/fetch-vectors/"
     schedule:
       interval: "daily"
       time: "06:00"
@@ -42,18 +24,9 @@ updates:
     open-pull-requests-limit: 1024
 
   - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: daily
-      time: "06:00"
-      timezone: "America/New_York"
-    allow:
-      # Also update indirect dependencies
-      - dependency-type: all
-    open-pull-requests-limit: 1024
-
-  - package-ecosystem: pip
-    directory: "/.github/requirements/"
+    directories:
+      - "/"
+      - "/.github/requirements/"
     schedule:
       interval: daily
       time: "06:00"
