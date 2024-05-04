@@ -30,6 +30,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     permissions:
       id-token: "write"
+      attestations: "write"
     steps:
       - run: echo "$EVENT_CONTEXT"
         env:
@@ -89,9 +90,10 @@ jobs:
 
       - run: twine upload --skip-existing $(find dist/ -type f -name 'cryptography*')
 
-      # Do not perform sigstore signatures for things for TestPyPI. This is
-      # because there's nothing that would prevent a malicious PyPI from
-      # serving a signed TestPyPI asset in place of a release intended for
-      # PyPI.
-      - run: sigstore sign $(find dist/ -type f -name 'cryptography*')
+      # Do not perform attestation for things for TestPyPI. This is because
+      # there's nothing that would prevent a malicious PyPI from serving a
+      # signed TestPyPI asset in place of a release intended for PyPI.
+      - uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940  # v1.0.0
+        with:
+          subject-path: 'dist/**/cryptography*'
         if: env.TWINE_REPOSITORY == 'pypi'
