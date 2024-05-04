@@ -535,20 +535,12 @@ class Backend:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_supported(self) -> bool:
-        # Beginning with OpenSSL 3.2.0, X25519 is considered FIPS.
-        if (
-            self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-        ):
+        if self._fips_enabled:
             return False
         return True
 
     def x448_supported(self) -> bool:
-        # Beginning with OpenSSL 3.2.0, X448 is considered FIPS.
-        if (
-            self._fips_enabled
-            and not self._lib.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-        ):
+        if self._fips_enabled:
             return False
         return (
             not self._lib.CRYPTOGRAPHY_IS_LIBRESSL
