@@ -45,6 +45,13 @@ Changelog
   timezone-aware alternative to the naïve ``datetime`` attribute
   :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
 
+.. _v42-0-6:
+
+42.0.6 - 2024-05-04
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 3.9.1.
+
 .. _v42-0-5:
 
 42.0.5 - 2024-02-23
