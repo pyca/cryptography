@@ -13,7 +13,7 @@ pub struct KeepAlive<T: StableDeref> {
 }
 
 /// # Safety
-/// Implementors of this trait must ensure that the value returned by
+/// Implementers of this trait must ensure that the value returned by
 /// `deref()` must remain valid, even if `self` is moved.
 pub unsafe trait StableDeref: Deref {}
 // SAFETY: `Vec`'s data is on the heap, so as long as it's not mutated, the

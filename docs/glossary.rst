@@ -94,7 +94,7 @@ Glossary
         A bytes-like object contains binary data and supports the
         `buffer protocol`_. This includes ``bytes``, ``bytearray``, and
         ``memoryview`` objects. It is :term:`unsafe` to pass a mutable object
-        (e.g., a ``bytearray`` or other implementor of the buffer protocol)
+        (e.g., a ``bytearray`` or other implementer of the buffer protocol)
         and to `mutate it concurrently`_ with the operation it has been
         provided for.
 
