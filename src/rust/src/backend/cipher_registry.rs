@@ -262,7 +262,7 @@ fn get_cipher_registry(
         m.add(&chacha20, none_type.as_any(), None, Cipher::chacha20())?;
 
         // Don't register legacy ciphers if they're unavailable. In theory
-        // this should't be necessary but OpenSSL 3 will return an EVP_CIPHER
+        // this shouldn't be necessary but OpenSSL 3 will return an EVP_CIPHER
         // even when the cipher is unavailable.
         if cfg!(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))
             || types::LEGACY_PROVIDER_LOADED.get(py)?.is_truthy()?
