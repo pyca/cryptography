@@ -79,10 +79,10 @@ class TestOCSPRequest:
             ocsp.load_der_ocsp_request,
         )
         assert req.issuer_name_hash == (
-            b"8\xcaF\x8c\x07D\x8d\xf4\x81\x96" b"\xc7mmLpQ\x9e`\xa7\xbd"
+            b"8\xcaF\x8c\x07D\x8d\xf4\x81\x96\xc7mmLpQ\x9e`\xa7\xbd"
         )
         assert req.issuer_key_hash == (
-            b"yu\xbb\x84:\xcb,\xdez\t\xbe1" b"\x1bC\xbc\x1c*MSX"
+            b"yu\xbb\x84:\xcb,\xdez\t\xbe1\x1bC\xbc\x1c*MSX"
         )
         assert isinstance(req.hash_algorithm, hashes.SHA1)
         assert req.serial_number == int(

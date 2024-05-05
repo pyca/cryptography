@@ -2520,7 +2520,7 @@ class TestRSASubjectAlternativeNameExtension:
         assert ext is not None
         uri = ext.value.get_values_for_type(x509.UniformResourceIdentifier)
         assert uri == [
-            "gopher://xn--80ato2c.cryptography:70/path?q=s#hel" "lo",
+            "gopher://xn--80ato2c.cryptography:70/path?q=s#hello",
             "http://someregulardomain.com",
         ]
 
