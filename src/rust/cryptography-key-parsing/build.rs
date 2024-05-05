@@ -5,6 +5,9 @@
 use std::env;
 
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_IS_LIBRESSL)");
+    println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_IS_BORINGSSL)");
+
     if env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_LIBRESSL");
     }
