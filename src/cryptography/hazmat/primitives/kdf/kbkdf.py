@@ -75,7 +75,7 @@ class _KBKDFDeriver:
 
         if (label or context) and fixed:
             raise ValueError(
-                "When supplying fixed data, " "label and context are ignored."
+                "When supplying fixed data, label and context are ignored."
             )
 
         if rlen is None or not self._valid_byte_length(rlen):

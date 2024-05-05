@@ -869,7 +869,7 @@ class CertificateBuilder:
         # zero.
         if number.bit_length() >= 160:  # As defined in RFC 5280
             raise ValueError(
-                "The serial number should not be more than 159 " "bits."
+                "The serial number should not be more than 159 bits."
             )
         return CertificateBuilder(
             self._issuer_name,
@@ -1047,7 +1047,7 @@ class CertificateRevocationListBuilder:
         last_update = _convert_to_naive_utc_time(last_update)
         if last_update < _EARLIEST_UTC_TIME:
             raise ValueError(
-                "The last update date must be on or after" " 1950 January 1."
+                "The last update date must be on or after 1950 January 1."
             )
         if self._next_update is not None and last_update > self._next_update:
             raise ValueError(
@@ -1071,7 +1071,7 @@ class CertificateRevocationListBuilder:
         next_update = _convert_to_naive_utc_time(next_update)
         if next_update < _EARLIEST_UTC_TIME:
             raise ValueError(
-                "The last update date must be on or after" " 1950 January 1."
+                "The last update date must be on or after 1950 January 1."
             )
         if self._last_update is not None and next_update < self._last_update:
             raise ValueError(
@@ -1172,7 +1172,7 @@ class RevokedCertificateBuilder:
         # zero.
         if number.bit_length() >= 160:  # As defined in RFC 5280
             raise ValueError(
-                "The serial number should not be more than 159 " "bits."
+                "The serial number should not be more than 159 bits."
             )
         return RevokedCertificateBuilder(
             number, self._revocation_date, self._extensions
@@ -1188,7 +1188,7 @@ class RevokedCertificateBuilder:
         time = _convert_to_naive_utc_time(time)
         if time < _EARLIEST_UTC_TIME:
             raise ValueError(
-                "The revocation date must be on or after" " 1950 January 1."
+                "The revocation date must be on or after 1950 January 1."
             )
         return RevokedCertificateBuilder(
             self._serial_number, time, self._extensions
