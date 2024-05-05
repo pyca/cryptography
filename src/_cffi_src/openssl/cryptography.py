@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-INCLUDES = """
+INCLUDES = r"""
 /* define our OpenSSL API compatibility level to 1.1.0. Any symbols older than
    that will raise an error during compilation. */
 #define OPENSSL_API_COMPAT 0x10100000L
