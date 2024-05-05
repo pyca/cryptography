@@ -86,8 +86,7 @@ def _convert_to_naive_utc_time(time: datetime.datetime) -> datetime.datetime:
             aware.
     """
     if time.tzinfo is not None:
-        offset = time.utcoffset()
-        offset = offset if offset else datetime.timedelta()
+        offset = time.utcoffset() or datetime.timedelta()
         return time.replace(tzinfo=None) - offset
     else:
         return time
