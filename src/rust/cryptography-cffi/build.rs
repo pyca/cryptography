@@ -7,6 +7,8 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(python_implementation, values(\"CPython\", \"PyPy\"))");
+
     let target = env::var("TARGET").unwrap();
     let openssl_static = env::var("OPENSSL_STATIC")
         .map(|x| x == "1")
