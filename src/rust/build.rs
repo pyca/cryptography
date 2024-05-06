@@ -9,6 +9,7 @@ fn main() {
     println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)");
     println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)");
     println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_IS_LIBRESSL)");
+    println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_LIBRESSL_380_OR_GREATER)");
     println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_IS_BORINGSSL)");
     println!("cargo:rustc-check-cfg=cfg(CRYPTOGRAPHY_OSSLCONF, values(\"OPENSSL_NO_IDEA\", \"OPENSSL_NO_CAST\", \"OPENSSL_NO_BF\", \"OPENSSL_NO_CAMELLIA\", \"OPENSSL_NO_SEED\", \"OPENSSL_NO_SM4\"))");
 
