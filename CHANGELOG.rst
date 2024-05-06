@@ -45,6 +45,16 @@ Changelog
   timezone-aware alternative to the naïve ``datetime`` attribute
   :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
 
+.. _v42-0-7:
+
+42.0.7 - 2024-05-06
+~~~~~~~~~~~~~~~~~~~
+
+* Restored Windows 7 compatibility for our pre-built wheels. Note that we do
+  not test on Windows 7 and wheels for our next release will not support it.
+  Microsoft no longer provides support for Windows 7 and users are encouraged
+  to upgrade.
+
 .. _v42-0-6:
 
 42.0.6 - 2024-05-04
