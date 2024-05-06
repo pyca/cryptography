@@ -326,7 +326,7 @@ jobs:
           architecture: ${{ matrix.WINDOWS.ARCH }}
       - uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
-          toolchain: stable
+          toolchain: 1.77.2
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d # v3.0.0
