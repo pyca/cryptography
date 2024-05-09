@@ -159,6 +159,7 @@ class TestRFC4514:
                 "2.5.4.10=abc",
                 Name([NameAttribute(NameOID.ORGANIZATION_NAME, "abc")]),
             ),
+            ("", Name([])),
         ]:
             with subtests.test():
                 result = Name.from_rfc4514_string(value)

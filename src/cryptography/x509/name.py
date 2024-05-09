@@ -414,6 +414,10 @@ class _RFC4514NameParser:
         we parse it, we need to reverse again to get the RDNs on the
         correct order.
         """
+
+        if not self._has_data():
+            return Name([])
+
         rdns = [self._parse_rdn()]
 
         while self._has_data():

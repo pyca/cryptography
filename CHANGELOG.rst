@@ -44,6 +44,8 @@ Changelog
 * Added :attr:`~cryptography.x509.InvalidityDate.invalidity_date_utc`, a
   timezone-aware alternative to the naïve ``datetime`` attribute
   :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
+* Added support for parsing empty DN string in
+  :meth:`~cryptography.x509.Name.from_rfc4514_string`.
 
 .. _v42-0-7:
 
