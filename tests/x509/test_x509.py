@@ -5885,6 +5885,9 @@ class TestNameAttribute:
             {NameOID.COMMON_NAME: "CommonName", NameOID.EMAIL_ADDRESS: "E"}
         ) == ("CommonName=Santa Claus,E=santa@north.pole")
 
+    def test_empty_name(self):
+        assert x509.Name([]).rfc4514_string() == ""
+
     def test_empty_value(self):
         na = x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "")
         assert na.rfc4514_string() == r"ST="
