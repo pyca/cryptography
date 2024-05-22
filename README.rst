@@ -12,6 +12,10 @@ pyca/cryptography
 .. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=main
     :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amain
 
+.. image:: https://assets.piptrends.com/get-last-month-downloads-badge/cryptography.svg
+    :target: https://piptrends.com/package/cryptography
+    :alt: cryptography Downloads Last Month by pip Trends
+
 
 ``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers. Our goal is for it to be your "cryptographic
