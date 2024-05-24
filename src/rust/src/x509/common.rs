@@ -198,17 +198,12 @@ fn parse_name_attribute(
     py: pyo3::Python<'_>,
     attribute: AttributeTypeValue<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let oid = oid_to_py_oid(py, &attribute.type_id)?.to_object(py);
-    let tag_val = attribute
-        .value
-        .tag()
-        .as_u8()
-        .ok_or_else(|| {
-            CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                "Long-form tags are not supported in NameAttribute values",
-            ))
-        })?
-        .to_object(py);
+    let oid = oid_to_py_oid(py, &attribute.type_id)?;
+    let tag_val = attribute.value.tag().as_u8().ok_or_else(|| {
+        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+            "Long-form tags are not supported in NameAttribute values",
+        ))
+    })?;
     let py_tag = types::ASN1_TYPE_TO_ENUM.get(py)?.get_item(tag_val)?;
     let py_data = match attribute.value.tag().as_u8() {
         // BitString tag value
@@ -257,7 +252,7 @@ pub(crate) fn parse_general_name(
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let py_gn = match gn {
         GeneralName::OtherName(data) => {
-            let oid = oid_to_py_oid(py, &data.type_id)?.to_object(py);
+            let oid = oid_to_py_oid(py, &data.type_id)?;
             types::OTHER_NAME
                 .get(py)?
                 .call1((oid, data.value.full_data()))?
@@ -293,7 +288,7 @@ pub(crate) fn parse_general_name(
             }
         }
         GeneralName::RegisteredID(data) => {
-            let oid = oid_to_py_oid(py, &data)?.to_object(py);
+            let oid = oid_to_py_oid(py, &data)?;
             types::REGISTERED_ID.get(py)?.call1((oid,))?.to_object(py)
         }
         _ => {

@@ -527,7 +527,7 @@ fn parse_user_notice(
             let org = parse_display_text(py, data.organization)?;
             let numbers = pyo3::types::PyList::empty_bound(py);
             for num in data.notice_numbers.unwrap_read().clone() {
-                numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?.to_object(py))?;
+                numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?)?;
             }
             types::NOTICE_REFERENCE
                 .get(py)?
@@ -580,7 +580,7 @@ fn parse_cp(
     let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
     let certificate_policies = pyo3::types::PyList::empty_bound(py);
     for policyinfo in cp {
-        let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?.to_object(py);
+        let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?;
         let py_pqis = match policyinfo.policy_qualifiers {
             Some(policy_qualifiers) => {
                 parse_policy_qualifiers(py, policy_qualifiers.unwrap_read())?
@@ -589,8 +589,7 @@ fn parse_cp(
         };
         let pi = types::POLICY_INFORMATION
             .get(py)?
-            .call1((pi_oid, py_pqis))?
-            .to_object(py);
+            .call1((pi_oid, py_pqis))?;
         certificate_policies.append(pi)?;
     }
     Ok(certificate_policies.to_object(py))
@@ -722,10 +721,7 @@ pub(crate) fn parse_access_descriptions(
     for access in parsed.unwrap_read().clone() {
         let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
         let gn = x509::parse_general_name(py, access.access_location)?;
-        let ad = types::ACCESS_DESCRIPTION
-            .get(py)?
-            .call1((py_oid, gn))?
-            .to_object(py);
+        let ad = types::ACCESS_DESCRIPTION.get(py)?.call1((py_oid, gn))?;
         ads.append(ad)?;
     }
     Ok(ads.to_object(py))
@@ -755,7 +751,7 @@ pub fn parse_cert_ext<'p>(
 
             let features = pyo3::types::PyList::empty_bound(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
-                let py_feature = tls_feature_type_to_enum.get_item(feature.to_object(py))?;
+                let py_feature = tls_feature_type_to_enum.get_item(feature)?;
                 features.append(py_feature)?;
             }
             Ok(Some(types::TLS_FEATURE.get(py)?.call1((features,))?))

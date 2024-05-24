@@ -75,8 +75,7 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyLong>,
 ) -> pyo3::PyResult<PyBackedBytes> {
-    let zero = (0).to_object(py);
-    if v.lt(zero)? {
+    if v.lt(0)? {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "Negative integers are not supported",
         ));
