@@ -6,7 +6,6 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pyo3::prelude::{PyAnyMethods, PyDictMethods, PyModuleMethods};
-use pyo3::ToPyObject;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -482,8 +481,7 @@ fn public_key_from_numbers(
     numbers: &EllipticCurvePublicNumbers,
     curve: &openssl::ec::EcGroupRef,
 ) -> CryptographyResult<openssl::ec::EcKey<openssl::pkey::Public>> {
-    let zero = (0).to_object(py);
-    if numbers.x.bind(py).lt(&zero)? || numbers.y.bind(py).lt(&zero)? {
+    if numbers.x.bind(py).lt(0)? || numbers.y.bind(py).lt(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "Invalid EC key. Both x and y must be non-negative.",
