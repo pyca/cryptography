@@ -76,7 +76,6 @@ the root of trust:
     >>> with open(certifi.where(), "rb") as pems:
     ...    store = Store(load_pem_x509_certificates(pems.read()))
     >>> builder = PolicyBuilder().store(store)
-    >>> builder = builder.time(verification_time)
     >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
     >>> # NOTE: peer and untrusted_intermediates are Certificate and
     >>> #       list[Certificate] respectively, and should be loaded from the
