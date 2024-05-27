@@ -155,7 +155,7 @@ Creating a CA hierarchy
 
 When building your own root hierarchy you need to generate a CA and then
 issue certificates (typically intermediates) using it. This example shows
-how to generate a root CA, a signing intermediate, and issues) a leaf
+how to generate a root CA, a signing intermediate, and issues a leaf
 certificate off that intermediate. X.509 is a complex specification so
 this example will require adaptation (typically different extensions)
 for specific operating environments.
@@ -229,7 +229,7 @@ With a root certificate created we now want to create our intermediate.
     >>> int_cert = x509.CertificateBuilder().subject_name(
     ...     subject
     ... ).issuer_name(
-    ...     root_cert.issuer
+    ...     root_cert.subject
     ... ).public_key(
     ...     int_key.public_key()
     ... ).serial_number(
@@ -237,10 +237,10 @@ With a root certificate created we now want to create our intermediate.
     ... ).not_valid_before(
     ...     datetime.datetime.now(datetime.timezone.utc)
     ... ).not_valid_after(
-    ...     # Our intermediate will be valid for ~3 years and allows no
-    ...     # further intermediates (path length 0)
+    ...     # Our intermediate will be valid for ~3 years
     ...     datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365*3)
     ... ).add_extension(
+    ...     # Allow no further intermediates (path length 0)
     ...     x509.BasicConstraints(ca=True, path_length=0),
     ...     critical=True,
     ... ).add_extension(
@@ -280,7 +280,7 @@ Now we can issue an end entity certificate off this chain.
     >>> ee_cert = x509.CertificateBuilder().subject_name(
     ...     subject
     ... ).issuer_name(
-    ...     int_cert.issuer
+    ...     int_cert.subject
     ... ).public_key(
     ...     ee_key.public_key()
     ... ).serial_number(
@@ -327,7 +327,7 @@ Now we can issue an end entity certificate off this chain.
     ...         int_cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value
     ...     ),
     ...     critical=False,
-    ... ).sign(root_key, hashes.SHA256())
+    ... ).sign(int_key, hashes.SHA256())
 
 And finally we use the verification APIs to validate the chain.
 
@@ -339,6 +339,8 @@ And finally we use the verification APIs to validate the chain.
     >>> builder = PolicyBuilder().store(store)
     >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
     >>> chain = verifier.verify(ee_cert, [int_cert])
+    >>> len(chain)
+    3
 
 Determining Certificate or Certificate Signing Request Key Type
 ---------------------------------------------------------------
