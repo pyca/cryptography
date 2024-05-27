@@ -145,7 +145,7 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     if format.is(&types::PRIVATE_FORMAT_TRADITIONAL_OPENSSL.get(py)?) {
-        if cryptography_openssl::fips::is_enabled() && !password.is_empty(){
+        if cryptography_openssl::fips::is_enabled() && !password.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Encrypted traditional OpenSSL format is not supported in FIPS mode",
