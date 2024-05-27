@@ -2432,6 +2432,21 @@ class TestRSAPrivateKeySerialization:
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend._fips_enabled,
+        skip_message="Requires FIPS",
+    )
+    def test_traditional_serialization_fips(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        key = rsa_key_2048
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.BestAvailableEncryption(b"password"),
+            )
+
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
         [
