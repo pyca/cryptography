@@ -150,6 +150,13 @@ pub(crate) fn pkey_private_bytes<'p>(
                 let pem_bytes = if password.is_empty() {
                     rsa.private_key_to_pem()?
                 } else {
+                    if cryptography_openssl::fips::is_enabled() {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "Encrypted traditional OpenSSL format is not supported in FIPS mode",
+                            ),
+                        ));
+                    }
                     rsa.private_key_to_pem_passphrase(
                         openssl::symm::Cipher::aes_256_cbc(),
                         password,
