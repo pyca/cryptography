@@ -97,7 +97,7 @@ static RSASSA_PSS_SHA256: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| Algorithm
         hash_algorithm: PSS_SHA256_HASH_ALG,
         mask_gen_algorithm: PSS_SHA256_MASK_GEN_ALG,
         salt_length: 32,
-        _trailer_field: 1,
+        _trailer_field: None,
     }))),
 });
 
@@ -108,7 +108,7 @@ static RSASSA_PSS_SHA384: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| Algorithm
         hash_algorithm: PSS_SHA384_HASH_ALG,
         mask_gen_algorithm: PSS_SHA384_MASK_GEN_ALG,
         salt_length: 48,
-        _trailer_field: 1,
+        _trailer_field: None,
     }))),
 });
 
@@ -119,7 +119,7 @@ static RSASSA_PSS_SHA512: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| Algorithm
         hash_algorithm: PSS_SHA512_HASH_ALG,
         mask_gen_algorithm: PSS_SHA512_MASK_GEN_ALG,
         salt_length: 64,
-        _trailer_field: 1,
+        _trailer_field: None,
     }))),
 });
 
