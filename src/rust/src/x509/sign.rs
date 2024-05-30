@@ -163,7 +163,7 @@ pub(crate) fn compute_signature_algorithm<'p>(
                     params: mgf_alg,
                 },
                 salt_length,
-                _trailer_field: 1,
+                _trailer_field: None,
             })));
 
         return Ok(common::AlgorithmIdentifier {
