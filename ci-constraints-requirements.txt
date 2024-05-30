@@ -103,7 +103,7 @@ pytest-xdist==3.6.1; python_version >= "3.8"
     # via cryptography (pyproject.toml)
 readme-renderer==43.0
     # via cryptography (pyproject.toml)
-requests==2.32.2
+requests==2.32.3
     # via sphinx
 ruff==0.4.6
     # via cryptography (pyproject.toml)
