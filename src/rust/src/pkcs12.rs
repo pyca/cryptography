@@ -246,20 +246,20 @@ enum CertificateOrPKCS12Certificate {
 }
 
 #[pyo3::prelude::pyfunction]
-#[pyo3(signature = (name, cert, cas))]
+#[pyo3(signature = (name, key, cert, cas))]
 fn serialize_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
     name: Option<&[u8]>,
+    key: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     cert: Option<&Certificate>,
     cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let (password, mac_algorithm, mac_kdf_iter) = decode_encryption_algorithm(py)?;
 
     let mut auth_safe_contents = vec![];
-    let cert_bag_contents;
+    let (cert_bag_contents, key_bag_contents);
     let mut ca_certs = vec![];
-    assert!(cert.is_some() || cas.is_some());
-    {
+    if cert.is_some() || cas.is_some() {
         let mut cert_bags = vec![];
 
         if let Some(cert) = cert {
@@ -291,6 +291,35 @@ fn serialize_key_and_certificates<'p>(
             ))),
         });
     }
+
+    if let Some(key) = key {
+        let der = types::ENCODING_DER.get(py)?;
+        let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
+        let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
+
+        let pkcs8_bytes = key
+            .call_method1(
+                pyo3::intern!(py, "private_bytes"),
+                (der, pkcs8, no_encryption),
+            )?
+            .extract::<pyo3::pybacked::PyBackedBytes>()?;
+        let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
+
+        let key_bag = cryptography_x509::pkcs12::SafeBag {
+            _bag_id: asn1::DefinedByMarker::marker(),
+            bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(pkcs8_tlv)),
+            attributes: friendly_name_attributes(name)?,
+        };
+
+        key_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new([key_bag]))?;
+        auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+            _content_type: asn1::DefinedByMarker::marker(),
+            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
+                &key_bag_contents,
+            ))),
+        });
+    }
+
     let auth_safe_content = asn1::write_single(&asn1::SequenceOfWriter::new(auth_safe_contents))?;
 
     let salt = types::OS_URANDOM
