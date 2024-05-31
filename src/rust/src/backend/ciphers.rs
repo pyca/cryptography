@@ -10,13 +10,13 @@ use crate::types;
 use pyo3::types::{PyAnyMethods, PyModuleMethods};
 use pyo3::IntoPy;
 
-struct CipherContext {
+pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,
     py_mode: pyo3::PyObject,
 }
 
 impl CipherContext {
-    fn new(
+    pub(crate) fn new(
         py: pyo3::Python<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         mode: pyo3::Bound<'_, pyo3::PyAny>,
@@ -126,7 +126,7 @@ impl CipherContext {
         Ok(pyo3::types::PyBytes::new_bound(py, &out_buf[..n]))
     }
 
-    fn update_into(
+    pub(crate) fn update_into(
         &mut self,
         py: pyo3::Python<'_>,
         buf: &[u8],
@@ -167,7 +167,7 @@ impl CipherContext {
         Ok(())
     }
 
-    fn finalize<'p>(
+    pub(crate) fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
