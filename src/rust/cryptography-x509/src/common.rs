@@ -125,6 +125,12 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::DH_KEY_AGREEMENT_OID)]
     DhKeyAgreement(BasicDHParams<'a>),
 
+    #[defined_by(oid::PBES2_OID)]
+    Pbes2(PBES2Params<'a>),
+
+    #[defined_by(oid::PBKDF2_OID)]
+    Pbkdf2(PBKDF2Params<'a>),
+
     #[defined_by(oid::HMAC_WITH_SHA1_OID)]
     HmacWithSha1(asn1::Null),
     #[defined_by(oid::HMAC_WITH_SHA256_OID)]
@@ -401,6 +407,28 @@ pub struct DssParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub q: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct PBES2Params<'a> {
+    pub key_derivation_func: Box<AlgorithmIdentifier<'a>>,
+    pub encryption_scheme: Box<AlgorithmIdentifier<'a>>,
+}
+
+const HMAC_SHA1_ALG: AlgorithmIdentifier<'static> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::HmacWithSha1(()),
+};
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct PBKDF2Params<'a> {
+    // This is technically a CHOICE that can be an otherSource. We don't
+    // support that.
+    pub salt: &'a [u8],
+    pub iteration_count: u64,
+    pub key_length: Option<u64>,
+    #[default(HMAC_SHA1_ALG)]
+    pub prf: Box<AlgorithmIdentifier<'a>>,
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the

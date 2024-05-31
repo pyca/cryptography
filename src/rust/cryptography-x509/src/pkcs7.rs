@@ -22,6 +22,8 @@ pub enum Content<'a> {
     SignedData(asn1::Explicit<Box<SignedData<'a>>, 0>),
     #[defined_by(PKCS7_DATA_OID)]
     Data(Option<asn1::Explicit<&'a [u8], 0>>),
+    #[defined_by(PKCS7_ENCRYPTED_DATA_OID)]
+    EncryptedData(asn1::Explicit<EncryptedData<'a>, 0>),
 }
 
 #[derive(asn1::Asn1Write)]
@@ -58,6 +60,20 @@ pub struct SignerInfo<'a> {
 pub struct IssuerAndSerialNumber<'a> {
     pub issuer: name::Name<'a>,
     pub serial_number: asn1::BigInt<'a>,
+}
+
+#[derive(asn1::Asn1Write)]
+pub struct EncryptedData<'a> {
+    pub version: u8,
+    pub encrypted_content_info: EncryptedContentInfo<'a>,
+}
+
+#[derive(asn1::Asn1Write)]
+pub struct EncryptedContentInfo<'a> {
+    pub content_type: asn1::ObjectIdentifier,
+    pub content_encryption_algorithm: common::AlgorithmIdentifier<'a>,
+    #[implicit(0)]
+    pub encrypted_content: Option<&'a [u8]>,
 }
 
 #[derive(asn1::Asn1Write)]

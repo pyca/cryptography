@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::common::Utf8StoredBMPString;
+use crate::common::{AlgorithmIdentifier, Utf8StoredBMPString};
 use crate::pkcs7;
 
 pub const CERT_BAG_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 3);
@@ -55,6 +55,9 @@ pub enum BagValue<'a> {
 
     #[defined_by(KEY_BAG_OID)]
     KeyBag(asn1::Tlv<'a>),
+
+    #[defined_by(SHROUDED_KEY_BAG_OID)]
+    ShroudedKeyBag(EncryptedPrivateKeyInfo<'a>),
 }
 
 #[derive(asn1::Asn1Write)]
@@ -68,4 +71,10 @@ pub struct CertBag<'a> {
 pub enum CertType<'a> {
     #[defined_by(X509_CERTIFICATE_OID)]
     X509(asn1::OctetStringEncoded<crate::certificate::Certificate<'a>>),
+}
+
+#[derive(asn1::Asn1Write)]
+pub struct EncryptedPrivateKeyInfo<'a> {
+    pub encryption_algorithm: AlgorithmIdentifier<'a>,
+    pub encrypted_data: &'a [u8],
 }
