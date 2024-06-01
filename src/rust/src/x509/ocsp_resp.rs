@@ -46,7 +46,7 @@ fn load_der_ocsp_response(
                 ))
             }
         },
-        MALFORMED_REQUEST_RESPOSNE
+        MALFORMED_REQUEST_RESPONSE
         | INTERNAL_ERROR_RESPONSE
         | TRY_LATER_RESPONSE
         | SIG_REQUIRED_RESPONSE
@@ -92,7 +92,7 @@ impl OCSPResponse {
 }
 
 const SUCCESSFUL_RESPONSE: u32 = 0;
-const MALFORMED_REQUEST_RESPOSNE: u32 = 1;
+const MALFORMED_REQUEST_RESPONSE: u32 = 1;
 const INTERNAL_ERROR_RESPONSE: u32 = 2;
 const TRY_LATER_RESPONSE: u32 = 3;
 // 4 is unused
@@ -131,7 +131,7 @@ impl OCSPResponse {
         let status = self.raw.borrow_dependent().response_status.value();
         let attr = if status == SUCCESSFUL_RESPONSE {
             "SUCCESSFUL"
-        } else if status == MALFORMED_REQUEST_RESPOSNE {
+        } else if status == MALFORMED_REQUEST_RESPONSE {
             "MALFORMED_REQUEST"
         } else if status == INTERNAL_ERROR_RESPONSE {
             "INTERNAL_ERROR"
@@ -203,14 +203,14 @@ impl OCSPResponse {
         match hash_alg {
             Ok(data) => Ok(data),
             Err(_) => {
-                let exc_messsage = format!(
+                let exc_message = format!(
                     "Signature algorithm OID: {} not recognized",
                     self.requires_successful_response()?
                         .signature_algorithm
                         .oid()
                 );
                 Err(CryptographyError::from(
-                    exceptions::UnsupportedAlgorithm::new_err(exc_messsage),
+                    exceptions::UnsupportedAlgorithm::new_err(exc_message),
                 ))
             }
         }

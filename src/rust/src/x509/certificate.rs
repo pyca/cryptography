@@ -777,7 +777,7 @@ pub fn parse_cert_ext<'p>(
 
             Ok(Some(types::KEY_USAGE.get(py)?.call1((
                 kus.digital_signature(),
-                kus.content_comitment(),
+                kus.content_commitment(),
                 kus.key_encipherment(),
                 kus.data_encipherment(),
                 kus.key_agreement(),
