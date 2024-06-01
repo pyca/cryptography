@@ -147,3 +147,13 @@ pub const EKU_OCSP_SIGNING_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 
 pub const EKU_ANY_KEY_USAGE_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 37, 0);
 pub const EKU_CERTIFICATE_TRANSPARENCY_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 4);
+
+pub const PBES2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 13);
+pub const PBKDF2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 12);
+
+pub const AES_256_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 42);
+pub const AES_192_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 22);
+pub const AES_128_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 2);
+
+pub const HMAC_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 7);
+pub const HMAC_WITH_SHA256_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 9);
