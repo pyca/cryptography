@@ -8,4 +8,4 @@ publish = false
 rust-version = "1.65.0"
 
 [dependencies]
-asn1 = { version = "0.16.1", default-features = false }
+asn1 = { version = "0.16.2", default-features = false }
