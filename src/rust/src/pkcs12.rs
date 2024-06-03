@@ -230,13 +230,23 @@ fn cert_to_bag<'a>(
     })
 }
 
-fn decode_encryption_algorithm(
-    py: pyo3::Python<'_>,
-) -> CryptographyResult<(&[u8], pyo3::Bound<'_, pyo3::PyAny>, u64)> {
+fn decode_encryption_algorithm<'a>(
+    py: pyo3::Python<'a>,
+    encryption_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
+) -> CryptographyResult<(
+    pyo3::pybacked::PyBackedBytes,
+    pyo3::Bound<'a, pyo3::PyAny>,
+    u64,
+)> {
     let default_hmac_alg = types::SHA256.get(py)?.call0()?;
     let default_hmac_kdf_iter = 2048;
 
-    Ok((b"", default_hmac_alg, default_hmac_kdf_iter))
+    assert!(encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)?);
+    Ok((
+        pyo3::types::PyBytes::new_bound(py, b"").extract()?,
+        default_hmac_alg,
+        default_hmac_kdf_iter,
+    ))
 }
 
 #[derive(pyo3::FromPyObject)]
@@ -246,15 +256,17 @@ enum CertificateOrPKCS12Certificate {
 }
 
 #[pyo3::prelude::pyfunction]
-#[pyo3(signature = (name, key, cert, cas))]
+#[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
 fn serialize_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
     name: Option<&[u8]>,
     key: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     cert: Option<&Certificate>,
     cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let (password, mac_algorithm, mac_kdf_iter) = decode_encryption_algorithm(py)?;
+    let (password, mac_algorithm, mac_kdf_iter) =
+        decode_encryption_algorithm(py, encryption_algorithm)?;
 
     let mut auth_safe_contents = vec![];
     let (cert_bag_contents, key_bag_contents);
@@ -328,7 +340,7 @@ fn serialize_key_and_certificates<'p>(
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
     let mac_algorithm_md = hashes::message_digest_from_algorithm(py, &mac_algorithm)?;
     let mac_key = pkcs12_kdf(
-        password,
+        &password,
         &salt,
         KDF_MAC_KEY_ID,
         mac_kdf_iter,
