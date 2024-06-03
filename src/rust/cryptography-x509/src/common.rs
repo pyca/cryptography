@@ -125,6 +125,14 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::DH_KEY_AGREEMENT_OID)]
     DhKeyAgreement(BasicDHParams<'a>),
 
+    #[defined_by(oid::HMAC_WITH_SHA1_OID)]
+    HmacWithSha1(asn1::Null),
+    #[defined_by(oid::HMAC_WITH_SHA256_OID)]
+    HmacWithSha256(asn1::Null),
+
+    #[defined_by(oid::AES_256_CBC_OID)]
+    Aes256Cbc([u8; 16]),
+
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }
