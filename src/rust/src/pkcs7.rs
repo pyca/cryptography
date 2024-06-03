@@ -27,10 +27,6 @@ const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1
 const PKCS7_SIGNING_TIME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 5);
 const PKCS7_SMIME_CAP_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 15);
 
-const AES_256_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 42);
-const AES_192_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 22);
-const AES_128_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 2);
-
 static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
     let mut h = HashMap::new();
     h.insert(&oid::SHA224_OID, "sha-224");
@@ -105,9 +101,9 @@ fn sign_and_serialize<'p>(
         // Subset of values OpenSSL provides:
         // https://github.com/openssl/openssl/blob/667a8501f0b6e5705fd611d5bb3ca24848b07154/crypto/pkcs7/pk7_smime.c#L150
         // removing all the ones that are bad cryptography
-        &asn1::SequenceOfWriter::new([AES_256_CBC_OID]),
-        &asn1::SequenceOfWriter::new([AES_192_CBC_OID]),
-        &asn1::SequenceOfWriter::new([AES_128_CBC_OID]),
+        &asn1::SequenceOfWriter::new([oid::AES_256_CBC_OID]),
+        &asn1::SequenceOfWriter::new([oid::AES_192_CBC_OID]),
+        &asn1::SequenceOfWriter::new([oid::AES_128_CBC_OID]),
     ]))?;
 
     #[allow(clippy::type_complexity)]
