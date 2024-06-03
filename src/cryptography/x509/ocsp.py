@@ -404,6 +404,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
 OCSPRequest.register(ocsp.OCSPRequest)
 OCSPResponse.register(ocsp.OCSPResponse)
+OCSPSingleResponse.register(ocsp.OCSPSingleResponse)
 
 
 class OCSPRequestBuilder:

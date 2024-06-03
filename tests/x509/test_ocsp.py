@@ -1179,6 +1179,7 @@ class TestOCSPResponse:
         with pytest.raises(ValueError):
             resp.serial_number
 
+        assert isinstance(next(resp.responses), ocsp.OCSPSingleResponse)
         assert len(list(resp.responses)) == 20
 
     def test_multi_valued_responses(self):
