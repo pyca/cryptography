@@ -423,6 +423,12 @@ class TestPKCS12Creation:
         ("encryption_algorithm", "password"),
         [
             (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (
+                serialization.PrivateFormat.PKCS12.encryption_builder().build(
+                    b"not a password"
+                ),
+                b"not a password",
+            ),
             (serialization.NoEncryption(), None),
         ],
     )
