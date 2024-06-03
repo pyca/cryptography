@@ -918,6 +918,7 @@ pub(crate) fn add_to_module(
     module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_response, module)?)?;
 
     module.add_class::<OCSPResponse>()?;
+    module.add_class::<OCSPSingleResponse>()?;
 
     Ok(())
 }
