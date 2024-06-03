@@ -778,18 +778,6 @@ fn create_ocsp_response(
     load_der_ocsp_response(py, pyo3::types::PyBytes::new_bound(py, &data).unbind())
 }
 
-pub(crate) fn add_to_module(
-    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
-) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        load_der_ocsp_response,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_response, module)?)?;
-
-    Ok(())
-}
-
 type RawOCSPResponseIterator<'a> = asn1::SequenceOf<'a, SingleResponse<'a>>;
 
 self_cell::self_cell!(
@@ -918,4 +906,18 @@ impl OCSPSingleResponse {
         let single_resp = self.single_response();
         singleresp_py_next_update(single_resp, py)
     }
+}
+
+pub(crate) fn add_to_module(
+    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
+) -> pyo3::PyResult<()> {
+    module.add_function(pyo3::wrap_pyfunction_bound!(
+        load_der_ocsp_response,
+        module
+    )?)?;
+    module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_response, module)?)?;
+
+    module.add_class::<OCSPResponse>()?;
+
+    Ok(())
 }

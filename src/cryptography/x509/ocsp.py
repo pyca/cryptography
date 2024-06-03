@@ -402,6 +402,10 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         """
 
 
+OCSPRequest.register(ocsp.OCSPRequest)
+OCSPResponse.register(ocsp.OCSPResponse)
+
+
 class OCSPRequestBuilder:
     def __init__(
         self,
