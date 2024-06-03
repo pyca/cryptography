@@ -235,5 +235,7 @@ pub(crate) fn add_to_module(
     module.add_function(pyo3::wrap_pyfunction_bound!(load_der_ocsp_request, module)?)?;
     module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_request, module)?)?;
 
+    module.add_class::<OCSPRequest>()?;
+
     Ok(())
 }

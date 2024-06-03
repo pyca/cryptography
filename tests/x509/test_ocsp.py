@@ -78,6 +78,7 @@ class TestOCSPRequest:
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
         )
+        assert isinstance(req, ocsp.OCSPRequest)
         assert req.issuer_name_hash == (
             b"8\xcaF\x8c\x07D\x8d\xf4\x81\x96\xc7mmLpQ\x9e`\xa7\xbd"
         )
@@ -1120,6 +1121,7 @@ class TestOCSPResponse:
             os.path.join("x509", "letsencryptx3.pem"),
             x509.load_pem_x509_certificate,
         )
+        assert isinstance(resp, ocsp.OCSPResponse)
         assert resp.response_status == ocsp.OCSPResponseStatus.SUCCESSFUL
         assert (
             resp.signature_algorithm_oid
