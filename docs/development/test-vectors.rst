@@ -205,6 +205,10 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub.der`` contains
   are the above parameters and keys in DER format.
 
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub_v41_0_7.pem`` contains
+  a Diffie-Hellman public key created with version 41.0.7 of this
+  package.
+
 * ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.pem``,
   ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.pem`` and
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.pem`` contains
