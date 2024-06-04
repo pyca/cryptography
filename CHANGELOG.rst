@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v42-0-8:
+
+42.0.8 - 2024-06-04
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.2.2.
+
 .. _v42-0-7:
 
 42.0.7 - 2024-05-06
