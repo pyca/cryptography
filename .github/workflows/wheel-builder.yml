@@ -52,7 +52,11 @@ jobs:
   manylinux:
     needs: [sdist]
     runs-on: ${{ matrix.MANYLINUX.RUNNER }}
-    container: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
+    container:
+      image: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
+      volumes:
+        - /staticnodehost:/staticnodecontainer:rw,rshared
+        - /staticnodehost:/__e/node20:ro,rshared
     strategy:
       fail-fast: false
       matrix:
@@ -102,6 +106,9 @@ jobs:
             MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: [self-hosted, Linux, ARM64]}
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
+      - name: Ridiculous-er workaround for static node20
+        run: |
+          cp -R /staticnode/* /staticnodecontainer/
       - name: Ridiculous alpine workaround for actions support on arm64
         run: |
           # This modifies /etc/os-release so the JS actions
