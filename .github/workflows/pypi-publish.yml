@@ -93,7 +93,7 @@ jobs:
       # Do not perform attestation for things for TestPyPI. This is because
       # there's nothing that would prevent a malicious PyPI from serving a
       # signed TestPyPI asset in place of a release intended for PyPI.
-      - uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d  # v1.1.2
+      - uses: actions/attest-build-provenance@49df96e17e918a15956db358890b08e61c704919  # v1.2.0
         with:
           subject-path: 'dist/**/cryptography*'
         if: env.TWINE_REPOSITORY == 'pypi'
