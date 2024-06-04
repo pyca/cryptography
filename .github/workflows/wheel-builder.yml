@@ -250,7 +250,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
-          toolchain: 1.77.2
+          toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
@@ -333,7 +333,7 @@ jobs:
           architecture: ${{ matrix.WINDOWS.ARCH }}
       - uses: dtolnay/rust-toolchain@1482605bfc5719782e1267fd0c0cc350fe7646b8
         with:
-          toolchain: stable
+          toolchain: 1.77.2
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - uses: dawidd6/action-download-artifact@deb3bb83256a78589fef6a7b942e5f2573ad7c13 # v5
