@@ -20,7 +20,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
     pushd openssl
     git checkout "${VERSION}"
   else
-    curl -O "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
+    curl -LO "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
     tar zxf "openssl-${VERSION}.tar.gz"
     pushd "openssl-${VERSION}"
   fi
@@ -57,7 +57,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
   fi
   popd
 elif [[ "${TYPE}" == "libressl" ]]; then
-  curl -O "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
+  curl -LO "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
   cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
