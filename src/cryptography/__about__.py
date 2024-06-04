@@ -10,7 +10,7 @@ __all__ = [
     "__copyright__",
 ]
 
-__version__ = "42.0.7"
+__version__ = "42.0.8"
 
 
 __author__ = "The Python Cryptographic Authority and individual contributors"
