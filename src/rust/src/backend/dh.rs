@@ -12,7 +12,6 @@ use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 #[derive(Debug, PartialEq)]
 pub(crate) enum AllowDHX {
     True,
@@ -77,6 +76,7 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[allow(dead_code)]
 fn pkey_from_dh<T: openssl::pkey::HasParams>(
     dh: openssl::dh::Dh<T>,
     allow_dhx: AllowDHX,

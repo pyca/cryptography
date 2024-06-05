@@ -7,7 +7,6 @@ import binascii
 import copy
 import itertools
 import os
-import sys
 import typing
 
 import pytest
