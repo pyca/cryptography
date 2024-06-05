@@ -139,6 +139,9 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::AES_256_CBC_OID)]
     Aes256Cbc([u8; 16]),
 
+    #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
+    Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
+
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }
@@ -429,6 +432,12 @@ pub struct PBKDF2Params<'a> {
     pub key_length: Option<u64>,
     #[default(HMAC_SHA1_ALG)]
     pub prf: Box<AlgorithmIdentifier<'a>>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct PBES1Params {
+    pub salt: [u8; 8],
+    pub iterations: u64,
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the

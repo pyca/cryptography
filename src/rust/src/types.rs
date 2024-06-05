@@ -89,6 +89,10 @@ pub static PRIVATE_FORMAT_PKCS8: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["PrivateFormat", "PKCS8"],
 );
+pub static PRIVATE_FORMAT_PKCS12: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization",
+    &["PrivateFormat", "PKCS12"],
+);
 pub static PRIVATE_FORMAT_RAW: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["PrivateFormat", "Raw"],
@@ -147,6 +151,15 @@ pub static BEST_AVAILABLE_ENCRYPTION: LazyPyImport = LazyPyImport::new(
 pub static ENCRYPTION_BUILDER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["_KeySerializationEncryption"],
+);
+
+pub static PBES_PBESV1SHA1AND3KEYTRIPLEDESCBC: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs12",
+    &["PBES", "PBESv1SHA1And3KeyTripleDESCBC"],
+);
+pub static PBES_PBESV2SHA256ANDAES256CBC: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs12",
+    &["PBES", "PBESv2SHA256AndAES256CBC"],
 );
 
 pub static SERIALIZE_SSH_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(

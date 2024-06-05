@@ -100,6 +100,8 @@ class TestPKCS7Loading:
 # We have no public verification API and won't be adding one until we get
 # some requirements from users so this function exists to give us basic
 # verification for the signing tests.
+#
+# This relies on a number of bindings that we'd otherwise like to remove.
 def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
     sig_bio = backend._bytes_to_bio(sig)
     if encoding is serialization.Encoding.DER:
