@@ -12,6 +12,7 @@ use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 #[derive(Debug, PartialEq)]
 pub(crate) enum AllowDHX {
     True,
