@@ -487,9 +487,7 @@ class TestDH:
 
         params = public_key.parameters()
 
-        print("XXXXXX: test p1", file=sys.stderr)
         private_key = params.generate_private_key()
-        print("XXXXXX: test p2", file=sys.stderr)
 
         # test that we can do a key exchange with a public key
         # generated with an older version
