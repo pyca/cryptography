@@ -77,7 +77,7 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-#[allow(dead_code)]
+#[allow(unused_variables)]
 fn pkey_from_dh<T: openssl::pkey::HasParams>(
     dh: openssl::dh::Dh<T>,
     allow_dhx: AllowDHX,
