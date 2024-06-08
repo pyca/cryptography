@@ -24,16 +24,13 @@ multiple of the block size.
         >>> from cryptography.hazmat.primitives import padding
         >>> padder = padding.PKCS7(128).padder()
         >>> padded_data = padder.update(b"11111111111111112222222222")
-        >>> padded_data
-        b'1111111111111111'
         >>> padded_data += padder.finalize()
         >>> padded_data
         b'11111111111111112222222222\x06\x06\x06\x06\x06\x06'
         >>> unpadder = padding.PKCS7(128).unpadder()
         >>> data = unpadder.update(padded_data)
+        >>> data += unpadder.finalize()
         >>> data
-        b'1111111111111111'
-        >>> data + unpadder.finalize()
         b'11111111111111112222222222'
 
     :param block_size: The size of the block in :term:`bits` that the data is
@@ -67,16 +64,13 @@ multiple of the block size.
 
         >>> padder = padding.ANSIX923(128).padder()
         >>> padded_data = padder.update(b"11111111111111112222222222")
-        >>> padded_data
-        b'1111111111111111'
         >>> padded_data += padder.finalize()
         >>> padded_data
         b'11111111111111112222222222\x00\x00\x00\x00\x00\x06'
         >>> unpadder = padding.ANSIX923(128).unpadder()
         >>> data = unpadder.update(padded_data)
+        >>> data += unpadder.finalize()
         >>> data
-        b'1111111111111111'
-        >>> data + unpadder.finalize()
         b'11111111111111112222222222'
 
     :param block_size: The size of the block in :term:`bits` that the data is

@@ -100,6 +100,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> py
         padding::check_ansix923_padding,
         m
     )?)?;
+    m.add_class::<padding::PKCS7PaddingContext>()?;
     m.add_class::<oid::ObjectIdentifier>()?;
 
     m.add_submodule(&asn1::create_submodule(py)?)?;
