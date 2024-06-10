@@ -8,7 +8,7 @@ use pyo3::types::IntoPyDict;
 use std::slice;
 
 pub(crate) struct CffiBuf<'p> {
-    _pyobj: pyo3::Bound<'p, pyo3::PyAny>,
+    pyobj: pyo3::Bound<'p, pyo3::PyAny>,
     _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
     buf: &'p [u8],
 }
@@ -34,9 +34,13 @@ fn _extract_buffer_length<'p>(
     Ok((bufobj, ptrval))
 }
 
-impl CffiBuf<'_> {
+impl<'a> CffiBuf<'a> {
     pub(crate) fn as_bytes(&self) -> &[u8] {
         self.buf
+    }
+
+    pub(crate) fn into_pyobj(self) -> pyo3::Bound<'a, pyo3::PyAny> {
+        self.pyobj
     }
 }
 
@@ -59,7 +63,7 @@ impl<'a> pyo3::conversion::FromPyObject<'a> for CffiBuf<'a> {
         };
 
         Ok(CffiBuf {
-            _pyobj: pyobj.clone(),
+            pyobj: pyobj.clone(),
             _bufobj: bufobj,
             buf,
         })

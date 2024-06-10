@@ -2,6 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::buf::CffiBuf;
+use crate::error::{CryptographyError, CryptographyResult};
+use crate::exceptions;
+
 /// Returns the value of the input with the most-significant-bit copied to all
 /// of the bits.
 fn duplicate_msb_to_all(a: u8) -> u8 {
@@ -61,6 +65,51 @@ pub(crate) fn check_ansix923_padding(data: &[u8]) -> bool {
 
     // Now check the low bit to see if it's set
     (mismatch & 1) == 0
+}
+
+#[pyo3::prelude::pyclass]
+pub(crate) struct PKCS7PaddingContext {
+    block_size: usize,
+    length_seen: Option<usize>,
+}
+
+#[pyo3::prelude::pymethods]
+impl PKCS7PaddingContext {
+    #[new]
+    fn new(block_size: usize) -> PKCS7PaddingContext {
+        PKCS7PaddingContext {
+            block_size: block_size / 8,
+            length_seen: Some(0),
+        }
+    }
+
+    fn update<'a>(&mut self, buf: CffiBuf<'a>) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+        match self.length_seen.as_mut() {
+            Some(v) => {
+                *v += buf.as_bytes().len();
+                Ok(buf.into_pyobj())
+            }
+            None => Err(CryptographyError::from(
+                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
+            )),
+        }
+    }
+
+    fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.length_seen.take() {
+            Some(v) => {
+                let pad_size = self.block_size - (v % self.block_size);
+                let pad = vec![pad_size as u8; pad_size];
+                Ok(pyo3::types::PyBytes::new_bound(py, &pad))
+            }
+            None => Err(CryptographyError::from(
+                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
+            )),
+        }
+    }
 }
 
 #[cfg(test)]

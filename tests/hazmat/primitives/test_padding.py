@@ -47,9 +47,9 @@ class TestPKCS7:
 
         str(mybytes())
         padder = padding.PKCS7(128).padder()
-        padder.update(mybytes(b"abc"))
+        data = padder.update(mybytes(b"abc")) + padder.finalize()
         unpadder = padding.PKCS7(128).unpadder()
-        unpadder.update(mybytes(padder.finalize()))
+        unpadder.update(mybytes(data))
         assert unpadder.finalize() == b"abc"
 
     @pytest.mark.parametrize(

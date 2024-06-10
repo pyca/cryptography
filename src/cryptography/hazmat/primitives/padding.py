@@ -10,6 +10,7 @@ import typing
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.bindings._rust import (
+    PKCS7PaddingContext,
     check_ansix923_padding,
     check_pkcs7_padding,
 )
@@ -111,35 +112,10 @@ class PKCS7:
         self.block_size = block_size
 
     def padder(self) -> PaddingContext:
-        return _PKCS7PaddingContext(self.block_size)
+        return PKCS7PaddingContext(self.block_size)
 
     def unpadder(self) -> PaddingContext:
         return _PKCS7UnpaddingContext(self.block_size)
-
-
-class _PKCS7PaddingContext(PaddingContext):
-    _buffer: bytes | None
-
-    def __init__(self, block_size: int):
-        self.block_size = block_size
-        # TODO: more copies than necessary, we should use zero-buffer (#193)
-        self._buffer = b""
-
-    def update(self, data: bytes) -> bytes:
-        self._buffer, result = _byte_padding_update(
-            self._buffer, data, self.block_size
-        )
-        return result
-
-    def _padding(self, size: int) -> bytes:
-        return bytes([size]) * size
-
-    def finalize(self) -> bytes:
-        result = _byte_padding_pad(
-            self._buffer, self.block_size, self._padding
-        )
-        self._buffer = None
-        return result
 
 
 class _PKCS7UnpaddingContext(PaddingContext):
@@ -162,6 +138,9 @@ class _PKCS7UnpaddingContext(PaddingContext):
         )
         self._buffer = None
         return result
+
+
+PaddingContext.register(PKCS7PaddingContext)
 
 
 class ANSIX923:
