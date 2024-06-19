@@ -1,11 +1,10 @@
 [package]
 name = "cryptography-key-parsing"
-version = "0.1.0"
-authors = ["The cryptography developers <cryptography-dev@python.org>"]
-edition = "2021"
-publish = false
-# This specifies the MSRV
-rust-version = "1.65.0"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 asn1 = { version = "0.16.2", default-features = false }
