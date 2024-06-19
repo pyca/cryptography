@@ -364,7 +364,7 @@ jobs:
           - mitmproxy
           - scapy
         PYTHON:
-          - '3.12.3'
+          - '3.12'
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
