@@ -4,7 +4,6 @@
 requires = [
     # First version of setuptools to support pyproject.toml configuration
     "setuptools>=61.0.0",
-    "wheel",
     # Must be kept in sync with `project.dependencies`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
     "setuptools-rust>=1.7.0",
