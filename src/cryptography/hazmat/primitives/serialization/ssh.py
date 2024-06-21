@@ -620,7 +620,7 @@ class _SSHFormatSKECDSA:
     def load_public(
         self, data: memoryview
     ) -> tuple[ec.EllipticCurvePublicKey, memoryview]:
-        """Make Ed25519 public key from data."""
+        """Make ECDSA public key from data."""
         public_key, data = _lookup_kformat(_ECDSA_NISTP256).load_public(data)
         _, data = load_application(data)
         return public_key, data
