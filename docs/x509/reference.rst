@@ -2404,8 +2404,8 @@ X.509 Extensions
         .. doctest::
 
             >>> from cryptography import x509
-            >>> from cryptography.x509.oid import ExtensionOID
             >>> from cryptography.hazmat.primitives import hashes
+            >>> from cryptography.x509.oid import ExtensionOID
             >>> cert = x509.load_pem_x509_certificate(cryptography_cert_pem)
             >>> # Get the subjectAltName extension from the certificate
             >>> ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
