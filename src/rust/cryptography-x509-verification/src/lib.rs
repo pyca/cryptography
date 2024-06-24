@@ -213,22 +213,22 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
     }
 }
 
-pub type Chain<'c, B> = Vec<VerificationCertificate<'c, B>>;
+pub type Chain<'a, 'c, B> = Vec<&'a VerificationCertificate<'c, B>>;
 
-pub fn verify<'chain, B: CryptoOps>(
-    leaf: &VerificationCertificate<'chain, B>,
-    intermediates: impl IntoIterator<Item = VerificationCertificate<'chain, B>>,
-    policy: &Policy<'_, B>,
-    store: &Store<'chain, B>,
-) -> Result<Chain<'chain, B>, ValidationError> {
-    let builder = ChainBuilder::new(intermediates.into_iter().collect(), policy, store);
+pub fn verify<'a, 'chain: 'a, B: CryptoOps>(
+    leaf: &'a VerificationCertificate<'chain, B>,
+    intermediates: &'a [&'a VerificationCertificate<'chain, B>],
+    policy: &'a Policy<'_, B>,
+    store: &'a Store<'chain, B>,
+) -> Result<Chain<'a, 'chain, B>, ValidationError> {
+    let builder = ChainBuilder::new(intermediates, policy, store);
 
     let mut budget = Budget::new();
     builder.build_chain(leaf, &mut budget)
 }
 
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
-    intermediates: Vec<VerificationCertificate<'chain, B>>,
+    intermediates: &'a [&'a VerificationCertificate<'chain, B>],
     policy: &'a Policy<'a, B>,
     store: &'a Store<'chain, B>,
 }
@@ -252,9 +252,9 @@ impl ApplyNameConstraintStatus {
     }
 }
 
-impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
+impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
-        intermediates: Vec<VerificationCertificate<'chain, B>>,
+        intermediates: &'a [&'a VerificationCertificate<'chain, B>],
         policy: &'a Policy<'a, B>,
         store: &'a Store<'chain, B>,
     ) -> Self {
@@ -266,7 +266,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     }
 
     fn potential_issuers(
-        &'a self,
+        &self,
         cert: &'a VerificationCertificate<'chain, B>,
     ) -> impl Iterator<Item = &'a VerificationCertificate<'chain, B>> + '_ {
         // TODO: Optimizations:
@@ -274,19 +274,19 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         self.store
             .get_by_subject(&cert.certificate().tbs_cert.issuer)
             .iter()
-            .chain(self.intermediates.iter().filter(|&candidate| {
+            .chain(self.intermediates.iter().copied().filter(|&candidate| {
                 candidate.certificate().subject() == cert.certificate().issuer()
             }))
     }
 
     fn build_chain_inner(
         &self,
-        working_cert: &VerificationCertificate<'chain, B>,
+        working_cert: &'a VerificationCertificate<'chain, B>,
         current_depth: u8,
         working_cert_extensions: &Extensions<'chain>,
         name_chain: NameChain<'_, 'chain>,
         budget: &mut Budget,
-    ) -> Result<Chain<'chain, B>, ValidationError> {
+    ) -> Result<Chain<'a, 'chain, B>, ValidationError> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             name_chain.evaluate_constraints(&nc.value()?, budget)?;
         }
@@ -294,7 +294,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // Look in the store's root set to see if the working cert is listed.
         // If it is, we've reached the end.
         if self.store.contains(working_cert) {
-            return Ok(vec![working_cert.clone()]);
+            return Ok(vec![working_cert]);
         }
 
         // Check that our current depth does not exceed our policy-configured
@@ -357,7 +357,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         budget,
                     ) {
                         Ok(mut chain) => {
-                            chain.push(working_cert.clone());
+                            chain.push(working_cert);
                             return Ok(chain);
                         }
                         // Immediately return on fatal error.
@@ -387,9 +387,9 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
     fn build_chain(
         &self,
-        leaf: &VerificationCertificate<'chain, B>,
+        leaf: &'a VerificationCertificate<'chain, B>,
         budget: &mut Budget,
-    ) -> Result<Chain<'chain, B>, ValidationError> {
+    ) -> Result<Chain<'a, 'chain, B>, ValidationError> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).

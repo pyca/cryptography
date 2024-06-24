@@ -22,7 +22,7 @@ impl<'a, B: CryptoOps> Store<'a, B> {
             by_subject
                 .entry(cert.certificate().tbs_cert.subject.clone())
                 .or_default()
-                .push(cert.clone());
+                .push(cert);
         }
         Store { by_subject }
     }
@@ -51,9 +51,10 @@ mod tests {
     #[test]
     fn test_store() {
         let cert_pem = v1_cert_pem();
-        let cert = VerificationCertificate::new(cert(&cert_pem), ());
-        let store = Store::<'_, PublicKeyErrorOps>::new([cert.clone()]);
+        let cert1 = VerificationCertificate::new(cert(&cert_pem), ());
+        let cert2 = VerificationCertificate::new(cert(&cert_pem), ());
+        let store = Store::<'_, PublicKeyErrorOps>::new([cert1]);
 
-        assert!(store.contains(&cert));
+        assert!(store.contains(&cert2));
     }
 }

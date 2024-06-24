@@ -39,11 +39,6 @@ impl<B: CryptoOps> PartialEq for VerificationCertificate<'_, B> {
     }
 }
 impl<B: CryptoOps> Eq for VerificationCertificate<'_, B> {}
-impl<B: CryptoOps> Clone for VerificationCertificate<'_, B> {
-    fn clone(&self) -> Self {
-        VerificationCertificate::new(self.cert.clone(), self.extra.clone())
-    }
-}
 
 pub trait CryptoOps {
     /// A public key type for this cryptographic backend.
@@ -53,7 +48,7 @@ pub trait CryptoOps {
     type Err;
 
     /// Extra data that's passed around with the certificate.
-    type CertificateExtra: Clone;
+    type CertificateExtra;
 
     /// Extracts the public key from the given `Certificate` in
     /// a `Key` format known by the cryptographic backend, or `None`
