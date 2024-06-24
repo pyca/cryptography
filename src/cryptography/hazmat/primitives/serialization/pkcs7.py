@@ -181,8 +181,9 @@ class PKCS7SignatureBuilder:
 class PKCS7EnvelopeBuilder:
     def __init__(
         self,
-        data: bytes | None = None,
-        recipients: list[x509.Certificate] | None = None,
+        *,
+        _data: bytes | None = None,
+        _recipients: list[x509.Certificate] | None = None,
     ):
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
@@ -194,15 +195,15 @@ class PKCS7EnvelopeBuilder:
                 " of OpenSSL.",
                 _Reasons.UNSUPPORTED_PADDING,
             )
-        self._data = data
-        self._recipients = recipients if recipients is not None else []
+        self._data = _data
+        self._recipients = _recipients if _recipients is not None else []
 
     def set_data(self, data: bytes) -> PKCS7EnvelopeBuilder:
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")
 
-        return PKCS7EnvelopeBuilder(data, self._recipients)
+        return PKCS7EnvelopeBuilder(_data=data, _recipients=self._recipients)
 
     def add_recipient(
         self,
@@ -215,8 +216,8 @@ class PKCS7EnvelopeBuilder:
             raise TypeError("Only RSA keys are supported at this time.")
 
         return PKCS7EnvelopeBuilder(
-            self._data,
-            [
+            _data=self._data,
+            _recipients=[
                 *self._recipients,
                 certificate,
             ],
@@ -244,16 +245,16 @@ class PKCS7EnvelopeBuilder:
                 "Must be PEM, DER, or SMIME from the Encoding enum"
             )
 
-        # These options only make sense when signing, not encrypting
-        if (
-            PKCS7Options.NoAttributes in options
-            or PKCS7Options.NoCapabilities in options
-            or PKCS7Options.NoCerts in options
-            or PKCS7Options.DetachedSignature in options
+        # Only allow options that make sense when signing
+        if any(
+            [
+                opt not in [PKCS7Options.Text, PKCS7Options.Binary]
+                for opt in options
+            ]
         ):
             raise ValueError(
-                "The following options are not supported for encryption:"
-                "NoAttributes, NoCapabilities, NoCerts, DetachedSignature"
+                "Only the following options are supported for signing: "
+                "Text, Binary"
             )
 
         return rust_pkcs7.encrypt_and_serialize(self, encoding, options)

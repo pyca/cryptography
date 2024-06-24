@@ -13,13 +13,14 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytes, PyBytesMethods, PyListMethods, PyModuleMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::padding::PKCS7PaddingContext;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
@@ -92,13 +93,10 @@ fn encrypt_and_serialize<'p>(
         smime_canonicalize(raw_data.as_bytes(), text_mode).0
     };
 
-    let padder = types::SYMMETRIC_PADDING_PKCS7
-        .get(py)?
-        .call1((128,))?
-        .call_method0(pyo3::intern!(py, "padder"))?;
-    let padded_content_start =
-        padder.call_method1(pyo3::intern!(py, "update"), (data_with_header,))?;
-    let padded_content_end = padder.call_method0(pyo3::intern!(py, "finalize"))?;
+    let data_with_header = PyBytes::new_bound(py, &data_with_header);
+    let mut padder = PKCS7PaddingContext::new(128);
+    let padded_content_start = padder.update(data_with_header.extract()?)?;
+    let padded_content_end = padder.finalize(py)?;
     let padded_content = padded_content_start.add(padded_content_end)?;
 
     // The message is encrypted with AES-128-CBC, which the S/MIME v3.2 RFC
@@ -148,12 +146,12 @@ fn encrypt_and_serialize<'p>(
         recipient_infos: asn1::SetOfWriter::new(&recipient_infos),
 
         encrypted_content_info: pkcs7::EncryptedContentInfo {
-            _content_type: PKCS7_DATA_OID,
+            content_type: PKCS7_DATA_OID,
             content_encryption_algorithm: AlgorithmIdentifier {
                 oid: asn1::DefinedByMarker::marker(),
                 params: AlgorithmParameters::AesCbc(iv.extract()?),
             },
-            content: Some(encrypted_content.extract()?),
+            encrypted_content: Some(encrypted_content.extract()?),
         },
     };
 

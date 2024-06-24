@@ -58,10 +58,10 @@ pub struct SignerInfo<'a> {
 
 #[derive(asn1::Asn1Write)]
 pub struct EncryptedContentInfo<'a> {
-    pub _content_type: asn1::ObjectIdentifier,
+    pub content_type: asn1::ObjectIdentifier,
     pub content_encryption_algorithm: common::AlgorithmIdentifier<'a>,
     #[implicit(0)]
-    pub content: Option<&'a [u8]>,
+    pub encrypted_content: Option<&'a [u8]>,
 }
 
 #[derive(asn1::Asn1Write)]

@@ -359,8 +359,6 @@ pub static PREHASHED: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.utils",
     &["Prehashed"],
 );
-pub static SYMMETRIC_PADDING_PKCS7: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.padding", &["PKCS7"]);
 pub static ASYMMETRIC_PADDING: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.padding",
     &["AsymmetricPadding"],
