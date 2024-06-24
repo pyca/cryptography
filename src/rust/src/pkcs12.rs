@@ -24,6 +24,7 @@ struct PKCS12Certificate {
 #[pyo3::prelude::pymethods]
 impl PKCS12Certificate {
     #[new]
+    #[pyo3(signature = (cert, friendly_name=None))]
     fn new(
         cert: pyo3::Py<Certificate>,
         friendly_name: Option<pyo3::Py<pyo3::types::PyBytes>>,
@@ -40,7 +41,7 @@ impl PKCS12Certificate {
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
         let friendly_name_eq = match (&self.friendly_name, &other.friendly_name) {
-            (Some(a), Some(b)) => a.bind(py).eq(b.bind(py))?,
+            (Some(a), Some(b)) => a.bind(py).as_bytes() == b.bind(py).as_bytes(),
             (None, None) => true,
             _ => false,
         };
@@ -406,6 +407,7 @@ fn decode_p12(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, password, backend=None))]
 fn load_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
@@ -456,6 +458,7 @@ fn load_key_and_certificates<'p>(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, password, backend=None))]
 fn load_pkcs12<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'_>,

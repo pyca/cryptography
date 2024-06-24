@@ -6,10 +6,12 @@ use pyo3::prelude::PyModuleMethods;
 
 #[pyo3::prelude::pyclass(
     frozen,
+    eq,
     module = "cryptography.hazmat.bindings._rust.exceptions",
     name = "_Reasons"
 )]
 #[allow(non_camel_case_types)]
+#[derive(PartialEq)]
 pub(crate) enum Reasons {
     BACKEND_MISSING_INTERFACE,
     UNSUPPORTED_HASH,

@@ -356,6 +356,7 @@ impl DsaPrivateNumbers {
         DsaPrivateNumbers { x, public_numbers }
     }
 
+    #[pyo3(signature = (backend=None))]
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
@@ -406,6 +407,7 @@ impl DsaPublicNumbers {
         }
     }
 
+    #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
@@ -460,6 +462,7 @@ impl DsaParameterNumbers {
         DsaParameterNumbers { p, q, g }
     }
 
+    #[pyo3(signature = (backend=None))]
     fn parameters(
         &self,
         py: pyo3::Python<'_>,

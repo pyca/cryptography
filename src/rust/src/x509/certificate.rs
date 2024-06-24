@@ -365,6 +365,7 @@ fn cert_version(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn load_pem_x509_certificate(
     py: pyo3::Python<'_>,
     data: &[u8],
@@ -411,6 +412,7 @@ fn load_pem_x509_certificates(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 pub(crate) fn load_der_x509_certificate(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
