@@ -59,7 +59,7 @@ fn serialize_certificates<'p>(
         digest_algorithms: asn1::SetOfWriter::new(&[]),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
-            content: pkcs7::Content::Data(Some(asn1::Explicit::new(b""))),
+            content: pkcs7::Content::Data(None),
         },
         certificates: Some(asn1::SetOfWriter::new(&raw_certs)),
         crls: None,
