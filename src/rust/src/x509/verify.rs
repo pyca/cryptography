@@ -260,17 +260,25 @@ impl PyClientVerifier {
         let policy = self.as_policy();
         let store = self.store.get();
 
-        let chain = cryptography_x509_verification::verify(
-            &VerificationCertificate::new(
-                leaf.get().raw.borrow_dependent().clone(),
-                leaf.clone_ref(py),
-            ),
-            intermediates.iter().map(|i| {
+        let intermediates = intermediates
+            .iter()
+            .map(|i| {
                 VerificationCertificate::new(
                     i.get().raw.borrow_dependent().clone(),
                     i.clone_ref(py),
                 )
-            }),
+            })
+            .collect::<Vec<_>>();
+        let intermediate_refs = intermediates.iter().collect::<Vec<_>>();
+
+        let v = VerificationCertificate::new(
+            leaf.get().raw.borrow_dependent().clone(),
+            leaf.clone_ref(py),
+        );
+
+        let chain = cryptography_x509_verification::verify(
+            &v,
+            &intermediate_refs,
             policy,
             store.raw.borrow_dependent(),
         )
@@ -344,17 +352,25 @@ impl PyServerVerifier {
         let policy = self.as_policy();
         let store = self.store.get();
 
-        let chain = cryptography_x509_verification::verify(
-            &VerificationCertificate::new(
-                leaf.get().raw.borrow_dependent().clone(),
-                leaf.clone_ref(py),
-            ),
-            intermediates.iter().map(|i| {
+        let intermediates = intermediates
+            .iter()
+            .map(|i| {
                 VerificationCertificate::new(
                     i.get().raw.borrow_dependent().clone(),
                     i.clone_ref(py),
                 )
-            }),
+            })
+            .collect::<Vec<_>>();
+        let intermediate_refs = intermediates.iter().collect::<Vec<_>>();
+
+        let v = VerificationCertificate::new(
+            leaf.get().raw.borrow_dependent().clone(),
+            leaf.clone_ref(py),
+        );
+
+        let chain = cryptography_x509_verification::verify(
+            &v,
+            &intermediate_refs,
             policy,
             store.raw.borrow_dependent(),
         )
