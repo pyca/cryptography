@@ -780,7 +780,7 @@ Custom PKCS12 Test Vectors
 * ``pkcs12/name-2-3-pwd.p12`` - A PKCS12 file containing a cert
   (``pkcs12/ca/ca.pem``) and key (``pkcs12/ca/ca_key.pem``),
   as well as two additional certificates (``x509/cryptography.io.pem``
-  and ``x509/letsencryptx3.pem``) with friendly names ``name2` and
+  and ``x509/letsencryptx3.pem``) with friendly names ``name2`` and
   ``name3`` respectively, encrypted via AES 256 CBC with the password
   ``cryptography``.
 * ``pkcs12/name-2-pwd.p12`` - A PKCS12 file containing a cert
