@@ -117,6 +117,7 @@ pub(crate) fn private_key_from_pkey(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn load_der_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
@@ -145,6 +146,7 @@ pub(crate) fn load_der_public_key_bytes(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn load_pem_public_key(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,

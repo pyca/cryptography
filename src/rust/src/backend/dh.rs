@@ -28,6 +28,7 @@ struct DHParameters {
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (generator, key_size, backend=None))]
 fn generate_parameters(
     generator: u32,
     key_size: u32,
@@ -87,6 +88,7 @@ fn pkey_from_dh<T: openssl::pkey::HasParams>(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn from_der_parameters(
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -107,6 +109,7 @@ fn from_der_parameters(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn from_pem_parameters(
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -410,6 +413,7 @@ impl DHPrivateNumbers {
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[pyo3(signature = (backend=None))]
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
@@ -462,6 +466,7 @@ impl DHPublicNumbers {
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,
         py: pyo3::Python<'_>,
@@ -494,6 +499,7 @@ impl DHPublicNumbers {
 #[pyo3::prelude::pymethods]
 impl DHParameterNumbers {
     #[new]
+    #[pyo3(signature = (p, g, q=None))]
     fn new(
         py: pyo3::Python<'_>,
         p: pyo3::Py<pyo3::types::PyLong>,
@@ -520,6 +526,7 @@ impl DHParameterNumbers {
         Ok(DHParameterNumbers { p, g, q })
     }
 
+    #[pyo3(signature = (backend=None))]
     fn parameters(
         &self,
         py: pyo3::Python<'_>,

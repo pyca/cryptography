@@ -536,6 +536,7 @@ impl ChaCha20Poly1305 {
         Ok(types::OS_URANDOM.get(py)?.call1((32,))?)
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -556,6 +557,7 @@ impl ChaCha20Poly1305 {
             .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -651,6 +653,7 @@ impl AesGcm {
         Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -671,6 +674,7 @@ impl AesGcm {
             .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -704,6 +708,7 @@ struct AesCcm {
 #[pyo3::prelude::pymethods]
 impl AesCcm {
     #[new]
+    #[pyo3(signature = (key, tag_length=None))]
     fn new(
         py: pyo3::Python<'_>,
         key: pyo3::Py<pyo3::PyAny>,
@@ -762,6 +767,7 @@ impl AesCcm {
         Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -795,6 +801,7 @@ impl AesCcm {
         self.ctx.encrypt(py, data_bytes, aad, Some(nonce_bytes))
     }
 
+    #[pyo3(signature = (nonce, data, associated_data))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,

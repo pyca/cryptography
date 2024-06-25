@@ -9,6 +9,7 @@
 use crate::error::CryptographyResult;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
+use pyo3::prelude::PyModuleMethods;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use std::env;
 

@@ -155,6 +155,7 @@ pub(crate) fn public_key_from_pkey(
     })
 }
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (curve, backend=None))]
 fn generate_private_key(
     py: pyo3::Python<'_>,
     curve: pyo3::Bound<'_, pyo3::PyAny>,
@@ -518,6 +519,7 @@ impl EllipticCurvePrivateNumbers {
         }
     }
 
+    #[pyo3(signature = (backend=None))]
     fn private_key(
         &self,
         py: pyo3::Python<'_>,
@@ -600,6 +602,7 @@ impl EllipticCurvePublicNumbers {
         Ok(EllipticCurvePublicNumbers { x, y, curve })
     }
 
+    #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,
         py: pyo3::Python<'_>,

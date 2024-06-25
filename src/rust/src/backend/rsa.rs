@@ -773,6 +773,7 @@ impl RsaPublicNumbers {
         RsaPublicNumbers { e, n }
     }
 
+    #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,
         py: pyo3::Python<'_>,

@@ -169,7 +169,7 @@ impl Sct {
 
         let kwargs = pyo3::types::PyDict::new_bound(py);
         kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;
-        kwargs.set_item("tzinfo", None::<Option<pyo3::PyAny>>)?;
+        kwargs.set_item("tzinfo", None::<Option<pyo3::PyObject>>)?;
 
         types::DATETIME_DATETIME
             .get(py)?

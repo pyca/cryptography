@@ -36,6 +36,7 @@ impl Cmac {
 #[pyo3::pymethods]
 impl Cmac {
     #[new]
+    #[pyo3(signature = (algorithm, backend=None))]
     fn new(
         py: pyo3::Python<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,

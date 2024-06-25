@@ -28,7 +28,7 @@ impl LazyPyImport {
             Ok::<_, pyo3::PyErr>(obj.unbind())
         })?;
 
-        Ok(p.clone().into_bound(py))
+        Ok(p.clone_ref(py).into_bound(py))
     }
 }
 

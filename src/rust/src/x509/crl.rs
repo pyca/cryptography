@@ -25,6 +25,7 @@ use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, types, x509};
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
@@ -54,6 +55,7 @@ fn load_der_x509_crl(
 }
 
 #[pyo3::prelude::pyfunction]
+#[pyo3(signature = (data, backend=None))]
 fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
