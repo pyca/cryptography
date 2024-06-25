@@ -16,7 +16,7 @@ Changelog
   now enforces a minimum RSA key size of 1024-bit. Note that 1024-bit is still
   considered insecure, users should generally use a key size of 2048-bits.
 * :func:`~cryptography.hazmat.primitives.serialization.pkcs7.serialize_certificates`
-  now has consistent ASN.1 structure to ``openssl crl2pkcs7 -nocrl -certfile ...``.
+  now emits ASN.1 that more closely follows the recommendations in :rfc:`2315`.
 * Added new :doc:`/hazmat/decrepit/index` module which contains outdated and
   insecure cryptographic primitives.
   :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
