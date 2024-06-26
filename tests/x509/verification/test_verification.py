@@ -145,7 +145,7 @@ class TestClientVerifier:
 
     def test_verify_fails_renders_oid(self):
         leaf = _load_cert(
-            os.path.join("x509", "ekucrit-testuser-cert.pem"),
+            os.path.join("x509", "custom", "ekucrit-testuser-cert.pem"),
             x509.load_pem_x509_certificate,
         )
 
