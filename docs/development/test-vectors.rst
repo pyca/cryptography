@@ -312,6 +312,7 @@ X.509
   bytes in a ``VisibleString`` type.
 * ``ee-pss-sha1-cert.pem`` - An RSA PSS certificate using a SHA1 signature and
   SHA1 for MGF1 from the OpenSSL test suite.
+* ``ekucrit-testuser-cert.pem`` - A leaf certificate containing a critical EKU.
 
 Custom X.509 Vectors
 ~~~~~~~~~~~~~~~~~~~~

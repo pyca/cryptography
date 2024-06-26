@@ -11,7 +11,11 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.verification import PolicyBuilder, Store
+from cryptography.x509.verification import (
+    PolicyBuilder,
+    Store,
+    VerificationError,
+)
 from tests.x509.test_x509 import _load_cert
 
 
@@ -138,6 +142,32 @@ class TestClientVerifier:
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
+
+    def test_verify_fails_renders_oid(self):
+        leaf = _load_cert(
+            os.path.join("x509", "ekucrit-testuser-cert.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+
+        validation_time = datetime.datetime.fromisoformat(
+            "2024-06-26T00:00:00+00:00"
+        )
+
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(validation_time)
+        verifier = builder.build_client_verifier()
+
+        pattern = (
+            r"invalid extension: 2\.5\.29\.37: "
+            r"Certificate extension has incorrect criticality"
+        )
+        with pytest.raises(
+            VerificationError,
+            match=pattern,
+        ):
+            verifier.verify(leaf, [])
 
 
 class TestServerVerifier:
