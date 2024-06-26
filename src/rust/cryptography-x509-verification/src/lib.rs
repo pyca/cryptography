@@ -12,8 +12,10 @@ pub mod policy;
 pub mod trust_store;
 pub mod types;
 
+use std::fmt::Display;
 use std::vec;
 
+use asn1::ObjectIdentifier;
 use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
 use cryptography_x509::{
     extensions::{NameConstraints, SubjectAlternativeName},
@@ -35,8 +37,43 @@ pub enum ValidationError {
     CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
     DuplicateExtension(DuplicateExtensionsError),
+    ExtensionError {
+        oid: ObjectIdentifier,
+        reason: &'static str,
+    },
     FatalError(&'static str),
     Other(String),
+}
+
+impl From<asn1::ParseError> for ValidationError {
+    fn from(value: asn1::ParseError) -> Self {
+        Self::Malformed(value)
+    }
+}
+
+impl From<DuplicateExtensionsError> for ValidationError {
+    fn from(value: DuplicateExtensionsError) -> Self {
+        Self::DuplicateExtension(value)
+    }
+}
+
+impl Display for ValidationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ValidationError::CandidatesExhausted(inner) => {
+                write!(f, "candidates exhausted: {inner}")
+            }
+            ValidationError::Malformed(err) => write!(f, "malformed ASN.1: {err}"),
+            ValidationError::DuplicateExtension(DuplicateExtensionsError(oid)) => {
+                write!(f, "malformed certificate: duplicate extension: {oid}")
+            }
+            ValidationError::ExtensionError { oid, reason } => {
+                write!(f, "invalid extension: {oid}: {reason}")
+            }
+            ValidationError::FatalError(err) => write!(f, "fatal error: {err}"),
+            ValidationError::Other(err) => write!(f, "{err}"),
+        }
+    }
 }
 
 struct Budget {
@@ -61,18 +98,6 @@ impl Budget {
                     "Exceeded maximum name constraint check limit",
                 ))?;
         Ok(())
-    }
-}
-
-impl From<asn1::ParseError> for ValidationError {
-    fn from(value: asn1::ParseError) -> Self {
-        Self::Malformed(value)
-    }
-}
-
-impl From<DuplicateExtensionsError> for ValidationError {
-    fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
     }
 }
 

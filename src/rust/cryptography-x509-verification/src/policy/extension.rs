@@ -81,10 +81,10 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                     self.extended_key_usage.permits(policy, cert, Some(&ext))?;
                 }
                 _ if ext.critical => {
-                    return Err(ValidationError::Other(format!(
-                        "certificate contains unaccounted-for critical extensions: {}",
-                        ext.extn_id
-                    )));
+                    return Err(ValidationError::ExtensionError {
+                        oid: ext.extn_id.clone(),
+                        reason: "certificate contains unaccounted-for critical extensions",
+                    });
                 }
                 _ => {}
             }
@@ -205,10 +205,10 @@ impl<B: CryptoOps> ExtensionValidator<B> {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
             // Extension MUST NOT be present but is; NOT OK.
-            (ExtensionValidator::NotPresent, Some(extn)) => Err(ValidationError::Other(format!(
-                "Certificate contains prohibited extension: {}",
-                extn.extn_id
-            ))),
+            (ExtensionValidator::NotPresent, Some(extn)) => Err(ValidationError::ExtensionError {
+                oid: extn.extn_id.clone(),
+                reason: "Certificate contains prohibited extension",
+            }),
             // Extension MUST be present but is not; NOT OK.
             (ExtensionValidator::Present { .. }, None) => Err(ValidationError::Other(
                 "Certificate is missing required extension".to_string(),
@@ -222,10 +222,10 @@ impl<B: CryptoOps> ExtensionValidator<B> {
                 Some(extn),
             ) => {
                 if !criticality.permits(extn.critical) {
-                    return Err(ValidationError::Other(format!(
-                        "Certificate extension has incorrect criticality: {}",
-                        extn.extn_id
-                    )));
+                    return Err(ValidationError::ExtensionError {
+                        oid: extn.extn_id.clone(),
+                        reason: "Certificate extension has incorrect criticality",
+                    });
                 }
 
                 // If a custom validator is supplied, apply it.
@@ -242,10 +242,10 @@ impl<B: CryptoOps> ExtensionValidator<B> {
                 match extn {
                     // If the extension is present, apply our criticality check.
                     Some(extn) if !criticality.permits(extn.critical) => {
-                        Err(ValidationError::Other(format!(
-                            "Certificate extension has incorrect criticality: {}",
-                            extn.extn_id,
-                        )))
+                        Err(ValidationError::ExtensionError {
+                            oid: extn.extn_id.clone(),
+                            reason: "Certificate extension has incorrect criticality",
+                        })
                     }
                     // If a custom validator is supplied, apply it.
                     _ => validator.map_or(Ok(()), |v| v(policy, cert, extn)),
