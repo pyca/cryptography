@@ -63,7 +63,7 @@ impl Display for ValidationError {
             ValidationError::CandidatesExhausted(inner) => {
                 write!(f, "candidates exhausted: {inner}")
             }
-            ValidationError::Malformed(err) => write!(f, "malformed ASN.1: {err}"),
+            ValidationError::Malformed(err) => err.fmt(f),
             ValidationError::DuplicateExtension(DuplicateExtensionsError(oid)) => {
                 write!(f, "malformed certificate: duplicate extension: {oid}")
             }
@@ -435,5 +435,32 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // We build the chain in reverse order, fix it now.
         chain.reverse();
         Ok(chain)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use asn1::ParseError;
+    use cryptography_x509::{
+        extensions::DuplicateExtensionsError, oid::SUBJECT_ALTERNATIVE_NAME_OID,
+    };
+
+    use crate::ValidationError;
+
+    #[test]
+    fn test_validationerror_display() {
+        let err = ValidationError::Malformed(ParseError::new(asn1::ParseErrorKind::InvalidLength));
+        assert_eq!(err.to_string(), "ASN.1 parsing error: invalid length");
+
+        let err = ValidationError::DuplicateExtension(DuplicateExtensionsError(
+            SUBJECT_ALTERNATIVE_NAME_OID,
+        ));
+        assert_eq!(
+            err.to_string(),
+            "malformed certificate: duplicate extension: 2.5.29.17"
+        );
+
+        let err = ValidationError::FatalError("oops");
+        assert_eq!(err.to_string(), "fatal error: oops");
     }
 }
