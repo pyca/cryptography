@@ -82,7 +82,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
                 }
                 _ if ext.critical => {
                     return Err(ValidationError::ExtensionError {
-                        oid: ext.extn_id.clone(),
+                        oid: ext.extn_id,
                         reason: "certificate contains unaccounted-for critical extensions",
                     });
                 }
