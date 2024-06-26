@@ -3,8 +3,8 @@
 // for complete details.
 
 use crate::types;
-use pyo3::prelude::PyAnyMethods;
 use pyo3::types::IntoPyDict;
+use pyo3::types::PyAnyMethods;
 use std::slice;
 
 pub(crate) struct CffiBuf<'p> {

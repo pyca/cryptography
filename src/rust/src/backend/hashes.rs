@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyModuleMethods};
 use pyo3::IntoPy;
 use std::borrow::Cow;
 
@@ -10,7 +10,7 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
 pub(crate) struct Hash {
     #[pyo3(get)]
     algorithm: pyo3::Py<pyo3::PyAny>,
@@ -140,8 +140,8 @@ impl Hash {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "hashes")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "hashes")?;
     m.add_class::<Hash>()?;
 
     Ok(m)

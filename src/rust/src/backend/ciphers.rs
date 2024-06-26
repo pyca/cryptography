@@ -7,7 +7,7 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use crate::types;
-use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyModuleMethods};
 use pyo3::IntoPy;
 
 struct CipherContext {
@@ -191,7 +191,7 @@ impl CipherContext {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.ciphers",
     name = "CipherContext"
 )]
@@ -199,7 +199,7 @@ struct PyCipherContext {
     ctx: Option<CipherContext>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.ciphers",
     name = "AEADEncryptionContext"
 )]
@@ -211,7 +211,7 @@ struct PyAEADEncryptionContext {
     aad_bytes_remaining: u64,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.ciphers",
     name = "AEADDecryptionContext"
 )]
@@ -226,7 +226,7 @@ fn get_mut_ctx(ctx: Option<&mut CipherContext>) -> pyo3::PyResult<&mut CipherCon
     ctx.ok_or_else(|| exceptions::AlreadyFinalized::new_err("Context was already finalized."))
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl PyCipherContext {
     fn update<'p>(
         &mut self,
@@ -255,7 +255,7 @@ impl PyCipherContext {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl PyAEADEncryptionContext {
     fn update<'p>(
         &mut self,
@@ -342,7 +342,7 @@ impl PyAEADEncryptionContext {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl PyAEADDecryptionContext {
     fn update<'p>(
         &mut self,
@@ -470,7 +470,7 @@ impl PyAEADDecryptionContext {
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn create_encryption_ctx(
     py: pyo3::Python<'_>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
@@ -496,7 +496,7 @@ fn create_encryption_ctx(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn create_decryption_ctx(
     py: pyo3::Python<'_>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
@@ -528,7 +528,7 @@ fn create_decryption_ctx(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn cipher_supported(
     py: pyo3::Python<'_>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
@@ -537,7 +537,7 @@ fn cipher_supported(
     Ok(cipher_registry::get_cipher(py, algorithm, mode.get_type().into_any())?.is_some())
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn _advance(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
     if let Ok(c) = ctx.downcast::<PyAEADEncryptionContext>() {
         c.borrow_mut().bytes_remaining -= n;
@@ -546,7 +546,7 @@ fn _advance(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn _advance_aad(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
     if let Ok(c) = ctx.downcast::<PyAEADEncryptionContext>() {
         c.borrow_mut().aad_bytes_remaining -= n;
@@ -557,8 +557,8 @@ fn _advance_aad(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "ciphers")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "ciphers")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(create_encryption_ctx, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(create_decryption_ctx, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(cipher_supported, &m)?)?;

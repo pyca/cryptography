@@ -8,7 +8,7 @@ use std::hash::{Hash, Hasher};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
 use pyo3::IntoPy;
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
@@ -26,13 +26,13 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateSigningRequest {
     raw: OwnedCsr,
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl CertificateSigningRequest {
     fn __hash__(&self, py: pyo3::Python<'_>) -> u64 {
         let mut hasher = DefaultHasher::new();
@@ -235,7 +235,7 @@ impl CertificateSigningRequest {
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn load_pem_x509_csr(
     py: pyo3::Python<'_>,
@@ -258,7 +258,7 @@ fn load_pem_x509_csr(
     )
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn load_der_x509_csr(
     py: pyo3::Python<'_>,
@@ -285,7 +285,7 @@ fn load_der_x509_csr(
     })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn create_x509_csr(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,

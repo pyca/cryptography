@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::prelude::PyListMethods;
+use pyo3::types::PyListMethods;
 use pyo3::ToPyObject;
 
 use crate::exceptions;
@@ -148,12 +148,12 @@ impl CryptographyError {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type CryptographyResult<T = pyo3::PyObject> = Result<T, CryptographyError>;
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
     Err(openssl::error::ErrorStack::get().into())
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
 pub(crate) struct OpenSSLError {
     e: openssl::error::Error,
 }
@@ -186,7 +186,7 @@ impl OpenSSLError {
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 pub(crate) fn capture_error_stack(
     py: pyo3::Python<'_>,
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyList>> {

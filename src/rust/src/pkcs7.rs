@@ -11,7 +11,7 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::prelude::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
@@ -36,7 +36,7 @@ static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::ne
     h
 });
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
@@ -75,7 +75,7 @@ fn serialize_certificates<'p>(
     encode_der_data(py, "PKCS7".to_string(), content_info_bytes, encoding)
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn sign_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
@@ -355,7 +355,7 @@ fn load_pkcs7_certificates(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn load_pem_pkcs7_certificates<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
@@ -381,7 +381,7 @@ fn load_pem_pkcs7_certificates<'p>(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn load_der_pkcs7_certificates<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
@@ -409,8 +409,8 @@ fn load_der_pkcs7_certificates<'p>(
 
 pub(crate) fn create_submodule(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let submod = pyo3::prelude::PyModule::new_bound(py, "pkcs7")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let submod = pyo3::types::PyModule::new_bound(py, "pkcs7")?;
 
     submod.add_function(pyo3::wrap_pyfunction_bound!(
         serialize_certificates,

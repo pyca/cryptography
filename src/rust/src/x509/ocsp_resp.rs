@@ -10,7 +10,7 @@ use cryptography_x509::{
     ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
     oid,
 };
-use pyo3::prelude::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -19,7 +19,7 @@ use crate::{exceptions, types, x509};
 
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn load_der_ocsp_response(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
@@ -72,7 +72,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
 
@@ -99,7 +99,7 @@ const TRY_LATER_RESPONSE: u32 = 3;
 const SIG_REQUIRED_RESPONSE: u32 = 5;
 const UNAUTHORIZED_RESPONSE: u32 = 6;
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl OCSPResponse {
     #[getter]
     fn responses(&self) -> Result<OCSPResponseIterator, CryptographyError> {
@@ -588,7 +588,7 @@ fn singleresp_py_revocation_time<'p>(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn create_ocsp_response(
     py: pyo3::Python<'_>,
     status: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -788,12 +788,12 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPResponseIterator {
     contents: OwnedOCSPResponseIteratorData,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl OCSPResponseIterator {
     fn __iter__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
@@ -820,7 +820,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 struct OCSPSingleResponse {
     raw: OwnedSingleResponse,
 }
@@ -831,7 +831,7 @@ impl OCSPSingleResponse {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl OCSPSingleResponse {
     #[getter]
     fn serial_number<'p>(
@@ -908,9 +908,7 @@ impl OCSPSingleResponse {
     }
 }
 
-pub(crate) fn add_to_module(
-    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
-) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
     module.add_function(pyo3::wrap_pyfunction_bound!(
         load_der_ocsp_response,
         module

@@ -8,8 +8,8 @@ use crate::asn1::{py_oid_to_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, sct};
 use crate::{types, x509};
-use pyo3::prelude::PyAnyMethods;
 use pyo3::pybacked::PyBackedStr;
+use pyo3::types::PyAnyMethods;
 
 fn encode_general_subtrees<'a>(
     py: pyo3::Python<'_>,
@@ -39,7 +39,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     py: pyo3::Python<'a>,
     py_aki: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
-    #[derive(pyo3::prelude::FromPyObject)]
+    #[derive(pyo3::FromPyObject)]
     struct PyAuthorityKeyIdentifier<'a> {
         key_identifier: Option<pyo3::pybacked::PyBackedBytes>,
         authority_cert_issuer: Option<pyo3::Bound<'a, pyo3::PyAny>>,
@@ -77,7 +77,7 @@ pub(crate) fn encode_distribution_points<'p>(
     py: pyo3::Python<'p>,
     py_dps: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<Vec<u8>> {
-    #[derive(pyo3::prelude::FromPyObject)]
+    #[derive(pyo3::FromPyObject)]
     struct PyDistributionPoint<'a> {
         crl_issuer: Option<pyo3::Bound<'a, pyo3::PyAny>>,
         full_name: Option<pyo3::Bound<'a, pyo3::PyAny>>,
@@ -132,7 +132,7 @@ pub(crate) fn encode_distribution_points<'p>(
 }
 
 fn encode_basic_constraints(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
-    #[derive(pyo3::prelude::FromPyObject)]
+    #[derive(pyo3::FromPyObject)]
     struct PyBasicConstraints {
         ca: bool,
         path_length: Option<u64>,

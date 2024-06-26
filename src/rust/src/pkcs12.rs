@@ -8,12 +8,12 @@ use crate::error::CryptographyResult;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
-use pyo3::prelude::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[pyo3::prelude::pyclass(frozen)]
+#[pyo3::pyclass(frozen)]
 struct PKCS12Certificate {
     #[pyo3(get)]
     certificate: pyo3::Py<Certificate>,
@@ -21,7 +21,7 @@ struct PKCS12Certificate {
     friendly_name: Option<pyo3::Py<pyo3::types::PyBytes>>,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl PKCS12Certificate {
     #[new]
     #[pyo3(signature = (cert, friendly_name=None))]
@@ -256,7 +256,7 @@ enum CertificateOrPKCS12Certificate {
     PKCS12Certificate(pyo3::Py<PKCS12Certificate>),
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
 fn serialize_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
@@ -406,7 +406,7 @@ fn decode_p12(
     Ok(parsed)
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None))]
 fn load_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
@@ -457,7 +457,7 @@ fn load_key_and_certificates<'p>(
     Ok((private_key, cert, additional_certs))
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None))]
 fn load_pkcs12<'p>(
     py: pyo3::Python<'p>,
@@ -516,8 +516,8 @@ fn load_pkcs12<'p>(
 
 pub(crate) fn create_submodule(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let submod = pyo3::prelude::PyModule::new_bound(py, "pkcs12")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let submod = pyo3::types::PyModule::new_bound(py, "pkcs12")?;
 
     submod.add_function(pyo3::wrap_pyfunction_bound!(
         load_key_and_certificates,

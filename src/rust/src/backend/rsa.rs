@@ -9,9 +9,9 @@ use crate::backend::{hashes, utils};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyModuleMethods};
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.rsa",
     name = "RSAPrivateKey"
@@ -20,7 +20,7 @@ pub(crate) struct RsaPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.rsa",
     name = "RSAPublicKey"
@@ -61,7 +61,7 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn generate_private_key(public_exponent: u32, key_size: u32) -> CryptographyResult<RsaPrivateKey> {
     let e = openssl::bn::BigNum::from_u32(public_exponent)?;
     let rsa = openssl::rsa::Rsa::generate_with_e(key_size, &e)?;
@@ -278,7 +278,7 @@ fn setup_signature_ctx(
     Ok(())
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl RsaPrivateKey {
     fn sign<'p>(
         &self,
@@ -417,7 +417,7 @@ impl RsaPrivateKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl RsaPublicKey {
     fn verify(
         &self,
@@ -530,7 +530,7 @@ impl RsaPublicKey {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.primitives.asymmetric.rsa",
     name = "RSAPrivateNumbers"
@@ -552,7 +552,7 @@ struct RsaPrivateNumbers {
     public_numbers: pyo3::Py<RsaPublicNumbers>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.primitives.asymmetric.rsa",
     name = "RSAPublicNumbers"
@@ -650,7 +650,7 @@ fn check_private_key_components(
     Ok(())
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl RsaPrivateNumbers {
     #[new]
     fn new(
@@ -766,7 +766,7 @@ fn check_public_key_components(
     Ok(())
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl RsaPublicNumbers {
     #[new]
     fn new(e: pyo3::Py<pyo3::types::PyLong>, n: pyo3::Py<pyo3::types::PyLong>) -> RsaPublicNumbers {
@@ -816,8 +816,8 @@ impl RsaPublicNumbers {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "rsa")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "rsa")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(generate_private_key, &m)?)?;
 
     m.add_class::<RsaPrivateKey>()?;

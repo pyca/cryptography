@@ -7,8 +7,8 @@ use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
 use pyo3::types::IntoPyDict;
+use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
 use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
@@ -88,7 +88,7 @@ pub(crate) fn encode_name_entry<'p>(
     })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn encode_name_bytes<'p>(
     py: pyo3::Python<'p>,
     py_name: &pyo3::Bound<'p, pyo3::PyAny>,
@@ -457,7 +457,7 @@ pub(crate) fn encode_extensions<
     )))
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
     py_ext: pyo3::Bound<'p, pyo3::PyAny>,
