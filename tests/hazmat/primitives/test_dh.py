@@ -473,6 +473,25 @@ class TestDH:
 
         assert key1 == key2
 
+    def test_old_public_key_exchange(self, backend):
+        vector = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub_v41_0_7.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        public_key = serialization.load_pem_public_key(vector, backend)
+
+        assert isinstance(public_key, dh.DHPublicKey)
+
+        params = public_key.parameters()
+
+        private_key = params.generate_private_key()
+
+        # test that we can do a key exchange with a public key
+        # generated with an older version
+        private_key.exchange(public_key)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dh_supported(),

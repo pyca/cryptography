@@ -12,6 +12,13 @@ use pyo3::prelude::{PyAnyMethods, PyModuleMethods};
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
+#[allow(dead_code)]
+#[derive(Debug, PartialEq)]
+pub(crate) enum AllowDHX {
+    True,
+    False,
+}
+
 #[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
@@ -71,14 +78,17 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[allow(unused_variables)]
 fn pkey_from_dh<T: openssl::pkey::HasParams>(
     dh: openssl::dh::Dh<T>,
+    allow_dhx: AllowDHX,
 ) -> CryptographyResult<openssl::pkey::PKey<T>> {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
             Ok(openssl::pkey::PKey::from_dh(dh)?)
         } else {
-            if dh.prime_q().is_some() {
+            if dh.prime_q().is_some()
+            && allow_dhx == AllowDHX::True {
                 Ok(openssl::pkey::PKey::from_dhx(dh)?)
             } else {
                 Ok(openssl::pkey::PKey::from_dh(dh)?)
@@ -214,7 +224,10 @@ impl DHPrivateKey {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(orig_dh.public_key().to_owned()?)?)?;
+        let pkey = pkey_from_dh(
+            dh.set_public_key(orig_dh.public_key().to_owned()?)?,
+            AllowDHX::False,
+        )?;
 
         Ok(DHPublicKey { pkey })
     }
@@ -322,7 +335,7 @@ impl DHParameters {
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
-            pkey: pkey_from_dh(dh)?,
+            pkey: pkey_from_dh(dh, AllowDHX::False)?,
         })
     }
 
@@ -435,7 +448,7 @@ impl DHPrivateNumbers {
             ));
         }
 
-        let pkey = pkey_from_dh(dh)?;
+        let pkey = pkey_from_dh(dh, AllowDHX::True)?;
         Ok(DHPrivateKey { pkey })
     }
 
@@ -478,7 +491,7 @@ impl DHPublicNumbers {
 
         let pub_key = utils::py_int_to_bn(py, self.y.bind(py))?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(pub_key)?)?;
+        let pkey = pkey_from_dh(dh.set_public_key(pub_key)?, AllowDHX::True)?;
 
         Ok(DHPublicKey { pkey })
     }
