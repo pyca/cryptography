@@ -6,7 +6,7 @@ use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use pyo3::prelude::{PyBytesMethods, PyModuleMethods};
+use pyo3::types::{PyBytesMethods, PyModuleMethods};
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
 struct Poly1305Boring {
@@ -88,7 +88,7 @@ impl Poly1305Open {
     }
 }
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
 struct Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
     inner: Option<Poly1305Boring>,
@@ -167,8 +167,8 @@ impl Poly1305 {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "poly1305")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "poly1305")?;
 
     m.add_class::<Poly1305>()?;
 

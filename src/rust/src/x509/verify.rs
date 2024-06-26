@@ -11,7 +11,7 @@ use cryptography_x509_verification::{
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
 
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};

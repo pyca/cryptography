@@ -5,21 +5,21 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::prelude::{PyAnyMethods, PyDictMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyDictMethods, PyModuleMethods};
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 pub(crate) struct ECPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
     #[pyo3(get)]
     curve: pyo3::Py<pyo3::PyAny>,
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 pub(crate) struct ECPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
     #[pyo3(get)]
@@ -125,7 +125,7 @@ fn check_key_infinity(
     Ok(())
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn curve_supported(py: pyo3::Python<'_>, py_curve: pyo3::Bound<'_, pyo3::PyAny>) -> bool {
     curve_from_py_curve(py, py_curve, false).is_ok()
 }
@@ -154,7 +154,7 @@ pub(crate) fn public_key_from_pkey(
         curve: curve.into(),
     })
 }
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (curve, backend=None))]
 fn generate_private_key(
     py: pyo3::Python<'_>,
@@ -172,7 +172,7 @@ fn generate_private_key(
     })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn derive_private_key(
     py: pyo3::Python<'_>,
     py_private_value: &pyo3::Bound<'_, pyo3::types::PyLong>,
@@ -195,7 +195,7 @@ fn derive_private_key(
     })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn from_public_bytes(
     py: pyo3::Python<'_>,
     py_curve: pyo3::Bound<'_, pyo3::PyAny>,
@@ -215,7 +215,7 @@ fn from_public_bytes(
     })
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl ECPrivateKey {
     #[getter]
     fn key_size<'p>(
@@ -374,7 +374,7 @@ impl ECPrivateKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl ECPublicKey {
     #[getter]
     fn key_size<'p>(
@@ -459,7 +459,7 @@ impl ECPublicKey {
     }
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
 struct EllipticCurvePrivateNumbers {
     #[pyo3(get)]
     private_value: pyo3::Py<pyo3::types::PyLong>,
@@ -467,7 +467,7 @@ struct EllipticCurvePrivateNumbers {
     public_numbers: pyo3::Py<EllipticCurvePublicNumbers>,
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
 struct EllipticCurvePublicNumbers {
     #[pyo3(get)]
     x: pyo3::Py<pyo3::types::PyLong>,
@@ -506,7 +506,7 @@ fn public_key_from_numbers(
     Ok(openssl::ec::EcKey::from_public_key(curve, &point)?)
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl EllipticCurvePrivateNumbers {
     #[new]
     fn new(
@@ -579,7 +579,7 @@ impl EllipticCurvePrivateNumbers {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl EllipticCurvePublicNumbers {
     #[new]
     fn new(
@@ -672,8 +672,8 @@ impl EllipticCurvePublicNumbers {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "ec")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "ec")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(curve_supported, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(generate_private_key, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(derive_private_key, &m)?)?;

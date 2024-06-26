@@ -5,19 +5,19 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
-use pyo3::prelude::PyModuleMethods;
+use pyo3::types::PyModuleMethods;
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
 pub(crate) struct X25519PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
 pub(crate) struct X25519PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<X25519PrivateKey> {
     Ok(X25519PrivateKey {
         pkey: openssl::pkey::PKey::generate_x25519()?,
@@ -40,7 +40,7 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
     let pkey =
         openssl::pkey::PKey::private_key_from_raw_bytes(data.as_bytes(), openssl::pkey::Id::X25519)
@@ -52,7 +52,7 @@ fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
     Ok(X25519PrivateKey { pkey })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
     let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::X25519)
         .map_err(|_| {
@@ -61,7 +61,7 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
     Ok(X25519PublicKey { pkey })
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl X25519PrivateKey {
     fn exchange<'p>(
         &self,
@@ -122,7 +122,7 @@ impl X25519PrivateKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl X25519PublicKey {
     fn public_bytes_raw<'p>(
         &self,
@@ -152,8 +152,8 @@ impl X25519PublicKey {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "x25519")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "x25519")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;

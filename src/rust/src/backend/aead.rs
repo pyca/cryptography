@@ -5,7 +5,7 @@
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -444,7 +444,7 @@ impl EvpAead {
     }
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
 struct ChaCha20Poly1305 {
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
     ctx: EvpAead,
@@ -466,7 +466,7 @@ struct ChaCha20Poly1305 {
     ctx: LazyEvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl ChaCha20Poly1305 {
     #[new]
     fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<Self> {
@@ -579,7 +579,7 @@ impl ChaCha20Poly1305 {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESGCM"
@@ -602,7 +602,7 @@ struct AesGcm {
     ctx: LazyEvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl AesGcm {
     #[new]
     fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
@@ -696,7 +696,7 @@ impl AesGcm {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESCCM"
@@ -705,7 +705,7 @@ struct AesCcm {
     ctx: LazyEvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl AesCcm {
     #[new]
     #[pyo3(signature = (key, tag_length=None))]
@@ -834,7 +834,7 @@ impl AesCcm {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESSIV"
@@ -843,7 +843,7 @@ struct AesSiv {
     ctx: EvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl AesSiv {
     #[new]
     fn new(key: CffiBuf<'_>) -> CryptographyResult<AesSiv> {
@@ -932,7 +932,7 @@ impl AesSiv {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESOCB3"
@@ -941,7 +941,7 @@ struct AesOcb3 {
     ctx: EvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl AesOcb3 {
     #[new]
     fn new(key: CffiBuf<'_>) -> CryptographyResult<AesOcb3> {
@@ -1042,7 +1042,7 @@ impl AesOcb3 {
     }
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESGCMSIV"
@@ -1051,7 +1051,7 @@ struct AesGcmSiv {
     ctx: EvpCipherAead,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl AesGcmSiv {
     #[new]
     fn new(key: CffiBuf<'_>) -> CryptographyResult<AesGcmSiv> {
@@ -1155,8 +1155,8 @@ impl AesGcmSiv {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "aead")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "aead")?;
 
     m.add_class::<AesGcm>()?;
     m.add_class::<ChaCha20Poly1305>()?;

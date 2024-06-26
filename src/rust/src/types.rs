@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::prelude::PyAnyMethods;
+use pyo3::types::PyAnyMethods;
 
 pub struct LazyPyImport {
     module: &'static str,

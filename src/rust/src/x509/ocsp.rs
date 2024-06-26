@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use cryptography_x509::common;
 use cryptography_x509::ocsp_req::CertID;
 use once_cell::sync::Lazy;
-use pyo3::prelude::PyAnyMethods;
+use pyo3::types::PyAnyMethods;
 
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;

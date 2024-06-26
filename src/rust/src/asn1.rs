@@ -6,10 +6,10 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
 use cryptography_x509::name::Name;
-use pyo3::prelude::PyAnyMethods;
-use pyo3::prelude::PyModuleMethods;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::IntoPyDict;
+use pyo3::types::PyAnyMethods;
+use pyo3::types::PyModuleMethods;
 use pyo3::ToPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};
@@ -32,7 +32,7 @@ pub(crate) fn oid_to_py_oid<'p>(
     Ok(pyo3::Bound::new(py, crate::oid::ObjectIdentifier { oid: oid.clone() })?.into_any())
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn parse_spki_for_data<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
@@ -57,7 +57,7 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
     int_type.call_method(pyo3::intern!(py, "from_bytes"), (v, "big"), Some(&kwargs))
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn decode_dss_signature(
     py: pyo3::Python<'_>,
     data: &[u8],
@@ -118,7 +118,7 @@ pub(crate) fn encode_der_data<'p>(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn encode_dss_signature<'p>(
     py: pyo3::Python<'p>,
     r: pyo3::Bound<'_, pyo3::types::PyLong>,
@@ -134,7 +134,7 @@ fn encode_dss_signature<'p>(
     Ok(pyo3::types::PyBytes::new_bound(py, &result))
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 struct TestCertificate {
     #[pyo3(get)]
     not_before_tag: u8,
@@ -164,7 +164,7 @@ fn time_tag(t: &Time) -> u8 {
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyError> {
     let cert = asn1::parse_single::<Certificate<'_>>(data)?;
 
@@ -178,8 +178,8 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyEr
 
 pub(crate) fn create_submodule(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let submod = pyo3::prelude::PyModule::new_bound(py, "asn1")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let submod = pyo3::types::PyModule::new_bound(py, "asn1")?;
     submod.add_function(pyo3::wrap_pyfunction_bound!(parse_spki_for_data, &submod)?)?;
 
     submod.add_function(pyo3::wrap_pyfunction_bound!(decode_dss_signature, &submod)?)?;

@@ -4,11 +4,11 @@
 
 use crate::error::CryptographyResult;
 use crate::types;
-use pyo3::prelude::PyAnyMethods;
+use pyo3::types::PyAnyMethods;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
 pub(crate) struct ObjectIdentifier {
     pub(crate) oid: asn1::ObjectIdentifier,
 }

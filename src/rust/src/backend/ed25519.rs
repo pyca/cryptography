@@ -6,19 +6,19 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use pyo3::prelude::PyModuleMethods;
+use pyo3::types::PyModuleMethods;
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
 pub(crate) struct Ed25519PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
 pub(crate) struct Ed25519PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<Ed25519PrivateKey> {
     Ok(Ed25519PrivateKey {
         pkey: openssl::pkey::PKey::generate_ed25519()?,
@@ -41,7 +41,7 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<Ed25519PrivateKey> {
     let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
         data.as_bytes(),
@@ -53,7 +53,7 @@ fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<Ed25519PrivateKey> {
     Ok(Ed25519PrivateKey { pkey })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<Ed25519PublicKey> {
     let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::ED25519)
         .map_err(|_| {
@@ -62,7 +62,7 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<Ed25519PublicKey> {
     Ok(Ed25519PublicKey { pkey })
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl Ed25519PrivateKey {
     fn sign<'p>(
         &self,
@@ -118,7 +118,7 @@ impl Ed25519PrivateKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl Ed25519PublicKey {
     fn verify(&self, signature: CffiBuf<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
@@ -162,8 +162,8 @@ impl Ed25519PublicKey {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "ed25519")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "ed25519")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
     m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;

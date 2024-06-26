@@ -13,7 +13,7 @@ use cryptography_x509::{
     },
     name, oid,
 };
-use pyo3::prelude::{PyAnyMethods, PyListMethods, PyModuleMethods, PySliceMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods, PySliceMethods};
 use pyo3::ToPyObject;
 
 use crate::asn1::{
@@ -24,7 +24,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, types, x509};
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn load_der_x509_crl(
     py: pyo3::Python<'_>,
@@ -54,7 +54,7 @@ fn load_der_x509_crl(
     })
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
@@ -83,7 +83,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
@@ -113,7 +113,7 @@ impl CertificateRevocationList {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl CertificateRevocationList {
     fn __eq__(&self, other: pyo3::PyRef<'_, CertificateRevocationList>) -> bool {
         self.owned.borrow_dependent() == other.owned.borrow_dependent()
@@ -455,7 +455,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.x509")]
 struct CRLIterator {
     contents: OwnedCRLIteratorData,
 }
@@ -485,7 +485,7 @@ fn try_map_arc_data_mut_crl_iterator<E>(
     })
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl CRLIterator {
     fn __len__(&self) -> usize {
         self.contents
@@ -534,13 +534,13 @@ impl Clone for OwnedRevokedCertificate {
     }
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 struct RevokedCertificate {
     owned: OwnedRevokedCertificate,
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl RevokedCertificate {
     #[getter]
     fn serial_number<'p>(
@@ -642,7 +642,7 @@ pub fn parse_crl_entry_ext<'p>(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn create_x509_crl(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,

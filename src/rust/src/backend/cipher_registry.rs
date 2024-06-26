@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 
 use openssl::cipher::Cipher;
-use pyo3::prelude::PyAnyMethods;
+use pyo3::types::PyAnyMethods;
 
 use crate::error::CryptographyResult;
 use crate::types;

@@ -9,7 +9,7 @@
 use crate::error::CryptographyResult;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
-use pyo3::prelude::PyModuleMethods;
+use pyo3::types::PyModuleMethods;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use std::env;
 
@@ -26,7 +26,7 @@ pub(crate) mod types;
 mod x509;
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-#[pyo3::prelude::pyclass(module = "cryptography.hazmat.bindings._rust")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
     legacy: Option<provider::Provider>,
     _default: provider::Provider,
@@ -34,17 +34,17 @@ struct LoadedProviders {
     fips: Option<provider::Provider>,
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn openssl_version() -> i64 {
     openssl::version::number()
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn openssl_version_text() -> &'static str {
     openssl::version::version()
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn is_fips_enabled() -> bool {
     cryptography_openssl::fips::is_enabled()
 }
@@ -84,14 +84,14 @@ fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
 }
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
     providers.fips = Some(provider::Provider::load(None, "fips")?);
     cryptography_openssl::fips::enable()?;
     Ok(())
 }
 
-#[pyo3::prelude::pymodule]
+#[pyo3::pymodule]
 fn _rust(py: pyo3::Python<'_>, m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction_bound!(
         padding::check_pkcs7_padding,
@@ -109,7 +109,7 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> py
     m.add_submodule(&pkcs12::create_submodule(py)?)?;
     m.add_submodule(&exceptions::create_submodule(py)?)?;
 
-    let x509_mod = pyo3::prelude::PyModule::new_bound(py, "x509")?;
+    let x509_mod = pyo3::types::PyModule::new_bound(py, "x509")?;
     crate::x509::certificate::add_to_module(&x509_mod)?;
     crate::x509::common::add_to_module(&x509_mod)?;
     crate::x509::crl::add_to_module(&x509_mod)?;
@@ -118,14 +118,14 @@ fn _rust(py: pyo3::Python<'_>, m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> py
     crate::x509::verify::add_to_module(&x509_mod)?;
     m.add_submodule(&x509_mod)?;
 
-    let ocsp_mod = pyo3::prelude::PyModule::new_bound(py, "ocsp")?;
+    let ocsp_mod = pyo3::types::PyModule::new_bound(py, "ocsp")?;
     crate::x509::ocsp_req::add_to_module(&ocsp_mod)?;
     crate::x509::ocsp_resp::add_to_module(&ocsp_mod)?;
     m.add_submodule(&ocsp_mod)?;
 
     m.add_submodule(&cryptography_cffi::create_module(py)?)?;
 
-    let openssl_mod = pyo3::prelude::PyModule::new_bound(py, "openssl")?;
+    let openssl_mod = pyo3::types::PyModule::new_bound(py, "openssl")?;
     openssl_mod.add(
         "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
         cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),

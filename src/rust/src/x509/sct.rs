@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::prelude::{PyAnyMethods, PyDictMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods, PyModuleMethods};
 use pyo3::ToPyObject;
 
 use crate::error::CryptographyError;
@@ -128,7 +128,7 @@ impl TryFrom<u8> for SignatureAlgorithm {
     }
 }
 
-#[pyo3::prelude::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,
@@ -141,7 +141,7 @@ pub(crate) struct Sct {
     pub(crate) sct_data: Vec<u8>,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl Sct {
     fn __eq__(&self, other: pyo3::PyRef<'_, Sct>) -> bool {
         self.sct_data == other.sct_data
@@ -259,9 +259,7 @@ pub(crate) fn parse_scts(
     Ok(py_scts.to_object(py))
 }
 
-pub(crate) fn add_to_module(
-    module: &pyo3::Bound<'_, pyo3::prelude::PyModule>,
-) -> pyo3::PyResult<()> {
+pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
     module.add_class::<Sct>()?;
 
     Ok(())

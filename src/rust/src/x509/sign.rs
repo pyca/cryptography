@@ -6,8 +6,8 @@ use std::collections::HashMap;
 
 use cryptography_x509::{common, oid};
 use once_cell::sync::Lazy;
-use pyo3::prelude::PyAnyMethods;
 use pyo3::pybacked::PyBackedBytes;
+use pyo3::types::PyAnyMethods;
 
 use crate::asn1::oid_to_py_oid;
 use crate::error::{CryptographyError, CryptographyResult};

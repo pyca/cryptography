@@ -6,10 +6,10 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use pyo3::prelude::PyAnyMethods;
-use pyo3::prelude::PyModuleMethods;
+use pyo3::types::PyAnyMethods;
+use pyo3::types::PyModuleMethods;
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPrivateKey"
@@ -18,7 +18,7 @@ pub(crate) struct DsaPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAPublicKey"
@@ -27,7 +27,7 @@ pub(crate) struct DsaPublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.dsa",
     name = "DSAParameters"
@@ -52,7 +52,7 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-#[pyo3::prelude::pyfunction]
+#[pyo3::pyfunction]
 fn generate_parameters(key_size: u32) -> CryptographyResult<DsaParameters> {
     let dsa = openssl::dsa::Dsa::generate_params(key_size)?;
     Ok(DsaParameters { dsa })
@@ -64,7 +64,7 @@ fn clone_dsa_params<T: openssl::pkey::HasParams>(
     openssl::dsa::Dsa::from_pqg(d.p().to_owned()?, d.q().to_owned()?, d.g().to_owned()?)
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaPrivateKey {
     fn sign<'p>(
         &self,
@@ -149,7 +149,7 @@ impl DsaPrivateKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaPublicKey {
     fn verify(
         &self,
@@ -222,7 +222,7 @@ impl DsaPublicKey {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaParameters {
     fn generate_private_key(&self) -> CryptographyResult<DsaPrivateKey> {
         let dsa = clone_dsa_params(&self.dsa)?.generate_key()?;
@@ -308,7 +308,7 @@ fn check_dsa_private_numbers(
     Ok(())
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.primitives.asymmetric.dsa",
     name = "DSAPrivateNumbers"
@@ -320,7 +320,7 @@ struct DsaPrivateNumbers {
     public_numbers: pyo3::Py<DsaPublicNumbers>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.primitives.asymmetric.dsa",
     name = "DSAPublicNumbers"
@@ -332,7 +332,7 @@ struct DsaPublicNumbers {
     parameter_numbers: pyo3::Py<DsaParameterNumbers>,
 }
 
-#[pyo3::prelude::pyclass(
+#[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.primitives.asymmetric.dsa",
     name = "DSAParameterNumbers"
@@ -346,7 +346,7 @@ struct DsaParameterNumbers {
     g: pyo3::Py<pyo3::types::PyLong>,
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaPrivateNumbers {
     #[new]
     fn new(
@@ -394,7 +394,7 @@ impl DsaPrivateNumbers {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaPublicNumbers {
     #[new]
     fn new(
@@ -451,7 +451,7 @@ impl DsaPublicNumbers {
     }
 }
 
-#[pyo3::prelude::pymethods]
+#[pyo3::pymethods]
 impl DsaParameterNumbers {
     #[new]
     fn new(
@@ -501,8 +501,8 @@ impl DsaParameterNumbers {
 
 pub(crate) fn create_module(
     py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::prelude::PyModule>> {
-    let m = pyo3::prelude::PyModule::new_bound(py, "dsa")?;
+) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
+    let m = pyo3::types::PyModule::new_bound(py, "dsa")?;
     m.add_function(pyo3::wrap_pyfunction_bound!(generate_parameters, &m)?)?;
 
     m.add_class::<DsaPrivateKey>()?;
