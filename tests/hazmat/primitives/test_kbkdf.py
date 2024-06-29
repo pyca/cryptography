@@ -161,7 +161,7 @@ class TestKBKDFHMAC:
 
     def test_zero_llen(self, backend):
         with pytest.raises(ValueError):
-            kdf = KBKDFHMAC(
+            KBKDFHMAC(
                 hashes.SHA256(),
                 Mode.CounterMode,
                 32,
@@ -173,7 +173,6 @@ class TestKBKDFHMAC:
                 None,
                 backend=backend,
             )
-            kdf.derive(b"input key")
 
     def test_l_type(self, backend):
         with pytest.raises(TypeError):
@@ -633,7 +632,7 @@ class TestKBKDFCMAC:
 
     def test_zero_llen(self, backend):
         with pytest.raises(ValueError):
-            kdf = KBKDFCMAC(
+            KBKDFCMAC(
                 algorithms.AES,
                 Mode.CounterMode,
                 32,
@@ -645,7 +644,6 @@ class TestKBKDFCMAC:
                 None,
                 backend=backend,
             )
-            kdf.derive(b"32 bytes long input key material")
 
     def test_l_type(self, backend):
         with pytest.raises(TypeError):
