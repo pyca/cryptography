@@ -88,7 +88,7 @@ class _KBKDFDeriver:
             raise TypeError("llen must be an integer")
 
         if llen == 0:
-            raise ValueError("llen must be nonzero")
+            raise ValueError("llen must be non-zero")
 
         if label is None:
             label = b""
