@@ -156,3 +156,4 @@ virtualenv==20.26.3
 # The following packages are considered to be unsafe in a requirements file:
 # cffi
 # pycparser
+cffi>=1.17.0rc1
