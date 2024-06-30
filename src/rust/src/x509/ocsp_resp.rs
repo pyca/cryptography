@@ -179,8 +179,24 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to produced_at_utc.",
+                1,
+            )?;
         let resp = self.requires_successful_response()?;
         x509::datetime_to_py(py, resp.tbs_response_data.produced_at.as_datetime())
+    }
+
+    #[getter]
+    fn produced_at_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let resp = self.requires_successful_response()?;
+        x509::datetime_to_py_utc(py, resp.tbs_response_data.produced_at.as_datetime())
     }
 
     #[getter]
@@ -325,9 +341,26 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.",
+                1,
+            )?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_revocation_time(&single_resp, py)
+    }
+
+    #[getter]
+    fn revocation_time_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = single_response(resp)?;
+        singleresp_py_revocation_time_utc(&single_resp, py)
     }
 
     #[getter]
@@ -345,9 +378,26 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to this_update_utc.",
+                1,
+            )?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_this_update(&single_resp, py)
+    }
+
+    #[getter]
+    fn this_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = single_response(resp)?;
+        singleresp_py_this_update_utc(&single_resp, py)
     }
 
     #[getter]
@@ -355,9 +405,26 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.",
+                1,
+            )?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
         singleresp_py_next_update(&single_resp, py)
+    }
+
+    #[getter]
+    fn next_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let resp = self.requires_successful_response()?;
+        let single_resp = single_response(resp)?;
+        singleresp_py_next_update_utc(&single_resp, py)
     }
 
     #[getter]
@@ -549,12 +616,29 @@ fn singleresp_py_this_update<'p>(
     x509::datetime_to_py(py, resp.this_update.as_datetime())
 }
 
+fn singleresp_py_this_update_utc<'p>(
+    resp: &ocsp_resp::SingleResponse<'_>,
+    py: pyo3::Python<'p>,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    x509::datetime_to_py_utc(py, resp.this_update.as_datetime())
+}
+
 fn singleresp_py_next_update<'p>(
     resp: &ocsp_resp::SingleResponse<'_>,
     py: pyo3::Python<'p>,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match &resp.next_update {
         Some(v) => x509::datetime_to_py(py, v.as_datetime()),
+        None => Ok(py.None().into_bound(py)),
+    }
+}
+
+fn singleresp_py_next_update_utc<'p>(
+    resp: &ocsp_resp::SingleResponse<'_>,
+    py: pyo3::Python<'p>,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    match &resp.next_update {
+        Some(v) => x509::datetime_to_py_utc(py, v.as_datetime()),
         None => Ok(py.None().into_bound(py)),
     }
 }
@@ -581,6 +665,20 @@ fn singleresp_py_revocation_time<'p>(
     match &resp.cert_status {
         ocsp_resp::CertStatus::Revoked(revoked_info) => {
             x509::datetime_to_py(py, revoked_info.revocation_time.as_datetime())
+        }
+        ocsp_resp::CertStatus::Good(_) | ocsp_resp::CertStatus::Unknown(_) => {
+            Ok(py.None().into_bound(py))
+        }
+    }
+}
+
+fn singleresp_py_revocation_time_utc<'p>(
+    resp: &ocsp_resp::SingleResponse<'_>,
+    py: pyo3::Python<'p>,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    match &resp.cert_status {
+        ocsp_resp::CertStatus::Revoked(revoked_info) => {
+            x509::datetime_to_py_utc(py, revoked_info.revocation_time.as_datetime())
         }
         ocsp_resp::CertStatus::Good(_) | ocsp_resp::CertStatus::Unknown(_) => {
             Ok(py.None().into_bound(py))
@@ -876,8 +974,24 @@ impl OCSPSingleResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.",
+                1,
+            )?;
         let single_resp = self.single_response();
         singleresp_py_revocation_time(single_resp, py)
+    }
+
+    #[getter]
+    fn revocation_time_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let single_resp = self.single_response();
+        singleresp_py_revocation_time_utc(single_resp, py)
     }
 
     #[getter]
@@ -894,8 +1008,24 @@ impl OCSPSingleResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to this_update_utc.",
+                1,
+            )?;
         let single_resp = self.single_response();
         singleresp_py_this_update(single_resp, py)
+    }
+
+    #[getter]
+    fn this_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let single_resp = self.single_response();
+        singleresp_py_this_update_utc(single_resp, py)
     }
 
     #[getter]
@@ -903,8 +1033,24 @@ impl OCSPSingleResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let warning_cls = types::DEPRECATED_IN_43.get(py)?;
+        pyo3::PyErr::warn_bound(
+                py,
+                &warning_cls,
+                "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.",
+                1,
+            )?;
         let single_resp = self.single_response();
         singleresp_py_next_update(single_resp, py)
+    }
+
+    #[getter]
+    fn next_update_utc<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        let single_resp = self.single_response();
+        singleresp_py_next_update_utc(single_resp, py)
     }
 }
 

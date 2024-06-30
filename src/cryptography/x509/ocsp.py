@@ -188,6 +188,14 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def revocation_time_utc(self) -> datetime.datetime | None:
+        """
+        The date of when the certificate was revoked or None if not
+        revoked. Represented as a non-naive UTC datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def revocation_reason(self) -> x509.ReasonFlags | None:
         """
         The reason the certificate was revoked or None if not specified or
@@ -204,9 +212,26 @@ class OCSPSingleResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def this_update_utc(self) -> datetime.datetime:
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def next_update(self) -> datetime.datetime | None:
         """
         The time when newer information will be available
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        The time when newer information will be available. Represented as a
+        non-naive UTC datetime.
         """
 
     @property
@@ -317,6 +342,14 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def produced_at_utc(self) -> datetime.datetime:
+        """
+        The time the response was produced. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def certificate_status(self) -> OCSPCertStatus:
         """
         The status of the certificate (an element from the OCSPCertStatus enum)
@@ -328,6 +361,14 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         """
         The date of when the certificate was revoked or None if not
         revoked.
+        """
+
+    @property
+    @abc.abstractmethod
+    def revocation_time_utc(self) -> datetime.datetime | None:
+        """
+        The date of when the certificate was revoked or None if not
+        revoked. Represented as a non-naive UTC datetime.
         """
 
     @property
@@ -348,9 +389,26 @@ class OCSPResponse(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def this_update_utc(self) -> datetime.datetime:
+        """
+        The most recent time at which the status being indicated is known by
+        the responder to have been correct. Represented as a non-naive UTC
+        datetime.
+        """
+
+    @property
+    @abc.abstractmethod
     def next_update(self) -> datetime.datetime | None:
         """
         The time when newer information will be available
+        """
+
+    @property
+    @abc.abstractmethod
+    def next_update_utc(self) -> datetime.datetime | None:
+        """
+        The time when newer information will be available. Represented as a
+        non-naive UTC datetime.
         """
 
     @property

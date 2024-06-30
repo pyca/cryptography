@@ -48,6 +48,16 @@ Changelog
   :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
 * Added support for parsing empty DN string in
   :meth:`~cryptography.x509.Name.from_rfc4514_string`.
+* Added the following properties that return timezone-aware ``datetime`` objects:
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.produced_at_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.revocation_time_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.this_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.next_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.revocation_time_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.this_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.next_update_utc`,
+  These are timezone-aware variants of existing properties that return naïve
+  ``datetime`` objects.
 
 .. _v42-0-8:
 
