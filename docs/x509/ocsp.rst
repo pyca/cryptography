@@ -539,7 +539,24 @@ Interfaces
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPResponse.produced_at_utc`.
+
         A naïve datetime representing the time when the response was produced.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
+
+    .. attribute:: produced_at_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the time when the response was produced.
 
         :raises ValueError: If ``response_status`` is not
             :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL`.
@@ -558,12 +575,32 @@ Interfaces
 
         :type: :class:`datetime.datetime` or None
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPResponse.revocation_time_utc`.
+
         A naïve datetime representing the time when the certificate was revoked
         or ``None`` if the certificate has not been revoked.
 
         :raises ValueError: If ``response_status`` is not
             :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
             if multiple SINGLERESPs are present.
+
+    .. attribute:: revocation_time_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime` or None
+
+        A timezone-aware datetime representing the time when the certificate was
+        revoked or ``None`` if the certificate has not been revoked.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
+
 
     .. attribute:: revocation_reason
 
@@ -580,7 +617,26 @@ Interfaces
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPResponse.this_update_utc`.
+
         A naïve datetime representing the most recent time at which the status
+        being indicated is known by the responder to have been correct.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
+
+    .. attribute:: this_update_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the most recent time at which the status
         being indicated is known by the responder to have been correct.
 
         :raises ValueError: If ``response_status`` is not
@@ -591,12 +647,33 @@ Interfaces
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPResponse.next_update_utc`.
+
         A naïve datetime representing the time when newer information will
         be available.
 
         :raises ValueError: If ``response_status`` is not
             :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
             if multiple SINGLERESPs are present.
+
+
+    .. attribute:: next_update_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the time when newer information will
+        be available.
+
+        :raises ValueError: If ``response_status`` is not
+            :class:`~cryptography.x509.ocsp.OCSPResponseStatus.SUCCESSFUL` or
+            if multiple SINGLERESPs are present.
+
 
     .. attribute:: issuer_key_hash
 
@@ -759,7 +836,22 @@ Interfaces
 
         :type: :class:`datetime.datetime` or None
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.revocation_time_utc`.
+
         A naïve datetime representing the time when the certificate was revoked
+        or ``None`` if the certificate has not been revoked.
+
+    .. attribute:: revocation_time_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime` or None
+
+        A timezone-aware datetime representing the time when the certificate was revoked
         or ``None`` if the certificate has not been revoked.
 
     .. attribute:: revocation_reason
@@ -773,14 +865,44 @@ Interfaces
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.this_update_utc`.
+
         A naïve datetime representing the most recent time at which the status
+        being indicated is known by the responder to have been correct.
+
+    .. attribute:: this_update_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the most recent time at which the status
         being indicated is known by the responder to have been correct.
 
     .. attribute:: next_update
 
         :type: :class:`datetime.datetime`
 
+        .. warning::
+
+            This property is deprecated and will be removed in a future
+            version. Please switch to the timezone-aware variant
+            :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.next_update_utc`.
+
         A naïve datetime representing the time when newer information will
+        be available.
+
+    .. attribute:: next_update_utc
+
+        .. versionadded:: 43.0.0
+
+        :type: :class:`datetime.datetime`
+
+        A timezone-aware datetime representing the time when newer information will
         be available.
 
     .. attribute:: issuer_key_hash
