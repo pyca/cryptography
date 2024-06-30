@@ -150,7 +150,6 @@ jobs:
         IMAGE:
           - {IMAGE: "rhel8", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "rhel8-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
-          - {IMAGE: "buster", NOXSESSION: "tests-nocoverage", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bullseye", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "bookworm", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "trixie", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
