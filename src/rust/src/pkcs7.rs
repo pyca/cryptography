@@ -168,9 +168,7 @@ fn encrypt_and_serialize<'p>(
             .extract()?)
     } else {
         // Handles the DER, PEM, and error cases
-        // This uses the "CMS" tag for PEM encoding, matching the behavior of
-        // `openssl-cms` rather than the legacy `openssl-smime`.
-        encode_der_data(py, "CMS".to_string(), ci_bytes, encoding)
+        encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
     }
 }
 
