@@ -57,6 +57,17 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RSA_OID)]
     Rsa(Option<asn1::Null>),
 
+    // Used only in PKCS#7 AlgorithmIdentifiers
+    // https://datatracker.ietf.org/doc/html/rfc3565#section-4.1
+    //
+    // From RFC 3565 section 4.1:
+    // The AlgorithmIdentifier parameters field MUST be present, and the
+    // parameters field MUST contain a AES-IV:
+    //
+    // AES-IV ::= OCTET STRING (SIZE(16))
+    #[defined_by(oid::AES_128_CBC_OID)]
+    AesCbc(&'a [u8]),
+
     // These ECDSA algorithms should have no parameters,
     // but Java 11 (up to at least 11.0.19) encodes them
     // with NULL parameters. The JDK team is looking to

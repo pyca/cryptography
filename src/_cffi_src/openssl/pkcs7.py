@@ -20,6 +20,7 @@ void PKCS7_free(PKCS7 *);
    https://github.com/pyca/cryptography/issues/5433 */
 int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                  BIO *, int);
+int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
 PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
 """
 
@@ -29,6 +30,7 @@ static const long Cryptography_HAS_PKCS7_FUNCS = 0;
 
 int (*PKCS7_verify)(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
                     BIO *, int) = NULL;
+int (*PKCS7_decrypt)(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int) = NULL;
 PKCS7 *(*SMIME_read_PKCS7)(BIO *, BIO **) = NULL;
 #else
 static const long Cryptography_HAS_PKCS7_FUNCS = 1;
