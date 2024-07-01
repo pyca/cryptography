@@ -9,7 +9,6 @@ pub const PKCS7_SIGNED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 
 pub const PKCS7_ENVELOPED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 7, 3);
 pub const PKCS7_ENCRYPTED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 7, 6);
 
-
 #[derive(asn1::Asn1Write)]
 pub struct ContentInfo<'a> {
     pub _content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,

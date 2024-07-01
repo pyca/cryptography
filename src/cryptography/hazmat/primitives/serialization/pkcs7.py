@@ -245,7 +245,7 @@ class PKCS7EnvelopeBuilder:
                 "Must be PEM, DER, or SMIME from the Encoding enum"
             )
 
-        # Only allow options that make sense when signing
+        # Only allow options that make sense for encryption
         if any(
             [
                 opt not in [PKCS7Options.Text, PKCS7Options.Binary]
@@ -253,8 +253,14 @@ class PKCS7EnvelopeBuilder:
             ]
         ):
             raise ValueError(
-                "Only the following options are supported for signing: "
+                "Only the following options are supported for encryption: "
                 "Text, Binary"
+            )
+        elif PKCS7Options.Text in options and PKCS7Options.Binary in options:
+            # OpenSSL accepts both options at the same time, but ignores Text.
+            # We fail defensively to avoid unexpected outputs.
+            raise ValueError(
+                "Cannot use Binary and Text options at the same time"
             )
 
         return rust_pkcs7.encrypt_and_serialize(self, encoding, options)

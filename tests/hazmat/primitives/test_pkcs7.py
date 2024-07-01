@@ -981,28 +981,30 @@ class TestPKCS7EnvelopeBuilder:
             builder.encrypt(serialization.Encoding.Raw, [])
 
     @pytest.mark.parametrize(
-        "invalid_option",
+        "invalid_options",
         [
-            pkcs7.PKCS7Options.NoAttributes,
-            pkcs7.PKCS7Options.NoCapabilities,
-            pkcs7.PKCS7Options.NoCerts,
-            pkcs7.PKCS7Options.DetachedSignature,
+            [pkcs7.PKCS7Options.NoAttributes],
+            [pkcs7.PKCS7Options.NoCapabilities],
+            [pkcs7.PKCS7Options.NoCerts],
+            [pkcs7.PKCS7Options.DetachedSignature],
+            [pkcs7.PKCS7Options.Binary, pkcs7.PKCS7Options.Text],
         ],
     )
-    def test_encrypt_invalid_encryption_options(self, backend, invalid_option):
+    def test_encrypt_invalid_encryption_options(
+        self, backend, invalid_options
+    ):
         cert, _ = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder().set_data(b"test").add_recipient(cert)
         )
         with pytest.raises(ValueError):
-            builder.encrypt(serialization.Encoding.DER, [invalid_option])
+            builder.encrypt(serialization.Encoding.DER, invalid_options)
 
     @pytest.mark.parametrize(
         "options",
         [
             [pkcs7.PKCS7Options.Text],
             [pkcs7.PKCS7Options.Binary],
-            [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.Binary],
         ],
     )
     def test_smime_encrypt_smime_encoding(self, backend, options):
@@ -1041,7 +1043,6 @@ class TestPKCS7EnvelopeBuilder:
         [
             [pkcs7.PKCS7Options.Text],
             [pkcs7.PKCS7Options.Binary],
-            [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.Binary],
         ],
     )
     def test_smime_encrypt_der_encoding(self, backend, options):
