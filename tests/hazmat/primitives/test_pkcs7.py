@@ -153,6 +153,35 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
         backend._consume_errors()
 
 
+def _pkcs7_decrypt(encoding, msg, pkey, cert_recipient, options, backend):
+    msg_bio = backend._bytes_to_bio(msg)
+    if encoding is serialization.Encoding.DER:
+        p7 = backend._lib.d2i_PKCS7_bio(msg_bio.bio, backend._ffi.NULL)
+    elif encoding is serialization.Encoding.PEM:
+        p7 = backend._lib.PEM_read_bio_PKCS7(
+            msg_bio.bio,
+            backend._ffi.NULL,
+            backend._ffi.NULL,
+            backend._ffi.NULL,
+        )
+    else:
+        p7 = backend._lib.SMIME_read_PKCS7(msg_bio.bio, backend._ffi.NULL)
+    backend.openssl_assert(p7 != backend._ffi.NULL)
+    p7 = backend._ffi.gc(p7, backend._lib.PKCS7_free)
+    flags = 0
+    for option in options:
+        if option is pkcs7.PKCS7Options.Text:
+            flags |= backend._lib.PKCS7_TEXT
+
+    ossl_cert = backend._cert2ossl(cert_recipient)
+    ossl_pkey = backend._key2ossl(pkey)
+    out_bio = backend._create_mem_bio_gc()
+    res = backend._lib.PKCS7_decrypt(p7, ossl_pkey, ossl_cert, out_bio, flags)
+    backend.openssl_assert(res == 1)
+
+    return backend._read_mem_bio(out_bio)
+
+
 def _load_cert_key():
     key = load_vectors_from_file(
         os.path.join("x509", "custom", "ca", "ca_key.pem"),
@@ -1009,7 +1038,7 @@ class TestPKCS7EnvelopeBuilder:
     )
     def test_smime_encrypt_smime_encoding(self, backend, options):
         data = b"hello world\n"
-        cert, _ = _load_rsa_cert_key()
+        cert, private_key = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
         )
@@ -1038,6 +1067,22 @@ class TestPKCS7EnvelopeBuilder:
             b"\x20\x43\x41"
         ) in payload
 
+        decrypted_bytes = _pkcs7_decrypt(
+            serialization.Encoding.SMIME,
+            enveloped,
+            private_key,
+            cert,
+            options,
+            backend,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
     @pytest.mark.parametrize(
         "options",
         [
@@ -1047,7 +1092,7 @@ class TestPKCS7EnvelopeBuilder:
     )
     def test_smime_encrypt_der_encoding(self, backend, options):
         data = b"hello world\n"
-        cert, _ = _load_rsa_cert_key()
+        cert, private_key = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
         )
@@ -1065,9 +1110,58 @@ class TestPKCS7EnvelopeBuilder:
             b"\x20\x43\x41"
         ) in enveloped
 
+        decrypted_bytes = _pkcs7_decrypt(
+            serialization.Encoding.DER,
+            enveloped,
+            private_key,
+            cert,
+            options,
+            backend,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_pem_encoding(self, backend, options):
+        data = b"hello world\n"
+        cert, private_key = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.PEM, options)
+        with open("msg.p7m", "wb") as f:
+            f.write(enveloped)
+
+        decrypted_bytes = _pkcs7_decrypt(
+            serialization.Encoding.PEM,
+            enveloped,
+            private_key,
+            cert,
+            options,
+            backend,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
     def test_smime_encrypt_multiple_recipients(self, backend):
         data = b"hello world\n"
-        cert, _ = _load_rsa_cert_key()
+        cert, private_key = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder()
             .set_data(data)

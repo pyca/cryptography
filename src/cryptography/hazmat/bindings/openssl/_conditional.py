@@ -133,6 +133,7 @@ def cryptography_has_ssl_cookie() -> list[str]:
 def cryptography_has_pkcs7_funcs() -> list[str]:
     return [
         "PKCS7_verify",
+        "PKCS7_decrypt",
         "SMIME_read_PKCS7",
     ]
 
