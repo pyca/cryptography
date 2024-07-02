@@ -3,9 +3,7 @@ updates:
   - package-ecosystem: "github-actions"
     directories:
       - "/"
-      - "/.github/actions/cache/"
-      - "/.github/actions/upload-coverage/"
-      - "/.github/actions/fetch-vectors/"
+      - "/.github/actions/*/"
     schedule:
       interval: "daily"
       time: "06:00"
