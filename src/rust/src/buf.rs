@@ -35,6 +35,14 @@ fn _extract_buffer_length<'p>(
 }
 
 impl<'a> CffiBuf<'a> {
+    pub(crate) fn from_bytes(py: pyo3::Python<'a>, buf: &'a [u8]) -> Self {
+        CffiBuf {
+            pyobj: py.None().into_bound(py),
+            _bufobj: py.None().into_bound(py),
+            buf,
+        }
+    }
+
     pub(crate) fn as_bytes(&self) -> &[u8] {
         self.buf
     }

@@ -398,26 +398,7 @@ class Backend:
         if name is not None:
             utils._check_bytes("name", name)
 
-        assert not isinstance(encryption_algorithm, serialization.NoEncryption)
-        if isinstance(
-            encryption_algorithm, serialization.BestAvailableEncryption
-        ):
-            # PKCS12 encryption is hopeless trash and can never be fixed.
-            # OpenSSL 3 supports PBESv2, but Libre and Boring do not, so
-            # we use PBESv1 with 3DES on the older paths.
-            if rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                nid_cert = self._lib.NID_aes_256_cbc
-                nid_key = self._lib.NID_aes_256_cbc
-            else:
-                nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
-                nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
-            # At least we can set this higher than OpenSSL's default
-            pkcs12_iter = 20000
-            mac_iter = 0
-            # MAC algorithm can only be set on OpenSSL 3.0.0+
-            mac_alg = self._ffi.NULL
-            password = encryption_algorithm.password
-        elif (
+        if (
             isinstance(
                 encryption_algorithm, serialization._KeySerializationEncryption
             )

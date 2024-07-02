@@ -167,7 +167,11 @@ def serialize_key_and_certificates(
     if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
-    if isinstance(encryption_algorithm, serialization.NoEncryption):
+    if isinstance(
+        encryption_algorithm, serialization.NoEncryption
+    ) or isinstance(
+        encryption_algorithm, serialization.BestAvailableEncryption
+    ):
         return rust_pkcs12.serialize_key_and_certificates(
             name, key, cert, cas, encryption_algorithm
         )

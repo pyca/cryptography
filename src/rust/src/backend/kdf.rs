@@ -8,7 +8,7 @@ use crate::error::CryptographyResult;
 use pyo3::types::PyModuleMethods;
 
 #[pyo3::pyfunction]
-fn derive_pbkdf2_hmac<'p>(
+pub(crate) fn derive_pbkdf2_hmac<'p>(
     py: pyo3::Python<'p>,
     key_material: CffiBuf<'_>,
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
