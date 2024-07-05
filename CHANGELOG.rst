@@ -63,6 +63,9 @@ Changelog
 * Added :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.reset_nonce`
   for altering the ``nonce`` of a cipher context without initializing a new
   instance. See the docs for additional restrictions.
+* :class:`~cryptography.x509.NameAttribute` now raises an exception when
+  attempting to create a common name whose length is shorter or longer than
+  :rfc:`5280` permits.
 
 .. _v42-0-8:
 
