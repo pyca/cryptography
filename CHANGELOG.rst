@@ -58,6 +58,8 @@ Changelog
   :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.next_update_utc`,
   These are timezone-aware variants of existing properties that return naïve
   ``datetime`` objects.
+* Added
+  :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_private_exponent`
 
 .. _v42-0-8:
 
