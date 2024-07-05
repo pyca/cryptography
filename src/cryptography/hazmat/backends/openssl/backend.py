@@ -5,11 +5,9 @@
 from __future__ import annotations
 
 import collections
-import contextlib
 import typing
 
-from cryptography import utils, x509
-from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography import x509
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
@@ -31,12 +29,6 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,
     Mode,
-)
-from cryptography.hazmat.primitives.serialization.pkcs12 import (
-    PBES,
-    PKCS12Certificate,
-    PKCS12PrivateKeyTypes,
-    _PKCS12CATypes,
 )
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
@@ -126,11 +118,6 @@ class Backend:
         evp_md = self._lib.EVP_get_digestbyname(alg)
         return evp_md
 
-    def _evp_md_non_null_from_algorithm(self, algorithm: hashes.HashAlgorithm):
-        evp_md = self._evp_md_from_algorithm(algorithm)
-        self.openssl_assert(evp_md != self._ffi.NULL)
-        return evp_md
-
     def hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and not isinstance(algorithm, self._fips_hashes):
             return False
@@ -199,17 +186,6 @@ class Backend:
         bio = self._ffi.gc(bio, self._lib.BIO_free)
         return bio
 
-    def _read_mem_bio(self, bio) -> bytes:
-        """
-        Reads a memory BIO. This only works on memory BIOs.
-        """
-        buf = self._ffi.new("char **")
-        buf_len = self._lib.BIO_get_mem_data(bio, buf)
-        self.openssl_assert(buf_len > 0)
-        self.openssl_assert(buf[0] != self._ffi.NULL)
-        bio_data = self._ffi.buffer(buf[0], buf_len)[:]
-        return bio_data
-
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
@@ -273,21 +249,6 @@ class Backend:
         self.openssl_assert(x509 != self._ffi.NULL)
         x509 = self._ffi.gc(x509, self._lib.X509_free)
         return x509
-
-    def _key2ossl(self, key: PKCS12PrivateKeyTypes) -> typing.Any:
-        data = key.private_bytes(
-            serialization.Encoding.DER,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-        mem_bio = self._bytes_to_bio(data)
-
-        evp_pkey = self._lib.d2i_PrivateKey_bio(
-            mem_bio.bio,
-            self._ffi.NULL,
-        )
-        self.openssl_assert(evp_pkey != self._ffi.NULL)
-        return self._ffi.gc(evp_pkey, self._lib.EVP_PKEY_free)
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
         if self._fips_enabled and not isinstance(
@@ -355,175 +316,6 @@ class Backend:
             rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
             and not self._fips_enabled
         )
-
-    def _zero_data(self, data, length: int) -> None:
-        # We clear things this way because at the moment we're not
-        # sure of a better way that can guarantee it overwrites the
-        # memory of a bytearray and doesn't just replace the underlying char *.
-        for i in range(length):
-            data[i] = 0
-
-    @contextlib.contextmanager
-    def _zeroed_null_terminated_buf(self, data):
-        """
-        This method takes bytes, which can be a bytestring or a mutable
-        buffer like a bytearray, and yields a null-terminated version of that
-        data. This is required because PKCS12_parse doesn't take a length with
-        its password char * and ffi.from_buffer doesn't provide null
-        termination. So, to support zeroing the data via bytearray we
-        need to build this ridiculous construct that copies the memory, but
-        zeroes it after use.
-        """
-        if data is None:
-            yield self._ffi.NULL
-        else:
-            data_len = len(data)
-            buf = self._ffi.new("char[]", data_len + 1)
-            self._ffi.memmove(buf, data, data_len)
-            try:
-                yield buf
-            finally:
-                # Cast to a uint8_t * so we can assign by integer
-                self._zero_data(self._ffi.cast("uint8_t *", buf), data_len)
-
-    def serialize_key_and_certificates_to_pkcs12(
-        self,
-        name: bytes | None,
-        key: PKCS12PrivateKeyTypes | None,
-        cert: x509.Certificate | None,
-        cas: list[_PKCS12CATypes] | None,
-        encryption_algorithm: serialization.KeySerializationEncryption,
-    ) -> bytes:
-        password = None
-        if name is not None:
-            utils._check_bytes("name", name)
-
-        if (
-            isinstance(
-                encryption_algorithm, serialization._KeySerializationEncryption
-            )
-            and encryption_algorithm._format
-            is serialization.PrivateFormat.PKCS12
-        ):
-            # Default to OpenSSL's defaults. Behavior will vary based on the
-            # version of OpenSSL cryptography is compiled against.
-            nid_cert = 0
-            nid_key = 0
-            # Use the default iters we use in best available
-            pkcs12_iter = 20000
-            mac_iter = 0
-            password = encryption_algorithm.password
-            keycertalg = encryption_algorithm._key_cert_algorithm
-            if keycertalg is PBES.PBESv1SHA1And3KeyTripleDESCBC:
-                nid_cert = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
-                nid_key = self._lib.NID_pbe_WithSHA1And3_Key_TripleDES_CBC
-            elif keycertalg is PBES.PBESv2SHA256AndAES256CBC:
-                if not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-                    raise UnsupportedAlgorithm(
-                        "PBESv2 is not supported by this version of OpenSSL"
-                    )
-                nid_cert = self._lib.NID_aes_256_cbc
-                nid_key = self._lib.NID_aes_256_cbc
-            else:
-                assert keycertalg is None
-                # We use OpenSSL's defaults
-
-            if encryption_algorithm._hmac_hash is not None:
-                if not self._lib.Cryptography_HAS_PKCS12_SET_MAC:
-                    raise UnsupportedAlgorithm(
-                        "Setting MAC algorithm is not supported by this "
-                        "version of OpenSSL."
-                    )
-                mac_alg = self._evp_md_non_null_from_algorithm(
-                    encryption_algorithm._hmac_hash
-                )
-                self.openssl_assert(mac_alg != self._ffi.NULL)
-            else:
-                mac_alg = self._ffi.NULL
-
-            if encryption_algorithm._kdf_rounds is not None:
-                pkcs12_iter = encryption_algorithm._kdf_rounds
-
-        else:
-            raise ValueError("Unsupported key encryption type")
-
-        if cas is None or len(cas) == 0:
-            sk_x509 = self._ffi.NULL
-        else:
-            sk_x509 = self._lib.sk_X509_new_null()
-            sk_x509 = self._ffi.gc(sk_x509, self._lib.sk_X509_free)
-
-            # This list is to keep the x509 values alive until end of function
-            ossl_cas = []
-            for ca in cas:
-                if isinstance(ca, PKCS12Certificate):
-                    ca_alias = ca.friendly_name
-                    ossl_ca = self._cert2ossl(ca.certificate)
-                    if ca_alias is None:
-                        res = self._lib.X509_alias_set1(
-                            ossl_ca, self._ffi.NULL, -1
-                        )
-                    else:
-                        res = self._lib.X509_alias_set1(
-                            ossl_ca, ca_alias, len(ca_alias)
-                        )
-                    self.openssl_assert(res == 1)
-                else:
-                    ossl_ca = self._cert2ossl(ca)
-                ossl_cas.append(ossl_ca)
-                res = self._lib.sk_X509_push(sk_x509, ossl_ca)
-                backend.openssl_assert(res >= 1)
-
-        with self._zeroed_null_terminated_buf(password) as password_buf:
-            with self._zeroed_null_terminated_buf(name) as name_buf:
-                ossl_cert = self._cert2ossl(cert) if cert else self._ffi.NULL
-                ossl_pkey = (
-                    self._key2ossl(key) if key is not None else self._ffi.NULL
-                )
-
-                p12 = self._lib.PKCS12_create(
-                    password_buf,
-                    name_buf,
-                    ossl_pkey,
-                    ossl_cert,
-                    sk_x509,
-                    nid_key,
-                    nid_cert,
-                    pkcs12_iter,
-                    mac_iter,
-                    0,
-                )
-                if p12 == self._ffi.NULL:
-                    errors = self._consume_errors()
-                    raise ValueError(
-                        (
-                            "Failed to create PKCS12 (does the key match the "
-                            "certificate?)"
-                        ),
-                        errors,
-                    )
-
-            if (
-                self._lib.Cryptography_HAS_PKCS12_SET_MAC
-                and mac_alg != self._ffi.NULL
-            ):
-                self._lib.PKCS12_set_mac(
-                    p12,
-                    password_buf,
-                    -1,
-                    self._ffi.NULL,
-                    0,
-                    mac_iter,
-                    mac_alg,
-                )
-
-        self.openssl_assert(p12 != self._ffi.NULL)
-        p12 = self._ffi.gc(p12, self._lib.PKCS12_free)
-
-        bio = self._create_mem_bio_gc()
-        res = self._lib.i2d_PKCS12_bio(bio, p12)
-        self.openssl_assert(res > 0)
-        return self._read_mem_bio(bio)
 
     def poly1305_supported(self) -> bool:
         if self._fips_enabled:

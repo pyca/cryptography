@@ -4,7 +4,7 @@
 
 use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
-use crate::error::CryptographyResult;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
@@ -80,23 +80,41 @@ impl PKCS12Certificate {
 }
 
 enum EncryptionAlgorithm {
+    PBESv1SHA1And3KeyTripleDESCBC,
     PBESv2SHA256AndAES256CBC,
 }
 
 impl EncryptionAlgorithm {
+    fn salt_length(&self) -> usize {
+        match self {
+            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => 8,
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => 16,
+        }
+    }
+
     fn algorithm_identifier<'a>(
         &self,
+        cipher_kdf_iter: u64,
         salt: &'a [u8],
         iv: &'a [u8],
     ) -> cryptography_x509::common::AlgorithmIdentifier<'a> {
         match self {
+            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => {
+                cryptography_x509::common::AlgorithmIdentifier {
+                    oid: asn1::DefinedByMarker::marker(),
+                    params: cryptography_x509::common::AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(cryptography_x509::common::PBES1Params{
+                        salt: salt[..8].try_into().unwrap(),
+                        iterations: cipher_kdf_iter,
+                    }),
+                }
+            }
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
                 let kdf_algorithm_identifier = cryptography_x509::common::AlgorithmIdentifier {
                     oid: asn1::DefinedByMarker::marker(),
                     params: cryptography_x509::common::AlgorithmParameters::Pbkdf2(
                         cryptography_x509::common::PBKDF2Params {
                             salt,
-                            iteration_count: 20000,
+                            iteration_count: cipher_kdf_iter,
                             key_length: None,
                             prf: Box::new(cryptography_x509::common::AlgorithmIdentifier {
                                 oid: asn1::DefinedByMarker::marker(),
@@ -133,16 +151,65 @@ impl EncryptionAlgorithm {
         &self,
         py: pyo3::Python<'_>,
         password: &[u8],
+        cipher_kdf_iter: u64,
         salt: &[u8],
         iv: &[u8],
         data: &[u8],
     ) -> CryptographyResult<Vec<u8>> {
         match self {
+            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => {
+                let key = pkcs12_kdf(
+                    password,
+                    salt,
+                    KDF_ENCRYPTION_KEY_ID,
+                    cipher_kdf_iter,
+                    24,
+                    openssl::hash::MessageDigest::sha1(),
+                )?;
+                let iv = pkcs12_kdf(
+                    password,
+                    salt,
+                    KDF_IV_ID,
+                    cipher_kdf_iter,
+                    8,
+                    openssl::hash::MessageDigest::sha1(),
+                )?;
+
+                let triple_des = types::TRIPLE_DES
+                    .get(py)?
+                    .call1((pyo3::types::PyBytes::new_bound(py, &key),))?;
+                let cbc = types::CBC
+                    .get(py)?
+                    .call1((pyo3::types::PyBytes::new_bound(py, &iv),))?;
+                let mut cipher =
+                    ciphers::CipherContext::new(py, triple_des, cbc, openssl::symm::Mode::Encrypt)?;
+
+                let mut ciphertext = vec![0; data.len() + 16];
+                let n = cipher.update_into(py, data, &mut ciphertext)?;
+
+                let mut padder = PKCS7PaddingContext::new(64);
+                assert!(padder.update(CffiBuf::from_bytes(py, data))?.is_none());
+                let padding = padder.finalize(py)?;
+
+                let pad_n = cipher.update_into(py, padding.as_bytes(), &mut ciphertext[n..])?;
+                let final_block = cipher.finalize(py)?;
+                assert!(final_block.as_bytes().is_empty());
+                ciphertext.truncate(n + pad_n);
+
+                Ok(ciphertext)
+            }
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
                 let pass_buf = CffiBuf::from_bytes(py, password);
                 let sha256 = types::SHA256.get(py)?.call0()?;
 
-                let key = kdf::derive_pbkdf2_hmac(py, pass_buf, &sha256, salt, 20000, 32)?;
+                let key = kdf::derive_pbkdf2_hmac(
+                    py,
+                    pass_buf,
+                    &sha256,
+                    salt,
+                    cipher_kdf_iter.try_into().unwrap(),
+                    32,
+                )?;
 
                 let aes256 = types::AES256.get(py)?.call1((key,))?;
                 let cbc = types::CBC.get(py)?.call1((iv,))?;
@@ -320,6 +387,7 @@ fn cert_to_bag<'a>(
     })
 }
 
+#[allow(clippy::type_complexity)]
 fn decode_encryption_algorithm<'a>(
     py: pyo3::Python<'a>,
     encryption_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
@@ -327,27 +395,77 @@ fn decode_encryption_algorithm<'a>(
     pyo3::pybacked::PyBackedBytes,
     pyo3::Bound<'a, pyo3::PyAny>,
     u64,
+    u64,
     Option<EncryptionAlgorithm>,
 )> {
     let default_hmac_alg = types::SHA256.get(py)?.call0()?;
     let default_hmac_kdf_iter = 2048;
+    let default_cipher_kdf_iter = 20000;
 
     if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
         Ok((
             pyo3::types::PyBytes::new_bound(py, b"").extract()?,
             default_hmac_alg,
             default_hmac_kdf_iter,
+            default_cipher_kdf_iter,
             None,
         ))
-    } else {
-        assert!(encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?);
+    } else if encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
+        && encryption_algorithm
+            .getattr(pyo3::intern!(py, "_format"))?
+            .is(&types::PRIVATE_FORMAT_PKCS12.get(py)?)
+    {
+        let key_cert_alg =
+            encryption_algorithm.getattr(pyo3::intern!(py, "_key_cert_algorithm"))?;
+        let cipher = if key_cert_alg.is(&types::PBES_PBESV1SHA1AND3KEYTRIPLEDESCBC.get(py)?) {
+            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC
+        } else if key_cert_alg.is(&types::PBES_PBESV2SHA256ANDAES256CBC.get(py)?) {
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
+        } else {
+            assert!(key_cert_alg.is_none());
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
+        };
+
+        let hmac_alg = if let Some(v) = encryption_algorithm
+            .getattr(pyo3::intern!(py, "_hmac_hash"))?
+            .extract()?
+        {
+            v
+        } else {
+            default_hmac_alg
+        };
+
+        let cipher_kdf_iter = if let Some(v) = encryption_algorithm
+            .getattr(pyo3::intern!(py, "_kdf_rounds"))?
+            .extract()?
+        {
+            v
+        } else {
+            default_cipher_kdf_iter
+        };
+
+        Ok((
+            encryption_algorithm
+                .getattr(pyo3::intern!(py, "password"))?
+                .extract()?,
+            hmac_alg,
+            default_hmac_kdf_iter,
+            cipher_kdf_iter,
+            Some(cipher),
+        ))
+    } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)? {
         Ok((
             encryption_algorithm
                 .getattr(pyo3::intern!(py, "password"))?
                 .extract()?,
             default_hmac_alg,
             default_hmac_kdf_iter,
+            default_cipher_kdf_iter,
             Some(EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
+        ))
+    } else {
+        Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Unsupported key encryption type"),
         ))
     }
 }
@@ -368,7 +486,7 @@ fn serialize_key_and_certificates<'p>(
     cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let (password, mac_algorithm, mac_kdf_iter, encryption_algorithm) =
+    let (password, mac_algorithm, mac_kdf_iter, cipher_kdf_iter, encryption_algorithm) =
         decode_encryption_algorithm(py, encryption_algorithm)?;
 
     let mut auth_safe_contents = vec![];
@@ -387,6 +505,20 @@ fn serialize_key_and_certificates<'p>(
         let mut cert_bags = vec![];
 
         if let Some(cert) = cert {
+            if let Some(ref key) = key {
+                if !cert
+                    .public_key(py)?
+                    .into_bound(py)
+                    .eq(key.call_method0(pyo3::intern!(py, "public_key"))?)?
+                {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Certificate public key and provided private key do not match",
+                        ),
+                    ));
+                }
+            }
+
             cert_bags.push(cert_to_bag(cert, name)?);
         }
 
@@ -411,13 +543,20 @@ fn serialize_key_and_certificates<'p>(
         if let Some(e) = &encryption_algorithm {
             cert_salt = types::OS_URANDOM
                 .get(py)?
-                .call1((16,))?
+                .call1((e.salt_length(),))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             cert_iv = types::OS_URANDOM
                 .get(py)?
                 .call1((16,))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            cert_ciphertext = e.encrypt(py, &password, &cert_salt, &cert_iv, &cert_bag_contents)?;
+            cert_ciphertext = e.encrypt(
+                py,
+                &password,
+                cipher_kdf_iter,
+                &cert_salt,
+                &cert_iv,
+                &cert_bag_contents,
+            )?;
 
             auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
                 _content_type: asn1::DefinedByMarker::marker(),
@@ -426,8 +565,11 @@ fn serialize_key_and_certificates<'p>(
                         version: 0,
                         encrypted_content_info: cryptography_x509::pkcs7::EncryptedContentInfo {
                             content_type: cryptography_x509::pkcs7::PKCS7_DATA_OID,
-                            content_encryption_algorithm: e
-                                .algorithm_identifier(&cert_salt, &cert_iv),
+                            content_encryption_algorithm: e.algorithm_identifier(
+                                cipher_kdf_iter,
+                                &cert_salt,
+                                &cert_iv,
+                            ),
                             encrypted_content: Some(&cert_ciphertext),
                         },
                     },
@@ -458,20 +600,31 @@ fn serialize_key_and_certificates<'p>(
         let key_bag = if let Some(e) = encryption_algorithm {
             key_salt = types::OS_URANDOM
                 .get(py)?
-                .call1((16,))?
+                .call1((e.salt_length(),))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             key_iv = types::OS_URANDOM
                 .get(py)?
                 .call1((16,))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            key_ciphertext = e.encrypt(py, &password, &key_salt, &key_iv, &pkcs8_bytes)?;
+            key_ciphertext = e.encrypt(
+                py,
+                &password,
+                cipher_kdf_iter,
+                &key_salt,
+                &key_iv,
+                &pkcs8_bytes,
+            )?;
 
             cryptography_x509::pkcs12::SafeBag {
                 _bag_id: asn1::DefinedByMarker::marker(),
                 bag_value: asn1::Explicit::new(
                     cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
                         cryptography_x509::pkcs12::EncryptedPrivateKeyInfo {
-                            encryption_algorithm: e.algorithm_identifier(&key_salt, &key_iv),
+                            encryption_algorithm: e.algorithm_identifier(
+                                cipher_kdf_iter,
+                                &key_salt,
+                                &key_iv,
+                            ),
                             encrypted_data: &key_ciphertext,
                         },
                     ),
