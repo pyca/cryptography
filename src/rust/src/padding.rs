@@ -76,14 +76,17 @@ pub(crate) struct PKCS7PaddingContext {
 #[pyo3::pymethods]
 impl PKCS7PaddingContext {
     #[new]
-    fn new(block_size: usize) -> PKCS7PaddingContext {
+    pub(crate) fn new(block_size: usize) -> PKCS7PaddingContext {
         PKCS7PaddingContext {
             block_size: block_size / 8,
             length_seen: Some(0),
         }
     }
 
-    fn update<'a>(&mut self, buf: CffiBuf<'a>) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    pub(crate) fn update<'a>(
+        &mut self,
+        buf: CffiBuf<'a>,
+    ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
         match self.length_seen.as_mut() {
             Some(v) => {
                 *v += buf.as_bytes().len();
@@ -95,7 +98,7 @@ impl PKCS7PaddingContext {
         }
     }
 
-    fn finalize<'p>(
+    pub(crate) fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {

@@ -2,9 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::backend::{hashes, hmac, keys};
+use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use crate::padding::PKCS7PaddingContext;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
@@ -75,6 +76,94 @@ impl PKCS12Certificate {
             self.certificate.bind(py).str()?,
             friendly_name_repr
         ))
+    }
+}
+
+enum EncryptionAlgorithm {
+    PBESv2SHA256AndAES256CBC,
+}
+
+impl EncryptionAlgorithm {
+    fn algorithm_identifier<'a>(
+        &self,
+        salt: &'a [u8],
+        iv: &'a [u8],
+    ) -> cryptography_x509::common::AlgorithmIdentifier<'a> {
+        match self {
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
+                let kdf_algorithm_identifier = cryptography_x509::common::AlgorithmIdentifier {
+                    oid: asn1::DefinedByMarker::marker(),
+                    params: cryptography_x509::common::AlgorithmParameters::Pbkdf2(
+                        cryptography_x509::common::PBKDF2Params {
+                            salt,
+                            iteration_count: 20000,
+                            key_length: None,
+                            prf: Box::new(cryptography_x509::common::AlgorithmIdentifier {
+                                oid: asn1::DefinedByMarker::marker(),
+                                params:
+                                    cryptography_x509::common::AlgorithmParameters::HmacWithSha256(
+                                        (),
+                                    ),
+                            }),
+                        },
+                    ),
+                };
+                let encryption_algorithm_identifier =
+                    cryptography_x509::common::AlgorithmIdentifier {
+                        oid: asn1::DefinedByMarker::marker(),
+                        params: cryptography_x509::common::AlgorithmParameters::Aes256Cbc(
+                            iv[..16].try_into().unwrap(),
+                        ),
+                    };
+
+                cryptography_x509::common::AlgorithmIdentifier {
+                    oid: asn1::DefinedByMarker::marker(),
+                    params: cryptography_x509::common::AlgorithmParameters::Pbes2(
+                        cryptography_x509::common::PBES2Params {
+                            key_derivation_func: Box::new(kdf_algorithm_identifier),
+                            encryption_scheme: Box::new(encryption_algorithm_identifier),
+                        },
+                    ),
+                }
+            }
+        }
+    }
+
+    fn encrypt(
+        &self,
+        py: pyo3::Python<'_>,
+        password: &[u8],
+        salt: &[u8],
+        iv: &[u8],
+        data: &[u8],
+    ) -> CryptographyResult<Vec<u8>> {
+        match self {
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
+                let pass_buf = CffiBuf::from_bytes(py, password);
+                let sha256 = types::SHA256.get(py)?.call0()?;
+
+                let key = kdf::derive_pbkdf2_hmac(py, pass_buf, &sha256, salt, 20000, 32)?;
+
+                let aes256 = types::AES256.get(py)?.call1((key,))?;
+                let cbc = types::CBC.get(py)?.call1((iv,))?;
+                let mut cipher =
+                    ciphers::CipherContext::new(py, aes256, cbc, openssl::symm::Mode::Encrypt)?;
+
+                let mut ciphertext = vec![0; data.len() + 32];
+                let n = cipher.update_into(py, data, &mut ciphertext)?;
+
+                let mut padder = PKCS7PaddingContext::new(128);
+                assert!(padder.update(CffiBuf::from_bytes(py, data))?.is_none());
+                let padding = padder.finalize(py)?;
+
+                let pad_n = cipher.update_into(py, padding.as_bytes(), &mut ciphertext[n..])?;
+                let final_block = cipher.finalize(py)?;
+                assert!(final_block.as_bytes().is_empty());
+                ciphertext.truncate(n + pad_n);
+
+                Ok(ciphertext)
+            }
+        }
     }
 }
 
@@ -238,16 +327,29 @@ fn decode_encryption_algorithm<'a>(
     pyo3::pybacked::PyBackedBytes,
     pyo3::Bound<'a, pyo3::PyAny>,
     u64,
+    Option<EncryptionAlgorithm>,
 )> {
     let default_hmac_alg = types::SHA256.get(py)?.call0()?;
     let default_hmac_kdf_iter = 2048;
 
-    assert!(encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)?);
-    Ok((
-        pyo3::types::PyBytes::new_bound(py, b"").extract()?,
-        default_hmac_alg,
-        default_hmac_kdf_iter,
-    ))
+    if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
+        Ok((
+            pyo3::types::PyBytes::new_bound(py, b"").extract()?,
+            default_hmac_alg,
+            default_hmac_kdf_iter,
+            None,
+        ))
+    } else {
+        assert!(encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?);
+        Ok((
+            encryption_algorithm
+                .getattr(pyo3::intern!(py, "password"))?
+                .extract()?,
+            default_hmac_alg,
+            default_hmac_kdf_iter,
+            Some(EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
+        ))
+    }
 }
 
 #[derive(pyo3::FromPyObject)]
@@ -266,11 +368,20 @@ fn serialize_key_and_certificates<'p>(
     cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let (password, mac_algorithm, mac_kdf_iter) =
+    let (password, mac_algorithm, mac_kdf_iter, encryption_algorithm) =
         decode_encryption_algorithm(py, encryption_algorithm)?;
 
     let mut auth_safe_contents = vec![];
-    let (cert_bag_contents, key_bag_contents);
+    let (
+        cert_bag_contents,
+        cert_salt,
+        cert_iv,
+        cert_ciphertext,
+        key_bag_contents,
+        key_salt,
+        key_iv,
+        key_ciphertext,
+    );
     let mut ca_certs = vec![];
     if cert.is_some() || cas.is_some() {
         let mut cert_bags = vec![];
@@ -297,12 +408,39 @@ fn serialize_key_and_certificates<'p>(
         }
 
         cert_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(cert_bags))?;
-        auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
-            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                &cert_bag_contents,
-            ))),
-        });
+        if let Some(e) = &encryption_algorithm {
+            cert_salt = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            cert_iv = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            cert_ciphertext = e.encrypt(py, &password, &cert_salt, &cert_iv, &cert_bag_contents)?;
+
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+                _content_type: asn1::DefinedByMarker::marker(),
+                content: cryptography_x509::pkcs7::Content::EncryptedData(asn1::Explicit::new(
+                    cryptography_x509::pkcs7::EncryptedData {
+                        version: 0,
+                        encrypted_content_info: cryptography_x509::pkcs7::EncryptedContentInfo {
+                            content_type: cryptography_x509::pkcs7::PKCS7_DATA_OID,
+                            content_encryption_algorithm: e
+                                .algorithm_identifier(&cert_salt, &cert_iv),
+                            encrypted_content: Some(&cert_ciphertext),
+                        },
+                    },
+                )),
+            })
+        } else {
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+                _content_type: asn1::DefinedByMarker::marker(),
+                content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
+                    &cert_bag_contents,
+                ))),
+            });
+        }
     }
 
     if let Some(key) = key {
@@ -316,12 +454,40 @@ fn serialize_key_and_certificates<'p>(
                 (der, pkcs8, no_encryption),
             )?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
-        let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
 
-        let key_bag = cryptography_x509::pkcs12::SafeBag {
-            _bag_id: asn1::DefinedByMarker::marker(),
-            bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(pkcs8_tlv)),
-            attributes: friendly_name_attributes(name)?,
+        let key_bag = if let Some(e) = encryption_algorithm {
+            key_salt = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            key_iv = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            key_ciphertext = e.encrypt(py, &password, &key_salt, &key_iv, &pkcs8_bytes)?;
+
+            cryptography_x509::pkcs12::SafeBag {
+                _bag_id: asn1::DefinedByMarker::marker(),
+                bag_value: asn1::Explicit::new(
+                    cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
+                        cryptography_x509::pkcs12::EncryptedPrivateKeyInfo {
+                            encryption_algorithm: e.algorithm_identifier(&key_salt, &key_iv),
+                            encrypted_data: &key_ciphertext,
+                        },
+                    ),
+                ),
+                attributes: friendly_name_attributes(name)?,
+            }
+        } else {
+            let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
+
+            cryptography_x509::pkcs12::SafeBag {
+                _bag_id: asn1::DefinedByMarker::marker(),
+                bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(
+                    pkcs8_tlv,
+                )),
+                attributes: friendly_name_attributes(name)?,
+            }
         };
 
         key_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new([key_bag]))?;
