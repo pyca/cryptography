@@ -5809,13 +5809,20 @@ class TestNameAttribute:
                 None,  # type:ignore[arg-type]
             )
 
-    def test_init_bad_country_code_value(self):
+    def test_init_bad_length(self):
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.COUNTRY_NAME, "United States")
 
         # unicode string of length 2, but > 2 bytes
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.COUNTRY_NAME, "\U0001f37a\U0001f37a")
+
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, "Too Long")
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.COMMON_NAME, "Too Long" * 10)
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.COMMON_NAME, "")
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):
