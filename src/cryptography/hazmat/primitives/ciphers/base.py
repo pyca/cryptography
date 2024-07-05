@@ -33,6 +33,14 @@ class CipherContext(metaclass=abc.ABCMeta):
         Returns the results of processing the final block as bytes.
         """
 
+    @abc.abstractmethod
+    def reset_nonce(self, nonce: bytes) -> None:
+        """
+        Resets the nonce for the cipher context to the provided value.
+        Raises an exception if it does not support reset or if the
+        provided nonce does not have a valid length.
+        """
+
 
 class AEADCipherContext(CipherContext, metaclass=abc.ABCMeta):
     @abc.abstractmethod

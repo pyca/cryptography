@@ -60,6 +60,9 @@ Changelog
   ``datetime`` objects.
 * Added
   :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_private_exponent`
+* Added :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.reset_nonce`
+  for altering the ``nonce`` of a cipher context without initializing a new
+  instance. See the docs for additional restrictions.
 
 .. _v42-0-8:
 
