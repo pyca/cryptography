@@ -96,13 +96,22 @@ class TestChaCha20:
         data = b"helloworld" * 10
         key = b"\x00" * 32
         nonce = b"\x00" * 16
+        nonce_alt = b"\xee" * 16
         cipher = Cipher(algorithms.ChaCha20(key, nonce), None)
+        cipher_alt = Cipher(algorithms.ChaCha20(key, nonce_alt), None)
         enc = cipher.encryptor()
         ct1 = enc.update(data)
         assert len(ct1) == len(data)
         for _ in range(2):
             enc.reset_nonce(nonce)
             assert enc.update(data) == ct1
+        # Reset the nonce to a different value
+        # and check it matches with a different context
+        enc_alt = cipher_alt.encryptor()
+        ct2 = enc_alt.update(data)
+        enc.reset_nonce(nonce_alt)
+        assert enc.update(data) == ct2
+        enc_alt.finalize()
         enc.finalize()
         with pytest.raises(AlreadyFinalized):
             enc.reset_nonce(nonce)
@@ -111,6 +120,12 @@ class TestChaCha20:
         for _ in range(2):
             dec.reset_nonce(nonce)
             assert dec.update(ct1) == data
+        # Reset the nonce to a different value
+        # and check it matches with a different context
+        dec_alt = cipher_alt.decryptor()
+        dec.reset_nonce(nonce_alt)
+        assert dec.update(ct2) == dec_alt.update(ct2)
+        dec_alt.finalize()
         dec.finalize()
         with pytest.raises(AlreadyFinalized):
             dec.reset_nonce(nonce)

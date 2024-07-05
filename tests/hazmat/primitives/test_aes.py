@@ -311,24 +311,42 @@ def test_alternate_aes_classes(mode, alg_cls, backend):
 def test_reset_nonce(backend):
     data = b"helloworld" * 10
     nonce = b"\x00" * 16
-    c = base.Cipher(
+    nonce_alt = b"\xee" * 16
+    cipher = base.Cipher(
         algorithms.AES(b"\x00" * 16),
         modes.CTR(nonce),
     )
-    enc = c.encryptor()
+    cipher_alt = base.Cipher(
+        algorithms.AES(b"\x00" * 16),
+        modes.CTR(nonce_alt),
+    )
+    enc = cipher.encryptor()
     ct1 = enc.update(data)
     assert len(ct1) == len(data)
     for _ in range(2):
         enc.reset_nonce(nonce)
         assert enc.update(data) == ct1
+    # Reset the nonce to a different value
+    # and check it matches with a different context
+    enc_alt = cipher_alt.encryptor()
+    ct2 = enc_alt.update(data)
+    enc.reset_nonce(nonce_alt)
+    assert enc.update(data) == ct2
+    enc_alt.finalize()
     enc.finalize()
     with pytest.raises(AlreadyFinalized):
         enc.reset_nonce(nonce)
-    dec = c.decryptor()
+    dec = cipher.decryptor()
     assert dec.update(ct1) == data
     for _ in range(2):
         dec.reset_nonce(nonce)
         assert dec.update(ct1) == data
+    # Reset the nonce to a different value
+    # and check it matches with a different context
+    dec_alt = cipher_alt.decryptor()
+    dec.reset_nonce(nonce_alt)
+    assert dec.update(ct2) == dec_alt.update(ct2)
+    dec_alt.finalize()
     dec.finalize()
     with pytest.raises(AlreadyFinalized):
         dec.reset_nonce(nonce)
