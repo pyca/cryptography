@@ -295,6 +295,7 @@ impl PyClientVerifier {
         let leaf_san = &chain[0]
             .certificate()
             .extensions()
+            .ok()
             .unwrap()
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
             .unwrap();
