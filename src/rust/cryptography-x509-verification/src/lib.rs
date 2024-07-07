@@ -36,7 +36,6 @@ use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 pub enum ValidationError {
     CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
-    DuplicateExtension(DuplicateExtensionsError),
     ExtensionError {
         oid: ObjectIdentifier,
         reason: &'static str,
@@ -53,7 +52,10 @@ impl From<asn1::ParseError> for ValidationError {
 
 impl From<DuplicateExtensionsError> for ValidationError {
     fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
+        Self::ExtensionError {
+            oid: value.0,
+            reason: "duplicate extension",
+        }
     }
 }
 
@@ -64,9 +66,6 @@ impl Display for ValidationError {
                 write!(f, "candidates exhausted: {inner}")
             }
             ValidationError::Malformed(err) => err.fmt(f),
-            ValidationError::DuplicateExtension(DuplicateExtensionsError(oid)) => {
-                write!(f, "malformed certificate: duplicate extension: {oid}")
-            }
             ValidationError::ExtensionError { oid, reason } => {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
@@ -441,9 +440,7 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 #[cfg(test)]
 mod tests {
     use asn1::ParseError;
-    use cryptography_x509::{
-        extensions::DuplicateExtensionsError, oid::SUBJECT_ALTERNATIVE_NAME_OID,
-    };
+    use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 
     use crate::ValidationError;
 
@@ -452,12 +449,13 @@ mod tests {
         let err = ValidationError::Malformed(ParseError::new(asn1::ParseErrorKind::InvalidLength));
         assert_eq!(err.to_string(), "ASN.1 parsing error: invalid length");
 
-        let err = ValidationError::DuplicateExtension(DuplicateExtensionsError(
-            SUBJECT_ALTERNATIVE_NAME_OID,
-        ));
+        let err = ValidationError::ExtensionError {
+            oid: SUBJECT_ALTERNATIVE_NAME_OID,
+            reason: "duplicate extension",
+        };
         assert_eq!(
             err.to_string(),
-            "malformed certificate: duplicate extension: 2.5.29.17"
+            "invalid extension: 2.5.29.17: duplicate extension"
         );
 
         let err = ValidationError::FatalError("oops");
