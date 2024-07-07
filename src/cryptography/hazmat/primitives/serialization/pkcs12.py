@@ -139,22 +139,6 @@ def serialize_key_and_certificates(
             "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
             " private key, or None."
         )
-    if cert is not None and not isinstance(cert, x509.Certificate):
-        raise TypeError("cert must be a certificate or None")
-
-    if cas is not None:
-        cas = list(cas)
-        if not all(
-            isinstance(
-                val,
-                (
-                    x509.Certificate,
-                    PKCS12Certificate,
-                ),
-            )
-            for val in cas
-        ):
-            raise TypeError("all values in cas must be certificates")
 
     if not isinstance(
         encryption_algorithm, serialization.KeySerializationEncryption

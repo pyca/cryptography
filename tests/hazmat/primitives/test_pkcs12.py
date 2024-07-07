@@ -470,7 +470,7 @@ class TestPKCS12Creation:
         )
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, key, None, encryption)
-        assert str(exc.value) == "cert must be a certificate or None"
+        assert "object cannot be converted to 'Certificate'" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, cert, None, key)
@@ -484,7 +484,9 @@ class TestPKCS12Creation:
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(None, key, cert, [key], encryption)
-        assert str(exc.value) == "all values in cas must be certificates"
+        assert "failed to extract enum CertificateOrPKCS12Certificate" in str(
+            exc.value
+        )
 
     def test_generate_no_cert(self, backend):
         _, key = _load_ca(backend)
