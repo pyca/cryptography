@@ -36,7 +36,6 @@ use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 pub enum ValidationError {
     CandidatesExhausted(Box<ValidationError>),
     Malformed(asn1::ParseError),
-    DuplicateExtension(DuplicateExtensionsError),
     ExtensionError {
         oid: ObjectIdentifier,
         reason: &'static str,
@@ -53,7 +52,10 @@ impl From<asn1::ParseError> for ValidationError {
 
 impl From<DuplicateExtensionsError> for ValidationError {
     fn from(value: DuplicateExtensionsError) -> Self {
-        Self::DuplicateExtension(value)
+        Self::ExtensionError {
+            oid: value.0,
+            reason: "duplicate extension",
+        }
     }
 }
 
@@ -64,9 +66,6 @@ impl Display for ValidationError {
                 write!(f, "candidates exhausted: {inner}")
             }
             ValidationError::Malformed(err) => err.fmt(f),
-            ValidationError::DuplicateExtension(DuplicateExtensionsError(oid)) => {
-                write!(f, "malformed certificate: duplicate extension: {oid}")
-            }
             ValidationError::ExtensionError { oid, reason } => {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
