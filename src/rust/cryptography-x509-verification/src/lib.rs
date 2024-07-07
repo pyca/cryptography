@@ -436,3 +436,29 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         Ok(chain)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use asn1::ParseError;
+    use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
+
+    use crate::ValidationError;
+
+    #[test]
+    fn test_validationerror_display() {
+        let err = ValidationError::Malformed(ParseError::new(asn1::ParseErrorKind::InvalidLength));
+        assert_eq!(err.to_string(), "ASN.1 parsing error: invalid length");
+
+        let err = ValidationError::ExtensionError {
+            oid: SUBJECT_ALTERNATIVE_NAME_OID,
+            reason: "duplicate extension",
+        };
+        assert_eq!(
+            err.to_string(),
+            "invalid extension: 2.5.29.17: duplicate extension"
+        );
+
+        let err = ValidationError::FatalError("oops");
+        assert_eq!(err.to_string(), "fatal error: oops");
+    }
+}

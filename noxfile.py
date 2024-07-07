@@ -265,6 +265,7 @@ def local(session):
         *test_dependencies,
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
+        "-e",
         "./vectors/",
         verbose=False,
     )
