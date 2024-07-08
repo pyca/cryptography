@@ -25,6 +25,9 @@ pub(crate) struct DHPublicKey {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 struct DHParameters {
     dh: openssl::dh::Dh<openssl::pkey::Params>,
+
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    is_dhx: bool,
 }
 
 #[pyo3::pyfunction]
@@ -51,7 +54,11 @@ fn generate_parameters(
 
     let dh = openssl::dh::Dh::generate_params(key_size, generator)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Unable to generate DH parameters"))?;
-    Ok(DHParameters { dh })
+    Ok(DHParameters {
+        dh,
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        is_dhx: false,
+    })
 }
 
 pub(crate) fn private_key_from_pkey(
@@ -73,16 +80,30 @@ pub(crate) fn public_key_from_pkey(
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 fn pkey_from_dh<T: openssl::pkey::HasParams>(
     dh: openssl::dh::Dh<T>,
+    is_dhx: bool,
 ) -> CryptographyResult<openssl::pkey::PKey<T>> {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
+            let _ = is_dhx;
             Ok(openssl::pkey::PKey::from_dh(dh)?)
         } else {
-            if dh.prime_q().is_some() {
+            if is_dhx {
                 Ok(openssl::pkey::PKey::from_dhx(dh)?)
             } else {
                 Ok(openssl::pkey::PKey::from_dh(dh)?)
             }
+        }
+    }
+}
+
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+fn is_dhx(id: openssl::pkey::Id) -> bool {
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
+            let _ = id;
+            false
+        } else {
+            id == openssl::pkey::Id::DHX
         }
     }
 }
@@ -105,6 +126,8 @@ fn from_der_parameters(
 
     Ok(DHParameters {
         dh: openssl::dh::Dh::from_pqg(p, q, g)?,
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        is_dhx: asn1_params.q.is_some(),
     })
 }
 
@@ -214,7 +237,10 @@ impl DHPrivateKey {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(orig_dh.public_key().to_owned()?)?)?;
+        let pkey = pkey_from_dh(
+            dh.set_public_key(orig_dh.public_key().to_owned()?)?,
+            is_dhx(self.pkey.id()),
+        )?;
 
         Ok(DHPublicKey { pkey })
     }
@@ -222,6 +248,8 @@ impl DHPrivateKey {
     fn parameters(&self) -> CryptographyResult<DHParameters> {
         Ok(DHParameters {
             dh: clone_dh(&self.pkey.dh().unwrap())?,
+            #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+            is_dhx: is_dhx(self.pkey.id()),
         })
     }
 
@@ -280,6 +308,9 @@ impl DHPublicKey {
     fn parameters(&self) -> CryptographyResult<DHParameters> {
         Ok(DHParameters {
             dh: clone_dh(&self.pkey.dh().unwrap())?,
+
+            #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+            is_dhx: is_dhx(self.pkey.id()),
         })
     }
 
@@ -322,7 +353,7 @@ impl DHParameters {
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
-            pkey: pkey_from_dh(dh)?,
+            pkey: pkey_from_dh(dh, self.is_dhx)?,
         })
     }
 
@@ -421,9 +452,11 @@ impl DHPrivateNumbers {
     ) -> CryptographyResult<DHPrivateKey> {
         let _ = backend;
 
-        let dh = dh_parameters_from_numbers(py, self.public_numbers.get().parameter_numbers.get())?;
+        let public_numbers = self.public_numbers.get();
+        let parameter_numbers = public_numbers.parameter_numbers.get();
+        let dh = dh_parameters_from_numbers(py, parameter_numbers)?;
 
-        let pub_key = utils::py_int_to_bn(py, self.public_numbers.get().y.bind(py))?;
+        let pub_key = utils::py_int_to_bn(py, public_numbers.y.bind(py))?;
         let priv_key = utils::py_int_to_bn(py, self.x.bind(py))?;
 
         let dh = dh.set_key(pub_key, priv_key)?;
@@ -435,7 +468,7 @@ impl DHPrivateNumbers {
             ));
         }
 
-        let pkey = pkey_from_dh(dh)?;
+        let pkey = pkey_from_dh(dh, parameter_numbers.q.is_some())?;
         Ok(DHPrivateKey { pkey })
     }
 
@@ -474,11 +507,12 @@ impl DHPublicNumbers {
     ) -> CryptographyResult<DHPublicKey> {
         let _ = backend;
 
-        let dh = dh_parameters_from_numbers(py, self.parameter_numbers.get())?;
+        let parameter_numbers = self.parameter_numbers.get();
+        let dh = dh_parameters_from_numbers(py, parameter_numbers)?;
 
         let pub_key = utils::py_int_to_bn(py, self.y.bind(py))?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(pub_key)?)?;
+        let pkey = pkey_from_dh(dh.set_public_key(pub_key)?, parameter_numbers.q.is_some())?;
 
         Ok(DHPublicKey { pkey })
     }
@@ -535,7 +569,11 @@ impl DHParameterNumbers {
         let _ = backend;
 
         let dh = dh_parameters_from_numbers(py, self)?;
-        Ok(DHParameters { dh })
+        Ok(DHParameters {
+            dh,
+            #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+            is_dhx: self.q.is_some(),
+        })
     }
 
     fn __eq__(
