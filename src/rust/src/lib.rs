@@ -100,6 +100,8 @@ mod _rust {
     use crate::oid::ObjectIdentifier;
     #[pymodule_export]
     use crate::padding::{check_ansix923_padding, check_pkcs7_padding, PKCS7PaddingContext};
+    #[pymodule_export]
+    use crate::pkcs12::pkcs12;
 
     #[pyo3::pymodule]
     mod x509 {
@@ -178,7 +180,6 @@ mod _rust {
     fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
         m.add_submodule(&crate::asn1::create_submodule(m.py())?)?;
         m.add_submodule(&crate::pkcs7::create_submodule(m.py())?)?;
-        m.add_submodule(&crate::pkcs12::create_submodule(m.py())?)?;
 
         m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
 

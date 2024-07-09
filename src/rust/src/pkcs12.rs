@@ -9,7 +9,7 @@ use crate::padding::PKCS7PaddingContext;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::IntoPy;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -833,24 +833,12 @@ fn load_pkcs12<'p>(
         .call1((private_key, cert, additional_certs))?)
 }
 
-pub(crate) fn create_submodule(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let submod = pyo3::types::PyModule::new_bound(py, "pkcs12")?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        load_key_and_certificates,
-        &submod
-    )?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(load_pkcs12, &submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        serialize_key_and_certificates,
-        &submod
-    )?)?;
-
-    submod.add_class::<PKCS12Certificate>()?;
-
-    Ok(submod)
+#[pyo3::pymodule]
+pub(crate) mod pkcs12 {
+    #[pymodule_export]
+    use super::{
+        load_key_and_certificates, load_pkcs12, serialize_key_and_certificates, PKCS12Certificate,
+    };
 }
 
 #[cfg(test)]
