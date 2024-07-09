@@ -798,17 +798,29 @@ class TestRSASSHSerialization:
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
 
-    def test_load_ssh_public_key_rsa(self, backend):
-        ssh_key = (
+    @pytest.mark.parametrize(
+        "ssh_key",
+        [
+            # standard representation ('ssh-rsa' as key type)
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
             b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
             b"PDA7ZRBnrfiHpSQYQ874AZaAoIjgkv7DBfsE6gcDQLub0PFjWyrYQUJhtOLQEK"
             b"vY/G0vt2iRL3juawWmCFdTK3W3XvwAdgGk71i6lHt+deOPNEPN2H58E4odrZ2f"
             b"sxn/adpDqfb2sM0kPwQs0aWvrrKGvUaustkivQE4XWiSFnB0oJB/lKK/CKVKuy"
             b"///ImSCGHQRvhwariN2tvZ6CBNSLh3iQgeB0AkyJlng7MXB2qYq/Ci2FUOryCX"
-            b"2MzHvnbv testkey@localhost"
-        )
-
+            b"2MzHvnbv testkey@localhost",
+            # same key with 'rsa-sha2-256' as key type (nonstandard,
+            # contradicts RFC 8332)
+            b"rsa-sha2-256 AAAADHJzYS1zaGEyLTI1NgAAAAMBAAEAAAEBAMO79dE/WTIro"
+            b"KC3fqC2z1cCQWKK4ktbpFTSPcopVlKzUjtndSZT3/1pWH+tlXjdZAbyNpHqSRw"
+            b"/iy05HQMS2WU8MDtlEGet+IelJBhDzvgBloCgiOCS/sMF+wTqBwNAu5vQ8WNbK"
+            b"thBQmG04tAQq9j8bS+3aJEveO5rBaYIV1Mrdbde/AB2AaTvWLqUe3514480Q83"
+            b"YfnwTih2tnZ+zGf9p2kOp9vawzSQ/BCzRpa+usoa9Rq6y2SK9AThdaJIWcHSgk"
+            b"H+Uor8IpUq7L//8iZIIYdBG+HBquI3a29noIE1IuHeJCB4HQCTImWeDsxcHapi"
+            b"r8KLYVQ6vIJfYzMe+du8= testkey@localhost",
+        ],
+    )
+    def test_load_ssh_public_key_rsa(self, ssh_key, backend):
         key = load_ssh_public_key(ssh_key, backend)
 
         assert key is not None

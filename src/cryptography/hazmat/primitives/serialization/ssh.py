@@ -68,8 +68,10 @@ _CERT_SUFFIX = b"-cert-v01@openssh.com"
 _SK_SSH_ED25519 = b"sk-ssh-ed25519@openssh.com"
 _SK_SSH_ECDSA_NISTP256 = b"sk-ecdsa-sha2-nistp256@openssh.com"
 
-# These are not key types, only algorithms, so they cannot appear
-# as a public key type
+# These are not key types, only algorithms, so they are not
+# supposed to appear as public key types
+# (per https://datatracker.ietf.org/doc/html/rfc8332#section-3)
+# Some implementations nevertheless use them as public key types.
 _SSH_RSA_SHA256 = b"rsa-sha2-256"
 _SSH_RSA_SHA512 = b"rsa-sha2-512"
 
@@ -634,6 +636,8 @@ class _SSHFormatSKECDSA:
 
 _KEY_FORMATS = {
     _SSH_RSA: _SSHFormatRSA(),
+    _SSH_RSA_SHA256: _SSHFormatRSA(),  # non-standard
+    _SSH_RSA_SHA512: _SSHFormatRSA(),  # non-standard
     _SSH_DSA: _SSHFormatDSA(),
     _SSH_ED25519: _SSHFormatEd25519(),
     _ECDSA_NISTP256: _SSHFormatECDSA(b"nistp256", ec.SECP256R1()),
