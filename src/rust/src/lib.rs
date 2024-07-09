@@ -95,6 +95,8 @@ mod _rust {
     use pyo3::types::PyModuleMethods;
 
     #[pymodule_export]
+    use crate::exceptions::exceptions;
+    #[pymodule_export]
     use crate::oid::ObjectIdentifier;
     #[pymodule_export]
     use crate::padding::{check_ansix923_padding, check_pkcs7_padding, PKCS7PaddingContext};
@@ -177,7 +179,6 @@ mod _rust {
         m.add_submodule(&crate::asn1::create_submodule(m.py())?)?;
         m.add_submodule(&crate::pkcs7::create_submodule(m.py())?)?;
         m.add_submodule(&crate::pkcs12::create_submodule(m.py())?)?;
-        m.add_submodule(&crate::exceptions::create_submodule(m.py())?)?;
 
         m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
 

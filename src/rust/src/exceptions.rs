@@ -2,8 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::PyModuleMethods;
-
 #[pyo3::pyclass(
     frozen,
     eq,
@@ -39,12 +37,8 @@ pyo3::import_exception_bound!(cryptography.x509, DuplicateExtension);
 pyo3::import_exception_bound!(cryptography.x509, UnsupportedGeneralNameType);
 pyo3::import_exception_bound!(cryptography.x509, InvalidVersion);
 
-pub(crate) fn create_submodule(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let submod = pyo3::types::PyModule::new_bound(py, "exceptions")?;
-
-    submod.add_class::<Reasons>()?;
-
-    Ok(submod)
+#[pyo3::pymodule]
+pub(crate) mod exceptions {
+    #[pymodule_export]
+    use super::Reasons;
 }
