@@ -10,7 +10,7 @@ use cryptography_x509::{
     ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
     oid,
 };
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -20,7 +20,7 @@ use crate::{exceptions, types, x509};
 const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 
 #[pyo3::pyfunction]
-fn load_der_ocsp_response(
+pub(crate) fn load_der_ocsp_response(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> Result<OCSPResponse, CryptographyError> {
@@ -73,7 +73,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
-struct OCSPResponse {
+pub(crate) struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
 
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
@@ -687,7 +687,7 @@ fn singleresp_py_revocation_time_utc<'p>(
 }
 
 #[pyo3::pyfunction]
-fn create_ocsp_response(
+pub(crate) fn create_ocsp_response(
     py: pyo3::Python<'_>,
     status: &pyo3::Bound<'_, pyo3::PyAny>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -919,7 +919,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
-struct OCSPSingleResponse {
+pub(crate) struct OCSPSingleResponse {
     raw: OwnedSingleResponse,
 }
 
@@ -1052,17 +1052,4 @@ impl OCSPSingleResponse {
         let single_resp = self.single_response();
         singleresp_py_next_update_utc(single_resp, py)
     }
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        load_der_ocsp_response,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_response, module)?)?;
-
-    module.add_class::<OCSPResponse>()?;
-    module.add_class::<OCSPSingleResponse>()?;
-
-    Ok(())
 }
