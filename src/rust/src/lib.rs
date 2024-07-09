@@ -105,6 +105,12 @@ mod _rust {
 
     #[pyo3::pymodule]
     mod x509 {
+        #[pymodule_export]
+        use crate::x509::verify::{
+            PolicyBuilder, PyClientVerifier, PyServerVerifier, PyStore, PyVerifiedClient,
+            VerificationError,
+        };
+
         #[pymodule_init]
         fn init(x509_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
             crate::x509::certificate::add_to_module(x509_mod)?;
@@ -112,7 +118,6 @@ mod _rust {
             crate::x509::crl::add_to_module(x509_mod)?;
             crate::x509::csr::add_to_module(x509_mod)?;
             crate::x509::sct::add_to_module(x509_mod)?;
-            crate::x509::verify::add_to_module(x509_mod)?;
 
             Ok(())
         }
