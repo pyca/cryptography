@@ -95,6 +95,8 @@ mod _rust {
     use pyo3::types::PyModuleMethods;
 
     #[pymodule_export]
+    use crate::asn1::asn1_mod;
+    #[pymodule_export]
     use crate::exceptions::exceptions;
     #[pymodule_export]
     use crate::oid::ObjectIdentifier;
@@ -178,9 +180,7 @@ mod _rust {
 
     #[pymodule_init]
     fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-        m.add_submodule(&crate::asn1::create_submodule(m.py())?)?;
         m.add_submodule(&crate::pkcs7::create_submodule(m.py())?)?;
-
         m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
 
         Ok(())

@@ -9,7 +9,6 @@ use cryptography_x509::name::Name;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::IntoPyDict;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::PyModuleMethods;
 use pyo3::ToPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};
@@ -176,19 +175,11 @@ fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyEr
     })
 }
 
-pub(crate) fn create_submodule(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let submod = pyo3::types::PyModule::new_bound(py, "asn1")?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(parse_spki_for_data, &submod)?)?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(decode_dss_signature, &submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(encode_dss_signature, &submod)?)?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        test_parse_certificate,
-        &submod
-    )?)?;
-
-    Ok(submod)
+#[pyo3::pymodule]
+#[pyo3(name = "asn1")]
+pub(crate) mod asn1_mod {
+    #[pymodule_export]
+    use super::{
+        decode_dss_signature, encode_dss_signature, parse_spki_for_data, test_parse_certificate,
+    };
 }
