@@ -51,3 +51,6 @@ members = [
     "cryptography-x509",
     "cryptography-x509-verification",
 ]
+
+[patch.crates-io]
+pyo3 = { git = "https://github.com/davidhewitt/pyo3/", branch = "stable-abi-refcounting" }

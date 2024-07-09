@@ -248,8 +248,7 @@ dependencies = [
 [[package]]
 name = "pyo3"
 version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e99090d12f6182924499253aaa1e73bf15c69cea8d2774c3c781e35badc3548"
+source = "git+https://github.com/davidhewitt/pyo3/?branch=stable-abi-refcounting#6069680c8a0ec61b60c945099adb25db80ab3970"
 dependencies = [
  "cfg-if",
  "indoc",
@@ -266,8 +265,7 @@ dependencies = [
 [[package]]
 name = "pyo3-build-config"
 version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7879eb018ac754bba32cb0eec7526391c02c14a093121857ed09fbf1d1057d41"
+source = "git+https://github.com/davidhewitt/pyo3/?branch=stable-abi-refcounting#6069680c8a0ec61b60c945099adb25db80ab3970"
 dependencies = [
  "once_cell",
  "target-lexicon",
@@ -276,8 +274,7 @@ dependencies = [
 [[package]]
 name = "pyo3-ffi"
 version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce2baa5559a411fc1cf519295f24c34b53d5d725818bc96b5abf94762da09041"
+source = "git+https://github.com/davidhewitt/pyo3/?branch=stable-abi-refcounting#6069680c8a0ec61b60c945099adb25db80ab3970"
 dependencies = [
  "libc",
  "pyo3-build-config",
@@ -286,8 +283,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros"
 version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "049621c20a23f2def20f4fe67978d1da8d8a883d64b9c21362f3b776e254edc7"
+source = "git+https://github.com/davidhewitt/pyo3/?branch=stable-abi-refcounting#6069680c8a0ec61b60c945099adb25db80ab3970"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -298,8 +294,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros-backend"
 version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e969ee2e025435f1819d31a275ba4bb9cbbdf3ac535227fdbd85b9322ffe144"
+source = "git+https://github.com/davidhewitt/pyo3/?branch=stable-abi-refcounting#6069680c8a0ec61b60c945099adb25db80ab3970"
 dependencies = [
  "heck",
  "proc-macro2",
