@@ -7,7 +7,7 @@ use cryptography_x509::{
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
     oid,
 };
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -23,7 +23,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyfunction]
-fn load_der_ocsp_request(
+pub(crate) fn load_der_ocsp_request(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<OCSPRequest> {
@@ -51,7 +51,7 @@ fn load_der_ocsp_request(
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
-struct OCSPRequest {
+pub(crate) struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
@@ -166,7 +166,7 @@ impl OCSPRequest {
 }
 
 #[pyo3::pyfunction]
-fn create_ocsp_request(
+pub(crate) fn create_ocsp_request(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<OCSPRequest> {
@@ -227,13 +227,4 @@ fn create_ocsp_request(
     };
     let data = asn1::write_single(&ocsp_req)?;
     load_der_ocsp_request(py, pyo3::types::PyBytes::new_bound(py, &data).unbind())
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(load_der_ocsp_request, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(create_ocsp_request, module)?)?;
-
-    module.add_class::<OCSPRequest>()?;
-
-    Ok(())
 }
