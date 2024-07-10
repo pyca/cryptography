@@ -5,7 +5,7 @@
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -1153,17 +1153,8 @@ impl AesGcmSiv {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "aead")?;
-
-    m.add_class::<AesGcm>()?;
-    m.add_class::<ChaCha20Poly1305>()?;
-    m.add_class::<AesCcm>()?;
-    m.add_class::<AesSiv>()?;
-    m.add_class::<AesOcb3>()?;
-    m.add_class::<AesGcmSiv>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod aead {
+    #[pymodule_export]
+    use super::{AesCcm, AesGcm, AesGcmSiv, AesOcb3, AesSiv, ChaCha20Poly1305};
 }

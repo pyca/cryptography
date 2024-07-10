@@ -7,7 +7,7 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use crate::types;
-use pyo3::types::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::PyAnyMethods;
 use pyo3::IntoPy;
 
 pub(crate) struct CipherContext {
@@ -604,20 +604,11 @@ fn _advance_aad(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "ciphers")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(create_encryption_ctx, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(create_decryption_ctx, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(cipher_supported, &m)?)?;
-
-    m.add_function(pyo3::wrap_pyfunction_bound!(_advance, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(_advance_aad, &m)?)?;
-
-    m.add_class::<PyCipherContext>()?;
-    m.add_class::<PyAEADEncryptionContext>()?;
-    m.add_class::<PyAEADDecryptionContext>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod ciphers {
+    #[pymodule_export]
+    use super::{
+        _advance, _advance_aad, cipher_supported, create_decryption_ctx, create_encryption_ctx,
+        PyAEADDecryptionContext, PyAEADEncryptionContext, PyCipherContext,
+    };
 }
