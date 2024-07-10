@@ -156,6 +156,12 @@ mod _rust {
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
         #[pymodule_export]
+        use crate::backend::aead::aead;
+        #[pymodule_export]
+        use crate::backend::ciphers::ciphers;
+        #[pymodule_export]
+        use crate::backend::cmac::cmac;
+        #[pymodule_export]
         use crate::backend::dh::dh;
         #[pymodule_export]
         use crate::backend::dsa::dsa;
