@@ -129,13 +129,10 @@ mod _rust {
     mod ocsp {
         #[pymodule_export]
         use crate::x509::ocsp_req::{create_ocsp_request, load_der_ocsp_request, OCSPRequest};
-
-        #[pymodule_init]
-        fn init(ocsp_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-            crate::x509::ocsp_resp::add_to_module(ocsp_mod)?;
-
-            Ok(())
-        }
+        #[pymodule_export]
+        use crate::x509::ocsp_resp::{
+            create_ocsp_response, load_der_ocsp_response, OCSPResponse, OCSPSingleResponse,
+        };
     }
 
     #[pyo3::pymodule]
