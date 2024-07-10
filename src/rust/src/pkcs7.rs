@@ -11,7 +11,7 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
@@ -407,26 +407,14 @@ fn load_der_pkcs7_certificates<'p>(
     }
 }
 
-pub(crate) fn create_submodule(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let submod = pyo3::types::PyModule::new_bound(py, "pkcs7")?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        serialize_certificates,
-        &submod
-    )?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(sign_and_serialize, &submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        load_pem_pkcs7_certificates,
-        &submod
-    )?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        load_der_pkcs7_certificates,
-        &submod
-    )?)?;
-
-    Ok(submod)
+#[pyo3::pymodule]
+#[pyo3(name = "pkcs7")]
+pub(crate) mod pkcs7_mod {
+    #[pymodule_export]
+    use super::{
+        load_der_pkcs7_certificates, load_pem_pkcs7_certificates, serialize_certificates,
+        sign_and_serialize,
+    };
 }
 
 #[cfg(test)]
