@@ -33,16 +33,6 @@ pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> 
     module.add_submodule(&dsa::create_module(module.py())?)?;
     module.add_submodule(&ec::create_module(module.py())?)?;
 
-    module.add_submodule(&ed25519::create_module(module.py())?)?;
-    #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-    module.add_submodule(&ed448::create_module(module.py())?)?;
-
-    module.add_submodule(&x25519::create_module(module.py())?)?;
-    #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-    module.add_submodule(&x448::create_module(module.py())?)?;
-
-    module.add_submodule(&poly1305::create_module(module.py())?)?;
-
     module.add_submodule(&rsa::create_module(module.py())?)?;
 
     Ok(())
