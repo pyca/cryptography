@@ -13,7 +13,7 @@ use cryptography_x509::{
     },
     name, oid,
 };
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods, PySliceMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PySliceMethods};
 use pyo3::ToPyObject;
 
 use crate::asn1::{
@@ -26,7 +26,7 @@ use crate::{exceptions, types, x509};
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_der_x509_crl(
+pub(crate) fn load_der_x509_crl(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -56,7 +56,7 @@ fn load_der_x509_crl(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_pem_x509_crl(
+pub(crate) fn load_pem_x509_crl(
     py: pyo3::Python<'_>,
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -84,7 +84,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
-struct CertificateRevocationList {
+pub(crate) struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
     revoked_certs: pyo3::sync::GILOnceCell<Vec<OwnedRevokedCertificate>>,
@@ -535,7 +535,7 @@ impl Clone for OwnedRevokedCertificate {
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
-struct RevokedCertificate {
+pub(crate) struct RevokedCertificate {
     owned: OwnedRevokedCertificate,
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
@@ -643,7 +643,7 @@ pub fn parse_crl_entry_ext<'p>(
 }
 
 #[pyo3::pyfunction]
-fn create_x509_crl(
+pub(crate) fn create_x509_crl(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
     private_key: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -728,15 +728,4 @@ fn create_x509_crl(
         pyo3::types::PyBytes::new_bound(py, &data).unbind(),
         None,
     )
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(load_der_x509_crl, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(load_pem_x509_crl, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(create_x509_crl, module)?)?;
-
-    module.add_class::<CertificateRevocationList>()?;
-    module.add_class::<RevokedCertificate>()?;
-
-    Ok(())
 }
