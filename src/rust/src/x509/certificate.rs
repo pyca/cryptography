@@ -17,7 +17,7 @@ use cryptography_x509::extensions::{
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{
@@ -366,7 +366,7 @@ fn cert_version(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_pem_x509_certificate(
+pub(crate) fn load_pem_x509_certificate(
     py: pyo3::Python<'_>,
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -388,7 +388,7 @@ fn load_pem_x509_certificate(
 }
 
 #[pyo3::pyfunction]
-fn load_pem_x509_certificates(
+pub(crate) fn load_pem_x509_certificates(
     py: pyo3::Python<'_>,
     data: &[u8],
 ) -> CryptographyResult<Vec<Certificate>> {
@@ -886,7 +886,7 @@ pub(crate) fn time_from_datetime(dt: asn1::DateTime) -> CryptographyResult<commo
 }
 
 #[pyo3::pyfunction]
-fn create_x509_certificate(
+pub(crate) fn create_x509_certificate(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
     private_key: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -974,27 +974,4 @@ pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {
     if set {
         vals[idx] |= v;
     }
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        load_der_x509_certificate,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        load_pem_x509_certificate,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        load_pem_x509_certificates,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        create_x509_certificate,
-        module
-    )?)?;
-
-    module.add_class::<Certificate>()?;
-
-    Ok(())
 }
