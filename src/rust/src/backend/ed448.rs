@@ -6,7 +6,6 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use pyo3::types::PyModuleMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed448")]
 pub(crate) struct Ed448PrivateKey {
@@ -157,16 +156,10 @@ impl Ed448PublicKey {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "ed448")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
-
-    m.add_class::<Ed448PrivateKey>()?;
-    m.add_class::<Ed448PublicKey>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod ed448 {
+    #[pymodule_export]
+    use super::{
+        from_private_bytes, from_public_bytes, generate_key, Ed448PrivateKey, Ed448PublicKey,
+    };
 }
