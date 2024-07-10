@@ -234,9 +234,7 @@ impl EncryptionAlgorithm {
     }
 }
 
-#[allow(dead_code)]
 const KDF_ENCRYPTION_KEY_ID: u8 = 1;
-#[allow(dead_code)]
 const KDF_IV_ID: u8 = 2;
 const KDF_MAC_KEY_ID: u8 = 3;
 
