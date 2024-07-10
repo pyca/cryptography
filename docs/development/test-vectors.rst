@@ -876,6 +876,10 @@ using command-line tools from OpenSSH_7.6p1 package.
 * ``ed25519-psw.key``, ``ed25519-psw.key.pub`` -
   Password-protected Ed25519 private key and corresponding public key.
   Password is "password".
+* ``ed448-nopsw.key.pub`` -
+  Ed448 private key and corresponding public key. Generated with
+  ``puttygen`` which added support for Ed448 keys in `PUTTY Ed448`_,
+  although OpenSSH has not yet added support for them.
 * ``rsa-nopsw.key``, ``rsa-nopsw.key.pub``,
   ``rsa-nopsw.key-cert.pub`` -
   RSA-2048 private key; and corresponding public key in plain format
@@ -1097,3 +1101,4 @@ header format (substituting the correct information):
 .. _`OpenSSL's OCB vectors`: https://github.com/openssl/openssl/commit/2f19ab18a29cf9c82cdd68bc8c7e5be5061b19be
 .. _`badkeys`: https://github.com/vcsjones/badkeys/tree/50f1cc5f8d13bf3a2046d689f6452decb15d9c3c
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/01690a7ff36c4d18c48b301cdf375c954105a1d9/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
+.. _`PuTTY Ed448`: https://github.com/github/putty/commit/a085acbadf829ac5b426323ca98058d6aa4048ba
