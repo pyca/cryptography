@@ -51,5 +51,8 @@ pub(crate) fn derive_scrypt<'p>(
 #[pyo3::pymodule]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::{derive_pbkdf2_hmac, derive_scrypt};
+    use super::derive_pbkdf2_hmac;
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    #[pymodule_export]
+    use super::derive_scrypt;
 }
