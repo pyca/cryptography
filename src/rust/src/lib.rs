@@ -156,6 +156,12 @@ mod _rust {
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
         #[pymodule_export]
+        use crate::backend::dh::dh;
+        #[pymodule_export]
+        use crate::backend::dsa::dsa;
+        #[pymodule_export]
+        use crate::backend::ec::ec;
+        #[pymodule_export]
         use crate::backend::ed25519::ed25519;
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         #[pymodule_export]

@@ -8,7 +8,7 @@ use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
-use pyo3::types::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::PyAnyMethods;
 
 const MIN_MODULUS_SIZE: u32 = 512;
 
@@ -554,20 +554,11 @@ impl DHParameterNumbers {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "dh")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_parameters, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_der_parameters, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_pem_parameters, &m)?)?;
-
-    m.add_class::<DHPrivateKey>()?;
-    m.add_class::<DHPublicKey>()?;
-    m.add_class::<DHParameters>()?;
-    m.add_class::<DHPrivateNumbers>()?;
-    m.add_class::<DHPublicNumbers>()?;
-    m.add_class::<DHParameterNumbers>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod dh {
+    #[pymodule_export]
+    use super::{
+        from_der_parameters, from_pem_parameters, generate_parameters, DHParameterNumbers,
+        DHParameters, DHPrivateKey, DHPrivateNumbers, DHPublicKey, DHPublicNumbers,
+    };
 }
