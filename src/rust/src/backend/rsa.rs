@@ -9,7 +9,7 @@ use crate::backend::{hashes, utils};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::types::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::PyAnyMethods;
 
 #[pyo3::pyclass(
     frozen,
@@ -814,16 +814,10 @@ impl RsaPublicNumbers {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "rsa")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_private_key, &m)?)?;
-
-    m.add_class::<RsaPrivateKey>()?;
-    m.add_class::<RsaPublicKey>()?;
-    m.add_class::<RsaPrivateNumbers>()?;
-    m.add_class::<RsaPublicNumbers>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod rsa {
+    #[pymodule_export]
+    use super::{
+        generate_private_key, RsaPrivateKey, RsaPrivateNumbers, RsaPublicKey, RsaPublicNumbers,
+    };
 }

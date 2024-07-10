@@ -183,6 +183,8 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]
+        use crate::backend::rsa::rsa;
+        #[pymodule_export]
         use crate::backend::x25519::x25519;
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         #[pymodule_export]
@@ -218,8 +220,6 @@ mod _rust {
                     openssl_mod.add("_legacy_provider_loaded", false)?;
                 }
             }
-
-            crate::backend::add_to_module(openssl_mod)?;
 
             Ok(())
         }
