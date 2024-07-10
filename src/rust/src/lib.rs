@@ -148,6 +148,12 @@ mod _rust {
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
         #[pymodule_export]
+        use crate::backend::hashes::hashes;
+        #[pymodule_export]
+        use crate::backend::hmac::hmac;
+        #[pymodule_export]
+        use crate::backend::kdf::kdf;
+        #[pymodule_export]
         use crate::backend::keys::keys;
         #[pymodule_export]
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
