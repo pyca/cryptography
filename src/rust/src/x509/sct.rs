@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods};
 use pyo3::ToPyObject;
 
 use crate::error::CryptographyError;
@@ -257,12 +257,6 @@ pub(crate) fn parse_scts(
         py_scts.append(pyo3::Bound::new(py, sct)?)?;
     }
     Ok(py_scts.to_object(py))
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_class::<Sct>()?;
-
-    Ok(())
 }
 
 #[cfg(test)]
