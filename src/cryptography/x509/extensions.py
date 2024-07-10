@@ -1275,6 +1275,68 @@ class KeyUsage(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
+class PrivateKeyUsagePeriod(ExtensionType):
+    oid = ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+
+    def __init__(
+        self,
+        not_before: datetime.datetime | None = None,
+        not_after: datetime.datetime | None = None,
+    ) -> None:
+        if not isinstance(not_before, datetime.datetime) and not_before is not None:
+            raise TypeError(
+                "not_before must be a datetime.datetime or None"
+            )
+
+        if not isinstance(not_after, datetime.datetime) and not_after is not None:
+            raise TypeError(
+                "not_after must be a datetime.datetime or None"
+            )
+        
+        if not_before is None and not_after is None:
+            raise ValueError(
+                "At least one of not_before and not_after must not be None"
+            )
+        
+        if not_before is not None and not_after is not None and not_before > not_after:
+            raise ValueError(
+                "not_before must be before not_after"
+            )
+
+        self._not_before = not_before
+        self._not_after = not_after
+
+    @property
+    def not_before(self) -> datetime.datetime | None:
+        return self._not_before
+    
+    @property
+    def not_after(self) -> datetime.datetime | None:
+        return self._not_after
+    
+    def __repr__(self) -> str:
+        return (
+            f"<PrivateKeyUsagePeriod(not_before={self.not_before}, "
+            f"not_after={self.not_after})>"
+        )
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PrivateKeyUsagePeriod):
+            return NotImplemented
+        
+        return self.not_before == other.not_before and self.not_after == other.not_after
+    
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.not_before, 
+                self.not_after
+            )
+        )
+    
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 class NameConstraints(ExtensionType):
     oid = ExtensionOID.NAME_CONSTRAINTS
 

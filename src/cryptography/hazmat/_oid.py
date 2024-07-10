@@ -14,6 +14,7 @@ class ExtensionOID:
     SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
     SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
     KEY_USAGE = ObjectIdentifier("2.5.29.15")
+    PRIVATE_KEY_USAGE_PERIOD = ObjectIdentifier("2.5.29.16")
     SUBJECT_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.17")
     ISSUER_ALTERNATIVE_NAME = ObjectIdentifier("2.5.29.18")
     BASIC_CONSTRAINTS = ObjectIdentifier("2.5.29.19")
