@@ -7,7 +7,6 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::PyModuleMethods;
 
 #[pyo3::pyclass(
     frozen,
@@ -499,18 +498,11 @@ impl DsaParameterNumbers {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "dsa")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_parameters, &m)?)?;
-
-    m.add_class::<DsaPrivateKey>()?;
-    m.add_class::<DsaPublicKey>()?;
-    m.add_class::<DsaParameters>()?;
-    m.add_class::<DsaPrivateNumbers>()?;
-    m.add_class::<DsaPublicNumbers>()?;
-    m.add_class::<DsaParameterNumbers>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod dsa {
+    #[pymodule_export]
+    use super::{
+        generate_parameters, DsaParameterNumbers, DsaParameters, DsaPrivateKey, DsaPrivateNumbers,
+        DsaPublicKey, DsaPublicNumbers,
+    };
 }
