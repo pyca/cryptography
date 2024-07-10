@@ -110,6 +110,17 @@ mod _rust {
     #[pyo3::pymodule]
     mod x509 {
         #[pymodule_export]
+        use crate::x509::common::{encode_extension_value, encode_name_bytes};
+        #[pymodule_export]
+        use crate::x509::crl::{
+            create_x509_crl, load_der_x509_crl, load_pem_x509_crl, CertificateRevocationList,
+            RevokedCertificate,
+        };
+        #[pymodule_export]
+        use crate::x509::csr::{
+            create_x509_csr, load_der_x509_csr, load_pem_x509_csr, CertificateSigningRequest,
+        };
+        #[pymodule_export]
         use crate::x509::sct::Sct;
         #[pymodule_export]
         use crate::x509::verify::{
@@ -120,9 +131,6 @@ mod _rust {
         #[pymodule_init]
         fn init(x509_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
             crate::x509::certificate::add_to_module(x509_mod)?;
-            crate::x509::common::add_to_module(x509_mod)?;
-            crate::x509::crl::add_to_module(x509_mod)?;
-            crate::x509::csr::add_to_module(x509_mod)?;
 
             Ok(())
         }

@@ -8,7 +8,7 @@ use std::hash::{Hash, Hasher};
 use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 use pyo3::IntoPy;
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
@@ -27,7 +27,7 @@ self_cell::self_cell!(
 );
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
-struct CertificateSigningRequest {
+pub(crate) struct CertificateSigningRequest {
     raw: OwnedCsr,
     cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
 }
@@ -237,7 +237,7 @@ impl CertificateSigningRequest {
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_pem_x509_csr(
+pub(crate) fn load_pem_x509_csr(
     py: pyo3::Python<'_>,
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -260,7 +260,7 @@ fn load_pem_x509_csr(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_der_x509_csr(
+pub(crate) fn load_der_x509_csr(
     py: pyo3::Python<'_>,
     data: pyo3::Py<pyo3::types::PyBytes>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -286,7 +286,7 @@ fn load_der_x509_csr(
 }
 
 #[pyo3::pyfunction]
-fn create_x509_csr(
+pub(crate) fn create_x509_csr(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
     private_key: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -390,14 +390,4 @@ fn create_x509_csr(
         pyo3::types::PyBytes::new_bound(py, &data).clone().unbind(),
         None,
     )
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(load_der_x509_csr, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(load_pem_x509_csr, module)?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(create_x509_csr, module)?)?;
-
-    module.add_class::<CertificateSigningRequest>()?;
-
-    Ok(())
 }
