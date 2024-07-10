@@ -26,7 +26,7 @@ pub(crate) fn derive_pbkdf2_hmac<'p>(
 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 #[pyo3::pyfunction]
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn derive_scrypt<'p>(
+fn derive_scrypt<'p>(
     py: pyo3::Python<'p>,
     key_material: CffiBuf<'_>,
     salt: &[u8],
