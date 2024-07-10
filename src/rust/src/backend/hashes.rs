@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::{PyAnyMethods, PyModuleMethods};
+use pyo3::types::PyAnyMethods;
 use pyo3::IntoPy;
 use std::borrow::Cow;
 
@@ -138,11 +138,8 @@ impl Hash {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "hashes")?;
-    m.add_class::<Hash>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod hashes {
+    #[pymodule_export]
+    use super::Hash;
 }
