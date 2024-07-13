@@ -11,4 +11,4 @@ pyo3 = { version = "0.22.1", features = ["abi3"] }
 openssl-sys = "0.9.102"
 
 [build-dependencies]
-cc = "1.0.105"
+cc = "1.1.2"
