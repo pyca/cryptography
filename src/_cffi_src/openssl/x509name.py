@@ -11,11 +11,9 @@ INCLUDES = """
  * See the comment above Cryptography_STACK_OF_X509 in x509.py
  */
 typedef STACK_OF(X509_NAME) Cryptography_STACK_OF_X509_NAME;
-typedef STACK_OF(X509_NAME_ENTRY) Cryptography_STACK_OF_X509_NAME_ENTRY;
 """
 
 TYPES = """
-typedef ... Cryptography_STACK_OF_X509_NAME_ENTRY;
 typedef ... X509_NAME;
 typedef ... X509_NAME_ENTRY;
 typedef ... Cryptography_STACK_OF_X509_NAME;
