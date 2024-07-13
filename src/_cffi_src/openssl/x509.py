@@ -33,8 +33,6 @@ typedef ... X509_REVOKED;
 typedef ... X509_CRL;
 typedef ... X509;
 
-typedef ... NETSCAPE_SPKI;
-
 typedef ... PKCS8_PRIV_KEY_INFO;
 
 typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
@@ -107,14 +105,6 @@ int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
 int X509_CRL_sort(X509_CRL *);
 int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 void X509_CRL_free(X509_CRL *);
-
-int NETSCAPE_SPKI_verify(NETSCAPE_SPKI *, EVP_PKEY *);
-int NETSCAPE_SPKI_sign(NETSCAPE_SPKI *, EVP_PKEY *, const EVP_MD *);
-char *NETSCAPE_SPKI_b64_encode(NETSCAPE_SPKI *);
-EVP_PKEY *NETSCAPE_SPKI_get_pubkey(NETSCAPE_SPKI *);
-int NETSCAPE_SPKI_set_pubkey(NETSCAPE_SPKI *, EVP_PKEY *);
-NETSCAPE_SPKI *NETSCAPE_SPKI_new(void);
-void NETSCAPE_SPKI_free(NETSCAPE_SPKI *);
 
 /*  ASN1 serialization */
 int i2d_X509_bio(BIO *, X509 *);
