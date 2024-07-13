@@ -147,10 +147,6 @@ def cryptography_has_unexpected_eof_while_reading() -> list[str]:
     return ["SSL_R_UNEXPECTED_EOF_WHILE_READING"]
 
 
-def cryptography_has_pkcs12_set_mac() -> list[str]:
-    return ["PKCS12_set_mac"]
-
-
 def cryptography_has_ssl_op_ignore_unexpected_eof() -> list[str]:
     return [
         "SSL_OP_IGNORE_UNEXPECTED_EOF",
@@ -188,7 +184,6 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
     ),
-    "Cryptography_HAS_PKCS12_SET_MAC": cryptography_has_pkcs12_set_mac,
     "Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF": (
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),

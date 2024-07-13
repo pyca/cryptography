@@ -35,7 +35,6 @@ ffi = build_ffi_for_binding(
         "objects",
         "opensslv",
         "pem",
-        "pkcs12",
         "rand",
         "rsa",
         "ssl",
