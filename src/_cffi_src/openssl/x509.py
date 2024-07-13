@@ -15,17 +15,14 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
-typedef STACK_OF(X509_CRL) Cryptography_STACK_OF_X509_CRL;
 typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_X509;
-typedef ... Cryptography_STACK_OF_X509_CRL;
 typedef ... Cryptography_STACK_OF_X509_REVOKED;
 
 typedef ... X509_ALGOR;
-typedef ... X509_ATTRIBUTE;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
@@ -34,8 +31,6 @@ typedef ... X509_CRL;
 typedef ... X509;
 
 typedef ... NETSCAPE_SPKI;
-
-typedef ... PKCS8_PRIV_KEY_INFO;
 
 typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
 """
