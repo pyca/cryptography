@@ -441,6 +441,16 @@ class TestDH:
         assert int.from_bytes(symkey1, "big") == int(vector["z"], 16)
         assert int.from_bytes(symkey2, "big") == int(vector["z"], 16)
 
+    def test_exchange_old_key(self, backend):
+        k = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub_cryptography_old.pem"),
+            lambda f: serialization.load_pem_public_key(f.read()),
+            mode="rb",
+        )
+        assert isinstance(k, dh.DHPublicKey)
+        # Ensure this doesn't raise.
+        k.parameters().generate_private_key().exchange(k)
+
     def test_public_key_equality(self, backend):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhpub.pem"),

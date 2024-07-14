@@ -114,13 +114,7 @@ pub fn parse_public_key(
             let pub_key = openssl::bn::BigNum::from_slice(pub_key_int.as_bytes())?;
             let dh = dh.set_public_key(pub_key)?;
 
-            cfg_if::cfg_if! {
-                if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
-                    Ok(openssl::pkey::PKey::from_dh(dh)?)
-                } else {
-                    Ok(openssl::pkey::PKey::from_dhx(dh)?)
-                }
-            }
+            Ok(openssl::pkey::PKey::from_dh(dh)?)
         }
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::DhKeyAgreement(dh_params) => {

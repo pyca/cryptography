@@ -70,23 +70,6 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-fn pkey_from_dh<T: openssl::pkey::HasParams>(
-    dh: openssl::dh::Dh<T>,
-) -> CryptographyResult<openssl::pkey::PKey<T>> {
-    cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)] {
-            Ok(openssl::pkey::PKey::from_dh(dh)?)
-        } else {
-            if dh.prime_q().is_some() {
-                Ok(openssl::pkey::PKey::from_dhx(dh)?)
-            } else {
-                Ok(openssl::pkey::PKey::from_dh(dh)?)
-            }
-        }
-    }
-}
-
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn from_der_parameters(
@@ -214,7 +197,8 @@ impl DHPrivateKey {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(orig_dh.public_key().to_owned()?)?)?;
+        let pkey =
+            openssl::pkey::PKey::from_dh(dh.set_public_key(orig_dh.public_key().to_owned()?)?)?;
 
         Ok(DHPublicKey { pkey })
     }
@@ -322,7 +306,7 @@ impl DHParameters {
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
-            pkey: pkey_from_dh(dh)?,
+            pkey: openssl::pkey::PKey::from_dh(dh)?,
         })
     }
 
@@ -435,7 +419,7 @@ impl DHPrivateNumbers {
             ));
         }
 
-        let pkey = pkey_from_dh(dh)?;
+        let pkey = openssl::pkey::PKey::from_dh(dh)?;
         Ok(DHPrivateKey { pkey })
     }
 
@@ -478,7 +462,7 @@ impl DHPublicNumbers {
 
         let pub_key = utils::py_int_to_bn(py, self.y.bind(py))?;
 
-        let pkey = pkey_from_dh(dh.set_public_key(pub_key)?)?;
+        let pkey = openssl::pkey::PKey::from_dh(dh.set_public_key(pub_key)?)?;
 
         Ok(DHPublicKey { pkey })
     }

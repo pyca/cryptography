@@ -224,6 +224,10 @@ Key exchange
 * ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
   Brainpool vectors from :rfc:`7027`.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/dhpub_cryptography_old.pem``
+  contains a Diffie-Hellman public key generated with a previous version of
+  ``cryptography``.
+
 X.509
 ~~~~~
 
