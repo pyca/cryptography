@@ -8,7 +8,7 @@ use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::Time;
 use cryptography_x509::name::Name;
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.pytests")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.test_support")]
 struct TestCertificate {
     #[pyo3(get)]
     not_before_tag: u8,
