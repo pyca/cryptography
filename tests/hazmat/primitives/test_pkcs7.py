@@ -142,11 +142,8 @@ def _pkcs7_verify(encoding, sig, msg, certs, options, backend):
         )
     else:
         msg_bio = backend._bytes_to_bio(msg)
-        # libressl 3.7.0 has a bug when NULL is passed as an `out_bio`. Work
-        # around it for now.
-        out_bio = backend._create_mem_bio_gc()
         res = backend._lib.PKCS7_verify(
-            p7, backend._ffi.NULL, store, msg_bio.bio, out_bio, flags
+            p7, backend._ffi.NULL, store, msg_bio.bio, backend._ffi.NULL, flags
         )
     backend.openssl_assert(res == 1)
     # OpenSSL 3.0 leaves a random bio error on the stack:
