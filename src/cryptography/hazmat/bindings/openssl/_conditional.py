@@ -130,13 +130,6 @@ def cryptography_has_ssl_cookie() -> list[str]:
     ]
 
 
-def cryptography_has_pkcs7_funcs() -> list[str]:
-    return [
-        "PKCS7_verify",
-        "SMIME_read_PKCS7",
-    ]
-
-
 def cryptography_has_prime_checks() -> list[str]:
     return [
         "BN_prime_checks_for_size",
@@ -179,7 +172,6 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
-    "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading

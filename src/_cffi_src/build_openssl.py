@@ -42,7 +42,6 @@ ffi = build_ffi_for_binding(
         "x509name",
         "x509v3",
         "x509_vfy",
-        "pkcs7",
     ],
 )
 
