@@ -175,17 +175,6 @@ class Backend:
 
         return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_ptr)
 
-    def _create_mem_bio_gc(self):
-        """
-        Creates an empty memory BIO.
-        """
-        bio_method = self._lib.BIO_s_mem()
-        self.openssl_assert(bio_method != self._ffi.NULL)
-        bio = self._lib.BIO_new(bio_method)
-        self.openssl_assert(bio != self._ffi.NULL)
-        bio = self._ffi.gc(bio, self._lib.BIO_free)
-        return bio
-
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
