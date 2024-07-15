@@ -11,7 +11,6 @@ import pytest
 
 from cryptography import x509
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
