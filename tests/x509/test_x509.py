@@ -14,7 +14,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
-from cryptography.hazmat.bindings._rust import asn1
+from cryptography.hazmat.bindings._rust import test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
@@ -2429,7 +2429,7 @@ class TestRSACertificateRequest:
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
 
@@ -2615,7 +2615,7 @@ class TestCertificateBuilder:
             not_valid_before=not_valid_before,
             not_valid_after=not_valid_after,
         )
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
         # UTC TIME
@@ -3088,7 +3088,7 @@ class TestCertificateBuilder:
         )
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         _check_cert_times(cert, not_valid_before=time, not_valid_after=time)
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
         # UTC TIME
