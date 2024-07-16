@@ -4,13 +4,9 @@
 
 from __future__ import annotations
 
-import collections
-import typing
-
-from cryptography import x509
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.bindings.openssl import binding
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -30,8 +26,6 @@ from cryptography.hazmat.primitives.ciphers.modes import (
     CBC,
     Mode,
 )
-
-_MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
 
 
 class Backend:
@@ -162,19 +156,6 @@ class Backend:
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 
-    def _bytes_to_bio(self, data: bytes) -> _MemoryBIO:
-        """
-        Return a _MemoryBIO namedtuple of (BIO, char*).
-
-        The char* is the storage for the BIO and it must stay alive until the
-        BIO is finished with.
-        """
-        data_ptr = self._ffi.from_buffer(data)
-        bio = self._lib.BIO_new_mem_buf(data_ptr, len(data))
-        self.openssl_assert(bio != self._ffi.NULL)
-
-        return _MemoryBIO(self._ffi.gc(bio, self._lib.BIO_free), data_ptr)
-
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
@@ -230,14 +211,6 @@ class Backend:
         return self.cipher_supported(
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )
-
-    def _cert2ossl(self, cert: x509.Certificate) -> typing.Any:
-        data = cert.public_bytes(serialization.Encoding.DER)
-        mem_bio = self._bytes_to_bio(data)
-        x509 = self._lib.d2i_X509_bio(mem_bio.bio, self._ffi.NULL)
-        self.openssl_assert(x509 != self._ffi.NULL)
-        x509 = self._ffi.gc(x509, self._lib.X509_free)
-        return x509
 
     def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
         if self._fips_enabled and not isinstance(
