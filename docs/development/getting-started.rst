@@ -45,18 +45,18 @@ Building the docs
 -----------------
 
 Building the docs on non-Windows platforms requires manually installing
-the C library `libenchant` (`installation instructions`_).
-The docs can be built using `nox`:
+the C library ``libenchant`` (`installation instructions`_).
+The docs can be built using ``nox``:
 
 .. code-block:: console
 
     $ nox -e docs
 
-Troubleshooting `libenchant` errors on macOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Troubleshooting ``libenchant`` errors on macOS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If after installing `libenchant` using Homebrew there is still an error saying that
-the library was not found, it's because of `a bug`_ in version 3.2.2 of `pyenchant`.
+If after installing ``libenchant`` using Homebrew there is still an error saying that
+the library was not found, it's because of `a bug`_ in version 3.2.2 of ``pyenchant``.
 The workaround is to manually specify the directory where Homebrew installed the
 library:
 
