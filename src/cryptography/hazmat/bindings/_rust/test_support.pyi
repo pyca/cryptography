@@ -13,6 +13,13 @@ class TestCertificate:
     subject_value_tags: list[int]
 
 def test_parse_certificate(data: bytes) -> TestCertificate: ...
+def pkcs7_decrypt(
+    encoding: serialization.Encoding,
+    msg: bytes,
+    pkey: serialization.pkcs7.PKCS7PrivateKeyTypes,
+    cert_recipient: x509.Certificate,
+    options: list[pkcs7.PKCS7Options],
+) -> bytes: ...
 def pkcs7_verify(
     encoding: serialization.Encoding,
     sig: bytes,

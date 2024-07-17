@@ -97,63 +97,6 @@ class TestPKCS7Loading:
             pkcs7.load_der_pkcs7_certificates(der)
 
 
-def _key2ossl(key: pkcs7.PKCS7PrivateKeyTypes, backend) -> typing.Any:
-    data = key.private_bytes(
-        serialization.Encoding.DER,
-        serialization.PrivateFormat.PKCS8,
-        serialization.NoEncryption(),
-    )
-    mem_bio = backend._bytes_to_bio(data)
-
-    evp_pkey = backend._lib.d2i_PrivateKey_bio(
-        mem_bio.bio,
-        backend._ffi.NULL,
-    )
-    backend.openssl_assert(evp_pkey != backend._ffi.NULL)
-    return backend._ffi.gc(evp_pkey, backend._lib.EVP_PKEY_free)
-
-
-def _read_mem_bio(bio, backend) -> bytes:
-    """
-    Reads a memory BIO. This only works on memory BIOs.
-    """
-    buf = backend._ffi.new("char **")
-    buf_len = backend._lib.BIO_get_mem_data(bio, buf)
-    backend.openssl_assert(buf_len > 0)
-    backend.openssl_assert(buf[0] != backend._ffi.NULL)
-    bio_data = backend._ffi.buffer(buf[0], buf_len)[:]
-    return bio_data
-
-
-def _pkcs7_decrypt(encoding, msg, pkey, cert_recipient, options, backend):
-    msg_bio = backend._bytes_to_bio(msg)
-    if encoding is serialization.Encoding.DER:
-        p7 = backend._lib.d2i_PKCS7_bio(msg_bio.bio, backend._ffi.NULL)
-    elif encoding is serialization.Encoding.PEM:
-        p7 = backend._lib.PEM_read_bio_PKCS7(
-            msg_bio.bio,
-            backend._ffi.NULL,
-            backend._ffi.NULL,
-            backend._ffi.NULL,
-        )
-    else:
-        p7 = backend._lib.SMIME_read_PKCS7(msg_bio.bio, backend._ffi.NULL)
-    backend.openssl_assert(p7 != backend._ffi.NULL)
-    p7 = backend._ffi.gc(p7, backend._lib.PKCS7_free)
-    flags = 0
-    for option in options:
-        if option is pkcs7.PKCS7Options.Text:
-            flags |= backend._lib.PKCS7_TEXT
-
-    ossl_cert = backend._cert2ossl(cert_recipient)
-    ossl_pkey = _key2ossl(pkey, backend)
-    out_bio = backend._create_mem_bio_gc()
-    res = backend._lib.PKCS7_decrypt(p7, ossl_pkey, ossl_cert, out_bio, flags)
-    backend.openssl_assert(res == 1)
-
-    return _read_mem_bio(out_bio, backend)
-
-
 def _load_cert_key():
     key = load_vectors_from_file(
         os.path.join("x509", "custom", "ca", "ca_key.pem"),
@@ -1023,13 +966,12 @@ class TestPKCS7EnvelopeBuilder:
             b"\x20\x43\x41"
         ) in payload
 
-        decrypted_bytes = _pkcs7_decrypt(
+        decrypted_bytes = test_support.pkcs7_decrypt(
             serialization.Encoding.SMIME,
             enveloped,
             private_key,
             cert,
             options,
-            backend,
         )
         # New lines are canonicalized to '\r\n' when not using Binary
         expected_data = (
@@ -1066,13 +1008,12 @@ class TestPKCS7EnvelopeBuilder:
             b"\x20\x43\x41"
         ) in enveloped
 
-        decrypted_bytes = _pkcs7_decrypt(
+        decrypted_bytes = test_support.pkcs7_decrypt(
             serialization.Encoding.DER,
             enveloped,
             private_key,
             cert,
             options,
-            backend,
         )
         # New lines are canonicalized to '\r\n' when not using Binary
         expected_data = (
@@ -1099,13 +1040,12 @@ class TestPKCS7EnvelopeBuilder:
         with open("msg.p7m", "wb") as f:
             f.write(enveloped)
 
-        decrypted_bytes = _pkcs7_decrypt(
+        decrypted_bytes = test_support.pkcs7_decrypt(
             serialization.Encoding.PEM,
             enveloped,
             private_key,
             cert,
             options,
-            backend,
         )
         # New lines are canonicalized to '\r\n' when not using Binary
         expected_data = (
