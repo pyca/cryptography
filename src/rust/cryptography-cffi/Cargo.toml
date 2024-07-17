@@ -7,7 +7,7 @@ publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-pyo3 = { version = "0.22.1", features = ["abi3"] }
+pyo3 = { version = "0.22.2", features = ["abi3"] }
 openssl-sys = "0.9.102"
 
 [build-dependencies]
