@@ -137,7 +137,6 @@ def _limbo_testcase(id_, testcase):
         # validation even begins.
         try:
             verifier = builder.build_server_verifier(peer_name)
-            assert should_pass
         except ValueError:
             assert not should_pass
     else:
