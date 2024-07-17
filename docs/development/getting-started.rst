@@ -52,19 +52,6 @@ The docs can be built using ``nox``:
 
     $ nox -e docs
 
-Troubleshooting ``libenchant`` errors on macOS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If after installing ``libenchant`` using Homebrew there is still an error saying that
-the library was not found, it's because of `a bug`_ in version 3.2.2 of ``pyenchant``.
-The workaround is to manually specify the directory where Homebrew installed the
-library:
-
-.. code-block:: console
-
-    $ export PYENCHANT_LIBRARY_PATH=/opt/homebrew/lib/libenchant-2.dylib
-    $ nox -e docs
-
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
