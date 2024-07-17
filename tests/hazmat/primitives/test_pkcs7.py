@@ -1037,9 +1037,6 @@ class TestPKCS7EnvelopeBuilder:
             pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
         )
         enveloped = builder.encrypt(serialization.Encoding.PEM, options)
-        with open("msg.p7m", "wb") as f:
-            f.write(enveloped)
-
         decrypted_bytes = test_support.pkcs7_decrypt(
             serialization.Encoding.PEM,
             enveloped,
