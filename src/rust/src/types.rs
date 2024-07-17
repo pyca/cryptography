@@ -476,9 +476,6 @@ pub static FFI_CAST: LazyPyImport = LazyPyImport::new(
     &["_openssl", "ffi", "cast"],
 );
 
-pub static CIPHER: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.ciphers", &["Cipher"]);
-
 pub static BLOCK_CIPHER_ALGORITHM: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers",
     &["BlockCipherAlgorithm"],

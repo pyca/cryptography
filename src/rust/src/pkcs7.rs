@@ -13,14 +13,14 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::types::{PyAnyMethods, PyBytes, PyBytesMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::IntoPy;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::padding::PKCS7PaddingContext;
+use crate::pkcs12::symmetric_encrypt;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
@@ -93,24 +93,14 @@ fn encrypt_and_serialize<'p>(
         smime_canonicalize(raw_data.as_bytes(), text_mode).0
     };
 
-    let data_with_header = PyBytes::new_bound(py, &data_with_header);
-    let mut padder = PKCS7PaddingContext::new(128);
-    let padded_content_start = padder.update(data_with_header.extract()?)?;
-    let padded_content_end = padder.finalize(py)?;
-    let padded_content = padded_content_start.add(padded_content_end)?;
-
     // The message is encrypted with AES-128-CBC, which the S/MIME v3.2 RFC
     // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
     let key = types::OS_URANDOM.get(py)?.call1((16,))?;
     let aes128_algorithm = types::AES128.get(py)?.call1((&key,))?;
     let iv = types::OS_URANDOM.get(py)?.call1((16,))?;
     let cbc_mode = types::CBC.get(py)?.call1((&iv,))?;
-    let cipher = types::CIPHER.get(py)?.call1((aes128_algorithm, cbc_mode))?;
-    let encryptor = cipher.call_method0(pyo3::intern!(py, "encryptor"))?;
-    let encrypted_content_start =
-        encryptor.call_method1(pyo3::intern!(py, "update"), (padded_content,))?;
-    let encrypted_content_end = encryptor.call_method0(pyo3::intern!(py, "finalize"))?;
-    let encrypted_content = encrypted_content_start.add(encrypted_content_end)?;
+
+    let encrypted_content = symmetric_encrypt(py, aes128_algorithm, cbc_mode, &data_with_header)?;
 
     let py_recipients: Vec<pyo3::Bound<'p, x509::certificate::Certificate>> = builder
         .getattr(pyo3::intern!(py, "_recipients"))?
@@ -151,7 +141,7 @@ fn encrypt_and_serialize<'p>(
                 oid: asn1::DefinedByMarker::marker(),
                 params: AlgorithmParameters::Aes128Cbc(iv.extract()?),
             },
-            encrypted_content: Some(encrypted_content.extract()?),
+            encrypted_content: Some(&encrypted_content),
         },
     };
 
