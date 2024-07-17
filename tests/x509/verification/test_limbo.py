@@ -139,6 +139,7 @@ def _limbo_testcase(id_, testcase):
             verifier = builder.build_server_verifier(peer_name)
         except ValueError:
             assert not should_pass
+            return
     else:
         assert testcase["extended_key_usage"] == ["clientAuth"]
         verifier = builder.build_client_verifier()
