@@ -62,4 +62,3 @@ The docs can be built using ``nox``:
 .. _`pip`: https://pypi.org/project/pip/
 .. _`as documented here`: https://docs.rs/openssl/latest/openssl/#automatic
 .. _`installation instructions`: https://pyenchant.github.io/pyenchant/install.html#installing-the-enchant-c-library
-.. _`a bug`: https://github.com/pyenchant/pyenchant/pull/302
