@@ -66,6 +66,8 @@ Changelog
 * :class:`~cryptography.x509.NameAttribute` now raises an exception when
   attempting to create a common name whose length is shorter or longer than
   :rfc:`5280` permits.
+* Added basic support for PKCS7 encryption (including SMIME) via
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7EnvelopeBuilder`.
 
 .. _v42-0-8:
 
