@@ -227,7 +227,6 @@ class PKCS7EnvelopeBuilder:
         self,
         encoding: serialization.Encoding,
         options: typing.Iterable[PKCS7Options],
-        backend: typing.Any = None,
     ) -> bytes:
         if len(self._recipients) == 0:
             raise ValueError("Must have at least one recipient")
