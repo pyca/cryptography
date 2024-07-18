@@ -1095,6 +1095,37 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     -----END CERTIFICATE-----
     """.strip()
 
+    ca_cert_rsa = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIExzCCAq+gAwIBAgIJAOcS06ClbtbJMA0GCSqGSIb3DQEBCwUAMBoxGDAWBgNV
+    BAMMD2NyeXB0b2dyYXBoeSBDQTAeFw0yMDA5MTQyMTQwNDJaFw00ODAxMzEyMTQw
+    NDJaMBoxGDAWBgNVBAMMD2NyeXB0b2dyYXBoeSBDQTCCAiIwDQYJKoZIhvcNAQEB
+    BQADggIPADCCAgoCggIBANBIheRc1HT4MzV5GvUbDk9CFU6DTomRApNqRmizriRq
+    m6OY4Ht3d71BXog6/IBkqAnZ4/XJQ40G4sVDb52k11oPvfJ/F5pc+6UqPBL+QGzY
+    GkJoubAqXFpI6ow0qayFNQLv0T9o4yh0QQOoGvgCmv91qmitLrZNXu4U9S76G+Di
+    GST+QyMkMxj+VsGRsRRBufV1urcnvFWjU6Q2+cr2cp0mMAG96NTyIskYiJ8vL03W
+    z4DX4klO4X47fPmDnU/OMn4SbvMZ896j1L0J04S+uVThTkxQWcFcqXhX5qM8kzcj
+    JUmybFlbf150j3WiucW48K/j7fJ0x9q3iUo4Gva0coScglJWcgo/BBCwFDw8NVba
+    7npxSRMiaS3qTv0dEFcRnvByc+7hyGxxlWdTE9tHisUI1eZVk9P9ziqNOZKscY8Z
+    X1+/C4M9X69Y7A8I74F5dO27IRycEgOrSo2z1NhfSwbqJr9a2TBtRsFinn8rjKBI
+    zNn0E5p9jO1WjxtkcjHfXXpLN8FFMvoYI9l/K+ZWDm9sboaF8jrgozSc004AFemA
+    H79mmCGVRKXn1vDAo4DLC6p3NiBFYQcYbW9V+beGD6srsF6xJtuY/UwtPROLWSzu
+    CCrZ/4BlmpNsR0ehIFFvzEKjX6rR2yp3YKlguDbMBMKMpfSGxAFwcZ7OiaxR20UH
+    AgMBAAGjEDAOMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBADSveDS4
+    y2V/N6Li2n9ChGNdCMr/45M0cl+GpL55aA36AWYMRLv0wip7MWV3yOj4mkjGBlTE
+    awKHH1FtetsE6B4a7M2hHhOXyXE60uUdptEx6ckGrJ1iyqu5cQUX1P+VnXbmOxfF
+    bl+Ugzjbgirx239rA4ezkDRuOvKcCbDOFV/gw3ZHfJ/IQeRXIQRl/y51wcnFUvFM
+    JEESYiijeDbEcY8r1/phmVQL0CO7WLMmTxlFj4X/TR3MTZWJQIap9GiLs5+n3QiO
+    jsZ3GuFOomB8oTebYkXniwbNu5hgLP/seRQzGA7B9VDZryAhCtvGgjtQh0eW2Qxt
+    sgmDJGOPKnKT3O5U0v3+IPLEYpe8JSzgAhhh6H1rAJRUNwP2gRcO4eOUJSkdl218
+    fRNT0ILzosuWxwprER9ciMQF8q0JJKMhcfHRMH0S5mWVJAIkj68KY05oCy2zNyYa
+    oruopKSWXe0Bzr40znm40P7xIkui2BGQMlDPpbCaEfLsLqyctfbdmMlxac/QgIfY
+    TltrbqmI3MNy5uqGViGFpWPCB+kD8EsJF9nlKJXlu/i55qgUr/2/2CdeWlZDBP8A
+    1fdzmpYpWnwhE0KobzLS2z3AwDxiY/RSWUfypLZA0K/lpaEtYB6UHMDZ0/8WqgZV
+    gNucCuty0cA4Kf7eX1TlAKVwH8hTkVmJc2rX
+    -----END CERTIFICATE-----
+    """.strip()
+
 
 .. class:: PKCS7SignatureBuilder
 
@@ -1174,11 +1205,72 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :returns bytes: The signed PKCS7 message.
 
 
+.. class:: PKCS7EnvelopeBuilder
+
+    The PKCS7 envelope builder can create encrypted S/MIME messages,
+    which are commonly used in email. S/MIME has multiple versions,
+    but this implements a subset of :rfc:`5751`, also known as S/MIME
+    Version 3.2.
+
+    .. versionadded:: 43.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+        >>> options = [pkcs7.PKCS7Options.Text]
+        >>> pkcs7.PKCS7EnvelopeBuilder().set_data(
+        ...     b"data to encrypt"
+        ... ).add_recipient(
+        ...     cert
+        ... ).encrypt(
+        ...     serialization.Encoding.SMIME, options
+        ... )
+        b'...'
+
+    .. method:: set_data(data)
+
+        :param data: The data to be encrypted.
+        :type data: :term:`bytes-like`
+
+    .. method:: add_recipient(certificate)
+
+        Add a recipient for the message. Recipients will be able to use their private keys
+        to decrypt the message. This method may be called multiple times to add as many recipients
+        as desired.
+
+        :param certificate: A :class:`~cryptography.x509.Certificate` for an intended
+            recipient of the encrypted message. Only certificates with public RSA keys
+            are currently supported.
+
+    .. method:: encrypt(encoding, options)
+
+        The message is encrypted using AES-128-CBC. The encryption key used is included in
+        the envelope, encrypted using the recipient's public RSA key. If multiple recipients
+        are specified, the key is encrypted once with each recipient's public key, and all
+        encrypted keys are included in the envelope (one per recipient).
+
+        :param encoding: :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM`,
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.DER`,
+            or :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`.
+
+        :param options: A list of
+            :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
+            this operation only
+            :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` and
+            :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Binary`
+            are supported.
+
+        :returns bytes: The enveloped PKCS7 message.
+
+
 .. class:: PKCS7Options
 
     .. versionadded:: 3.2
 
-    An enumeration of options for PKCS7 signature creation.
+    An enumeration of options for PKCS7 signature and envelope creation.
 
     .. attribute:: Text
 

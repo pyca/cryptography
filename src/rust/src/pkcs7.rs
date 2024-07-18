@@ -6,7 +6,9 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
 
+use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attribute;
+use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
@@ -18,6 +20,7 @@ use pyo3::IntoPy;
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::pkcs12::symmetric_encrypt;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
@@ -73,6 +76,90 @@ fn serialize_certificates<'p>(
     let content_info_bytes = asn1::write_single(&content_info)?;
 
     encode_der_data(py, "PKCS7".to_string(), content_info_bytes, encoding)
+}
+
+#[pyo3::pyfunction]
+fn encrypt_and_serialize<'p>(
+    py: pyo3::Python<'p>,
+    builder: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
+    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
+    let data_with_header = if options.contains(types::PKCS7_BINARY.get(py)?)? {
+        Cow::Borrowed(raw_data.as_bytes())
+    } else {
+        smime_canonicalize(raw_data.as_bytes(), text_mode).0
+    };
+
+    // The message is encrypted with AES-128-CBC, which the S/MIME v3.2 RFC
+    // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
+    let key = types::OS_URANDOM.get(py)?.call1((16,))?;
+    let aes128_algorithm = types::AES128.get(py)?.call1((&key,))?;
+    let iv = types::OS_URANDOM.get(py)?.call1((16,))?;
+    let cbc_mode = types::CBC.get(py)?.call1((&iv,))?;
+
+    let encrypted_content = symmetric_encrypt(py, aes128_algorithm, cbc_mode, &data_with_header)?;
+
+    let py_recipients: Vec<pyo3::Bound<'p, x509::certificate::Certificate>> = builder
+        .getattr(pyo3::intern!(py, "_recipients"))?
+        .extract()?;
+
+    let mut recipient_infos = vec![];
+    let padding = types::PKCS1V15.get(py)?.call0()?;
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+    for cert in py_recipients.iter() {
+        // Currently, keys are encrypted with RSA (PKCS #1 v1.5), which the S/MIME v3.2 RFC
+        // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.3)
+        let encrypted_key = cert
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .call_method1(pyo3::intern!(py, "encrypt"), (&key, &padding))?
+            .extract::<pyo3::pybacked::PyBackedBytes>()?;
+
+        recipient_infos.push(pkcs7::RecipientInfo {
+            version: 0,
+            issuer_and_serial_number: pkcs7::IssuerAndSerialNumber {
+                issuer: cert.get().raw.borrow_dependent().tbs_cert.issuer.clone(),
+                serial_number: cert.get().raw.borrow_dependent().tbs_cert.serial,
+            },
+            key_encryption_algorithm: AlgorithmIdentifier {
+                oid: asn1::DefinedByMarker::marker(),
+                params: AlgorithmParameters::Rsa(Some(())),
+            },
+            encrypted_key: ka_bytes.add(encrypted_key),
+        });
+    }
+
+    let enveloped_data = pkcs7::EnvelopedData {
+        version: 0,
+        recipient_infos: asn1::SetOfWriter::new(&recipient_infos),
+
+        encrypted_content_info: pkcs7::EncryptedContentInfo {
+            content_type: PKCS7_DATA_OID,
+            content_encryption_algorithm: AlgorithmIdentifier {
+                oid: asn1::DefinedByMarker::marker(),
+                params: AlgorithmParameters::Aes128Cbc(iv.extract()?),
+            },
+            encrypted_content: Some(&encrypted_content),
+        },
+    };
+
+    let content_info = pkcs7::ContentInfo {
+        _content_type: asn1::DefinedByMarker::marker(),
+        content: pkcs7::Content::EnvelopedData(asn1::Explicit::new(Box::new(enveloped_data))),
+    };
+    let ci_bytes = asn1::write_single(&content_info)?;
+
+    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
+        Ok(types::SMIME_ENVELOPED_ENCODE
+            .get(py)?
+            .call1((&*ci_bytes,))?
+            .extract()?)
+    } else {
+        // Handles the DER, PEM, and error cases
+        encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
+    }
 }
 
 #[pyo3::pyfunction]
@@ -256,7 +343,7 @@ fn sign_and_serialize<'p>(
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
             .collect::<Vec<_>>()
             .join(",");
-        Ok(types::SMIME_ENCODE
+        Ok(types::SMIME_SIGNED_ENCODE
             .get(py)?
             .call1((&*data_without_header, &*ci_bytes, mic_algs, text_mode))?
             .extract()?)
@@ -412,8 +499,8 @@ fn load_der_pkcs7_certificates<'p>(
 pub(crate) mod pkcs7_mod {
     #[pymodule_export]
     use super::{
-        load_der_pkcs7_certificates, load_pem_pkcs7_certificates, serialize_certificates,
-        sign_and_serialize,
+        encrypt_and_serialize, load_der_pkcs7_certificates, load_pem_pkcs7_certificates,
+        serialize_certificates, sign_and_serialize,
     };
 }
 

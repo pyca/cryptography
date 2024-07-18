@@ -117,7 +117,7 @@ def _load_cert_key():
     only_if=lambda backend: backend.pkcs7_supported(),
     skip_message="Requires OpenSSL with PKCS7 support",
 )
-class TestPKCS7Builder:
+class TestPKCS7SignatureBuilder:
     def test_invalid_data(self, backend):
         builder = pkcs7.PKCS7SignatureBuilder()
         with pytest.raises(TypeError):
@@ -834,6 +834,242 @@ class TestPKCS7Builder:
         )
 
 
+def _load_rsa_cert_key():
+    key = load_vectors_from_file(
+        os.path.join("x509", "custom", "ca", "rsa_key.pem"),
+        lambda pemfile: serialization.load_pem_private_key(
+            pemfile.read(), None, unsafe_skip_rsa_key_validation=True
+        ),
+        mode="rb",
+    )
+    cert = load_vectors_from_file(
+        os.path.join("x509", "custom", "ca", "rsa_ca.pem"),
+        loader=lambda pemfile: x509.load_pem_x509_certificate(pemfile.read()),
+        mode="rb",
+    )
+    return cert, key
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.pkcs7_supported()
+    and backend.rsa_encryption_supported(padding.PKCS1v15()),
+    skip_message="Requires OpenSSL with PKCS7 support and PKCS1 v1.5 padding "
+    "support",
+)
+class TestPKCS7EnvelopeBuilder:
+    def test_invalid_data(self, backend):
+        builder = pkcs7.PKCS7EnvelopeBuilder()
+        with pytest.raises(TypeError):
+            builder.set_data("not bytes")  # type: ignore[arg-type]
+
+    def test_set_data_twice(self, backend):
+        builder = pkcs7.PKCS7EnvelopeBuilder().set_data(b"test")
+        with pytest.raises(ValueError):
+            builder.set_data(b"test")
+
+    def test_encrypt_no_recipient(self, backend):
+        builder = pkcs7.PKCS7EnvelopeBuilder().set_data(b"test")
+        with pytest.raises(ValueError):
+            builder.encrypt(serialization.Encoding.SMIME, [])
+
+    def test_encrypt_no_data(self, backend):
+        cert, _ = _load_rsa_cert_key()
+        builder = pkcs7.PKCS7EnvelopeBuilder().add_recipient(cert)
+        with pytest.raises(ValueError):
+            builder.encrypt(serialization.Encoding.SMIME, [])
+
+    def test_unsupported_encryption(self, backend):
+        cert_non_rsa, _ = _load_cert_key()
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7EnvelopeBuilder().add_recipient(cert_non_rsa)
+
+    def test_not_a_cert(self, backend):
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7EnvelopeBuilder().add_recipient(
+                b"notacert",  # type: ignore[arg-type]
+            )
+
+    def test_encrypt_invalid_options(self, backend):
+        cert, _ = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(b"test").add_recipient(cert)
+        )
+        with pytest.raises(ValueError):
+            builder.encrypt(
+                serialization.Encoding.SMIME,
+                [b"invalid"],  # type: ignore[list-item]
+            )
+
+    def test_encrypt_invalid_encoding(self, backend):
+        cert, _ = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(b"test").add_recipient(cert)
+        )
+        with pytest.raises(ValueError):
+            builder.encrypt(serialization.Encoding.Raw, [])
+
+    @pytest.mark.parametrize(
+        "invalid_options",
+        [
+            [pkcs7.PKCS7Options.NoAttributes],
+            [pkcs7.PKCS7Options.NoCapabilities],
+            [pkcs7.PKCS7Options.NoCerts],
+            [pkcs7.PKCS7Options.DetachedSignature],
+            [pkcs7.PKCS7Options.Binary, pkcs7.PKCS7Options.Text],
+        ],
+    )
+    def test_encrypt_invalid_encryption_options(
+        self, backend, invalid_options
+    ):
+        cert, _ = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(b"test").add_recipient(cert)
+        )
+        with pytest.raises(ValueError):
+            builder.encrypt(serialization.Encoding.DER, invalid_options)
+
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_smime_encoding(self, backend, options):
+        data = b"hello world\n"
+        cert, private_key = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.SMIME, options)
+        assert b"MIME-Version: 1.0\n" in enveloped
+        assert b"Content-Transfer-Encoding: base64\n" in enveloped
+        message = email.parser.BytesParser().parsebytes(enveloped)
+        assert message.get_content_disposition() == "attachment"
+        assert message.get_filename() == "smime.p7m"
+        assert message.get_content_type() == "application/pkcs7-mime"
+        assert message.get_param("smime-type") == "enveloped-data"
+        assert message.get_param("name") == "smime.p7m"
+
+        payload = message.get_payload(decode=True)
+        assert isinstance(payload, bytes)
+
+        # We want to know if we've serialized something that has the parameters
+        # we expect, so we match on specific byte strings of OIDs & DER values.
+        # OID 2.16.840.1.101.3.4.1.2 (aes128-CBC)
+        assert b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x02" in payload
+        # OID 1.2.840.113549.1.1.1 (rsaEncryption (PKCS #1))
+        assert b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01" in payload
+        # cryptography CA (the recipient's Common Name)
+        assert (
+            b"\x0c\x0f\x63\x72\x79\x70\x74\x6f\x67\x72\x61\x70\x68\x79"
+            b"\x20\x43\x41"
+        ) in payload
+
+        decrypted_bytes = test_support.pkcs7_decrypt(
+            serialization.Encoding.SMIME,
+            enveloped,
+            private_key,
+            cert,
+            options,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_der_encoding(self, backend, options):
+        data = b"hello world\n"
+        cert, private_key = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.DER, options)
+
+        # We want to know if we've serialized something that has the parameters
+        # we expect, so we match on specific byte strings of OIDs & DER values.
+        # OID 2.16.840.1.101.3.4.1.2 (aes128-CBC)
+        assert b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x02" in enveloped
+        # OID 1.2.840.113549.1.1.1 (rsaEncryption (PKCS #1))
+        assert b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01" in enveloped
+        # cryptography CA (the recipient's Common Name)
+        assert (
+            b"\x0c\x0f\x63\x72\x79\x70\x74\x6f\x67\x72\x61\x70\x68\x79"
+            b"\x20\x43\x41"
+        ) in enveloped
+
+        decrypted_bytes = test_support.pkcs7_decrypt(
+            serialization.Encoding.DER,
+            enveloped,
+            private_key,
+            cert,
+            options,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
+    @pytest.mark.parametrize(
+        "options",
+        [
+            [pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
+        ],
+    )
+    def test_smime_encrypt_pem_encoding(self, backend, options):
+        data = b"hello world\n"
+        cert, private_key = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder().set_data(data).add_recipient(cert)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.PEM, options)
+        decrypted_bytes = test_support.pkcs7_decrypt(
+            serialization.Encoding.PEM,
+            enveloped,
+            private_key,
+            cert,
+            options,
+        )
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
+
+    def test_smime_encrypt_multiple_recipients(self, backend):
+        data = b"hello world\n"
+        cert, private_key = _load_rsa_cert_key()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(cert)
+            .add_recipient(cert)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.DER, [])
+        # cryptography CA (the recipient's Common Name)
+        common_name_bytes = (
+            b"\x0c\x0f\x63\x72\x79\x70\x74\x6f\x67\x72\x61"
+            b"\x70\x68\x79\x20\x43\x41"
+        )
+        assert enveloped.count(common_name_bytes) == 2
+
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.pkcs7_supported(),
     skip_message="Requires OpenSSL with PKCS7 support",
@@ -921,3 +1157,14 @@ class TestPKCS7Unsupported:
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             pkcs7.load_pem_pkcs7_certificates(b"nonsense")
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.pkcs7_supported()
+    and not backend.rsa_encryption_supported(padding.PKCS1v15()),
+    skip_message="Requires OpenSSL with no PKCS1 v1.5 padding support",
+)
+class TestPKCS7EnvelopeBuilderUnsupported:
+    def test_envelope_builder_unsupported(self, backend):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
+            pkcs7.PKCS7EnvelopeBuilder()

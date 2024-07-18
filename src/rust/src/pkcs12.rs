@@ -79,7 +79,7 @@ impl PKCS12Certificate {
     }
 }
 
-fn symmetric_encrypt(
+pub(crate) fn symmetric_encrypt(
     py: pyo3::Python<'_>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     mode: pyo3::Bound<'_, pyo3::PyAny>,

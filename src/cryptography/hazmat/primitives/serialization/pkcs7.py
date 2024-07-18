@@ -12,6 +12,7 @@ import io
 import typing
 
 from cryptography import utils, x509
+from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
@@ -177,7 +178,92 @@ class PKCS7SignatureBuilder:
         return rust_pkcs7.sign_and_serialize(self, encoding, options)
 
 
-def _smime_encode(
+class PKCS7EnvelopeBuilder:
+    def __init__(
+        self,
+        *,
+        _data: bytes | None = None,
+        _recipients: list[x509.Certificate] | None = None,
+    ):
+        from cryptography.hazmat.backends.openssl.backend import (
+            backend as ossl,
+        )
+
+        if not ossl.rsa_encryption_supported(padding=padding.PKCS1v15()):
+            raise UnsupportedAlgorithm(
+                "RSA with PKCS1 v1.5 padding is not supported by this version"
+                " of OpenSSL.",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+        self._data = _data
+        self._recipients = _recipients if _recipients is not None else []
+
+    def set_data(self, data: bytes) -> PKCS7EnvelopeBuilder:
+        _check_byteslike("data", data)
+        if self._data is not None:
+            raise ValueError("data may only be set once")
+
+        return PKCS7EnvelopeBuilder(_data=data, _recipients=self._recipients)
+
+    def add_recipient(
+        self,
+        certificate: x509.Certificate,
+    ) -> PKCS7EnvelopeBuilder:
+        if not isinstance(certificate, x509.Certificate):
+            raise TypeError("certificate must be a x509.Certificate")
+
+        if not isinstance(certificate.public_key(), rsa.RSAPublicKey):
+            raise TypeError("Only RSA keys are supported at this time.")
+
+        return PKCS7EnvelopeBuilder(
+            _data=self._data,
+            _recipients=[
+                *self._recipients,
+                certificate,
+            ],
+        )
+
+    def encrypt(
+        self,
+        encoding: serialization.Encoding,
+        options: typing.Iterable[PKCS7Options],
+    ) -> bytes:
+        if len(self._recipients) == 0:
+            raise ValueError("Must have at least one recipient")
+        if self._data is None:
+            raise ValueError("You must add data to encrypt")
+        options = list(options)
+        if not all(isinstance(x, PKCS7Options) for x in options):
+            raise ValueError("options must be from the PKCS7Options enum")
+        if encoding not in (
+            serialization.Encoding.PEM,
+            serialization.Encoding.DER,
+            serialization.Encoding.SMIME,
+        ):
+            raise ValueError(
+                "Must be PEM, DER, or SMIME from the Encoding enum"
+            )
+
+        # Only allow options that make sense for encryption
+        if any(
+            opt not in [PKCS7Options.Text, PKCS7Options.Binary]
+            for opt in options
+        ):
+            raise ValueError(
+                "Only the following options are supported for encryption: "
+                "Text, Binary"
+            )
+        elif PKCS7Options.Text in options and PKCS7Options.Binary in options:
+            # OpenSSL accepts both options at the same time, but ignores Text.
+            # We fail defensively to avoid unexpected outputs.
+            raise ValueError(
+                "Cannot use Binary and Text options at the same time"
+            )
+
+        return rust_pkcs7.encrypt_and_serialize(self, encoding, options)
+
+
+def _smime_signed_encode(
     data: bytes, signature: bytes, micalg: str, text_mode: bool
 ) -> bytes:
     # This function works pretty hard to replicate what OpenSSL does
@@ -223,6 +309,23 @@ def _smime_encode(
     )
     g.flatten(m)
     return fp.getvalue()
+
+
+def _smime_enveloped_encode(data: bytes) -> bytes:
+    m = email.message.Message()
+    m.add_header("MIME-Version", "1.0")
+    m.add_header("Content-Disposition", "attachment", filename="smime.p7m")
+    m.add_header(
+        "Content-Type",
+        "application/pkcs7-mime",
+        smime_type="enveloped-data",
+        name="smime.p7m",
+    )
+    m.add_header("Content-Transfer-Encoding", "base64")
+
+    m.set_payload(email.base64mime.body_encode(data, maxlinelen=65))
+
+    return m.as_bytes(policy=m.policy.clone(linesep="\n", max_line_length=0))
 
 
 class OpenSSLMimePart(email.message.MIMEPart):

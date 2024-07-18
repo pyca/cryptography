@@ -136,6 +136,16 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::HMAC_WITH_SHA256_OID)]
     HmacWithSha256(asn1::Null),
 
+    // Used only in PKCS#7 AlgorithmIdentifiers
+    // https://datatracker.ietf.org/doc/html/rfc3565#section-4.1
+    //
+    // From RFC 3565 section 4.1:
+    // The AlgorithmIdentifier parameters field MUST be present, and the
+    // parameters field MUST contain a AES-IV:
+    //
+    // AES-IV ::= OCTET STRING (SIZE(16))
+    #[defined_by(oid::AES_128_CBC_OID)]
+    Aes128Cbc([u8; 16]),
     #[defined_by(oid::AES_256_CBC_OID)]
     Aes256Cbc([u8; 16]),
 
