@@ -43,7 +43,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "3.8.4"}}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "3.9.2"}}
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
-          - {VERSION: "3.13-dev", NOXSESSSION: "tests"}
+          - {VERSION: "3.13-dev", NOXSESSION: "tests"}
           # Latest commit on the BoringSSL master branch, as of Jun 25, 2024.
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "12f0f4bec2a6db53a53748dd6001d1aacaae26ba"}}
           # Latest commit on the OpenSSL master branch, as of Jun 28, 2024.
