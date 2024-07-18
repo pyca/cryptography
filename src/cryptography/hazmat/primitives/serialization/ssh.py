@@ -311,7 +311,9 @@ class _SSHFormatRSA:
         mpint n, e, d, iqmp, p, q
     """
 
-    def get_public(self, data: memoryview):
+    def get_public(
+        self, data: memoryview
+    ) -> tuple[tuple[int, int], memoryview]:
         """RSA public fields"""
         e, data = _get_mpint(data)
         n, data = _get_mpint(data)
@@ -458,7 +460,9 @@ class _SSHFormatECDSA:
         self.ssh_curve_name = ssh_curve_name
         self.curve = curve
 
-    def get_public(self, data: memoryview) -> tuple[tuple, memoryview]:
+    def get_public(
+        self, data: memoryview
+    ) -> tuple[tuple[memoryview, memoryview], memoryview]:
         """ECDSA public fields"""
         curve, data = _get_sshstr(data)
         point, data = _get_sshstr(data)
@@ -521,7 +525,9 @@ class _SSHFormatEd25519:
         bytes secret_and_point
     """
 
-    def get_public(self, data: memoryview) -> tuple[tuple, memoryview]:
+    def get_public(
+        self, data: memoryview
+    ) -> tuple[tuple[memoryview], memoryview]:
         """Ed25519 public fields"""
         point, data = _get_sshstr(data)
         return (point,), data

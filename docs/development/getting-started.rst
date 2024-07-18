@@ -41,6 +41,17 @@ You can also specify a subset of tests to run as positional arguments:
     $ # run the whole x509 testsuite, plus the fernet tests
     $ nox -e local -- tests/x509/ tests/test_fernet.py
 
+Building the docs
+-----------------
+
+Building the docs on non-Windows platforms requires manually installing
+the C library ``libenchant`` (`installation instructions`_).
+The docs can be built using ``nox``:
+
+.. code-block:: console
+
+    $ nox -e docs
+
 
 .. _`Homebrew`: https://brew.sh
 .. _`MacPorts`: https://www.macports.org
@@ -50,3 +61,4 @@ You can also specify a subset of tests to run as positional arguments:
 .. _`virtualenv`: https://pypi.org/project/virtualenv/
 .. _`pip`: https://pypi.org/project/pip/
 .. _`as documented here`: https://docs.rs/openssl/latest/openssl/#automatic
+.. _`installation instructions`: https://pyenchant.github.io/pyenchant/install.html#installing-the-enchant-c-library

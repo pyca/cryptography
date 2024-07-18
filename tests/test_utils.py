@@ -39,6 +39,13 @@ from .utils import (
 )
 
 
+def test_int_to_bytes_rejects_zero_length():
+    with pytest.raises(ValueError):
+        cryptography.utils.int_to_bytes(123, 0)
+    with pytest.raises(ValueError):
+        cryptography.utils.int_to_bytes(0, 0)
+
+
 def test_check_backend_support_skip():
     supported = pretend.stub(
         kwargs={"only_if": lambda backend: False, "skip_message": "Nope"}

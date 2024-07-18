@@ -139,22 +139,6 @@ def serialize_key_and_certificates(
             "Key must be RSA, DSA, EllipticCurve, ED25519, or ED448"
             " private key, or None."
         )
-    if cert is not None and not isinstance(cert, x509.Certificate):
-        raise TypeError("cert must be a certificate or None")
-
-    if cas is not None:
-        cas = list(cas)
-        if not all(
-            isinstance(
-                val,
-                (
-                    x509.Certificate,
-                    PKCS12Certificate,
-                ),
-            )
-            for val in cas
-        ):
-            raise TypeError("all values in cas must be certificates")
 
     if not isinstance(
         encryption_algorithm, serialization.KeySerializationEncryption
@@ -167,13 +151,6 @@ def serialize_key_and_certificates(
     if key is None and cert is None and not cas:
         raise ValueError("You must supply at least one of key, cert, or cas")
 
-    if isinstance(encryption_algorithm, serialization.NoEncryption):
-        return rust_pkcs12.serialize_key_and_certificates(
-            name, key, cert, cas, encryption_algorithm
-        )
-
-    from cryptography.hazmat.backends.openssl.backend import backend
-
-    return backend.serialize_key_and_certificates_to_pkcs12(
+    return rust_pkcs12.serialize_key_and_certificates(
         name, key, cert, cas, encryption_algorithm
     )

@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import x509
-from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
@@ -471,7 +470,7 @@ class TestPKCS12Creation:
         )
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, key, None, encryption)
-        assert str(exc.value) == "cert must be a certificate or None"
+        assert "object cannot be converted to 'Certificate'" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, cert, None, key)
@@ -485,7 +484,9 @@ class TestPKCS12Creation:
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(None, key, cert, [key], encryption)
-        assert str(exc.value) == "all values in cas must be certificates"
+        assert "failed to extract enum CertificateOrPKCS12Certificate" in str(
+            exc.value
+        )
 
     def test_generate_no_cert(self, backend):
         _, key = _load_ca(backend)
@@ -636,12 +637,6 @@ class TestPKCS12Creation:
         ) and not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
             pytest.skip("PBESv2 is not supported on OpenSSL < 3.0")
 
-        if (
-            mac_alg is not None
-            and not backend._lib.Cryptography_HAS_PKCS12_SET_MAC
-        ):
-            pytest.skip("PKCS12_set_mac is not supported (boring)")
-
         builder = serialization.PrivateFormat.PKCS12.encryption_builder()
         if enc_alg is not None:
             builder = builder.key_cert_algorithm(enc_alg)
@@ -688,57 +683,6 @@ class TestPKCS12Creation:
         )
         assert parsed_more_certs == [cacert]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL < 3.0.0 (or Libre/Boring)",
-    )
-    @pytest.mark.parametrize(
-        ("algorithm"),
-        [
-            serialization.PrivateFormat.PKCS12.encryption_builder()
-            .key_cert_algorithm(PBES.PBESv2SHA256AndAES256CBC)
-            .build(b"password"),
-        ],
-    )
-    def test_key_serialization_encryption_unsupported(
-        self, algorithm, backend
-    ):
-        cacert, cakey = _load_ca(backend)
-        with pytest.raises(UnsupportedAlgorithm):
-            serialize_key_and_certificates(
-                b"name", cakey, cacert, [], algorithm
-            )
-
-    @pytest.mark.supported(
-        only_if=lambda backend: (
-            not backend._lib.Cryptography_HAS_PKCS12_SET_MAC
-        ),
-        skip_message="Requires OpenSSL without PKCS12_set_mac (boring only)",
-    )
-    @pytest.mark.parametrize(
-        "algorithm",
-        [
-            serialization.PrivateFormat.PKCS12.encryption_builder()
-            .key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
-            .hmac_hash(hashes.SHA256())
-            .build(b"password"),
-        ],
-    )
-    def test_key_serialization_encryption_set_mac_unsupported(
-        self, algorithm, backend
-    ):
-        cacert, cakey = _load_ca(backend)
-        with pytest.raises(UnsupportedAlgorithm):
-            serialize_key_and_certificates(
-                b"name", cakey, cacert, [], algorithm
-            )
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend._lib.Cryptography_HAS_PKCS12_SET_MAC,
-        skip_message="Requires OpenSSL with PKCS12_set_mac",
-    )
     def test_set_mac_key_certificate_mismatch(self, backend):
         cacert, _ = _load_ca(backend)
         key = ec.generate_private_key(ec.SECP256R1())

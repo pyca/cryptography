@@ -16,12 +16,9 @@ typedef ... EVP_MD_CTX;
 typedef ... EVP_PKEY;
 typedef ... EVP_PKEY_CTX;
 static const int EVP_PKEY_RSA;
-static const int EVP_PKEY_RSA_PSS;
 static const int EVP_PKEY_DSA;
 static const int EVP_PKEY_DH;
 static const int EVP_PKEY_EC;
-static const int EVP_PKEY_X25519;
-static const int EVP_PKEY_ED25519;
 static const int EVP_MAX_MD_SIZE;
 
 static const int Cryptography_HAS_EVP_PKEY_DHX;

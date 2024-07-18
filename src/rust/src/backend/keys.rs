@@ -2,7 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::PyModuleMethods;
 use pyo3::IntoPy;
 
 use crate::backend::utils;
@@ -176,7 +175,9 @@ fn load_pem_public_key(
             }
         }
         "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
-        _ => return Err(CryptographyError::from(pem::PemError::MalformedFraming)),
+        _ => return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+            "Valid PEM but no BEGIN PUBLIC KEY/END PUBLIC KEY delimiters. Are you sure this is a public key?"
+        ))),
     };
     public_key_from_pkey(py, &pkey, pkey.id())
 }
@@ -219,17 +220,12 @@ fn public_key_from_pkey(
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "keys")?;
-
-    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_private_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_private_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(load_der_public_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(load_pem_public_key, &m)?)?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod keys {
+    #[pymodule_export]
+    use super::{
+        load_der_private_key, load_der_public_key, load_pem_private_key, load_pem_public_key,
+    };
 }
 
 #[cfg(test)]

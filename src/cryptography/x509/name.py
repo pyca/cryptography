@@ -59,6 +59,12 @@ _NAMEOID_TO_NAME: _OidNameMap = {
 }
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
+_NAMEOID_LENGTH_LIMIT = {
+    NameOID.COUNTRY_NAME: (2, 2),
+    NameOID.JURISDICTION_COUNTRY_NAME: (2, 2),
+    NameOID.COMMON_NAME: (1, 64),
+}
+
 
 def _escape_dn_value(val: str | bytes) -> str:
     """Escape special characters in RFC4514 Distinguished Name value."""
@@ -132,19 +138,20 @@ class NameAttribute:
             if not isinstance(value, str):
                 raise TypeError("value argument must be a str")
 
-        if oid in (NameOID.COUNTRY_NAME, NameOID.JURISDICTION_COUNTRY_NAME):
+        length_limits = _NAMEOID_LENGTH_LIMIT.get(oid)
+        if length_limits is not None:
+            min_length, max_length = length_limits
             assert isinstance(value, str)
             c_len = len(value.encode("utf8"))
-            if c_len != 2 and _validate is True:
-                raise ValueError(
-                    "Country name must be a 2 character country code"
+            if c_len < min_length or c_len > max_length:
+                msg = (
+                    f"Attribute's length must be >= {min_length} and "
+                    f"<= {max_length}, but it was {c_len}"
                 )
-            elif c_len != 2:
-                warnings.warn(
-                    "Country names should be two characters, but the "
-                    f"attribute is {c_len} characters in length.",
-                    stacklevel=2,
-                )
+                if _validate is True:
+                    raise ValueError(msg)
+                else:
+                    warnings.warn(msg, stacklevel=2)
 
         # The appropriate ASN1 string type varies by OID and is defined across
         # multiple RFCs including 2459, 3280, and 5280. In general UTF8String

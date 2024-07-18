@@ -14,7 +14,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
-from cryptography.hazmat.bindings._rust import asn1
+from cryptography.hazmat.bindings._rust import test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dh,
@@ -2429,7 +2429,7 @@ class TestRSACertificateRequest:
 
         cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
 
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
 
@@ -2615,7 +2615,7 @@ class TestCertificateBuilder:
             not_valid_before=not_valid_before,
             not_valid_after=not_valid_after,
         )
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
         # UTC TIME
@@ -3088,7 +3088,7 @@ class TestCertificateBuilder:
         )
         cert = cert_builder.sign(private_key, hashes.SHA256(), backend)
         _check_cert_times(cert, not_valid_before=time, not_valid_after=time)
-        parsed = asn1.test_parse_certificate(
+        parsed = test_support.test_parse_certificate(
             cert.public_bytes(serialization.Encoding.DER)
         )
         # UTC TIME
@@ -5809,13 +5809,20 @@ class TestNameAttribute:
                 None,  # type:ignore[arg-type]
             )
 
-    def test_init_bad_country_code_value(self):
+    def test_init_bad_length(self):
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.COUNTRY_NAME, "United States")
 
         # unicode string of length 2, but > 2 bytes
         with pytest.raises(ValueError):
             x509.NameAttribute(NameOID.COUNTRY_NAME, "\U0001f37a\U0001f37a")
+
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, "Too Long")
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.COMMON_NAME, "Too Long" * 10)
+        with pytest.raises(ValueError):
+            x509.NameAttribute(NameOID.COMMON_NAME, "")
 
     def test_invalid_type(self):
         with pytest.raises(TypeError):

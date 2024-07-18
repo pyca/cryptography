@@ -265,6 +265,7 @@ def local(session):
         *test_dependencies,
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
+        "-e",
         "./vectors/",
         verbose=False,
     )
@@ -294,14 +295,11 @@ def local(session):
         "noxfile.py",
     )
 
-    install(
-        session,
-        # Needed until https://github.com/astral-sh/uv/issues/2152 is fixed
-        "--reinstall-package",
-        "cryptography",
-        "--refresh-package",
-        "cryptography",
-        ".",
+    session.run(
+        "maturin",
+        "develop",
+        "--release",
+        "--uv",
     )
 
     if session.posargs:

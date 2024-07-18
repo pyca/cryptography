@@ -5,7 +5,6 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
-use pyo3::types::PyModuleMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x25519")]
 pub(crate) struct X25519PrivateKey {
@@ -150,16 +149,10 @@ impl X25519PublicKey {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "x25519")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_private_bytes, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
-
-    m.add_class::<X25519PrivateKey>()?;
-    m.add_class::<X25519PublicKey>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod x25519 {
+    #[pymodule_export]
+    use super::{
+        from_private_bytes, from_public_bytes, generate_key, X25519PrivateKey, X25519PublicKey,
+    };
 }

@@ -6,7 +6,7 @@ use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use pyo3::types::{PyBytesMethods, PyModuleMethods};
+use pyo3::types::PyBytesMethods;
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
 struct Poly1305Boring {
@@ -165,12 +165,8 @@ impl Poly1305 {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "poly1305")?;
-
-    m.add_class::<Poly1305>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod poly1305 {
+    #[pymodule_export]
+    use super::Poly1305;
 }

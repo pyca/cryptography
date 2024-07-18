@@ -6,10 +6,11 @@
 import base64
 import datetime
 import os
+from typing import Optional
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, rsa
@@ -66,6 +67,35 @@ def _generate_root(private_key=None, algorithm=hashes.SHA256()):
 
     cert = builder.sign(private_key, algorithm, backend)
     return cert, private_key
+
+
+def _check_ocsp_response_times(
+    ocsp_resp: ocsp.OCSPResponse,
+    this_update: datetime.datetime,
+    next_update: Optional[datetime.datetime],
+    revocation_time: Optional[datetime.datetime],
+) -> None:
+    with pytest.warns(utils.DeprecatedIn43):
+        assert ocsp_resp.this_update == this_update
+    assert ocsp_resp.this_update_utc == this_update.replace(
+        tzinfo=datetime.timezone.utc
+    )
+
+    with pytest.warns(utils.DeprecatedIn43):
+        assert ocsp_resp.next_update == next_update
+    assert ocsp_resp.next_update_utc == (
+        next_update.replace(tzinfo=datetime.timezone.utc)
+        if next_update is not None
+        else None
+    )
+
+    with pytest.warns(utils.DeprecatedIn43):
+        assert ocsp_resp.revocation_time == revocation_time
+    assert ocsp_resp.revocation_time_utc == (
+        revocation_time.replace(tzinfo=datetime.timezone.utc)
+        if revocation_time is not None
+        else None
+    )
 
 
 class TestOCSPRequest:
@@ -634,16 +664,26 @@ class TestOCSPResponseBuilder:
         resp = builder.sign(private_key, hashes.SHA256())
         assert resp.responder_name == root_cert.subject
         assert resp.responder_key_hash is None
-        assert (current_time - resp.produced_at).total_seconds() < 10
+        with pytest.warns(utils.DeprecatedIn43):
+            assert (current_time - resp.produced_at).total_seconds() < 10
+        assert (
+            current_time.replace(tzinfo=datetime.timezone.utc)
+            - resp.produced_at_utc
+        ).total_seconds() < 10
         assert (
             resp.signature_algorithm_oid
             == x509.SignatureAlgorithmOID.ECDSA_WITH_SHA256
         )
         assert resp.certificate_status == ocsp.OCSPCertStatus.GOOD
-        assert resp.revocation_time is None
         assert resp.revocation_reason is None
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=None,
+        )
+
         private_key.public_key().verify(
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
@@ -674,10 +714,13 @@ class TestOCSPResponseBuilder:
         )
         resp = builder.sign(private_key, hashes.SHA256())
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == revoked_date
         assert resp.revocation_reason is None
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=revoked_date,
+        )
         private_key.public_key().verify(
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
@@ -707,8 +750,12 @@ class TestOCSPResponseBuilder:
         )
         resp = builder.sign(private_key, hashes.SHA384())
         assert resp.certificate_status == ocsp.OCSPCertStatus.UNKNOWN
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=None,
+        )
         private_key.public_key().verify(
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA384())
         )
@@ -766,10 +813,13 @@ class TestOCSPResponseBuilder:
         )
         resp = builder.sign(private_key, hashes.SHA256())
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == revoked_date
         assert resp.revocation_reason is None
-        assert resp.this_update == this_update
-        assert resp.next_update is None
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=None,
+            revocation_time=revoked_date,
+        )
         private_key.public_key().verify(
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
@@ -800,10 +850,13 @@ class TestOCSPResponseBuilder:
         )
         resp = builder.sign(private_key, hashes.SHA256())
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == revoked_date
         assert resp.revocation_reason is x509.ReasonFlags.key_compromise
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=revoked_date,
+        )
         private_key.public_key().verify(
             resp.signature, resp.tbs_response_bytes, ec.ECDSA(hashes.SHA256())
         )
@@ -1154,12 +1207,19 @@ class TestOCSPResponse:
         assert resp.certificates == []
         assert resp.responder_key_hash is None
         assert resp.responder_name == issuer.subject
-        assert resp.produced_at == datetime.datetime(2018, 8, 30, 11, 15)
+        with pytest.warns(utils.DeprecatedIn43):
+            assert resp.produced_at == datetime.datetime(2018, 8, 30, 11, 15)
+        assert resp.produced_at_utc == datetime.datetime(
+            2018, 8, 30, 11, 15, tzinfo=datetime.timezone.utc
+        )
         assert resp.certificate_status == ocsp.OCSPCertStatus.GOOD
-        assert resp.revocation_time is None
         assert resp.revocation_reason is None
-        assert resp.this_update == datetime.datetime(2018, 8, 30, 11, 0)
-        assert resp.next_update == datetime.datetime(2018, 9, 6, 11, 0)
+        _check_ocsp_response_times(
+            resp,
+            this_update=datetime.datetime(2018, 8, 30, 11, 0),
+            next_update=datetime.datetime(2018, 9, 6, 11, 0),
+            revocation_time=None,
+        )
         assert resp.issuer_key_hash == (
             b"\xa8Jjc\x04}\xdd\xba\xe6\xd19\xb7\xa6Ee\xef\xf3\xa8\xec\xa1"
         )
@@ -1215,9 +1275,20 @@ class TestOCSPResponse:
                 )
 
                 assert elem.certificate_status == ocsp.OCSPCertStatus.GOOD
-
-                assert elem.this_update == datetime.datetime(2020, 2, 22, 0, 0)
-                assert elem.next_update == datetime.datetime(2020, 2, 29, 1, 0)
+                with pytest.warns(utils.DeprecatedIn43):
+                    assert elem.this_update == datetime.datetime(
+                        2020, 2, 22, 0, 0
+                    )
+                assert elem.this_update_utc == datetime.datetime(
+                    2020, 2, 22, 0, 0, tzinfo=datetime.timezone.utc
+                )
+                with pytest.warns(utils.DeprecatedIn43):
+                    assert elem.next_update == datetime.datetime(
+                        2020, 2, 29, 1, 0
+                    )
+                assert elem.next_update_utc == datetime.datetime(
+                    2020, 2, 29, 1, 0, tzinfo=datetime.timezone.utc
+                )
             elif req_revoked.serial_number == serial:
                 assert elem.certificate_status == ocsp.OCSPCertStatus.REVOKED
 
@@ -1225,8 +1296,12 @@ class TestOCSPResponse:
                     elem.revocation_reason
                     == x509.ReasonFlags.cessation_of_operation
                 )
-                assert elem.revocation_time == datetime.datetime(
-                    2018, 5, 30, 14, 1, 39
+                with pytest.warns(utils.DeprecatedIn43):
+                    assert elem.revocation_time == datetime.datetime(
+                        2018, 5, 30, 14, 1, 39
+                    )
+                assert elem.revocation_time_utc == datetime.datetime(
+                    2018, 5, 30, 14, 1, 39, tzinfo=datetime.timezone.utc
                 )
 
     def test_load_unauthorized(self):
@@ -1249,18 +1324,26 @@ class TestOCSPResponse:
             resp.responder_key_hash
         with pytest.raises(ValueError):
             resp.responder_name
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn43):
             resp.produced_at
         with pytest.raises(ValueError):
-            resp.certificate_status
+            resp.produced_at_utc
         with pytest.raises(ValueError):
+            resp.certificate_status
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn43):
             resp.revocation_time
         with pytest.raises(ValueError):
-            resp.revocation_reason
+            resp.revocation_time_utc
         with pytest.raises(ValueError):
+            resp.revocation_reason
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn43):
             resp.this_update
         with pytest.raises(ValueError):
+            resp.this_update_utc
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn43):
             resp.next_update
+        with pytest.raises(ValueError):
+            resp.next_update_utc
         with pytest.raises(ValueError):
             resp.issuer_key_hash
         with pytest.raises(ValueError):
@@ -1278,8 +1361,12 @@ class TestOCSPResponse:
             ocsp.load_der_ocsp_response,
         )
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == datetime.datetime(
-            2016, 9, 2, 21, 28, 48
+        with pytest.warns(utils.DeprecatedIn43):
+            assert resp.revocation_time == datetime.datetime(
+                2016, 9, 2, 21, 28, 48
+            )
+        assert resp.revocation_time_utc == datetime.datetime(
+            2016, 9, 2, 21, 28, 48, tzinfo=datetime.timezone.utc
         )
         assert resp.revocation_reason is None
 
@@ -1334,7 +1421,9 @@ class TestOCSPResponse:
             ocsp.load_der_ocsp_response,
         )
         assert resp.serial_number == 16160
-        assert resp.next_update is None
+        with pytest.warns(utils.DeprecatedIn43):
+            assert resp.next_update is None
+        assert resp.next_update_utc is None
 
     def test_response_extensions(self):
         resp = _load_data(
@@ -1499,10 +1588,13 @@ class TestOCSPEdDSA:
         )
         resp = builder.sign(private_key, None)
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == revoked_date
         assert resp.revocation_reason is x509.ReasonFlags.key_compromise
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=revoked_date,
+        )
         assert resp.signature_hash_algorithm is None
         assert (
             resp.signature_algorithm_oid == x509.SignatureAlgorithmOID.ED25519
@@ -1542,10 +1634,13 @@ class TestOCSPEdDSA:
         )
         resp = builder.sign(private_key, None)
         assert resp.certificate_status == ocsp.OCSPCertStatus.REVOKED
-        assert resp.revocation_time == revoked_date
         assert resp.revocation_reason is x509.ReasonFlags.key_compromise
-        assert resp.this_update == this_update
-        assert resp.next_update == next_update
+        _check_ocsp_response_times(
+            resp,
+            this_update=this_update,
+            next_update=next_update,
+            revocation_time=revoked_date,
+        )
         assert resp.signature_hash_algorithm is None
         assert resp.signature_algorithm_oid == x509.SignatureAlgorithmOID.ED448
         private_key.public_key().verify(

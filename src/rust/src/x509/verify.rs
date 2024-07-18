@@ -11,7 +11,7 @@ use cryptography_x509_verification::{
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -55,7 +55,7 @@ pyo3::create_exception!(
 );
 
 #[pyo3::pyclass(frozen, module = "cryptography.x509.verification")]
-struct PolicyBuilder {
+pub(crate) struct PolicyBuilder {
     time: Option<asn1::DateTime>,
     store: Option<pyo3::Py<PyStore>>,
     max_chain_depth: Option<u8>,
@@ -212,7 +212,7 @@ self_cell::self_cell!(
     name = "VerifiedClient",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyVerifiedClient {
+pub(crate) struct PyVerifiedClient {
     #[pyo3(get)]
     subjects: pyo3::Py<pyo3::PyAny>,
     #[pyo3(get)]
@@ -224,7 +224,7 @@ struct PyVerifiedClient {
     name = "ClientVerifier",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyClientVerifier {
+pub(crate) struct PyClientVerifier {
     policy: PyCryptoPolicy<'static>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
@@ -295,6 +295,7 @@ impl PyClientVerifier {
         let leaf_san = &chain[0]
             .certificate()
             .extensions()
+            .ok()
             .unwrap()
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
             .unwrap();
@@ -314,7 +315,7 @@ impl PyClientVerifier {
     name = "ServerVerifier",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyServerVerifier {
+pub(crate) struct PyServerVerifier {
     #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
     policy: OwnedPolicy,
@@ -447,7 +448,7 @@ self_cell::self_cell!(
     name = "Store",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
-struct PyStore {
+pub(crate) struct PyStore {
     raw: RawPyStore,
 }
 
@@ -471,18 +472,4 @@ impl PyStore {
             }),
         })
     }
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_class::<PyVerifiedClient>()?;
-    module.add_class::<PyClientVerifier>()?;
-    module.add_class::<PyServerVerifier>()?;
-    module.add_class::<PyStore>()?;
-    module.add_class::<PolicyBuilder>()?;
-    module.add(
-        "VerificationError",
-        module.py().get_type_bound::<VerificationError>(),
-    )?;
-
-    Ok(())
 }

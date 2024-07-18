@@ -48,6 +48,24 @@ Changelog
   :attr:`~cryptography.x509.InvalidityDate.invalidity_date`.
 * Added support for parsing empty DN string in
   :meth:`~cryptography.x509.Name.from_rfc4514_string`.
+* Added the following properties that return timezone-aware ``datetime`` objects:
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.produced_at_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.revocation_time_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.this_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPResponse.next_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.revocation_time_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.this_update_utc`,
+  :meth:`~cryptography.x509.ocsp.OCSPSingleResponse.next_update_utc`,
+  These are timezone-aware variants of existing properties that return naïve
+  ``datetime`` objects.
+* Added
+  :func:`~cryptography.hazmat.primitives.asymmetric.rsa.rsa_recover_private_exponent`
+* Added :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.reset_nonce`
+  for altering the ``nonce`` of a cipher context without initializing a new
+  instance. See the docs for additional restrictions.
+* :class:`~cryptography.x509.NameAttribute` now raises an exception when
+  attempting to create a common name whose length is shorter or longer than
+  :rfc:`5280` permits.
 
 .. _v42-0-8:
 

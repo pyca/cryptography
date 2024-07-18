@@ -25,7 +25,6 @@ typedef struct asn1_string_st ASN1_IA5STRING;
 typedef struct asn1_string_st ASN1_TIME;
 typedef ... ASN1_OBJECT;
 typedef struct asn1_string_st ASN1_STRING;
-typedef struct asn1_string_st ASN1_UTF8STRING;
 typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
 

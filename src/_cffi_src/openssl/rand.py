@@ -9,7 +9,6 @@ INCLUDES = """
 """
 
 TYPES = """
-typedef ... RAND_METHOD;
 """
 
 FUNCTIONS = """

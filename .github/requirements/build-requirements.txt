@@ -58,27 +58,32 @@ cffi==1.16.0 ; platform_python_implementation != "PyPy" \
     --hash=sha256:fa3a0128b152627161ce47201262d3140edb5a5c3da88d73a1b790a959126956 \
     --hash=sha256:fcc8eb6d5902bb1cf6dc4f187ee3ea80a1eba0a89aba40a5cb20a5087d961357
     # via -r build-requirements.in
+maturin==1.7.0 \
+    --hash=sha256:0af4f2a4cfb99206d414dec138dd3aac3f506eb8928b7e38dfac570461b393d6 \
+    --hash=sha256:15fe7920391a128897714f6ed38ebbc771150410b795a55cefca73f089d5aecb \
+    --hash=sha256:1ba5277dd7832dc6181d69a005182b97b3520945825058484ffd9296f2efb59c \
+    --hash=sha256:1f521ebe0344db8260df0d12779aefc06c1f763cd654151cf4a238fe14f65dc1 \
+    --hash=sha256:29187d5c3e1e166c14eaadc63a8adc25b6bbb3e5b055d1bc87f6ca92b4b6e331 \
+    --hash=sha256:2bd8227e020a9308c076253f29224c53b08b2a4ed41fcd94b4eb9349684fcfe7 \
+    --hash=sha256:6fd312c56846d3cafa7c45e362d96b526170e79b9adb5b8ea02a10c88906069c \
+    --hash=sha256:7460122333971b2492154c102d2981ae337ae0486dde7f4df7e645d724de59a5 \
+    --hash=sha256:7c05226547778f31b73d48a19d11f57792bcc44f4047b84c73ea66cae2e62473 \
+    --hash=sha256:87a1fae70f1a6ad694832c735abf9f010edc4971c5cf89d2e7a54651a1a3792a \
+    --hash=sha256:928b82ceba924b1642c53f6684271e814b5ce5049cb4d35ff36bed078837eb83 \
+    --hash=sha256:c1ae0b4162fb1152aea83098bf1b66a7bf6dd73fd1b108e6c4e22160118a997c \
+    --hash=sha256:e9cd5b992b6c131c5f47c85e7bc266bf5bf94f29720856678431ce6c91b726df
+    # via -r build-requirements.in
 pycparser==2.22 \
     --hash=sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6 \
     --hash=sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc
     # via cffi
-semantic-version==2.10.0 \
-    --hash=sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c \
-    --hash=sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177
-    # via setuptools-rust
-setuptools-rust==1.9.0 \
-    --hash=sha256:409caf49dcf7ad9bd510b4bf4011fbad504e745fae98f57fe1c06f3a97719638 \
-    --hash=sha256:704df0948f2e4cc60c2596ad6e840ea679f4f43e58ed4ad0c1857807240eab96
-    # via -r build-requirements.in
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
-    # via setuptools-rust
+    # via maturin
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==70.1.1 \
-    --hash=sha256:937a48c7cdb7a21eb53cd7f9b59e525503aa8abaf3584c730dc5f7a5bec3a650 \
-    --hash=sha256:a58a8fde0541dab0419750bcc521fbdf8585f6e5cb41909df3a472ef7b81ca95
-    # via
-    #   -r build-requirements.in
-    #   setuptools-rust
+setuptools==71.0.0 \
+    --hash=sha256:98da3b8aca443b9848a209ae4165e2edede62633219afa493a58fbba57f72e2e \
+    --hash=sha256:f06fbe978a91819d250a30e0dc4ca79df713d909e24438a42d0ec300fc52247f
+    # via -r build-requirements.in

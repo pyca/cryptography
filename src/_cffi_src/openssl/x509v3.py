@@ -6,18 +6,9 @@ from __future__ import annotations
 
 INCLUDES = """
 #include <openssl/x509v3.h>
-
-/*
- * This is part of a work-around for the difficulty cffi has in dealing with
- * `STACK_OF(foo)` as the name of a type.  We invent a new, simpler name that
- * will be an alias for this type and use the alias throughout.  This works
- * together with another opaque typedef for the same name in the TYPES section.
- * Note that the result is an opaque type.
- */
 """
 
 TYPES = """
-typedef ... EXTENDED_KEY_USAGE;
 typedef ... CONF;
 
 typedef struct {
@@ -41,8 +32,6 @@ typedef struct {
     } d;
     ...;
 } GENERAL_NAME;
-
-static const long X509V3_EXT_ERROR_UNKNOWN;
 """
 
 

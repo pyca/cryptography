@@ -2,14 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use asn1::SimpleAsn1Readable;
-use cryptography_x509::certificate::Certificate;
-use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo, Time};
-use cryptography_x509::name::Name;
+use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo};
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::IntoPyDict;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::PyModuleMethods;
 use pyo3::ToPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};
@@ -134,61 +130,9 @@ fn encode_dss_signature<'p>(
     Ok(pyo3::types::PyBytes::new_bound(py, &result))
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
-struct TestCertificate {
-    #[pyo3(get)]
-    not_before_tag: u8,
-    #[pyo3(get)]
-    not_after_tag: u8,
-    #[pyo3(get)]
-    issuer_value_tags: Vec<u8>,
-    #[pyo3(get)]
-    subject_value_tags: Vec<u8>,
-}
-
-fn parse_name_value_tags(rdns: &Name<'_>) -> Vec<u8> {
-    let mut tags = vec![];
-    for rdn in rdns.unwrap_read().clone() {
-        let mut attributes = rdn.collect::<Vec<_>>();
-        assert_eq!(attributes.len(), 1);
-
-        tags.push(attributes.pop().unwrap().value.tag().as_u8().unwrap());
-    }
-    tags
-}
-
-fn time_tag(t: &Time) -> u8 {
-    match t {
-        Time::UtcTime(_) => asn1::UtcTime::TAG.as_u8().unwrap(),
-        Time::GeneralizedTime(_) => asn1::GeneralizedTime::TAG.as_u8().unwrap(),
-    }
-}
-
-#[pyo3::pyfunction]
-fn test_parse_certificate(data: &[u8]) -> Result<TestCertificate, CryptographyError> {
-    let cert = asn1::parse_single::<Certificate<'_>>(data)?;
-
-    Ok(TestCertificate {
-        not_before_tag: time_tag(&cert.tbs_cert.validity.not_before),
-        not_after_tag: time_tag(&cert.tbs_cert.validity.not_after),
-        issuer_value_tags: parse_name_value_tags(&cert.tbs_cert.issuer),
-        subject_value_tags: parse_name_value_tags(&cert.tbs_cert.subject),
-    })
-}
-
-pub(crate) fn create_submodule(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let submod = pyo3::types::PyModule::new_bound(py, "asn1")?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(parse_spki_for_data, &submod)?)?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(decode_dss_signature, &submod)?)?;
-    submod.add_function(pyo3::wrap_pyfunction_bound!(encode_dss_signature, &submod)?)?;
-
-    submod.add_function(pyo3::wrap_pyfunction_bound!(
-        test_parse_certificate,
-        &submod
-    )?)?;
-
-    Ok(submod)
+#[pyo3::pymodule]
+#[pyo3(name = "asn1")]
+pub(crate) mod asn1_mod {
+    #[pymodule_export]
+    use super::{decode_dss_signature, encode_dss_signature, parse_spki_for_data};
 }

@@ -8,10 +8,11 @@ import os
 
 import pytest
 
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
-from ...utils import load_nist_vectors
+from ...utils import load_nist_vectors, raises_unsupported_algorithm
 from .utils import generate_aead_test
 
 
@@ -230,3 +231,16 @@ class TestAESModeGCM:
         dec = cipher.decryptor()
         pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
         assert pt == data
+
+    def test_reset_nonce_invalid_mode(self, backend):
+        nonce = b"\x00" * 12
+        c = base.Cipher(
+            algorithms.AES(b"\x00" * 16),
+            modes.GCM(nonce),
+        )
+        enc = c.encryptor()
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+            enc.reset_nonce(nonce)
+        dec = c.decryptor()
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+            dec.reset_nonce(nonce)

@@ -35,7 +35,7 @@ jobs:
       - run: echo "$EVENT_CONTEXT"
         env:
           EVENT_CONTEXT: ${{ toJson(github.event) }}
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.11"
       - name: Get publish-requirements.txt from repository
@@ -93,7 +93,7 @@ jobs:
       # Do not perform attestation for things for TestPyPI. This is because
       # there's nothing that would prevent a malicious PyPI from serving a
       # signed TestPyPI asset in place of a release intended for PyPI.
-      - uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e  # v1.3.2
+      - uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0  # v1.3.3
         with:
           subject-path: 'dist/**/cryptography*'
         if: env.TWINE_REPOSITORY == 'pypi'

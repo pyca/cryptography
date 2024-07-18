@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::types::{PyAnyMethods, PyDictMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyDictMethods};
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -670,19 +670,11 @@ impl EllipticCurvePublicNumbers {
     }
 }
 
-pub(crate) fn create_module(
-    py: pyo3::Python<'_>,
-) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyModule>> {
-    let m = pyo3::types::PyModule::new_bound(py, "ec")?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(curve_supported, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(generate_private_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(derive_private_key, &m)?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(from_public_bytes, &m)?)?;
-
-    m.add_class::<ECPrivateKey>()?;
-    m.add_class::<ECPublicKey>()?;
-    m.add_class::<EllipticCurvePrivateNumbers>()?;
-    m.add_class::<EllipticCurvePublicNumbers>()?;
-
-    Ok(m)
+#[pyo3::pymodule]
+pub(crate) mod ec {
+    #[pymodule_export]
+    use super::{
+        curve_supported, derive_private_key, from_public_bytes, generate_private_key, ECPrivateKey,
+        ECPublicKey, EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
+    };
 }

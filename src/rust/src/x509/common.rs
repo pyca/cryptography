@@ -8,7 +8,7 @@ use cryptography_x509::extensions::{
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
-use pyo3::types::{PyAnyMethods, PyListMethods, PyModuleMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
@@ -89,7 +89,7 @@ pub(crate) fn encode_name_entry<'p>(
 }
 
 #[pyo3::pyfunction]
-fn encode_name_bytes<'p>(
+pub(crate) fn encode_name_bytes<'p>(
     py: pyo3::Python<'p>,
     py_name: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
@@ -458,7 +458,7 @@ pub(crate) fn encode_extensions<
 }
 
 #[pyo3::pyfunction]
-fn encode_extension_value<'p>(
+pub(crate) fn encode_extension_value<'p>(
     py: pyo3::Python<'p>,
     py_ext: pyo3::Bound<'p, pyo3::PyAny>,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
@@ -539,14 +539,4 @@ pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTim
             .get(py)?
             .call_method1(pyo3::intern!(py, "now"), (utc,))?,
     )
-}
-
-pub(crate) fn add_to_module(module: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    module.add_function(pyo3::wrap_pyfunction_bound!(
-        encode_extension_value,
-        module
-    )?)?;
-    module.add_function(pyo3::wrap_pyfunction_bound!(encode_name_bytes, module)?)?;
-
-    Ok(())
 }

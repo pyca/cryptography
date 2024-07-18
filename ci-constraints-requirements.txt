@@ -15,7 +15,7 @@ build==1.2.1
     # via
     #   check-sdist
     #   cryptography (pyproject.toml)
-certifi==2024.6.2
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
     # via requests
@@ -25,7 +25,7 @@ click==8.1.7
     # via cryptography (pyproject.toml)
 colorlog==6.8.2
     # via nox
-coverage==7.5.4; python_version >= "3.8"
+coverage==7.6.0; python_version >= "3.8"
     # via
     #   coverage
     #   pytest-cov
@@ -36,7 +36,7 @@ docutils==0.20.1
     #   readme-renderer
     #   sphinx
     #   sphinx-rtd-theme
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
     # via pytest
 execnet==2.1.1; python_version >= "3.8"
     # via pytest-xdist
@@ -56,7 +56,7 @@ mypy==1.10.1
     # via cryptography (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-nh3==0.2.17
+nh3==0.2.18
     # via readme-renderer
 nox==2024.4.15
     # via cryptography (pyproject.toml)
@@ -105,11 +105,11 @@ readme-renderer==43.0
     # via cryptography (pyproject.toml)
 requests==2.32.3
     # via sphinx
-ruff==0.4.10
+ruff==0.5.2
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.3.7
+sphinx==7.4.5
     # via
     #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme

@@ -133,7 +133,13 @@ def _limbo_testcase(id_, testcase):
             "extended_key_usage"
         ] == ["serverAuth"]
         peer_name = _get_limbo_peer(testcase["expected_peer_name"])
-        verifier = builder.build_server_verifier(peer_name)
+        # Some tests exercise invalid leaf SANs, which get caught before
+        # validation even begins.
+        try:
+            verifier = builder.build_server_verifier(peer_name)
+        except ValueError:
+            assert not should_pass
+            return
     else:
         assert testcase["extended_key_usage"] == ["clientAuth"]
         verifier = builder.build_client_verifier()

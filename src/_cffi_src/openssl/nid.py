@@ -9,11 +9,7 @@ INCLUDES = """
 """
 
 TYPES = """
-static const int Cryptography_HAS_ED448;
-
 static const int NID_undef;
-static const int NID_aes_256_cbc;
-static const int NID_pbe_WithSHA1And3_Key_TripleDES_CBC;
 
 static const int NID_subject_alt_name;
 static const int NID_crl_reason;
@@ -23,9 +19,4 @@ FUNCTIONS = """
 """
 
 CUSTOMIZATIONS = """
-#ifndef NID_ED448
-static const long Cryptography_HAS_ED448 = 0;
-#else
-static const long Cryptography_HAS_ED448 = 1;
-#endif
 """

@@ -130,13 +130,6 @@ def cryptography_has_ssl_cookie() -> list[str]:
     ]
 
 
-def cryptography_has_pkcs7_funcs() -> list[str]:
-    return [
-        "PKCS7_verify",
-        "SMIME_read_PKCS7",
-    ]
-
-
 def cryptography_has_prime_checks() -> list[str]:
     return [
         "BN_prime_checks_for_size",
@@ -145,10 +138,6 @@ def cryptography_has_prime_checks() -> list[str]:
 
 def cryptography_has_unexpected_eof_while_reading() -> list[str]:
     return ["SSL_R_UNEXPECTED_EOF_WHILE_READING"]
-
-
-def cryptography_has_pkcs12_set_mac() -> list[str]:
-    return ["PKCS12_set_mac"]
 
 
 def cryptography_has_ssl_op_ignore_unexpected_eof() -> list[str]:
@@ -183,12 +172,10 @@ CONDITIONAL_NAMES = {
     ),
     "Cryptography_HAS_DTLS_GET_DATA_MTU": cryptography_has_dtls_get_data_mtu,
     "Cryptography_HAS_SSL_COOKIE": cryptography_has_ssl_cookie,
-    "Cryptography_HAS_PKCS7_FUNCS": cryptography_has_pkcs7_funcs,
     "Cryptography_HAS_PRIME_CHECKS": cryptography_has_prime_checks,
     "Cryptography_HAS_UNEXPECTED_EOF_WHILE_READING": (
         cryptography_has_unexpected_eof_while_reading
     ),
-    "Cryptography_HAS_PKCS12_SET_MAC": cryptography_has_pkcs12_set_mac,
     "Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF": (
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),

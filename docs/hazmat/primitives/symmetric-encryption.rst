@@ -693,6 +693,27 @@ Interfaces
         :meth:`update` and :meth:`finalize` will raise an
         :class:`~cryptography.exceptions.AlreadyFinalized` exception.
 
+    .. method:: reset_nonce(nonce)
+
+        .. versionadded:: 43.0.0
+
+        This method allows changing the nonce for an already existing context.
+        Normally the nonce is set when the context is created and internally
+        incremented as data as passed. However, in some scenarios the same key
+        is used repeatedly but the nonce changes non-sequentially (e.g. ``QUIC``),
+        which requires updating the context with the new nonce.
+
+        This method only works for contexts using
+        :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20` or
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.CTR` mode.
+
+        :param nonce: The nonce to update the context with.
+        :type data: :term:`bytes-like`
+        :raises cryptography.exceptions.UnsupportedAlgorithm: If the
+            algorithm does not support updating the nonce.
+        :raises ValueError: If the nonce is not the correct length for the
+            algorithm.
+
 .. class:: AEADCipherContext
 
     When calling ``encryptor`` or ``decryptor`` on a ``Cipher`` object

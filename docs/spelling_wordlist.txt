@@ -15,6 +15,7 @@ Botan
 Brainpool
 Bullseye
 Capitan
+Carmichael
 CentOS
 changelog
 Changelog
@@ -51,6 +52,7 @@ Docstrings
 El
 Encodings
 endian
+Euler
 extendable
 facto
 fallback
@@ -128,6 +130,7 @@ Thawte
 timestamp
 timestamps
 toolchain
+totient
 Trixie
 tunable
 Ubuntu

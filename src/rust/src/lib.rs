@@ -9,7 +9,6 @@
 use crate::error::CryptographyResult;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
-use pyo3::types::PyModuleMethods;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use std::env;
 
@@ -22,6 +21,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs12;
 mod pkcs7;
+mod test_support;
 pub(crate) mod types;
 mod x509;
 
@@ -92,87 +92,146 @@ fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
 }
 
 #[pyo3::pymodule]
-fn _rust(py: pyo3::Python<'_>, m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-    m.add_function(pyo3::wrap_pyfunction_bound!(
-        padding::check_pkcs7_padding,
-        m
-    )?)?;
-    m.add_function(pyo3::wrap_pyfunction_bound!(
-        padding::check_ansix923_padding,
-        m
-    )?)?;
-    m.add_class::<padding::PKCS7PaddingContext>()?;
-    m.add_class::<oid::ObjectIdentifier>()?;
+mod _rust {
+    use pyo3::types::PyModuleMethods;
 
-    m.add_submodule(&asn1::create_submodule(py)?)?;
-    m.add_submodule(&pkcs7::create_submodule(py)?)?;
-    m.add_submodule(&pkcs12::create_submodule(py)?)?;
-    m.add_submodule(&exceptions::create_submodule(py)?)?;
+    #[pymodule_export]
+    use crate::asn1::asn1_mod;
+    #[pymodule_export]
+    use crate::exceptions::exceptions;
+    #[pymodule_export]
+    use crate::oid::ObjectIdentifier;
+    #[pymodule_export]
+    use crate::padding::{check_ansix923_padding, check_pkcs7_padding, PKCS7PaddingContext};
+    #[pymodule_export]
+    use crate::pkcs12::pkcs12;
+    #[pymodule_export]
+    use crate::pkcs7::pkcs7_mod;
+    #[pymodule_export]
+    use crate::test_support::test_support;
 
-    let x509_mod = pyo3::types::PyModule::new_bound(py, "x509")?;
-    crate::x509::certificate::add_to_module(&x509_mod)?;
-    crate::x509::common::add_to_module(&x509_mod)?;
-    crate::x509::crl::add_to_module(&x509_mod)?;
-    crate::x509::csr::add_to_module(&x509_mod)?;
-    crate::x509::sct::add_to_module(&x509_mod)?;
-    crate::x509::verify::add_to_module(&x509_mod)?;
-    m.add_submodule(&x509_mod)?;
+    #[pyo3::pymodule]
+    mod x509 {
+        #[pymodule_export]
+        use crate::x509::certificate::{
+            create_x509_certificate, load_der_x509_certificate, load_pem_x509_certificate,
+            load_pem_x509_certificates, Certificate,
+        };
+        #[pymodule_export]
+        use crate::x509::common::{encode_extension_value, encode_name_bytes};
+        #[pymodule_export]
+        use crate::x509::crl::{
+            create_x509_crl, load_der_x509_crl, load_pem_x509_crl, CertificateRevocationList,
+            RevokedCertificate,
+        };
+        #[pymodule_export]
+        use crate::x509::csr::{
+            create_x509_csr, load_der_x509_csr, load_pem_x509_csr, CertificateSigningRequest,
+        };
+        #[pymodule_export]
+        use crate::x509::sct::Sct;
+        #[pymodule_export]
+        use crate::x509::verify::{
+            PolicyBuilder, PyClientVerifier, PyServerVerifier, PyStore, PyVerifiedClient,
+            VerificationError,
+        };
+    }
 
-    let ocsp_mod = pyo3::types::PyModule::new_bound(py, "ocsp")?;
-    crate::x509::ocsp_req::add_to_module(&ocsp_mod)?;
-    crate::x509::ocsp_resp::add_to_module(&ocsp_mod)?;
-    m.add_submodule(&ocsp_mod)?;
+    #[pyo3::pymodule]
+    mod ocsp {
+        #[pymodule_export]
+        use crate::x509::ocsp_req::{create_ocsp_request, load_der_ocsp_request, OCSPRequest};
+        #[pymodule_export]
+        use crate::x509::ocsp_resp::{
+            create_ocsp_response, load_der_ocsp_response, OCSPResponse, OCSPSingleResponse,
+        };
+    }
 
-    m.add_submodule(&cryptography_cffi::create_module(py)?)?;
+    #[pyo3::pymodule]
+    mod openssl {
+        use pyo3::prelude::PyModuleMethods;
 
-    let openssl_mod = pyo3::types::PyModule::new_bound(py, "openssl")?;
-    openssl_mod.add(
-        "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
-        cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
-    )?;
-    openssl_mod.add(
-        "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
-        cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
-    )?;
+        #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+        #[pymodule_export]
+        use super::super::enable_fips;
+        #[pymodule_export]
+        use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
+        #[pymodule_export]
+        use crate::backend::aead::aead;
+        #[pymodule_export]
+        use crate::backend::ciphers::ciphers;
+        #[pymodule_export]
+        use crate::backend::cmac::cmac;
+        #[pymodule_export]
+        use crate::backend::dh::dh;
+        #[pymodule_export]
+        use crate::backend::dsa::dsa;
+        #[pymodule_export]
+        use crate::backend::ec::ec;
+        #[pymodule_export]
+        use crate::backend::ed25519::ed25519;
+        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[pymodule_export]
+        use crate::backend::ed448::ed448;
+        #[pymodule_export]
+        use crate::backend::hashes::hashes;
+        #[pymodule_export]
+        use crate::backend::hmac::hmac;
+        #[pymodule_export]
+        use crate::backend::kdf::kdf;
+        #[pymodule_export]
+        use crate::backend::keys::keys;
+        #[pymodule_export]
+        use crate::backend::poly1305::poly1305;
+        #[pymodule_export]
+        use crate::backend::rsa::rsa;
+        #[pymodule_export]
+        use crate::backend::x25519::x25519;
+        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[pymodule_export]
+        use crate::backend::x448::x448;
+        #[pymodule_export]
+        use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
-    openssl_mod.add("CRYPTOGRAPHY_IS_LIBRESSL", cfg!(CRYPTOGRAPHY_IS_LIBRESSL))?;
-    openssl_mod.add("CRYPTOGRAPHY_IS_BORINGSSL", cfg!(CRYPTOGRAPHY_IS_BORINGSSL))?;
+        #[pymodule_init]
+        fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+            openssl_mod.add(
+                "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
+                cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+            )?;
+            openssl_mod.add(
+                "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
+                cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
+            )?;
 
-    cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
-            let providers = _initialize_providers()?;
-            if providers.legacy.is_some() {
-                openssl_mod.add("_legacy_provider_loaded", true)?;
-            } else {
-                openssl_mod.add("_legacy_provider_loaded", false)?;
+            openssl_mod.add("CRYPTOGRAPHY_IS_LIBRESSL", cfg!(CRYPTOGRAPHY_IS_LIBRESSL))?;
+            openssl_mod.add("CRYPTOGRAPHY_IS_BORINGSSL", cfg!(CRYPTOGRAPHY_IS_BORINGSSL))?;
+
+            cfg_if::cfg_if! {
+                if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
+                    let providers = super::super::_initialize_providers()?;
+                    if providers.legacy.is_some() {
+                        openssl_mod.add("_legacy_provider_loaded", true)?;
+                    } else {
+                        openssl_mod.add("_legacy_provider_loaded", false)?;
+                    }
+                    openssl_mod.add("_providers", providers)?;
+                } else {
+                    // default value for non-openssl 3+
+                    openssl_mod.add("_legacy_provider_loaded", false)?;
+                }
             }
-            openssl_mod.add("_providers", providers)?;
 
-            openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(enable_fips, &openssl_mod)?)?;
-        } else {
-            // default value for non-openssl 3+
-            openssl_mod.add("_legacy_provider_loaded", false)?;
+            Ok(())
         }
     }
-    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(openssl_version, &openssl_mod)?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
-        openssl_version_text,
-        &openssl_mod
-    )?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
-        error::raise_openssl_error,
-        &openssl_mod
-    )?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(
-        error::capture_error_stack,
-        &openssl_mod
-    )?)?;
-    openssl_mod.add_function(pyo3::wrap_pyfunction_bound!(is_fips_enabled, &openssl_mod)?)?;
-    openssl_mod.add_class::<error::OpenSSLError>()?;
-    crate::backend::add_to_module(&openssl_mod)?;
-    m.add_submodule(&openssl_mod)?;
 
-    Ok(())
+    #[pymodule_init]
+    fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+        m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
