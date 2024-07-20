@@ -10,7 +10,7 @@ __all__ = [
     "__version__",
 ]
 
-__version__ = "43.0.0.dev1"
+__version__ = "43.0.0"
 
 
 __author__ = "The Python Cryptographic Authority and individual contributors"

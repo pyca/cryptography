@@ -3,14 +3,13 @@ Changelog
 
 .. _v43-0-0:
 
-43.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+43.0.0 - 2024-07-20
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL less than 1.1.1e has been
   removed.  Users on older version of OpenSSL will need to upgrade.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.8.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.3.1.
 * Updated the minimum supported Rust version (MSRV) to 1.65.0, from 1.63.0.
 * :func:`~cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key`
   now enforces a minimum RSA key size of 1024-bit. Note that 1024-bit is still
