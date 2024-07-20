@@ -1054,7 +1054,7 @@ class TestPKCS7EnvelopeBuilder:
 
     def test_smime_encrypt_multiple_recipients(self, backend):
         data = b"hello world\n"
-        cert, private_key = _load_rsa_cert_key()
+        cert, _ = _load_rsa_cert_key()
         builder = (
             pkcs7.PKCS7EnvelopeBuilder()
             .set_data(data)
