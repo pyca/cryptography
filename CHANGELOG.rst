@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v44-0-0:
+
+44.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+
 .. _v43-0-0:
 
 43.0.0 - 2024-07-20
