@@ -169,6 +169,7 @@ def flake(session: nox.Session) -> None:
     # TODO: Ideally there'd be a pip flag to install just our dependencies,
     # but not install us.
     pyproject_data = load_pyproject_toml()
+    install(session, "-e", "vectors/")
     install(
         session,
         *pyproject_data["build-system"]["requires"],
@@ -177,7 +178,6 @@ def flake(session: nox.Session) -> None:
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
     )
-    install(session, "-e", "vectors/")
 
     session.run("ruff", "check", ".")
     session.run("ruff", "format", "--check", ".")
@@ -258,9 +258,9 @@ def local(session):
         "test"
     ]
     test_dependencies = [
-        x
-        for x in test_dependencies
-        if not x.startswith("cryptography_vectors")
+        dep
+        for dep in test_dependencies
+        if not dep.startswith("cryptography_vectors")
     ]
     install(
         session,
