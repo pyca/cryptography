@@ -254,23 +254,14 @@ def rust(session: nox.Session) -> None:
 @nox.session(venv_backend="uv")
 def local(session):
     pyproject_data = load_pyproject_toml()
-    test_dependencies = pyproject_data["project"]["optional-dependencies"][
-        "test"
-    ]
-    test_dependencies = [
-        dep
-        for dep in test_dependencies
-        if not dep.startswith("cryptography_vectors")
-    ]
+    install(session, "-e", "./vectors")
     install(
         session,
         *pyproject_data["build-system"]["requires"],
         *pyproject_data["project"]["optional-dependencies"]["pep8test"],
-        *test_dependencies,
+        *pyproject_data["project"]["optional-dependencies"]["test"],
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
         *pyproject_data["project"]["optional-dependencies"]["nox"],
-        "-e",
-        "./vectors/",
         verbose=False,
     )
 
