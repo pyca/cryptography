@@ -72,6 +72,11 @@ pub(crate) fn message_digest_from_algorithm(
     }
 }
 
+#[pyo3::pyfunction]
+fn hash_supported(py: pyo3::Python<'_>, algorithm: pyo3::Bound<'_, pyo3::PyAny>) -> bool {
+    message_digest_from_algorithm(py, &algorithm).is_ok()
+}
+
 impl Hash {
     pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
         self.get_mut_ctx()?.update(data)?;
@@ -141,5 +146,5 @@ impl Hash {
 #[pyo3::pymodule]
 pub(crate) mod hashes {
     #[pymodule_export]
-    use super::Hash;
+    use super::{hash_supported, Hash};
 }
