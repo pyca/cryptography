@@ -254,7 +254,7 @@ def rust(session: nox.Session) -> None:
 @nox.session(venv_backend="uv")
 def local(session):
     pyproject_data = load_pyproject_toml()
-    install(session, "-e", "./vectors")
+    install(session, "-e", "./vectors", verbose=False)
     install(
         session,
         *pyproject_data["build-system"]["requires"],
