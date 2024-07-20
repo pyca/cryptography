@@ -8,7 +8,7 @@ rust-version.workspace = true
 
 [dependencies]
 cfg-if = "1"
-openssl = "0.10.64"
+openssl = "0.10.65"
 ffi = { package = "openssl-sys", version = "0.9.101" }
 foreign-types = "0.3"
 foreign-types-shared = "0.1"
