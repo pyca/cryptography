@@ -65,8 +65,8 @@ def tests(session: nox.Session) -> None:
             }
         )
 
-    install(session, f".[{extras}]")
     install(session, "-e", "./vectors")
+    install(session, f".[{extras}]")
 
     session.run("pip", "list")
 
@@ -257,7 +257,11 @@ def local(session):
     test_dependencies = pyproject_data["project"]["optional-dependencies"][
         "test"
     ]
-    test_dependencies.remove("cryptography_vectors")
+    test_dependencies = [
+        x
+        for x in test_dependencies
+        if not x.startswith("cryptography_vectors")
+    ]
     install(
         session,
         *pyproject_data["build-system"]["requires"],
