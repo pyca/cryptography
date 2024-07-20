@@ -9,6 +9,6 @@ rust-version.workspace = true
 [dependencies]
 asn1 = { version = "0.16.2", default-features = false }
 cfg-if = "1"
-openssl = "0.10.64"
+openssl = "0.10.65"
 openssl-sys = "0.9.103"
 cryptography-x509 = { path = "../cryptography-x509" }
