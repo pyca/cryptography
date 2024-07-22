@@ -5,7 +5,9 @@
 from __future__ import annotations
 
 INCLUDES = """
+#if !defined(OPENSSL_NO_ENGINE) || CRYPTOGRAPHY_IS_LIBRESSL
 #include <openssl/engine.h>
+#endif
 """
 
 TYPES = """
