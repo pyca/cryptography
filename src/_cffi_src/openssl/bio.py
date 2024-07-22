@@ -29,7 +29,6 @@ int BIO_should_read(BIO *);
 int BIO_should_write(BIO *);
 int BIO_should_io_special(BIO *);
 int BIO_should_retry(BIO *);
-int BIO_reset(BIO *);
 
 BIO_ADDR *BIO_ADDR_new(void);
 void BIO_ADDR_free(BIO_ADDR *);
