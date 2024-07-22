@@ -88,7 +88,7 @@ jobs:
               f.write(f"TWINE_PASSWORD={pypi_token}\n")
         shell: python
 
-      - run: twine upload --skip-existing $(find dist/ -type f -name 'cryptography*')
+      - run: find dist/ -type f -name 'cryptography*' -print0 | xargs -0 twine upload --skip-existing
 
       # Do not perform attestation for things for TestPyPI. This is because
       # there's nothing that would prevent a malicious PyPI from serving a
