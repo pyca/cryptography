@@ -231,7 +231,32 @@ pub struct BasicConstraints {
 
 pub type SubjectAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
 pub type IssuerAlternativeName<'a> = asn1::SequenceOf<'a, name::GeneralName<'a>>;
-pub type ExtendedKeyUsage<'a> = asn1::SequenceOf<'a, asn1::ObjectIdentifier>;
+
+pub struct ExtendedKeyUsage<'a>(asn1::SequenceOf<'a, asn1::ObjectIdentifier>);
+
+impl<'a> Iterator for ExtendedKeyUsage<'a> {
+    type Item = asn1::ObjectIdentifier;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for ExtendedKeyUsage<'a> {
+    const TAG: asn1::Tag = asn1::Sequence::TAG;
+
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        let seq = asn1::SequenceOf::parse_data(data)?;
+
+        // RFC 5280 4.2.1.12: EKU contains one or more purposes, and therefore
+        // must not be empty.
+        if seq.is_empty() {
+            return Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue));
+        }
+
+        Ok(Self(seq))
+    }
+}
 
 pub struct KeyUsage<'a>(asn1::BitString<'a>);
 
