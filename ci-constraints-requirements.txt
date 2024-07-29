@@ -124,7 +124,7 @@ sphinx-rtd-theme==2.0.0
     # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==1.0.8
     # via sphinx
-sphinxcontrib-devhelp==1.0.6
+sphinxcontrib-devhelp==2.0.0
     # via sphinx
 sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
