@@ -9,8 +9,8 @@ use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, DuplicateExtensionsError, IssuerAlternativeName, KeyUsage,
-    MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
+    DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage, IssuerAlternativeName,
+    KeyUsage, MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
     PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
     SequenceOfSubtrees, UserNotice,
 };
@@ -768,7 +768,7 @@ pub fn parse_cert_ext<'p>(
         }
         oid::EXTENDED_KEY_USAGE_OID => {
             let ekus = pyo3::types::PyList::empty_bound(py);
-            for oid in ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()? {
+            for oid in ext.value::<ExtendedKeyUsage<'_>>()? {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
             }
