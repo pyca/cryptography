@@ -76,10 +76,13 @@ the root of trust:
     >>> with open(certifi.where(), "rb") as pems:
     ...    store = Store(load_pem_x509_certificates(pems.read()))
     >>> builder = PolicyBuilder().store(store)
-    >>> # If significant time passes between the PolicyBuilder is initialized
-    >>> # and the time the validation is perform, you will need to update
-    >>> # the internal clock.
-    >>> builder = builder.time(datetime.now())
+    >>> # If significant time passes between the time the PolicyBuilder
+    >>> # is initialized and the time the validation is perform,
+    >>> # you will need to update the internal clock,
+    >>> # for example using `datetime.now()`
+    >>> # Here `verification_time` is a placeholder to help with the
+    >>  # automated testing of this example.
+    >>> builder = builder.time(verification_time)
     >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
     >>> # NOTE: peer and untrusted_intermediates are Certificate and
     >>> #       list[Certificate] respectively, and should be loaded from the
