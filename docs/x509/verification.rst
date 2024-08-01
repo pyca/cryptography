@@ -76,6 +76,9 @@ the root of trust:
     >>> with open(certifi.where(), "rb") as pems:
     ...    store = Store(load_pem_x509_certificates(pems.read()))
     >>> builder = PolicyBuilder().store(store)
+    >>> # See the documentation on `time` below for more details. If
+    >>> # significant time passes between creating a verifier and performing a
+    >>> # verification, you may encounter issues with certificate expiration.
     >>> builder = builder.time(verification_time)
     >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
     >>> # NOTE: peer and untrusted_intermediates are Certificate and
