@@ -535,7 +535,7 @@ Custom X.509 Vectors
 * ``ekucrit-testuser-cert.pem`` - A leaf certificate containing a critical EKU.
   This is an invalid certificate per CA/B 7.1.2.7.6.
 * ``empty-eku.pem`` - A leaf certificate containing an empty EKU extension.
-  This is an invalid certifcate per :rfc:`5280` 4.2.1.12.
+  This is an invalid certificate per :rfc:`5280` 4.2.1.12.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
