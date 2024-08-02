@@ -1876,6 +1876,65 @@ class TestKeyUsageExtension:
         assert ku.crl_sign is True
 
 
+class TestPrivateKeyUsagePeriodExtension:
+    def test_not_validity(self):
+        with pytest.raises(TypeError):
+            x509.PrivateKeyUsagePeriod("notvalidity")  # type:ignore[arg-type]
+
+    def test_repr(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        ext = x509.Extension(
+            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD, False, period
+        )
+        assert repr(ext) == (
+            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.16, name=privateKeyUsagePeriod)>, "
+            "critical=False, value=<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
+            "not_after=2013-01-01 00:00:00)>)>"
+        )
+
+    def test_eq(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert period == period2
+
+    def test_ne(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert period != period2
+        assert period != object()
+
+    def test_hash(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period3 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert hash(period) == hash(period2)
+        assert hash(period) != hash(period3)
+
+
 class TestDNSName:
     def test_non_a_label(self):
         with pytest.raises(ValueError):
@@ -6320,6 +6379,7 @@ def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
             continue
+        print(getattr(ExtensionOID, oid))
         assert getattr(ExtensionOID, oid) in _OID_NAMES
 
 

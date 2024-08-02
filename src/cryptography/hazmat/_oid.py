@@ -274,6 +274,7 @@ _OID_NAMES = {
     ExtensionOID.SUBJECT_DIRECTORY_ATTRIBUTES: "subjectDirectoryAttributes",
     ExtensionOID.SUBJECT_KEY_IDENTIFIER: "subjectKeyIdentifier",
     ExtensionOID.KEY_USAGE: "keyUsage",
+    ExtensionOID.PRIVATE_KEY_USAGE_PERIOD: "privateKeyUsagePeriod",
     ExtensionOID.SUBJECT_ALTERNATIVE_NAME: "subjectAltName",
     ExtensionOID.ISSUER_ALTERNATIVE_NAME: "issuerAltName",
     ExtensionOID.BASIC_CONSTRAINTS: "basicConstraints",
