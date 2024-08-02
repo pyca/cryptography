@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Enforce the :rfc:`5280` requirement that extended key usage extensions must
+  not be empty.
 
 .. _v43-0-0:
 

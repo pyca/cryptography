@@ -31,6 +31,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
 )
+from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
@@ -5732,6 +5733,15 @@ class TestOtherCertificate:
                 os.path.join("x509", "badasn1time.pem"),
                 x509.load_pem_x509_certificate,
             )
+
+    def test_invalid_empty_eku(self, backend):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "empty-eku.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(ValueError, match="InvalidSize"):
+            cert.extensions.get_extension_for_class(ExtendedKeyUsage)
 
 
 class TestNameAttribute:
