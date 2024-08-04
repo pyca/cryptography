@@ -154,7 +154,7 @@ source = [
     "*.nox\\*\\Lib\\site-packages\\cryptography",
     "*.nox/pypy/site-packages/cryptography",
 ]
-tests =[
+tests = [
     "tests/",
     "*tests\\",
 ]
