@@ -149,14 +149,14 @@ source = [
 
 [tool.coverage.paths]
 source = [
-   "src/cryptography",
-   "*.nox/*/lib*/python*/site-packages/cryptography",
-   "*.nox\\*\\Lib\\site-packages\\cryptography",
-   "*.nox/pypy/site-packages/cryptography",
+    "src/cryptography",
+    "*.nox/*/lib*/python*/site-packages/cryptography",
+    "*.nox\\*\\Lib\\site-packages\\cryptography",
+    "*.nox/pypy/site-packages/cryptography",
 ]
-tests =[
-   "tests/",
-   "*tests\\",
+tests = [
+    "tests/",
+    "*tests\\",
 ]
 
 [tool.coverage.report]
