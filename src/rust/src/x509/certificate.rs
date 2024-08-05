@@ -12,7 +12,7 @@ use cryptography_x509::extensions::{
     DistributionPointName, DuplicateExtensionsError, IssuerAlternativeName, KeyUsage,
     MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
     PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
-    SequenceOfSubtrees, UserNotice, PrivateKeyUsagePeriod
+    SequenceOfSubtrees, UserNotice
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
