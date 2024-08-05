@@ -105,7 +105,7 @@ readme-renderer==43.0
     # via cryptography (pyproject.toml)
 requests==2.32.3
     # via sphinx
-ruff==0.5.5
+ruff==0.5.6
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx
