@@ -26,6 +26,7 @@ void X509_NAME_free(X509_NAME *);
 unsigned long X509_NAME_hash(X509_NAME *);
 
 int i2d_X509_NAME(X509_NAME *, unsigned char **);
+X509_NAME *d2i_X509_NAME(X509_NAME **, unsigned char **, long);
 X509_NAME_ENTRY *X509_NAME_delete_entry(X509_NAME *, int);
 void X509_NAME_ENTRY_free(X509_NAME_ENTRY *);
 int X509_NAME_get_index_by_NID(X509_NAME *, int, int);
