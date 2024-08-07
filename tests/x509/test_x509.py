@@ -4251,6 +4251,10 @@ class TestCertificateBuilder:
                 encipher_only=False,
                 decipher_only=False,
             ),
+            x509.PrivateKeyUsagePeriod(
+                not_before=datetime.datetime(2002, 1, 1, 12, 1),
+                not_after=datetime.datetime(2030, 12, 31, 8, 30),
+            ),
             x509.OCSPNoCheck(),
             x509.SubjectKeyIdentifier,
         ],
