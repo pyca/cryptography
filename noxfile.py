@@ -46,6 +46,7 @@ def load_pyproject_toml() -> dict:
 @nox.session(name="tests-ssh")
 @nox.session(name="tests-randomorder")
 @nox.session(name="tests-nocoverage")
+@nox.session(name="tests-rust-debug")
 def tests(session: nox.Session) -> None:
     extras = "test"
     if session.name == "tests-ssh":
@@ -66,7 +67,14 @@ def tests(session: nox.Session) -> None:
         )
 
     install(session, "-e", "./vectors")
-    install(session, f".[{extras}]")
+    if session.name == "tests-rust-debug":
+        install(
+            session,
+            "--config-settings=build-args=--profile=dev",
+            f".[{extras}]",
+        )
+    else:
+        install(session, f".[{extras}]")
 
     session.run("pip", "list")
 

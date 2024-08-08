@@ -53,6 +53,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.65.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
+          - {VERSION: "3.12", NOXSESSION: "tests-rust-debug"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
