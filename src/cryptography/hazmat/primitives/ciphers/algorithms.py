@@ -82,7 +82,8 @@ utils.deprecated(
     __name__,
     "ARC4 has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and "
-    "will be removed from this module in 48.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.",
     utils.DeprecatedIn43,
     name="ARC4",
 )
@@ -93,7 +94,8 @@ utils.deprecated(
     __name__,
     "TripleDES has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and "
-    "will be removed from this module in 48.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.",
     utils.DeprecatedIn43,
     name="TripleDES",
 )
@@ -103,7 +105,8 @@ utils.deprecated(
     __name__,
     "Blowfish has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.Blowfish and "
-    "will be removed from this module in 45.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
     utils.DeprecatedIn37,
     name="Blowfish",
 )
@@ -114,7 +117,8 @@ utils.deprecated(
     __name__,
     "CAST5 has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.CAST5 and "
-    "will be removed from this module in 45.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
     utils.DeprecatedIn37,
     name="CAST5",
 )
@@ -125,7 +129,8 @@ utils.deprecated(
     __name__,
     "IDEA has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.IDEA and "
-    "will be removed from this module in 45.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
     utils.DeprecatedIn37,
     name="IDEA",
 )
@@ -136,7 +141,8 @@ utils.deprecated(
     __name__,
     "SEED has been moved to "
     "cryptography.hazmat.decrepit.ciphers.algorithms.SEED and "
-    "will be removed from this module in 45.0.0.",
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
     utils.DeprecatedIn37,
     name="SEED",
 )
