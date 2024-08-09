@@ -316,10 +316,10 @@ impl RsaPrivateKey {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let key_size_bytes =
             usize::try_from((self.pkey.rsa().unwrap().n().num_bits() + 7) / 8).unwrap();
-        if key_size_bytes != ciphertext.len() {
+        if key_size_bytes <= ciphertext.len() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
-                    "Ciphertext length must be equal to key size.",
+                    "Ciphertext length must be less-than or equal to key size.",
                 ),
             ));
         }
