@@ -662,15 +662,16 @@ class CertificateSigningRequestBuilder:
     def __init__(
         self,
         subject_name: Name | None = None,
-        extensions: list[Extension[ExtensionType]] = [],
-        attributes: list[tuple[ObjectIdentifier, bytes, int | None]] = [],
+        extensions: list[Extension[ExtensionType]] | None = None,
+        attributes: list[tuple[ObjectIdentifier, bytes, int | None]]
+        | None = None,
     ):
         """
         Creates an empty X.509 certificate request (v1).
         """
         self._subject_name = subject_name
-        self._extensions = extensions
-        self._attributes = attributes
+        self._extensions = extensions or []
+        self._attributes = attributes or []
 
     def subject_name(self, name: Name) -> CertificateSigningRequestBuilder:
         """
@@ -770,7 +771,7 @@ class CertificateBuilder:
         serial_number: int | None = None,
         not_valid_before: datetime.datetime | None = None,
         not_valid_after: datetime.datetime | None = None,
-        extensions: list[Extension[ExtensionType]] = [],
+        extensions: list[Extension[ExtensionType]] | None = None,
     ) -> None:
         self._version = Version.v3
         self._issuer_name = issuer_name
@@ -779,7 +780,7 @@ class CertificateBuilder:
         self._serial_number = serial_number
         self._not_valid_before = not_valid_before
         self._not_valid_after = not_valid_after
-        self._extensions = extensions
+        self._extensions = extensions or []
 
     def issuer_name(self, name: Name) -> CertificateBuilder:
         """
@@ -1013,14 +1014,14 @@ class CertificateRevocationListBuilder:
         issuer_name: Name | None = None,
         last_update: datetime.datetime | None = None,
         next_update: datetime.datetime | None = None,
-        extensions: list[Extension[ExtensionType]] = [],
-        revoked_certificates: list[RevokedCertificate] = [],
+        extensions: list[Extension[ExtensionType]] | None = None,
+        revoked_certificates: list[RevokedCertificate] | None = None,
     ):
         self._issuer_name = issuer_name
         self._last_update = last_update
         self._next_update = next_update
-        self._extensions = extensions
-        self._revoked_certificates = revoked_certificates
+        self._extensions = extensions or []
+        self._revoked_certificates = revoked_certificates or []
 
     def issuer_name(
         self, issuer_name: Name
@@ -1154,11 +1155,11 @@ class RevokedCertificateBuilder:
         self,
         serial_number: int | None = None,
         revocation_date: datetime.datetime | None = None,
-        extensions: list[Extension[ExtensionType]] = [],
+        extensions: list[Extension[ExtensionType]] | None = None,
     ):
         self._serial_number = serial_number
         self._revocation_date = revocation_date
-        self._extensions = extensions
+        self._extensions = extensions or []
 
     def serial_number(self, number: int) -> RevokedCertificateBuilder:
         if not isinstance(number, int):

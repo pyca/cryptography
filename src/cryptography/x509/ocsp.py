@@ -474,11 +474,11 @@ class OCSPRequestBuilder:
         | None = None,
         request_hash: tuple[bytes, bytes, int, hashes.HashAlgorithm]
         | None = None,
-        extensions: list[x509.Extension[x509.ExtensionType]] = [],
+        extensions: list[x509.Extension[x509.ExtensionType]] | None = None,
     ) -> None:
         self._request = request
         self._request_hash = request_hash
-        self._extensions = extensions
+        self._extensions = extensions or []
 
     def add_certificate(
         self,
@@ -556,12 +556,12 @@ class OCSPResponseBuilder:
         responder_id: tuple[x509.Certificate, OCSPResponderEncoding]
         | None = None,
         certs: list[x509.Certificate] | None = None,
-        extensions: list[x509.Extension[x509.ExtensionType]] = [],
+        extensions: list[x509.Extension[x509.ExtensionType]] | None = None,
     ):
         self._response = response
         self._responder_id = responder_id
         self._certs = certs
-        self._extensions = extensions
+        self._extensions = extensions or []
 
     def add_response(
         self,

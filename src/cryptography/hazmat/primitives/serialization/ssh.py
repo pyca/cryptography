@@ -1180,23 +1180,23 @@ class SSHCertificateBuilder:
         _serial: int | None = None,
         _type: SSHCertificateType | None = None,
         _key_id: bytes | None = None,
-        _valid_principals: list[bytes] = [],
+        _valid_principals: list[bytes] | None = None,
         _valid_for_all_principals: bool = False,
         _valid_before: int | None = None,
         _valid_after: int | None = None,
-        _critical_options: list[tuple[bytes, bytes]] = [],
-        _extensions: list[tuple[bytes, bytes]] = [],
+        _critical_options: list[tuple[bytes, bytes]] | None = None,
+        _extensions: list[tuple[bytes, bytes]] | None = None,
     ):
         self._public_key = _public_key
         self._serial = _serial
         self._type = _type
         self._key_id = _key_id
-        self._valid_principals = _valid_principals
+        self._valid_principals = _valid_principals or []
         self._valid_for_all_principals = _valid_for_all_principals
         self._valid_before = _valid_before
         self._valid_after = _valid_after
-        self._critical_options = _critical_options
-        self._extensions = _extensions
+        self._critical_options = _critical_options or []
+        self._extensions = _extensions or []
 
     def public_key(
         self, public_key: SSHCertPublicKeyTypes

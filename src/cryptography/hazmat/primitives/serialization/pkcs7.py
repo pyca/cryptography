@@ -56,12 +56,12 @@ class PKCS7SignatureBuilder:
                 PKCS7HashTypes,
                 padding.PSS | padding.PKCS1v15 | None,
             ]
-        ] = [],
-        additional_certs: list[x509.Certificate] = [],
+        ] | None = None,
+        additional_certs: list[x509.Certificate] | None = None,
     ):
         self._data = data
-        self._signers = signers
-        self._additional_certs = additional_certs
+        self._signers = signers or []
+        self._additional_certs = additional_certs or []
 
     def set_data(self, data: bytes) -> PKCS7SignatureBuilder:
         _check_byteslike("data", data)
