@@ -277,3 +277,34 @@ class TestMultiFernet:
 
         with pytest.raises(InvalidToken):
             mf2.rotate(mf1.encrypt(b"abc"))
+
+    def test_extract_timestamp_first_fernet_valid_token(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        mf1 = MultiFernet([f1])
+        current_time = 1526138327
+        token = mf1.encrypt_at_time(b"encrypt me", current_time)
+        assert mf1.extract_timestamp(token) == current_time
+
+    def test_extract_timestamp_second_fernet_valid_token(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+        mf1 = MultiFernet([f1, f2])
+        current_time = 1526138327
+        token = f2.encrypt_at_time(b"encrypt me", current_time)
+        assert mf1.extract_timestamp(token) == current_time
+
+    def test_extract_timestamp_invalid_token(self, backend):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+        mf1 = MultiFernet([f1])
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp(b"nonsensetoken")
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp(b"\x80abc")
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp(b"\x00")
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp("nonsensetoken")
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp("abc")
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp("")

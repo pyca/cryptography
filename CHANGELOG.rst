@@ -10,6 +10,8 @@ Changelog
 
 * Enforce the :rfc:`5280` requirement that extended key usage extensions must
   not be empty.
+* Added support for timestamp extraction to the
+  :class:`~cryptography.fernet.MultiFernet` class.
 
 .. _v43-0-0:
 

@@ -213,3 +213,11 @@ class MultiFernet:
             except InvalidToken:
                 pass
         raise InvalidToken
+
+    def extract_timestamp(self, msg: bytes | str) -> int:
+        for f in self._fernets:
+            try:
+                return f.extract_timestamp(msg)
+            except InvalidToken:
+                pass
+        raise InvalidToken
