@@ -16,3 +16,4 @@ target/
 .rust-cov/
 *.lcov
 *.profdata
+**/*.DS_Store
