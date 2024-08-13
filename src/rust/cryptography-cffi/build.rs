@@ -59,14 +59,12 @@ fn main() {
          print(os.pathsep.join(b.include_dirs), end='')",
     )
     .unwrap();
-    let openssl_include =
-        std::env::var_os("DEP_OPENSSL_INCLUDE").expect("unable to find openssl include path");
     let openssl_c = Path::new(&out_dir).join("_openssl.c");
 
     let mut build = cc::Build::new();
     build
         .file(openssl_c)
-        .include(openssl_include)
+        .includes(std::env::var_os("DEP_OPENSSL_INCLUDE"))
         .flag_if_supported("-Wconversion")
         .flag_if_supported("-Wno-error=sign-conversion")
         .flag_if_supported("-Wno-unused-parameter");
