@@ -172,6 +172,17 @@ Custom asymmetric vectors
 * ``asymmetric/PKCS8/rsa_pss_2048_hash_mask_salt.pem`` - A 2048-bit RSA PSS key
   with the hash (SHA256), mask algorithm (SHA256), and salt length (32)
   PSS parameters set.
+* ``asymmetric/Traditional_OpenSSL_Serialization/testrsa.pem`` - A 2048-bit RSA
+  key, encoded as a "traditional" ``RSA PRIVATE KEY`` PEM block, rather than a
+  ``PRIVATE KEY`` block.
+* ``asymmetric/Traditional_OpenSSL_Serialization/testrsa-encrypted.pem`` - The
+  above, encrypted at the PEM level with AES-128-CBC and password "password".
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1.pem`` - The above,
+  encrypted at the PEM level with DES-EDE3-CBC and password "123456".
+* ``asymmetric/Traditional_OpenSSL_Serialization/key2.pem`` - The above,
+  encrypted at the PEM level with AES-128-CBC and password "a123456".
+* ``asymmetric/DER_Serialization/testrsa.der`` - The above as a DER-encoded
+  RSAPrivateKey structure.
 
 
 Key exchange
