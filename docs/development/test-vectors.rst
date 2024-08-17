@@ -31,8 +31,6 @@ Asymmetric ciphers
 * FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
 * DH and ECDH and ECDH+KDF(17.4) test vectors from `NIST CAVP`_.
 * Ed25519 test vectors from the `Ed25519 website`_.
-* OpenSSL PEM RSA serialization vectors from the `OpenSSL example key`_ and
-  `GnuTLS key parsing tests`_.
 * ``asymmetric/PEM_Serialization/rsa-bad-1025-q-is-2.pem`` from `badkeys`_.
 * OpenSSL PEM DSA serialization vectors from the `GnuTLS example keys`_.
 * PKCS #8 PEM serialization vectors from
@@ -103,8 +101,7 @@ Custom asymmetric vectors
 * ``asymmetric/PKCS8/unenc-dsa-pkcs8.pub.pem`` and
   ``asymmetric/DER_Serialization/unenc-dsa-pkcs8.pub.der`` - Contains a DSA
   2048 bit public key generated using OpenSSL from ``unenc-dsa-pkcs8.pem``.
-* DER conversions of the `GnuTLS example keys`_ for DSA as well as the
-  `OpenSSL example key`_ for RSA.
+* DER conversions of the `GnuTLS example keys`_ for DSA.
 * DER conversions of `enc-rsa-pkcs8.pem`_, `enc2-rsa-pkcs8.pem`_, and
   `unenc-rsa-pkcs8.pem`_.
 * ``asymmetric/public/PKCS1/rsa.pub.pem`` and
@@ -175,6 +172,17 @@ Custom asymmetric vectors
 * ``asymmetric/PKCS8/rsa_pss_2048_hash_mask_salt.pem`` - A 2048-bit RSA PSS key
   with the hash (SHA256), mask algorithm (SHA256), and salt length (32)
   PSS parameters set.
+* ``asymmetric/Traditional_OpenSSL_Serialization/testrsa.pem`` - A 2048-bit RSA
+  key, encoded as a "traditional" ``RSA PRIVATE KEY`` PEM block, rather than a
+  ``PRIVATE KEY`` block.
+* ``asymmetric/Traditional_OpenSSL_Serialization/testrsa-encrypted.pem`` - The
+  above, encrypted at the PEM level with AES-128-CBC and password "password".
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1.pem`` - The above,
+  encrypted at the PEM level with DES-EDE3-CBC and password "123456".
+* ``asymmetric/Traditional_OpenSSL_Serialization/key2.pem`` - The above,
+  encrypted at the PEM level with AES-128-CBC and password "a123456".
+* ``asymmetric/DER_Serialization/testrsa.der`` - The above as a DER-encoded
+  RSAPrivateKey structure.
 
 
 Key exchange
@@ -1069,8 +1077,6 @@ header format (substituting the correct information):
 .. _`draft RFC`: https://datatracker.ietf.org/doc/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
 .. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
-.. _`OpenSSL example key`: https://github.com/openssl/openssl/blob/d02b48c63a58ea4367a0e905979f140b7d090f86/test/testrsa.pem
-.. _`GnuTLS key parsing tests`: https://gitlab.com/gnutls/gnutls/-/commit/f16ef39ef0303b02d7fa590a37820440c466ce8d
 .. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
 .. _`enc2-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/enc2pkcs8.pem
 .. _`unenc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/unencpkcs8.pem
