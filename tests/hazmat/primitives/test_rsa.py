@@ -821,8 +821,8 @@ class TestRSASignature:
         ),
         skip_message="Does not support PSS.",
     )
-    def test_unsupported_hash(self, rsa_key_512: rsa.RSAPrivateKey, backend):
-        private_key = rsa_key_512
+    def test_unsupported_hash(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+        private_key = rsa_key_2048
         message = b"one little message"
         pss = padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=0)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
@@ -850,9 +850,9 @@ class TestRSASignature:
         skip_message="Does not support PSS.",
     )
     def test_prehashed_digest_mismatch(
-        self, rsa_key_512: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
-        private_key = rsa_key_512
+        private_key = rsa_key_2048
         message = b"one little message"
         h = hashes.Hash(hashes.SHA512(), backend)
         h.update(message)
@@ -2137,6 +2137,8 @@ class TestRSAEncryption:
         skip_message="Requires FIPS",
     )
     def test_rsa_fips_small_key(self, rsa_key_512: rsa.RSAPrivateKey, backend):
+        # Ideally this would use a larger disallowed key like RSA-1024, but
+        # RHEL-8 thinks that RSA-1024 is allowed by FIPS.
         with pytest.raises(ValueError):
             rsa_key_512.sign(b"somedata", padding.PKCS1v15(), hashes.SHA512())
 
