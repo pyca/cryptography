@@ -2136,12 +2136,11 @@ class TestRSAEncryption:
         only_if=lambda backend: backend._fips_enabled,
         skip_message="Requires FIPS",
     )
-    def test_rsa_fips_small_key(self, backend):
-        rsa_key_1024 = RSA_KEY_1024.private_key(
-            backend, unsafe_skip_rsa_key_validation=True
-        )
+    def test_rsa_fips_small_key(self, rsa_key_512: rsa.RSAPrivateKey, backend):
+        # Ideally this would use a larger disallowed key like RSA-1024, but
+        # RHEL-8 thinks that RSA-1024 is allowed by FIPS.
         with pytest.raises(ValueError):
-            rsa_key_1024.sign(b"somedata", padding.PKCS1v15(), hashes.SHA512())
+            rsa_key_512.sign(b"somedata", padding.PKCS1v15(), hashes.SHA512())
 
     def test_unsupported_padding(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
