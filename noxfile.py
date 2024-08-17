@@ -259,7 +259,7 @@ def rust(session: nox.Session) -> None:
         process_rust_coverage(session, rust_tests, prof_location)
 
 
-@nox.session(venv_backend="uv")
+@nox.session(venv_backend="uv|venv")
 def local(session):
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "./vectors", verbose=False)
@@ -302,7 +302,7 @@ def local(session):
         "maturin",
         "develop",
         "--release",
-        "--uv",
+        *(["--uv"] if session.venv_backend == "uv" else []),
     )
 
     if session.posargs:
