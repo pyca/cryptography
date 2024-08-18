@@ -56,7 +56,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-rust-debug"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@3058c89e2e39fccb6d6501b454f573105eadd166 # v4.1.7
         timeout-minutes: 3
         with:
           persist-credentials: false
