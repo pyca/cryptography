@@ -207,3 +207,5 @@ linkcheck_ignore = [
 ]
 
 autosectionlabel_prefix_document = True
+
+flyout_display = "attached"
