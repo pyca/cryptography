@@ -12,6 +12,9 @@ Changelog
   not be empty.
 * Added support for timestamp extraction to the
   :class:`~cryptography.fernet.MultiFernet` class.
+* Relax the Authority Key Identifier requirements on root CA certificates
+  during X.509 verification to allow fields permitted by :rfc:`5280` but
+  forbidden by the CA/Browser BRs.
 
 .. _v43-0-0:
 

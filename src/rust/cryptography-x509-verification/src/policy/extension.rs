@@ -412,18 +412,13 @@ pub(crate) mod ca {
                 ));
             }
 
-            // authorityCertIssuer and authorityCertSerialNumber MUST NOT be present.
-            if aki.authority_cert_issuer.is_some() {
-                return Err(ValidationError::Other(
-                    "authorityKeyIdentifier must not contain authorityCertIssuer".to_string(),
-                ));
-            }
-
-            if aki.authority_cert_serial_number.is_some() {
-                return Err(ValidationError::Other(
-                    "authorityKeyIdentifier must not contain authorityCertSerialNumber".to_string(),
-                ));
-            }
+            // NOTE: CABF 7.1.2.1.3 says that Root CAs MUST NOT
+            // have authorityCertIdentifier or authorityCertSerialNumber,
+            // but these are present in practice in trust program bundles
+            // due to older roots that have been grandfathered in.
+            // Other validators are permissive of these being present,
+            // so we don't check for them.
+            // See #11461 for more information.
         }
 
         Ok(())
