@@ -67,6 +67,12 @@ LIMBO_SKIP_TESTCASES = {
     # forbidden under CABF. This is consistent with what
     # Go's crypto/x509 and Rust's webpki crate do.
     "webpki::aki::root-with-aki-ski-mismatch",
+    # We allow root CAs where the AKI contains fields other than keyIdentifier,
+    # which is technically forbidden under CABF. No other implementations
+    # enforce this requirement.
+    "webpki::aki::root-with-aki-authoritycertissuer",
+    "webpki::aki::root-with-aki-authoritycertserialnumber",
+    "webpki::aki::root-with-aki-all-fields",
     # We allow RSA keys that aren't divisible by 8, which is technically
     # forbidden under CABF. No other implementation checks this either.
     "webpki::forbidden-rsa-not-divisable-by-8-in-root",
