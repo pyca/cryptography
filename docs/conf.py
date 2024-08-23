@@ -199,6 +199,7 @@ linkcheck_ignore = [
     r"https://speakerdeck.com",
     r"https://\w+.stackexchange.com",
     r"https://stackoverflow.com",
+    r"https://webstore.ansi.org",
     # GitHub changed how they do page renders so anchor detection
     # no longer works in source view
     r"https://github.com/.*/blob/.*#L\d+",
