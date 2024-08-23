@@ -205,6 +205,8 @@ linkcheck_ignore = [
     r"https://github.com/.*/blob/.*#L\d+",
     # Kuleuven struggles with the endless forward march of time
     r"https://www.cosic.esat.kuleuven.be",
+    # CMU doesn't know how to send intermediates
+    r"https://wiki.sei.cmu.edu",
 ]
 
 autosectionlabel_prefix_document = True
