@@ -11,6 +11,7 @@ pub const SHROUDED_KEY_BAG_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 2);
 pub const X509_CERTIFICATE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 22, 1);
 pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 20);
+pub const LOCAL_KEY_ID_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 21);
 
 #[derive(asn1::Asn1Write)]
 pub struct Pfx<'a> {
@@ -46,6 +47,9 @@ pub struct Attribute<'a> {
 pub enum AttributeSet<'a> {
     #[defined_by(FRIENDLY_NAME_OID)]
     FriendlyName(asn1::SetOfWriter<'a, Utf8StoredBMPString<'a>, [Utf8StoredBMPString<'a>; 1]>),
+
+    #[defined_by(LOCAL_KEY_ID_OID)]
+    LocalKeyId(asn1::SetOfWriter<'a, &'a [u8], [&'a [u8]; 1]>),
 }
 
 #[derive(asn1::Asn1DefinedByWrite)]

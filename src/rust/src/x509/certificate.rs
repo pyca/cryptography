@@ -84,16 +84,16 @@ impl Certificate {
         )
     }
 
-    fn fingerprint<'p>(
+    pub(crate) fn fingerprint<'p>(
         &self,
         py: pyo3::Python<'p>,
         algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let serialized = asn1::write_single(&self.raw.borrow_dependent())?;
 
         let mut h = hashes::Hash::new(py, algorithm, None)?;
         h.update_bytes(&serialized)?;
-        Ok(h.finalize(py)?.into_any())
+        h.finalize(py)
     }
 
     fn public_bytes<'p>(

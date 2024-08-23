@@ -338,38 +338,51 @@ fn pkcs12_kdf(
     Ok(result)
 }
 
-fn friendly_name_attributes(
-    friendly_name: Option<&[u8]>,
+fn pkcs12_attributes<'a>(
+    friendly_name: Option<&'a [u8]>,
+    local_key_id: Option<&'a [u8]>,
 ) -> CryptographyResult<
     Option<
         asn1::SetOfWriter<
-            '_,
-            cryptography_x509::pkcs12::Attribute<'_>,
-            Vec<cryptography_x509::pkcs12::Attribute<'_>>,
+            'a,
+            cryptography_x509::pkcs12::Attribute<'a>,
+            Vec<cryptography_x509::pkcs12::Attribute<'a>>,
         >,
     >,
 > {
+    let mut attrs = vec![];
     if let Some(name) = friendly_name {
         let name_str = std::str::from_utf8(name).map_err(|_| {
             pyo3::exceptions::PyValueError::new_err("friendly_name must be valid UTF-8")
         })?;
 
-        Ok(Some(asn1::SetOfWriter::new(vec![
-            cryptography_x509::pkcs12::Attribute {
-                _attr_id: asn1::DefinedByMarker::marker(),
-                attr_values: cryptography_x509::pkcs12::AttributeSet::FriendlyName(
-                    asn1::SetOfWriter::new([Utf8StoredBMPString::new(name_str)]),
-                ),
-            },
-        ])))
-    } else {
+        attrs.push(cryptography_x509::pkcs12::Attribute {
+            _attr_id: asn1::DefinedByMarker::marker(),
+            attr_values: cryptography_x509::pkcs12::AttributeSet::FriendlyName(
+                asn1::SetOfWriter::new([Utf8StoredBMPString::new(name_str)]),
+            ),
+        });
+    }
+    if let Some(key_id) = local_key_id {
+        attrs.push(cryptography_x509::pkcs12::Attribute {
+            _attr_id: asn1::DefinedByMarker::marker(),
+            attr_values: cryptography_x509::pkcs12::AttributeSet::LocalKeyId(
+                asn1::SetOfWriter::new([key_id]),
+            ),
+        });
+    }
+
+    if attrs.is_empty() {
         Ok(None)
+    } else {
+        Ok(Some(asn1::SetOfWriter::new(attrs)))
     }
 }
 
 fn cert_to_bag<'a>(
     cert: &'a Certificate,
     friendly_name: Option<&'a [u8]>,
+    local_key_id: Option<&'a [u8]>,
 ) -> CryptographyResult<cryptography_x509::pkcs12::SafeBag<'a>> {
     Ok(cryptography_x509::pkcs12::SafeBag {
         _bag_id: asn1::DefinedByMarker::marker(),
@@ -381,7 +394,7 @@ fn cert_to_bag<'a>(
                 )),
             },
         )),
-        attributes: friendly_name_attributes(friendly_name)?,
+        attributes: pkcs12_attributes(friendly_name, local_key_id)?,
     })
 }
 
@@ -499,6 +512,7 @@ fn serialize_key_and_certificates<'p>(
         key_ciphertext,
     );
     let mut ca_certs = vec![];
+    let mut key_id = None;
     if cert.is_some() || cas.is_some() {
         let mut cert_bags = vec![];
 
@@ -515,9 +529,14 @@ fn serialize_key_and_certificates<'p>(
                         ),
                     ));
                 }
+                key_id = Some(cert.fingerprint(py, &types::SHA1.get(py)?.call0()?)?);
             }
 
-            cert_bags.push(cert_to_bag(cert, name)?);
+            cert_bags.push(cert_to_bag(
+                cert,
+                name,
+                key_id.as_ref().map(|v| v.as_bytes()),
+            )?);
         }
 
         if let Some(cas) = cas {
@@ -527,10 +546,13 @@ fn serialize_key_and_certificates<'p>(
 
             for cert in &ca_certs {
                 let bag = match cert {
-                    CertificateOrPKCS12Certificate::Certificate(c) => cert_to_bag(c.get(), None)?,
+                    CertificateOrPKCS12Certificate::Certificate(c) => {
+                        cert_to_bag(c.get(), None, None)?
+                    }
                     CertificateOrPKCS12Certificate::PKCS12Certificate(c) => cert_to_bag(
                         c.get().certificate.get(),
                         c.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
+                        None,
                     )?,
                 };
                 cert_bags.push(bag);
@@ -627,7 +649,7 @@ fn serialize_key_and_certificates<'p>(
                         },
                     ),
                 ),
-                attributes: friendly_name_attributes(name)?,
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
             }
         } else {
             let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
@@ -637,7 +659,7 @@ fn serialize_key_and_certificates<'p>(
                 bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(
                     pkcs8_tlv,
                 )),
-                attributes: friendly_name_attributes(name)?,
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
             }
         };
 

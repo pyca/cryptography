@@ -697,6 +697,30 @@ class TestPKCS12Creation:
                 b"name", key, cacert, [], encryption
             )
 
+    @pytest.mark.parametrize(
+        "encryption_algorithm",
+        [
+            serialization.NoEncryption(),
+            serialization.BestAvailableEncryption(b"password"),
+        ],
+    )
+    def test_generate_localkeyid(self, backend, encryption_algorithm):
+        cert, key = _load_ca(backend)
+
+        p12 = serialize_key_and_certificates(
+            None, key, cert, None, encryption_algorithm
+        )
+        # Dirty, but does the trick. Should be there:
+        # * 2x if unencrypted (once for the key and once for the cert)
+        # * 1x if encrypted (the cert one is encrypted, but the key one is
+        #   plaintext)
+        count = (
+            2
+            if isinstance(encryption_algorithm, serialization.NoEncryption)
+            else 1
+        )
+        assert p12.count(cert.fingerprint(hashes.SHA1())) == count
+
 
 @pytest.mark.skip_fips(
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
