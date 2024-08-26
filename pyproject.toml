@@ -1,6 +1,6 @@
 [build-system]
 # These requirements must be kept sync with the requirements in
-# ./github/requirements/build-requirements.{in,txt}
+# ./.github/requirements/build-requirements.{in,txt}
 requires = [
     "maturin>=1,<2",
 
