@@ -78,7 +78,7 @@ docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=1.1.1"]
 docstest = ["pyenchant >=1.6.11", "readme-renderer", "sphinxcontrib-spelling >=4.0.1"]
 sdist = ["build"]
 # `click` included because its needed to type check `release.py`
-pep8test = ["ruff", "mypy", "check-sdist", "click"]
+pep8test = ["ruff", "mypy", "check-sdist; python_version >= '3.8'", "click"]
 
 [tool.maturin]
 python-source = "src"
