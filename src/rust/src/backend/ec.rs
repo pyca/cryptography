@@ -241,7 +241,7 @@ impl ECPrivateKey {
         }
 
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
-        // If `set_peer_ex` is available, we don't valid the key. This is
+        // If `set_peer_ex` is available, we don't validate the key. This is
         // because we already validated it sufficiently when we created the
         // ECPublicKey object.
         #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
