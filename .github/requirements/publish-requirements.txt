@@ -321,7 +321,7 @@ urllib3==2.2.2 \
     # via
     #   requests
     #   twine
-zipp==3.20.0 \
-    --hash=sha256:0145e43d89664cfe1a2e533adc75adafed82fe2da404b4bbb6b026c0157bdb31 \
-    --hash=sha256:58da6168be89f0be59beb194da1250516fdaa062ccebd30127ac65d30045e10d
+zipp==3.20.1 \
+    --hash=sha256:9960cd8967c8f85a56f920d5d507274e74f9ff813a0ab8889a5b5be2daf44064 \
+    --hash=sha256:c22b14cc4763c5a5b04134207736c107db42e9d3ef2d9779d465f5f1bcba572b
     # via importlib-metadata
