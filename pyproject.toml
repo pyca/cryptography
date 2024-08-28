@@ -8,7 +8,7 @@ requires = [
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
     # Needed because cffi imports distutils, and in Python 3.12, distutils has
     # been removed from the stdlib, but installing setuptools puts it back.
-    "setuptools",
+    "setuptools!=74.0.0",
 ]
 build-backend = "maturin"
 
