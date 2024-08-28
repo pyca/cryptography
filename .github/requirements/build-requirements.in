@@ -1,5 +1,5 @@
 # Must be kept sync with build-system.requires at pyproject.toml
-setuptools>=61.0.0
+setuptools!=74.0.0
 cffi>=1.12; platform_python_implementation != 'PyPy'
 maturin>=1,<2
 
