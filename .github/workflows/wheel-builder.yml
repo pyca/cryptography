@@ -135,7 +135,8 @@ jobs:
           source .venv/bin/activate
           OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
               OPENSSL_STATIC=1 \
-              .venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/ && mv dist/cryptography*.whl tmpwheelhouse
+              .venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/
+          mv dist/cryptography*.whl tmpwheelhouse
         env:
           RUSTUP_HOME: /root/.rustup
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptograph*.whl -w wheelhouse/
@@ -255,7 +256,8 @@ jobs:
           source venv/bin/activate
           OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
               OPENSSL_STATIC=1 \
-              venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/ && mv dist/cryptography*.whl wheelhouse
+              venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/
+          mv dist/cryptography*.whl wheelhouse
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
@@ -344,7 +346,8 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
           fi
 
-          python -m pip wheel -v --no-deps cryptography*.tar.gz $PY_LIMITED_API -w dist/ && mv dist/cryptography*.whl wheelhouse/
+          python -m pip wheel -v --no-deps cryptography*.tar.gz $PY_LIMITED_API -w dist/
+          mv dist/cryptography*.whl wheelhouse/
         shell: bash
       - run: pip install -f wheelhouse --no-index cryptography
       - name: Print the OpenSSL we built and linked against
