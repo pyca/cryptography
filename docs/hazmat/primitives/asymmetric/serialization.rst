@@ -1357,7 +1357,10 @@ Serialization Formats
 
         .. versionadded:: 2.5
 
-        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/ed25519`,
+        :doc:`/hazmat/primitives/asymmetric/ed448`,
+        :doc:`/hazmat/primitives/asymmetric/x25519`, and
+        :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
     .. attribute:: OpenSSH
@@ -1471,7 +1474,10 @@ Serialization Formats
 
         .. versionadded:: 2.5
 
-        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/ed25519`,
+        :doc:`/hazmat/primitives/asymmetric/ed448`,
+        :doc:`/hazmat/primitives/asymmetric/x25519`, and
+        :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
     .. attribute:: CompressedPoint
@@ -1544,7 +1550,10 @@ Serialization Encodings
 
         .. versionadded:: 2.5
 
-        A raw format used by :doc:`/hazmat/primitives/asymmetric/x448`. It is a
+        A raw format used by :doc:`/hazmat/primitives/asymmetric/ed25519`,
+        :doc:`/hazmat/primitives/asymmetric/ed448`,
+        :doc:`/hazmat/primitives/asymmetric/x25519`, and
+        :doc:`/hazmat/primitives/asymmetric/x448`. It is a
         binary format and is invalid for other key types.
 
     .. attribute:: X962
