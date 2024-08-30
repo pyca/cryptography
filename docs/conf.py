@@ -17,11 +17,6 @@ import os
 import sys
 
 try:
-    import sphinx_rtd_theme
-except ImportError:
-    sphinx_rtd_theme = None
-
-try:
     from sphinxcontrib import spelling
 except ImportError:
     spelling = None
@@ -46,7 +41,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "cryptography-docs",
-    "sphinx_rtd_theme",
 ]
 
 if spelling is not None:
@@ -121,10 +115,7 @@ pygments_style = "sphinx"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-if sphinx_rtd_theme:
-    html_theme = "sphinx_rtd_theme"
-else:
-    html_theme = "default"
+html_theme = "piccolo_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

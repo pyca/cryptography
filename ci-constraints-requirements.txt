@@ -35,7 +35,6 @@ docutils==0.20.1
     # via
     #   readme-renderer
     #   sphinx
-    #   sphinx-rtd-theme
 exceptiongroup==1.2.2
     # via pytest
 execnet==2.1.1; python_version >= "3.8"
@@ -68,6 +67,8 @@ packaging==24.1; python_version >= "3.8"
     #   sphinx
 pathspec==0.12.1
     # via check-sdist
+piccolo-theme==0.24.0
+    # via cryptography (pyproject.toml)
 platformdirs==4.2.2; python_version >= "3.8"
     # via virtualenv
 pluggy==1.5.0; python_version >= "3.8"
@@ -112,7 +113,6 @@ snowballstemmer==2.2.0
 sphinx==7.4.7
     # via
     #   cryptography (pyproject.toml)
-    #   sphinx-rtd-theme
     #   sphinxcontrib-applehelp
     #   sphinxcontrib-devhelp
     #   sphinxcontrib-htmlhelp
@@ -120,16 +120,12 @@ sphinx==7.4.7
     #   sphinxcontrib-qthelp
     #   sphinxcontrib-serializinghtml
     #   sphinxcontrib-spelling
-sphinx-rtd-theme==2.0.0
-    # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
 sphinxcontrib-devhelp==2.0.0
     # via sphinx
 sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
-sphinxcontrib-jquery==4.1
-    # via sphinx-rtd-theme
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-qthelp==2.0.0
