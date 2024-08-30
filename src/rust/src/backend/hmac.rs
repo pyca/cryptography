@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::backend::hashes::{already_finalized_error, message_digest_from_algorithm};
+use crate::backend::hashes::message_digest_from_algorithm;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
@@ -47,14 +47,14 @@ impl Hmac {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 
     fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::hmac::Hmac> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 }
 

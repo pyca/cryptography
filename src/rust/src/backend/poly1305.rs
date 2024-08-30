@@ -2,7 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
@@ -136,7 +135,9 @@ impl Poly1305 {
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
         self.inner
             .as_mut()
-            .map_or(Err(already_finalized_error()), |b| b.update(data))
+            .map_or(Err(exceptions::already_finalized_error()), |b| {
+                b.update(data)
+            })
     }
 
     fn finalize<'p>(
@@ -146,7 +147,9 @@ impl Poly1305 {
         let res = self
             .inner
             .as_mut()
-            .map_or(Err(already_finalized_error()), |b| b.finalize(py));
+            .map_or(Err(exceptions::already_finalized_error()), |b| {
+                b.finalize(py)
+            });
         self.inner = None;
 
         res
