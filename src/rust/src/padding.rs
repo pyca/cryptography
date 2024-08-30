@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::buf::CffiBuf;
-use crate::error::{CryptographyError, CryptographyResult};
+use crate::error::CryptographyResult;
 use crate::exceptions;
 
 /// Returns the value of the input with the most-significant-bit copied to all
@@ -92,9 +92,7 @@ impl PKCS7PaddingContext {
                 *v += buf.as_bytes().len();
                 Ok(buf.into_pyobj())
             }
-            None => Err(CryptographyError::from(
-                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
-            )),
+            None => Err(exceptions::already_finalized_error()),
         }
     }
 
@@ -108,9 +106,7 @@ impl PKCS7PaddingContext {
                 let pad = vec![pad_size as u8; pad_size];
                 Ok(pyo3::types::PyBytes::new_bound(py, &pad))
             }
-            None => Err(CryptographyError::from(
-                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
-            )),
+            None => Err(exceptions::already_finalized_error()),
         }
     }
 }

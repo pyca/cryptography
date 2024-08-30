@@ -259,8 +259,8 @@ struct PyAEADDecryptionContext {
     aad_bytes_remaining: u64,
 }
 
-fn get_mut_ctx(ctx: Option<&mut CipherContext>) -> pyo3::PyResult<&mut CipherContext> {
-    ctx.ok_or_else(|| exceptions::AlreadyFinalized::new_err("Context was already finalized."))
+fn get_mut_ctx(ctx: Option<&mut CipherContext>) -> CryptographyResult<&mut CipherContext> {
+    ctx.ok_or_else(exceptions::already_finalized_error)
 }
 
 #[pyo3::pymethods]

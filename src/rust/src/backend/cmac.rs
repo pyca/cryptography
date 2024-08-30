@@ -3,7 +3,6 @@
 // for complete details.
 
 use crate::backend::cipher_registry;
-use crate::backend::hashes::already_finalized_error;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
@@ -22,14 +21,14 @@ impl Cmac {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 
     fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::cmac::Cmac> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 }
 

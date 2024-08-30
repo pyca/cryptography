@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::error::CryptographyError;
+
 #[pyo3::pyclass(
     frozen,
     eq,
@@ -36,6 +38,10 @@ pyo3::import_exception_bound!(cryptography.x509, AttributeNotFound);
 pyo3::import_exception_bound!(cryptography.x509, DuplicateExtension);
 pyo3::import_exception_bound!(cryptography.x509, UnsupportedGeneralNameType);
 pyo3::import_exception_bound!(cryptography.x509, InvalidVersion);
+
+pub(crate) fn already_finalized_error() -> CryptographyError {
+    CryptographyError::from(AlreadyFinalized::new_err("Context was already finalized."))
+}
 
 #[pyo3::pymodule]
 pub(crate) mod exceptions {

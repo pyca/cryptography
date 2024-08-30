@@ -17,25 +17,19 @@ pub(crate) struct Hash {
     ctx: Option<openssl::hash::Hasher>,
 }
 
-pub(crate) fn already_finalized_error() -> CryptographyError {
-    CryptographyError::from(exceptions::AlreadyFinalized::new_err(
-        "Context was already finalized.",
-    ))
-}
-
 impl Hash {
     fn get_ctx(&self) -> CryptographyResult<&openssl::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 
     fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
-        Err(already_finalized_error())
+        Err(exceptions::already_finalized_error())
     }
 }
 
