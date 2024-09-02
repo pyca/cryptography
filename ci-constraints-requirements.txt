@@ -5,7 +5,7 @@
 # and then manually massaged to add version specifiers to packages whose
 # versions vary by Python version
 
-alabaster==0.7.16
+alabaster==1.0.0
     # via sphinx
 argcomplete==3.5.0; python_version >= "3.8"
     # via nox
