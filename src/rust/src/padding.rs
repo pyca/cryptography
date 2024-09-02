@@ -3,7 +3,7 @@
 // for complete details.
 
 use crate::buf::CffiBuf;
-use crate::error::CryptographyResult;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
 /// Returns the value of the input with the most-significant-bit copied to all
@@ -107,6 +107,80 @@ impl PKCS7PaddingContext {
                 Ok(pyo3::types::PyBytes::new_bound(py, &pad))
             }
             None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
+#[pyo3::pyclass]
+pub(crate) struct PKCS7UnpaddingContext {
+    block_size: usize,
+    buffer: Option<Vec<u8>>,
+}
+
+#[pyo3::pymethods]
+impl PKCS7UnpaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> PKCS7UnpaddingContext {
+        PKCS7UnpaddingContext {
+            block_size: block_size / 8,
+            buffer: Some(Vec::new()),
+        }
+    }
+
+    pub(crate) fn update<'a>(
+        &mut self,
+        py: pyo3::Python<'a>,
+        buf: CffiBuf<'a>,
+    ) -> CryptographyResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
+        match self.buffer.as_mut() {
+            Some(v) => {
+                // Extract the buffer
+                v.extend_from_slice(buf.as_bytes());
+
+                // Number of finished blocks
+                let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
+                let result_size = finished_blocks * self.block_size;
+
+                // Split the buffer into result and remaining buffer
+                let result: Vec<u8> = v.drain(..result_size).collect();
+                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+            }
+            None => Err(CryptographyError::from(
+                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
+            )),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.take() {
+            Some(v) => {
+                // Check if buffer has the right size
+                if v.len() != self.block_size {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes."),
+                    ));
+                }
+
+                // Check the validity of the buffer
+                if !check_pkcs7_padding(&v) {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes."),
+                    ));
+                }
+
+                // Remove the padding
+                let pad_size = *v.last().unwrap();
+
+                // Remove the n last elements of v
+                let result = v[..v.len() - pad_size as usize].to_vec();
+                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+            }
+            None => Err(CryptographyError::from(
+                exceptions::AlreadyFinalized::new_err("Context was already finalized."),
+            )),
         }
     }
 }
