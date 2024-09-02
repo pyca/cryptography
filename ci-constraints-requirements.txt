@@ -109,7 +109,7 @@ ruff==0.6.3
     # via cryptography (pyproject.toml)
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.4.7
+sphinx==8.0.2
     # via
     #   cryptography (pyproject.toml)
     #   sphinx-rtd-theme
