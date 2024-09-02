@@ -441,7 +441,7 @@ jobs:
         id: combinecoverage
         run: |
           set +e
-          python -m coverage combine
+          python -m coverage combine coverage.*
           echo "## Python Coverage" >> $GITHUB_STEP_SUMMARY
           python -m coverage report -m --fail-under=100 > COV_REPORT
           COV_EXIT_CODE=$?
