@@ -164,8 +164,45 @@ impl Scrypt {
     }
 }
 
+#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+#[pyo3::pyfunction]
+#[allow(clippy::too_many_arguments)]
+#[pyo3(signature = (key_material, salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+fn derive_argon2id<'p>(
+    py: pyo3::Python<'p>,
+    key_material: CffiBuf<'_>,
+    salt: &[u8],
+    length: usize,
+    iterations: u32,
+    lanes: u32,
+    memory_cost: u32,
+    ad: Option<&[u8]>,
+    secret: Option<&[u8]>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    use crate::error::CryptographyError;
+
+    Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
+        openssl::kdf::argon2id(
+            None,
+            key_material.as_bytes(),
+            salt,
+            ad,
+            secret,
+            iterations,
+            lanes,
+            memory_cost,
+            b,
+        )
+        .map_err(CryptographyError::from)?;
+        Ok(())
+    })?)
+}
+
 #[pyo3::pymodule]
 pub(crate) mod kdf {
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[pymodule_export]
+    use super::derive_argon2id;
     #[pymodule_export]
     use super::derive_pbkdf2_hmac;
     #[pymodule_export]
