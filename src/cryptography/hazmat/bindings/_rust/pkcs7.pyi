@@ -8,6 +8,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs7
 
+# Hello!
 def serialize_certificates(
     certs: list[x509.Certificate],
     encoding: serialization.Encoding,
