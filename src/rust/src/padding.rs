@@ -111,6 +111,65 @@ impl PKCS7PaddingContext {
     }
 }
 
+#[pyo3::pyclass]
+pub(crate) struct PKCS7UnpaddingContext {
+    block_size: usize,
+    buffer: Option<Vec<u8>>,
+}
+
+#[pyo3::pymethods]
+impl PKCS7UnpaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> PKCS7UnpaddingContext {
+        PKCS7UnpaddingContext {
+            block_size: block_size / 8,
+            buffer: Some(Vec::new()),
+        }
+    }
+
+    pub(crate) fn update<'a>(
+        &mut self,
+        py: pyo3::Python<'a>,
+        buf: CffiBuf<'a>,
+    ) -> CryptographyResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
+        match self.buffer.as_mut() {
+            Some(v) => {
+                v.extend_from_slice(buf.as_bytes());
+                let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
+                let result_size = finished_blocks * self.block_size;
+                let result: Vec<u8> = v.drain(..result_size).collect();
+                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.take() {
+            Some(v) => {
+                if v.len() != self.block_size {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+                if !check_pkcs7_padding(&v) {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+
+                let pad_size = *v.last().unwrap();
+                let result = v[..v.len() - pad_size as usize].to_vec();
+                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::constant_time_lt;
