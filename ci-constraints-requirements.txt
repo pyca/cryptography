@@ -120,7 +120,7 @@ sphinx==7.4.7
     #   sphinxcontrib-qthelp
     #   sphinxcontrib-serializinghtml
     #   sphinxcontrib-spelling
-sphinx-rtd-theme==2.0.0
+sphinx-rtd-theme==3.0.0rc1
     # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
