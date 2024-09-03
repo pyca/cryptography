@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v43-0-1:
+
+43.0.1 - 2024-09-03
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.3.2.
+
 .. _v43-0-0:
 
 43.0.0 - 2024-07-20
