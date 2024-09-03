@@ -20,7 +20,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
     pushd openssl
     git checkout "${VERSION}"
   else
-    curl -LO "https://www.openssl.org/source/openssl-${VERSION}.tar.gz"
+    curl -LO "https://github.com/openssl/openssl/releases/download/openssl-${VERSION}/openssl-${VERSION}.tar.gz"
     tar zxf "openssl-${VERSION}.tar.gz"
     pushd "openssl-${VERSION}"
   fi
