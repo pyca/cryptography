@@ -70,7 +70,7 @@ fn generate_private_key(public_exponent: u32, key_size: u32) -> CryptographyResu
 }
 
 fn oaep_hash_supported(md: &openssl::hash::MessageDigest) -> bool {
-    (!cryptography_openssl::fips::is_enabled() && md == &openssl::hash::MessageDigest::sha1())
+    md == &openssl::hash::MessageDigest::sha1()
         || md == &openssl::hash::MessageDigest::sha224()
         || md == &openssl::hash::MessageDigest::sha256()
         || md == &openssl::hash::MessageDigest::sha384()
