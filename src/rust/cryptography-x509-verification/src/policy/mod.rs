@@ -25,9 +25,11 @@ use cryptography_x509::oid::{
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
-use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy, ExtensionValidator};
+use crate::policy::extension::{ca, common, ee, Criticality, ExtensionValidator};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, VerificationCertificate};
+
+pub use crate::policy::extension::ExtensionPolicy;
 
 // RSA key constraints, as defined in CA/B 6.1.5.
 static WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;

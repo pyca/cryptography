@@ -148,6 +148,17 @@ pub const EKU_ANY_KEY_USAGE_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 3
 pub const EKU_CERTIFICATE_TRANSPARENCY_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 11129, 2, 4, 4);
 
+pub const ALL_EKU_OIDS: [asn1::ObjectIdentifier; 8] = [
+    EKU_SERVER_AUTH_OID,
+    EKU_CLIENT_AUTH_OID,
+    EKU_CODE_SIGNING_OID,
+    EKU_EMAIL_PROTECTION_OID,
+    EKU_TIME_STAMPING_OID,
+    EKU_OCSP_SIGNING_OID,
+    EKU_ANY_KEY_USAGE_OID,
+    EKU_CERTIFICATE_TRANSPARENCY_OID,
+];
+
 pub const PBES2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 13);
 pub const PBKDF2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 12);
 

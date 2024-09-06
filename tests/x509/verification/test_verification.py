@@ -6,12 +6,18 @@ import datetime
 import os
 from functools import lru_cache
 from ipaddress import IPv4Address
+from typing import Type, Union
 
 import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
+from cryptography.x509.oid import (
+    AuthorityInformationAccessOID,
+    ExtendedKeyUsageOID,
+)
 from cryptography.x509.verification import (
+    CustomPolicyBuilder,
     PolicyBuilder,
     Store,
     VerificationError,
@@ -28,60 +34,71 @@ def dummy_store() -> Store:
     return Store([cert])
 
 
-class TestPolicyBuilder:
-    def test_time_already_set(self):
+AnyPolicyBuilder = Union[PolicyBuilder, CustomPolicyBuilder]
+
+
+@pytest.mark.parametrize("builder_type", [PolicyBuilder, CustomPolicyBuilder])
+class TestPolicyBuilderCommon:
+    """
+    Tests functionality that is identical between
+    PolicyBuilder and CustomPolicyBuilder.
+    """
+
+    def test_time_already_set(self, builder_type: Type[AnyPolicyBuilder]):
         with pytest.raises(ValueError):
-            PolicyBuilder().time(datetime.datetime.now()).time(
+            builder_type().time(datetime.datetime.now()).time(
                 datetime.datetime.now()
             )
 
-    def test_store_already_set(self):
+    def test_store_already_set(self, builder_type: Type[AnyPolicyBuilder]):
         with pytest.raises(ValueError):
-            PolicyBuilder().store(dummy_store()).store(dummy_store())
+            builder_type().store(dummy_store()).store(dummy_store())
 
-    def test_max_chain_depth_already_set(self):
+    def test_max_chain_depth_already_set(
+        self, builder_type: Type[AnyPolicyBuilder]
+    ):
         with pytest.raises(ValueError):
-            PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+            builder_type().max_chain_depth(8).max_chain_depth(9)
 
-    def test_ipaddress_subject(self):
+    def test_ipaddress_subject(self, builder_type: Type[AnyPolicyBuilder]):
         policy = (
-            PolicyBuilder()
+            builder_type()
             .store(dummy_store())
             .build_server_verifier(IPAddress(IPv4Address("0.0.0.0")))
         )
         assert policy.subject == IPAddress(IPv4Address("0.0.0.0"))
 
-    def test_dnsname_subject(self):
+    def test_dnsname_subject(self, builder_type: Type[AnyPolicyBuilder]):
         policy = (
-            PolicyBuilder()
+            builder_type()
             .store(dummy_store())
             .build_server_verifier(DNSName("cryptography.io"))
         )
         assert policy.subject == DNSName("cryptography.io")
 
-    def test_subject_bad_types(self):
+    def test_subject_bad_types(self, builder_type: Type[AnyPolicyBuilder]):
         # Subject must be a supported GeneralName type
         with pytest.raises(TypeError):
-            PolicyBuilder().store(dummy_store()).build_server_verifier(
+            builder_type().store(dummy_store()).build_server_verifier(
                 "cryptography.io"  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().store(dummy_store()).build_server_verifier(
+            builder_type().store(dummy_store()).build_server_verifier(
                 "0.0.0.0"  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().store(dummy_store()).build_server_verifier(
+            builder_type().store(dummy_store()).build_server_verifier(
                 IPv4Address("0.0.0.0")  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().store(dummy_store()).build_server_verifier(None)  # type: ignore[arg-type]
+            builder_type().store(dummy_store()).build_server_verifier(None)  # type: ignore[arg-type]
 
-    def test_builder_pattern(self):
+    def test_builder_pattern(self, builder_type: Type[AnyPolicyBuilder]):
         now = datetime.datetime.now().replace(microsecond=0)
         store = dummy_store()
         max_chain_depth = 16
 
-        builder = PolicyBuilder()
+        builder = builder_type()
         builder = builder.time(now)
         builder = builder.store(store)
         builder = builder.max_chain_depth(max_chain_depth)
@@ -92,11 +109,29 @@ class TestPolicyBuilder:
         assert verifier.store == store
         assert verifier.max_chain_depth == max_chain_depth
 
-    def test_build_server_verifier_missing_store(self):
+    def test_build_server_verifier_missing_store(
+        self, builder_type: Type[AnyPolicyBuilder]
+    ):
         with pytest.raises(
             ValueError, match="A server verifier must have a trust store"
         ):
-            PolicyBuilder().build_server_verifier(DNSName("cryptography.io"))
+            builder_type().build_server_verifier(DNSName("cryptography.io"))
+
+
+class TestCustomPolicyBuilder:
+    def test_eku_already_set(self):
+        with pytest.raises(ValueError):
+            CustomPolicyBuilder().eku(ExtendedKeyUsageOID.IPSEC_IKE).eku(
+                ExtendedKeyUsageOID.IPSEC_IKE
+            )
+
+    def test_eku_bad_type(self):
+        with pytest.raises(TypeError):
+            CustomPolicyBuilder().eku("not an OID")  # type: ignore[arg-type]
+
+    def test_eku_non_eku_oid(self):
+        with pytest.raises(ValueError):
+            CustomPolicyBuilder().eku(AuthorityInformationAccessOID.OCSP)
 
 
 class TestStore:
@@ -109,14 +144,23 @@ class TestStore:
             Store(["not a cert"])  # type: ignore[list-item]
 
 
+@pytest.mark.parametrize(
+    "builder_type",
+    [
+        PolicyBuilder,
+        CustomPolicyBuilder,
+    ],
+)
 class TestClientVerifier:
-    def test_build_client_verifier_missing_store(self):
+    def test_build_client_verifier_missing_store(
+        self, builder_type: Type[AnyPolicyBuilder]
+    ):
         with pytest.raises(
             ValueError, match="A client verifier must have a trust store"
         ):
-            PolicyBuilder().build_client_verifier()
+            builder_type().build_client_verifier()
 
-    def test_verify(self):
+    def test_verify(self, builder_type: Type[AnyPolicyBuilder]):
         # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
@@ -128,7 +172,7 @@ class TestClientVerifier:
         validation_time = datetime.datetime.fromisoformat(
             "2018-11-16T00:00:00+00:00"
         )
-        builder = PolicyBuilder().store(store)
+        builder = builder_type().store(store)
         builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
 
@@ -139,11 +183,34 @@ class TestClientVerifier:
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
 
-        assert x509.DNSName("www.cryptography.io") in verified_client.subjects
-        assert x509.DNSName("cryptography.io") in verified_client.subjects
-        assert len(verified_client.subjects) == 2
+        expected_subject = x509.Name(
+            [
+                x509.NameAttribute(
+                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME, "GT48742965"
+                ),
+                x509.NameAttribute(
+                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME,
+                    "See www.rapidssl.com/resources/cps (c)14",
+                ),
+                x509.NameAttribute(
+                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME,
+                    "Domain Control Validated - RapidSSL(R)",
+                ),
+                x509.NameAttribute(
+                    x509.NameOID.COMMON_NAME, "www.cryptography.io"
+                ),
+            ]
+        )
+        assert verified_client.subject == expected_subject
+        assert verified_client.sans is not None
+        assert x509.DNSName("www.cryptography.io") in verified_client.sans
+        assert x509.DNSName("cryptography.io") in verified_client.sans
 
-    def test_verify_fails_renders_oid(self):
+        assert len(verified_client.sans) == 2
+
+    def test_verify_fails_renders_oid(
+        self, builder_type: Type[AnyPolicyBuilder]
+    ):
         leaf = _load_cert(
             os.path.join("x509", "custom", "ekucrit-testuser-cert.pem"),
             x509.load_pem_x509_certificate,
@@ -155,7 +222,7 @@ class TestClientVerifier:
             "2024-06-26T00:00:00+00:00"
         )
 
-        builder = PolicyBuilder().store(store)
+        builder = builder_type().store(store)
         builder = builder.time(validation_time)
         verifier = builder.build_client_verifier()
 

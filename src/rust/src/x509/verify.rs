@@ -3,25 +3,31 @@
 // for complete details.
 
 use cryptography_x509::{
-    certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
+    certificate::Certificate,
+    extensions::SubjectAlternativeName,
+    oid::{ALL_EKU_OIDS, SUBJECT_ALTERNATIVE_NAME_OID},
 };
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
-    policy::{Policy, Subject},
+    policy::{ExtensionPolicy, Policy, Subject},
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::{
+    types::{PyAnyMethods, PyListMethods},
+    ToPyObject,
+};
 
-use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
+use crate::{asn1::py_oid_to_oid, backend::keys};
 
 use super::parse_general_names;
 
+#[derive(Clone)]
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
@@ -125,25 +131,9 @@ impl PolicyBuilder {
     }
 
     fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
-        let store = match self.store.as_ref() {
-            Some(s) => s.clone_ref(py),
-            None => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "A client verifier must have a trust store.",
-                    ),
-                ));
-            }
-        };
-
-        let time = match self.time.as_ref() {
-            Some(t) => t.clone(),
-            None => datetime_now(py)?,
-        };
-
-        let policy = PyCryptoPolicy(Policy::client(PyCryptoOps {}, time, self.max_chain_depth));
-
-        Ok(PyClientVerifier { policy, store })
+        build_client_verifier_impl(py, &self.store, &self.time, |time| {
+            Policy::client(PyCryptoOps {}, time, self.max_chain_depth)
+        })
     }
 
     fn build_server_verifier(
@@ -151,42 +141,199 @@ impl PolicyBuilder {
         py: pyo3::Python<'_>,
         subject: pyo3::PyObject,
     ) -> CryptographyResult<PyServerVerifier> {
-        let store = match self.store.as_ref() {
-            Some(s) => s.clone_ref(py),
-            None => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "A server verifier must have a trust store.",
-                    ),
-                ));
-            }
-        };
-
-        let time = match self.time.as_ref() {
-            Some(t) => t.clone(),
-            None => datetime_now(py)?,
-        };
-        let subject_owner = build_subject_owner(py, &subject)?;
-
-        let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::server(
-                PyCryptoOps {},
-                subject,
-                time,
-                self.max_chain_depth,
-            )))
-        })?;
-
-        Ok(PyServerVerifier {
-            py_subject: subject,
-            policy,
-            store,
+        build_server_verifier_impl(py, &self.store, &self.time, subject, |subject, time| {
+            Policy::server(PyCryptoOps {}, subject, time, self.max_chain_depth)
         })
     }
 }
 
-struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
+#[pyo3::pyclass(frozen, module = "cryptography.x509.verification")]
+pub(crate) struct CustomPolicyBuilder {
+    time: Option<asn1::DateTime>,
+    store: Option<pyo3::Py<PyStore>>,
+    max_chain_depth: Option<u8>,
+    eku: Option<asn1::ObjectIdentifier>,
+    ca_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
+    ee_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
+}
+
+impl CustomPolicyBuilder {
+    /// Clones the builder, requires the GIL token to increase
+    /// reference count for `self.store`.
+    fn py_clone(&self, py: pyo3::Python<'_>) -> CustomPolicyBuilder {
+        CustomPolicyBuilder {
+            time: self.time.clone(),
+            store: self.store.as_ref().map(|s| s.clone_ref(py)),
+            max_chain_depth: self.max_chain_depth,
+            eku: self.eku.clone(),
+            ca_ext_policy: self.ca_ext_policy.clone(),
+            ee_ext_policy: self.ee_ext_policy.clone(),
+        }
+    }
+}
+
+#[pyo3::pymethods]
+impl CustomPolicyBuilder {
+    #[new]
+    fn new() -> CustomPolicyBuilder {
+        CustomPolicyBuilder {
+            time: None,
+            store: None,
+            max_chain_depth: None,
+            eku: None,
+            ca_ext_policy: None,
+            ee_ext_policy: None,
+        }
+    }
+
+    fn time(
+        &self,
+        py: pyo3::Python<'_>,
+        new_time: pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<CustomPolicyBuilder> {
+        policy_builder_set_once_check!(self, time, "validation time");
+
+        Ok(CustomPolicyBuilder {
+            time: Some(py_to_datetime(py, new_time)?),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn store(
+        &self,
+        py: pyo3::Python<'_>,
+        new_store: pyo3::Py<PyStore>,
+    ) -> CryptographyResult<CustomPolicyBuilder> {
+        policy_builder_set_once_check!(self, store, "trust store");
+
+        Ok(CustomPolicyBuilder {
+            store: Some(new_store),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn max_chain_depth(
+        &self,
+        py: pyo3::Python<'_>,
+        new_max_chain_depth: u8,
+    ) -> CryptographyResult<CustomPolicyBuilder> {
+        policy_builder_set_once_check!(self, max_chain_depth, "maximum chain depth");
+
+        Ok(CustomPolicyBuilder {
+            max_chain_depth: Some(new_max_chain_depth),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn eku(
+        &self,
+        py: pyo3::Python<'_>,
+        new_eku: pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<CustomPolicyBuilder> {
+        policy_builder_set_once_check!(self, eku, "EKU");
+
+        let oid = py_oid_to_oid(new_eku)?;
+
+        if !ALL_EKU_OIDS.contains(&oid) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Unknown EKU OID. Only EKUs from x509.ExtendedKeyUsageOID are supported.",
+                ),
+            ));
+        }
+
+        Ok(CustomPolicyBuilder {
+            eku: Some(oid),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
+        build_client_verifier_impl(py, &self.store, &self.time, |time| {
+            // TODO: Replace with a custom policy once it's implemented in cryptography-x509-verification
+            Policy::client(PyCryptoOps {}, time, self.max_chain_depth)
+        })
+    }
+
+    fn build_server_verifier(
+        &self,
+        py: pyo3::Python<'_>,
+        subject: pyo3::PyObject,
+    ) -> CryptographyResult<PyServerVerifier> {
+        build_server_verifier_impl(py, &self.store, &self.time, subject, |subject, time| {
+            // TODO: Replace with a custom policy once it's implemented in cryptography-x509-verification
+            Policy::server(PyCryptoOps {}, subject, time, self.max_chain_depth)
+        })
+    }
+}
+
+/// This is a helper to avoid code duplication between PolicyBuilder and CustomPolicyBuilder.
+fn build_server_verifier_impl(
+    py: pyo3::Python<'_>,
+    store: &Option<pyo3::Py<PyStore>>,
+    time: &Option<asn1::DateTime>,
+    subject: pyo3::PyObject,
+    make_policy: impl Fn(Subject<'_>, asn1::DateTime) -> PyCryptoPolicy<'_>,
+) -> CryptographyResult<PyServerVerifier> {
+    let store = match store {
+        Some(s) => s.clone_ref(py),
+        None => {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "A server verifier must have a trust store.",
+                ),
+            ));
+        }
+    };
+
+    let time = match time.as_ref() {
+        Some(t) => t.clone(),
+        None => datetime_now(py)?,
+    };
+    let subject_owner = build_subject_owner(py, &subject)?;
+
+    let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
+        let subject = build_subject(py, subject_owner)?;
+        Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(make_policy(subject, time))
+    })?;
+
+    Ok(PyServerVerifier {
+        py_subject: subject,
+        policy,
+        store,
+    })
+}
+
+/// This is a helper to avoid code duplication between PolicyBuilder and CustomPolicyBuilder.
+fn build_client_verifier_impl(
+    py: pyo3::Python<'_>,
+    store: &Option<pyo3::Py<PyStore>>,
+    time: &Option<asn1::DateTime>,
+    make_policy: impl Fn(asn1::DateTime) -> PyCryptoPolicy<'static>,
+) -> CryptographyResult<PyClientVerifier> {
+    let store = match store.as_ref() {
+        Some(s) => s.clone_ref(py),
+        None => {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "A client verifier must have a trust store.",
+                ),
+            ));
+        }
+    };
+
+    let time = match time.as_ref() {
+        Some(t) => t.clone(),
+        None => datetime_now(py)?,
+    };
+
+    Ok(PyClientVerifier {
+        policy: make_policy(time),
+        store,
+    })
+}
+
+type PyCryptoPolicy<'a> = Policy<'a, PyCryptoOps>;
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
@@ -215,7 +362,9 @@ self_cell::self_cell!(
 )]
 pub(crate) struct PyVerifiedClient {
     #[pyo3(get)]
-    subjects: pyo3::Py<pyo3::PyAny>,
+    subject: pyo3::Py<pyo3::PyAny>,
+    #[pyo3(get)]
+    sans: Option<pyo3::Py<pyo3::PyAny>>,
     #[pyo3(get)]
     chain: pyo3::Py<pyo3::types::PyList>,
 }
@@ -233,7 +382,7 @@ pub(crate) struct PyClientVerifier {
 
 impl PyClientVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy.0
+        &self.policy
     }
 }
 
@@ -290,22 +439,32 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
-        // enforces the presence of a SAN and the well-formedness of the
-        // extension set.
-        let leaf_san = &chain[0]
-            .certificate()
-            .extensions()
-            .ok()
-            .unwrap()
-            .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
-            .unwrap();
+        let cert = &chain[0].certificate();
 
-        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
-        let py_gns = parse_general_names(py, &leaf_gns)?;
+        let py_sans = || -> pyo3::PyResult<Option<pyo3::PyObject>> {
+            let leaf_san_ext = cert
+                .extensions()
+                .ok()
+                .unwrap()
+                .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID);
+
+            match leaf_san_ext {
+                Some(leaf_san) => {
+                    let leaf_gns = leaf_san
+                        .value::<SubjectAlternativeName<'_>>()
+                        .map_err(|e| -> CryptographyError { e.into() })?;
+                    let py_gns = parse_general_names(py, &leaf_gns)?;
+                    Ok(Some(py_gns))
+                }
+                None => Ok(None),
+            }
+        }()?;
+
+        let py_subject = crate::x509::parse_name(py, cert.subject())?;
 
         Ok(PyVerifiedClient {
-            subjects: py_gns,
+            subject: py_subject.to_object(py),
+            sans: py_sans,
             chain: py_chain.unbind(),
         })
     }
@@ -326,7 +485,7 @@ pub(crate) struct PyServerVerifier {
 
 impl PyServerVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy.borrow_dependent().0
+        self.policy.borrow_dependent()
     }
 }
 
