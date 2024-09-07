@@ -20,7 +20,6 @@ fn constant_time_lt(a: u8, b: u8) -> u8 {
     duplicate_msb_to_all(a ^ ((a ^ b) | (a.wrapping_sub(b) ^ b)))
 }
 
-#[pyo3::pyfunction]
 pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
@@ -137,8 +136,8 @@ impl PKCS7UnpaddingContext {
                 v.extend_from_slice(buf.as_bytes());
                 let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
                 let result_size = finished_blocks * self.block_size;
-                let result: Vec<u8> = v.drain(..result_size).collect();
-                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+                let result = v.drain(..result_size);
+                Ok(pyo3::types::PyBytes::new_bound(py, result.as_slice()))
             }
             None => Err(exceptions::already_finalized_error()),
         }
@@ -162,8 +161,8 @@ impl PKCS7UnpaddingContext {
                 }
 
                 let pad_size = *v.last().unwrap();
-                let result = v[..v.len() - pad_size as usize].to_vec();
-                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+                let result = &v[..v.len() - pad_size as usize];
+                Ok(pyo3::types::PyBytes::new_bound(py, result))
             }
             None => Err(exceptions::already_finalized_error()),
         }
