@@ -18,11 +18,14 @@ use pyo3::{
     ToPyObject,
 };
 
-use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
+use crate::{
+    asn1::oid_to_py_oid,
+    error::{CryptographyError, CryptographyResult},
+};
 use crate::{asn1::py_oid_to_oid, backend::keys};
 
 use super::parse_general_names;
@@ -401,6 +404,12 @@ impl PyClientVerifier {
         self.as_policy().max_chain_depth
     }
 
+    #[getter]
+    fn eku(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+        let eku = &self.as_policy().extended_key_usage;
+        return Ok(oid_to_py_oid(py, eku)?.as_unbound().clone_ref(py));
+    }
+
     fn verify(
         &self,
         py: pyo3::Python<'_>,
@@ -502,6 +511,12 @@ impl PyServerVerifier {
     #[getter]
     fn max_chain_depth(&self) -> u8 {
         self.as_policy().max_chain_depth
+    }
+
+    #[getter]
+    fn eku(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+        let eku = &self.as_policy().extended_key_usage;
+        return Ok(oid_to_py_oid(py, eku)?.as_unbound().clone_ref(py));
     }
 
     fn verify<'p>(

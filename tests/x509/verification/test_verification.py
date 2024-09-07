@@ -108,6 +108,7 @@ class TestPolicyBuilderCommon:
         assert verifier.validation_time == now
         assert verifier.store == store
         assert verifier.max_chain_depth == max_chain_depth
+        assert verifier.eku == ExtendedKeyUsageOID.SERVER_AUTH
 
     def test_build_server_verifier_missing_store(
         self, builder_type: Type[AnyPolicyBuilder]
@@ -179,6 +180,7 @@ class TestClientVerifier:
         assert verifier.validation_time == validation_time.replace(tzinfo=None)
         assert verifier.max_chain_depth == 16
         assert verifier.store is store
+        assert verifier.eku == ExtendedKeyUsageOID.CLIENT_AUTH
 
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
