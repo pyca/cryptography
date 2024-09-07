@@ -320,25 +320,25 @@ jobs:
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
             echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
         shell: bash
-      - name: Install Python dependencies
-        run: python -m pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
+
+      - run: pip install uv
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          python -m pip wheel -v --no-deps cryptography*.tar.gz $PY_LIMITED_API -w dist/
-          mv dist/cryptography*.whl wheelhouse/
+          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
-      - run: pip install -f wheelhouse --no-index cryptography
+
+      - run: uv venv
+      - run: uv pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
+      - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Print the OpenSSL we built and linked against
         run: |
-            python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+            .venv/Scripts/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 
-      - run: mkdir cryptography-wheelhouse
-      - run: move wheelhouse\cryptography*.whl cryptography-wheelhouse\
       - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
-          path: cryptography-wheelhouse\
+          path: wheelhouse\
