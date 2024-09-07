@@ -74,7 +74,7 @@ test = [
     "certifi",
 ]
 test-randomorder = ["pytest-randomly"]
-docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=3.0.0rc1"]
+docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=3.0.0rc1; python_version >= '3.8'"]
 docstest = ["pyenchant >=1.6.11", "readme-renderer", "sphinxcontrib-spelling >=4.0.1"]
 sdist = ["build"]
 # `click` included because its needed to type check `release.py`
@@ -184,3 +184,8 @@ git-only = [
     ".gitattributes",
     ".gitignore",
 ]
+
+[tool.uv]
+# These cover all Python versions, but by expressing multiple environments we
+# force uv's resolver to pick the latest versions of packages for each version.
+environments = ["python_version >= '3.10'", "python_version >= '3.8' and python_version < '3.10'", "python_version < '3.8'"]
