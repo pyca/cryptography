@@ -222,46 +222,41 @@ jobs:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m venv venv
-      - name: Install Python dependencies
-        run: venv/bin/pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
-
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: cryptography-sdist
+
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install uv
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }} --no-build-isolation"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          # `maturin` has a binary that needs to be on the $PATH, so we
-          # activate the venv.
-          source venv/bin/activate
           OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
               OPENSSL_STATIC=1 \
-              venv/bin/python -m pip wheel -v --no-deps $PY_LIMITED_API cryptograph*.tar.gz -w dist/
-          mv dist/cryptography*.whl wheelhouse
+              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
-      - run: venv/bin/pip install -f wheelhouse/ --no-index cryptography
+
+      - run: uv venv
+      - run: uv pip install --require-hashes -r $BUILD_REQUIREMENTS_PATH
+      - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Show the wheel's minimum macOS SDK and architectures
         run: |
-          find venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
+          find .venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
       - run: |
-          venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+          .venv/bin/python -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
 
-      - run: mkdir cryptography-wheelhouse
-      - run: mv wheelhouse/cryptography*.whl cryptography-wheelhouse/
       - run: |
-          echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls cryptography-wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
+          echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
       - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
-          path: cryptography-wheelhouse/
+          path: wheelhouse/
 
   windows:
     needs: [sdist]
