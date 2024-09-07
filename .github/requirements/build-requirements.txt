@@ -73,6 +73,10 @@ cffi==1.17.1 ; platform_python_implementation != "PyPy" \
     --hash=sha256:f7f5baafcc48261359e14bcd6d9bff6d4b28d9103847c9e136694cb0501aef87 \
     --hash=sha256:fc48c783f9c87e60831201f2cce7f3b2e4846bf4d8728eabe54d60700b318a0b
     # via -r build-requirements.in
+flit-core==3.9.0 \
+    --hash=sha256:72ad266176c4a3fcfab5f2930d76896059851240570ce9a98733b658cb786eba \
+    --hash=sha256:7aada352fb0c7f5538c4fafeddf314d3a6a92ee8e2b1de70482329e42de70301
+    # via -r build-requirements.in
 maturin==1.7.1 \
     --hash=sha256:00f0f8f5051f4c0d0f69bdd0c6297ea87e979f70fb78a377eb4277c932804e2d \
     --hash=sha256:07c8800603e551a45e16fe7ad1742977097ea43c18b28e491df74d4ca15c5857 \
