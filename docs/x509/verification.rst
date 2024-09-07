@@ -111,12 +111,22 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    .. attribute:: subjects
+    .. versionchanged:: 44.0.0
+        Renamed `subjects` to :attr:`sans`. 
+        Made `sans` optional, added :attr:`subject`.
 
-        :type: list of :class:`~cryptography.x509.GeneralName`
+    .. attribute:: subject
+
+        :type: :class:`~cryptography.x509.Name`
+
+        The subject presented in the verified client's certificate.
+
+    .. attribute:: sans
+
+        :type: list of :class:`~cryptography.x509.GeneralName` or None
 
         The subjects presented in the verified client's Subject Alternative Name
-        extension.
+        extension or `None` if the extension is not present.
 
     .. attribute:: chain
 
@@ -129,6 +139,8 @@ the root of trust:
 .. class:: ClientVerifier
 
     .. versionadded:: 43.0.0
+    .. versionchanged:: 44.0.0
+        Added :attr:`eku`.
 
     A ClientVerifier verifies client certificates.
 
@@ -156,6 +168,18 @@ the root of trust:
         :type: :class:`Store`
 
         The verifier's trust store.
+    
+    .. attribute:: eku
+
+        :type: :class:`~cryptography.x509.ObjectIdentifier` or None
+
+        The value of the Extended Key Usage extension required by this verifier
+        If the verifier was built using :meth:`PolicyBuilder.build_client_verifier`,
+        this will always be :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH`. 
+        
+        :note: 
+            See :meth:`CustomPolicyBuilder.eku` documentation for how verification is affected 
+            when changing the required EKU or using a custom extension policy.
 
     .. method:: verify(leaf, intermediates)
 
@@ -211,6 +235,18 @@ the root of trust:
         :type: :class:`Store`
 
         The verifier's trust store.
+
+    .. attribute:: eku
+
+        :type: :class:`~cryptography.x509.ObjectIdentifier`
+
+        The value of the Extended Key Usage extension required by this verifier
+        If the verifier was built using :meth:`PolicyBuilder.build_server_verifier`,
+        this will always be :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.SERVER_AUTH`.
+        
+        :note:
+            See :meth:`CustomPolicyBuilder.eku` documentation for how verification is affected 
+            when changing the required EKU or using a custom extension policy.
 
     .. method:: verify(leaf, intermediates)
 
@@ -284,6 +320,85 @@ the root of trust:
     .. method:: build_client_verifier()
 
         .. versionadded:: 43.0.0
+
+        Builds a verifier for verifying client certificates.
+
+        .. warning::
+
+            This API is not suitable for website (i.e. server) certificate
+            verification. You **must** use :meth:`build_server_verifier`
+            for server verification.
+
+        :returns: An instance of :class:`ClientVerifier`
+
+.. class:: CustomPolicyBuilder
+
+    .. versionadded:: 44.0.0
+
+    A CustomPolicyBuilder provides a builder-style interface for constructing a
+    Verifier, but provides additional control over the verification policy compared to :class:`PolicyBuilder`.
+
+    .. method:: time(new_time)
+
+        Sets the verifier's verification time.
+
+        If not called explicitly, this is set to :meth:`datetime.datetime.now`
+        when :meth:`build_server_verifier` or :meth:`build_client_verifier`
+        is called.
+
+        :param new_time: The :class:`datetime.datetime` to use in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: store(new_store)
+
+        Sets the verifier's trust store.
+
+        :param new_store: The :class:`Store` to use in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: max_chain_depth(new_max_chain_depth)
+
+        Sets the verifier's maximum chain building depth.
+
+        This depth behaves tracks the length of the intermediate CA
+        chain: a maximum depth of zero means that the leaf must be directly
+        issued by a member of the store, a depth of one means no more than
+        one intermediate CA, and so forth. Note that self-issued intermediates
+        don't count against the chain depth, per RFC 5280.
+
+        :param new_max_chain_depth: The maximum depth to allow in the verifier
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: eku(new_eku)
+
+        Sets the Extended Key Usage required by the verifier's policy.
+
+        If this method is not called, the EKU defaults to :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.SERVER_AUTH` 
+        if :meth:`build_server_verifier` is called, and :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH` if
+        :meth:`build_client_verifier` is called. 
+
+        When using the default extension policies, only certificates
+        with the Extended Key Usage extension containing the specified value
+        will be accepted. To accept more than one EKU or any EKU, use an extension policy
+        with a custom validator. The EKU set via this method is accessible to custom extension validator
+        callbacks via the `policy` argument.
+
+        :param ~cryptography.x509.ObjectIdentifier new_eku:
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: build_server_verifier(subject)
+
+        Builds a verifier for verifying server certificates.
+
+        :param subject: A :class:`Subject` to use in the verifier
+
+        :returns: An instance of :class:`ServerVerifier`
+
+    .. method:: build_client_verifier()
 
         Builds a verifier for verifying client certificates.
 
