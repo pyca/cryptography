@@ -124,7 +124,7 @@ pathspec==0.12.1 ; python_full_version >= '3.8'
     # via check-sdist
 platformdirs==4.0.0 ; python_full_version < '3.8'
     # via virtualenv
-platformdirs==4.2.2 ; python_full_version >= '3.8'
+platformdirs==4.3.1 ; python_full_version >= '3.8'
     # via virtualenv
 pluggy==1.2.0 ; python_full_version < '3.8'
     # via pytest
