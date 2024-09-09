@@ -4,7 +4,6 @@
 
 
 import binascii
-import mmap
 import os
 import sys
 
@@ -20,6 +19,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import (
 )
 
 from ...utils import load_nist_vectors, load_vectors_from_file
+from .test_aead import large_mmap
 
 
 def test_deprecated_ciphers_import_with_warning():
@@ -255,12 +255,7 @@ class TestCipherUpdateInto:
     sys.platform not in {"linux", "darwin"}, reason="mmap required"
 )
 def test_update_auto_chunking():
-    # Silencing mypy warning on Windows, even though mmap doesn't exist. See:
-    # https://mypy.readthedocs.io/en/stable/common_issues.html#version-and-platform-checks
-    if sys.platform == "win32":
-        large_data = mmap.mmap(-1, 2**29 + 2**20)
-    else:
-        large_data = mmap.mmap(-1, 2**29 + 2**20, prot=mmap.PROT_READ)
+    large_data = large_mmap(length=2**29 + 2**20)
 
     key = b"\x00" * 16
     c = ciphers.Cipher(AES(key), modes.ECB())
