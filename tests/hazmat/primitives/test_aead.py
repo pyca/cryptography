@@ -42,6 +42,8 @@ def large_mmap(length: int = 2**32):
     # See: https://mypy.readthedocs.io/en/stable/common_issues.html#version-and-platform-checks
     if sys.platform != "win32":
         return mmap.mmap(-1, length, prot=mmap.PROT_READ)
+    else:  # pragma: no cover
+        return mmap.mmap(-1, length)
 
 
 @pytest.mark.skipif(
