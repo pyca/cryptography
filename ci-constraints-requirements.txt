@@ -265,7 +265,7 @@ urllib3==2.0.7 ; python_full_version < '3.8'
     # via requests
 urllib3==2.2.2 ; python_full_version >= '3.8'
     # via requests
-virtualenv==20.26.3
+virtualenv==20.26.4
     # via nox
 webencodings==0.5.1 ; python_full_version < '3.8'
     # via bleach
