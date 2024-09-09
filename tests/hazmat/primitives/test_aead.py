@@ -38,7 +38,12 @@ def _aead_supported(cls):
 
 
 def large_mmap():
-    return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
+    # Silencing mypy warning on Windows, even though mmap doesn't exist. See:
+    # https://mypy.readthedocs.io/en/stable/common_issues.html#version-and-platform-checks
+    if sys.platform == "win32":
+        return mmap.mmap(-1, 2**32)
+    else:
+        return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
 
 
 @pytest.mark.skipif(

@@ -255,7 +255,12 @@ class TestCipherUpdateInto:
     sys.platform not in {"linux", "darwin"}, reason="mmap required"
 )
 def test_update_auto_chunking():
-    large_data = mmap.mmap(-1, 2**29 + 2**20, prot=mmap.PROT_READ)
+    # Silencing mypy warning on Windows, even though mmap doesn't exist. See:
+    # https://mypy.readthedocs.io/en/stable/common_issues.html#version-and-platform-checks
+    if sys.platform == "win32":
+        large_data = mmap.mmap(-1, 2**29 + 2**20)
+    else:
+        large_data = mmap.mmap(-1, 2**29 + 2**20, prot=mmap.PROT_READ)
 
     key = b"\x00" * 16
     c = ciphers.Cipher(AES(key), modes.ECB())
