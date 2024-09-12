@@ -161,6 +161,14 @@ def docs(session: nox.Session) -> None:
     session.run(
         "python3", "-m", "readme_renderer", "README.rst", "-o", "/dev/null"
     )
+    session.run(
+        "python3",
+        "-m",
+        "readme_renderer",
+        "vectors/README.rst",
+        "-o",
+        "/dev/null",
+    )
 
 
 @nox.session(name="docs-linkcheck")
