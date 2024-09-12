@@ -1,8 +1,0 @@
-twine
-requests
-
-# WARN: changing the requirements here DOES NOT update the dependencies used
-# for publishing at the github workflow, as the process uses
-# `publish-requirements.txt`.
-# To update `publish-requirements.txt`, run the command indicated in the
-# header of that file.
