@@ -37,8 +37,10 @@ def _aead_supported(cls):
         return False
 
 
-def large_mmap():
-    return mmap.mmap(-1, 2**32, prot=mmap.PROT_READ)
+def large_mmap(length: int = 2**32):
+    # Silencing mypy prot argument warning on Windows, even though this
+    # function is only used in non-Windows-based tests.
+    return mmap.mmap(-1, length, prot=mmap.PROT_READ)  # type: ignore[call-arg,attr-defined,unused-ignore]
 
 
 @pytest.mark.skipif(
