@@ -263,7 +263,7 @@ typing-extensions==4.12.2 ; python_full_version >= '3.8'
     # via mypy
 urllib3==2.0.7 ; python_full_version < '3.8'
     # via requests
-urllib3==2.2.2 ; python_full_version >= '3.8'
+urllib3==2.2.3 ; python_full_version >= '3.8'
     # via requests
 virtualenv==20.26.4
     # via nox
