@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated Python 3.7 support. Python 3.7 is no longer supported by the
+  Python core team. Support for Python 3.7 will be removed in a future
+  ``cryptography`` release.
 * Enforce the :rfc:`5280` requirement that extended key usage extensions must
   not be empty.
 * Added support for timestamp extraction to the
