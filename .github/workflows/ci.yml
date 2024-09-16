@@ -223,11 +223,11 @@ jobs:
           - {OS: 'macos-13', ARCH: 'x86_64'}
           - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.7", NOXSESSION: "tests"}
           - {VERSION: "3.12", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - PYTHON: {VERSION: "3.7", NOXSESSION: "tests"}
             RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
