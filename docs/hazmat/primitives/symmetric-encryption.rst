@@ -174,6 +174,7 @@ Algorithms
 
         >>> import struct, os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> key = os.urandom(32)
         >>> nonce = os.urandom(8)
         >>> counter = 0
         >>> full_nonce = struct.pack("<Q", counter) + nonce
