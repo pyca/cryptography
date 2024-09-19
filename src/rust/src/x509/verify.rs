@@ -3,9 +3,7 @@
 // for complete details.
 
 use cryptography_x509::{
-    certificate::Certificate,
-    extensions::SubjectAlternativeName,
-    oid::{ALL_EKU_OIDS, SUBJECT_ALTERNATIVE_NAME_OID},
+    certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
 };
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
@@ -15,15 +13,12 @@ use cryptography_x509_verification::{
 };
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
+use crate::backend::keys;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
-use crate::{
-    asn1::oid_to_py_oid,
-    error::{CryptographyError, CryptographyResult},
-};
-use crate::{asn1::py_oid_to_oid, backend::keys};
 
 use super::parse_general_names;
 
@@ -152,7 +147,6 @@ pub(crate) struct CustomPolicyBuilder {
     time: Option<asn1::DateTime>,
     store: Option<pyo3::Py<PyStore>>,
     max_chain_depth: Option<u8>,
-    eku: Option<asn1::ObjectIdentifier>,
     ca_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
     ee_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
 }
@@ -165,7 +159,6 @@ impl CustomPolicyBuilder {
             time: self.time.clone(),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: self.max_chain_depth,
-            eku: self.eku.clone(),
             ca_ext_policy: self.ca_ext_policy.clone(),
             ee_ext_policy: self.ee_ext_policy.clone(),
         }
@@ -180,7 +173,6 @@ impl CustomPolicyBuilder {
             time: None,
             store: None,
             max_chain_depth: None,
-            eku: None,
             ca_ext_policy: None,
             ee_ext_policy: None,
         }
@@ -221,29 +213,6 @@ impl CustomPolicyBuilder {
 
         Ok(CustomPolicyBuilder {
             max_chain_depth: Some(new_max_chain_depth),
-            ..self.py_clone(py)
-        })
-    }
-
-    fn eku(
-        &self,
-        py: pyo3::Python<'_>,
-        new_eku: pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> CryptographyResult<CustomPolicyBuilder> {
-        policy_builder_set_once_check!(self, eku, "EKU");
-
-        let oid = py_oid_to_oid(new_eku)?;
-
-        if !ALL_EKU_OIDS.contains(&oid) {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Unknown EKU OID. Only EKUs from x509.ExtendedKeyUsageOID are supported.",
-                ),
-            ));
-        }
-
-        Ok(CustomPolicyBuilder {
-            eku: Some(oid),
             ..self.py_clone(py)
         })
     }
@@ -399,12 +368,6 @@ impl PyClientVerifier {
         self.as_policy().max_chain_depth
     }
 
-    #[getter]
-    fn eku(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
-        let eku = &self.as_policy().extended_key_usage;
-        return Ok(oid_to_py_oid(py, eku)?.as_unbound().clone_ref(py));
-    }
-
     fn verify(
         &self,
         py: pyo3::Python<'_>,
@@ -504,12 +467,6 @@ impl PyServerVerifier {
     #[getter]
     fn max_chain_depth(&self) -> u8 {
         self.as_policy().max_chain_depth
-    }
-
-    #[getter]
-    fn eku(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
-        let eku = &self.as_policy().extended_key_usage;
-        return Ok(oid_to_py_oid(py, eku)?.as_unbound().clone_ref(py));
     }
 
     fn verify<'p>(

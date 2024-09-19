@@ -132,8 +132,6 @@ the root of trust:
 .. class:: ClientVerifier
 
     .. versionadded:: 43.0.0
-    .. versionchanged:: 44.0.0
-        Added :attr:`eku`.
 
     A ClientVerifier verifies client certificates.
 
@@ -161,18 +159,6 @@ the root of trust:
         :type: :class:`Store`
 
         The verifier's trust store.
-    
-    .. attribute:: eku
-
-        :type: :class:`~cryptography.x509.ObjectIdentifier` or None
-
-        The value of the Extended Key Usage extension required by this verifier
-        If the verifier was built using :meth:`PolicyBuilder.build_client_verifier`,
-        this will always be :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH`. 
-        
-        :note: 
-            See :meth:`CustomPolicyBuilder.eku` documentation for how verification is affected 
-            when changing the required EKU or using a custom extension policy.
 
     .. method:: verify(leaf, intermediates)
 
@@ -228,18 +214,6 @@ the root of trust:
         :type: :class:`Store`
 
         The verifier's trust store.
-
-    .. attribute:: eku
-
-        :type: :class:`~cryptography.x509.ObjectIdentifier`
-
-        The value of the Extended Key Usage extension required by this verifier
-        If the verifier was built using :meth:`PolicyBuilder.build_server_verifier`,
-        this will always be :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.SERVER_AUTH`.
-        
-        :note:
-            See :meth:`CustomPolicyBuilder.eku` documentation for how verification is affected 
-            when changing the required EKU or using a custom extension policy.
 
     .. method:: verify(leaf, intermediates)
 
@@ -362,24 +336,6 @@ the root of trust:
         don't count against the chain depth, per RFC 5280.
 
         :param new_max_chain_depth: The maximum depth to allow in the verifier
-
-        :returns: A new instance of :class:`PolicyBuilder`
-
-    .. method:: eku(new_eku)
-
-        Sets the Extended Key Usage required by the verifier's policy.
-
-        If this method is not called, the EKU defaults to :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.SERVER_AUTH` 
-        if :meth:`build_server_verifier` is called, and :attr:`~cryptography.x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH` if
-        :meth:`build_client_verifier` is called. 
-
-        When using the default extension policies, only certificates
-        with the Extended Key Usage extension containing the specified value
-        will be accepted. To accept more than one EKU or any EKU, use an extension policy
-        with a custom validator. The EKU set via this method is accessible to custom extension validator
-        callbacks via the `policy` argument.
-
-        :param ~cryptography.x509.ObjectIdentifier new_eku:
 
         :returns: A new instance of :class:`PolicyBuilder`
 

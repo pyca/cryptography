@@ -12,10 +12,6 @@ import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
-from cryptography.x509.oid import (
-    AuthorityInformationAccessOID,
-    ExtendedKeyUsageOID,
-)
 from cryptography.x509.verification import (
     CustomPolicyBuilder,
     PolicyBuilder,
@@ -108,7 +104,6 @@ class TestPolicyBuilderCommon:
         assert verifier.validation_time == now
         assert verifier.store == store
         assert verifier.max_chain_depth == max_chain_depth
-        assert verifier.eku == ExtendedKeyUsageOID.SERVER_AUTH
 
     def test_build_server_verifier_missing_store(
         self, builder_type: Type[AnyPolicyBuilder]
@@ -117,22 +112,6 @@ class TestPolicyBuilderCommon:
             ValueError, match="A server verifier must have a trust store"
         ):
             builder_type().build_server_verifier(DNSName("cryptography.io"))
-
-
-class TestCustomPolicyBuilder:
-    def test_eku_already_set(self):
-        with pytest.raises(ValueError):
-            CustomPolicyBuilder().eku(ExtendedKeyUsageOID.IPSEC_IKE).eku(
-                ExtendedKeyUsageOID.IPSEC_IKE
-            )
-
-    def test_eku_bad_type(self):
-        with pytest.raises(TypeError):
-            CustomPolicyBuilder().eku("not an OID")  # type: ignore[arg-type]
-
-    def test_eku_non_eku_oid(self):
-        with pytest.raises(ValueError):
-            CustomPolicyBuilder().eku(AuthorityInformationAccessOID.OCSP)
 
 
 class TestStore:
@@ -180,7 +159,6 @@ class TestClientVerifier:
         assert verifier.validation_time == validation_time.replace(tzinfo=None)
         assert verifier.max_chain_depth == 16
         assert verifier.store is store
-        assert verifier.eku == ExtendedKeyUsageOID.CLIENT_AUTH
 
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
