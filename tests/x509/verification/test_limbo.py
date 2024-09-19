@@ -169,7 +169,7 @@ def _limbo_testcase(
             expected_subjects = [
                 _get_limbo_peer(p) for p in testcase["expected_peer_names"]
             ]
-            assert expected_subjects == verified_client.sans
+            assert expected_subjects == verified_client.subjects
 
             built_chain = verified_client.chain
 

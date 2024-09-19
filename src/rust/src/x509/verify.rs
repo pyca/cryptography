@@ -13,10 +13,7 @@ use cryptography_x509_verification::{
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
-use pyo3::{
-    types::{PyAnyMethods, PyListMethods},
-    ToPyObject,
-};
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
@@ -365,9 +362,7 @@ self_cell::self_cell!(
 )]
 pub(crate) struct PyVerifiedClient {
     #[pyo3(get)]
-    subject: pyo3::Py<pyo3::PyAny>,
-    #[pyo3(get)]
-    sans: Option<pyo3::Py<pyo3::PyAny>>,
+    subjects: Option<pyo3::Py<pyo3::PyAny>>,
     #[pyo3(get)]
     chain: pyo3::Py<pyo3::types::PyList>,
 }
@@ -448,32 +443,30 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        let cert = &chain[0].certificate();
-
-        let py_sans = || -> pyo3::PyResult<Option<pyo3::PyObject>> {
-            let leaf_san_ext = cert
+        let subjects = {
+            // NOTE: The `unwrap()` cannot fail, since the underlying policy
+            // enforces the well-formedness of the extension set.
+            let leaf_san_ext = &chain[0]
+                .certificate()
                 .extensions()
                 .ok()
                 .unwrap()
                 .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID);
 
             match leaf_san_ext {
+                None => None,
                 Some(leaf_san) => {
                     let leaf_gns = leaf_san
                         .value::<SubjectAlternativeName<'_>>()
                         .map_err(|e| -> CryptographyError { e.into() })?;
                     let py_gns = parse_general_names(py, &leaf_gns)?;
-                    Ok(Some(py_gns))
+                    Some(py_gns)
                 }
-                None => Ok(None),
             }
-        }()?;
-
-        let py_subject = crate::x509::parse_name(py, cert.subject())?;
+        };
 
         Ok(PyVerifiedClient {
-            subject: py_subject.to_object(py),
-            sans: py_sans,
+            subjects,
             chain: py_chain.unbind(),
         })
     }

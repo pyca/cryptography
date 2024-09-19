@@ -185,30 +185,10 @@ class TestClientVerifier:
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
 
-        expected_subject = x509.Name(
-            [
-                x509.NameAttribute(
-                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME, "GT48742965"
-                ),
-                x509.NameAttribute(
-                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME,
-                    "See www.rapidssl.com/resources/cps (c)14",
-                ),
-                x509.NameAttribute(
-                    x509.NameOID.ORGANIZATIONAL_UNIT_NAME,
-                    "Domain Control Validated - RapidSSL(R)",
-                ),
-                x509.NameAttribute(
-                    x509.NameOID.COMMON_NAME, "www.cryptography.io"
-                ),
-            ]
-        )
-        assert verified_client.subject == expected_subject
-        assert verified_client.sans is not None
-        assert x509.DNSName("www.cryptography.io") in verified_client.sans
-        assert x509.DNSName("cryptography.io") in verified_client.sans
-
-        assert len(verified_client.sans) == 2
+        assert verified_client.subjects is not None
+        assert x509.DNSName("www.cryptography.io") in verified_client.subjects
+        assert x509.DNSName("cryptography.io") in verified_client.subjects
+        assert len(verified_client.subjects) == 2
 
     def test_verify_fails_renders_oid(
         self, builder_type: Type[AnyPolicyBuilder]

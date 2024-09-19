@@ -112,16 +112,9 @@ the root of trust:
     .. versionadded:: 43.0.0
 
     .. versionchanged:: 44.0.0
-        Renamed `subjects` to :attr:`sans`. 
-        Made `sans` optional, added :attr:`subject`.
+        Made `subjects` optional with the addition of custom extension policies.
 
-    .. attribute:: subject
-
-        :type: :class:`~cryptography.x509.Name`
-
-        The subject presented in the verified client's certificate.
-
-    .. attribute:: sans
+    .. attribute:: subjects
 
         :type: list of :class:`~cryptography.x509.GeneralName` or None
 
