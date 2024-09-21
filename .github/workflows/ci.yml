@@ -50,6 +50,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "7f62adaf2b088de38ad2e534d0bfae2ff7ae01f2"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
+          # - 1.77: offset_of! in std (for pyo3)
           # - 1.80: LazyLock in std
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "1.65.0"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
