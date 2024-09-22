@@ -315,6 +315,7 @@ jobs:
         shell: bash
 
       - run: pip install -r "${UV_REQUIREMENTS_PATH}"
+        shell: bash
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
