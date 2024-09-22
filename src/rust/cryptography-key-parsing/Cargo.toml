@@ -12,3 +12,6 @@ cfg-if = "1"
 openssl = "0.10.66"
 openssl-sys = "0.9.103"
 cryptography-x509 = { path = "../cryptography-x509" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)'] }
