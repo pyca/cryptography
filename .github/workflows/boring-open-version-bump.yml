@@ -43,17 +43,21 @@ jobs:
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
           sed -E -i "s/Latest commit on the BoringSSL master branch.*/Latest commit on the BoringSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${{ steps.check-sha-boring.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${COMMIT_SHA}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha-boring.outputs.COMMIT_SHA
+        env:
+          COMMIT_SHA: ${{ steps.check-sha-boring.outputs.COMMIT_SHA }}
       - name: Update OpenSSL
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
           sed -E -i "s/Latest commit on the OpenSSL master branch.*/Latest commit on the OpenSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}\"/" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${COMMIT_SHA}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha-openssl.outputs.COMMIT_SHA
+        env:
+          COMMIT_SHA: ${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}
       - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         id: generate-token
         with:
