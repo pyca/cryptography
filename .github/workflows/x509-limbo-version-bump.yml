@@ -32,9 +32,11 @@ jobs:
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
           sed -E -i "s/Latest commit on the x509-limbo main branch.*/Latest commit on the x509-limbo main branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
-          sed -E -i "s/ref: \"[0-9a-f]{40}\" # x509-limbo-ref/ref: \"${{ steps.check-sha-x509-limbo.outputs.COMMIT_SHA }}\" # x509-limbo-ref/" .github/actions/fetch-vectors/action.yml
+          sed -E -i "s/ref: \"[0-9a-f]{40}\" # x509-limbo-ref/ref: \"${COMMIT_SHA}\" # x509-limbo-ref/" .github/actions/fetch-vectors/action.yml
           git status
         if: steps.check-sha-x509-limbo.outputs.COMMIT_SHA
+        env:
+          COMMIT_SHA: ${{ steps.check-sha-x509-limbo.outputs.COMMIT_SHA }}
       - id: check-sha-wycheproof
         run: |
           SHA=$(git ls-remote https://github.com/C2SP/wycheproof refs/heads/master | cut -f1)
@@ -50,9 +52,11 @@ jobs:
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
           sed -E -i "s/Latest commit on the wycheproof master branch.*/Latest commit on the wycheproof master branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
-          sed -E -i "s/ref: \"[0-9a-f]{40}\" # wycheproof-ref/ref: \"${{ steps.check-sha-wycheproof.outputs.COMMIT_SHA }}\" # wycheproof-ref/" .github/actions/fetch-vectors/action.yml
+          sed -E -i "s/ref: \"[0-9a-f]{40}\" # wycheproof-ref/ref: \"${COMMIT_SHA}\" # wycheproof-ref/" .github/actions/fetch-vectors/action.yml
           git status
         if: steps.check-sha-wycheproof.outputs.COMMIT_SHA
+        env:
+          COMMIT_SHA: ${{ steps.check-sha-wycheproof.outputs.COMMIT_SHA }}
       - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         id: generate-token
         with:
