@@ -327,6 +327,7 @@ jobs:
 
       - run: uv venv
       - run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
+        shell: bash
       - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Print the OpenSSL we built and linked against
         run: |
