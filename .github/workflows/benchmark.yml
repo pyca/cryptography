@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         timeout-minutes: 3
         with:
+          persist-credentials: false
           repository: "pyca/cryptography"
           path: "cryptography-base"
           ref: "${{ github.event.inputs.base_commit || github.base_ref }}"
