@@ -223,7 +223,7 @@ jobs:
         with:
           name: cryptography-sdist
 
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r ${{ env.UV_REQUIREMENTS_PATH }}
+      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r "${UV_REQUIREMENTS_PATH}"
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -314,7 +314,8 @@ jobs:
             echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
         shell: bash
 
-      - run: pip install -r ${{ env.UV_REQUIREMENTS_PATH }}
+      - run: pip install -r "${UV_REQUIREMENTS_PATH}"
+        shell: bash
       - run: mkdir wheelhouse
       - run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
@@ -325,7 +326,8 @@ jobs:
         shell: bash
 
       - run: uv venv
-      - run: uv pip install --require-hashes -r ${{ env.BUILD_REQUIREMENTS_PATH }}
+      - run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
+        shell: bash
       - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Print the OpenSSL we built and linked against
         run: |
