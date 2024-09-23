@@ -31,6 +31,7 @@ messages allows an attacker to forge tags. Poly1305 is described in
     .. doctest::
 
         >>> from cryptography.hazmat.primitives import poly1305
+        >>> key = b"\x01" * 32 # A real key should come from os.urandom(32)
         >>> p = poly1305.Poly1305(key)
         >>> p.update(b"message to authenticate")
         >>> p.finalize()

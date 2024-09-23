@@ -28,6 +28,7 @@ A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
         >>> from cryptography.hazmat.primitives import cmac
         >>> from cryptography.hazmat.primitives.ciphers import algorithms
+        >>> key = b"\x00" * 16 # A real key should come from os.urandom(16)
         >>> c = cmac.CMAC(algorithms.AES(key))
         >>> c.update(b"message to authenticate")
         >>> c.finalize()
