@@ -19,7 +19,7 @@ handled by the use of ``nox``, which can be installed with ``pip``.
 OpenSSL on macOS
 ~~~~~~~~~~~~~~~~
 
-You must have installed `OpenSSL`_ (via `Homebrew`_ , `MacPorts`_) before
+You must have installed `OpenSSL`_ (via `Homebrew`_  or `MacPorts`_) before
 invoking ``nox`` or else pip will fail to compile.
 
 Running tests
