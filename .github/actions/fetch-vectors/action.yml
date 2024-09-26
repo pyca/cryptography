@@ -5,14 +5,14 @@ runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       with:
         repository: "C2SP/wycheproof"
         path: "wycheproof"
         # Latest commit on the wycheproof master branch, as of Apr 09, 2024.
         ref: "cd27d6419bedd83cbd24611ec54b6d4bfdb0cdca" # wycheproof-ref
 
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       with:
         repository: "C2SP/x509-limbo"
         path: "x509-limbo"
