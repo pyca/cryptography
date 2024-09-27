@@ -188,7 +188,7 @@ requests==2.31.0 ; python_full_version < '3.8'
     # via sphinx
 requests==2.32.3 ; python_full_version >= '3.8'
     # via sphinx
-ruff==0.6.7
+ruff==0.6.8
     # via cryptography (pyproject.toml)
 six==1.16.0 ; python_full_version < '3.8'
     # via bleach
