@@ -11,7 +11,7 @@ pyo3 = { version = "0.22.3", features = ["abi3"] }
 openssl-sys = "0.9.103"
 
 [build-dependencies]
-cc = "1.1.21"
+cc = "1.1.22"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(python_implementation, values("CPython", "PyPy"))'] }
