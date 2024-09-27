@@ -210,7 +210,7 @@ sphinx==8.0.2 ; python_full_version >= '3.10'
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
     #   sphinxcontrib-spelling
-sphinx-rtd-theme==3.0.0rc2 ; python_full_version >= '3.8'
+sphinx-rtd-theme==3.0.0rc3 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==1.0.2 ; python_full_version < '3.8'
     # via sphinx
