@@ -54,6 +54,20 @@ pyo3::create_exception!(
     pyo3::exceptions::PyException
 );
 
+macro_rules! policy_builder_set_once_check {
+    ($self: ident, $property: ident, $human_readable_name: literal) => {
+        if $self.$property.is_some() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(concat!(
+                    "The ",
+                    $human_readable_name,
+                    " may only be set once."
+                )),
+            ));
+        }
+    };
+}
+
 #[pyo3::pyclass(frozen, module = "cryptography.x509.verification")]
 pub(crate) struct PolicyBuilder {
     time: Option<asn1::DateTime>,
@@ -77,13 +91,8 @@ impl PolicyBuilder {
         py: pyo3::Python<'_>,
         new_time: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<PolicyBuilder> {
-        if self.time.is_some() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "The validation time may only be set once.",
-                ),
-            ));
-        }
+        policy_builder_set_once_check!(self, time, "validation time");
+
         Ok(PolicyBuilder {
             time: Some(py_to_datetime(py, new_time)?),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
@@ -92,11 +101,8 @@ impl PolicyBuilder {
     }
 
     fn store(&self, new_store: pyo3::Py<PyStore>) -> CryptographyResult<PolicyBuilder> {
-        if self.store.is_some() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("The trust store may only be set once."),
-            ));
-        }
+        policy_builder_set_once_check!(self, store, "trust store");
+
         Ok(PolicyBuilder {
             time: self.time.clone(),
             store: Some(new_store),
@@ -109,13 +115,8 @@ impl PolicyBuilder {
         py: pyo3::Python<'_>,
         new_max_chain_depth: u8,
     ) -> CryptographyResult<PolicyBuilder> {
-        if self.max_chain_depth.is_some() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "The maximum chain depth may only be set once.",
-                ),
-            ));
-        }
+        policy_builder_set_once_check!(self, max_chain_depth, "maximum chain depth");
+
         Ok(PolicyBuilder {
             time: self.time.clone(),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
