@@ -6,7 +6,6 @@ import datetime
 import ipaddress
 import json
 import os
-from typing import Type, Union
 
 import pytest
 
@@ -14,7 +13,6 @@ from cryptography import x509
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.verification import (
     ClientVerifier,
-    CustomPolicyBuilder,
     PolicyBuilder,
     ServerVerifier,
     Store,
@@ -98,11 +96,7 @@ def _get_limbo_peer(expected_peer):
         return x509.RFC822Name(value)
 
 
-def _limbo_testcase(
-    id_,
-    testcase,
-    builder_type: Union[Type[PolicyBuilder], Type[CustomPolicyBuilder]],
-):
+def _limbo_testcase(id_, testcase):
     if id_ in LIMBO_SKIP_TESTCASES:
         pytest.skip(f"explicitly skipped testcase: {id_}")
 
@@ -133,7 +127,7 @@ def _limbo_testcase(
     max_chain_depth = testcase["max_chain_depth"]
     should_pass = testcase["expected_result"] == "SUCCESS"
 
-    builder = builder_type().store(Store(trusted_certs))
+    builder = PolicyBuilder().store(Store(trusted_certs))
     if validation_time is not None:
         builder = builder.time(validation_time)
     if max_chain_depth is not None:
@@ -183,8 +177,7 @@ def _limbo_testcase(
             verifier.verify(peer_certificate, untrusted_intermediates)
 
 
-@pytest.mark.parametrize("builder_type", [PolicyBuilder, CustomPolicyBuilder])
-def test_limbo(subtests, pytestconfig, builder_type):
+def test_limbo(subtests, pytestconfig):
     limbo_root = pytestconfig.getoption("--x509-limbo-root", skip=True)
     limbo_path = os.path.join(limbo_root, "limbo.json")
     with open(limbo_path, mode="rb") as limbo_file:
@@ -194,4 +187,4 @@ def test_limbo(subtests, pytestconfig, builder_type):
             with subtests.test():
                 # NOTE: Pass in the id separately to make pytest
                 # error renderings slightly nicer.
-                _limbo_testcase(testcase["id"], testcase, builder_type)
+                _limbo_testcase(testcase["id"], testcase)

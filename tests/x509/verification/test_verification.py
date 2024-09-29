@@ -6,14 +6,12 @@ import datetime
 import os
 from functools import lru_cache
 from ipaddress import IPv4Address
-from typing import Type, Union
 
 import pytest
 
 from cryptography import x509
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
-    CustomPolicyBuilder,
     PolicyBuilder,
     Store,
     VerificationError,
@@ -30,71 +28,60 @@ def dummy_store() -> Store:
     return Store([cert])
 
 
-AnyPolicyBuilder = Union[PolicyBuilder, CustomPolicyBuilder]
-
-
-@pytest.mark.parametrize("builder_type", [PolicyBuilder, CustomPolicyBuilder])
-class TestPolicyBuilderCommon:
-    """
-    Tests functionality that is identical between
-    PolicyBuilder and CustomPolicyBuilder.
-    """
-
-    def test_time_already_set(self, builder_type: Type[AnyPolicyBuilder]):
+class TestPolicyBuilder:
+    def test_time_already_set(self):
         with pytest.raises(ValueError):
-            builder_type().time(datetime.datetime.now()).time(
+            PolicyBuilder().time(datetime.datetime.now()).time(
                 datetime.datetime.now()
             )
 
-    def test_store_already_set(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_store_already_set(self):
         with pytest.raises(ValueError):
-            builder_type().store(dummy_store()).store(dummy_store())
+            PolicyBuilder().store(dummy_store()).store(dummy_store())
 
-    def test_max_chain_depth_already_set(
-        self, builder_type: Type[AnyPolicyBuilder]
-    ):
+    def test_max_chain_depth_already_set(self):
         with pytest.raises(ValueError):
-            builder_type().max_chain_depth(8).max_chain_depth(9)
+            PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
 
-    def test_ipaddress_subject(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_ipaddress_subject(self):
         policy = (
-            builder_type()
+            PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(IPAddress(IPv4Address("0.0.0.0")))
         )
         assert policy.subject == IPAddress(IPv4Address("0.0.0.0"))
 
-    def test_dnsname_subject(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_dnsname_subject(self):
         policy = (
-            builder_type()
+            PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(DNSName("cryptography.io"))
         )
         assert policy.subject == DNSName("cryptography.io")
 
-    def test_subject_bad_types(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_subject_bad_types(self):
         # Subject must be a supported GeneralName type
         with pytest.raises(TypeError):
-            builder_type().store(dummy_store()).build_server_verifier(
+            PolicyBuilder().store(dummy_store()).build_server_verifier(
                 "cryptography.io"  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            builder_type().store(dummy_store()).build_server_verifier(
+            PolicyBuilder().store(dummy_store()).build_server_verifier(
                 "0.0.0.0"  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            builder_type().store(dummy_store()).build_server_verifier(
+            PolicyBuilder().store(dummy_store()).build_server_verifier(
                 IPv4Address("0.0.0.0")  # type: ignore[arg-type]
             )
         with pytest.raises(TypeError):
-            builder_type().store(dummy_store()).build_server_verifier(None)  # type: ignore[arg-type]
+            PolicyBuilder().store(dummy_store()).build_server_verifier(None)  # type: ignore[arg-type]
 
-    def test_builder_pattern(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)
         store = dummy_store()
         max_chain_depth = 16
 
-        builder = builder_type()
+        builder = PolicyBuilder()
         builder = builder.time(now)
         builder = builder.store(store)
         builder = builder.max_chain_depth(max_chain_depth)
@@ -105,13 +92,11 @@ class TestPolicyBuilderCommon:
         assert verifier.store == store
         assert verifier.max_chain_depth == max_chain_depth
 
-    def test_build_server_verifier_missing_store(
-        self, builder_type: Type[AnyPolicyBuilder]
-    ):
+    def test_build_server_verifier_missing_store(self):
         with pytest.raises(
             ValueError, match="A server verifier must have a trust store"
         ):
-            builder_type().build_server_verifier(DNSName("cryptography.io"))
+            PolicyBuilder().build_server_verifier(DNSName("cryptography.io"))
 
 
 class TestStore:
@@ -124,23 +109,14 @@ class TestStore:
             Store(["not a cert"])  # type: ignore[list-item]
 
 
-@pytest.mark.parametrize(
-    "builder_type",
-    [
-        PolicyBuilder,
-        CustomPolicyBuilder,
-    ],
-)
 class TestClientVerifier:
-    def test_build_client_verifier_missing_store(
-        self, builder_type: Type[AnyPolicyBuilder]
-    ):
+    def test_build_client_verifier_missing_store(self):
         with pytest.raises(
             ValueError, match="A client verifier must have a trust store"
         ):
-            builder_type().build_client_verifier()
+            PolicyBuilder().build_client_verifier()
 
-    def test_verify(self, builder_type: Type[AnyPolicyBuilder]):
+    def test_verify(self):
         # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
@@ -152,7 +128,7 @@ class TestClientVerifier:
         validation_time = datetime.datetime.fromisoformat(
             "2018-11-16T00:00:00+00:00"
         )
-        builder = builder_type().store(store)
+        builder = PolicyBuilder().store(store)
         builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
 
@@ -168,9 +144,7 @@ class TestClientVerifier:
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
 
-    def test_verify_fails_renders_oid(
-        self, builder_type: Type[AnyPolicyBuilder]
-    ):
+    def test_verify_fails_renders_oid(self):
         leaf = _load_cert(
             os.path.join("x509", "custom", "ekucrit-testuser-cert.pem"),
             x509.load_pem_x509_certificate,
@@ -182,7 +156,7 @@ class TestClientVerifier:
             "2024-06-26T00:00:00+00:00"
         )
 
-        builder = builder_type().store(store)
+        builder = PolicyBuilder().store(store)
         builder = builder.time(validation_time)
         verifier = builder.build_client_verifier()
 
