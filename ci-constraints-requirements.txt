@@ -146,7 +146,7 @@ pygments==2.18.0 ; python_full_version >= '3.8'
     # via
     #   readme-renderer
     #   sphinx
-pyproject-hooks==1.1.0
+pyproject-hooks==1.2.0
     # via build
 pytest==7.4.4 ; python_full_version < '3.8'
     # via
