@@ -489,8 +489,8 @@ impl ChaCha20Poly1305 {
             } else if #[cfg(any(
                 CRYPTOGRAPHY_IS_LIBRESSL,
                 CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-            )))] {
+                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+            ))] {
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
@@ -625,8 +625,8 @@ impl AesGcm {
                 CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
                 CRYPTOGRAPHY_IS_BORINGSSL,
                 CRYPTOGRAPHY_IS_LIBRESSL,
-                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER,
-            )))] {
+                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+            ))] {
                 Ok(AesGcm {
                     ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
                 })
