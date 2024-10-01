@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import x509
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -632,11 +631,6 @@ class TestPKCS12Creation:
         iters,
         iter_der,
     ):
-        if (
-            enc_alg is PBES.PBESv2SHA256AndAES256CBC
-        ) and not rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-            pytest.skip("PBESv2 is not supported on OpenSSL < 3.0")
-
         builder = serialization.PrivateFormat.PKCS12.encryption_builder()
         if enc_alg is not None:
             builder = builder.key_cert_algorithm(enc_alg)
