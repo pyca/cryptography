@@ -163,22 +163,20 @@ Algorithms
 
         In the `original version`_ of the algorithm the nonce is defined as a
         64-bit value that is later concatenated with a block counter (encoded
-        as a 64-bit little-endian). If you have a separate nonce and block
-        counter you will need to concatenate it yourself before passing it.
-        For example, if you have an initial block counter of 2 and a 64-bit
-        nonce the concatenated nonce would be
-        ``struct.pack("<Q", 2) + nonce``.
+        as a 64-bit little-endian).
+        You can leverage :class:`cryptography.hazmat.primitives.nonces.Nonces`
+        for this.  A construction would look like:
 
 
     .. doctest::
 
-        >>> import struct, os
+        >>> import os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.primitives.nonces import Nonces
         >>> key = os.urandom(32)
-        >>> nonce = os.urandom(8)
-        >>> counter = 0
-        >>> full_nonce = struct.pack("<Q", counter) + nonce
-        >>> algorithm = algorithms.ChaCha20(key, full_nonce)
+        >>> nonces = Nonces(size=16, counter_size=8, order='little', trailing_counter=False)
+        >>> nonce = nonces.update()
+        >>> algorithm = algorithms.ChaCha20(key, nonce)
         >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
         >>> ct = encryptor.update(b"a secret message")
@@ -392,6 +390,24 @@ Modes
         ``block_size`` of the cipher with a given key. The nonce does not need
         to be kept secret and may be included with the ciphertext.
     :type nonce: :term:`bytes-like`
+
+    A good construction using nonce counters looks like:
+
+.. doctest::
+
+        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        >>> from cryptography.hazmat.primitives.nonces import Nonces
+        >>> import os
+        >>> key = os.urandom(16)
+        >>> nonces = Nonces(size=16, counter_size=4)
+        >>> algorithm = algorithms.AES(key)
+        >>> cipher = Cipher(algorithm, modes.CTR(nonces.update()))
+        >>> # nonces.nonce is the last nonce used
+        >>> encryptor = cipher.encryptor()
+        >>> ct = encryptor.update(b"a secret message")
+        >>> decryptor = cipher.decryptor()
+        >>> decryptor.update(ct)
+        b'a secret message'
 
 .. class:: OFB(initialization_vector)
 
