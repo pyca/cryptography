@@ -16,3 +16,4 @@ Primitives
     symmetric-encryption
     padding
     twofactor
+    nonces
