@@ -26,7 +26,7 @@ certifi==2024.8.30
     #   requests
 charset-normalizer==3.3.2
     # via requests
-check-sdist==0.1.3 ; python_full_version >= '3.8'
+check-sdist==1.0.0 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 click==8.1.7
     # via cryptography (pyproject.toml)
