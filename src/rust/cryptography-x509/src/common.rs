@@ -198,7 +198,7 @@ impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
         true
     }
 }
-impl<'a> asn1::Asn1Writable for RawTlv<'a> {
+impl asn1::Asn1Writable for RawTlv<'_> {
     fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult {
         w.write_tlv(self.tag, move |dest| dest.push_slice(self.value))
     }
@@ -471,7 +471,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedVisibleString<'a> {
     }
 }
 
-impl<'a> asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'a> {
+impl asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'_> {
     const TAG: asn1::Tag = asn1::VisibleString::TAG;
     fn write_data(&self, _: &mut asn1::WriteBuf) -> asn1::WriteResult {
         unimplemented!();
@@ -487,7 +487,7 @@ impl<'a> Utf8StoredBMPString<'a> {
     }
 }
 
-impl<'a> asn1::SimpleAsn1Writable for Utf8StoredBMPString<'a> {
+impl asn1::SimpleAsn1Writable for Utf8StoredBMPString<'_> {
     const TAG: asn1::Tag = asn1::BMPString::TAG;
     fn write_data(&self, writer: &mut asn1::WriteBuf) -> asn1::WriteResult {
         for ch in self.0.encode_utf16() {
@@ -531,7 +531,7 @@ impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
     }
 }
 
-impl<'a, T: asn1::Asn1Writable> asn1::Asn1Writable for WithTlv<'a, T> {
+impl<T: asn1::Asn1Writable> asn1::Asn1Writable for WithTlv<'_, T> {
     fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult<()> {
         self.value.write(w)
     }
