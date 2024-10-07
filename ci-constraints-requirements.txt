@@ -16,7 +16,7 @@ bleach==6.0.0 ; python_full_version < '3.8'
     # via readme-renderer
 build==1.1.1 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
-build==1.2.2 ; python_full_version >= '3.8'
+build==1.2.2.post1 ; python_full_version >= '3.8'
     # via
     #   cryptography (pyproject.toml)
     #   check-sdist
