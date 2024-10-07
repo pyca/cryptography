@@ -31,6 +31,11 @@ class TOTP:
         )
 
     def generate(self, time: int | float) -> bytes:
+        if not isinstance(time, (int, float)):
+            raise TypeError(
+                "Time parameter must be an integer type or float type."
+            )
+
         counter = int(time / self._time_step)
         return self._hotp.generate(counter)
 
