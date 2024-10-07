@@ -107,3 +107,13 @@ class TestHOTP:
         key = bytearray(b"a long key with lots of entropy goes here")
         hotp = HOTP(key, 6, SHA1(), backend)
         assert hotp.generate(10) == b"559978"
+
+    def test_invalid_counter(self, backend):
+        key = os.urandom(16)
+        hotp = HOTP(key, 6, SHA1(), backend)
+
+        with pytest.raises(TypeError):
+            hotp.generate(2.5)  # type: ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            hotp.generate(2**64)

@@ -142,3 +142,10 @@ class TestTOTP:
         totp = TOTP(key, 8, hashes.SHA512(), 30, backend)
         time = 60
         assert totp.generate(time) == b"53049576"
+
+    def test_invalid_time(self, backend):
+        key = b"12345678901234567890"
+        totp = TOTP(key, 8, hashes.SHA1(), 30, backend)
+
+        with pytest.raises(TypeError):
+            totp.generate("test")  # type: ignore[arg-type]

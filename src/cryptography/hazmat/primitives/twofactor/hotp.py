@@ -67,6 +67,9 @@ class HOTP:
         self._algorithm = algorithm
 
     def generate(self, counter: int) -> bytes:
+        if not isinstance(counter, int):
+            raise TypeError("Counter parameter must be an integer type.")
+
         truncated_value = self._dynamic_truncate(counter)
         hotp = truncated_value % (10**self._length)
         return "{0:0{1}}".format(hotp, self._length).encode()
@@ -77,7 +80,12 @@ class HOTP:
 
     def _dynamic_truncate(self, counter: int) -> int:
         ctx = hmac.HMAC(self._key, self._algorithm)
-        ctx.update(counter.to_bytes(length=8, byteorder="big"))
+
+        try:
+            ctx.update(counter.to_bytes(length=8, byteorder="big"))
+        except OverflowError:
+            raise ValueError(f"Counter must be between 0 and {2 ** 64 - 1}.")
+
         hmac_value = ctx.finalize()
 
         offset = hmac_value[len(hmac_value) - 1] & 0b1111
