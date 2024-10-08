@@ -79,8 +79,6 @@ pub(crate) struct PolicyBuilder {
 }
 
 impl PolicyBuilder {
-    /// Clones the builder, requires the GIL token to increase
-    /// reference count for `self.store`.
     fn py_clone(&self, py: pyo3::Python<'_>) -> PolicyBuilder {
         PolicyBuilder {
             time: self.time.clone(),
@@ -313,26 +311,20 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        let subjects = {
-            // NOTE: The `unwrap()` cannot fail, since the underlying policy
-            // enforces the well-formedness of the extension set.
-            let leaf_san_ext = &chain[0]
-                .certificate()
-                .extensions()
-                .ok()
-                .unwrap()
-                .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID);
-
-            match leaf_san_ext {
-                None => None,
-                Some(leaf_san) => {
-                    let leaf_gns = leaf_san
-                        .value::<SubjectAlternativeName<'_>>()
-                        .map_err(|e| -> CryptographyError { e.into() })?;
-                    let py_gns = parse_general_names(py, &leaf_gns)?;
-                    Some(py_gns)
-                }
+        // NOTE: The `unwrap()` cannot fail, since the underlying policy
+        // enforces the well-formedness of the extension set.
+        let subjects = match &chain[0]
+            .certificate()
+            .extensions()
+            .ok()
+            .unwrap()
+            .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
+        {
+            Some(leaf_san) => {
+                let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+                Some(parse_general_names(py, &leaf_gns)?)
             }
+            None => None,
         };
 
         Ok(PyVerifiedClient {
