@@ -96,7 +96,7 @@ iniconfig==2.0.0
     # via pytest
 jinja2==3.1.4
     # via sphinx
-markupsafe==2.1.5
+markupsafe==3.0.0
     # via jinja2
 mypy==1.4.1 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
