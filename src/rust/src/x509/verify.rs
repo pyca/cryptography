@@ -7,7 +7,7 @@ use cryptography_x509::{
 };
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
-    policy::{ExtensionPolicy, Policy, Subject},
+    policy::{Policy, Subject},
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
@@ -22,7 +22,6 @@ use crate::x509::sign;
 
 use super::parse_general_names;
 
-#[derive(Clone)]
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
@@ -74,8 +73,6 @@ pub(crate) struct PolicyBuilder {
     time: Option<asn1::DateTime>,
     store: Option<pyo3::Py<PyStore>>,
     max_chain_depth: Option<u8>,
-    ca_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
-    ee_ext_policy: Option<ExtensionPolicy<PyCryptoOps>>,
 }
 
 impl PolicyBuilder {
@@ -84,8 +81,6 @@ impl PolicyBuilder {
             time: self.time.clone(),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: self.max_chain_depth,
-            ca_ext_policy: self.ca_ext_policy.clone(),
-            ee_ext_policy: self.ee_ext_policy.clone(),
         }
     }
 }
@@ -98,8 +93,6 @@ impl PolicyBuilder {
             time: None,
             store: None,
             max_chain_depth: None,
-            ca_ext_policy: None,
-            ee_ext_policy: None,
         }
     }
 
@@ -311,24 +304,22 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        // NOTE: The `unwrap()` cannot fail, since the underlying policy
-        // enforces the well-formedness of the extension set.
-        let subjects = match &chain[0]
+        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
+        // enforces the presence of a SAN and the well-formedness of the
+        // extension set.
+        let leaf_san = &chain[0]
             .certificate()
             .extensions()
             .ok()
             .unwrap()
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
-        {
-            Some(leaf_san) => {
-                let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
-                Some(parse_general_names(py, &leaf_gns)?)
-            }
-            None => None,
-        };
+            .unwrap();
+
+        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+        let py_gns = parse_general_names(py, &leaf_gns)?;
 
         Ok(PyVerifiedClient {
-            subjects,
+            subjects: Some(py_gns),
             chain: py_chain.unbind(),
         })
     }

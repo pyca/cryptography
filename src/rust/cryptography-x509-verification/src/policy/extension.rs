@@ -14,8 +14,7 @@ use cryptography_x509::{
 
 use crate::{ops::CryptoOps, policy::Policy, ValidationError};
 
-#[derive(Clone)]
-pub struct ExtensionPolicy<B: CryptoOps> {
+pub(crate) struct ExtensionPolicy<B: CryptoOps> {
     pub(crate) authority_information_access: ExtensionValidator<B>,
     pub(crate) authority_key_identifier: ExtensionValidator<B>,
     pub(crate) subject_key_identifier: ExtensionValidator<B>,
@@ -124,7 +123,6 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
 }
 
 /// Represents different criticality states for an extension.
-#[derive(Clone)]
 pub(crate) enum Criticality {
     /// The extension MUST be marked as critical.
     Critical,
@@ -153,7 +151,6 @@ type MaybeExtensionValidatorCallback<B> =
     fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), ValidationError>;
 
 /// Represents different validation states for an extension.
-#[derive(Clone)]
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
     /// The extension MUST NOT be present.
     NotPresent,
