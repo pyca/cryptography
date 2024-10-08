@@ -30,7 +30,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "flake"}
           - {VERSION: "3.12", NOXSESSION: "rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.2.3"}}
-          - {VERSION: "3.13-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.13", NOXSESSION: "tests"}
           - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.15"}}
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.1.7"}}
@@ -227,7 +227,7 @@ jobs:
           - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests"}
-          - {VERSION: "3.12", NOXSESSION: "tests"}
+          - {VERSION: "3.13", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.7", NOXSESSION: "tests"}
@@ -295,7 +295,7 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
           - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.12", NOXSESSION: "tests"}
+          - {VERSION: "3.13", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
