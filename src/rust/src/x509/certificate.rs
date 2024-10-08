@@ -467,6 +467,8 @@ fn warn_if_invalid_params(
         | AlgorithmParameters::DsaWithSha256(Some(..))
         | AlgorithmParameters::DsaWithSha384(Some(..))
         | AlgorithmParameters::DsaWithSha512(Some(..)) => {
+            // This can also be triggered by an Intel On Die certificate
+            // https://github.com/pyca/cryptography/issues/11723
             let warning_cls = types::DEPRECATED_IN_41.get(py)?;
             pyo3::PyErr::warn_bound(
                 py,
