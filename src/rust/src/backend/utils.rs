@@ -457,7 +457,7 @@ pub(crate) fn handle_key_load_result<T>(
             )),
         )),
         (Err(e), _, _) => {
-            let errors = error::list_from_openssl_error(py, e);
+            let errors = error::list_from_openssl_error(py, &e);
             Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err((
                     "Could not deserialize key data. The data may be in an incorrect format, the provided password may be incorrect, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters).",
