@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::fmt;
+
 use pyo3::types::PyListMethods;
 use pyo3::ToPyObject;
 
@@ -81,10 +83,10 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
     }
 }
 
-pub(crate) fn list_from_openssl_error(
-    py: pyo3::Python<'_>,
-    error_stack: openssl::error::ErrorStack,
-) -> pyo3::Bound<'_, pyo3::types::PyList> {
+pub(crate) fn list_from_openssl_error<'p>(
+    py: pyo3::Python<'p>,
+    error_stack: &openssl::error::ErrorStack,
+) -> pyo3::Bound<'p, pyo3::types::PyList> {
     let errors = pyo3::types::PyList::empty_bound(py);
     for e in error_stack.errors() {
         errors
@@ -97,35 +99,57 @@ pub(crate) fn list_from_openssl_error(
     errors
 }
 
+impl fmt::Display for CryptographyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CryptographyError::Asn1Parse(asn1_error) => {
+                write!(f, "error parsing asn1 value: {asn1_error:?}")
+            }
+            CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
+                write!(
+                    f,
+                    "failed to allocate memory while performing ASN.1 serialization"
+                )
+            }
+            CryptographyError::KeyParsing(asn1_error) => {
+                write!(
+                    f,
+                    "Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: {asn1_error}",
+                )
+            }
+            CryptographyError::Py(py_error) => write!(f, "{}", py_error),
+            CryptographyError::OpenSSL(error_stack) => {
+                write!(
+                    f,
+                    "Unknown OpenSSL error. This error is commonly encountered
+                    when another library is not cleaning up the OpenSSL error
+                    stack. If you are using cryptography with another library
+                    that uses OpenSSL try disabling it before reporting a bug.
+                    Otherwise please file an issue at
+                    https://github.com/pyca/cryptography/issues with
+                    information on how to reproduce this. ({error_stack})"
+                )
+            }
+        }
+    }
+}
+
 impl From<CryptographyError> for pyo3::PyErr {
     fn from(e: CryptographyError) -> pyo3::PyErr {
         match e {
-            CryptographyError::Asn1Parse(asn1_error) => pyo3::exceptions::PyValueError::new_err(
-                format!("error parsing asn1 value: {asn1_error:?}"),
-            ),
-            CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
-                pyo3::exceptions::PyMemoryError::new_err(
-                    "failed to allocate memory while performing ASN.1 serialization",
-                )
+            CryptographyError::Asn1Parse(_) => {
+                pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
-            CryptographyError::KeyParsing(asn1_error) => pyo3::exceptions::PyValueError::new_err(
-                format!("Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: {asn1_error}"),
-            ),
+            CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
+                pyo3::exceptions::PyMemoryError::new_err(e.to_string())
+            }
+            CryptographyError::KeyParsing(_) => {
+                pyo3::exceptions::PyValueError::new_err(e.to_string())
+            }
             CryptographyError::Py(py_error) => py_error,
-            CryptographyError::OpenSSL(error_stack) => pyo3::Python::with_gil(|py| {
+            CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::with_gil(|py| {
                 let errors = list_from_openssl_error(py, error_stack);
-                exceptions::InternalError::new_err((
-                    format!(
-                        "Unknown OpenSSL error. This error is commonly encountered
-                        when another library is not cleaning up the OpenSSL error
-                        stack. If you are using cryptography with another library
-                        that uses OpenSSL try disabling it before reporting a bug.
-                        Otherwise please file an issue at
-                        https://github.com/pyca/cryptography/issues with
-                        information on how to reproduce this. ({errors:?})"
-                    ),
-                    errors.to_object(py),
-                ))
+                exceptions::InternalError::new_err((e.to_string(), errors.to_object(py)))
             }),
         }
     }
