@@ -137,14 +137,11 @@ impl fmt::Display for CryptographyError {
 impl From<CryptographyError> for pyo3::PyErr {
     fn from(e: CryptographyError) -> pyo3::PyErr {
         match e {
-            CryptographyError::Asn1Parse(_) => {
+            CryptographyError::Asn1Parse(_) | CryptographyError::KeyParsing(_) => {
                 pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
                 pyo3::exceptions::PyMemoryError::new_err(e.to_string())
-            }
-            CryptographyError::KeyParsing(_) => {
-                pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::with_gil(|py| {
@@ -224,6 +221,16 @@ pub(crate) fn capture_error_stack(
 #[cfg(test)]
 mod tests {
     use super::CryptographyError;
+
+    #[test]
+    fn test_cryptographyerror_display() {
+        pyo3::prepare_freethreaded_python();
+        pyo3::Python::with_gil(|py| {
+            let py_error = pyo3::exceptions::PyRuntimeError::new_err("abc");
+            let e: CryptographyError = py_error.clone_ref(py).into();
+            assert!(e.to_string() == py_error.to_string());
+        })
+    }
 
     #[test]
     fn test_cryptographyerror_from() {
