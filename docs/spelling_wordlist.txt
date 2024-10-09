@@ -140,6 +140,7 @@ unencrypted
 unicode
 unpadded
 unpadding
+validator
 Ventura
 verifier
 Verifier

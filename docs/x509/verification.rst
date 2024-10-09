@@ -111,12 +111,15 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
+    .. versionchanged:: 44.0.0
+        Made ``subjects`` optional with the addition of custom extension policies.
+
     .. attribute:: subjects
 
-        :type: list of :class:`~cryptography.x509.GeneralName`
+        :type: list of :class:`~cryptography.x509.GeneralName` or None
 
         The subjects presented in the verified client's Subject Alternative Name
-        extension.
+        extension or ``None`` if the extension is not present.
 
     .. attribute:: chain
 

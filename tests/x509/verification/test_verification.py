@@ -139,6 +139,7 @@ class TestClientVerifier:
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
 
+        assert verified_client.subjects is not None
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2

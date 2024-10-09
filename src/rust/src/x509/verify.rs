@@ -75,6 +75,16 @@ pub(crate) struct PolicyBuilder {
     max_chain_depth: Option<u8>,
 }
 
+impl PolicyBuilder {
+    fn py_clone(&self, py: pyo3::Python<'_>) -> PolicyBuilder {
+        PolicyBuilder {
+            time: self.time.clone(),
+            store: self.store.as_ref().map(|s| s.clone_ref(py)),
+            max_chain_depth: self.max_chain_depth,
+        }
+    }
+}
+
 #[pyo3::pymethods]
 impl PolicyBuilder {
     #[new]
@@ -95,18 +105,20 @@ impl PolicyBuilder {
 
         Ok(PolicyBuilder {
             time: Some(py_to_datetime(py, new_time)?),
-            store: self.store.as_ref().map(|s| s.clone_ref(py)),
-            max_chain_depth: self.max_chain_depth,
+            ..self.py_clone(py)
         })
     }
 
-    fn store(&self, new_store: pyo3::Py<PyStore>) -> CryptographyResult<PolicyBuilder> {
+    fn store(
+        &self,
+        py: pyo3::Python<'_>,
+        new_store: pyo3::Py<PyStore>,
+    ) -> CryptographyResult<PolicyBuilder> {
         policy_builder_set_once_check!(self, store, "trust store");
 
         Ok(PolicyBuilder {
-            time: self.time.clone(),
             store: Some(new_store),
-            max_chain_depth: self.max_chain_depth,
+            ..self.py_clone(py)
         })
     }
 
@@ -118,9 +130,8 @@ impl PolicyBuilder {
         policy_builder_set_once_check!(self, max_chain_depth, "maximum chain depth");
 
         Ok(PolicyBuilder {
-            time: self.time.clone(),
-            store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: Some(new_max_chain_depth),
+            ..self.py_clone(py)
         })
     }
 
@@ -141,7 +152,8 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        let policy = PyCryptoPolicy(Policy::client(PyCryptoOps {}, time, self.max_chain_depth));
+        // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
+        let policy = Policy::client(PyCryptoOps {}, time, self.max_chain_depth);
 
         Ok(PyClientVerifier { policy, store })
     }
@@ -170,12 +182,14 @@ impl PolicyBuilder {
 
         let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
             let subject = build_subject(py, subject_owner)?;
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(PyCryptoPolicy(Policy::server(
+
+            // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
+            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(Policy::server(
                 PyCryptoOps {},
                 subject,
                 time,
                 self.max_chain_depth,
-            )))
+            ))
         })?;
 
         Ok(PyServerVerifier {
@@ -186,7 +200,7 @@ impl PolicyBuilder {
     }
 }
 
-struct PyCryptoPolicy<'a>(Policy<'a, PyCryptoOps>);
+type PyCryptoPolicy<'a> = Policy<'a, PyCryptoOps>;
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
@@ -215,7 +229,7 @@ self_cell::self_cell!(
 )]
 pub(crate) struct PyVerifiedClient {
     #[pyo3(get)]
-    subjects: pyo3::Py<pyo3::PyAny>,
+    subjects: Option<pyo3::Py<pyo3::PyAny>>,
     #[pyo3(get)]
     chain: pyo3::Py<pyo3::types::PyList>,
 }
@@ -233,7 +247,7 @@ pub(crate) struct PyClientVerifier {
 
 impl PyClientVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy.0
+        &self.policy
     }
 }
 
@@ -305,7 +319,7 @@ impl PyClientVerifier {
         let py_gns = parse_general_names(py, &leaf_gns)?;
 
         Ok(PyVerifiedClient {
-            subjects: py_gns,
+            subjects: Some(py_gns),
             chain: py_chain.unbind(),
         })
     }
@@ -326,7 +340,7 @@ pub(crate) struct PyServerVerifier {
 
 impl PyServerVerifier {
     fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy.borrow_dependent().0
+        self.policy.borrow_dependent()
     }
 }
 
