@@ -58,6 +58,6 @@ jobs:
           skip-existing: true
           # Do not perform attestation for things for TestPyPI. This is
           # because there's nothing that would prevent a malicious PyPI from
-          # serving a signed TestPyPI asset in place of a release intended for'
+          # serving a signed TestPyPI asset in place of a release intended for
           # PyPI.
           attestations: ${{ env.PYPI_URL == 'https://pypi.org/legacy/' }}
