@@ -34,6 +34,10 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
 
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version: "3.13"
+        timeout-minutes: 3
       - run: python -m pip install -r $UV_REQUIREMENTS_PATH
 
       - name: Make sdist (cryptography)
@@ -157,7 +161,7 @@ jobs:
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
-            DEPLOYMENT_TARGET: '10.12'
+            DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
             ARCHFLAGS: '-arch x86_64 -arch arm64'
             # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
@@ -169,7 +173,7 @@ jobs:
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.3/python-3.11.3-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
-            DEPLOYMENT_TARGET: '10.12'
+            DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
             ARCHFLAGS: '-arch x86_64 -arch arm64'
             # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
@@ -178,7 +182,7 @@ jobs:
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: 'pypy-3.10'
             BIN_PATH: 'pypy3'
-            DEPLOYMENT_TARGET: '10.12'
+            DEPLOYMENT_TARGET: '10.13'
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
             ARCHFLAGS: '-arch x86_64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"

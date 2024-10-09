@@ -272,11 +272,12 @@ jobs:
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \
             OPENSSL_STATIC=1 \
-            CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function -mmacosx-version-min=10.12" \
+            CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function" \
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
+          MACOSX_DEPLOYMENT_TARGET: "10.13"
       - name: Tests
         run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
         env:
