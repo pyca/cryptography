@@ -77,4 +77,6 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   rm -rf "${OSSL_PATH}/bin"
   popd
   rm -rf boringssl/
+
+  sudo apt-get install -y bindgen
 fi
