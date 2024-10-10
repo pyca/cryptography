@@ -35,7 +35,7 @@ from cryptography.hazmat.primitives.serialization import (
 )
 from cryptography.hazmat.primitives.serialization.pkcs12 import PBES
 
-from ...utils import load_vectors_from_file
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 from .test_ec import _skip_curve_unsupported
 from .test_rsa import rsa_key_2048
 from .utils import _check_dsa_private_numbers, _check_rsa_private_numbers
@@ -1433,12 +1433,9 @@ class TestEd448Serialization:
 
     def test_openssh_serialization_unsupported(self, backend):
         key = ed448.Ed448PrivateKey.generate()
-        with pytest.raises(ValueError):
-            key.public_key().public_bytes(
-                Encoding.OpenSSH,
-                PublicFormat.OpenSSH,
-            )
-        with pytest.raises(ValueError):
+        with raises_unsupported_algorithm(
+            "Serializing Ed448 SSH private keys is unsupported"
+        ):
             key.private_bytes(
                 Encoding.PEM,
                 PrivateFormat.OpenSSH,

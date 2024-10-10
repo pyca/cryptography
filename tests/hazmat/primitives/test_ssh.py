@@ -14,6 +14,7 @@ from cryptography.exceptions import InvalidSignature, InvalidTag
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
+    ed448,
     ed25519,
     rsa,
 )
@@ -55,6 +56,7 @@ class TestOpenSSHSerialization:
             ("ecdsa-nopsw.key.pub", "ecdsa-nopsw.key-cert.pub"),
             ("ed25519-psw.key.pub", None),
             ("ed25519-nopsw.key.pub", "ed25519-nopsw.key-cert.pub"),
+            ("ed448-nopsw.key.pub", None),
             ("sk-ecdsa-psw.key.pub", None),
             ("sk-ecdsa-nopsw.key.pub", None),
             ("sk-ed25519-psw.key.pub", None),
@@ -64,6 +66,8 @@ class TestOpenSSHSerialization:
     def test_load_ssh_public_key(self, key_file, cert_file, backend):
         if "ed25519" in key_file and not backend.ed25519_supported():
             pytest.skip("Requires OpenSSL with Ed25519 support")
+        if "ed448" in key_file and not backend.ed448_supported():
+            pytest.skip("Requires OpenSSL with Ed448 support")
 
         # normal public key
         pub_data = load_vectors_from_file(
@@ -170,6 +174,8 @@ class TestOpenSSHSerialization:
     def test_load_ssh_private_key(self, key_file, backend):
         if "ed25519" in key_file and not backend.ed25519_supported():
             pytest.skip("Requires OpenSSL with Ed25519 support")
+        if "ed448" in key_file and not backend.ed448_supported():
+            pytest.skip("Requires OpenSSL with Ed448 support")
         if "-psw" in key_file and not ssh._bcrypt_supported:
             pytest.skip("Requires bcrypt module")
 
@@ -1128,6 +1134,65 @@ class TestEd25519SSHSerialization:
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key, backend)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed448_supported(),
+    skip_message="Requires OpenSSL with Ed448 support",
+)
+class TestEd448SSHSerialization:
+    def test_load_ssh_public_key(self, backend):
+        ssh_key = (
+            b"ssh-ed448 AAAACXNzaC1lZDQ0OAAAADnVY+2PC4Oj9MSsYZORD7xivKK3zy"
+            b"yHFKYj3eMCMPsAwNVk6fqGHeSIRDN39ld5Jto8S5Y1lemtJHA= user@chir"
+            b"on.local"
+        )
+        key = load_ssh_public_key(ssh_key, backend)
+        assert isinstance(key, ed448.Ed448PublicKey)
+        assert key.public_bytes(Encoding.Raw, PublicFormat.Raw) == (
+            bytes.fromhex(
+                "d5 63 ed 8f 0b 83 a3 f4  c4 ac 61 93 91 0f bc 62"
+                "bc a2 b7 cf 2c 87 14 a6  23 dd e3 02 30 fb 00 c0"
+                "d5 64 e9 fa 86 1d e4 88  44 33 77 f6 57 79 26 da"
+                "3c 4b 96 35 95 e9 ad 24  70"
+            )
+        )
+
+    def test_public_bytes_openssh(self, backend):
+        pub_data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "ed448-nopsw.key.pub"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_ssh_public_key(pub_data, backend)
+        assert isinstance(key, ed448.Ed448PublicKey)
+        assert key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH) == (
+            pub_data
+        )
+
+    def test_load_ssh_private_key_unsupported(self, backend):
+        priv_data = bytearray(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "OpenSSH", "ed448-nopsw.key"
+                ),
+                lambda f: f.read(),
+                mode="rb",
+            )
+        )
+        with raises_unsupported_algorithm(
+            "Loading Ed448 SSH private keys is unsupported"
+        ):
+            load_ssh_private_key(priv_data, None, backend)
+
+    def test_serialize_ssh_private_unsupported(self, backend):
+        private_key = ed448.Ed448PrivateKey.generate()
+        with raises_unsupported_algorithm(
+            "Serializing Ed448 SSH private keys is unsupported"
+        ):
+            private_key.private_bytes(
+                Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
+            )
 
 
 class TestSSHCertificate:
