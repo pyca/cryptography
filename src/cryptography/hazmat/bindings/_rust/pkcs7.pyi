@@ -6,6 +6,7 @@ import typing
 
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import pkcs7
 
 def serialize_certificates(
@@ -19,6 +20,13 @@ def encrypt_and_serialize(
 ) -> bytes: ...
 def sign_and_serialize(
     builder: pkcs7.PKCS7SignatureBuilder,
+    encoding: serialization.Encoding,
+    options: typing.Iterable[pkcs7.PKCS7Options],
+) -> bytes: ...
+def deserialize_and_decrypt(
+    data: bytes,
+    certificate: x509.Certificate,
+    private_key: rsa.RSAPrivateKey,
     encoding: serialization.Encoding,
     options: typing.Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...

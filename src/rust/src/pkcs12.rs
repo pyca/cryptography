@@ -5,7 +5,7 @@
 use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::padding::PKCS7PaddingContext;
+use crate::padding::{PKCS7PaddingContext, PKCS7UnpaddingContext};
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
@@ -105,6 +105,40 @@ pub(crate) fn symmetric_encrypt(
     ciphertext.truncate(n + pad_n);
 
     Ok(ciphertext)
+}
+
+pub(crate) fn symmetric_decrypt(
+    py: pyo3::Python<'_>,
+    algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+    mode: pyo3::Bound<'_, pyo3::PyAny>,
+    data: &[u8],
+) -> CryptographyResult<Vec<u8>> {
+    let block_size = algorithm
+        .getattr(pyo3::intern!(py, "block_size"))?
+        .extract()?;
+
+    let mut cipher =
+        ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Decrypt)?;
+
+    // Decrypt the data
+    let mut decrypted_data = vec![0; data.len() + (block_size / 8)];
+    let count = cipher.update_into(py, data, &mut decrypted_data)?;
+    let final_block = cipher.finalize(py)?;
+    assert!(final_block.as_bytes().is_empty());
+    decrypted_data.truncate(count);
+
+    // Unpad the data
+    let mut unpadder = PKCS7UnpaddingContext::new(block_size);
+    let unpadded_first_blocks = unpadder.update(py, CffiBuf::from_bytes(py, &decrypted_data))?;
+    let unpadded_last_block = unpadder.finalize(py)?;
+
+    let unpadded_data = [
+        unpadded_first_blocks.as_bytes(),
+        unpadded_last_block.as_bytes(),
+    ]
+    .concat();
+
+    Ok(unpadded_data)
 }
 
 enum EncryptionAlgorithm {

@@ -263,6 +263,87 @@ class PKCS7EnvelopeBuilder:
         return rust_pkcs7.encrypt_and_serialize(self, encoding, options)
 
 
+def pkcs7_decrypt_der(
+    data: bytes,
+    certificate: x509.Certificate,
+    private_key: rsa.RSAPrivateKey,
+    options: typing.Iterable[PKCS7Options],
+) -> bytes:
+    return _pkcs7_decrypt(
+        data, certificate, private_key, options, serialization.Encoding.DER
+    )
+
+
+def pkcs7_decrypt_pem(
+    data: bytes,
+    certificate: x509.Certificate,
+    private_key: rsa.RSAPrivateKey,
+    options: typing.Iterable[PKCS7Options],
+) -> bytes:
+    return _pkcs7_decrypt(
+        data, certificate, private_key, options, serialization.Encoding.PEM
+    )
+
+
+def pkcs7_decrypt_smime(
+    data: bytes,
+    certificate: x509.Certificate,
+    private_key: rsa.RSAPrivateKey,
+    options: typing.Iterable[PKCS7Options],
+) -> bytes:
+    data = _smime_enveloped_decode(data)
+    return _pkcs7_decrypt(
+        data, certificate, private_key, options, serialization.Encoding.DER
+    )
+
+
+def _pkcs7_decrypt(
+    data: bytes,
+    certificate: x509.Certificate,
+    private_key: rsa.RSAPrivateKey,
+    options: typing.Iterable[PKCS7Options],
+    encoding: serialization.Encoding,
+) -> bytes:
+    from cryptography.hazmat.backends.openssl.backend import (
+        backend as ossl,
+    )
+
+    if not ossl.rsa_encryption_supported(padding=padding.PKCS1v15()):
+        raise UnsupportedAlgorithm(
+            "RSA with PKCS1 v1.5 padding is not supported by this version"
+            " of OpenSSL.",
+            _Reasons.UNSUPPORTED_PADDING,
+        )
+
+    options = list(options)
+    if not all(isinstance(x, PKCS7Options) for x in options):
+        raise ValueError("options must be from the PKCS7Options enum")
+    if any(
+        opt not in [PKCS7Options.Text, PKCS7Options.Binary] for opt in options
+    ):
+        raise ValueError(
+            "Only the following options are supported for encryption: "
+            "Text, Binary"
+        )
+    elif PKCS7Options.Text in options and PKCS7Options.Binary in options:
+        # OpenSSL accepts both options at the same time, but ignores Text.
+        # We fail defensively to avoid unexpected outputs.
+        raise ValueError("Cannot use Binary and Text options at the same time")
+
+    if not isinstance(certificate, x509.Certificate):
+        raise TypeError("certificate must be a x509.Certificate")
+
+    if not isinstance(certificate.public_key(), rsa.RSAPublicKey):
+        raise TypeError("Only RSA keys are supported at this time.")
+
+    if not isinstance(private_key, rsa.RSAPrivateKey):
+        raise TypeError("Only RSA private keys are supported at this time.")
+
+    return rust_pkcs7.deserialize_and_decrypt(
+        data, certificate, private_key, encoding, options
+    )
+
+
 def _smime_signed_encode(
     data: bytes, signature: bytes, micalg: str, text_mode: bool
 ) -> bytes:
@@ -326,6 +407,15 @@ def _smime_enveloped_encode(data: bytes) -> bytes:
     m.set_payload(email.base64mime.body_encode(data, maxlinelen=65))
 
     return m.as_bytes(policy=m.policy.clone(linesep="\n", max_line_length=0))
+
+
+def _smime_enveloped_decode(data: bytes) -> bytes:
+    m = email.message_from_bytes(data)
+    # Content type can be application/x-pkcs7-mime or application/pkcs7-mime
+    # Could also be using the filename parameter, or no checks at all.
+    if "pkcs7-mime" not in m.get_content_type():
+        raise ValueError("Not an S/MIME enveloped message")
+    return bytes(m.get_payload(decode=True))
 
 
 class OpenSSLMimePart(email.message.MIMEPart):

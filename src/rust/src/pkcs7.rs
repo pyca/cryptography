@@ -20,10 +20,10 @@ use pyo3::IntoPy;
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::pkcs12::symmetric_encrypt;
+use crate::pkcs12::{symmetric_decrypt, symmetric_encrypt};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
-use crate::{exceptions, types, x509};
+use crate::{backend, exceptions, types, x509};
 
 const PKCS7_CONTENT_TYPE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 3);
 const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 4);
@@ -59,14 +59,16 @@ fn serialize_certificates<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: asn1::SetOfWriter::new(&[]),
+        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(None),
         },
-        certificates: Some(asn1::SetOfWriter::new(&raw_certs)),
+        certificates: Some(common::Asn1ReadableOrWritable::new_write(
+            asn1::SetOfWriter::new(&raw_certs),
+        )),
         crls: None,
-        signer_infos: asn1::SetOfWriter::new(&[]),
+        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
     };
 
     let content_info = pkcs7::ContentInfo {
@@ -133,7 +135,9 @@ fn encrypt_and_serialize<'p>(
 
     let enveloped_data = pkcs7::EnvelopedData {
         version: 0,
-        recipient_infos: asn1::SetOfWriter::new(&recipient_infos),
+        recipient_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &recipient_infos,
+        )),
 
         encrypted_content_info: pkcs7::EncryptedContentInfo {
             content_type: PKCS7_DATA_OID,
@@ -160,6 +164,116 @@ fn encrypt_and_serialize<'p>(
         // Handles the DER, PEM, and error cases
         encode_der_data(py, "PKCS7".to_string(), ci_bytes, encoding)
     }
+}
+
+#[pyo3::pyfunction]
+fn deserialize_and_decrypt<'p>(
+    py: pyo3::Python<'p>,
+    data: CffiBuf<'p>,
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    // Extract the data on the right format (PEM or DER, SMIME handled by Python)
+    let extracted_data = if encoding.is(&types::ENCODING_DER.get(py)?) {
+        data.as_bytes().to_vec()
+    } else {
+        let pem_str = std::str::from_utf8(data.as_bytes())
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
+        let pem = pem::parse(pem_str)
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
+        pem.contents().to_vec()
+    };
+
+    // Deserialize the content info
+    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(&extracted_data).unwrap();
+    let plain_content = match content_info.content {
+        pkcs7::Content::EnvelopedData(data) => {
+            // Extract enveloped data
+            let enveloped_data = data.into_inner();
+
+            // Get recipients, and the one matching with the given certificate (if any)
+            let mut recipient_infos = enveloped_data.recipient_infos.unwrap_read().clone();
+            let recipient_serial_number = certificate.get().raw.borrow_dependent().tbs_cert.serial;
+            let found_recipient_info = recipient_infos.find(|info| {
+                info.issuer_and_serial_number.serial_number.as_bytes()
+                    == recipient_serial_number.as_bytes()
+            });
+
+            // Raise error when no recipient is found
+            // Unsure if this is the right exception to raise
+            let recipient_info = match found_recipient_info {
+                Some(info) => info,
+                None => {
+                    return Err(CryptographyError::from(
+                        exceptions::AttributeNotFound::new_err((
+                            "No recipient found that matches the given certificate.",
+                            exceptions::Reasons::UNSUPPORTED_X509,
+                        )),
+                    ));
+                }
+            };
+
+            // Decrypt the key using the private key
+            let padding = types::PKCS1V15.get(py)?.call0()?;
+            let key = private_key
+                .call_method1(
+                    pyo3::intern!(py, "decrypt"),
+                    (recipient_info.encrypted_key, &padding),
+                )?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+
+            // Get algorithm
+            // TODO: implement all the possible algorithms
+            let algorithm_identifier = enveloped_data
+                .encrypted_content_info
+                .content_encryption_algorithm;
+            let (algorithm, mode) = match algorithm_identifier.params {
+                AlgorithmParameters::Aes128Cbc(iv) => (
+                    types::AES128.get(py)?.call1((key,))?,
+                    types::CBC
+                        .get(py)?
+                        .call1((pyo3::types::PyBytes::new_bound(py, &iv),))?,
+                ),
+                _ => {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "Only AES-128-CBC is currently supported for decryption.",
+                            exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                        )),
+                    ));
+                }
+            };
+
+            // Decrypt the content using the key and proper algorithm
+            let encrypted_content = enveloped_data
+                .encrypted_content_info
+                .encrypted_content
+                .unwrap();
+            let decrypted_content = symmetric_decrypt(py, algorithm, mode, encrypted_content)?;
+            pyo3::types::PyBytes::new_bound(py, decrypted_content.as_slice())
+        }
+        _ => {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "Only EnvelopedData structures are currently supported.",
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                )),
+            ));
+        }
+    };
+
+    // Return content in different form, based on options
+    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
+    let plain_data = if options.contains(types::PKCS7_BINARY.get(py)?)? {
+        plain_content
+    } else {
+        let decanonicalized = smime_decanonicalize(plain_content.as_bytes(), text_mode);
+        pyo3::types::PyBytes::new_bound(py, decanonicalized.into_owned().as_slice())
+    };
+
+    Ok(plain_data)
 }
 
 #[pyo3::pyfunction]
@@ -317,7 +431,9 @@ fn sign_and_serialize<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: asn1::SetOfWriter::new(&digest_algs),
+        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &digest_algs,
+        )),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
@@ -325,10 +441,14 @@ fn sign_and_serialize<'p>(
         certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
-            Some(asn1::SetOfWriter::new(&certs))
+            Some(common::Asn1ReadableOrWritable::new_write(
+                asn1::SetOfWriter::new(&certs),
+            ))
         },
         crls: None,
-        signer_infos: asn1::SetOfWriter::new(&signer_infos),
+        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &signer_infos,
+        )),
     };
 
     let content_info = pkcs7::ContentInfo {
@@ -405,6 +525,39 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     } else {
         (Cow::Borrowed(data), Cow::Borrowed(data))
     }
+}
+
+fn smime_decanonicalize(data: &[u8], text_mode: bool) -> Cow<'_, [u8]> {
+    let mut new_data = vec![];
+    let mut last_idx = 0;
+
+    // Remove the header if text_mode is true
+    let data = if text_mode {
+        let header = b"Content-Type: text/plain\r\n\r\n";
+        if data.starts_with(header) {
+            &data[header.len()..]
+        } else {
+            data
+        }
+    } else {
+        data
+    };
+
+    // Remove the \r in the data
+    for (i, c) in data.iter().copied().enumerate() {
+        if c == b'\n' && i > 0 && data[i - 1] == b'\r' {
+            new_data.extend_from_slice(&data[last_idx..i - 1]);
+            new_data.push(b'\n');
+            last_idx = i + 1;
+        }
+    }
+
+    // Copy the remaining data
+    if last_idx < data.len() {
+        new_data.extend_from_slice(&data[last_idx..]);
+    }
+
+    Cow::Owned(new_data)
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
@@ -499,8 +652,8 @@ fn load_der_pkcs7_certificates<'p>(
 pub(crate) mod pkcs7_mod {
     #[pymodule_export]
     use super::{
-        encrypt_and_serialize, load_der_pkcs7_certificates, load_pem_pkcs7_certificates,
-        serialize_certificates, sign_and_serialize,
+        deserialize_and_decrypt, encrypt_and_serialize, load_der_pkcs7_certificates,
+        load_pem_pkcs7_certificates, serialize_certificates, sign_and_serialize,
     };
 }
 
@@ -509,7 +662,7 @@ mod tests {
     use std::borrow::Cow;
     use std::ops::Deref;
 
-    use super::smime_canonicalize;
+    use super::{smime_canonicalize, smime_decanonicalize};
 
     #[test]
     fn test_smime_canonicalize() {
@@ -567,6 +720,30 @@ mod tests {
                 matches!(result_without_header, Cow::Borrowed(_)),
                 expected_is_borrowed
             );
+        }
+    }
+
+    #[test]
+    fn test_smime_decanonicalize() {
+        for (input, text_mode, expected_output) in [
+            // Values with text_mode=false
+            (b"" as &[u8], false, b"" as &[u8]),
+            (b"abc\r\n", false, b"abc\n"),
+            (b"\r\nabc\n", false, b"\nabc\n"),
+            (b"abc\r\ndef\r\n", false, b"abc\ndef\n"),
+            (b"abc\r\ndef\nabc", false, b"abc\ndef\nabc"),
+            // Values with text_mode=true
+            (b"abc\r\n", true, b"abc\n"),
+            (b"Content-Type: text/plain\r\n\r\n", true, b""),
+            (b"Content-Type: text/plain\r\n\r\nabc", true, b"abc"),
+            (
+                b"Content-Type: text/plain\r\n\r\nabc\r\ndef\nabc",
+                true,
+                b"abc\ndef\nabc",
+            ),
+        ] {
+            let result = smime_decanonicalize(input, text_mode);
+            assert_eq!(result.deref(), expected_output);
         }
     }
 }
