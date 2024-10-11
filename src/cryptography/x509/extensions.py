@@ -1988,9 +1988,9 @@ class IssuingDistributionPoint(ExtensionType):
                 "must all be boolean."
             )
 
-        # Per RFC5280 Section 5.2.5, the Issuing Distribution Point extension in a CRL
-        # can have only one of onlyContainsUserCerts, onlyContainsCACerts,
-        # onlyContainsAttributeCerts set to TRUE.
+        # Per RFC5280 Section 5.2.5, the Issuing Distribution Point extension
+        # in a CRL can have only one of onlyContainsUserCerts,
+        # onlyContainsCACerts, onlyContainsAttributeCerts set to TRUE.
         crl_constraints = [
             only_contains_user_certs,
             only_contains_ca_certs,

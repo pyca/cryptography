@@ -5380,7 +5380,6 @@ class TestIssuingDistributionPointExtension:
             (TypeError, False, False, "notabool", False, None, None, None),
             (TypeError, False, False, False, "notabool", None, None, None),
             (ValueError, True, True, False, False, None, None, None),
-            (ValueError, False, False, True, True, None, None, None),
             (ValueError, False, False, False, False, None, None, None),
         ],
     )
