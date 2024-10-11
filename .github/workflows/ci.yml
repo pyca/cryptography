@@ -119,6 +119,8 @@ jobs:
           echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
           echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
+      - run: sudo apt-get install -y bindgen
+        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl'
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
