@@ -7,4 +7,4 @@ publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-pyo3 = { version = "0.22.3", features = ["abi3"] }
+pyo3 = { version = "0.22.4", features = ["abi3"] }
