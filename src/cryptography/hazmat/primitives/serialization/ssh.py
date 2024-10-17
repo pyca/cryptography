@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
+    ed448,
     ed25519,
     padding,
     rsa,
@@ -57,6 +58,7 @@ except ImportError:
 
 
 _SSH_ED25519 = b"ssh-ed25519"
+_SSH_ED448 = b"ssh-ed448"
 _SSH_RSA = b"ssh-rsa"
 _SSH_DSA = b"ssh-dss"
 _ECDSA_NISTP256 = b"ecdsa-sha2-nistp256"
@@ -152,6 +154,10 @@ def _get_ssh_key_type(key: SSHPrivateKeyTypes | SSHPublicKeyTypes) -> bytes:
         key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)
     ):
         key_type = _SSH_ED25519
+    elif isinstance(
+        key, (ed448.Ed448PrivateKey, ed448.Ed448PublicKey)
+    ):
+        key_type = _SSH_ED448
     else:
         raise ValueError("Unsupported key type")
 
@@ -582,6 +588,57 @@ class _SSHFormatEd25519:
         f_priv.put_sshstr(f_keypair)
 
 
+class _SSHFormatEd448:
+    """Format for Ed448 keys.
+
+    Public:
+        bytes point
+    Private:
+        bytes point
+        bytes secret_and_point
+    """
+
+    def get_public(
+        self, data: memoryview
+    ) -> tuple[tuple[memoryview], memoryview]:
+        """Ed448 public fields"""
+        point, data = _get_sshstr(data)
+        return (point,), data
+
+    def load_public(
+        self, data: memoryview
+    ) -> tuple[ed448.Ed448PublicKey, memoryview]:
+        """Make Ed448 public key from data."""
+        (point,), data = self.get_public(data)
+        public_key = ed448.Ed448PublicKey.from_public_bytes(point.tobytes())
+        return public_key, data
+
+    def load_private(
+        self, data: memoryview, pubfields
+    ) -> tuple[ed448.Ed448PrivateKey, memoryview]:
+        """Make Ed448 private key from data."""
+        raise UnsupportedAlgorithm(
+            "Loading Ed448 SSH private keys is unsupported"
+        )
+
+    def encode_public(
+        self, public_key: ed448.Ed448PublicKey, f_pub: _FragList
+    ) -> None:
+        """Write Ed448 public key"""
+        raw_public_key = public_key.public_bytes(
+            Encoding.Raw, PublicFormat.Raw
+        )
+        f_pub.put_sshstr(raw_public_key)
+
+    def encode_private(
+        self, private_key: ed448.Ed448PrivateKey, f_priv: _FragList
+    ) -> None:
+        """Write Ed448 private key"""
+        raise UnsupportedAlgorithm(
+            "Serializing Ed448 SSH private keys is unsupported"
+        )
+
+
 def load_application(data) -> tuple[memoryview, memoryview]:
     """
     U2F application strings
@@ -636,6 +693,7 @@ _KEY_FORMATS = {
     _SSH_RSA: _SSHFormatRSA(),
     _SSH_DSA: _SSHFormatDSA(),
     _SSH_ED25519: _SSHFormatEd25519(),
+    _SSH_ED448: _SSHFormatEd448(),
     _ECDSA_NISTP256: _SSHFormatECDSA(b"nistp256", ec.SECP256R1()),
     _ECDSA_NISTP384: _SSHFormatECDSA(b"nistp384", ec.SECP384R1()),
     _ECDSA_NISTP521: _SSHFormatECDSA(b"nistp521", ec.SECP521R1()),
