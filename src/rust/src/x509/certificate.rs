@@ -737,14 +737,18 @@ pub fn parse_cert_ext<'p>(
 ) -> CryptographyResult<Option<pyo3::Bound<'p, pyo3::PyAny>>> {
     match ext.extn_id {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {
-            let gn_seq = ext.value::<SubjectAlternativeName<'_>>()?;
+            let gn_seq = ext.value::<SubjectAlternativeName<'_>>().map_err(|e| {
+                e.add_location(asn1::ParseLocation::Field("subject_alternative_name"))
+            })?;
             let sans = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 types::SUBJECT_ALTERNATIVE_NAME.get(py)?.call1((sans,))?,
             ))
         }
         oid::ISSUER_ALTERNATIVE_NAME_OID => {
-            let gn_seq = ext.value::<IssuerAlternativeName<'_>>()?;
+            let gn_seq = ext.value::<IssuerAlternativeName<'_>>().map_err(|e| {
+                e.add_location(asn1::ParseLocation::Field("issuer_alternative_name"))
+            })?;
             let ians = x509::parse_general_names(py, &gn_seq)?;
             Ok(Some(
                 types::ISSUER_ALTERNATIVE_NAME.get(py)?.call1((ians,))?,
