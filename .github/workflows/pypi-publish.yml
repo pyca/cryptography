@@ -37,7 +37,7 @@ jobs:
           EVENT_CONTEXT: ${{ toJson(github.event) }}
 
       - run: |
-          echo "PYPI_URL=https://pypi.org/legacy/" >> $GITHUB_ENV
+          echo "PYPI_URL=https://upload.pypi.org/legacy/" >> $GITHUB_ENV
         if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi')
       - run: |
           echo "PYPI_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
@@ -60,4 +60,4 @@ jobs:
           # because there's nothing that would prevent a malicious PyPI from
           # serving a signed TestPyPI asset in place of a release intended for
           # PyPI.
-          attestations: ${{ env.PYPI_URL == 'https://pypi.org/legacy/' }}
+          attestations: ${{ env.PYPI_URL == 'https://upload.pypi.org/legacy/' }}
