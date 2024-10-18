@@ -24,6 +24,20 @@ Changelog
   during X.509 verification to allow fields permitted by :rfc:`5280` but
   forbidden by the CA/Browser BRs.
 
+.. _v43-0-3:
+
+43.0.3 - 2024-10-18
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed release metadata for ``cryptography-vectors``
+
+.. _v43-0-2:
+
+43.0.2 - 2024-10-18
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 4.0.0.
+
 .. _v43-0-1:
 
 43.0.1 - 2024-09-03
