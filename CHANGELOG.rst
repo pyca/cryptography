@@ -9,6 +9,7 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.9.
 * Deprecated Python 3.7 support. Python 3.7 is no longer supported by the
   Python core team. Support for Python 3.7 will be removed in a future
   ``cryptography`` release.
