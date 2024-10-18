@@ -2324,6 +2324,14 @@ class TestRSAIssuerAlternativeNameExtension:
             x509.UniformResourceIdentifier("http://path.to.root/root.crt"),
         ]
 
+    def test_malformed(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "malformed-ian.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(ValueError, match="issuer_alternative_name"):
+            cert.extensions
+
 
 class TestCRLNumber:
     def test_eq(self):
@@ -2708,6 +2716,14 @@ class TestRSASubjectAlternativeNameExtension:
             ).value
         ]
         assert result == sans
+
+    def test_malformed(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "malformed-san.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(ValueError, match="subject_alternative_name"):
+            cert.extensions
 
 
 class TestExtendedKeyUsageExtension:

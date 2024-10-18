@@ -544,6 +544,8 @@ Custom X.509 Vectors
   This is an invalid certificate per CA/B 7.1.2.7.6.
 * ``empty-eku.pem`` - A leaf certificate containing an empty EKU extension.
   This is an invalid certificate per :rfc:`5280` 4.2.1.12.
+* ``malformed-san.pem`` - A certificate with a malformed SAN.
+* ``malformed-ian.pem`` - A certificate with a malformed IAN.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
