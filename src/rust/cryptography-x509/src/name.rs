@@ -35,7 +35,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedIA5String<'a> {
     }
 }
 
-impl<'a> asn1::SimpleAsn1Writable for UnvalidatedIA5String<'a> {
+impl asn1::SimpleAsn1Writable for UnvalidatedIA5String<'_> {
     const TAG: asn1::Tag = asn1::IA5String::TAG;
     fn write_data(&self, dest: &mut asn1::WriteBuf) -> asn1::WriteResult {
         dest.push_slice(self.0.as_bytes())
