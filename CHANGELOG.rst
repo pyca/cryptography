@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v43-0-3:
+
+43.0.3 - 2024-10-18
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed release metadata for ``cryptography-vectors``
+
 .. _v43-0-2:
 
 43.0.2 - 2024-10-18
