@@ -4,7 +4,7 @@
 
 mod extension;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -19,8 +19,10 @@ use cryptography_x509::common::{
 use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
-    BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
-    EKU_SERVER_AUTH_OID,
+    AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
+    EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID, EKU_SERVER_AUTH_OID,
+    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
+    SUBJECT_KEY_IDENTIFIER_OID,
 };
 use once_cell::sync::Lazy;
 
@@ -251,92 +253,122 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
             permitted_public_key_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SPKI_ALGORITHMS),
             permitted_signature_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS),
-            ca_extension_policy: ExtensionPolicy {
-                // 5280 4.2.2.1: Authority Information Access
-                authority_information_access: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    Some(common::authority_information_access),
+            ca_extension_policy: ExtensionPolicy::new(HashMap::from([
+                (
+                    // 5280 4.2.2.1: Authority Information Access
+                    AUTHORITY_INFORMATION_ACCESS_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::NonCritical,
+                        Some(common::authority_information_access),
+                    ),
                 ),
-                // 5280 4.2.1.1: Authority Key Identifier
-                authority_key_identifier: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    Some(ca::authority_key_identifier),
+                (
+                    // 5280 4.2.1.1: Authority Key Identifier
+                    AUTHORITY_KEY_IDENTIFIER_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::NonCritical,
+                        Some(ca::authority_key_identifier),
+                    ),
                 ),
-                // 5280 4.2.1.2: Subject Key Identifier
-                // NOTE: CABF requires SKI in CA certificates, but many older CAs lack it.
-                // We choose to be permissive here.
-                subject_key_identifier: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    None,
+                (
+                    // 5280 4.2.1.2: Subject Key Identifier
+                    // NOTE: CABF requires SKI in CA certificates, but many older CAs lack it.
+                    // We choose to be permissive here.
+                    SUBJECT_KEY_IDENTIFIER_OID,
+                    ExtensionValidator::maybe_present(Criticality::NonCritical, None),
                 ),
-                // 5280 4.2.1.3: Key Usage
-                key_usage: ExtensionValidator::present(Criticality::Agnostic, Some(ca::key_usage)),
-                subject_alternative_name: ExtensionValidator::maybe_present(
-                    Criticality::Agnostic,
-                    None,
+                (
+                    // 5280 4.2.1.3: Key Usage
+                    KEY_USAGE_OID,
+                    ExtensionValidator::present(Criticality::Agnostic, Some(ca::key_usage)),
                 ),
-                // 5280 4.2.1.9: Basic Constraints
-                basic_constraints: ExtensionValidator::present(
-                    Criticality::Critical,
-                    Some(ca::basic_constraints),
+                (
+                    SUBJECT_ALTERNATIVE_NAME_OID,
+                    ExtensionValidator::maybe_present(Criticality::Agnostic, None),
                 ),
-                // 5280 4.2.1.10: Name Constraints
-                // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
-                name_constraints: ExtensionValidator::maybe_present(
-                    Criticality::Agnostic,
-                    Some(ca::name_constraints),
+                (
+                    // 5280 4.2.1.9: Basic Constraints
+                    BASIC_CONSTRAINTS_OID,
+                    ExtensionValidator::present(Criticality::Critical, Some(ca::basic_constraints)),
                 ),
-                // 5280: 4.2.1.12: Extended Key Usage
-                // NOTE: CABF requires EKUs in many non-root CA certs, but validators widely
-                // ignore this requirement and treat a missing EKU as "any EKU".
-                // We choose to be permissive here.
-                extended_key_usage: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    Some(ca::extended_key_usage),
+                (
+                    // 5280 4.2.1.10: Name Constraints
+                    // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
+                    NAME_CONSTRAINTS_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::Agnostic,
+                        Some(ca::name_constraints),
+                    ),
                 ),
-            },
-            ee_extension_policy: ExtensionPolicy {
-                // 5280 4.2.2.1: Authority Information Access
-                authority_information_access: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    Some(common::authority_information_access),
+                (
+                    // 5280: 4.2.1.12: Extended Key Usage
+                    // NOTE: CABF requires EKUs in many non-root CA certs, but validators widely
+                    // ignore this requirement and treat a missing EKU as "any EKU".
+                    // We choose to be permissive here.
+                    EXTENDED_KEY_USAGE_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::NonCritical,
+                        Some(ca::extended_key_usage),
+                    ),
                 ),
-                // 5280 4.2.1.1.: Authority Key Identifier
-                authority_key_identifier: ExtensionValidator::present(
-                    Criticality::NonCritical,
-                    None,
+            ])),
+            ee_extension_policy: ExtensionPolicy::new(HashMap::from([
+                (
+                    // 5280 4.2.2.1: Authority Information Access
+                    AUTHORITY_INFORMATION_ACCESS_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::NonCritical,
+                        Some(common::authority_information_access),
+                    ),
                 ),
-                subject_key_identifier: ExtensionValidator::maybe_present(
-                    Criticality::Agnostic,
-                    None,
+                (
+                    // 5280 4.2.1.1.: Authority Key Identifier
+                    AUTHORITY_KEY_IDENTIFIER_OID,
+                    ExtensionValidator::present(Criticality::NonCritical, None),
                 ),
-                // 5280 4.2.1.3: Key Usage
-                key_usage: ExtensionValidator::maybe_present(
-                    Criticality::Agnostic,
-                    Some(ee::key_usage),
+                (
+                    SUBJECT_KEY_IDENTIFIER_OID,
+                    ExtensionValidator::maybe_present(Criticality::Agnostic, None),
                 ),
-                // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-                // This validator handles both client and server cases by only matching against
-                // the SAN if the profile contains a subject, which it won't in the client
-                // validation case.
-                subject_alternative_name: ExtensionValidator::present(
-                    Criticality::Agnostic,
-                    Some(ee::subject_alternative_name),
+                (
+                    // 5280 4.2.1.3: Key Usage
+                    KEY_USAGE_OID,
+                    ExtensionValidator::maybe_present(Criticality::Agnostic, Some(ee::key_usage)),
                 ),
-                // 5280 4.2.1.9: Basic Constraints
-                basic_constraints: ExtensionValidator::maybe_present(
-                    Criticality::Agnostic,
-                    Some(ee::basic_constraints),
+                (
+                    // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+                    // This validator handles both client and server cases by only matching against
+                    // the SAN if the profile contains a subject, which it won't in the client
+                    // validation case.
+                    SUBJECT_ALTERNATIVE_NAME_OID,
+                    ExtensionValidator::present(
+                        Criticality::Agnostic,
+                        Some(ee::subject_alternative_name),
+                    ),
                 ),
-                // 5280 4.2.1.10: Name Constraints
-                name_constraints: ExtensionValidator::not_present(),
-                // CA/B: 7.1.2.7.10: Subscriber Certificate Extended Key Usage
-                // NOTE: CABF requires EKUs in EE certs, while RFC 5280 does not.
-                extended_key_usage: ExtensionValidator::maybe_present(
-                    Criticality::NonCritical,
-                    Some(ee::extended_key_usage),
+                (
+                    // 5280 4.2.1.9: Basic Constraints
+                    BASIC_CONSTRAINTS_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::Agnostic,
+                        Some(ee::basic_constraints),
+                    ),
                 ),
-            },
+                (
+                    // 5280 4.2.1.10: Name Constraints
+                    NAME_CONSTRAINTS_OID,
+                    ExtensionValidator::not_present(),
+                ),
+                (
+                    // CA/B: 7.1.2.7.10: Subscriber Certificate Extended Key Usage
+                    // NOTE: CABF requires EKUs in EE certs, while RFC 5280 does not.
+                    EXTENDED_KEY_USAGE_OID,
+                    ExtensionValidator::maybe_present(
+                        Criticality::NonCritical,
+                        Some(ee::extended_key_usage),
+                    ),
+                ),
+            ])),
         }
     }
 

@@ -2,120 +2,61 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::oid::{
-    AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_KEY_IDENTIFIER_OID,
-};
 use cryptography_x509::{
     certificate::Certificate,
     extensions::{Extension, Extensions},
 };
+use std::collections::{HashMap, HashSet};
 
 use crate::{ops::CryptoOps, policy::Policy, ValidationError};
 
 pub(crate) struct ExtensionPolicy<B: CryptoOps> {
-    pub(crate) authority_information_access: ExtensionValidator<B>,
-    pub(crate) authority_key_identifier: ExtensionValidator<B>,
-    pub(crate) subject_key_identifier: ExtensionValidator<B>,
-    pub(crate) key_usage: ExtensionValidator<B>,
-    pub(crate) subject_alternative_name: ExtensionValidator<B>,
-    pub(crate) basic_constraints: ExtensionValidator<B>,
-    pub(crate) name_constraints: ExtensionValidator<B>,
-    pub(crate) extended_key_usage: ExtensionValidator<B>,
+    pub(crate) validator_by_oid: HashMap<asn1::ObjectIdentifier, ExtensionValidator<B>>,
 }
 
 impl<B: CryptoOps> ExtensionPolicy<B> {
+    pub(crate) fn new(
+        validator_by_oid: HashMap<asn1::ObjectIdentifier, ExtensionValidator<B>>,
+    ) -> Self {
+        Self { validator_by_oid }
+    }
+
     pub(crate) fn permits(
         &self,
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
-        let mut authority_information_access_seen = false;
-        let mut authority_key_identifier_seen = false;
-        let mut subject_key_identifier_seen = false;
-        let mut key_usage_seen = false;
-        let mut subject_alternative_name_seen = false;
-        let mut basic_constraints_seen = false;
-        let mut name_constraints_seen = false;
-        let mut extended_key_usage_seen = false;
+        let mut unseen_oids: HashSet<asn1::ObjectIdentifier> =
+            self.validator_by_oid.keys().cloned().collect();
 
         // Iterate over each extension and run its policy.
         for ext in extensions.iter() {
-            match ext.extn_id {
-                AUTHORITY_INFORMATION_ACCESS_OID => {
-                    authority_information_access_seen = true;
-                    self.authority_information_access
-                        .permits(policy, cert, Some(&ext))?;
-                }
-                AUTHORITY_KEY_IDENTIFIER_OID => {
-                    authority_key_identifier_seen = true;
-                    self.authority_key_identifier
-                        .permits(policy, cert, Some(&ext))?;
-                }
-                SUBJECT_KEY_IDENTIFIER_OID => {
-                    subject_key_identifier_seen = true;
-                    self.subject_key_identifier
-                        .permits(policy, cert, Some(&ext))?;
-                }
-                KEY_USAGE_OID => {
-                    key_usage_seen = true;
-                    self.key_usage.permits(policy, cert, Some(&ext))?;
-                }
-                SUBJECT_ALTERNATIVE_NAME_OID => {
-                    subject_alternative_name_seen = true;
-                    self.subject_alternative_name
-                        .permits(policy, cert, Some(&ext))?;
-                }
-                BASIC_CONSTRAINTS_OID => {
-                    basic_constraints_seen = true;
-                    self.basic_constraints.permits(policy, cert, Some(&ext))?;
-                }
-                NAME_CONSTRAINTS_OID => {
-                    name_constraints_seen = true;
-                    self.name_constraints.permits(policy, cert, Some(&ext))?;
-                }
-                EXTENDED_KEY_USAGE_OID => {
-                    extended_key_usage_seen = true;
-                    self.extended_key_usage.permits(policy, cert, Some(&ext))?;
-                }
-                _ if ext.critical => {
-                    return Err(ValidationError::ExtensionError {
-                        oid: ext.extn_id,
-                        reason: "certificate contains unaccounted-for critical extensions",
-                    });
-                }
-                _ => {}
+            if self.validator_by_oid.contains_key(&ext.extn_id) {
+                unseen_oids.remove(&ext.extn_id);
+
+                self.validator_by_oid.get(&ext.extn_id).unwrap().permits(
+                    policy,
+                    cert,
+                    Some(&ext),
+                )?;
+            } else if ext.critical {
+                return Err(ValidationError::ExtensionError {
+                    oid: ext.extn_id,
+                    reason: "certificate contains unaccounted-for critical extensions",
+                });
             }
         }
 
         // Now we check if there were any required extensions that aren't
         // present
-        if !authority_information_access_seen {
-            self.authority_information_access
+        for oid in unseen_oids {
+            // This unwrap can't fail since unseen_oids is constructed
+            // from `validator_per_oid` keys.
+            self.validator_by_oid
+                .get(&oid)
+                .unwrap()
                 .permits(policy, cert, None)?;
-        }
-        if !authority_key_identifier_seen {
-            self.authority_key_identifier.permits(policy, cert, None)?;
-        }
-        if !subject_key_identifier_seen {
-            self.subject_key_identifier.permits(policy, cert, None)?;
-        }
-        if !key_usage_seen {
-            self.key_usage.permits(policy, cert, None)?;
-        }
-        if !subject_alternative_name_seen {
-            self.subject_alternative_name.permits(policy, cert, None)?;
-        }
-        if !basic_constraints_seen {
-            self.basic_constraints.permits(policy, cert, None)?;
-        }
-        if !name_constraints_seen {
-            self.name_constraints.permits(policy, cert, None)?;
-        }
-        if !extended_key_usage_seen {
-            self.extended_key_usage.permits(policy, cert, None)?;
         }
 
         Ok(())
