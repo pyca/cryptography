@@ -20,6 +20,7 @@ except ImportError:
     import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 nox.options.reuse_existing_virtualenvs = True
+nox.options.default_venv_backend = "uv|virtualenv"
 
 
 def install(
@@ -76,7 +77,10 @@ def tests(session: nox.Session) -> None:
     else:
         install(session, f".[{extras}]")
 
-    session.run("pip", "list")
+    if session.venv_backend == "uv":
+        session.run("uv", "pip", "list")
+    else:
+        session.run("pip", "list")
 
     if session.name != "tests-nocoverage":
         cov_args = [
@@ -267,7 +271,7 @@ def rust(session: nox.Session) -> None:
         process_rust_coverage(session, rust_tests, prof_location)
 
 
-@nox.session(venv_backend="uv|venv")
+@nox.session
 def local(session):
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "./vectors", verbose=False)
