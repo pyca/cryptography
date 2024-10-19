@@ -201,10 +201,72 @@ class PolicyBuilder:
     def time(self, new_time: datetime.datetime) -> PolicyBuilder: ...
     def store(self, new_store: Store) -> PolicyBuilder: ...
     def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder: ...
+    def ca_extension_policy(
+        self, new_ca_extension_policy: ExtensionPolicy
+    ) -> PolicyBuilder: ...
+    def ee_extension_policy(
+        self, new_ee_extension_policy: ExtensionPolicy
+    ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(
         self, subject: x509.verification.Subject
     ) -> ServerVerifier: ...
+
+class Criticality:
+    CRITICAL: Criticality
+    AGNOSTIC: Criticality
+    NON_CRITICAL: Criticality
+
+class Policy:
+    @property
+    def max_chain_depth(self) -> int: ...
+    @property
+    def subject(self) -> x509.verification.Subject: ...
+    @property
+    def validation_time(self) -> datetime.datetime: ...
+    @property
+    def extended_key_usage(self) -> x509.ObjectIdentifier: ...
+    @property
+    def minimum_rsa_modulus(self) -> int: ...
+
+class ExtensionPolicy: ...
+
+MaybeExtensionValidatorCallback = typing.Callable[
+    [
+        Policy,
+        x509.Certificate,
+        x509.ExtensionType | None,
+    ],
+    None,
+]
+PresentExtensionValidatorCallback = typing.Callable[
+    [Policy, x509.Certificate, x509.ExtensionType],
+    None,
+]
+
+class ExtensionPolicyBuilder:
+    @staticmethod
+    def permit_all() -> ExtensionPolicyBuilder: ...
+    @staticmethod
+    def webpki_defaults_ca() -> ExtensionPolicyBuilder: ...
+    @staticmethod
+    def webpki_defaults_ee() -> ExtensionPolicyBuilder: ...
+    def not_present(
+        self, oid: x509.ObjectIdentifier
+    ) -> ExtensionPolicyBuilder: ...
+    def maybe_present(
+        self,
+        oid: x509.ObjectIdentifier,
+        criticality: Criticality,
+        validator: MaybeExtensionValidatorCallback | None,
+    ) -> ExtensionPolicyBuilder: ...
+    def must_be_present(
+        self,
+        oid: x509.ObjectIdentifier,
+        criticality: Criticality,
+        validator: PresentExtensionValidatorCallback | None,
+    ) -> ExtensionPolicyBuilder: ...
+    def build(self) -> ExtensionPolicy: ...
 
 class VerifiedClient:
     @property

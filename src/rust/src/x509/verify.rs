@@ -2,26 +2,30 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+mod extension_policy_builder;
+pub(crate) use extension_policy_builder::{
+    ExtensionPolicyBuilder, PyCriticality, PyExtensionPolicy, PyPolicy,
+};
+
 use cryptography_x509::{
     certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
 };
 use cryptography_x509_verification::{
     ops::{CryptoOps, VerificationCertificate},
-    policy::{Policy, Subject},
+    policy::{ExtensionPolicy, Policy, Subject},
     trust_store::Store,
     types::{DNSName, IPAddress},
 };
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
-use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
-use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
+use crate::x509::common::{datetime_now, datetime_to_py};
 use crate::x509::sign;
+use crate::{backend::keys, x509::parse_general_names};
+use crate::{types, x509::py_to_datetime};
 
-use super::parse_general_names;
-
+#[derive(Clone)]
 pub(crate) struct PyCryptoOps {}
 
 impl CryptoOps for PyCryptoOps {
@@ -81,6 +85,8 @@ pub(crate) struct PolicyBuilder {
     time: Option<asn1::DateTime>,
     store: Option<pyo3::Py<PyStore>>,
     max_chain_depth: Option<u8>,
+    ca_ext_policy: Option<ExtensionPolicy<'static, PyCryptoOps>>,
+    ee_ext_policy: Option<ExtensionPolicy<'static, PyCryptoOps>>,
 }
 
 impl PolicyBuilder {
@@ -89,6 +95,8 @@ impl PolicyBuilder {
             time: self.time.clone(),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: self.max_chain_depth,
+            ca_ext_policy: self.ca_ext_policy.clone(),
+            ee_ext_policy: self.ee_ext_policy.clone(),
         }
     }
 }
@@ -101,6 +109,8 @@ impl PolicyBuilder {
             time: None,
             store: None,
             max_chain_depth: None,
+            ca_ext_policy: None,
+            ee_ext_policy: None,
         }
     }
 
@@ -143,6 +153,32 @@ impl PolicyBuilder {
         })
     }
 
+    fn ca_extension_policy(
+        &self,
+        py: pyo3::Python<'_>,
+        new_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(self, ca_ext_policy, "CA extension policy");
+
+        Ok(PolicyBuilder {
+            ca_ext_policy: Some(new_policy.borrow().0.clone()),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn ee_extension_policy(
+        &self,
+        py: pyo3::Python<'_>,
+        new_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(self, ee_ext_policy, "EE extension policy");
+
+        Ok(PolicyBuilder {
+            ee_ext_policy: Some(new_policy.borrow().0.clone()),
+            ..self.py_clone(py)
+        })
+    }
+
     fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
         let store = match self.store.as_ref() {
             Some(s) => s.clone_ref(py),
@@ -160,8 +196,13 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
-        let policy = Policy::client(PyCryptoOps {}, time, self.max_chain_depth);
+        let policy = Policy::client(
+            PyCryptoOps {},
+            time,
+            self.max_chain_depth,
+            self.ca_ext_policy.clone(),
+            self.ee_ext_policy.clone(),
+        );
 
         Ok(PyClientVerifier { policy, store })
     }
@@ -191,12 +232,13 @@ impl PolicyBuilder {
         let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
             let subject = build_subject(py, subject_owner)?;
 
-            // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
             Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(Policy::server(
                 PyCryptoOps {},
                 subject,
                 time,
                 self.max_chain_depth,
+                self.ca_ext_policy.clone(),
+                self.ee_ext_policy.clone(),
             ))
         })?;
 
@@ -303,22 +345,24 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
-        // enforces the presence of a SAN and the well-formedness of the
-        // extension set.
-        let leaf_san = &chain[0]
+        // NOTE: The `unwrap()` cannot fail, since the underlying policy
+        // enforces the well-formedness of the extension set.
+        let subjects = match &chain[0]
             .certificate()
             .extensions()
             .ok()
             .unwrap()
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
-            .unwrap();
-
-        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
-        let py_gns = parse_general_names(py, &leaf_gns)?;
+        {
+            Some(leaf_san) => {
+                let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+                Some(parse_general_names(py, &leaf_gns)?)
+            }
+            None => None,
+        };
 
         Ok(PyVerifiedClient {
-            subjects: Some(py_gns.into()),
+            subjects,
             chain: py_chain.unbind(),
         })
     }

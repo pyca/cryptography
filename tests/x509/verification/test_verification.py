@@ -10,8 +10,12 @@ from ipaddress import IPv4Address
 import pytest
 
 from cryptography import x509
+from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
+    Criticality,
+    ExtensionPolicyBuilder,
+    Policy,
     PolicyBuilder,
     Store,
     VerificationError,
@@ -222,3 +226,137 @@ class TestServerVerifier:
             match=r"<Certificate\(subject=.*?CN=www.cryptography.io.*?\)>",
         ):
             verifier.verify(leaf, [])
+
+
+# TODO: revisit tests
+
+
+class TestCustomExtensionPolicy:
+    leaf = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+    )
+    ca = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+    )
+    store = Store([ca])
+    validation_time = datetime.datetime.fromisoformat(
+        "2018-11-16T00:00:00+00:00"
+    )
+
+    @staticmethod
+    def _eku_validator_cb(policy, cert, ext):
+        assert isinstance(policy, Policy)
+        assert (
+            policy.validation_time
+            == TestCustomExtensionPolicy.validation_time.replace(tzinfo=None)
+        )
+        assert isinstance(cert, x509.Certificate)
+        assert ext is None or isinstance(ext, x509.ExtendedKeyUsage)
+
+    def test_custom_cb_pass(self):
+        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
+        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+
+        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+            ExtendedKeyUsage.oid, Criticality.AGNOSTIC, self._eku_validator_cb
+        )
+        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+            ExtendedKeyUsage.oid, Criticality.AGNOSTIC, self._eku_validator_cb
+        )
+
+        ca_validator_called = False
+
+        def ca_basic_constraints_validator(policy, cert, ext):
+            assert cert == self.ca
+            assert isinstance(policy, Policy)
+            assert isinstance(cert, x509.Certificate)
+            assert isinstance(ext, x509.BasicConstraints)
+            nonlocal ca_validator_called
+            ca_validator_called = True
+
+        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+            x509.BasicConstraints.oid,
+            Criticality.AGNOSTIC,
+            ca_basic_constraints_validator,
+        )
+
+        builder = PolicyBuilder().store(self.store)
+        builder = builder.time(self.validation_time).max_chain_depth(16)
+        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
+        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+
+        builder.build_client_verifier().verify(self.leaf, [])
+        assert ca_validator_called
+        ca_validator_called = False
+
+        path = builder.build_server_verifier(
+            DNSName("cryptography.io")
+        ).verify(self.leaf, [])
+        assert ca_validator_called
+        assert path == [self.leaf, self.ca]
+
+    def test_custom_cb_no_retval_enforced(self):
+        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
+        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+
+        def validator(*_):
+            return False
+
+        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+            x509.BasicConstraints.oid,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+            ExtendedKeyUsage.oid,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+
+        builder = PolicyBuilder().store(self.store).time(self.validation_time)
+        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
+        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+
+        for verifier in (
+            builder.build_client_verifier(),
+            builder.build_server_verifier(DNSName("cryptography.io")),
+        ):
+            with pytest.raises(
+                VerificationError,
+                match="Python validator must return None.",
+            ):
+                verifier.verify(self.leaf, [])
+
+    def test_custom_cb_exception_fails_verification(self):
+        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
+        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+
+        def validator(*_):
+            raise ValueError("test")
+
+        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+            x509.BasicConstraints.oid,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+            ExtendedKeyUsage.oid,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+
+        builder = PolicyBuilder().store(self.store).time(self.validation_time)
+        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
+        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+
+        for verifier in (
+            builder.build_client_verifier(),
+            builder.build_server_verifier(DNSName("cryptography.io")),
+        ):
+            with pytest.raises(
+                VerificationError,
+                match="Python extension validator failed: ValueError: test",
+            ):
+                verifier.verify(self.leaf, [])
