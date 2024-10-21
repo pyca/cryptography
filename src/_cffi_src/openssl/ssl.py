@@ -297,6 +297,9 @@ const char *SSL_CIPHER_get_version(const SSL_CIPHER *);
 
 SSL_SESSION *SSL_get_session(const SSL *);
 
+SSL_SESSION *d2i_SSL_SESSION(SSL_SESSION **, const unsigned char **, long);
+int i2d_SSL_SESSION(SSL_SESSION *, unsigned char **);
+
 uint64_t SSL_set_options(SSL *, uint64_t);
 uint64_t SSL_get_options(SSL *);
 
