@@ -107,7 +107,7 @@ def tests(session: nox.Session) -> None:
 
     if session.name != "tests-nocoverage":
         [rust_so] = glob.glob(
-            f"{session.virtualenv.location}/**/cryptography/hazmat/bindings/_rust.*",
+            f"{session.virtualenv.location}/lib/**/cryptography/hazmat/bindings/_rust.*",
             recursive=True,
         )
         process_rust_coverage(session, [rust_so], prof_location)
