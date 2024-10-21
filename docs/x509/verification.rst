@@ -276,6 +276,32 @@ the root of trust:
 
         :returns: A new instance of :class:`PolicyBuilder`
 
+    .. method:: ca_extension_policy(new_policy)
+
+        .. versionadded:: 44.0.0
+
+        Sets the CA extension policy for the verifier.
+        If this method is not called, the default CA extension policy that 
+        follows the CA/B Forum guidelines is used.
+
+        :param ExtensionPolicy new_policy: The CA extension policy to use. 
+            Use :class:`ExtensionPolicyBuilder` to create the policy.
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: ee_extension_policy(new_policy)
+
+        .. versionadded:: 44.0.0
+
+        Sets the End Entity (EE) extension policy for the verifier.
+        If this method is not called, the default EE extension policy that 
+        follows the CA/B Forum guidelines is used.
+
+        :param ExtensionPolicy new_policy: The EE extension policy to use.
+            Use :class:`ExtensionPolicyBuilder` to create the policy.
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
     .. method:: build_server_verifier(subject)
 
         Builds a verifier for verifying server certificates.
@@ -297,3 +323,182 @@ the root of trust:
             for server verification.
 
         :returns: An instance of :class:`ClientVerifier`
+
+.. class:: ExtensionPolicyBuilder
+
+    .. versionadded:: 44.0.0
+
+    An ExtensionPolicyBuilder provides a builder-style interface for constructing an 
+    :class:`ExtensionPolicy`.
+
+    .. staticmethod:: permit_all()
+
+        Creates an ExtensionPolicyBuilder initialized with a policy that does 
+        not put any constraints on a certificate's extensions. 
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. staticmethod:: webpki_defaults_ca()
+
+        Creates an ExtensionPolicyBuilder initialized with a 
+        CA extension policy based on CA/B Forum guidelines.
+
+        This is the CA extension policy used by :class:`PolicyBuilder`.
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. staticmethod:: webpki_defaults_ee()
+
+        Creates an ExtensionPolicyBuilder initialized with an
+        EE extension policy based on CA/B Forum guidelines.
+
+        This is the EE extension policy used by :class:`PolicyBuilder`.
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. method:: not_present(oid)
+
+        Specifies that the extension identified by the given OID must not be present.
+
+        :param oid: The OID of the extension that must not be present.
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. method:: maybe_present(oid, criticality, validator_cb)
+
+        Specifies that the extension identified by the given OID may or may not be present.
+        If it is present, it must conform to the given criticality constraint. 
+        An optional validator callback may be provided.
+
+        If a validator callback is provided, the callback will be invoked 
+        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
+        that uses the extension policy. For details on the callback signature, see :type:`MaybeExtensionValidatorCallback`.
+
+        :param ObjectIdentifier oid: The OID of the extension that may be present
+        :param Criticality criticality: The criticality of the extension
+        :param validator_cb: An optional Python callback to validate the extension value. 
+        :type validator_cb: :type:`MaybeExtensionValidatorCallback` or None
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. method:: must_be_present(oid, criticality, validator_cb)
+
+        Specifies that the extension identified by the given OID must be present and conform to the given criticality constraint.
+        An optional validator callback may be provided.
+
+        If a validator callback is provided, the callback will be invoked 
+        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
+        that uses the extension policy. For details on the callback signature, see :type:`PresentExtensionValidatorCallback`.
+
+        :param ObjectIdentifier oid: The OID of the extension that must be present
+        :param Criticality criticality: The criticality of the extension
+        :param validator_cb: An optional Python callback to validate the extension
+        :type validator_cb: :type:`PresentExtensionValidatorCallback` or None
+
+        :returns: An instance of :class:`ExtensionPolicyBuilder`
+
+    .. method:: build()
+
+        Builds the extension policy.
+
+        :returns: An :class:`ExtensionPolicy`
+
+.. class:: Criticality
+
+    .. versionadded:: 44.0.0
+
+    An enumeration of criticality constraints for certificate extensions.
+
+    .. attribute:: CRITICAL
+
+        The extension must be marked as critical.
+
+    .. attribute:: AGNOSTIC
+            
+        The extension may be marked either as critical or non-critical.
+
+    .. attribute:: NON_CRITICAL
+
+        The extension must not be marked as critical.
+
+.. class:: ExtensionPolicy
+
+    .. versionadded:: 44.0.0
+
+    An ExtensionPolicy constrains the presence, contents and criticalities of certificate extensions.
+
+    This type is opaque to the user and should be created using :class:`ExtensionPolicyBuilder`.
+    Pass the created policy to :meth:`PolicyBuilder.ca_extension_policy` or :meth:`PolicyBuilder.ee_extension_policy`
+    to set the policies used during verification.
+
+.. class:: Policy
+
+    .. versionadded:: 44.0.0
+
+    Represents a policy for certificate verification. Passed to extension validator callbacks.
+
+    .. attribute:: max_chain_depth
+
+        The maximum chain depth (as described in :meth:`PolicyBuilder.max_chain_depth`).
+
+        :type: int
+
+    .. attribute:: subject
+
+        The subject used during verification. 
+        Will be None if the verifier is a :class:`ClientVerifier`.
+
+        :type: x509.verification.Subject or None
+
+    .. attribute:: validation_time
+
+        The validation time.
+
+        :type: datetime.datetime
+
+    .. attribute:: extended_key_usage
+
+        The Extended Key Usage required by the policy.
+
+        :type: x509.ObjectIdentifier
+
+    .. attribute:: minimum_rsa_modulus
+
+        The minimum RSA modulus size required by the policy.
+
+        :type: int
+
+.. type:: MaybeExtensionValidatorCallback
+    :canonical: Callable[[Policy, Certificate, Optional[ExtensionType]], None]
+    
+    .. versionadded:: 44.0.0
+
+
+    A Python callback that validates an extension that may or may not be present.
+    If the extension is not present, the callback will be invoked with `ext` set to `None`.
+
+    To fail the validation, the callback must raise an exception.
+
+    :param Policy policy: The verification policy.
+    :param Certificate certificate: The certificate being verified.
+    :param ExtensionType or None extension: The extension value or `None` if the extension is not present.
+    
+    :returns: An extension validator callback must return `None`.
+              If the validation fails, the validator must raise an exception.
+
+.. type:: PresentExtensionValidatorCallback
+    :canonical: Callable[[Policy, Certificate, ExtensionType], None]
+
+    .. versionadded:: 44.0.0
+
+
+    A Python callback that validates an extension that must be present.
+
+    To fail the validation, the callback must raise an exception.
+
+    :param Policy policy: The verification policy.
+    :param Certificate certificate: The certificate being verified.
+    :param ExtensionType extension: The extension value.
+
+    :returns: An extension validator callback must return `None`.
+              If the validation fails, the validator must raise an exception.
