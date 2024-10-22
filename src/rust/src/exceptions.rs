@@ -30,6 +30,7 @@ pub(crate) enum Reasons {
 pyo3::import_exception_bound!(cryptography.exceptions, AlreadyUpdated);
 pyo3::import_exception_bound!(cryptography.exceptions, AlreadyFinalized);
 pyo3::import_exception_bound!(cryptography.exceptions, InternalError);
+pyo3::import_exception_bound!(cryptography.exceptions, InvalidKey);
 pyo3::import_exception_bound!(cryptography.exceptions, InvalidSignature);
 pyo3::import_exception_bound!(cryptography.exceptions, InvalidTag);
 pyo3::import_exception_bound!(cryptography.exceptions, NotYetFinalized);
