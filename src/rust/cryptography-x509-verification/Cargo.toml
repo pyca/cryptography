@@ -7,7 +7,7 @@ publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-asn1 = { version = "0.17.0", default-features = false }
+asn1 = { version = "0.18.0", default-features = false }
 cryptography-x509 = { path = "../cryptography-x509" }
 cryptography-key-parsing = { path = "../cryptography-key-parsing" }
 once_cell = "1"
