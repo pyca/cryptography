@@ -63,6 +63,7 @@ from cryptography.x509.extensions import (
     PolicyInformation,
     PrecertificateSignedCertificateTimestamps,
     PrecertPoison,
+    PrivateKeyUsagePeriod,
     ReasonFlags,
     SignedCertificateTimestamps,
     SubjectAlternativeName,
@@ -111,6 +112,7 @@ OID_FRESHEST_CRL = ExtensionOID.FRESHEST_CRL
 OID_INHIBIT_ANY_POLICY = ExtensionOID.INHIBIT_ANY_POLICY
 OID_ISSUER_ALTERNATIVE_NAME = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 OID_KEY_USAGE = ExtensionOID.KEY_USAGE
+OID_PRIVATE_KEY_USAGE_PERIOD = ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
 OID_NAME_CONSTRAINTS = ExtensionOID.NAME_CONSTRAINTS
 OID_OCSP_NO_CHECK = ExtensionOID.OCSP_NO_CHECK
 OID_POLICY_CONSTRAINTS = ExtensionOID.POLICY_CONSTRAINTS
@@ -226,6 +228,7 @@ __all__ = [
     "PolicyInformation",
     "PrecertPoison",
     "PrecertificateSignedCertificateTimestamps",
+    "PrivateKeyUsagePeriod",
     "PublicKeyAlgorithmOID",
     "RFC822Name",
     "ReasonFlags",
