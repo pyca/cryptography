@@ -28,6 +28,7 @@ committers
 conda
 CPython
 Cryptanalysis
+criticalities
 crypto
 cryptographic
 cryptographically
