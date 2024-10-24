@@ -233,7 +233,7 @@ class Backend:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
-        return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
+        return True
 
     def x25519_supported(self) -> bool:
         if self._fips_enabled:
