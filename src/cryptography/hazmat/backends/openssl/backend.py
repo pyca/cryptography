@@ -122,6 +122,12 @@ class Backend:
         else:
             return hasattr(rust_openssl.kdf, "derive_scrypt")
 
+    def argon2_supported(self) -> bool:
+        if self._fips_enabled:
+            return False
+        else:
+            return hasattr(rust_openssl.kdf, "derive_argon2id")
+
     def hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         # FIPS mode still allows SHA1 for HMAC
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):

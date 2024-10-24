@@ -20,3 +20,13 @@ def derive_scrypt(
     max_mem: int,
     length: int,
 ) -> bytes: ...
+def derive_argon2id(
+    key_material: bytes,
+    salt: bytes,
+    length: int,
+    iterations: int,
+    lanes: int,
+    memory_cost: int,
+    ad: bytes | None,
+    secret: bytes | None,
+) -> bytes: ...

@@ -30,6 +30,105 @@ Different KDFs are suitable for different tasks such as:
 Variable cost algorithms
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Argon2id
+--------
+
+.. currentmodule:: cryptography.hazmat.primitives.kdf.argon2
+
+.. class:: Argon2id(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
+
+    .. versionadded:: 44.0.0
+
+    Argon2id is a KDF designed for password storage. It is designed to be
+    resistant to hardware attacks and is described in :rfc:`9106`.
+
+    This class conforms to the
+    :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
+    interface.
+
+    .. doctest::
+
+        >>> import os
+        >>> from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
+        >>> salt = os.urandom(16)
+        >>> # derive
+        >>> kdf = Argon2id(
+        ...     salt=salt,
+        ...     length=32,
+        ...     iterations=1,
+        ...     lanes=4,
+        ...     memory_cost=64 * 1024,
+        ...     ad=None,
+        ...     secret=None,
+        ... )
+        >>> key = kdf.derive(b"my great password")
+        >>> # verify
+        >>> kdf = Argon2id(
+        ...     salt=salt,
+        ...     length=32,
+        ...     iterations=1,
+        ...     lanes=4,
+        ...     memory_cost=64 * 1024,
+        ...     ad=None,
+        ...     secret=None,
+        ... )
+        >>> kdf.verify(b"my great password", key)
+
+    **All arguments to the constructor are keyword-only.**
+
+    :param bytes salt: A salt.
+    :param int length: The desired length of the derived key in bytes.
+    :param int iterations: Also known as passes, this is used to tune
+        the running time independently of the memory size.
+    :param int lanes: The number of lanes (parallel threads) to use. Also
+        known as parallelism.
+    :param int memory_cost: The amount of memory to use in kibibytes.
+        1 kibibyte (KiB) is 1024 bytes.
+    :param bytes ad: Optional associated data.
+    :param bytes secret: Optional secret data.
+
+    :rfc:`9106` has recommendations for `parameter choice`_.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If Argon2id is not
+        supported by the OpenSSL version ``cryptography`` is using.
+
+    .. method:: derive(key_material)
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :return bytes: the derived key.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This generates and returns a new key from the supplied password.
+
+    .. method:: verify(key_material, expected_key)
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive`.
+        :param bytes expected_key: The expected result of deriving a new key,
+                                   this is the same as the return value of
+                                   :meth:`derive`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the expected key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive` or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This checks whether deriving a new key from the supplied
+        ``key_material`` generates the same key as the ``expected_key``, and
+        raises an exception if they do not match. This can be used for
+        checking whether the password a user provides matches the stored derived
+        key.
+
 
 PBKDF2
 ------
@@ -1039,3 +1138,4 @@ Interface
 .. _`recommends`: https://datatracker.ietf.org/doc/html/rfc7914#section-2
 .. _`The scrypt paper`: https://www.tarsnap.com/scrypt/scrypt.pdf
 .. _`understanding HKDF`: https://soatok.blog/2021/11/17/understanding-hkdf/
+.. _`parameter choice`: https://datatracker.ietf.org/doc/html/rfc9106#section-4
