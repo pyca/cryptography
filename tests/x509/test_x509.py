@@ -6056,10 +6056,11 @@ class TestObjectIdentifier:
         x509.ObjectIdentifier("1.39.999")
         x509.ObjectIdentifier("2.5.29.3")
         x509.ObjectIdentifier("2.999.37.5.22.8")
+        x509.ObjectIdentifier(f"2.25.{2**128 - 1}")
 
     def test_oid_arc_too_large(self):
         with pytest.raises(ValueError):
-            x509.ObjectIdentifier(f"2.25.{2**128 - 1}")
+            x509.ObjectIdentifier(f"2.25.{2**128}")
 
 
 class TestName:

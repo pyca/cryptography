@@ -7,7 +7,7 @@ publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-asn1 = { version = "0.17.0", default-features = false }
+asn1 = { version = "0.18.0", default-features = false }
 cfg-if = "1"
 openssl = "0.10.68"
 openssl-sys = "0.9.104"
