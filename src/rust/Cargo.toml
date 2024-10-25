@@ -1,11 +1,3 @@
-[workspace.package]
-version = "0.1.0"
-authors = ["The cryptography developers <cryptography-dev@python.org>"]
-edition = "2021"
-publish = false
-# This specifies the MSRV
-rust-version = "1.65.0"
-
 [package]
 name = "cryptography-rust"
 version.workspace = true
@@ -38,19 +30,6 @@ default = ["extension-module"]
 [lib]
 name = "cryptography_rust"
 crate-type = ["cdylib"]
-
-[profile.release]
-overflow-checks = true
-
-[workspace]
-members = [
-    "cryptography-cffi",
-    "cryptography-keepalive",
-    "cryptography-key-parsing",
-    "cryptography-openssl",
-    "cryptography-x509",
-    "cryptography-x509-verification",
-]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)', 'cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_IDEA", "OPENSSL_NO_CAST", "OPENSSL_NO_BF", "OPENSSL_NO_CAMELLIA", "OPENSSL_NO_SEED", "OPENSSL_NO_SM4"))'] }
