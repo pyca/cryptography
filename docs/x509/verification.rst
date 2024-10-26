@@ -276,31 +276,19 @@ the root of trust:
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: ca_extension_policy(new_policy)
+    .. method:: extension_policies(new_ee_policy, new_ca_policy)
 
         .. versionadded:: 44.0.0
 
-        Sets the CA extension policy for the verifier.
-        If this method is not called, the default CA extension policy that 
-        follows the CA/B Forum guidelines is used.
+        Sets the EE and CA extension policies for the verifier.
+        The default policies used are those returned by :meth:`ExtensionPolicy.webpki_defaults_ee`
+        and :meth:`ExtensionPolicy.webpki_defaults_ca`.
 
-        :param ExtensionPolicy new_policy: The CA extension policy to use. 
-            Use :class:`ExtensionPolicyBuilder` to create the policy.
-
-        :returns: A new instance of :class:`PolicyBuilder`
-
-    .. method:: ee_extension_policy(new_policy)
-
-        .. versionadded:: 44.0.0
-
-        Sets the End Entity (EE) extension policy for the verifier.
-        If this method is not called, the default EE extension policy that 
-        follows the CA/B Forum guidelines is used.
-
-        :param ExtensionPolicy new_policy: The EE extension policy to use.
-            Use :class:`ExtensionPolicyBuilder` to create the policy.
+        :param ExtensionPolicy new_ee_policy: The CA extension policy to use. 
+        :param ExtensionPolicy new_ca_policy: The EE extension policy to use.
 
         :returns: A new instance of :class:`PolicyBuilder`
+
 
     .. method:: build_server_verifier(subject)
 
@@ -324,37 +312,37 @@ the root of trust:
 
         :returns: An instance of :class:`ClientVerifier`
 
-.. class:: ExtensionPolicyBuilder
+.. class:: ExtensionPolicy
 
     .. versionadded:: 44.0.0
 
-    An ExtensionPolicyBuilder provides a builder-style interface for constructing an 
+    An ExtensionPolicy provides a builder-style interface for constructing an 
     :class:`ExtensionPolicy`.
 
     .. staticmethod:: permit_all()
 
-        Creates an ExtensionPolicyBuilder initialized with a policy that does 
+        Creates an ExtensionPolicy initialized with a policy that does 
         not put any constraints on a certificate's extensions. 
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
+        :returns: An instance of :class:`ExtensionPolicy`
 
     .. staticmethod:: webpki_defaults_ca()
 
-        Creates an ExtensionPolicyBuilder initialized with a 
+        Creates an ExtensionPolicy initialized with a 
         CA extension policy based on CA/B Forum guidelines.
 
         This is the CA extension policy used by :class:`PolicyBuilder`.
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
+        :returns: An instance of :class:`ExtensionPolicy`
 
     .. staticmethod:: webpki_defaults_ee()
 
-        Creates an ExtensionPolicyBuilder initialized with an
+        Creates an ExtensionPolicy initialized with an
         EE extension policy based on CA/B Forum guidelines.
 
         This is the EE extension policy used by :class:`PolicyBuilder`.
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
+        :returns: An instance of :class:`ExtensionPolicy`
 
     .. method:: require_not_present(oid)
 
@@ -362,7 +350,7 @@ the root of trust:
 
         :param oid: The OID of the extension that must not be present.
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
+        :returns: An instance of :class:`ExtensionPolicy`
 
     .. method:: may_be_present(oid, criticality, validator_cb)
 
@@ -379,7 +367,7 @@ the root of trust:
         :param validator_cb: An optional Python callback to validate the extension value. 
         :type validator_cb: :type:`MaybeExtensionValidatorCallback` or None
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
+        :returns: An instance of :class:`ExtensionPolicy`
 
     .. method:: require_present(oid, criticality, validator_cb)
 
@@ -395,13 +383,7 @@ the root of trust:
         :param validator_cb: An optional Python callback to validate the extension
         :type validator_cb: :type:`PresentExtensionValidatorCallback` or None
 
-        :returns: An instance of :class:`ExtensionPolicyBuilder`
-
-    .. method:: build()
-
-        Builds the extension policy.
-
-        :returns: An :class:`ExtensionPolicy`
+        :returns: An instance of :class:`ExtensionPolicy`
 
 .. class:: Criticality
 
@@ -420,16 +402,6 @@ the root of trust:
     .. attribute:: NON_CRITICAL
 
         The extension must not be marked as critical.
-
-.. class:: ExtensionPolicy
-
-    .. versionadded:: 44.0.0
-
-    An ExtensionPolicy constrains the presence, contents and criticalities of certificate extensions.
-
-    This type is opaque to the user and should be created using :class:`ExtensionPolicyBuilder`.
-    Pass the created policy to :meth:`PolicyBuilder.ca_extension_policy` or :meth:`PolicyBuilder.ee_extension_policy`
-    to set the policies used during verification.
 
 .. class:: Policy
 
