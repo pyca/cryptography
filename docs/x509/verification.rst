@@ -356,7 +356,7 @@ the root of trust:
 
         :returns: An instance of :class:`ExtensionPolicyBuilder`
 
-    .. method:: not_present(oid)
+    .. method:: require_not_present(oid)
 
         Specifies that the extension identified by the given OID must not be present.
 
@@ -364,7 +364,7 @@ the root of trust:
 
         :returns: An instance of :class:`ExtensionPolicyBuilder`
 
-    .. method:: maybe_present(oid, criticality, validator_cb)
+    .. method:: may_be_present(oid, criticality, validator_cb)
 
         Specifies that the extension identified by the given OID may or may not be present.
         If it is present, it must conform to the given criticality constraint. 
@@ -381,7 +381,7 @@ the root of trust:
 
         :returns: An instance of :class:`ExtensionPolicyBuilder`
 
-    .. method:: must_be_present(oid, criticality, validator_cb)
+    .. method:: require_present(oid, criticality, validator_cb)
 
         Specifies that the extension identified by the given OID must be present and conform to the given criticality constraint.
         An optional validator callback may be provided.
