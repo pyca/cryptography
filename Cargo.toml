@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "src/rust/",
+    "src/rust/cryptography-cffi",
+    "src/rust/cryptography-keepalive",
+    "src/rust/cryptography-key-parsing",
+    "src/rust/cryptography-openssl",
+    "src/rust/cryptography-x509",
+    "src/rust/cryptography-x509-verification",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["The cryptography developers <cryptography-dev@python.org>"]
+edition = "2021"
+publish = false
+# This specifies the MSRV
+rust-version = "1.65.0"
+
+[profile.release]
+overflow-checks = true

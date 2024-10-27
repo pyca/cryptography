@@ -231,33 +231,32 @@ def rust(session: nox.Session) -> None:
     pyproject_data = load_pyproject_toml()
     install(session, *pyproject_data["build-system"]["requires"])
 
-    with session.chdir("src/rust/"):
-        session.run("cargo", "fmt", "--all", "--", "--check", external=True)
-        if session.name != "rust-noclippy":
-            session.run(
-                "cargo",
-                "clippy",
-                "--all",
-                "--",
-                "-D",
-                "warnings",
-                external=True,
-            )
-
-        build_output = session.run(
-            "cargo",
-            "test",
-            "--no-default-features",
-            "--all",
-            "--no-run",
-            "-q",
-            "--message-format=json",
-            external=True,
-            silent=True,
-        )
+    session.run("cargo", "fmt", "--all", "--", "--check", external=True)
+    if session.name != "rust-noclippy":
         session.run(
-            "cargo", "test", "--no-default-features", "--all", external=True
+            "cargo",
+            "clippy",
+            "--all",
+            "--",
+            "-D",
+            "warnings",
+            external=True,
         )
+
+    build_output = session.run(
+        "cargo",
+        "test",
+        "--no-default-features",
+        "--all",
+        "--no-run",
+        "-q",
+        "--message-format=json",
+        external=True,
+        silent=True,
+    )
+    session.run(
+        "cargo", "test", "--no-default-features", "--all", external=True
+    )
 
     # It's None on install-only invocations
     if build_output is not None:
@@ -288,18 +287,17 @@ def local(session):
     session.run("ruff", "format", ".")
     session.run("ruff", "check", ".")
 
-    with session.chdir("src/rust/"):
-        session.run("cargo", "fmt", "--all", external=True)
-        session.run("cargo", "check", "--all", "--tests", external=True)
-        session.run(
-            "cargo",
-            "clippy",
-            "--all",
-            "--",
-            "-D",
-            "warnings",
-            external=True,
-        )
+    session.run("cargo", "fmt", "--all", external=True)
+    session.run("cargo", "check", "--all", "--tests", external=True)
+    session.run(
+        "cargo",
+        "clippy",
+        "--all",
+        "--",
+        "-D",
+        "warnings",
+        external=True,
+    )
 
     session.run(
         "mypy",
@@ -331,10 +329,9 @@ def local(session):
         *tests,
     )
 
-    with session.chdir("src/rust/"):
-        session.run(
-            "cargo", "test", "--no-default-features", "--all", external=True
-        )
+    session.run(
+        "cargo", "test", "--no-default-features", "--all", external=True
+    )
 
 
 LCOV_SOURCEFILE_RE = re.compile(
