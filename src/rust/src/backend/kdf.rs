@@ -201,7 +201,9 @@ impl Argon2id {
     ) -> CryptographyResult<Self> {
         cfg_if::cfg_if! {
             if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
+                _ = py;
                 _ = salt;
+                _ = length;
                 _ = iterations;
                 _ = lanes;
                 _ = memory_cost;
@@ -274,7 +276,7 @@ impl Argon2id {
         }
     }
 
-    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -284,7 +286,6 @@ impl Argon2id {
             return Err(exceptions::already_finalized_error());
         }
         self.used = true;
-
         Ok(pyo3::types::PyBytes::new_bound_with(
             py,
             self.length,
@@ -306,7 +307,7 @@ impl Argon2id {
         )?)
     }
 
-    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
@@ -333,7 +334,6 @@ impl Argon2id {
 pub(crate) mod kdf {
     #[pymodule_export]
     use super::derive_pbkdf2_hmac;
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     #[pymodule_export]
     use super::Argon2id;
     #[pymodule_export]

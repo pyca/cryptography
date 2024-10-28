@@ -221,6 +221,17 @@ mod _rust {
                     openssl_mod.add("_legacy_provider_loaded", false)?;
                 }
             }
+            cfg_if::cfg_if! {
+                if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)] {
+                    use std::ptr;
+                    if let Ok(available) = std::thread::available_parallelism() {
+                        // SAFETY: This sets a libctx provider limit, but we always use the same libctx by passing NULL.
+                        unsafe {
+                            openssl_sys::OSSL_set_max_threads(ptr::null_mut(), available.get() as u64);
+                        }
+                    };
+                }
+            }
 
             Ok(())
         }
