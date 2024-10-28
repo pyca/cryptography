@@ -27,13 +27,17 @@ class Scrypt:
     def derive(self, key_material: bytes) -> bytes: ...
     def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
 
-def derive_argon2id(
-    key_material: bytes,
-    salt: bytes,
-    length: int,
-    iterations: int,
-    lanes: int,
-    memory_cost: int,
-    ad: bytes | None,
-    secret: bytes | None,
-) -> bytes: ...
+class Argon2id:
+    def __init__(
+        self,
+        *,
+        salt: bytes,
+        length: int,
+        iterations: int,
+        lanes: int,
+        memory_cost: int,
+        ad: bytes | None = None,
+        secret: bytes | None = None,
+    ) -> None: ...
+    def derive(self, key_material: bytes) -> bytes: ...
+    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...

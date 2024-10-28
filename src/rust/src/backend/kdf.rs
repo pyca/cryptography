@@ -164,47 +164,178 @@ impl Scrypt {
     }
 }
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
-#[pyo3::pyfunction]
-#[allow(clippy::too_many_arguments)]
-#[pyo3(signature = (key_material, salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
-fn derive_argon2id<'p>(
-    py: pyo3::Python<'p>,
-    key_material: CffiBuf<'_>,
-    salt: &[u8],
+#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+struct Argon2id {
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    salt: pyo3::Py<pyo3::types::PyBytes>,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     length: usize,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     iterations: u32,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     lanes: u32,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     memory_cost: u32,
-    ad: Option<&[u8]>,
-    secret: Option<&[u8]>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    use crate::error::CryptographyError;
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    used: bool,
+}
 
-    Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
-        openssl::kdf::argon2id(
-            None,
-            key_material.as_bytes(),
-            salt,
-            ad,
-            secret,
-            iterations,
-            lanes,
-            memory_cost,
-            b,
-        )
-        .map_err(CryptographyError::from)?;
+#[pyo3::pymethods]
+impl Argon2id {
+    #[new]
+    #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        py: pyo3::Python<'_>,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        length: usize,
+        iterations: u32,
+        lanes: u32,
+        memory_cost: u32,
+        ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<Self> {
+        cfg_if::cfg_if! {
+            if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
+                _ = salt;
+                _ = iterations;
+                _ = lanes;
+                _ = memory_cost;
+                _ = ad;
+                _ = secret;
+
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err(
+                        "This version of OpenSSL does not support argon2id"
+                    ),
+                ))
+            } else {
+                if cryptography_openssl::fips::is_enabled() {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err(
+                            "This version of OpenSSL does not support argon2id"
+                        ),
+                    ));
+                }
+
+                if salt.extract::<&[u8]>(py)?.len() < 8 {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "salt must be at least 8 bytes"
+                        ),
+                    ));
+                }
+                if length < 4 {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "length must be greater than or equal to 4."
+                        ),
+                    ));
+                }
+                if iterations < 1 {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "iterations must be greater than or equal to 1."
+                        ),
+                    ));
+                }
+                if lanes < 1 {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "lanes must be greater than or equal to 1."
+                        ),
+                    ));
+                }
+
+                if memory_cost < 8 * lanes {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "memory_cost must be an integer >= 8 * lanes."
+                        ),
+                    ));
+                }
+
+
+                Ok(Argon2id{
+                    salt,
+                    length,
+                    iterations,
+                    lanes,
+                    memory_cost,
+                    ad,
+                    secret,
+                    used: false,
+                })
+            }
+        }
+    }
+
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        Ok(pyo3::types::PyBytes::new_bound_with(
+            py,
+            self.length,
+            |b| {
+                openssl::kdf::argon2id(
+                    None,
+                    key_material.as_bytes(),
+                    self.salt.as_bytes(py),
+                    self.ad.as_ref().map(|ad| ad.as_bytes(py)),
+                    self.secret.as_ref().map(|secret| secret.as_bytes(py)),
+                    self.iterations,
+                    self.lanes,
+                    self.memory_cost,
+                    b,
+                )
+                .map_err(CryptographyError::from)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if actual_bytes.len() != expected_bytes.len()
+            || !openssl::memcmp::eq(actual_bytes, expected_bytes)
+        {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
         Ok(())
-    })?)
+    }
 }
 
 #[pyo3::pymodule]
 pub(crate) mod kdf {
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
-    #[pymodule_export]
-    use super::derive_argon2id;
     #[pymodule_export]
     use super::derive_pbkdf2_hmac;
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[pymodule_export]
+    use super::Argon2id;
     #[pymodule_export]
     use super::Scrypt;
 }

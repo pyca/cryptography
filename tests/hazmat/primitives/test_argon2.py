@@ -101,10 +101,6 @@ class TestArgon2id:
     @pytest.mark.parametrize(
         "params",
         [
-            (b"b" * 8, "notanint", 1, 1, 32),  # invalid type
-            (b"b" * 8, 32, "notanint", 1, 32),  # invalid type
-            (b"b" * 8, 32, 1, "notanint", 32),  # invalid type
-            (b"b" * 8, 32, 1, 1, "notanint"),  # invalid type
             (b"b" * 7, 3, 1, 1, 32),  # salt < 8
             (b"b" * 8, 3, 1, 1, 32),  # length < 4
             (b"b" * 8, 32, 0, 1, 32),  # iterations < 1
