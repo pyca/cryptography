@@ -20,7 +20,7 @@ cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
 openssl = "0.10.68"
 openssl-sys = "0.9.104"
-foreign-types-shared = "0.1"
+foreign-types-shared = "0.3"
 self_cell = "1"
 
 [features]
