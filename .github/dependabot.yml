@@ -11,7 +11,7 @@ updates:
     open-pull-requests-limit: 1024
 
   - package-ecosystem: cargo
-    directory: "/src/rust/"
+    directory: "/"
     schedule:
       interval: daily
       time: "06:00"
