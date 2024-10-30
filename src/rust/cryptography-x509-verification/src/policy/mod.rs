@@ -504,7 +504,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub(crate) fn valid_issuer(
         &self,
         issuer: &VerificationCertificate<'_, B>,
-        child: &Certificate<'_>,
+        child: &VerificationCertificate<'_, B>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
     ) -> Result<(), ValidationError> {
@@ -520,7 +520,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         {
             return Err(ValidationError::Other(format!(
                 "Forbidden public key algorithm: {:?}",
-                &child.tbs_cert.spki.algorithm
+                &issuer.certificate().tbs_cert.spki.algorithm
             )));
         }
 
@@ -532,11 +532,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // position).
         if !self
             .permitted_signature_algorithms
-            .contains(&child.signature_alg)
+            .contains(&child.certificate().signature_alg)
         {
             return Err(ValidationError::Other(format!(
                 "Forbidden signature algorithm: {:?}",
-                &child.signature_alg
+                &child.certificate().signature_alg
             )));
         }
 
@@ -559,7 +559,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         let pk = issuer
             .public_key(&self.ops)
             .map_err(|_| ValidationError::Other("issuer has malformed public key".to_string()))?;
-        if self.ops.verify_signed_by(child, pk).is_err() {
+        if self.ops.verify_signed_by(child.certificate(), pk).is_err() {
             return Err(ValidationError::Other(
                 "signature does not match".to_string(),
             ));
