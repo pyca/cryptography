@@ -12,7 +12,7 @@ use cryptography_x509::{
     extensions::{Extension, Extensions},
 };
 
-use crate::{ops::CryptoOps, policy::Policy, ValidationError};
+use crate::{ops::CryptoOps, policy::Policy, ValidationError, ValidationResult};
 
 pub(crate) struct ExtensionPolicy<B: CryptoOps> {
     pub(crate) authority_information_access: ExtensionValidator<B>,
@@ -31,7 +31,7 @@ impl<B: CryptoOps> ExtensionPolicy<B> {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         let mut authority_information_access_seen = false;
         let mut authority_key_identifier_seen = false;
         let mut subject_key_identifier_seen = false;
@@ -145,10 +145,10 @@ impl Criticality {
 }
 
 type PresentExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> Result<(), ValidationError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> ValidationResult<()>;
 
 type MaybeExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> Result<(), ValidationError>;
+    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> ValidationResult<()>;
 
 /// Represents different validation states for an extension.
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
@@ -200,7 +200,7 @@ impl<B: CryptoOps> ExtensionValidator<B> {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extension: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         match (self, extension) {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
@@ -265,14 +265,14 @@ pub(crate) mod ee {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, ValidationError},
+        policy::{Policy, ValidationError, ValidationResult},
     };
 
     pub(crate) fn basic_constraints<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             let basic_constraints: BasicConstraints = extn.value()?;
 
@@ -290,7 +290,7 @@ pub(crate) mod ee {
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         match (cert.subject().is_empty(), extn.critical) {
             // If the subject is empty, the SAN MUST be critical.
             (true, false) => {
@@ -327,7 +327,7 @@ pub(crate) mod ee {
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
@@ -351,7 +351,7 @@ pub(crate) mod ee {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             let key_usage: KeyUsage<'_> = extn.value()?;
 
@@ -378,14 +378,14 @@ pub(crate) mod ca {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, ValidationError},
+        policy::{Policy, ValidationError, ValidationResult},
     };
 
     pub(crate) fn authority_key_identifier<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         // CABF: AKI is required on all CA certificates *except* root CA certificates,
         // where is it merely recommended. This is slightly different from RFC 5280,
         // which requires AKI on all CA certificates *except* self-signed root CA certificates.
@@ -428,7 +428,7 @@ pub(crate) mod ca {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         let key_usage: KeyUsage<'_> = extn.value()?;
 
         if !key_usage.key_cert_sign() {
@@ -444,7 +444,7 @@ pub(crate) mod ca {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         let basic_constraints: BasicConstraints = extn.value()?;
 
         if !basic_constraints.ca {
@@ -464,7 +464,7 @@ pub(crate) mod ca {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             let name_constraints: NameConstraints<'_> = extn.value()?;
 
@@ -496,7 +496,7 @@ pub(crate) mod ca {
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
@@ -521,14 +521,14 @@ pub(crate) mod common {
 
     use crate::{
         ops::CryptoOps,
-        policy::{Policy, ValidationError},
+        policy::{Policy, ValidationResult},
     };
 
     pub(crate) fn authority_information_access<B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(extn) = extn {
             // We don't currently do anything useful with these, but we
             // do check that they're well-formed.
@@ -550,7 +550,7 @@ mod tests {
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
-    use crate::policy::{Policy, Subject, ValidationError};
+    use crate::policy::{Policy, Subject, ValidationResult};
     use crate::types::DNSName;
 
     #[test]
@@ -590,7 +590,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: &Extension<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         Ok(())
     }
 
@@ -630,7 +630,7 @@ mod tests {
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: Option<&Extension<'_>>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         Ok(())
     }
 

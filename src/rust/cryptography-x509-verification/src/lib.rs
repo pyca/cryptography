@@ -44,6 +44,8 @@ pub enum ValidationError {
     Other(String),
 }
 
+pub type ValidationResult<T> = Result<T, ValidationError>;
+
 impl From<asn1::ParseError> for ValidationError {
     fn from(value: asn1::ParseError) -> Self {
         Self::Malformed(value)
@@ -89,7 +91,7 @@ impl Budget {
         }
     }
 
-    fn name_constraint_check(&mut self) -> Result<(), ValidationError> {
+    fn name_constraint_check(&mut self) -> ValidationResult<()> {
         self.name_constraint_checks =
             self.name_constraint_checks
                 .checked_sub(1)
@@ -110,7 +112,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         child: Option<&'a NameChain<'a, 'chain>>,
         extensions: &Extensions<'chain>,
         self_issued_intermediate: bool,
-    ) -> Result<Self, ValidationError> {
+    ) -> ValidationResult<Self> {
         let sans = match (
             self_issued_intermediate,
             extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID),
@@ -129,7 +131,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         constraint: &GeneralName<'chain>,
         san: &GeneralName<'chain>,
         budget: &mut Budget,
-    ) -> Result<ApplyNameConstraintStatus, ValidationError> {
+    ) -> ValidationResult<ApplyNameConstraintStatus> {
         budget.name_constraint_check()?;
 
         match (constraint, san) {
@@ -195,7 +197,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         &self,
         constraints: &NameConstraints<'chain>,
         budget: &mut Budget,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         if let Some(child) = self.child {
             child.evaluate_constraints(constraints, budget)?;
         }
@@ -244,7 +246,7 @@ pub fn verify<'a, 'chain: 'a, B: CryptoOps>(
     intermediates: &'a [&'a VerificationCertificate<'chain, B>],
     policy: &'a Policy<'_, B>,
     store: &'a Store<'chain, B>,
-) -> Result<Chain<'a, 'chain, B>, ValidationError> {
+) -> ValidationResult<Chain<'a, 'chain, B>> {
     let builder = ChainBuilder::new(intermediates, policy, store);
 
     let mut budget = Budget::new();
@@ -310,7 +312,7 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         working_cert_extensions: &Extensions<'chain>,
         name_chain: NameChain<'_, 'chain>,
         budget: &mut Budget,
-    ) -> Result<Chain<'a, 'chain, B>, ValidationError> {
+    ) -> ValidationResult<Chain<'a, 'chain, B>> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             name_chain.evaluate_constraints(&nc.value()?, budget)?;
         }
@@ -413,7 +415,7 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         &self,
         leaf: &'a VerificationCertificate<'chain, B>,
         budget: &mut Budget,
-    ) -> Result<Chain<'a, 'chain, B>, ValidationError> {
+    ) -> ValidationResult<Chain<'a, 'chain, B>> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).

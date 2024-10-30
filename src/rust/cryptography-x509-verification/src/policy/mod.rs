@@ -27,7 +27,7 @@ use once_cell::sync::Lazy;
 use crate::ops::CryptoOps;
 use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy, ExtensionValidator};
 use crate::types::{DNSName, DNSPattern, IPAddress};
-use crate::{ValidationError, VerificationCertificate};
+use crate::{ValidationError, ValidationResult, VerificationCertificate};
 
 // RSA key constraints, as defined in CA/B 6.1.5.
 static WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
@@ -373,7 +373,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         )
     }
 
-    fn permits_basic(&self, cert: &Certificate<'_>) -> Result<(), ValidationError> {
+    fn permits_basic(&self, cert: &Certificate<'_>) -> ValidationResult<()> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
@@ -441,7 +441,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         cert: &Certificate<'_>,
         current_depth: u8,
         extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         self.permits_basic(cert)?;
 
         // 5280 4.1.2.6: Subject
@@ -480,7 +480,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         &self,
         cert: &Certificate<'_>,
         extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         self.permits_basic(cert)?;
 
         self.ee_extension_policy.permits(self, cert, extensions)?;
@@ -507,7 +507,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &Certificate<'_>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
-    ) -> Result<(), ValidationError> {
+    ) -> ValidationResult<()> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)?;
 
@@ -569,7 +569,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 }
 
-fn permits_validity_date(validity_date: &Time) -> Result<(), ValidationError> {
+fn permits_validity_date(validity_date: &Time) -> ValidationResult<()> {
     const GENERALIZED_DATE_INVALIDITY_RANGE: Range<u16> = 1950..2050;
 
     // NOTE: The inverse check on `asn1::UtcTime` is already done for us
