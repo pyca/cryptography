@@ -176,7 +176,7 @@ pytest-benchmark==5.1.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-cov==4.1.0 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
-pytest-cov==5.0.0 ; python_full_version == '3.8.*'
+pytest-cov==6.0.0 ; python_full_version == '3.8.*'
     # via cryptography (pyproject.toml)
 pytest-cov==6.0.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
