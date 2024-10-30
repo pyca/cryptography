@@ -39,7 +39,7 @@ colorama==0.4.6 ; (platform_system != 'Windows' and sys_platform == 'win32') or 
     #   colorlog
     #   pytest
     #   sphinx
-colorlog==6.8.2
+colorlog==6.9.0
     # via nox
 coverage==7.2.7 ; python_full_version < '3.8'
     # via pytest-cov
