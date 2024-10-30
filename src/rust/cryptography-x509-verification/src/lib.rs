@@ -340,7 +340,7 @@ impl<'a, 'chain: 'a, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             let issuer_extensions = issuing_cert_candidate.certificate().extensions()?;
             match self.policy.valid_issuer(
                 issuing_cert_candidate,
-                working_cert.certificate(),
+                working_cert,
                 current_depth,
                 &issuer_extensions,
             ) {
