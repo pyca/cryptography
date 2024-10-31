@@ -68,6 +68,20 @@ Xw4nMqk=
         ) -> Result<(), Self::Err> {
             Ok(())
         }
+
+        fn clone_public_key(key: &Self::Key) -> Self::Key {
+            key.clone()
+        }
+
+        fn clone_extra(extra: &Self::CertificateExtra) -> Self::CertificateExtra {
+            extra.clone()
+        }
+    }
+
+    #[test]
+    fn test_clone() {
+        assert_eq!(PublicKeyErrorOps::clone_public_key(&()), ());
+        assert_eq!(PublicKeyErrorOps::clone_extra(&()), ());
     }
 
     #[test]
