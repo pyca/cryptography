@@ -285,9 +285,16 @@ impl KeyUsage<'_> {
     }
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct NamingAuthority<'a> {
+    pub id: Option<asn1::ObjectIdentifier>,
+    pub url: Option<asn1::IA5String<'a>>,
+    pub text: Option<asn1::Utf8String<'a>>,
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{BasicConstraints, Extension, Extensions, KeyUsage};
+    use super::{BasicConstraints, Extension, Extensions, KeyUsage, NamingAuthority};
     use crate::oid::{AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID};
 
     #[test]
@@ -371,5 +378,30 @@ mod tests {
         assert!(ku.crl_sign());
         assert!(ku.encipher_only());
         assert!(ku.decipher_only());
+    }
+
+    #[test]
+    fn test_naming_authority() {
+        let authority1 = NamingAuthority {
+            id: None,
+            url: None,
+            text: None,
+        };
+        let encoded = asn1::write_single(&authority1).unwrap();
+        let parsed1: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
+        assert!(parsed1.id.is_none());
+        assert!(parsed1.url.is_none());
+        assert!(parsed1.text.is_none());
+
+        let authority2 = NamingAuthority {
+            id: Some(asn1::oid!(1, 2, 3, 4)),
+            url: asn1::IA5String::new("https://example.com"),
+            text: Some(asn1::Utf8String::new("spam")),
+        };
+        let encoded = asn1::write_single(&authority2).unwrap();
+        let parsed2: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
+        assert!(parsed2.id == authority2.id);
+        assert!(parsed2.url == authority2.url);
+        assert!(parsed2.text == authority2.text);
     }
 }
