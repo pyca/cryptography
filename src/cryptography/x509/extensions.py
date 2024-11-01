@@ -2167,47 +2167,39 @@ class MSCertificateTemplate(ExtensionType):
 class NamingAuthority:
     def __init__(
         self,
-        naming_authority_id: ObjectIdentifier | None,
-        naming_authority_url: str | None,
-        naming_authority_text: str | None,
+        id: ObjectIdentifier | None,
+        url: str | None,
+        text: str | None,
     ) -> None:
-        if naming_authority_id is not None and not isinstance(
-            naming_authority_id, ObjectIdentifier
-        ):
-            raise TypeError("naming_authority_id must be an ObjectIdentifier")
+        if id is not None and not isinstance(id, ObjectIdentifier):
+            raise TypeError("id must be an ObjectIdentifier")
 
-        if naming_authority_url is not None and not isinstance(
-            naming_authority_url, str
-        ):
-            raise TypeError("naming_authority_url must be a str")
+        if url is not None and not isinstance(url, str):
+            raise TypeError("url must be a str")
 
-        if naming_authority_text is not None and not isinstance(
-            naming_authority_text, str
-        ):
-            raise TypeError("naming_authority_text must be a str")
+        if text is not None and not isinstance(text, str):
+            raise TypeError("text must be a str")
 
-        self._naming_authority_id = naming_authority_id
-        self._naming_authority_url = naming_authority_url
-        self._naming_authority_text = naming_authority_text
+        self._id = id
+        self._url = url
+        self._text = text
 
     @property
-    def naming_authority_id(self) -> ObjectIdentifier | None:
-        return self._naming_authority_id
+    def id(self) -> ObjectIdentifier | None:
+        return self._id
 
     @property
-    def naming_authority_url(self) -> str | None:
-        return self._naming_authority_url
+    def url(self) -> str | None:
+        return self._url
 
     @property
-    def naming_authority_text(self) -> str | None:
-        return self._naming_authority_text
+    def text(self) -> str | None:
+        return self._text
 
     def __repr__(self) -> str:
         return (
             f"<NamingAuthority("
-            f"naming_authority_id={self.naming_authority_id}, "
-            f"naming_authority_url={self.naming_authority_url}, "
-            f"naming_authority_text={self.naming_authority_text})>"
+            f"id={self.id}, url={self.url}, text={self.text})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -2215,17 +2207,17 @@ class NamingAuthority:
             return NotImplemented
 
         return (
-            self.naming_authority_id == other.naming_authority_id
-            and self.naming_authority_url == other.naming_authority_url
-            and self.naming_authority_text == other.naming_authority_text
+            self.id == other.id
+            and self.url == other.url
+            and self.text == other.text
         )
 
     def __hash__(self) -> int:
         return hash(
             (
-                self.naming_authority_id,
-                self.naming_authority_url,
-                self.naming_authority_text,
+                self.id,
+                self.url,
+                self.text,
             )
         )
 

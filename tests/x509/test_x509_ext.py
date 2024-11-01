@@ -6394,9 +6394,7 @@ class TestNamingAuthority:
     def test_repr(self):
         authority = x509.NamingAuthority(None, None, None)
         assert repr(authority) == (
-            "<NamingAuthority(naming_authority_id=None, "
-            "naming_authority_url=None, "
-            "naming_authority_text=None)>"
+            "<NamingAuthority(id=None, url=None, text=None)>"
         )
 
         authority = x509.NamingAuthority(
@@ -6404,10 +6402,8 @@ class TestNamingAuthority:
         )
         assert repr(authority) == (
             "<NamingAuthority("
-            "naming_authority_id="
-            "<ObjectIdentifier(oid=1.2.3, name=Unknown OID)>, "
-            "naming_authority_url=https://example.com, "
-            "naming_authority_text=spam)>"
+            "id=<ObjectIdentifier(oid=1.2.3, name=Unknown OID)>, "
+            "url=https://example.com, text=spam)>"
         )
 
     def test_hash(self):
