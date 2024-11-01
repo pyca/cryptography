@@ -2222,6 +2222,104 @@ class NamingAuthority:
         )
 
 
+class ProfessionInfo:
+    def __init__(
+        self,
+        naming_authority: NamingAuthority | None,
+        profession_items: typing.Iterable[str],
+        profession_oids: typing.Iterable[ObjectIdentifier],
+        registration_number: str | None,
+        add_profession_info: bytes | None,
+    ):
+        if naming_authority is not None and not isinstance(
+            naming_authority, NamingAuthority
+        ):
+            raise TypeError("naming_authority must be a NamingAuthority")
+
+        profession_items = list(profession_items)
+        if not all(isinstance(item, str) for item in profession_items):
+            raise TypeError(
+                "Every item in the profession_items list must be a str"
+            )
+
+        profession_oids = list(profession_oids)
+        if not all(
+            isinstance(oid, ObjectIdentifier) for oid in profession_oids
+        ):
+            raise TypeError(
+                "Every item in the profession_oids list must be an "
+                "ObjectIdentifier"
+            )
+
+        if registration_number is not None and not isinstance(
+            registration_number, str
+        ):
+            raise TypeError("registration_number must be a str")
+
+        if add_profession_info is not None and not isinstance(
+            add_profession_info, bytes
+        ):
+            raise TypeError("add_profession_info must be bytes")
+
+        self._naming_authority = naming_authority
+        self._profession_items = profession_items
+        self._profession_oids = profession_oids
+        self._registration_number = registration_number
+        self._add_profession_info = add_profession_info
+
+    @property
+    def naming_authority(self) -> NamingAuthority | None:
+        return self._naming_authority
+
+    @property
+    def profession_items(self) -> list[str]:
+        return self._profession_items
+
+    @property
+    def profession_oids(self) -> list[ObjectIdentifier]:
+        return self._profession_oids
+
+    @property
+    def registration_number(self) -> str | None:
+        return self._registration_number
+
+    @property
+    def add_profession_info(self) -> bytes | None:
+        return self._add_profession_info
+
+    def __repr__(self) -> str:
+        return (
+            f"<ProfessionInfo(naming_authority={self.naming_authority}, "
+            f"profession_items={self.profession_items}, "
+            f"profession_oids={self.profession_oids}, "
+            f"registration_number={self.registration_number}, "
+            f"add_profession_info={self.add_profession_info})>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ProfessionInfo):
+            return NotImplemented
+
+        return (
+            self.naming_authority == other.naming_authority
+            and self.profession_items == other.profession_items
+            and self.profession_oids == other.profession_oids
+            and self.registration_number == other.registration_number
+            and self.add_profession_info == other.add_profession_info
+        )
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.naming_authority,
+                *self.profession_items,
+                *self.profession_oids,
+                self.registration_number,
+                self.add_profession_info,
+            )
+        )
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):
