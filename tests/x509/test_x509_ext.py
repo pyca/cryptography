@@ -6331,6 +6331,116 @@ class TestMSCertificateTemplate:
         )
 
 
+class TestNamingAuthority:
+    def test_invalid_init(self):
+        with pytest.raises(TypeError):
+            x509.NamingAuthority(
+                42,  # type:ignore[arg-type]
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"),
+                42,  # type:ignore[arg-type]
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"),
+                "https://example.com",
+                42,  # type:ignore[arg-type]
+            )
+
+    def test_eq(self):
+        authority1 = x509.NamingAuthority(None, None, None)
+        authority2 = x509.NamingAuthority(None, None, None)
+        assert authority1 == authority2
+
+        authority1 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        authority2 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        assert authority1 == authority2
+
+    def test_ne(self):
+        authority1 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        authority2 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), None, None
+        )
+        authority3 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", None
+        )
+        authority4 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), None, "spam"
+        )
+        authority5 = x509.NamingAuthority(None, "https://example.com", "spam")
+        authority6 = x509.NamingAuthority(None, None, "spam")
+        authority7 = x509.NamingAuthority(None, "https://example.com", None)
+        authority8 = x509.NamingAuthority(None, None, None)
+        assert authority1 != authority2
+        assert authority1 != authority3
+        assert authority1 != authority4
+        assert authority1 != authority5
+        assert authority1 != authority6
+        assert authority1 != authority7
+        assert authority1 != authority8
+        assert authority1 != object()
+
+    def test_repr(self):
+        authority = x509.NamingAuthority(None, None, None)
+        assert repr(authority) == (
+            "<NamingAuthority(naming_authority_id=None, "
+            "naming_authority_url=None, "
+            "naming_authority_text=None)>"
+        )
+
+        authority = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        assert repr(authority) == (
+            "<NamingAuthority("
+            "naming_authority_id="
+            "<ObjectIdentifier(oid=1.2.3, name=Unknown OID)>, "
+            "naming_authority_url=https://example.com, "
+            "naming_authority_text=spam)>"
+        )
+
+    def test_hash(self):
+        authority1 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        authority2 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+        )
+        authority3 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), None, None
+        )
+        authority4 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), "https://example.com", None
+        )
+        authority5 = x509.NamingAuthority(
+            x509.ObjectIdentifier("1.2.3"), None, "spam"
+        )
+        authority6 = x509.NamingAuthority(None, "https://example.com", "spam")
+        authority7 = x509.NamingAuthority(None, None, "spam")
+        authority8 = x509.NamingAuthority(None, "https://example.com", None)
+        authority9 = x509.NamingAuthority(None, None, None)
+
+        assert hash(authority1) == hash(authority2)
+        assert hash(authority1) != hash(authority3)
+        assert hash(authority1) != hash(authority4)
+        assert hash(authority1) != hash(authority5)
+        assert hash(authority1) != hash(authority6)
+        assert hash(authority1) != hash(authority7)
+        assert hash(authority1) != hash(authority8)
+        assert hash(authority1) != hash(authority9)
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):

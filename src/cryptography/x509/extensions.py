@@ -2164,6 +2164,72 @@ class MSCertificateTemplate(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
+class NamingAuthority:
+    def __init__(
+        self,
+        naming_authority_id: ObjectIdentifier | None,
+        naming_authority_url: str | None,
+        naming_authority_text: str | None,
+    ) -> None:
+        if naming_authority_id is not None and not isinstance(
+            naming_authority_id, ObjectIdentifier
+        ):
+            raise TypeError("naming_authority_id must be an ObjectIdentifier")
+
+        if naming_authority_url is not None and not isinstance(
+            naming_authority_url, str
+        ):
+            raise TypeError("naming_authority_url must be a str")
+
+        if naming_authority_text is not None and not isinstance(
+            naming_authority_text, str
+        ):
+            raise TypeError("naming_authority_text must be a str")
+
+        self._naming_authority_id = naming_authority_id
+        self._naming_authority_url = naming_authority_url
+        self._naming_authority_text = naming_authority_text
+
+    @property
+    def naming_authority_id(self) -> ObjectIdentifier | None:
+        return self._naming_authority_id
+
+    @property
+    def naming_authority_url(self) -> str | None:
+        return self._naming_authority_url
+
+    @property
+    def naming_authority_text(self) -> str | None:
+        return self._naming_authority_text
+
+    def __repr__(self) -> str:
+        return (
+            f"<NamingAuthority("
+            f"naming_authority_id={self.naming_authority_id}, "
+            f"naming_authority_url={self.naming_authority_url}, "
+            f"naming_authority_text={self.naming_authority_text})>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, NamingAuthority):
+            return NotImplemented
+
+        return (
+            self.naming_authority_id == other.naming_authority_id
+            and self.naming_authority_url == other.naming_authority_url
+            and self.naming_authority_text == other.naming_authority_text
+        )
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.naming_authority_id,
+                self.naming_authority_url,
+                self.naming_authority_text,
+            )
+        )
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):
