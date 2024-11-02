@@ -291,6 +291,26 @@ pub struct NamingAuthority<'a> {
     pub text: Option<DisplayText<'a>>,
 }
 
+type SequenceOfDisplayTexts<'a> = common::Asn1ReadableOrWritable<
+    asn1::SequenceOf<'a, DisplayText<'a>>,
+    asn1::SequenceOfWriter<'a, DisplayText<'a>, Vec<DisplayText<'a>>>,
+>;
+
+type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
+    asn1::SequenceOf<'a, asn1::ObjectIdentifier>,
+    asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
+>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct ProfessionInfo<'a> {
+    #[explicit(0)]
+    pub naming_authority: Option<NamingAuthority<'a>>,
+    pub profession_items: SequenceOfDisplayTexts<'a>,
+    pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
+    pub registration_number: Option<asn1::PrintableString<'a>>,
+    pub add_profession_info: Option<asn1::Tlv<'a>>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{BasicConstraints, Extension, Extensions, KeyUsage};
