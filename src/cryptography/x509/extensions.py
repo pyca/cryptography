@@ -2230,7 +2230,7 @@ class ProfessionInfo:
         profession_oids: typing.Iterable[ObjectIdentifier],
         registration_number: str | None,
         add_profession_info: bytes | None,
-    ):
+    ) -> None:
         if naming_authority is not None and not isinstance(
             naming_authority, NamingAuthority
         ):
@@ -2293,7 +2293,7 @@ class ProfessionInfo:
             f"profession_items={self.profession_items}, "
             f"profession_oids={self.profession_oids}, "
             f"registration_number={self.registration_number}, "
-            f"add_profession_info={self.add_profession_info})>"
+            f"add_profession_info={self.add_profession_info!r})>"
         )
 
     def __eq__(self, other: object) -> bool:

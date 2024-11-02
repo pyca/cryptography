@@ -6458,7 +6458,7 @@ class TestProfessionInfo:
         with pytest.raises(TypeError):
             x509.ProfessionInfo(
                 None,
-                [42],  # type:ignore[arg-type]
+                [42],  # type:ignore[list-item]
                 [],
                 None,
                 None,
