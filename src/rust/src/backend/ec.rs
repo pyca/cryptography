@@ -186,7 +186,9 @@ fn derive_private_key(
     point.mul_generator(&curve, &private_value, &bn_ctx)?;
     let ec = openssl::ec::EcKey::from_private_components(&curve, &private_value, &point)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid EC key"))?;
-    check_key_infinity(&ec)?;
+    ec.check_key().map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("Invalid EC key (key out of range, infinity, etc.)")
+    })?;
     let pkey = openssl::pkey::PKey::from_ec_key(ec)?;
 
     Ok(ECPrivateKey {

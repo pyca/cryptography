@@ -144,6 +144,16 @@ def test_derive_point_at_infinity(backend):
         ec.derive_private_key(q, ec.SECP256R1())
 
 
+def test_derive_point_invalid_key(backend):
+    curve = ec.SECP256R1()
+    _skip_curve_unsupported(backend, curve)
+    with pytest.raises(ValueError):
+        ec.derive_private_key(
+            0xE2563328DFABF68188606B91324281C1D58A4456431B09D510B35FECC9F307CA1822846FA2671371A9A81BAC0E35749D,
+            curve,
+        )
+
+
 def test_ec_numbers():
     numbers = ec.EllipticCurvePrivateNumbers(
         1, ec.EllipticCurvePublicNumbers(2, 3, DummyCurve())
