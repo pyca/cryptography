@@ -6612,7 +6612,60 @@ class TestProfessionInfo:
         )
 
     def test_hash(self):
-        raise NotImplementedError("TODO")
+        info1 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info2 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info3 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info4 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info5 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info6 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [],
+            None,
+            b"\x01\x02\x03",
+        )
+        info7 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None), [], [], None, None
+        )
+
+        assert hash(info1) == hash(info2)
+        assert hash(info1) != hash(info3)
+        assert hash(info1) != hash(info4)
+        assert hash(info1) != hash(info5)
+        assert hash(info1) != hash(info6)
+        assert hash(info1) != hash(info7)
 
 
 def test_all_extension_oid_members_have_names_defined():
