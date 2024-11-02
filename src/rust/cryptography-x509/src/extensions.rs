@@ -382,26 +382,26 @@ mod tests {
 
     #[test]
     fn test_naming_authority() {
-        let authority1 = NamingAuthority {
+        let authority = NamingAuthority {
             id: None,
             url: None,
             text: None,
         };
-        let encoded = asn1::write_single(&authority1).unwrap();
-        let parsed1: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
-        assert!(parsed1.id.is_none());
-        assert!(parsed1.url.is_none());
-        assert!(parsed1.text.is_none());
+        let encoded = asn1::write_single(&authority).unwrap();
+        let parsed: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
+        assert!(parsed.id.is_none());
+        assert!(parsed.url.is_none());
+        assert!(parsed.text.is_none());
 
-        let authority2 = NamingAuthority {
+        let authority = NamingAuthority {
             id: Some(asn1::oid!(1, 2, 3, 4)),
             url: asn1::IA5String::new("https://example.com"),
             text: Some(asn1::Utf8String::new("spam")),
         };
-        let encoded = asn1::write_single(&authority2).unwrap();
-        let parsed2: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
-        assert!(parsed2.id == authority2.id);
-        assert!(parsed2.url == authority2.url);
-        assert!(parsed2.text == authority2.text);
+        let encoded = asn1::write_single(&authority).unwrap();
+        let parsed: NamingAuthority<'_> = asn1::parse_single(&encoded).unwrap();
+        assert_eq!(parsed.id, authority.id);
+        assert_eq!(parsed.url, authority.url);
+        assert_eq!(parsed.text, authority.text);
     }
 }
