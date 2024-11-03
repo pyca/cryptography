@@ -302,7 +302,6 @@ type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
 >;
 
 pub struct ProfessionInfo<'a> {
-    #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
     pub profession_items: SequenceOfDisplayTexts<'a>,
     pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
