@@ -27,7 +27,7 @@ use once_cell::sync::Lazy;
 use crate::ops::CryptoOps;
 use crate::policy::extension::{ca, common, ee, Criticality, ExtensionPolicy, ExtensionValidator};
 use crate::types::{DNSName, DNSPattern, IPAddress};
-use crate::{ValidationError, ValidationResult, VerificationCertificate};
+use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
 // RSA key constraints, as defined in CA/B 6.1.5.
 static WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
@@ -377,18 +377,18 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "certificate must be an X509v3 certificate".to_string(),
-            ));
+            )));
         }
 
         // 5280 4.1.1.2 / 4.1.2.3: signatureAlgorithm / TBS Certificate Signature
         // The top-level signatureAlgorithm and TBSCert signature algorithm
         // MUST match.
         if cert.signature_alg != cert.tbs_cert.signature_alg {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "mismatch between signatureAlgorithm and SPKI algorithm".to_string(),
-            ));
+            )));
         }
 
         // 5280 4.1.2.2: Serial Number
@@ -402,21 +402,21 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             // 21 octets, since some CAs generate 20 bytes of randomness and
             // then forget to check whether that number would be negative, resulting
             // in a 21-byte encoding.
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "certificate must have a serial between 1 and 20 octets".to_string(),
-            ));
+            )));
         } else if serial.is_negative() {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "certificate serial number cannot be negative".to_string(),
-            ));
+            )));
         }
 
         // 5280 4.1.2.4: Issuer
         // The issuer MUST be a non-empty distinguished name.
         if cert.issuer().is_empty() {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "certificate must have a non-empty Issuer".to_string(),
-            ));
+            )));
         }
 
         // 5280 4.1.2.5: Validity
@@ -427,9 +427,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         permits_validity_date(&cert.tbs_cert.validity.not_before)?;
         permits_validity_date(&cert.tbs_cert.validity.not_after)?;
         if &self.validation_time < not_before || &self.validation_time > not_after {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "cert is not valid at validation time".to_string(),
-            ));
+            )));
         }
 
         Ok(())
@@ -464,9 +464,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 .path_length
                 .map_or(false, |len| u64::from(current_depth) > len)
             {
-                return Err(ValidationError::Other(
+                return Err(ValidationError::new(ValidationErrorKind::Other(
                     "path length constraint violated".to_string(),
-                ))?;
+                )));
             }
         }
 
@@ -518,10 +518,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_public_key_algorithms
             .contains(&issuer.certificate().tbs_cert.spki.algorithm)
         {
-            return Err(ValidationError::Other(format!(
+            return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden public key algorithm: {:?}",
                 &issuer.certificate().tbs_cert.spki.algorithm
-            )));
+            ))));
         }
 
         // CA/B 7.1.3.2 Signature AlgorithmIdentifier
@@ -534,11 +534,19 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             .permitted_signature_algorithms
             .contains(&child.certificate().signature_alg)
         {
-            return Err(ValidationError::Other(format!(
+            return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden signature algorithm: {:?}",
                 &child.certificate().signature_alg
-            )));
+            ))));
         }
+
+        // We do this before checking the RSA key size so that if parsing the
+        // key fails, we get a nice error message.
+        let pk = issuer.public_key(&self.ops).map_err(|_| {
+            ValidationError::new(ValidationErrorKind::Other(
+                "issuer has malformed public key".to_string(),
+            ))
+        })?;
 
         // CA/B 6.1.5: Key sizes
         // NOTE: We don't currently enforce that RSA moduli are divisible by 8,
@@ -552,17 +560,16 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                 asn1::parse_single(issuer_spki.subject_public_key.as_bytes())?;
 
             if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {
-                return Err(ValidationError::Other("RSA key is too weak".into()));
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "RSA key is too weak".into(),
+                )));
             }
         }
 
-        let pk = issuer
-            .public_key(&self.ops)
-            .map_err(|_| ValidationError::Other("issuer has malformed public key".to_string()))?;
         if self.ops.verify_signed_by(child.certificate(), pk).is_err() {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "signature does not match".to_string(),
-            ));
+            )));
         }
 
         Ok(())
@@ -576,9 +583,9 @@ fn permits_validity_date(validity_date: &Time) -> ValidationResult<()> {
     // by the variant's constructor.
     if let Time::GeneralizedTime(_) = validity_date {
         if GENERALIZED_DATE_INVALIDITY_RANGE.contains(&validity_date.as_datetime().year()) {
-            return Err(ValidationError::Other(
+            return Err(ValidationError::new(ValidationErrorKind::Other(
                 "validity dates between 1950 and 2049 must be UtcTime".to_string(),
-            ));
+            )));
         }
     }
 
