@@ -2384,7 +2384,7 @@ class Admission:
             (
                 self.admission_authority,
                 self.naming_authority,
-                *self.profession_infos,
+                *tuple(self.profession_infos),
             )
         )
 
