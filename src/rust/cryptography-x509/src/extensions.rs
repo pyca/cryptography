@@ -285,6 +285,7 @@ impl KeyUsage<'_> {
     }
 }
 
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct NamingAuthority<'a> {
     pub id: Option<asn1::ObjectIdentifier>,
     pub url: Option<asn1::IA5String<'a>>,
@@ -301,6 +302,7 @@ type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
 >;
 
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct ProfessionInfo<'a> {
     // #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
