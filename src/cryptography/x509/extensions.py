@@ -2320,6 +2320,75 @@ class ProfessionInfo:
         )
 
 
+class Admission:
+    def __init__(
+        self,
+        admission_authority: GeneralName | None,
+        naming_authority: NamingAuthority | None,
+        profession_infos: typing.Iterable[ProfessionInfo],
+    ) -> None:
+        if admission_authority is not None and not isinstance(
+            admission_authority, GeneralName
+        ):
+            raise TypeError("admission_authority must be a GeneralName")
+
+        if naming_authority is not None and not isinstance(
+            naming_authority, NamingAuthority
+        ):
+            raise TypeError("naming_authority must be a NamingAuthority")
+
+        profession_infos = list(profession_infos)
+        if not all(
+            isinstance(info, ProfessionInfo) for info in profession_infos
+        ):
+            raise TypeError(
+                "Every item in the profession_infos list must be a "
+                "ProfessionInfo"
+            )
+
+        self._admission_authority = admission_authority
+        self._naming_authority = naming_authority
+        self._profession_infos = profession_infos
+
+    @property
+    def admission_authority(self) -> GeneralName | None:
+        return self._admission_authority
+
+    @property
+    def naming_authority(self) -> NamingAuthority | None:
+        return self._naming_authority
+
+    @property
+    def profession_infos(self) -> list[ProfessionInfo]:
+        return self._profession_infos
+
+    def __repr__(self) -> str:
+        return (
+            f"<Admission(admission_authority={self.admission_authority}, "
+            f"naming_authority={self.naming_authority}, "
+            f"profession_infos={self.profession_infos})>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Admission):
+            return NotImplemented
+
+        return (
+            self.admission_authority == other.admission_authority
+            and self.naming_authority == other.naming_authority
+            and self.profession_infos == other.profession_infos
+        )
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.admission_authority,
+                self.naming_authority,
+                *tuple(self.profession_infos),
+            )
+        )
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):

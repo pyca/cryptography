@@ -312,6 +312,20 @@ pub struct ProfessionInfo<'a> {
     pub add_profession_info: Option<&'a [u8]>,
 }
 
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct Admission<'a> {
+    // #[explicit(0)]
+    pub admission_authority: Option<name::GeneralName<'a>>,
+    // #[explicit(1)]
+    pub naming_authority: Option<NamingAuthority<'a>>,
+    /*
+    pub profession_infos: common::Asn1ReadableOrWritable<
+        asn1::SequenceOf<'a, ProfessionInfo<'a>>,
+        asn1::SequenceOfWriter<'a, ProfessionInfo<'a>, Vec<ProfessionInfo<'a>>>,
+    >,
+    */
+}
+
 #[cfg(test)]
 mod tests {
     use super::{BasicConstraints, Extension, Extensions, KeyUsage};

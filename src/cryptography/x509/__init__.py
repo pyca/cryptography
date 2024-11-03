@@ -30,6 +30,7 @@ from cryptography.x509.base import (
 )
 from cryptography.x509.extensions import (
     AccessDescription,
+    Admission,
     AuthorityInformationAccess,
     AuthorityKeyIdentifier,
     BasicConstraints,
@@ -176,6 +177,7 @@ __all__ = [
     "OID_CA_ISSUERS",
     "OID_OCSP",
     "AccessDescription",
+    "Admission",
     "Attribute",
     "AttributeNotFound",
     "Attributes",

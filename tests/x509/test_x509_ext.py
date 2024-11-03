@@ -6668,6 +6668,333 @@ class TestProfessionInfo:
         assert hash(info1) != hash(info7)
 
 
+class TestAdmission:
+    def test_invalid_init(self):
+        with pytest.raises(TypeError):
+            x509.Admission(
+                42,  # type:ignore[arg-type]
+                None,
+                [],
+            )
+        with pytest.raises(TypeError):
+            x509.Admission(
+                None,
+                42,  # type:ignore[arg-type]
+                [],
+            )
+        with pytest.raises(TypeError):
+            x509.Admission(
+                None,
+                None,
+                42,  # type:ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            x509.Admission(
+                None,
+                None,
+                [42],  # type:ignore[list-item]
+            )
+
+    def test_eq(self):
+        admission1 = x509.Admission(None, None, [])
+        admission2 = x509.Admission(None, None, [])
+        assert admission1 == admission2
+
+        admission1 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission2 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        assert admission1 == admission2
+
+    def test_ne(self):
+        admission1 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission2 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [],
+        )
+        admission3 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            None,
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission4 = x509.Admission(
+            None,
+            None,
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission5 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            None,
+            [],
+        )
+        admission6 = x509.Admission(
+            None,
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [],
+        )
+        admission7 = x509.Admission(None, None, [])
+
+        assert admission1 != admission2
+        assert admission1 != admission3
+        assert admission1 != admission4
+        assert admission1 != admission5
+        assert admission1 != admission6
+        assert admission1 != admission7
+        assert admission1 != object()
+
+    def test_repr(self):
+        admission = x509.Admission(None, None, [])
+        assert repr(admission) == (
+            "<Admission("
+            "admission_authority=None, "
+            "naming_authority=None, "
+            "profession_infos=[])>"
+        )
+
+        admission = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        assert repr(admission) == (
+            "<Admission("
+            "admission_authority=<OtherName("
+            "type_id=<ObjectIdentifier("
+            "oid=2.5.4.6, name=countryName)>, "
+            "value=b'\\x04\\x04\\x13\\x02DE')>, "
+            "naming_authority=<NamingAuthority("
+            "id=<ObjectIdentifier(oid=1.2.3, name=Unknown OID)>, "
+            "url=https://example.com, text=spam)>, "
+            "profession_infos=[<ProfessionInfo("
+            "naming_authority=<NamingAuthority("
+            "id=<ObjectIdentifier(oid=1.2.3.4, name=Unknown OID)>, "
+            "url=https://example.org, text=eggs)>, "
+            "profession_items=['bacon'], "
+            "profession_oids=[<ObjectIdentifier("
+            "oid=1.2.3.4.5, name=Unknown OID)>], "
+            "registration_number=sausage, "
+            "add_profession_info=b'\\x01\\x02\\x03')>])>"
+        )
+
+    def test_hash(self):
+        admission1 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission2 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission3 = x509.Admission(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission4 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(None, None, None),
+            [
+                x509.ProfessionInfo(
+                    x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.3.4"),
+                        "https://example.org",
+                        "eggs",
+                    ),
+                    ["bacon"],
+                    [x509.ObjectIdentifier("1.2.3.4.5")],
+                    "sausage",
+                    b"\x01\x02\x03",
+                )
+            ],
+        )
+        admission5 = x509.Admission(
+            x509.OtherName(
+                type_id=x509.oid.NameOID.COUNTRY_NAME,
+                value=b"\x04\x04\x13\x02DE",
+            ),
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [],
+        )
+        admission6 = x509.Admission(None, None, [])
+
+        assert hash(admission1) == hash(admission2)
+        assert hash(admission1) != hash(admission3)
+        assert hash(admission1) != hash(admission4)
+        assert hash(admission1) != hash(admission5)
+        assert hash(admission1) != hash(admission6)
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
