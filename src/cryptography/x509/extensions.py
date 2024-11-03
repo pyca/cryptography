@@ -2312,8 +2312,8 @@ class ProfessionInfo:
         return hash(
             (
                 self.naming_authority,
-                *self.profession_items,
-                *self.profession_oids,
+                *tuple(self.profession_items),
+                *tuple(self.profession_oids),
                 self.registration_number,
                 self.add_profession_info,
             )
