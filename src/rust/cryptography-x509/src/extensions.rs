@@ -301,7 +301,6 @@ type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
 >;
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct ProfessionInfo<'a> {
     #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
