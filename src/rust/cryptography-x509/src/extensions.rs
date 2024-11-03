@@ -285,6 +285,12 @@ impl KeyUsage<'_> {
     }
 }
 
+pub struct NamingAuthority<'a> {
+    pub id: Option<asn1::ObjectIdentifier>,
+    pub url: Option<asn1::IA5String<'a>>,
+    pub text: Option<DisplayText<'a>>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{BasicConstraints, Extension, Extensions, KeyUsage};

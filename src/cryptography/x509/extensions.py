@@ -2164,6 +2164,64 @@ class MSCertificateTemplate(ExtensionType):
         return rust_x509.encode_extension_value(self)
 
 
+class NamingAuthority:
+    def __init__(
+        self,
+        id: ObjectIdentifier | None,
+        url: str | None,
+        text: str | None,
+    ) -> None:
+        if id is not None and not isinstance(id, ObjectIdentifier):
+            raise TypeError("id must be an ObjectIdentifier")
+
+        if url is not None and not isinstance(url, str):
+            raise TypeError("url must be a str")
+
+        if text is not None and not isinstance(text, str):
+            raise TypeError("text must be a str")
+
+        self._id = id
+        self._url = url
+        self._text = text
+
+    @property
+    def id(self) -> ObjectIdentifier | None:
+        return self._id
+
+    @property
+    def url(self) -> str | None:
+        return self._url
+
+    @property
+    def text(self) -> str | None:
+        return self._text
+
+    def __repr__(self) -> str:
+        return (
+            f"<NamingAuthority("
+            f"id={self.id}, url={self.url}, text={self.text})>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, NamingAuthority):
+            return NotImplemented
+
+        return (
+            self.id == other.id
+            and self.url == other.url
+            and self.text == other.text
+        )
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.id,
+                self.url,
+                self.text,
+            )
+        )
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):
