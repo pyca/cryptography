@@ -285,10 +285,31 @@ impl KeyUsage<'_> {
     }
 }
 
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct NamingAuthority<'a> {
     pub id: Option<asn1::ObjectIdentifier>,
     pub url: Option<asn1::IA5String<'a>>,
     pub text: Option<DisplayText<'a>>,
+}
+
+type SequenceOfDisplayTexts<'a> = common::Asn1ReadableOrWritable<
+    asn1::SequenceOf<'a, DisplayText<'a>>,
+    asn1::SequenceOfWriter<'a, DisplayText<'a>, Vec<DisplayText<'a>>>,
+>;
+
+type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
+    asn1::SequenceOf<'a, asn1::ObjectIdentifier>,
+    asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
+>;
+
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct ProfessionInfo<'a> {
+    // #[explicit(0)]
+    pub naming_authority: Option<NamingAuthority<'a>>,
+    pub profession_items: SequenceOfDisplayTexts<'a>,
+    pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
+    pub registration_number: Option<asn1::PrintableString<'a>>,
+    pub add_profession_info: Option<&'a [u8]>,
 }
 
 #[cfg(test)]

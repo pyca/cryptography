@@ -6437,6 +6437,237 @@ class TestNamingAuthority:
         assert hash(authority1) != hash(authority9)
 
 
+class TestProfessionInfo:
+    def test_invalid_init(self):
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                None,
+                None,  # type:ignore[arg-type]
+                None,  # type:ignore[arg-type]
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                "spam",  # type:ignore[arg-type]
+                [],
+                [],
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                None,
+                [42],  # type:ignore[list-item]
+                [],
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                None,
+                [],
+                "spam",  # type:ignore[arg-type]
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                None,
+                [],
+                [],
+                42,  # type:ignore[arg-type]
+                None,
+            )
+        with pytest.raises(TypeError):
+            x509.ProfessionInfo(
+                None,
+                [],
+                [],
+                None,
+                42,  # type:ignore[arg-type]
+            )
+
+    def test_eq(self):
+        info1 = x509.ProfessionInfo(None, [], [], None, None)
+        info2 = x509.ProfessionInfo(None, [], [], None, None)
+        assert info1 == info2
+
+        info1 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info2 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        assert info1 == info2
+
+    def test_ne(self):
+        info1 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info2 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            None,
+        )
+        info3 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            None,
+            None,
+        )
+        info4 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [],
+            None,
+            None,
+        )
+        info5 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            [],
+            [],
+            None,
+            None,
+        )
+        info6 = x509.ProfessionInfo(None, ["spam"], [], None, None)
+        info7 = x509.ProfessionInfo(
+            None, [], [x509.ObjectIdentifier("1.2.3")], None, None
+        )
+        info8 = x509.ProfessionInfo(None, [], [], "spam", None)
+        info9 = x509.ProfessionInfo(None, [], [], None, b"\x01\x02\x03")
+        info10 = x509.ProfessionInfo(None, [], [], None, None)
+
+        assert info1 != info2
+        assert info1 != info2
+        assert info1 != info3
+        assert info1 != info4
+        assert info1 != info5
+        assert info1 != info6
+        assert info1 != info7
+        assert info1 != info8
+        assert info1 != info9
+        assert info1 != info10
+        assert info1 != object()
+
+    def test_repr(self):
+        info = x509.ProfessionInfo(None, [], [], None, None)
+        assert repr(info) == (
+            "<ProfessionInfo("
+            "naming_authority=None, "
+            "profession_items=[], "
+            "profession_oids=[], "
+            "registration_number=None, "
+            "add_profession_info=None)>"
+        )
+
+        info = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        assert repr(info) == (
+            "<ProfessionInfo("
+            "naming_authority=<NamingAuthority("
+            "id=<ObjectIdentifier(oid=1.2.3, name=Unknown OID)>, "
+            "url=https://example.com, text=spam)>, "
+            "profession_items=['spam'], "
+            "profession_oids="
+            "[<ObjectIdentifier(oid=1.2.3.4, name=Unknown OID)>], "
+            "registration_number=eggs, "
+            "add_profession_info=b'\\x01\\x02\\x03')>"
+        )
+
+    def test_hash(self):
+        info1 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info2 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info3 = x509.ProfessionInfo(
+            x509.NamingAuthority(
+                x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
+            ),
+            ["spam"],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info4 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [x509.ObjectIdentifier("1.2.3.4")],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info5 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [],
+            "eggs",
+            b"\x01\x02\x03",
+        )
+        info6 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None),
+            [],
+            [],
+            None,
+            b"\x01\x02\x03",
+        )
+        info7 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None), [], [], None, None
+        )
+
+        assert hash(info1) == hash(info2)
+        assert hash(info1) != hash(info3)
+        assert hash(info1) != hash(info4)
+        assert hash(info1) != hash(info5)
+        assert hash(info1) != hash(info6)
+        assert hash(info1) != hash(info7)
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
