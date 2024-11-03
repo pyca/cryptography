@@ -288,7 +288,7 @@ impl KeyUsage<'_> {
 pub struct NamingAuthority<'a> {
     pub id: Option<asn1::ObjectIdentifier>,
     pub url: Option<asn1::IA5String<'a>>,
-    pub text: Option<asn1::Utf8String<'a>>,
+    pub text: Option<DisplayText<'a>>,
 }
 
 #[cfg(test)]
