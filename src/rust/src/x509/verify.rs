@@ -380,7 +380,7 @@ impl PyServerVerifier {
             policy,
             store.raw.borrow_dependent(),
         )
-        .map_err(|e| VerificationError::new_err(format!("validation failed: {e:?}")))?;
+        .map_err(|e| VerificationError::new_err(format!("validation failed: {e}")))?;
 
         let result = pyo3::types::PyList::empty_bound(py);
         for c in chain {
