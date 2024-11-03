@@ -51,8 +51,10 @@ mod tests {
     #[test]
     fn test_store() {
         let cert_pem = v1_cert_pem();
-        let cert1 = VerificationCertificate::new(cert(&cert_pem), ());
-        let cert2 = VerificationCertificate::new(cert(&cert_pem), ());
+        let c1 = cert(&cert_pem);
+        let c2 = cert(&cert_pem);
+        let cert1 = VerificationCertificate::new(&c1, ());
+        let cert2 = VerificationCertificate::new(&c2, ());
         let store = Store::<'_, PublicKeyErrorOps>::new([cert1]);
 
         assert!(store.contains(&cert2));

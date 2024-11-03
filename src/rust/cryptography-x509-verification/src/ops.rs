@@ -5,13 +5,13 @@
 use cryptography_x509::certificate::Certificate;
 
 pub struct VerificationCertificate<'a, B: CryptoOps> {
-    cert: Certificate<'a>,
+    cert: &'a Certificate<'a>,
     public_key: once_cell::sync::OnceCell<B::Key>,
     extra: B::CertificateExtra,
 }
 
 impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
-    pub fn new(cert: Certificate<'a>, extra: B::CertificateExtra) -> Self {
+    pub fn new(cert: &'a Certificate<'a>, extra: B::CertificateExtra) -> Self {
         VerificationCertificate {
             cert,
             extra,
@@ -20,7 +20,7 @@ impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
     }
 
     pub fn certificate(&self) -> &Certificate<'a> {
-        &self.cert
+        self.cert
     }
 
     pub fn public_key(&self, ops: &B) -> Result<&B::Key, B::Err> {
@@ -40,6 +40,22 @@ impl<B: CryptoOps> PartialEq for VerificationCertificate<'_, B> {
 }
 impl<B: CryptoOps> Eq for VerificationCertificate<'_, B> {}
 
+impl<B: CryptoOps> Clone for VerificationCertificate<'_, B> {
+    fn clone(&self) -> Self {
+        Self {
+            cert: self.cert,
+            extra: B::clone_extra(&self.extra),
+            public_key: {
+                let cell = once_cell::sync::OnceCell::new();
+                if let Some(k) = self.public_key.get() {
+                    cell.set(B::clone_public_key(k)).ok().unwrap();
+                }
+                cell
+            },
+        }
+    }
+}
+
 pub trait CryptoOps {
     /// A public key type for this cryptographic backend.
     type Key;
@@ -58,6 +74,12 @@ pub trait CryptoOps {
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
     fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err>;
+
+    // Makes a `clone` of `Key`
+    fn clone_public_key(extra: &Self::Key) -> Self::Key;
+
+    // Makes a `clone` of `CertificateExtra`
+    fn clone_extra(extra: &Self::CertificateExtra) -> Self::CertificateExtra;
 }
 
 #[cfg(test)]
