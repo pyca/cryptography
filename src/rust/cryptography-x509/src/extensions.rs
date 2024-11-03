@@ -307,7 +307,7 @@ pub struct ProfessionInfo<'a> {
     pub profession_items: SequenceOfDisplayTexts<'a>,
     pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
     pub registration_number: Option<asn1::PrintableString<'a>>,
-    pub add_profession_info: Option<asn1::Tlv<'a>>,
+    pub add_profession_info: Option<&'a [u8]>,
 }
 
 #[cfg(test)]
