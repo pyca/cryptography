@@ -2434,7 +2434,7 @@ class Admissions(ExtensionType):
         )
 
     def __hash__(self) -> int:
-        return hash((self.authority, *self._admissions))
+        return hash((self.authority, *tuple(self._admissions)))
 
 
 class UnrecognizedExtension(ExtensionType):
