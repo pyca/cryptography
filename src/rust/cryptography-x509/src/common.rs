@@ -132,9 +132,9 @@ pub enum AlgorithmParameters<'a> {
     Pbkdf2(PBKDF2Params<'a>),
 
     #[defined_by(oid::HMAC_WITH_SHA1_OID)]
-    HmacWithSha1(asn1::Null),
+    HmacWithSha1(Option<asn1::Null>),
     #[defined_by(oid::HMAC_WITH_SHA256_OID)]
-    HmacWithSha256(asn1::Null),
+    HmacWithSha256(Option<asn1::Null>),
 
     // Used only in PKCS#7 AlgorithmIdentifiers
     // https://datatracker.ietf.org/doc/html/rfc3565#section-4.1
@@ -430,7 +430,7 @@ pub struct PBES2Params<'a> {
 
 const HMAC_SHA1_ALG: AlgorithmIdentifier<'static> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::HmacWithSha1(()),
+    params: AlgorithmParameters::HmacWithSha1(Some(())),
 };
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
