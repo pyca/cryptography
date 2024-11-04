@@ -44,6 +44,7 @@ pub const FRESHEST_CRL_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 46);
 pub const INHIBIT_ANY_POLICY_OID: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 54);
 pub const ACCEPTABLE_RESPONSES_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 4);
+pub const ADMISSIONS_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 8, 3, 3);
 
 // Public key identifiers
 pub const EC_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 2, 1);

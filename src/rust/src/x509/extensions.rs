@@ -416,6 +416,34 @@ fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>
     Ok(asn1::write_single(&result.as_slice())?)
 }
 
+fn encode_naming_authority<'a>(
+    py: pyo3::Python<'_>,
+    ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
+    py_naming_authority: &pyo3::Bound<'a, pyo3::PyAny>,
+) -> Result<extensions::NamingAuthority<'a>, CryptographyError> {
+    let py_oid = py_naming_authority.getattr(pyo3::intern!(py, "id"))?;
+    let id = if py_oid.is_truthy()? {
+        Some(py_oid_to_oid(py_oid)?)
+    } else {
+        None
+    };
+    let py_url = py_naming_authority.getattr(pyo3::intern!(py, "url"))?;
+    let url = if py_url.is_truthy()? {
+        let py_url_str = ka_str.add(py_url.extract::<PyBackedStr>()?);
+        asn1::IA5String::new(py_url_str)
+    } else {
+        None
+    };
+    let py_text = py_naming_authority.getattr(pyo3::intern!(py, "text"))?;
+    let text = if py_text.is_truthy()? {
+        let py_text_str = ka_str.add(py_text.extract::<PyBackedStr>()?);
+        Some(extensions::DisplayText::Utf8String(asn1::Utf8String::new(py_text_str)))
+    } else {
+        None
+    };
+    Ok(extensions::NamingAuthority { id, url, text })
+}
+
 pub(crate) fn encode_extension(
     py: pyo3::Python<'_>,
     oid: &asn1::ObjectIdentifier,
@@ -562,6 +590,131 @@ pub(crate) fn encode_extension(
                 minor_version: ext.getattr(pyo3::intern!(py, "minor_version"))?.extract()?,
             };
             Ok(Some(asn1::write_single(&mstpl)?))
+        }
+        &oid::ADMISSIONS_OID => {
+            let ka_bytes = cryptography_keepalive::KeepAlive::new();
+            let ka_str = cryptography_keepalive::KeepAlive::new();
+            let py_admission_authority = ext.getattr(pyo3::intern!(py, "authority"))?;
+            let admission_authority = if py_admission_authority.is_truthy()? {
+                Some(x509::common::encode_general_name(
+                    py,
+                    &ka_bytes,
+                    &ka_str,
+                    &py_admission_authority,
+                )?)
+            } else {
+                None
+            };
+            let mut admissions = vec![];
+            for py_admission in ext.iter()? {
+                let py_admission = py_admission?;
+                let py_admission_authority =
+                    py_admission.getattr(pyo3::intern!(py, "admission_authority"))?;
+                let admission_authority = if py_admission_authority.is_truthy()? {
+                    Some(x509::common::encode_general_name(
+                        py,
+                        &ka_bytes,
+                        &ka_str,
+                        &py_admission_authority,
+                    )?)
+                } else {
+                    None
+                };
+                let py_naming_authority =
+                    py_admission.getattr(pyo3::intern!(py, "naming_authority"))?;
+                let naming_authority = if py_naming_authority.is_truthy()? {
+                    Some(encode_naming_authority(py, &ka_str, &py_naming_authority)?)
+                } else {
+                    None
+                };
+                let mut profession_infos = vec![];
+                let py_profession_infos =
+                    py_admission.getattr(pyo3::intern!(py, "profession_infos"))?;
+                for py_info in py_profession_infos.iter()? {
+                    let py_info = py_info?;
+                    let py_naming_authority =
+                        py_info.getattr(pyo3::intern!(py, "naming_authority"))?;
+                    let naming_authority = if py_naming_authority.is_truthy()? {
+                        Some(encode_naming_authority(py, &ka_str, &py_naming_authority)?)
+                    } else {
+                        None
+                    };
+                    let mut profession_items = vec![];
+                    let py_items = py_info.getattr(pyo3::intern!(py, "profession_items"))?;
+                    for py_item in py_items.iter()? {
+                        let py_item = py_item?;
+                        let py_item_str = ka_str.add(py_item.extract::<PyBackedStr>()?);
+                        let item =
+                            extensions::DisplayText::Utf8String(asn1::Utf8String::new(py_item_str));
+                        profession_items.push(item);
+                    }
+                    let profession_items = common::Asn1ReadableOrWritable::new_write(
+                        asn1::SequenceOfWriter::new(profession_items),
+                    );
+                    let py_oids = py_info.getattr(pyo3::intern!(py, "profession_oids"))?;
+                    let profession_oids = if py_oids.is_truthy()? {
+                        let mut profession_oids = vec![];
+                        for py_oid in py_oids.iter()? {
+                            let py_oid = py_oid?;
+                            let oid = py_oid_to_oid(py_oid)?;
+                            profession_oids.push(oid);
+                        }
+                        Some(common::Asn1ReadableOrWritable::new_write(
+                            asn1::SequenceOfWriter::new(profession_oids),
+                        ))
+                    } else {
+                        None
+                    };
+                    let py_registration_number =
+                        py_info.getattr(pyo3::intern!(py, "registration_number"))?;
+                    let registration_number = if py_registration_number.is_truthy()? {
+                        let py_registration_number_str =
+                            ka_str.add(py_registration_number.extract::<PyBackedStr>()?);
+                        asn1::PrintableString::new(py_registration_number_str)
+                    } else {
+                        None
+                    };
+                    let py_add_profession_info =
+                        py_info.getattr(pyo3::intern!(py, "add_profession_info"))?;
+                    let add_profession_info = if py_add_profession_info.is_truthy()? {
+                        asn1::parse_single(ka_bytes.add(py_add_profession_info.extract()?))
+                            .map_err(|e| {
+                                pyo3::exceptions::PyValueError::new_err(format!(
+                                    "OtherName value must be valid DER: {e:?}"
+                                ))
+                            })?
+                    } else {
+                        None
+                    };
+                    let info = extensions::ProfessionInfo {
+                        naming_authority,
+                        profession_items,
+                        profession_oids,
+                        registration_number,
+                        add_profession_info,
+                    };
+                    profession_infos.push(info);
+                }
+
+                let profession_infos = common::Asn1ReadableOrWritable::new_write(
+                    asn1::SequenceOfWriter::new(profession_infos),
+                );
+                let admission = extensions::Admission {
+                    admission_authority,
+                    naming_authority,
+                    profession_infos,
+                };
+                admissions.push(admission);
+            }
+
+            let contents_of_admissions =
+                common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(admissions));
+
+            let admission = extensions::Admissions {
+                admission_authority,
+                contents_of_admissions,
+            };
+            Ok(Some(asn1::write_single(&admission)?))
         }
         _ => Ok(None),
     }
