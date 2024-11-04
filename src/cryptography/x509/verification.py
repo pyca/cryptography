@@ -27,6 +27,5 @@ ServerVerifier = rust_x509.ServerVerifier
 Policy = rust_x509.Policy
 ExtensionPolicy = rust_x509.ExtensionPolicy
 Criticality = rust_x509.Criticality
-ExtensionPolicyBuilder = rust_x509.ExtensionPolicyBuilder
 PolicyBuilder = rust_x509.PolicyBuilder
 VerificationError = rust_x509.VerificationError

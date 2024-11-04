@@ -14,7 +14,7 @@ from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
     Criticality,
-    ExtensionPolicyBuilder,
+    ExtensionPolicy,
     Policy,
     PolicyBuilder,
     Store,
@@ -256,13 +256,13 @@ class TestCustomExtensionPolicy:
         assert ext is None or isinstance(ext, x509.ExtendedKeyUsage)
 
     def test_custom_cb_pass(self):
-        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
-        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
 
-        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+        ee_ext_policy = ee_ext_policy.may_be_present(
             ExtendedKeyUsage.oid, Criticality.AGNOSTIC, self._eku_validator_cb
         )
-        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+        ca_ext_policy = ca_ext_policy.may_be_present(
             ExtendedKeyUsage.oid, Criticality.AGNOSTIC, self._eku_validator_cb
         )
 
@@ -276,7 +276,7 @@ class TestCustomExtensionPolicy:
             nonlocal ca_validator_called
             ca_validator_called = True
 
-        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+        ca_ext_policy = ca_ext_policy.may_be_present(
             x509.BasicConstraints.oid,
             Criticality.AGNOSTIC,
             ca_basic_constraints_validator,
@@ -284,8 +284,7 @@ class TestCustomExtensionPolicy:
 
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time).max_chain_depth(16)
-        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
-        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
 
         builder.build_client_verifier().verify(self.leaf, [])
         assert ca_validator_called
@@ -298,26 +297,25 @@ class TestCustomExtensionPolicy:
         assert path == [self.leaf, self.ca]
 
     def test_custom_cb_no_retval_enforced(self):
-        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
-        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
 
         def validator(*_):
             return False
 
-        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+        ca_ext_policy = ca_ext_policy.may_be_present(
             x509.BasicConstraints.oid,
             Criticality.AGNOSTIC,
             validator,
         )
-        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+        ee_ext_policy = ee_ext_policy.may_be_present(
             ExtendedKeyUsage.oid,
             Criticality.AGNOSTIC,
             validator,
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
-        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
 
         for verifier in (
             builder.build_client_verifier(),
@@ -330,26 +328,25 @@ class TestCustomExtensionPolicy:
                 verifier.verify(self.leaf, [])
 
     def test_custom_cb_exception_fails_verification(self):
-        ca_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ca()
-        ee_ext_policy_builder = ExtensionPolicyBuilder.webpki_defaults_ee()
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
 
         def validator(*_):
             raise ValueError("test")
 
-        ca_ext_policy_builder = ca_ext_policy_builder.maybe_present(
+        ca_ext_policy = ca_ext_policy.may_be_present(
             x509.BasicConstraints.oid,
             Criticality.AGNOSTIC,
             validator,
         )
-        ee_ext_policy_builder = ee_ext_policy_builder.maybe_present(
+        ee_ext_policy = ee_ext_policy.may_be_present(
             ExtendedKeyUsage.oid,
             Criticality.AGNOSTIC,
             validator,
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.ee_extension_policy(ee_ext_policy_builder.build())
-        builder = builder.ca_extension_policy(ca_ext_policy_builder.build())
+        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
 
         for verifier in (
             builder.build_client_verifier(),

@@ -109,11 +109,6 @@ impl PyPolicy {
     }
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.x509.verification")]
-pub(crate) struct ExtensionPolicyBuilder(ExtensionPolicy<'static, PyCryptoOps>);
-
-/// This struct only exists to make the CustomPolicyBuilder API more ergonomic
-/// We want the CustomPolicyBuilder methods to accept a policy, not a policy builder.
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.x509.verification",
@@ -121,12 +116,12 @@ pub(crate) struct ExtensionPolicyBuilder(ExtensionPolicy<'static, PyCryptoOps>);
 )]
 pub(crate) struct PyExtensionPolicy(pub(super) ExtensionPolicy<'static, PyCryptoOps>);
 
-impl ExtensionPolicyBuilder {
+impl PyExtensionPolicy {
     fn with_assigned_validator(
         &self,
         oid: pyo3::Bound<'_, pyo3::types::PyAny>,
         validator: ExtensionValidator<'static, PyCryptoOps>,
-    ) -> PyResult<ExtensionPolicyBuilder> {
+    ) -> PyResult<PyExtensionPolicy> {
         let oid = py_oid_to_oid(oid)?;
         let mut policy = self.0.clone();
         match oid {
@@ -145,56 +140,52 @@ impl ExtensionPolicyBuilder {
                 )))
             }
         }
-        Ok(ExtensionPolicyBuilder(policy))
+        Ok(PyExtensionPolicy(policy))
     }
 }
 
 #[pyo3::pymethods]
-impl ExtensionPolicyBuilder {
+impl PyExtensionPolicy {
     #[staticmethod]
     pub(crate) fn permit_all() -> Self {
-        ExtensionPolicyBuilder(ExtensionPolicy::new_permit_all())
+        PyExtensionPolicy(ExtensionPolicy::new_permit_all())
     }
 
     #[staticmethod]
     pub(crate) fn webpki_defaults_ca() -> Self {
-        ExtensionPolicyBuilder(ExtensionPolicy::new_default_webpki_ca())
+        PyExtensionPolicy(ExtensionPolicy::new_default_webpki_ca())
     }
 
     #[staticmethod]
     pub(crate) fn webpki_defaults_ee() -> Self {
-        ExtensionPolicyBuilder(ExtensionPolicy::new_default_webpki_ee())
+        PyExtensionPolicy(ExtensionPolicy::new_default_webpki_ee())
     }
 
-    pub(crate) fn not_present(
+    pub(crate) fn require_not_present(
         &self,
         oid: pyo3::Bound<'_, pyo3::types::PyAny>,
-    ) -> pyo3::PyResult<ExtensionPolicyBuilder> {
+    ) -> pyo3::PyResult<PyExtensionPolicy> {
         self.with_assigned_validator(oid, ExtensionValidator::<'static, PyCryptoOps>::NotPresent)
     }
 
     #[pyo3(signature = (oid, criticality, validator_cb))]
-    pub(crate) fn maybe_present(
+    pub(crate) fn may_be_present(
         &self,
         oid: pyo3::Bound<'_, pyo3::types::PyAny>,
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
-    ) -> pyo3::PyResult<ExtensionPolicyBuilder> {
+    ) -> pyo3::PyResult<PyExtensionPolicy> {
         self.with_assigned_validator(oid, make_rust_maybe_validator(criticality, validator_cb))
     }
 
     #[pyo3(signature = (oid, criticality, validator_cb))]
-    pub(crate) fn must_be_present(
+    pub(crate) fn require_present(
         &self,
         oid: pyo3::Bound<'_, pyo3::types::PyAny>,
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
-    ) -> pyo3::PyResult<ExtensionPolicyBuilder> {
+    ) -> pyo3::PyResult<PyExtensionPolicy> {
         self.with_assigned_validator(oid, make_rust_present_validator(criticality, validator_cb))
-    }
-
-    pub(crate) fn build(&self) -> PyExtensionPolicy {
-        PyExtensionPolicy(self.0.clone())
     }
 }
 

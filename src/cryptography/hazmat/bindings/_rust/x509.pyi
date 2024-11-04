@@ -201,11 +201,10 @@ class PolicyBuilder:
     def time(self, new_time: datetime.datetime) -> PolicyBuilder: ...
     def store(self, new_store: Store) -> PolicyBuilder: ...
     def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder: ...
-    def ca_extension_policy(
-        self, new_ca_extension_policy: ExtensionPolicy
-    ) -> PolicyBuilder: ...
-    def ee_extension_policy(
-        self, new_ee_extension_policy: ExtensionPolicy
+    def extension_policies(
+        self,
+        new_ee_extension_policy: ExtensionPolicy,
+        new_ca_extension_policy: ExtensionPolicy,
     ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(
@@ -229,8 +228,6 @@ class Policy:
     @property
     def minimum_rsa_modulus(self) -> int: ...
 
-class ExtensionPolicy: ...
-
 MaybeExtensionValidatorCallback = typing.Callable[
     [
         Policy,
@@ -239,34 +236,34 @@ MaybeExtensionValidatorCallback = typing.Callable[
     ],
     None,
 ]
+
 PresentExtensionValidatorCallback = typing.Callable[
     [Policy, x509.Certificate, x509.ExtensionType],
     None,
 ]
 
-class ExtensionPolicyBuilder:
+class ExtensionPolicy:
     @staticmethod
-    def permit_all() -> ExtensionPolicyBuilder: ...
+    def permit_all() -> ExtensionPolicy: ...
     @staticmethod
-    def webpki_defaults_ca() -> ExtensionPolicyBuilder: ...
+    def webpki_defaults_ca() -> ExtensionPolicy: ...
     @staticmethod
-    def webpki_defaults_ee() -> ExtensionPolicyBuilder: ...
-    def not_present(
+    def webpki_defaults_ee() -> ExtensionPolicy: ...
+    def require_not_present(
         self, oid: x509.ObjectIdentifier
-    ) -> ExtensionPolicyBuilder: ...
-    def maybe_present(
+    ) -> ExtensionPolicy: ...
+    def may_be_present(
         self,
         oid: x509.ObjectIdentifier,
         criticality: Criticality,
         validator: MaybeExtensionValidatorCallback | None,
-    ) -> ExtensionPolicyBuilder: ...
-    def must_be_present(
+    ) -> ExtensionPolicy: ...
+    def require_present(
         self,
         oid: x509.ObjectIdentifier,
         criticality: Criticality,
         validator: PresentExtensionValidatorCallback | None,
-    ) -> ExtensionPolicyBuilder: ...
-    def build(self) -> ExtensionPolicy: ...
+    ) -> ExtensionPolicy: ...
 
 class VerifiedClient:
     @property

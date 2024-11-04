@@ -3,9 +3,7 @@
 // for complete details.
 
 mod extension_policy_builder;
-pub(crate) use extension_policy_builder::{
-    ExtensionPolicyBuilder, PyCriticality, PyExtensionPolicy, PyPolicy,
-};
+pub(crate) use extension_policy_builder::{PyCriticality, PyExtensionPolicy, PyPolicy};
 
 use cryptography_x509::{
     certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
@@ -153,28 +151,18 @@ impl PolicyBuilder {
         })
     }
 
-    fn ca_extension_policy(
+    fn extension_policies(
         &self,
         py: pyo3::Python<'_>,
-        new_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
+        new_ee_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
+        new_ca_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
     ) -> CryptographyResult<PolicyBuilder> {
-        policy_builder_set_once_check!(self, ca_ext_policy, "CA extension policy");
+        // Enough to check one of the two, since they can only be set together.
+        policy_builder_set_once_check!(self, ca_ext_policy, "extension policies");
 
         Ok(PolicyBuilder {
-            ca_ext_policy: Some(new_policy.borrow().0.clone()),
-            ..self.py_clone(py)
-        })
-    }
-
-    fn ee_extension_policy(
-        &self,
-        py: pyo3::Python<'_>,
-        new_policy: &pyo3::Bound<'_, PyExtensionPolicy>,
-    ) -> CryptographyResult<PolicyBuilder> {
-        policy_builder_set_once_check!(self, ee_ext_policy, "EE extension policy");
-
-        Ok(PolicyBuilder {
-            ee_ext_policy: Some(new_policy.borrow().0.clone()),
+            ca_ext_policy: Some(new_ca_policy.borrow().0.clone()),
+            ee_ext_policy: Some(new_ee_policy.borrow().0.clone()),
             ..self.py_clone(py)
         })
     }
