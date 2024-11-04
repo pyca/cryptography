@@ -430,7 +430,14 @@ fn encode_naming_authority<'a>(
     let py_url = py_naming_authority.getattr(pyo3::intern!(py, "url"))?;
     let url = if !py_url.is_none() {
         let py_url_str = ka_str.add(py_url.extract::<PyBackedStr>()?);
-        asn1::IA5String::new(py_url_str)
+        match asn1::IA5String::new(py_url_str) {
+            Some(s) => Some(s),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err("url value must be a valid IA5String"),
+                ))
+            }
+        }
     } else {
         None
     };

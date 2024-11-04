@@ -7156,6 +7156,20 @@ class TestAdmissions:
             b"0\x1e0\x1c0\x0c\xa1\x020\x000\x060\x040\x000\x000\x0c0\n0\x08\xa0\x020\x000\x000\x00"
         )
 
+        # test for non-ascii url value in naming authority
+        ext = x509.Admissions(
+            None,
+            [
+                x509.Admission(
+                    None,
+                    x509.NamingAuthority(None, "😄", None),
+                    [],
+                ),
+            ],
+        )
+        with pytest.raises(ValueError):
+            ext.public_bytes()
+
         # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf
         ext = x509.Admissions(
             authority=x509.DirectoryName(
