@@ -677,12 +677,7 @@ pub(crate) fn encode_extension(
                     let py_add_profession_info =
                         py_info.getattr(pyo3::intern!(py, "add_profession_info"))?;
                     let add_profession_info = if py_add_profession_info.is_truthy()? {
-                        asn1::parse_single(ka_bytes.add(py_add_profession_info.extract()?))
-                            .map_err(|e| {
-                                pyo3::exceptions::PyValueError::new_err(format!(
-                                    "OtherName value must be valid DER: {e:?}"
-                                ))
-                            })?
+                        Some(ka_bytes.add(py_add_profession_info.extract::<pyo3::pybacked::PyBackedBytes>()?))
                     } else {
                         None
                     };

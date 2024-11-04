@@ -7116,6 +7116,92 @@ class TestAdmissions:
         assert hash(admissions1) != hash(admissions4)
         assert hash(admissions1) != hash(admissions5)
 
+    def test_public_bytes(self):
+        ext = x509.Admissions(None, [])
+        assert ext.public_bytes() == b"0\x020\x00"
+
+        ext = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.com/"),
+            [],
+        )
+        assert (
+            ext.public_bytes() == b"0\x1c\x86\x18https://www.example.com/0\x00"
+        )
+
+        # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf
+        ext = x509.Admissions(
+            authority=x509.DirectoryName(
+                value=x509.Name(
+                    [
+                        x509.NameAttribute(
+                            x509.oid.NameOID.COUNTRY_NAME, "DE"
+                        ),
+                        x509.NameAttribute(
+                            x509.NameOID.ORGANIZATIONAL_UNIT_NAME,
+                            "Elektronisches Gesundheitsberuferegister",
+                        ),
+                    ]
+                )
+            ),
+            admissions=[
+                x509.Admission(
+                    admission_authority=x509.DNSName("gematik.de"),
+                    naming_authority=x509.NamingAuthority(
+                        x509.ObjectIdentifier("1.2.276.0.76.3.1.91"),
+                        "https://gematik.de/",
+                        (
+                            "Gesellschaft für Telematikanwendungen "
+                            "der Gesundheitskarte mbH"
+                        ),
+                    ),
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=x509.NamingAuthority(
+                                x509.ObjectIdentifier("1.2.276.0.76.3.1.1"),
+                                "https://www.kbv.de/",
+                                "KBV Kassenärztliche Bundesvereinigung",
+                            ),
+                            registration_number="123456789",
+                            profession_items=[
+                                "Ärztin/Arzt",
+                                (
+                                    "Orthopädieschuhmacher/-in "
+                                    "und Orthopädietechniker/-in"
+                                ),
+                            ],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.30"),
+                                x509.ObjectIdentifier("1.2.276.0.76.4.305"),
+                            ],
+                            # DER-encoded:
+                            # `x509.OtherName(
+                            #   type_id=x509.ObjectIdentifier('1.2.276.0.76.4.60'),
+                            #   value=b'\x0c\x1dProbe-Client Broker-Betreiber'
+                            # )`
+                            add_profession_info=(
+                                b"\xa0*\x06\x07*\x82\x14\x00L\x04<\xa0\x1f"
+                                b"\x0c\x1dProbe-Client Broker-Betreiber"
+                            ),
+                        )
+                    ],
+                ),
+            ],
+        )
+        assert ext.public_bytes() == (
+            b"0\x82\x01\xa6\xa4B0@1\x0b0\t\x06\x03U\x04\x06\x13\x02DE110/\x06"
+            b"\x03U\x04\x0b\x0c(Elektronisches Gesundheitsberuferegister0\x82"
+            b"\x01^0\x82\x01Z\xa0\x0c\x82\ngematik.de\xa1b0`\x06\x08*\x82\x14"
+            b"\x00L\x03\x01[\x16\x13https://gematik.de/\x0c?Gesellschaft f\xc3"
+            b"\xbcr Telematikanwendungen der Gesundheitskarte mbH0\x81\xe50"
+            b"\x81\xe2\xa0I0G\x06\x08*\x82\x14\x00L\x03\x01\x01\x16\x13https://www."
+            b"kbv.de/\x0c&KBV Kassen\xc3\xa4rztliche Bundesvereinigung0G\x0c"
+            b"\x0c\xc3\x84rztin/Arzt\x0c7Orthop\xc3\xa4dieschuhmacher/-in und "
+            b"Orthop\xc3\xa4dietechniker/-in0\x13\x06\x07*\x82\x14\x00L\x04\x1e"
+            b"\x06\x08*\x82\x14\x00L\x04\x821\x13\t123456789\x04,\xa0*\x06"
+            b"\x07*\x82\x14\x00L\x04<\xa0\x1f\x0c\x1dProbe-Client Broker-"
+            b"Betreiber"
+        )
+
 
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):

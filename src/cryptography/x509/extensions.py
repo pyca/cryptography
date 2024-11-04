@@ -2439,6 +2439,9 @@ class Admissions(ExtensionType):
     def __hash__(self) -> int:
         return hash((self.authority, tuple(self._admissions)))
 
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
 
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
