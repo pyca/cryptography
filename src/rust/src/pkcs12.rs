@@ -148,7 +148,7 @@ impl EncryptionAlgorithm {
                                 oid: asn1::DefinedByMarker::marker(),
                                 params:
                                     cryptography_x509::common::AlgorithmParameters::HmacWithSha256(
-                                        (),
+                                        Some(()),
                                     ),
                             }),
                         },
