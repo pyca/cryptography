@@ -7174,8 +7174,8 @@ class TestAdmissions:
                                 x509.ObjectIdentifier("1.2.276.0.76.4.305"),
                             ],
                             # DER-encoded:
-                            # `x509.OtherName(
-                            #   type_id=x509.ObjectIdentifier('1.2.276.0.76.4.60'),
+                            # `OtherName(
+                            #   type_id=ObjectIdentifier('1.2.276.0.76.4.60'),
                             #   value=b'\x0c\x1dProbe-Client Broker-Betreiber'
                             # )`
                             add_profession_info=(
