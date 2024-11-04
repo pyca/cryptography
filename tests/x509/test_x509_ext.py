@@ -6493,6 +6493,10 @@ class TestProfessionInfo:
         info2 = x509.ProfessionInfo(None, [], [], None, None)
         assert info1 == info2
 
+        info1 = x509.ProfessionInfo(None, [], None, None, None)
+        info2 = x509.ProfessionInfo(None, [], None, None, None)
+        assert info1 == info2
+
         info1 = x509.ProfessionInfo(
             x509.NamingAuthority(
                 x509.ObjectIdentifier("1.2.3"), "https://example.com", "spam"
@@ -6566,6 +6570,7 @@ class TestProfessionInfo:
         info8 = x509.ProfessionInfo(None, [], [], "spam", None)
         info9 = x509.ProfessionInfo(None, [], [], None, b"\x01\x02\x03")
         info10 = x509.ProfessionInfo(None, [], [], None, None)
+        info11 = x509.ProfessionInfo(None, [], None, None, None)
 
         assert info1 != info2
         assert info1 != info2
@@ -6577,6 +6582,7 @@ class TestProfessionInfo:
         assert info1 != info8
         assert info1 != info9
         assert info1 != info10
+        assert info1 != info11
         assert info1 != object()
 
     def test_repr(self):
@@ -6586,6 +6592,16 @@ class TestProfessionInfo:
             "naming_authority=None, "
             "profession_items=[], "
             "profession_oids=[], "
+            "registration_number=None, "
+            "add_profession_info=None)>"
+        )
+
+        info = x509.ProfessionInfo(None, [], None, None, None)
+        assert repr(info) == (
+            "<ProfessionInfo("
+            "naming_authority=None, "
+            "profession_items=[], "
+            "profession_oids=None, "
             "registration_number=None, "
             "add_profession_info=None)>"
         )
@@ -6659,6 +6675,10 @@ class TestProfessionInfo:
         info7 = x509.ProfessionInfo(
             x509.NamingAuthority(None, None, None), [], [], None, None
         )
+        info8 = x509.ProfessionInfo(
+            x509.NamingAuthority(None, None, None), [], None, None, None
+        )
+        info9 = x509.ProfessionInfo(None, [], None, None, None)
 
         assert hash(info1) == hash(info2)
         assert hash(info1) != hash(info3)
@@ -6666,6 +6686,8 @@ class TestProfessionInfo:
         assert hash(info1) != hash(info5)
         assert hash(info1) != hash(info6)
         assert hash(info1) != hash(info7)
+        assert hash(info1) != hash(info8)
+        assert hash(info1) != hash(info9)
 
 
 class TestAdmission:
