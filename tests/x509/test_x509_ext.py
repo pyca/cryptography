@@ -6995,6 +6995,106 @@ class TestAdmission:
         assert hash(admission1) != hash(admission6)
 
 
+class TestAdmissions:
+    def test_invalid_init(self):
+        with pytest.raises(TypeError):
+            x509.Admissions(
+                42,  # type:ignore[arg-type]
+                [],
+            )
+        with pytest.raises(TypeError):
+            x509.Admissions(
+                None,
+                42,  # type:ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            x509.Admissions(
+                None,
+                [42],  # type:ignore[list-item]
+            )
+        with pytest.raises(TypeError):
+            x509.Admissions(
+                None,
+                [None],  # type:ignore[list-item]
+            )
+
+    def test_eq(self):
+        admissions1 = x509.Admissions(None, [])
+        admissions2 = x509.Admissions(None, [])
+        assert admissions1 == admissions2
+
+        admissions1 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        admissions2 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        assert admissions1 == admissions2
+
+    def test_ne(self):
+        admissions1 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        admissions2 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"), []
+        )
+        admissions3 = x509.Admissions(
+            None,
+            [x509.Admission(None, None, [])],
+        )
+        admissions4 = x509.Admissions(None, [])
+
+        assert admissions1 != admissions2
+        assert admissions1 != admissions3
+        assert admissions1 != admissions4
+        assert admissions1 != object()
+
+    def test_repr(self):
+        admissions = x509.Admissions(None, [])
+        assert repr(admissions) == (
+            "<Admissions(authority=None, admissions=[])>"
+        )
+
+        admissions = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        assert repr(admissions) == (
+            "<Admissions("
+            "authority=<UniformResourceIdentifier("
+            "value='https://www.example.de')>, "
+            "admissions=[<Admission("
+            "admission_authority=None, "
+            "naming_authority=None, "
+            "profession_infos=[])>])>"
+        )
+
+    def test_hash(self):
+        admissions1 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        admissions2 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"),
+            [x509.Admission(None, None, [])],
+        )
+        admissions3 = x509.Admissions(
+            x509.UniformResourceIdentifier(value="https://www.example.de"), []
+        )
+        admissions4 = x509.Admissions(
+            None,
+            [x509.Admission(None, None, [])],
+        )
+        admissions5 = x509.Admissions(None, [])
+        assert hash(admissions1) == hash(admissions2)
+        assert hash(admissions1) != hash(admissions3)
+        assert hash(admissions1) != hash(admissions4)
+        assert hash(admissions1) != hash(admissions5)
+
+
 def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):

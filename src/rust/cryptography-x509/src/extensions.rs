@@ -326,6 +326,17 @@ pub struct Admission<'a> {
     */
 }
 
+// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct Admissions<'a> {
+    pub admission_authority: Option<name::GeneralName<'a>>,
+    /*
+    pub contents_of_admissions: common::Asn1ReadableOrWritable<
+        asn1::SequenceOf<'a, Admission<'a>>,
+        asn1::SequenceOfWriter<'a, Admission<'a>, Vec<Admission<'a>>>,
+    >,
+    */
+}
+
 #[cfg(test)]
 mod tests {
     use super::{BasicConstraints, Extension, Extensions, KeyUsage};
