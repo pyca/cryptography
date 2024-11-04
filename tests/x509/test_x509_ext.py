@@ -7153,7 +7153,7 @@ class TestAdmissions:
             ],
         )
         assert ext.public_bytes() == (
-            b"0\x1a0\x180\n\xa1\x020\x000\x040\x020\x000\n0\x080\x06\xa0\x020\x000\x00"
+            b"0\x1e0\x1c0\x0c\xa1\x020\x000\x060\x040\x000\x000\x0c0\n0\x08\xa0\x020\x000\x000\x00"
         )
 
         # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf

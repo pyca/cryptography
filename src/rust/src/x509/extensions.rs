@@ -420,22 +420,22 @@ fn encode_naming_authority<'a>(
     py: pyo3::Python<'_>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_naming_authority: &pyo3::Bound<'a, pyo3::PyAny>,
-) -> Result<extensions::NamingAuthority<'a>, CryptographyError> {
+) -> CryptographyResult<extensions::NamingAuthority<'a>> {
     let py_oid = py_naming_authority.getattr(pyo3::intern!(py, "id"))?;
-    let id = if py_oid.is_truthy()? {
+    let id = if !py_oid.is_none() {
         Some(py_oid_to_oid(py_oid)?)
     } else {
         None
     };
     let py_url = py_naming_authority.getattr(pyo3::intern!(py, "url"))?;
-    let url = if py_url.is_truthy()? {
+    let url = if !py_url.is_none() {
         let py_url_str = ka_str.add(py_url.extract::<PyBackedStr>()?);
         asn1::IA5String::new(py_url_str)
     } else {
         None
     };
     let py_text = py_naming_authority.getattr(pyo3::intern!(py, "text"))?;
-    let text = if py_text.is_truthy()? {
+    let text = if !py_text.is_none() {
         let py_text_str = ka_str.add(py_text.extract::<PyBackedStr>()?);
         Some(extensions::DisplayText::Utf8String(asn1::Utf8String::new(
             py_text_str,
@@ -451,9 +451,9 @@ fn encode_profession_info<'a>(
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_info: &pyo3::Bound<'a, pyo3::PyAny>,
-) -> Result<extensions::ProfessionInfo<'a>, CryptographyError> {
+) -> CryptographyResult<extensions::ProfessionInfo<'a>> {
     let py_naming_authority = py_info.getattr(pyo3::intern!(py, "naming_authority"))?;
-    let naming_authority = if py_naming_authority.is_truthy()? {
+    let naming_authority = if !py_naming_authority.is_none() {
         Some(encode_naming_authority(py, ka_str, &py_naming_authority)?)
     } else {
         None
@@ -469,7 +469,7 @@ fn encode_profession_info<'a>(
     let profession_items =
         common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(profession_items));
     let py_oids = py_info.getattr(pyo3::intern!(py, "profession_oids"))?;
-    let profession_oids = if py_oids.is_truthy()? {
+    let profession_oids = if !py_oids.is_none() {
         let mut profession_oids = vec![];
         for py_oid in py_oids.iter()? {
             let py_oid = py_oid?;
@@ -483,7 +483,7 @@ fn encode_profession_info<'a>(
         None
     };
     let py_registration_number = py_info.getattr(pyo3::intern!(py, "registration_number"))?;
-    let registration_number = if py_registration_number.is_truthy()? {
+    let registration_number = if !py_registration_number.is_none() {
         let py_registration_number_str =
             ka_str.add(py_registration_number.extract::<PyBackedStr>()?);
         asn1::PrintableString::new(py_registration_number_str)
@@ -491,7 +491,7 @@ fn encode_profession_info<'a>(
         None
     };
     let py_add_profession_info = py_info.getattr(pyo3::intern!(py, "add_profession_info"))?;
-    let add_profession_info = if py_add_profession_info.is_truthy()? {
+    let add_profession_info = if !py_add_profession_info.is_none() {
         Some(ka_bytes.add(py_add_profession_info.extract::<pyo3::pybacked::PyBackedBytes>()?))
     } else {
         None
@@ -510,9 +510,9 @@ fn encode_admission<'a>(
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_admission: &pyo3::Bound<'a, pyo3::PyAny>,
-) -> Result<extensions::Admission<'a>, CryptographyError> {
+) -> CryptographyResult<extensions::Admission<'a>> {
     let py_admission_authority = py_admission.getattr(pyo3::intern!(py, "admission_authority"))?;
-    let admission_authority = if py_admission_authority.is_truthy()? {
+    let admission_authority = if !py_admission_authority.is_none() {
         Some(x509::common::encode_general_name(
             py,
             ka_bytes,
@@ -523,7 +523,7 @@ fn encode_admission<'a>(
         None
     };
     let py_naming_authority = py_admission.getattr(pyo3::intern!(py, "naming_authority"))?;
-    let naming_authority = if py_naming_authority.is_truthy()? {
+    let naming_authority = if !py_naming_authority.is_none() {
         Some(encode_naming_authority(py, ka_str, &py_naming_authority)?)
     } else {
         None
@@ -694,7 +694,7 @@ pub(crate) fn encode_extension(
             let ka_bytes = cryptography_keepalive::KeepAlive::new();
             let ka_str = cryptography_keepalive::KeepAlive::new();
             let py_admission_authority = ext.getattr(pyo3::intern!(py, "authority"))?;
-            let admission_authority = if py_admission_authority.is_truthy()? {
+            let admission_authority = if !py_admission_authority.is_none() {
                 Some(x509::common::encode_general_name(
                     py,
                     &ka_bytes,
