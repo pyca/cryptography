@@ -7133,11 +7133,28 @@ class TestAdmissions:
             None,
             [
                 x509.Admission(
-                    None, None, [x509.ProfessionInfo(None, [], [], None, None)]
-                )
+                    None,
+                    x509.NamingAuthority(None, None, None),
+                    [x509.ProfessionInfo(None, [], [], None, None)],
+                ),
+                x509.Admission(
+                    None,
+                    None,
+                    [
+                        x509.ProfessionInfo(
+                            x509.NamingAuthority(None, None, None),
+                            [],
+                            [],
+                            None,
+                            None,
+                        )
+                    ],
+                ),
             ],
         )
-        assert ext.public_bytes() == b"0\n0\x080\x060\x040\x020\x00"
+        assert ext.public_bytes() == (
+            b"0\x1a0\x180\n\xa1\x020\x000\x040\x020\x000\n0\x080\x06\xa0\x020\x000\x00"
+        )
 
         # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf
         ext = x509.Admissions(
