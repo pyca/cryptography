@@ -2389,6 +2389,54 @@ class Admission:
         )
 
 
+class Admissions(ExtensionType):
+    oid = ExtensionOID.ADMISSIONS
+
+    def __init__(
+        self,
+        authority: GeneralName | None,
+        admissions: typing.Iterable[Admission],
+    ) -> None:
+        if authority is not None and not isinstance(authority, GeneralName):
+            raise TypeError("authority must be a GeneralName")
+
+        admissions = list(admissions)
+        if not all(
+            isinstance(admission, Admission) for admission in admissions
+        ):
+            raise TypeError(
+                "Every item in the contents_of_admissions list must be an "
+                "Admission"
+            )
+
+        self._authority = authority
+        self._admissions = admissions
+
+    __len__, __iter__, __getitem__ = _make_sequence_methods("_admissions")
+
+    @property
+    def authority(self) -> GeneralName | None:
+        return self._authority
+
+    def __repr__(self) -> str:
+        return (
+            f"<Admissions(authority={self._authority}, "
+            f"admissions={self._admissions})>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Admissions):
+            return NotImplemented
+
+        return (
+            self.authority == other.authority
+            and self._admissions == other._admissions
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.authority, *self._admissions))
+
+
 class UnrecognizedExtension(ExtensionType):
     def __init__(self, oid: ObjectIdentifier, value: bytes) -> None:
         if not isinstance(oid, ObjectIdentifier):
