@@ -7128,6 +7128,17 @@ class TestAdmissions:
             ext.public_bytes() == b"0\x1c\x86\x18https://www.example.com/0\x00"
         )
 
+        # test for encoding none values
+        ext = x509.Admissions(
+            None,
+            [
+                x509.Admission(
+                    None, None, [x509.ProfessionInfo(None, [], [], None, None)]
+                )
+            ],
+        )
+        assert ext.public_bytes() == b"0\n0\x080\x060\x040\x020\x00"
+
         # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf
         ext = x509.Admissions(
             authority=x509.DirectoryName(
