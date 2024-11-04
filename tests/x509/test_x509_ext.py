@@ -7156,20 +7156,6 @@ class TestAdmissions:
             b"0\x1a0\x180\n\xa1\x020\x000\x040\x020\x000\n0\x080\x06\xa0\x020\x000\x00"
         )
 
-        # test for non-ascii url value in naming authority
-        ext = x509.Admissions(
-            None,
-            [
-                x509.Admission(
-                    None,
-                    x509.NamingAuthority(None, "😄", None),
-                    [],
-                ),
-            ],
-        )
-        with pytest.raises(ValueError):
-            ext.public_bytes()
-
         # example values taken from https://gemspec.gematik.de/downloads/gemSpec/gemSpec_OID/gemSpec_OID_V3.17.0.pdf
         ext = x509.Admissions(
             authority=x509.DirectoryName(
@@ -7243,6 +7229,34 @@ class TestAdmissions:
             b"\x07*\x82\x14\x00L\x04<\xa0\x1f\x0c\x1dProbe-Client Broker-"
             b"Betreiber"
         )
+
+        # test for non-ascii url value in naming authority
+        ext = x509.Admissions(
+            None,
+            [
+                x509.Admission(
+                    None,
+                    x509.NamingAuthority(None, "😄", None),
+                    [],
+                ),
+            ],
+        )
+        with pytest.raises(ValueError):
+            ext.public_bytes()
+
+        # test for non-ascii registration number value in profession info
+        ext = x509.Admissions(
+            None,
+            [
+                x509.Admission(
+                    None,
+                    None,
+                    [x509.ProfessionInfo(None, [], [], "\x00", None)],
+                ),
+            ],
+        )
+        with pytest.raises(ValueError):
+            ext.public_bytes()
 
 
 def test_all_extension_oid_members_have_names_defined():

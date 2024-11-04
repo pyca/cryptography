@@ -493,7 +493,16 @@ fn encode_profession_info<'a>(
     let registration_number = if !py_registration_number.is_none() {
         let py_registration_number_str =
             ka_str.add(py_registration_number.extract::<PyBackedStr>()?);
-        asn1::PrintableString::new(py_registration_number_str)
+        match asn1::PrintableString::new(py_registration_number_str) {
+            Some(s) => Some(s),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "registration_number value must be a valid PrintableString",
+                    ),
+                ))
+            }
+        }
     } else {
         None
     };
