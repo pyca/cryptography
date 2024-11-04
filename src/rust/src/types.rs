@@ -263,6 +263,12 @@ pub static CERTIFICATE_VERSION_V1: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["Version", "v1"]);
 pub static CERTIFICATE_VERSION_V3: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["Version", "v3"]);
+pub static ADMISSION: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Admission"]);
+pub static NAMING_AUTHORITY: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["NamingAuthority"]);
+pub static PROFESSION_INFO: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["ProfessionInfo"]);
+pub static ADMISSIONS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Admissions"]);
 
 pub static CRL_REASON_FLAGS: LazyPyImport =
     LazyPyImport::new("cryptography.x509.extensions", &["_CRLREASONFLAGS"]);
