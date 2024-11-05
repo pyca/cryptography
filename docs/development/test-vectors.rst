@@ -546,9 +546,6 @@ Custom X.509 Vectors
   This is an invalid certificate per :rfc:`5280` 4.2.1.12.
 * ``malformed-san.pem`` - A certificate with a malformed SAN.
 * ``malformed-ian.pem`` - A certificate with a malformed IAN.
-* ``pkcs7/ca/rsa_ca.pem`` - A self-signed RSA certificate with ``basicConstraints``
-  set to true. Its private key is ``pkcs7/ca/rsa_key.pem``. This key is
-  encoded is used to attempt decoding the PKCS7 custom vectors.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
