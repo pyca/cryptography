@@ -223,6 +223,9 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.
     """
+    # reject invalid values early
+    if 17 != pow(17, e * d, n):
+        raise ValueError("n, d, e don't match")
     # See 8.2.2(i) in Handbook of Applied Cryptography.
     ktot = d * e - 1
     # The quantity d*e-1 is a multiple of phi(n), even,
@@ -238,6 +241,7 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     spotted = False
     tries = 0
     while not spotted and tries < _MAX_RECOVERY_ATTEMPTS:
+        print(tries)
         a = random.randint(2, n - 1)
         tries += 1
         k = t
