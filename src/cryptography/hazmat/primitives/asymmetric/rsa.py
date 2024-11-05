@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import random
 import typing
 from math import gcd
 
@@ -235,8 +236,10 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     # See "Digitalized Signatures and Public Key Functions as Intractable
     # as Factorization", M. Rabin, 1979
     spotted = False
-    a = 2
-    while not spotted and a < _MAX_RECOVERY_ATTEMPTS:
+    tries = 0
+    while not spotted and tries < _MAX_RECOVERY_ATTEMPTS:
+        a = random.randint(2, n-1)
+        tries += 1
         k = t
         # Cycle through all values a^{t*2^i}=a^k
         while k < ktot:
@@ -249,8 +252,6 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
                 spotted = True
                 break
             k *= 2
-        # This value was not any good... let's try another!
-        a += 2
     if not spotted:
         raise ValueError("Unable to compute factors p and q from exponent d.")
     # Found !
