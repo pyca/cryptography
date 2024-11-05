@@ -136,12 +136,13 @@ class TestArgon2id:
         with pytest.raises(AlreadyFinalized):
             argon2id.verify(b"password", digest)
 
-    def test_invalid_verify(self, backend):
+    @pytest.mark.parametrize("digest", [b"invalidkey", b"0" * 32])
+    def test_invalid_verify(self, digest, backend):
         argon2id = Argon2id(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         )
         with pytest.raises(InvalidKey):
-            argon2id.verify(b"password", b"invalidkey")
+            argon2id.verify(b"password", digest)
 
     def test_verify(self, backend):
         argon2id = Argon2id(

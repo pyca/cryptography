@@ -76,7 +76,8 @@ Argon2id
 
     **All arguments to the constructor are keyword-only.**
 
-    :param bytes salt: A salt.
+    :param bytes salt: A salt should be unique (and randomly generated) per
+        password and is recommended to be 16 bytes or longer
     :param int length: The desired length of the derived key in bytes.
     :param int iterations: Also known as passes, this is used to tune
         the running time independently of the memory size.
@@ -85,7 +86,7 @@ Argon2id
     :param int memory_cost: The amount of memory to use in kibibytes.
         1 kibibyte (KiB) is 1024 bytes.
     :param bytes ad: Optional associated data.
-    :param bytes secret: Optional secret data.
+    :param bytes secret: Optional secret data; used for keyed hashing.
 
     :rfc:`9106` has recommendations for `parameter choice`_.
 

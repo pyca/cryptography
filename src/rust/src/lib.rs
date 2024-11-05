@@ -229,7 +229,7 @@ mod _rust {
                         unsafe {
                             openssl_sys::OSSL_set_max_threads(ptr::null_mut(), available.get() as u64);
                         }
-                    };
+                    }
                 }
             }
 
