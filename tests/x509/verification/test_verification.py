@@ -204,3 +204,21 @@ class TestServerVerifier:
                 match="cert is not valid at validation time",
             ):
                 verifier.verify(leaf, [])
+
+    def test_error_message(self):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+
+        builder = PolicyBuilder().store(store)
+        verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+
+        with pytest.raises(
+            x509.verification.VerificationError,
+            match=r"<Certificate\(subject=.*?CN=www.cryptography.io.*?\)>",
+        ):
+            verifier.verify(leaf, [])

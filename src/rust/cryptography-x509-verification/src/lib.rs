@@ -45,13 +45,21 @@ pub enum ValidationErrorKind<'chain, B: CryptoOps> {
 
 pub struct ValidationError<'chain, B: CryptoOps> {
     kind: ValidationErrorKind<'chain, B>,
-    #[allow(dead_code)]
     cert: Option<VerificationCertificate<'chain, B>>,
 }
 
 impl<'chain, B: CryptoOps> ValidationError<'chain, B> {
     pub(crate) fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
         ValidationError { kind, cert: None }
+    }
+
+    pub(crate) fn set_cert(mut self, cert: VerificationCertificate<'chain, B>) -> Self {
+        self.cert = Some(cert);
+        self
+    }
+
+    pub fn certificate(&self) -> Option<&VerificationCertificate<'chain, B>> {
+        self.cert.as_ref()
     }
 }
 
@@ -447,7 +455,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         let leaf_extensions = leaf.certificate().extensions()?;
 
         self.policy
-            .permits_ee(leaf.certificate(), &leaf_extensions)?;
+            .permits_ee(leaf.certificate(), &leaf_extensions)
+            .map_err(|e| e.set_cert(leaf.clone()))?;
 
         let mut chain = self.build_chain_inner(
             leaf,
