@@ -28,12 +28,12 @@ pub(crate) struct ExtensionPolicy<B: CryptoOps> {
 }
 
 impl<B: CryptoOps> ExtensionPolicy<B> {
-    pub(crate) fn permits(
+    pub(crate) fn permits<'chain>(
         &self,
         policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
+        cert: &Certificate<'chain>,
         extensions: &Extensions<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         let mut authority_information_access_seen = false;
         let mut authority_key_identifier_seen = false;
         let mut subject_key_identifier_seen = false;
@@ -146,11 +146,17 @@ impl Criticality {
     }
 }
 
-type PresentExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, &Extension<'_>) -> ValidationResult<()>;
+type PresentExtensionValidatorCallback<B> = for<'chain> fn(
+    &Policy<'_, B>,
+    &Certificate<'chain>,
+    &Extension<'_>,
+) -> ValidationResult<'chain, (), B>;
 
-type MaybeExtensionValidatorCallback<B> =
-    fn(&Policy<'_, B>, &Certificate<'_>, Option<&Extension<'_>>) -> ValidationResult<()>;
+type MaybeExtensionValidatorCallback<B> = for<'chain> fn(
+    &Policy<'_, B>,
+    &Certificate<'chain>,
+    Option<&Extension<'_>>,
+) -> ValidationResult<'chain, (), B>;
 
 /// Represents different validation states for an extension.
 pub(crate) enum ExtensionValidator<B: CryptoOps> {
@@ -197,12 +203,12 @@ impl<B: CryptoOps> ExtensionValidator<B> {
         }
     }
 
-    pub(crate) fn permits(
+    pub(crate) fn permits<'chain>(
         &self,
         policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
+        cert: &Certificate<'chain>,
         extension: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         match (self, extension) {
             // Extension MUST NOT be present and isn't; OK.
             (ExtensionValidator::NotPresent, None) => Ok(()),
@@ -272,11 +278,11 @@ pub(crate) mod ee {
         policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult},
     };
 
-    pub(crate) fn basic_constraints<B: CryptoOps>(
+    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             let basic_constraints: BasicConstraints = extn.value()?;
 
@@ -290,11 +296,11 @@ pub(crate) mod ee {
         Ok(())
     }
 
-    pub(crate) fn subject_alternative_name<B: CryptoOps>(
+    pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
         cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         match (cert.subject().is_empty(), extn.critical) {
             // If the subject is empty, the SAN MUST be critical.
             (true, false) => {
@@ -327,11 +333,11 @@ pub(crate) mod ee {
         Ok(())
     }
 
-    pub(crate) fn extended_key_usage<B: CryptoOps>(
+    pub(crate) fn extended_key_usage<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
@@ -353,11 +359,11 @@ pub(crate) mod ee {
         }
     }
 
-    pub(crate) fn key_usage<B: CryptoOps>(
+    pub(crate) fn key_usage<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             let key_usage: KeyUsage<'_> = extn.value()?;
 
@@ -387,11 +393,11 @@ pub(crate) mod ca {
         policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult},
     };
 
-    pub(crate) fn authority_key_identifier<B: CryptoOps>(
+    pub(crate) fn authority_key_identifier<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         // CABF: AKI is required on all CA certificates *except* root CA certificates,
         // where is it merely recommended. This is slightly different from RFC 5280,
         // which requires AKI on all CA certificates *except* self-signed root CA certificates.
@@ -430,11 +436,11 @@ pub(crate) mod ca {
         Ok(())
     }
 
-    pub(crate) fn key_usage<B: CryptoOps>(
+    pub(crate) fn key_usage<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         let key_usage: KeyUsage<'_> = extn.value()?;
 
         if !key_usage.key_cert_sign() {
@@ -446,11 +452,11 @@ pub(crate) mod ca {
         Ok(())
     }
 
-    pub(crate) fn basic_constraints<B: CryptoOps>(
+    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: &Extension<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         let basic_constraints: BasicConstraints = extn.value()?;
 
         if !basic_constraints.ca {
@@ -466,11 +472,11 @@ pub(crate) mod ca {
         Ok(())
     }
 
-    pub(crate) fn name_constraints<B: CryptoOps>(
+    pub(crate) fn name_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             let name_constraints: NameConstraints<'_> = extn.value()?;
 
@@ -498,11 +504,11 @@ pub(crate) mod ca {
         Ok(())
     }
 
-    pub(crate) fn extended_key_usage<B: CryptoOps>(
+    pub(crate) fn extended_key_usage<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             let mut ekus: ExtendedKeyUsage<'_> = extn.value()?;
 
@@ -532,11 +538,11 @@ pub(crate) mod common {
         policy::{Policy, ValidationResult},
     };
 
-    pub(crate) fn authority_information_access<B: CryptoOps>(
+    pub(crate) fn authority_information_access<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
             // We don't currently do anything useful with these, but we
             // do check that they're well-formed.
@@ -594,11 +600,11 @@ mod tests {
         asn1::write_single(&ext).unwrap()
     }
 
-    fn present_extension_validator<B: CryptoOps>(
+    fn present_extension_validator<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: &Extension<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         Ok(())
     }
 
@@ -634,11 +640,11 @@ mod tests {
         assert!(extension_validator.permits(&policy, &cert, None).is_err());
     }
 
-    fn maybe_extension_validator<B: CryptoOps>(
+    fn maybe_extension_validator<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
         _cert: &Certificate<'_>,
         _ext: Option<&Extension<'_>>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         Ok(())
     }
 

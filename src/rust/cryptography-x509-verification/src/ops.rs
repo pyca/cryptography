@@ -33,6 +33,12 @@ impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
     }
 }
 
+impl<B: CryptoOps> std::fmt::Debug for VerificationCertificate<'_, B> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("VerificationCertificate").finish()
+    }
+}
+
 impl<B: CryptoOps> PartialEq for VerificationCertificate<'_, B> {
     fn eq(&self, other: &Self) -> bool {
         self.cert == other.cert
@@ -84,6 +90,8 @@ pub trait CryptoOps {
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use super::VerificationCertificate;
+    use crate::certificate::tests::PublicKeyErrorOps;
     use cryptography_x509::certificate::Certificate;
 
     pub(crate) fn v1_cert_pem() -> pem::Pem {
@@ -105,5 +113,14 @@ zl9HYIMxATFyqSiD9jsx
 
     pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
         asn1::parse_single(cert_pem.contents()).unwrap()
+    }
+
+    #[test]
+    fn test_verification_certificate_debug() {
+        let p = v1_cert_pem();
+        let c = cert(&p);
+        let vc = VerificationCertificate::<PublicKeyErrorOps>::new(&c, ());
+
+        assert_eq!(format!("{:?}", vc), "VerificationCertificate");
     }
 }

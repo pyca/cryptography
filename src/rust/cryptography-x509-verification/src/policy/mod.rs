@@ -373,7 +373,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         )
     }
 
-    fn permits_basic(&self, cert: &Certificate<'_>) -> ValidationResult<()> {
+    fn permits_basic<'chain>(&self, cert: &Certificate<'_>) -> ValidationResult<'chain, (), B> {
         // CA/B 7.1.1:
         // Certificates MUST be of type X.509 v3.
         if cert.tbs_cert.version != 2 {
@@ -436,12 +436,12 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 
     /// Checks whether the given CA certificate is compatible with this policy.
-    pub(crate) fn permits_ca(
+    pub(crate) fn permits_ca<'chain>(
         &self,
-        cert: &Certificate<'_>,
+        cert: &Certificate<'chain>,
         current_depth: u8,
         extensions: &Extensions<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert)?;
 
         // 5280 4.1.2.6: Subject
@@ -476,11 +476,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 
     /// Checks whether the given EE certificate is compatible with this policy.
-    pub(crate) fn permits_ee(
+    pub(crate) fn permits_ee<'chain>(
         &self,
-        cert: &Certificate<'_>,
+        cert: &Certificate<'chain>,
         extensions: &Extensions<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert)?;
 
         self.ee_extension_policy.permits(self, cert, extensions)?;
@@ -501,13 +501,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// may or may not be a higher number than the original depth, depending
     /// on the kind of validation performed (e.g., whether the issuer was
     /// self-issued).
-    pub(crate) fn valid_issuer(
+    pub(crate) fn valid_issuer<'chain>(
         &self,
-        issuer: &VerificationCertificate<'_, B>,
-        child: &VerificationCertificate<'_, B>,
+        issuer: &VerificationCertificate<'chain, B>,
+        child: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)?;
 
@@ -576,7 +576,9 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     }
 }
 
-fn permits_validity_date(validity_date: &Time) -> ValidationResult<()> {
+fn permits_validity_date<'chain, B: CryptoOps>(
+    validity_date: &Time,
+) -> ValidationResult<'chain, (), B> {
     const GENERALIZED_DATE_INVALIDITY_RANGE: Range<u16> = 1950..2050;
 
     // NOTE: The inverse check on `asn1::UtcTime` is already done for us
@@ -608,6 +610,7 @@ mod tests {
         RSASSA_PKCS1V15_SHA384, RSASSA_PKCS1V15_SHA512, RSASSA_PSS_SHA256, RSASSA_PSS_SHA384,
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
     };
+    use crate::certificate::tests::PublicKeyErrorOps;
     use crate::{
         policy::{
             Subject, SPKI_RSA, SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1,
@@ -777,8 +780,8 @@ mod tests {
             let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(permits_validity_date(&utc_validity).is_ok());
-            assert!(permits_validity_date(&generalized_validity).is_err());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&utc_validity).is_ok());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&generalized_validity).is_err());
         }
         {
             // 2049 date.
@@ -787,8 +790,8 @@ mod tests {
             let utc_validity = Time::UtcTime(asn1::UtcTime::new(utc_dt).unwrap());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(permits_validity_date(&utc_validity).is_ok());
-            assert!(permits_validity_date(&generalized_validity).is_err());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&utc_validity).is_ok());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&generalized_validity).is_err());
         }
         {
             // 2050 date.
@@ -797,7 +800,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(permits_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&generalized_validity).is_ok());
         }
         {
             // 2051 date.
@@ -807,7 +810,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(permits_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&generalized_validity).is_ok());
         }
         {
             // Post-2050 date.
@@ -817,7 +820,7 @@ mod tests {
             assert!(asn1::UtcTime::new(utc_dt).is_err());
             let generalized_validity =
                 Time::GeneralizedTime(asn1::GeneralizedTime::new(generalized_dt).unwrap());
-            assert!(permits_validity_date(&generalized_validity).is_ok());
+            assert!(permits_validity_date::<PublicKeyErrorOps>(&generalized_validity).is_ok());
         }
     }
 }

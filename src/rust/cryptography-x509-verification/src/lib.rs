@@ -32,9 +32,8 @@ use crate::types::DNSName;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 
-#[derive(Debug)]
-pub enum ValidationErrorKind {
-    CandidatesExhausted(Box<ValidationError>),
+pub enum ValidationErrorKind<'chain, B: CryptoOps> {
+    CandidatesExhausted(Box<ValidationError<'chain, B>>),
     Malformed(asn1::ParseError),
     ExtensionError {
         oid: ObjectIdentifier,
@@ -43,26 +42,28 @@ pub enum ValidationErrorKind {
     FatalError(&'static str),
     Other(String),
 }
-#[derive(Debug)]
-pub struct ValidationError {
-    kind: ValidationErrorKind,
+
+pub struct ValidationError<'chain, B: CryptoOps> {
+    kind: ValidationErrorKind<'chain, B>,
+    #[allow(dead_code)]
+    cert: Option<VerificationCertificate<'chain, B>>,
 }
 
-impl ValidationError {
-    pub(crate) fn new(kind: ValidationErrorKind) -> ValidationError {
-        ValidationError { kind }
+impl<'chain, B: CryptoOps> ValidationError<'chain, B> {
+    pub(crate) fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
+        ValidationError { kind, cert: None }
     }
 }
 
-pub type ValidationResult<T> = Result<T, ValidationError>;
+pub type ValidationResult<'chain, T, B> = Result<T, ValidationError<'chain, B>>;
 
-impl From<asn1::ParseError> for ValidationError {
+impl<B: CryptoOps> From<asn1::ParseError> for ValidationError<'_, B> {
     fn from(value: asn1::ParseError) -> Self {
         Self::new(ValidationErrorKind::Malformed(value))
     }
 }
 
-impl From<DuplicateExtensionsError> for ValidationError {
+impl<B: CryptoOps> From<DuplicateExtensionsError> for ValidationError<'_, B> {
     fn from(value: DuplicateExtensionsError) -> Self {
         Self::new(ValidationErrorKind::ExtensionError {
             oid: value.0,
@@ -71,7 +72,7 @@ impl From<DuplicateExtensionsError> for ValidationError {
     }
 }
 
-impl Display for ValidationError {
+impl<B: CryptoOps> Display for ValidationError<'_, B> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
             ValidationErrorKind::CandidatesExhausted(inner) => {
@@ -101,7 +102,7 @@ impl Budget {
         }
     }
 
-    fn name_constraint_check(&mut self) -> ValidationResult<()> {
+    fn name_constraint_check<'chain, B: CryptoOps>(&mut self) -> ValidationResult<'chain, (), B> {
         self.name_constraint_checks =
             self.name_constraint_checks.checked_sub(1).ok_or_else(|| {
                 ValidationError::new(ValidationErrorKind::FatalError(
@@ -118,11 +119,11 @@ struct NameChain<'a, 'chain> {
 }
 
 impl<'a, 'chain> NameChain<'a, 'chain> {
-    fn new(
+    fn new<B: CryptoOps>(
         child: Option<&'a NameChain<'a, 'chain>>,
         extensions: &Extensions<'chain>,
         self_issued_intermediate: bool,
-    ) -> ValidationResult<Self> {
+    ) -> ValidationResult<'chain, Self, B> {
         let sans = match (
             self_issued_intermediate,
             extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID),
@@ -136,12 +137,12 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         Ok(Self { child, sans })
     }
 
-    fn evaluate_single_constraint(
+    fn evaluate_single_constraint<B: CryptoOps>(
         &self,
         constraint: &GeneralName<'chain>,
         san: &GeneralName<'chain>,
         budget: &mut Budget,
-    ) -> ValidationResult<ApplyNameConstraintStatus> {
+    ) -> ValidationResult<'chain, ApplyNameConstraintStatus, B> {
         budget.name_constraint_check()?;
 
         match (constraint, san) {
@@ -205,11 +206,11 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         }
     }
 
-    fn evaluate_constraints(
+    fn evaluate_constraints<B: CryptoOps>(
         &self,
         constraints: &NameConstraints<'chain>,
         budget: &mut Budget,
-    ) -> ValidationResult<()> {
+    ) -> ValidationResult<'chain, (), B> {
         if let Some(child) = self.child {
             child.evaluate_constraints(constraints, budget)?;
         }
@@ -258,7 +259,7 @@ pub fn verify<'chain, B: CryptoOps>(
     intermediates: &[VerificationCertificate<'chain, B>],
     policy: &Policy<'_, B>,
     store: &Store<'chain, B>,
-) -> ValidationResult<Chain<'chain, B>> {
+) -> ValidationResult<'chain, Chain<'chain, B>, B> {
     let builder = ChainBuilder::new(intermediates, policy, store);
 
     let mut budget = Budget::new();
@@ -324,7 +325,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         working_cert_extensions: &Extensions<'chain>,
         name_chain: NameChain<'_, 'chain>,
         budget: &mut Budget,
-    ) -> ValidationResult<Chain<'chain, B>> {
+    ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             name_chain.evaluate_constraints(&nc.value()?, budget)?;
         }
@@ -346,7 +347,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 
         // Otherwise, we collect a list of potential issuers for this cert,
         // and continue with the first that verifies.
-        let mut last_err: Option<ValidationError> = None;
+        let mut last_err: Option<ValidationError<'_, B>> = None;
         for issuing_cert_candidate in self.potential_issuers(working_cert) {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
@@ -402,6 +403,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         Err(
                             e @ ValidationError {
                                 kind: ValidationErrorKind::FatalError(..),
+                                cert: _,
                             },
                         ) => return Err(e),
                         Err(e) => last_err = Some(e),
@@ -424,6 +426,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                     // Avoid spamming the user with nested `CandidatesExhausted` errors.
                     ValidationError {
                         kind: ValidationErrorKind::CandidatesExhausted(e),
+                        cert: _,
                     } => e,
                     _ => Box::new(e),
                 },
@@ -435,7 +438,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         &self,
         leaf: &VerificationCertificate<'chain, B>,
         budget: &mut Budget,
-    ) -> ValidationResult<Chain<'chain, B>> {
+    ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
         // Before anything else, check whether the given leaf cert
         // is well-formed according to our policy (and its underlying
         // certificate profile).
@@ -464,16 +467,17 @@ mod tests {
     use asn1::ParseError;
     use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 
+    use crate::certificate::tests::PublicKeyErrorOps;
     use crate::{ValidationError, ValidationErrorKind};
 
     #[test]
     fn test_validationerror_display() {
-        let err = ValidationError::new(ValidationErrorKind::Malformed(ParseError::new(
-            asn1::ParseErrorKind::InvalidLength,
-        )));
+        let err = ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::Malformed(
+            ParseError::new(asn1::ParseErrorKind::InvalidLength),
+        ));
         assert_eq!(err.to_string(), "ASN.1 parsing error: invalid length");
 
-        let err = ValidationError::new(ValidationErrorKind::ExtensionError {
+        let err = ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::ExtensionError {
             oid: SUBJECT_ALTERNATIVE_NAME_OID,
             reason: "duplicate extension",
         });
@@ -482,7 +486,8 @@ mod tests {
             "invalid extension: 2.5.29.17: duplicate extension"
         );
 
-        let err = ValidationError::new(ValidationErrorKind::FatalError("oops"));
+        let err =
+            ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));
         assert_eq!(err.to_string(), "fatal error: oops");
     }
 }
