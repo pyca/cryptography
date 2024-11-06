@@ -241,7 +241,6 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     spotted = False
     tries = 0
     while not spotted and tries < _MAX_RECOVERY_ATTEMPTS:
-        print(tries)
         a = random.randint(2, n - 1)
         tries += 1
         k = t
