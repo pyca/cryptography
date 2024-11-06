@@ -1861,6 +1861,148 @@ class TestRSACertificate:
         with pytest.raises(TypeError):
             cert.verify_directly_issued_by(leaf)
 
+    def test_admissions_extension(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "admissions_extension_cert_rsa2048.pem"
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        ext = cert.extensions.get_extension_for_class(x509.Admissions)
+        assert ext.value == x509.Admissions(
+            authority=None,
+            admissions=[
+                x509.Admission(
+                    admission_authority=None,
+                    naming_authority=None,
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=None,
+                            profession_items=["Netzkonnektor"],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.104")
+                            ],
+                            registration_number=None,
+                            add_profession_info=None,
+                        )
+                    ],
+                )
+            ],
+        )
+
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "admissions_extension_cert_synthetic.pem"
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        ext = cert.extensions.get_extension_for_class(x509.Admissions)
+        assert ext.value == x509.Admissions(
+            authority=x509.DirectoryName(
+                value=x509.Name(
+                    [
+                        x509.NameAttribute(
+                            oid=x509.NameOID.COUNTRY_NAME, value="DE"
+                        ),
+                        x509.NameAttribute(
+                            oid=x509.NameOID.ORGANIZATION_NAME,
+                            value="Elektronisches Gesundheitsberuferegister",
+                        ),
+                    ]
+                )
+            ),
+            admissions=[
+                x509.Admission(
+                    admission_authority=x509.RegisteredID(
+                        value=x509.NameOID.ORGANIZATION_NAME
+                    ),
+                    naming_authority=x509.NamingAuthority(
+                        id=x509.ObjectIdentifier("1.2.276.0.76.4.223"),
+                        url="",
+                        text="BetriebsstÃ¤tte GKV-Spitzenverband",
+                    ),
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=x509.NamingAuthority(
+                                id=x509.ObjectIdentifier("1.2.276.0.76.4.225"),
+                                url="https://example.com",
+                                text=(
+                                    "BetriebsstÃ¤tte Deutscher "
+                                    "Apothekerverband"
+                                ),
+                            ),
+                            profession_items=["Ã\x84rztin/Arzt", ""],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.30"),
+                                x509.ObjectIdentifier("1.2.276.0.76.4.31"),
+                            ],
+                            registration_number="9-999/99999999",
+                            add_profession_info=(
+                                b'\x16"additional profession info example'
+                            ),
+                        )
+                    ],
+                ),
+                x509.Admission(
+                    admission_authority=x509.OtherName(
+                        type_id=x509.NameOID.COUNTRY_NAME,
+                        value=b"\x04\x04\x13\x02DE",
+                    ),
+                    naming_authority=None,
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=x509.NamingAuthority(
+                                id=x509.ObjectIdentifier("1.2.276.0.76.4.227"),
+                                url=None,
+                                text=(
+                                    "BetriebsstÃ¤tte der Deutsche Krankenhaus "
+                                    "TrustCenter und Informationsverarbeitung "
+                                    "GmbH"
+                                ),
+                            ),
+                            profession_items=["Krankenhaus"],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.53"),
+                                x509.ObjectIdentifier("1.2.276.0.76.4.246"),
+                            ],
+                            registration_number="9.9.9-99999999",
+                            add_profession_info=None,
+                        ),
+                        x509.ProfessionInfo(
+                            naming_authority=None,
+                            profession_items=[
+                                "Krankenhaus",
+                                "BetriebsstÃ¤tte Geburtshilfe",
+                            ],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.53")
+                            ],
+                            registration_number="",
+                            add_profession_info=None,
+                        ),
+                    ],
+                ),
+                x509.Admission(
+                    admission_authority=None,
+                    naming_authority=None,
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=None,
+                            profession_items=[],
+                            profession_oids=[],
+                            registration_number=None,
+                            add_profession_info=None,
+                        )
+                    ],
+                ),
+                x509.Admission(
+                    admission_authority=None,
+                    naming_authority=None,
+                    profession_infos=[],
+                ),
+            ],
+        )
+
 
 class TestRSACertificateRequest:
     @pytest.mark.parametrize(
@@ -5645,6 +5787,49 @@ class TestECDSACertificate:
         cert_bad_sig = _break_cert_sig(cert)
         with pytest.raises(InvalidSignature):
             cert_bad_sig.verify_directly_issued_by(ca)
+
+    def test_admissions_extension(self, backend):
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "admissions_extension_cert_e256.pem"
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        ext = cert.extensions.get_extension_for_class(x509.Admissions)
+        assert ext.value == x509.Admissions(
+            authority=x509.DirectoryName(
+                value=x509.Name(
+                    [
+                        x509.NameAttribute(
+                            oid=x509.NameOID.COUNTRY_NAME, value="DE"
+                        ),
+                        x509.NameAttribute(
+                            oid=x509.NameOID.ORGANIZATION_NAME,
+                            value="äK Berlin",
+                        ),
+                    ]
+                )
+            ),
+            admissions=[
+                x509.Admission(
+                    admission_authority=None,
+                    naming_authority=None,
+                    profession_infos=[
+                        x509.ProfessionInfo(
+                            naming_authority=None,
+                            profession_items=[
+                                "Betriebsstätte Vorsorge- und Rehabilitation"
+                            ],
+                            profession_oids=[
+                                x509.ObjectIdentifier("1.2.276.0.76.4.257")
+                            ],
+                            registration_number="5-2-999999999",
+                            add_profession_info=None,
+                        )
+                    ],
+                )
+            ],
+        )
 
 
 class TestECDSACertificateRequest:

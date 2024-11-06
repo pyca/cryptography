@@ -546,6 +546,15 @@ Custom X.509 Vectors
   This is an invalid certificate per :rfc:`5280` 4.2.1.12.
 * ``malformed-san.pem`` - A certificate with a malformed SAN.
 * ``malformed-ian.pem`` - A certificate with a malformed IAN.
+* ``admissions_extension_cert_e256.pem`` - A certificate with the ``Admissions``
+  extension, signed using the ``ecPublicKey`` public key algorithm.
+  Submitted by gematik GmbH.
+* ``admissions_extension_cert_rsa2048.pem`` - A certificate with the ``Admissions``
+  extension, signed using the ``rsaEncryption`` public key algorithm.
+  Submitted by gematik GmbH.
+* ``admissions_extension_cert_synthetic.pem`` - A certificate containing
+  the ``Admissions`` extension with synthetic data,
+  signed by ``x509/custom/ca/rsa_ca.pem`` CA.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
