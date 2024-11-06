@@ -769,13 +769,17 @@ fn parse_profession_infos<'a>(
             let py_item = parse_display_text(py, item)?;
             py_profession_items.append(py_item)?;
         }
-        let py_profession_oids = pyo3::types::PyList::empty_bound(py);
-        if let Some(profession_oids) = info.profession_oids {
-            for oid in profession_oids.unwrap_read().clone() {
-                let py_oid = oid_to_py_oid(py, &oid)?.to_object(py);
-                py_profession_oids.append(py_oid)?;
-            }
-        }
+        let py_profession_oids = match info.profession_oids {
+            Some(oids) => {
+                let py_oids = pyo3::types::PyList::empty_bound(py);
+                for oid in oids.unwrap_read().clone() {
+                    let py_oid = oid_to_py_oid(py, &oid)?.to_object(py);
+                    py_oids.append(py_oid)?;
+                }
+                py_oids.to_object(py)
+            },
+            None => py.None(),
+        };
         let py_registration_number = match info.registration_number {
             Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).to_object(py),
             None => py.None(),

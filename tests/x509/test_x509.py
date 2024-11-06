@@ -1989,7 +1989,7 @@ class TestRSACertificate:
                         x509.ProfessionInfo(
                             naming_authority=None,
                             profession_items=[],
-                            profession_oids=[],
+                            profession_oids=None,
                             registration_number=None,
                             add_profession_info=None,
                         )
