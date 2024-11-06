@@ -734,7 +734,7 @@ pub(crate) fn parse_access_descriptions(
 fn parse_naming_authority<'p>(
     py: pyo3::Python<'p>,
     authority: NamingAuthority<'p>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::PyObject> {
     let py_id = match &authority.id {
         Some(data) => oid_to_py_oid(py, data)?.to_object(py),
         None => py.None(),
@@ -757,7 +757,7 @@ fn parse_naming_authority<'p>(
 fn parse_profession_infos<'a>(
     py: pyo3::Python<'_>,
     profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::PyObject> {
     let py_infos = pyo3::types::PyList::empty_bound(py);
     for info in profession_infos.clone() {
         let py_naming_authority = match info.naming_authority {
@@ -804,7 +804,7 @@ fn parse_profession_infos<'a>(
 fn parse_admissions<'a>(
     py: pyo3::Python<'_>,
     admissions: &asn1::SequenceOf<'a, Admission<'a>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::PyObject> {
     let py_admissions = pyo3::types::PyList::empty_bound(py);
     for admission in admissions.clone() {
         let py_admission_authority = match admission.admission_authority {
