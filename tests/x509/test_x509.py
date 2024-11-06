@@ -1997,6 +1997,11 @@ class TestRSACertificate:
                 ),
                 x509.Admission(
                     admission_authority=None,
+                    naming_authority=x509.NamingAuthority(None, None, None),
+                    profession_infos=[],
+                ),
+                x509.Admission(
+                    admission_authority=None,
                     naming_authority=None,
                     profession_infos=[],
                 ),
