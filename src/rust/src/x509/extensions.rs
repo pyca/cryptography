@@ -476,7 +476,7 @@ fn encode_profession_info<'a>(
     let profession_items =
         common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(profession_items));
     let py_oids = py_info.getattr(pyo3::intern!(py, "profession_oids"))?;
-    let profession_oids = if py_oids.is_truthy()? {
+    let profession_oids = if !py_oids.is_none() {
         let mut profession_oids = vec![];
         for py_oid in py_oids.iter()? {
             let py_oid = py_oid?;
