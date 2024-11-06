@@ -2311,14 +2311,14 @@ class ProfessionInfo:
 
     def __hash__(self) -> int:
         if self.profession_oids is None:
-            profession_oids: tuple[ObjectIdentifier | None, ...] = (None,)
+            profession_oids = None
         else:
             profession_oids = tuple(self.profession_oids)
         return hash(
             (
                 self.naming_authority,
                 *tuple(self.profession_items),
-                *tuple(profession_oids),
+                profession_oids,
                 self.registration_number,
                 self.add_profession_info,
             )
