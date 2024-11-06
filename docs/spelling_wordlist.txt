@@ -61,6 +61,8 @@ fallback
 Fernet
 fernet
 FIPS
+gematik
+GmbH
 Google
 hazmat
 Homebrew
