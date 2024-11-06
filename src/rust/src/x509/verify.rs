@@ -296,7 +296,7 @@ impl PyClientVerifier {
             policy,
             store.raw.borrow_dependent(),
         )
-        .map_err(|e| VerificationError::new_err(format!("validation failed: {e}")))?;
+        .or_else(|e| handle_validation_error(py, e))?;
 
         let py_chain = pyo3::types::PyList::empty_bound(py);
         for c in &chain {
@@ -380,7 +380,7 @@ impl PyServerVerifier {
             policy,
             store.raw.borrow_dependent(),
         )
-        .map_err(|e| VerificationError::new_err(format!("validation failed: {e}")))?;
+        .or_else(|e| handle_validation_error(py, e))?;
 
         let result = pyo3::types::PyList::empty_bound(py);
         for c in chain {
@@ -435,6 +435,19 @@ fn build_subject<'a>(
             Ok(Subject::IP(ip_addr))
         }
     }
+}
+
+fn handle_validation_error<T>(
+    py: pyo3::Python<'_>,
+    e: cryptography_x509_verification::ValidationError<'_, PyCryptoOps>,
+) -> CryptographyResult<T> {
+    let mut msg = format!("validation failed: {e}");
+    if let Some(cert) = e.certificate() {
+        let cert_repr = cert.extra().bind(py).repr()?;
+        msg = format!("{msg} (encountered processing {cert_repr})");
+    }
+
+    Err(CryptographyError::from(VerificationError::new_err(msg)))
 }
 
 type PyCryptoOpsStore<'a> = Store<'a, PyCryptoOps>;

@@ -509,7 +509,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         issuer_extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
-        self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)?;
+        self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)
+            .map_err(|e| e.set_cert(issuer.clone()))?;
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo
         // NOTE: We check the issuer's SPKI here, since the issuer is
