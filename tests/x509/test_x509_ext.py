@@ -6443,7 +6443,7 @@ class TestProfessionInfo:
             x509.ProfessionInfo(
                 None,
                 None,  # type:ignore[arg-type]
-                None,  # type:ignore[arg-type]
+                None,
                 None,
                 None,
             )
