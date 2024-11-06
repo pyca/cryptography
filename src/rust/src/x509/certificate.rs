@@ -8,11 +8,11 @@ use std::hash::{Hash, Hasher};
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
-    Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage, IssuerAlternativeName,
-    KeyUsage, MSCertificateTemplate, NameConstraints, NamingAuthority, PolicyConstraints, PolicyInformation,
-    PolicyQualifierInfo, ProfessionInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
-    SequenceOfSubtrees, UserNotice,
+    Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText,
+    DistributionPoint, DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage,
+    IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints, NamingAuthority,
+    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, ProfessionInfo, Qualifier,
+    RawExtensions, SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
@@ -781,9 +781,7 @@ fn parse_profession_infos<'a>(
             None => py.None(),
         };
         let py_add_profession_info = match info.add_profession_info {
-            Some(data) => pyo3::Py::<pyo3::PyAny>::from(
-                pyo3::types::PyBytes::new_bound(py, &data).to_object(py),
-            ),
+            Some(data) => pyo3::types::PyBytes::new_bound(py, data).to_object(py),
             None => py.None(),
         };
         let py_info = types::PROFESSION_INFO
