@@ -777,7 +777,7 @@ fn parse_profession_infos<'a>(
                     py_oids.append(py_oid)?;
                 }
                 py_oids.to_object(py)
-            },
+            }
             None => py.None(),
         };
         let py_registration_number = match info.registration_number {
