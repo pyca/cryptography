@@ -285,7 +285,7 @@ impl KeyUsage<'_> {
     }
 }
 
-// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct NamingAuthority<'a> {
     pub id: Option<asn1::ObjectIdentifier>,
     pub url: Option<asn1::IA5String<'a>>,
@@ -302,9 +302,9 @@ type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
     asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
 >;
 
-// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct ProfessionInfo<'a> {
-    // #[explicit(0)]
+    #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
     pub profession_items: SequenceOfDisplayTexts<'a>,
     pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
@@ -312,29 +312,25 @@ pub struct ProfessionInfo<'a> {
     pub add_profession_info: Option<&'a [u8]>,
 }
 
-// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Admission<'a> {
-    // #[explicit(0)]
+    #[explicit(0)]
     pub admission_authority: Option<name::GeneralName<'a>>,
-    // #[explicit(1)]
+    #[explicit(1)]
     pub naming_authority: Option<NamingAuthority<'a>>,
-    /*
     pub profession_infos: common::Asn1ReadableOrWritable<
         asn1::SequenceOf<'a, ProfessionInfo<'a>>,
         asn1::SequenceOfWriter<'a, ProfessionInfo<'a>, Vec<ProfessionInfo<'a>>>,
     >,
-    */
 }
 
-// #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Admissions<'a> {
     pub admission_authority: Option<name::GeneralName<'a>>,
-    /*
     pub contents_of_admissions: common::Asn1ReadableOrWritable<
         asn1::SequenceOf<'a, Admission<'a>>,
         asn1::SequenceOfWriter<'a, Admission<'a>, Vec<Admission<'a>>>,
     >,
-    */
 }
 
 #[cfg(test)]
