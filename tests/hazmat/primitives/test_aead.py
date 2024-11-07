@@ -363,6 +363,16 @@ class TestAESCCM:
         computed_pt2 = aesccm2.decrypt(bytearray(nonce), ct2, ad)
         assert computed_pt2 == pt
 
+    def test_max_data_length(self):
+        plaintext = b"A" * 65535
+        aad = b"authenticated but unencrypted data"
+        aesccm = AESCCM(AESCCM.generate_key(128))
+        nonce = os.urandom(13)
+
+        ciphertext = aesccm.encrypt(nonce, plaintext, aad)
+        decrypted_data = aesccm.decrypt(nonce, ciphertext, aad)
+        assert decrypted_data == plaintext
+
 
 def _load_gcm_vectors():
     vectors = _load_all_params(
