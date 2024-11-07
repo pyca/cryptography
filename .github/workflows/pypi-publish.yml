@@ -52,7 +52,7 @@ jobs:
           find tmpdist/ -type f -name 'cryptography*' -exec mv {} dist/ \;
 
       - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@61da13deb5f5124fb1536194f82ed3d9bbc7e8f3  # v1.12.0
+        uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc  # v1.12.2
         with:
           repository-url: ${{ env.PYPI_URL }}
           skip-existing: true
