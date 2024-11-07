@@ -892,9 +892,7 @@ class PolicyInformation:
 
     def __hash__(self) -> int:
         if self.policy_qualifiers is not None:
-            pq: tuple[str | UserNotice, ...] | None = tuple(
-                self.policy_qualifiers
-            )
+            pq = tuple(self.policy_qualifiers)
         else:
             pq = None
 
@@ -2310,14 +2308,14 @@ class ProfessionInfo:
         )
 
     def __hash__(self) -> int:
-        if self.profession_oids is None:
-            profession_oids = None
-        else:
+        if self.profession_oids is not None:
             profession_oids = tuple(self.profession_oids)
+        else:
+            profession_oids = None
         return hash(
             (
                 self.naming_authority,
-                *tuple(self.profession_items),
+                tuple(self.profession_items),
                 profession_oids,
                 self.registration_number,
                 self.add_profession_info,
@@ -2389,7 +2387,7 @@ class Admission:
             (
                 self.admission_authority,
                 self.naming_authority,
-                *tuple(self.profession_infos),
+                tuple(self.profession_infos),
             )
         )
 
@@ -2439,7 +2437,7 @@ class Admissions(ExtensionType):
         )
 
     def __hash__(self) -> int:
-        return hash((self.authority, *tuple(self._admissions)))
+        return hash((self.authority, tuple(self._admissions)))
 
 
 class UnrecognizedExtension(ExtensionType):
