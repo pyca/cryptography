@@ -213,9 +213,8 @@ def rsa_recover_private_exponent(e: int, p: int, q: int) -> int:
 
 
 # Controls the number of iterations rsa_recover_prime_factors will perform
-# to obtain the prime factors. Each iteration increments by 2 so the actual
-# maximum attempts is half this number.
-_MAX_RECOVERY_ATTEMPTS = 1000
+# to obtain the prime factors.
+_MAX_RECOVERY_ATTEMPTS = 500
 
 
 def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
