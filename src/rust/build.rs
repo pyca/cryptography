@@ -12,6 +12,9 @@ fn main() {
         if version >= 0x3_00_00_00_0 {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_300_OR_GREATER");
         }
+        if version >= 0x3_00_09_00_0 {
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_309_OR_GREATER");
+        }
         if version >= 0x3_02_00_00_0 {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_320_OR_GREATER");
         }

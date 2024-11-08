@@ -5,8 +5,9 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
+use crate::{error, exceptions};
 use pyo3::types::PyAnyMethods;
+use pyo3::ToPyObject;
 
 #[pyo3::pyclass(
     frozen,
@@ -76,7 +77,12 @@ impl DsaPrivateKey {
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
         let mut sig = vec![];
-        signer.sign_to_vec(data.as_bytes(), &mut sig)?;
+        signer.sign_to_vec(data.as_bytes(), &mut sig).map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err((
+                "DSA signing failed. This generally indicates an invalid key.",
+                error::list_from_openssl_error(py, &e).to_object(py),
+            ))
+        })?;
         Ok(pyo3::types::PyBytes::new_bound(py, &sig))
     }
 
