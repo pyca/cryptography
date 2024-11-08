@@ -703,6 +703,7 @@ impl AesGcm {
 )]
 struct AesCcm {
     ctx: LazyEvpCipherAead,
+    tag_length: usize,
 }
 
 #[pyo3::pymethods]
@@ -748,6 +749,7 @@ impl AesCcm {
 
                 Ok(AesCcm {
                     ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
+                    tag_length
                 })
             }
         }
@@ -824,7 +826,8 @@ impl AesCcm {
         let max_length = 1usize.checked_shl(8 * l_val as u32);
         // If `max_length` overflowed, then it's not possible for data to be
         // longer than it.
-        if max_length.map(|v| v < data_bytes.len()).unwrap_or(false) {
+        let pt_length = data_bytes.len().saturating_sub(self.tag_length);
+        if max_length.map(|v| v < pt_length).unwrap_or(false) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Data too long for nonce"),
             ));
