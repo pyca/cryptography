@@ -755,9 +755,9 @@ fn parse_naming_authority<'p>(
 }
 
 fn parse_profession_infos<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a>>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let py_infos = pyo3::types::PyList::empty_bound(py);
     for info in profession_infos.clone() {
         let py_naming_authority = match info.naming_authority {
@@ -788,19 +788,16 @@ fn parse_profession_infos<'a>(
             Some(data) => pyo3::types::PyBytes::new_bound(py, data).to_object(py),
             None => py.None(),
         };
-        let py_info = types::PROFESSION_INFO
-            .get(py)?
-            .call1((
-                py_naming_authority,
-                py_profession_items,
-                py_profession_oids,
-                py_registration_number,
-                py_add_profession_info,
-            ))?
-            .to_object(py);
+        let py_info = types::PROFESSION_INFO.get(py)?.call1((
+            py_naming_authority,
+            py_profession_items,
+            py_profession_oids,
+            py_registration_number,
+            py_add_profession_info,
+        ))?;
         py_infos.append(py_info)?;
     }
-    Ok(py_infos.to_object(py))
+    Ok(py_infos.into_any())
 }
 
 fn parse_admissions<'a>(
