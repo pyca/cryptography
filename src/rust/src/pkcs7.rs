@@ -59,14 +59,16 @@ fn serialize_certificates<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: asn1::SetOfWriter::new(&[]),
+        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(None),
         },
-        certificates: Some(asn1::SetOfWriter::new(&raw_certs)),
+        certificates: Some(common::Asn1ReadableOrWritable::new_write(
+            asn1::SetOfWriter::new(&raw_certs),
+        )),
         crls: None,
-        signer_infos: asn1::SetOfWriter::new(&[]),
+        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
     };
 
     let content_info = pkcs7::ContentInfo {
@@ -133,7 +135,9 @@ fn encrypt_and_serialize<'p>(
 
     let enveloped_data = pkcs7::EnvelopedData {
         version: 0,
-        recipient_infos: asn1::SetOfWriter::new(&recipient_infos),
+        recipient_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &recipient_infos,
+        )),
 
         encrypted_content_info: pkcs7::EncryptedContentInfo {
             content_type: PKCS7_DATA_OID,
@@ -317,7 +321,9 @@ fn sign_and_serialize<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: asn1::SetOfWriter::new(&digest_algs),
+        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &digest_algs,
+        )),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
@@ -325,10 +331,14 @@ fn sign_and_serialize<'p>(
         certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
-            Some(asn1::SetOfWriter::new(&certs))
+            Some(common::Asn1ReadableOrWritable::new_write(
+                asn1::SetOfWriter::new(&certs),
+            ))
         },
         crls: None,
-        signer_infos: asn1::SetOfWriter::new(&signer_infos),
+        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
+            &signer_infos,
+        )),
     };
 
     let content_info = pkcs7::ContentInfo {
