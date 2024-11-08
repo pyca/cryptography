@@ -122,7 +122,7 @@ packaging==24.0 ; python_full_version < '3.8'
     #   nox
     #   pytest
     #   sphinx
-packaging==24.1 ; python_full_version >= '3.8'
+packaging==24.2 ; python_full_version >= '3.8'
     # via
     #   build
     #   nox
