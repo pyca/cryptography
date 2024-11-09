@@ -549,6 +549,9 @@ Custom X.509 Vectors
 * ``admissions_extension_cert_synthetic.pem`` - A certificate containing
   the ``Admissions`` extension with synthetic data,
   signed by ``x509/custom/ca/rsa_ca.pem`` CA.
+* ``admissions_extension_cert_synthetic_missing_authority.pem`` -
+  A certificate containing the ``Admissions`` extension with no admissions
+  and no admission authority, signed by ``x509/custom/ca/rsa_ca.pem`` CA.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
