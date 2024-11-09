@@ -734,14 +734,14 @@ pub(crate) fn parse_access_descriptions(
 fn parse_naming_authority<'p>(
     py: pyo3::Python<'p>,
     authority: NamingAuthority<'p>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_id = match &authority.id {
-        Some(data) => oid_to_py_oid(py, data)?.to_object(py),
-        None => py.None(),
+        Some(data) => oid_to_py_oid(py, data)?,
+        None => py.None().bind(py).clone().into_any(),
     };
     let py_url = match authority.url {
-        Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).to_object(py),
-        None => py.None(),
+        Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+        None => py.None().bind(py).clone().into_any(),
     };
     let py_text = match authority.text {
         Some(data) => parse_display_text(py, data)?,
@@ -750,8 +750,7 @@ fn parse_naming_authority<'p>(
 
     Ok(types::NAMING_AUTHORITY
         .get(py)?
-        .call1((py_id, py_url, py_text))?
-        .to_object(py))
+        .call1((py_id, py_url, py_text))?)
 }
 
 fn parse_profession_infos<'a>(
@@ -762,7 +761,7 @@ fn parse_profession_infos<'a>(
     for info in profession_infos.clone() {
         let py_naming_authority = match info.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
-            None => py.None(),
+            None => py.None().bind(py).clone().into_any(),
         };
         let py_profession_items = pyo3::types::PyList::empty_bound(py);
         for item in info.profession_items.unwrap_read().clone() {
@@ -812,7 +811,7 @@ fn parse_admissions<'a>(
         };
         let py_naming_authority = match admission.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
-            None => py.None(),
+            None => py.None().bind(py).clone().into_any(),
         };
         let py_infos = parse_profession_infos(py, admission.profession_infos.unwrap_read())?;
 
