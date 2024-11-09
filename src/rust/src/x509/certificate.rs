@@ -800,9 +800,9 @@ fn parse_profession_infos<'a>(
 }
 
 fn parse_admissions<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     admissions: &asn1::SequenceOf<'a, Admission<'a>>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let py_admissions = pyo3::types::PyList::empty_bound(py);
     for admission in admissions.clone() {
         let py_admission_authority = match admission.admission_authority {
@@ -815,13 +815,14 @@ fn parse_admissions<'a>(
         };
         let py_infos = parse_profession_infos(py, admission.profession_infos.unwrap_read())?;
 
-        let py_entry = types::ADMISSION
-            .get(py)?
-            .call1((py_admission_authority, py_naming_authority, py_infos))?
-            .to_object(py);
+        let py_entry = types::ADMISSION.get(py)?.call1((
+            py_admission_authority,
+            py_naming_authority,
+            py_infos,
+        ))?;
         py_admissions.append(py_entry)?;
     }
-    Ok(py_admissions.to_object(py))
+    Ok(py_admissions.into_any())
 }
 
 pub fn parse_cert_ext<'p>(
