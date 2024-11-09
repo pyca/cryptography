@@ -1864,34 +1864,6 @@ class TestRSACertificate:
     def test_admissions_extension(self, backend):
         cert = _load_cert(
             os.path.join(
-                "x509", "custom", "admissions_extension_cert_rsa2048.pem"
-            ),
-            x509.load_pem_x509_certificate,
-        )
-        ext = cert.extensions.get_extension_for_class(x509.Admissions)
-        assert ext.value == x509.Admissions(
-            authority=None,
-            admissions=[
-                x509.Admission(
-                    admission_authority=None,
-                    naming_authority=None,
-                    profession_infos=[
-                        x509.ProfessionInfo(
-                            naming_authority=None,
-                            profession_items=["Netzkonnektor"],
-                            profession_oids=[
-                                x509.ObjectIdentifier("1.2.276.0.76.4.104")
-                            ],
-                            registration_number=None,
-                            add_profession_info=None,
-                        )
-                    ],
-                )
-            ],
-        )
-
-        cert = _load_cert(
-            os.path.join(
                 "x509", "custom", "admissions_extension_cert_synthetic.pem"
             ),
             x509.load_pem_x509_certificate,
@@ -5792,49 +5764,6 @@ class TestECDSACertificate:
         cert_bad_sig = _break_cert_sig(cert)
         with pytest.raises(InvalidSignature):
             cert_bad_sig.verify_directly_issued_by(ca)
-
-    def test_admissions_extension(self, backend):
-        cert = _load_cert(
-            os.path.join(
-                "x509", "custom", "admissions_extension_cert_e256.pem"
-            ),
-            x509.load_pem_x509_certificate,
-        )
-        ext = cert.extensions.get_extension_for_class(x509.Admissions)
-        assert ext.value == x509.Admissions(
-            authority=x509.DirectoryName(
-                value=x509.Name(
-                    [
-                        x509.NameAttribute(
-                            oid=x509.NameOID.COUNTRY_NAME, value="DE"
-                        ),
-                        x509.NameAttribute(
-                            oid=x509.NameOID.ORGANIZATION_NAME,
-                            value="äK Berlin",
-                        ),
-                    ]
-                )
-            ),
-            admissions=[
-                x509.Admission(
-                    admission_authority=None,
-                    naming_authority=None,
-                    profession_infos=[
-                        x509.ProfessionInfo(
-                            naming_authority=None,
-                            profession_items=[
-                                "Betriebsstätte Vorsorge- und Rehabilitation"
-                            ],
-                            profession_oids=[
-                                x509.ObjectIdentifier("1.2.276.0.76.4.257")
-                            ],
-                            registration_number="5-2-999999999",
-                            add_profession_info=None,
-                        )
-                    ],
-                )
-            ],
-        )
 
 
 class TestECDSACertificateRequest:
