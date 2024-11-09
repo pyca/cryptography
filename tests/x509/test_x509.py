@@ -1980,6 +1980,17 @@ class TestRSACertificate:
             ],
         )
 
+        cert = _load_cert(
+            os.path.join(
+                "x509",
+                "custom",
+                "admissions_extension_cert_synthetic_missing_authority.pem",
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        ext = cert.extensions.get_extension_for_class(x509.Admissions)
+        assert ext.value == x509.Admissions(authority=None, admissions=[])
+
 
 class TestRSACertificateRequest:
     @pytest.mark.parametrize(
