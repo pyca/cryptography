@@ -346,7 +346,7 @@ the root of trust:
 
     .. method:: require_not_present(oid)
 
-        Specifies that the extension identified by the given OID must not be present.
+        Specifies that the extension identified by the given OID must not be present (must be absent). 
 
         :param oid: The OID of the extension that must not be present.
 
@@ -354,7 +354,7 @@ the root of trust:
 
     .. method:: may_be_present(oid, criticality, validator_cb)
 
-        Specifies that the extension identified by the given OID may or may not be present.
+        Specifies that the extension identified by the given OID is optional.
         If it is present, it must conform to the given criticality constraint. 
         An optional validator callback may be provided.
 
