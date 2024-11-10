@@ -551,8 +551,8 @@ Custom X.509 Vectors
   signed by ``x509/custom/ca/rsa_ca.pem`` CA. The admissions in this certificate
   are prepared using synthetic data to verify the possible corner cases are handled
   by the parser correctly (an admission missing naming authority or admission
-  authority or profession infos, a profession info missing naming authority
-  or profession OIDs or the registration number etc).
+  authority, a profession info missing naming authority or profession OIDs
+  or the registration number etc).
 * ``admissions_extension_authority_not_provided.pem`` - A certificate containing
   the ``Admissions`` extension with no admissions and no admission authority,
   signed by ``x509/custom/ca/rsa_ca.pem`` CA.
