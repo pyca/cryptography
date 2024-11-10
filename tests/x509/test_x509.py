@@ -1864,7 +1864,9 @@ class TestRSACertificate:
     def test_admissions_extension(self, backend):
         cert = _load_cert(
             os.path.join(
-                "x509", "custom", "admissions_extension_cert_synthetic.pem"
+                "x509",
+                "custom",
+                "admissions_extension_optional_data_not_provided.pem",
             ),
             x509.load_pem_x509_certificate,
         )
@@ -1984,7 +1986,7 @@ class TestRSACertificate:
             os.path.join(
                 "x509",
                 "custom",
-                "admissions_extension_cert_synthetic_missing_authority.pem",
+                "admissions_extension_authority_not_provided.pem",
             ),
             x509.load_pem_x509_certificate,
         )
