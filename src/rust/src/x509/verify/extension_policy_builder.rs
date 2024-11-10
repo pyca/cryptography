@@ -1,4 +1,3 @@
-use std::net::IpAddr;
 use std::sync::Arc;
 
 use cryptography_x509::oid::{
@@ -11,20 +10,19 @@ use cryptography_x509::{certificate::Certificate, extensions::Extension};
 
 use cryptography_x509_verification::policy::{
     Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback, Policy,
-    PresentExtensionValidatorCallback, Subject,
+    PresentExtensionValidatorCallback,
 };
 use cryptography_x509_verification::ValidationError;
 use pyo3::types::PyAnyMethods;
 use pyo3::PyResult;
 
-use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
+use crate::asn1::py_oid_to_oid;
 
 use crate::error::CryptographyResult;
-use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::certificate::{parse_cert_ext, OwnedCertificate};
-use crate::x509::datetime_to_py;
 
+use super::py_policy::PyPolicy;
 use super::PyCryptoOps;
 
 #[pyo3::pyclass(
@@ -50,62 +48,6 @@ impl From<PyCriticality> for Criticality {
             PyCriticality::Agnostic => Criticality::Agnostic,
             PyCriticality::NonCritical => Criticality::NonCritical,
         }
-    }
-}
-
-#[pyo3::pyclass(module = "cryptography.x509.verification", name = "Policy")]
-/// This is just a wrapper that exposes policy to python extension validator callbacks.
-pub(crate) struct PyPolicy {
-    #[pyo3(get)]
-    max_chain_depth: u8,
-    #[pyo3(get)]
-    subject: Option<pyo3::PyObject>,
-    #[pyo3(get)]
-    validation_time: pyo3::PyObject,
-    #[pyo3(get)]
-    extended_key_usage: pyo3::PyObject,
-    #[pyo3(get)]
-    minimum_rsa_modulus: usize,
-}
-
-impl PyPolicy {
-    fn from_rust_policy(
-        py: pyo3::Python<'_>,
-        policy: &Policy<'_, PyCryptoOps>,
-    ) -> pyo3::PyResult<PyPolicy> {
-        let subject = if let Some(subject) = &policy.subject {
-            Some(
-                match subject {
-                    Subject::DNS(dns_name) => {
-                        types::DNS_NAME.get(py)?.call1((dns_name.as_str(),))?
-                    }
-                    Subject::IP(ip_address) => {
-                        let ip_string = Into::<IpAddr>::into(*ip_address).to_string();
-                        let py_ip_address =
-                            types::IPADDRESS_IPADDRESS.get(py)?.call1((ip_string,))?;
-                        types::IP_ADDRESS.get(py)?.call1((py_ip_address,))?
-                    }
-                }
-                .as_unbound()
-                .clone_ref(py),
-            )
-        } else {
-            None
-        };
-
-        let extended_key_usage = oid_to_py_oid(py, &policy.extended_key_usage)?
-            .as_unbound()
-            .clone_ref(py);
-
-        Ok(PyPolicy {
-            max_chain_depth: policy.max_chain_depth,
-            subject,
-            validation_time: datetime_to_py(py, &policy.validation_time)?
-                .as_unbound()
-                .clone_ref(py),
-            extended_key_usage,
-            minimum_rsa_modulus: policy.minimum_rsa_modulus,
-        })
     }
 }
 
@@ -221,7 +163,7 @@ fn make_python_callback_args<'p>(
     ValidationError,
 > {
     let py_policy = PyPolicy::from_rust_policy(py, policy).map_err(|e| {
-        ValidationError::Other(format!("{e} (while converting to python policy object)"))
+        ValidationError::Other(format!("{e} (while converting Policy object to python)"))
     })?;
     let py_cert = cert_to_py_cert(py, cert).map_err(|e| {
         ValidationError::Other(format!(

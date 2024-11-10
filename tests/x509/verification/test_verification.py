@@ -10,6 +10,7 @@ from ipaddress import IPv4Address
 import pytest
 
 from cryptography import x509
+from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
@@ -52,6 +53,7 @@ class TestPolicyBuilder:
             PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(IPAddress(IPv4Address("0.0.0.0")))
+            .policy
         )
         assert policy.subject == IPAddress(IPv4Address("0.0.0.0"))
 
@@ -60,6 +62,7 @@ class TestPolicyBuilder:
             PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(DNSName("cryptography.io"))
+            .policy
         )
         assert policy.subject == DNSName("cryptography.io")
 
@@ -91,10 +94,15 @@ class TestPolicyBuilder:
         builder = builder.max_chain_depth(max_chain_depth)
 
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))
-        assert verifier.subject == DNSName("cryptography.io")
-        assert verifier.validation_time == now
-        assert verifier.store == store
-        assert verifier.max_chain_depth == max_chain_depth
+        assert verifier.store is store
+
+        policy = verifier.policy
+        assert policy.extended_key_usage == ExtendedKeyUsageOID.SERVER_AUTH
+        assert policy.max_chain_depth == max_chain_depth
+        # this is not currently customizable
+        assert policy.minimum_rsa_modulus == 2048
+        assert policy.subject == DNSName("cryptography.io")
+        assert policy.validation_time == now
 
     def test_build_server_verifier_missing_store(self):
         with pytest.raises(
@@ -136,9 +144,15 @@ class TestClientVerifier:
         builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
 
-        assert verifier.validation_time == validation_time.replace(tzinfo=None)
-        assert verifier.max_chain_depth == 16
         assert verifier.store is store
+
+        policy = verifier.policy
+        assert policy.extended_key_usage == ExtendedKeyUsageOID.CLIENT_AUTH
+        assert policy.max_chain_depth == 16
+        # this is not currently customizable
+        assert policy.minimum_rsa_modulus == 2048
+        assert policy.subject is None
+        assert policy.validation_time == validation_time.replace(tzinfo=None)
 
         verified_client = verifier.verify(leaf, [])
         assert verified_client.chain == [leaf]
