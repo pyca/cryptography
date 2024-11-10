@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import random
 import typing
 from math import gcd
 
@@ -212,9 +213,8 @@ def rsa_recover_private_exponent(e: int, p: int, q: int) -> int:
 
 
 # Controls the number of iterations rsa_recover_prime_factors will perform
-# to obtain the prime factors. Each iteration increments by 2 so the actual
-# maximum attempts is half this number.
-_MAX_RECOVERY_ATTEMPTS = 1000
+# to obtain the prime factors.
+_MAX_RECOVERY_ATTEMPTS = 500
 
 
 def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
@@ -222,6 +222,9 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     Compute factors p and q from the private exponent d. We assume that n has
     no more than two factors. This function is adapted from code in PyCrypto.
     """
+    # reject invalid values early
+    if 17 != pow(17, e * d, n):
+        raise ValueError("n, d, e don't match")
     # See 8.2.2(i) in Handbook of Applied Cryptography.
     ktot = d * e - 1
     # The quantity d*e-1 is a multiple of phi(n), even,
@@ -235,8 +238,10 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     # See "Digitalized Signatures and Public Key Functions as Intractable
     # as Factorization", M. Rabin, 1979
     spotted = False
-    a = 2
-    while not spotted and a < _MAX_RECOVERY_ATTEMPTS:
+    tries = 0
+    while not spotted and tries < _MAX_RECOVERY_ATTEMPTS:
+        a = random.randint(2, n - 1)
+        tries += 1
         k = t
         # Cycle through all values a^{t*2^i}=a^k
         while k < ktot:
@@ -249,8 +254,6 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
                 spotted = True
                 break
             k *= 2
-        # This value was not any good... let's try another!
-        a += 2
     if not spotted:
         raise ValueError("Unable to compute factors p and q from exponent d.")
     # Found !
