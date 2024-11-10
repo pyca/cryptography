@@ -737,11 +737,11 @@ fn parse_naming_authority<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_id = match &authority.id {
         Some(data) => oid_to_py_oid(py, data)?,
-        None => py.None().bind(py).clone().into_any(),
+        None => py.None().into_bound(py),
     };
     let py_url = match authority.url {
         Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
-        None => py.None().bind(py).clone().into_any(),
+        None => py.None().into_bound(py),
     };
     let py_text = match authority.text {
         Some(data) => parse_display_text(py, data)?,
@@ -761,7 +761,7 @@ fn parse_profession_infos<'a>(
     for info in profession_infos.clone() {
         let py_naming_authority = match info.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
-            None => py.None().bind(py).clone().into_any(),
+            None => py.None().into_bound(py),
         };
         let py_profession_items = pyo3::types::PyList::empty_bound(py);
         for item in info.profession_items.unwrap_read().clone() {
@@ -772,20 +772,20 @@ fn parse_profession_infos<'a>(
             Some(oids) => {
                 let py_oids = pyo3::types::PyList::empty_bound(py);
                 for oid in oids.unwrap_read().clone() {
-                    let py_oid = oid_to_py_oid(py, &oid)?.to_object(py);
+                    let py_oid = oid_to_py_oid(py, &oid)?;
                     py_oids.append(py_oid)?;
                 }
-                py_oids.to_object(py)
+                py_oids.into_any()
             }
-            None => py.None(),
+            None => py.None().into_bound(py),
         };
         let py_registration_number = match info.registration_number {
-            Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).to_object(py),
-            None => py.None(),
+            Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+            None => py.None().into_bound(py),
         };
         let py_add_profession_info = match info.add_profession_info {
-            Some(data) => pyo3::types::PyBytes::new_bound(py, data).to_object(py),
-            None => py.None(),
+            Some(data) => pyo3::types::PyBytes::new_bound(py, data).into_any(),
+            None => py.None().into_bound(py),
         };
         let py_info = types::PROFESSION_INFO.get(py)?.call1((
             py_naming_authority,
@@ -811,7 +811,7 @@ fn parse_admissions<'a>(
         };
         let py_naming_authority = match admission.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
-            None => py.None().bind(py).clone().into_any(),
+            None => py.None().into_bound(py),
         };
         let py_infos = parse_profession_infos(py, admission.profession_infos.unwrap_read())?;
 
