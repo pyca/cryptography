@@ -66,7 +66,7 @@ ssh = ["bcrypt >=3.1.5"]
 nox = ["nox", "nox[uv] >=2024.03.02; python_version >= '3.8'"]
 test = [
     "cryptography_vectors",
-    "pytest >=6.2.0",
+    "pytest >=7.2.0",
     "pytest-benchmark",
     "pytest-cov",
     "pytest-xdist",
@@ -76,7 +76,7 @@ test = [
 test-randomorder = ["pytest-randomly"]
 docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=3.0.0; python_version >= '3.8'"]
 docstest = ["pyenchant >=1.6.11", "readme-renderer", "sphinxcontrib-spelling >=4.0.1"]
-sdist = ["build"]
+sdist = ["build >=1.0.0"]
 # `click` included because its needed to type check `release.py`
 pep8test = ["ruff", "mypy", "check-sdist; python_version >= '3.8'", "click"]
 
