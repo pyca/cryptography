@@ -15,3 +15,5 @@ _MEM_LIMIT = sys.maxsize // 2
 
 Scrypt = rust_openssl.kdf.Scrypt
 KeyDerivationFunction.register(Scrypt)
+
+__all__ = ["Scrypt"]
