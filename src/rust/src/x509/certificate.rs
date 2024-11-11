@@ -8,11 +8,11 @@ use std::hash::{Hash, Hasher};
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
-    AuthorityKeyIdentifier, BasicConstraints, DisplayText, DistributionPoint,
-    DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage, IssuerAlternativeName,
-    KeyUsage, MSCertificateTemplate, NameConstraints, PolicyConstraints, PolicyInformation,
-    PolicyQualifierInfo, Qualifier, RawExtensions, SequenceOfAccessDescriptions,
-    SequenceOfSubtrees, UserNotice,
+    Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText,
+    DistributionPoint, DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage,
+    IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints, NamingAuthority,
+    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, ProfessionInfo, Qualifier,
+    RawExtensions, SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
 };
 use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
@@ -731,6 +731,100 @@ pub(crate) fn parse_access_descriptions(
     Ok(ads.to_object(py))
 }
 
+fn parse_naming_authority<'p>(
+    py: pyo3::Python<'p>,
+    authority: NamingAuthority<'p>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let py_id = match &authority.id {
+        Some(data) => oid_to_py_oid(py, data)?,
+        None => py.None().into_bound(py),
+    };
+    let py_url = match authority.url {
+        Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+        None => py.None().into_bound(py),
+    };
+    let py_text = match authority.text {
+        Some(data) => parse_display_text(py, data)?,
+        None => py.None(),
+    };
+
+    Ok(types::NAMING_AUTHORITY
+        .get(py)?
+        .call1((py_id, py_url, py_text))?)
+}
+
+fn parse_profession_infos<'a>(
+    py: pyo3::Python<'a>,
+    profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a>>,
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let py_infos = pyo3::types::PyList::empty_bound(py);
+    for info in profession_infos.clone() {
+        let py_naming_authority = match info.naming_authority {
+            Some(data) => parse_naming_authority(py, data)?,
+            None => py.None().into_bound(py),
+        };
+        let py_profession_items = pyo3::types::PyList::empty_bound(py);
+        for item in info.profession_items.unwrap_read().clone() {
+            let py_item = parse_display_text(py, item)?;
+            py_profession_items.append(py_item)?;
+        }
+        let py_profession_oids = match info.profession_oids {
+            Some(oids) => {
+                let py_oids = pyo3::types::PyList::empty_bound(py);
+                for oid in oids.unwrap_read().clone() {
+                    let py_oid = oid_to_py_oid(py, &oid)?;
+                    py_oids.append(py_oid)?;
+                }
+                py_oids.into_any()
+            }
+            None => py.None().into_bound(py),
+        };
+        let py_registration_number = match info.registration_number {
+            Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+            None => py.None().into_bound(py),
+        };
+        let py_add_profession_info = match info.add_profession_info {
+            Some(data) => pyo3::types::PyBytes::new_bound(py, data).into_any(),
+            None => py.None().into_bound(py),
+        };
+        let py_info = types::PROFESSION_INFO.get(py)?.call1((
+            py_naming_authority,
+            py_profession_items,
+            py_profession_oids,
+            py_registration_number,
+            py_add_profession_info,
+        ))?;
+        py_infos.append(py_info)?;
+    }
+    Ok(py_infos.into_any())
+}
+
+fn parse_admissions<'a>(
+    py: pyo3::Python<'a>,
+    admissions: &asn1::SequenceOf<'a, Admission<'a>>,
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let py_admissions = pyo3::types::PyList::empty_bound(py);
+    for admission in admissions.clone() {
+        let py_admission_authority = match admission.admission_authority {
+            Some(authority) => x509::parse_general_name(py, authority)?,
+            None => py.None(),
+        };
+        let py_naming_authority = match admission.naming_authority {
+            Some(data) => parse_naming_authority(py, data)?,
+            None => py.None().into_bound(py),
+        };
+        let py_infos = parse_profession_infos(py, admission.profession_infos.unwrap_read())?;
+
+        let py_entry = types::ADMISSION.get(py)?.call1((
+            py_admission_authority,
+            py_naming_authority,
+            py_infos,
+        ))?;
+        py_admissions.append(py_entry)?;
+    }
+    Ok(py_admissions.into_any())
+}
+
 pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
@@ -868,6 +962,20 @@ pub fn parse_cert_ext<'p>(
                 ms_cert_tpl.major_version,
                 ms_cert_tpl.minor_version,
             ))?))
+        }
+        oid::ADMISSIONS_OID => {
+            let admissions = ext.value::<Admissions<'_>>()?;
+            let admission_authority = match admissions.admission_authority {
+                Some(authority) => x509::parse_general_name(py, authority)?,
+                None => py.None(),
+            };
+            let py_admissions =
+                parse_admissions(py, admissions.contents_of_admissions.unwrap_read())?;
+            Ok(Some(
+                types::ADMISSIONS
+                    .get(py)?
+                    .call1((admission_authority, py_admissions))?,
+            ))
         }
         _ => Ok(None),
     }
