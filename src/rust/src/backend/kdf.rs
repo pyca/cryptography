@@ -224,7 +224,7 @@ impl Argon2id {
                     ));
                 }
 
-                if salt.extract::<&[u8]>(py)?.len() < 8 {
+                if salt.as_bytes(py).len() < 8 {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
                             "salt must be at least 8 bytes"
@@ -253,7 +253,7 @@ impl Argon2id {
                     ));
                 }
 
-                if memory_cost < 8 * lanes {
+                if memory_cost / 8 < lanes {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
                             "memory_cost must be an integer >= 8 * lanes."
