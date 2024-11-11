@@ -23,7 +23,8 @@ Changelog
 * Relax the Authority Key Identifier requirements on root CA certificates
   during X.509 verification to allow fields permitted by :rfc:`5280` but
   forbidden by the CA/Browser BRs.
-* Added support for :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`.
+* Added support for :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`
+  when using OpenSSL 3.2.0+.
 
 .. _v43-0-3:
 

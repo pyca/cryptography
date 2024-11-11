@@ -84,7 +84,7 @@ Argon2id
     :param int lanes: The number of lanes (parallel threads) to use. Also
         known as parallelism.
     :param int memory_cost: The amount of memory to use in kibibytes.
-        1 kibibyte (KiB) is 1024 bytes.
+        1 kibibyte (KiB) is 1024 bytes. This must be at minimum 8 * ``lanes``.
     :param bytes ad: Optional associated data.
     :param bytes secret: Optional secret data; used for keyed hashing.
 

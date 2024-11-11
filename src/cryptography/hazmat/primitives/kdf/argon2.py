@@ -9,3 +9,5 @@ from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 Argon2id = rust_openssl.kdf.Argon2id
 KeyDerivationFunction.register(Argon2id)
+
+__all__ = ["Argon2id"]
