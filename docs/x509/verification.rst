@@ -133,6 +133,10 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
+    .. versionchanged:: 44.0.0
+        ``verification_time`` and ``max_chain_depth`` were replaced by the 
+        ``policy`` property that provides access to these values.
+
     A ClientVerifier verifies client certificates.
 
     It contains and describes various pieces of configurable path
@@ -142,17 +146,11 @@ the root of trust:
     ClientVerifier instances cannot be constructed directly;
     :class:`PolicyBuilder` must be used.
 
-    .. attribute:: validation_time
+    .. attribute:: policy
 
-        :type: :class:`datetime.datetime`
+        :type: :class:`Policy`
 
-        The verifier's validation time.
-
-    .. attribute:: max_chain_depth
-
-        :type: :class:`int`
-
-        The verifier's maximum intermediate CA chain depth.
+        The policy used by the verifier. Can be used to access verification time, chain depth, etc.
 
     .. attribute:: store
 
@@ -181,6 +179,11 @@ the root of trust:
 
     .. versionadded:: 42.0.0
 
+    .. versionchanged:: 44.0.0
+        ``subject``, ``verification_time`` and ``max_chain_depth`` were replaced by the 
+        ``policy`` property that provides access to these values.
+
+
     A ServerVerifier verifies server certificates.
 
     It contains and describes various pieces of configurable path
@@ -191,23 +194,11 @@ the root of trust:
     ServerVerifier instances cannot be constructed directly;
     :class:`PolicyBuilder` must be used.
 
-    .. attribute:: subject
+    .. attribute:: policy
 
-        :type: :class:`Subject`
+        :type: :class:`Policy`
 
-        The verifier's subject.
-
-    .. attribute:: validation_time
-
-        :type: :class:`datetime.datetime`
-
-        The verifier's validation time.
-
-    .. attribute:: max_chain_depth
-
-        :type: :class:`int`
-
-        The verifier's maximum intermediate CA chain depth.
+        The policy used by the verifier. Can be used to access verification time, chain depth, etc.
 
     .. attribute:: store
 
@@ -407,7 +398,8 @@ the root of trust:
 
     .. versionadded:: 44.0.0
 
-    Represents a policy for certificate verification. Passed to extension validator callbacks.
+    Represents a policy for certificate verification. Passed to extension validator callbacks and 
+    accessible via :class:`ClientVerifier` and :class:`ServerVerifier`.
 
     .. attribute:: max_chain_depth
 
