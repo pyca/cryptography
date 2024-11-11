@@ -183,6 +183,10 @@ Custom asymmetric vectors
   encrypted at the PEM level with AES-128-CBC and password "a123456".
 * ``asymmetric/DER_Serialization/testrsa.der`` - The above as a DER-encoded
   RSAPrivateKey structure.
+* ``asymmetric/DSA/custom/nilpotent.pem`` -- A key where the field is actually
+  a ring and the generator of the multiplicative subgroup is actually
+  nilpotent with low degree. Taken from BoringSSL (see
+  ``TEST(DSATest, NilpotentGenerator)``).
 
 
 Key exchange

@@ -12,6 +12,7 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -549,6 +550,30 @@ class TestDSASignature:
         prehashed_alg = Prehashed(hashes.SHA224())
         with pytest.raises(ValueError):
             private_key.sign(digest, prehashed_alg)
+
+    @pytest.mark.supported(
+        only_if=lambda _: (
+            rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_OPENSSL_309_OR_GREATER
+        ),
+        skip_message="Requires OpenSSL 3.0.9+, LibreSSL, or BoringSSL",
+    )
+    def test_nilpotent(self):
+        try:
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
+                lambda pemfile: serialization.load_pem_private_key(
+                    pemfile.read().encode(), password=None
+                ),
+            )
+        except ValueError:
+            # LibreSSL simply rejects this key on load.
+            return
+        assert isinstance(key, dsa.DSAPrivateKey)
+
+        with pytest.raises(ValueError):
+            key.sign(b"anything", hashes.SHA256())
 
 
 class TestDSANumbers:

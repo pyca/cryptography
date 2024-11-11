@@ -200,6 +200,10 @@ mod _rust {
                 cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
             )?;
             openssl_mod.add(
+                "CRYPTOGRAPHY_OPENSSL_309_OR_GREATER",
+                cfg!(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER),
+            )?;
+            openssl_mod.add(
                 "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
                 cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
             )?;
