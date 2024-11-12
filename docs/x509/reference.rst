@@ -2995,6 +2995,31 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CERTIFICATE_POLICIES`.
 
+.. class:: Admissions(authority, admissions)
+    :canonical: cryptography.x509.extensions.Admissions
+
+    .. versionadded:: 44.0.0
+
+    The admissions extension
+    It is an iterable, containing one or more :class:`~cryptography.x509.Admission` instances.
+
+    :param list admissions: A list of :class:`Admission` objects.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.ADMISSIONS`.
+
+    .. attribute:: authority
+
+        :type: :class:`GeneralName` or None
+
+    .. attribute:: admissions
+
+        :type: int or None
+
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3064,6 +3089,90 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         :type: list
 
         A list of integers.
+
+Admissions Classes
+~~~~~~~~~~~~~~~~~~
+
+These classes may be present within an :class:`Admissions` instance.
+
+.. class:: Admission(admission_authority, naming_authority, profession_infos)
+    :canonical: cryptography.x509.extensions.Admission
+
+    .. versionadded:: 44.0.0
+
+    Contains a policy identifier and an optional list of qualifiers.
+
+    .. attribute:: admission_authority
+
+        :type: :class:`GeneralName` or None
+
+    .. attribute:: naming_authority
+
+        :type: :class:`NamingAuthority` or None
+
+    .. attribute:: profession_infos
+
+        :type: list
+
+.. class:: ProfessionInfo(naming_authority, profession_items, profession_oids, registration_number, add_profession_info)
+    :canonical: cryptography.x509.extensions.ProfessionInfo
+
+    .. versionadded:: 44.0.0
+
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
+    .. attribute:: naming_authority
+
+        :type: :class:`NamingAuthority` or None
+
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
+    .. attribute:: profession_items
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
+
+        :type: list
+
+    .. attribute:: profession_oids
+
+        :type: list or None
+
+    .. attribute:: registration_number
+
+        :type: str or None
+
+    .. attribute:: add_profession_info
+
+        :type: bytes or None
+
+
+.. class:: NamingAuthority(notice_reference, explicit_text)
+    :canonical: cryptography.x509.extensions.NamingAuthority
+
+    .. versionadded:: 44.0.0
+
+    User notices are intended for display to a relying party when a certificate
+    is used. In practice, few if any UIs expose this data and it is a rarely
+    encoded component.
+
+    .. attribute:: notice_reference
+
+        :type: :class:`NoticeReference` or None
+
+        The notice reference field names an organization and identifies,
+        by number, a particular statement prepared by that organization.
+
+    .. attribute:: explicit_text
+
+        This field includes an arbitrary textual statement directly in the
+        certificate.
+
+        :type: str
+
 
 .. _crl_entry_extensions:
 
@@ -3830,6 +3939,12 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 41.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.311.21.7"``.
+
+    .. attribute:: ADMISSIONS
+
+        .. versionadded:: 44.0.0
+
+        Corresponds to the dotted string ``"1.3.36.8.3.3"``.
 
 
 .. class:: CRLEntryExtensionOID
