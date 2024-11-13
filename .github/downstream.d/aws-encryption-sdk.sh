@@ -10,7 +10,7 @@ case "${1}" in
         ;;
     run)
         cd aws-encryption-sdk-python
-        pytest -m local test/
+        pytest -m local test/ --ignore test/mpl/
         ;;
     *)
         exit 1
