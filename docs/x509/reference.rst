@@ -2228,7 +2228,7 @@ X.509 Extensions
     public key corresponding to the private key used to sign a certificate.
     This extension is typically used to assist in determining the appropriate
     certificate chain. For more information about generation and use of this
-    extension see `RFC 5280 section 4.2.1.1`_.
+    extension see :rfc:`5280#section-4.2.1.1`.
 
     .. attribute:: oid
 
@@ -4133,10 +4133,8 @@ Exceptions
         :type: int
 
         The integer value of the unsupported type. The complete list of
-        types can be found in `RFC 5280 section 4.2.1.6`_.
+        types can be found in :rfc:`5280#section-4.2.1.6`.
 
 
-.. _`RFC 5280 section 4.2.1.1`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
-.. _`RFC 5280 section 4.2.1.6`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 .. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/
 .. _`Common PKI v2`: https://www.elektronische-vertrauensdienste.de/EVD/SharedDocuments/Downloads/QES/Common_PKI_v2.0_02.pdf
