@@ -6825,6 +6825,14 @@ class TestRequestAttributes:
         )
         assert len(request.attributes) == 0
 
+    def test_zero_element_attribute(self):
+        request = _load_cert(
+            os.path.join("x509", "requests", "zero-element-attribute.pem"),
+            x509.load_pem_x509_csr,
+        )
+        with pytest.raises(ValueError, match="Only single-valued"):
+            request.attributes
+
 
 def test_load_pem_x509_certificates():
     with pytest.raises(ValueError):
