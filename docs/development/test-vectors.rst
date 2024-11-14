@@ -612,6 +612,8 @@ Custom X.509 Request Vectors
   invalid.
 * ``long-form-attribute.pem`` - A certificate signing request containing an
   attribute whose value's tag is encoded in the long form.
+* ``zero-element-attribute.pem`` - A certificate signing request containing an
+  attribute whose value has zero elements.
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

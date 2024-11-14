@@ -44,7 +44,7 @@ impl CertificationRequestInfo<'_> {
 pub fn check_attribute_length<'a>(
     values: asn1::SetOf<'a, asn1::Tlv<'a>>,
 ) -> Result<(), asn1::ParseError> {
-    if values.count() > 1 {
+    if values.count() != 1 {
         // TODO: We should raise a more specific error here
         // Only single-valued attributes are supported
         Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))
