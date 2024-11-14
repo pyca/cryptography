@@ -20,6 +20,7 @@ rust-version = "1.65.0"
 
 [workspace.dependencies]
 asn1 = { version = "0.18.0", default-features = false }
+pyo3 = { version = "0.22.6", features = ["abi3"] }
 
 [profile.release]
 overflow-checks = true
