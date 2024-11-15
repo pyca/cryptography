@@ -269,7 +269,7 @@ tomli==2.0.1 ; python_full_version < '3.8'
     #   mypy
     #   nox
     #   pytest
-tomli==2.0.2 ; python_full_version >= '3.8' and python_full_version <= '3.11'
+tomli==2.1.0 ; python_full_version >= '3.8' and python_full_version <= '3.11'
     # via
     #   build
     #   check-sdist
