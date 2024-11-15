@@ -172,7 +172,7 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_bound_with(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
             plaintext.len() + tag_len,
             |b| {
@@ -254,7 +254,7 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_bound_with(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
             ciphertext_data.len(),
             |b| {
@@ -399,7 +399,7 @@ impl EvpAead {
             assert!(aad.is_none());
             b""
         };
-        Ok(pyo3::types::PyBytes::new_bound_with(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
             plaintext.len() + self.tag_len,
             |b| {
@@ -430,7 +430,7 @@ impl EvpAead {
             b""
         };
 
-        Ok(pyo3::types::PyBytes::new_bound_with(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
             ciphertext.len() - self.tag_len,
             |b| {

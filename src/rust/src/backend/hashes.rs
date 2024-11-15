@@ -3,7 +3,6 @@
 // for complete details.
 
 use pyo3::types::PyAnyMethods;
-use pyo3::IntoPy;
 use std::borrow::Cow;
 
 use crate::buf::CffiBuf;
@@ -93,7 +92,7 @@ impl Hash {
         let ctx = openssl::hash::Hasher::new(md)?;
 
         Ok(Hash {
-            algorithm: algorithm.clone().into_py(py),
+            algorithm: algorithm.clone().unbind(),
             ctx: Some(ctx),
         })
     }
@@ -115,7 +114,7 @@ impl Hash {
                 let digest_size = algorithm
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
-                let result = pyo3::types::PyBytes::new_bound_with(py, digest_size, |b| {
+                let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
                     ctx.finish_xof(b).unwrap();
                     Ok(())
                 })?;
@@ -126,7 +125,7 @@ impl Hash {
 
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
-        Ok(pyo3::types::PyBytes::new_bound(py, &data))
+        Ok(pyo3::types::PyBytes::new(py, &data))
     }
 
     fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hash> {

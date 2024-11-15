@@ -77,7 +77,7 @@ impl Cmac {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
-        Ok(pyo3::types::PyBytes::new_bound(py, &data))
+        Ok(pyo3::types::PyBytes::new(py, &data))
     }
 
     fn verify(&mut self, py: pyo3::Python<'_>, signature: &[u8]) -> CryptographyResult<()> {

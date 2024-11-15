@@ -144,7 +144,7 @@ fn pkcs7_decrypt<'p>(
 
     let result = p7.decrypt(&pkey_ossl, &cert_ossl, flags)?;
 
-    Ok(pyo3::types::PyBytes::new_bound(py, &result))
+    Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
 #[pyo3::pymodule]

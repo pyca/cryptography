@@ -149,7 +149,7 @@ impl DHPrivateKey {
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
         let len = deriver.len()?;
-        Ok(pyo3::types::PyBytes::new_bound_with(py, len, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
             let n = deriver.derive(b).unwrap();
 
             let pad = b.len() - n;
@@ -363,7 +363,7 @@ impl DHParameters {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.dh")]
 struct DHPrivateNumbers {
     #[pyo3(get)]
-    x: pyo3::Py<pyo3::types::PyLong>,
+    x: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     public_numbers: pyo3::Py<DHPublicNumbers>,
 }
@@ -371,7 +371,7 @@ struct DHPrivateNumbers {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.dh")]
 struct DHPublicNumbers {
     #[pyo3(get)]
-    y: pyo3::Py<pyo3::types::PyLong>,
+    y: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     parameter_numbers: pyo3::Py<DHParameterNumbers>,
 }
@@ -379,18 +379,18 @@ struct DHPublicNumbers {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.dh")]
 struct DHParameterNumbers {
     #[pyo3(get)]
-    p: pyo3::Py<pyo3::types::PyLong>,
+    p: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    g: pyo3::Py<pyo3::types::PyLong>,
+    g: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    q: Option<pyo3::Py<pyo3::types::PyLong>>,
+    q: Option<pyo3::Py<pyo3::types::PyInt>>,
 }
 
 #[pyo3::pymethods]
 impl DHPrivateNumbers {
     #[new]
     fn new(
-        x: pyo3::Py<pyo3::types::PyLong>,
+        x: pyo3::Py<pyo3::types::PyInt>,
         public_numbers: pyo3::Py<DHPublicNumbers>,
     ) -> DHPrivateNumbers {
         DHPrivateNumbers { x, public_numbers }
@@ -428,7 +428,7 @@ impl DHPrivateNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.x.bind(py).eq(other.x.bind(py))?
+        Ok((**self.x.bind(py)).eq(other.x.bind(py))?
             && self
                 .public_numbers
                 .bind(py)
@@ -440,7 +440,7 @@ impl DHPrivateNumbers {
 impl DHPublicNumbers {
     #[new]
     fn new(
-        y: pyo3::Py<pyo3::types::PyLong>,
+        y: pyo3::Py<pyo3::types::PyInt>,
         parameter_numbers: pyo3::Py<DHParameterNumbers>,
     ) -> DHPublicNumbers {
         DHPublicNumbers {
@@ -472,7 +472,7 @@ impl DHPublicNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.y.bind(py).eq(other.y.bind(py))?
+        Ok((**self.y.bind(py)).eq(other.y.bind(py))?
             && self
                 .parameter_numbers
                 .bind(py)
@@ -486,9 +486,9 @@ impl DHParameterNumbers {
     #[pyo3(signature = (p, g, q=None))]
     fn new(
         py: pyo3::Python<'_>,
-        p: pyo3::Py<pyo3::types::PyLong>,
-        g: pyo3::Py<pyo3::types::PyLong>,
-        q: Option<pyo3::Py<pyo3::types::PyLong>>,
+        p: pyo3::Py<pyo3::types::PyInt>,
+        g: pyo3::Py<pyo3::types::PyInt>,
+        q: Option<pyo3::Py<pyo3::types::PyInt>>,
     ) -> CryptographyResult<DHParameterNumbers> {
         if g.bind(py).lt(2)? {
             return Err(CryptographyError::from(
@@ -528,12 +528,12 @@ impl DHParameterNumbers {
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
         let q_equal = match (self.q.as_ref(), other.q.as_ref()) {
-            (Some(self_q), Some(other_q)) => self_q.bind(py).eq(other_q.bind(py))?,
+            (Some(self_q), Some(other_q)) => (**self_q.bind(py)).eq(other_q.bind(py))?,
             (None, None) => true,
             _ => false,
         };
-        Ok(self.p.bind(py).eq(other.p.bind(py))?
-            && self.g.bind(py).eq(other.g.bind(py))?
+        Ok((**self.p.bind(py)).eq(other.p.bind(py))?
+            && (**self.g.bind(py)).eq(other.g.bind(py))?
             && q_equal)
     }
 }

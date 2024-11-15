@@ -70,17 +70,13 @@ impl X25519PrivateKey {
         let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
         deriver.set_peer(&peer_public_key.pkey)?;
 
-        Ok(pyo3::types::PyBytes::new_bound_with(
-            py,
-            deriver.len()?,
-            |b| {
-                let n = deriver.derive(b).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-                })?;
-                assert_eq!(n, b.len());
-                Ok(())
-            },
-        )?)
+        Ok(pyo3::types::PyBytes::new_with(py, deriver.len()?, |b| {
+            let n = deriver.derive(b).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
+            })?;
+            assert_eq!(n, b.len());
+            Ok(())
+        })?)
     }
 
     fn public_key(&self) -> CryptographyResult<X25519PublicKey> {
@@ -98,7 +94,7 @@ impl X25519PrivateKey {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_private_key()?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
     fn private_bytes<'p>(
@@ -128,7 +124,7 @@ impl X25519PublicKey {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
     fn public_bytes<'p>(

@@ -21,7 +21,7 @@ pub(crate) fn derive_pbkdf2_hmac<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let md = hashes::message_digest_from_algorithm(py, algorithm)?;
 
-    Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
+    Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
         openssl::pkcs5::pbkdf2_hmac(key_material.as_bytes(), salt, iterations, md, b).unwrap();
         Ok(())
     })?)
@@ -125,11 +125,8 @@ impl Scrypt {
         }
         self.used = true;
 
-        Ok(pyo3::types::PyBytes::new_bound_with(
-            py,
-            self.length,
-            |b| {
-                openssl::pkcs5::scrypt(key_material.as_bytes(), self.salt.as_bytes(py), self.n, self.r, self.p, (usize::MAX / 2).try_into().unwrap(), b).map_err(|_| {
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
+            openssl::pkcs5::scrypt(key_material.as_bytes(), self.salt.as_bytes(py), self.n, self.r, self.p, (usize::MAX / 2).try_into().unwrap(), b).map_err(|_| {
                 // memory required formula explained here:
                 // https://blog.filippo.io/the-scrypt-parameters/
                 let min_memory = 128 * self.n * self.r / (1024 * 1024);
@@ -137,8 +134,7 @@ impl Scrypt {
                     "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
                 ))
             })
-            },
-        )?)
+        })?)
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -286,25 +282,21 @@ impl Argon2id {
             return Err(exceptions::already_finalized_error());
         }
         self.used = true;
-        Ok(pyo3::types::PyBytes::new_bound_with(
-            py,
-            self.length,
-            |b| {
-                openssl::kdf::argon2id(
-                    None,
-                    key_material.as_bytes(),
-                    self.salt.as_bytes(py),
-                    self.ad.as_ref().map(|ad| ad.as_bytes(py)),
-                    self.secret.as_ref().map(|secret| secret.as_bytes(py)),
-                    self.iterations,
-                    self.lanes,
-                    self.memory_cost,
-                    b,
-                )
-                .map_err(CryptographyError::from)?;
-                Ok(())
-            },
-        )?)
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
+            openssl::kdf::argon2id(
+                None,
+                key_material.as_bytes(),
+                self.salt.as_bytes(py),
+                self.ad.as_ref().map(|ad| ad.as_bytes(py)),
+                self.secret.as_ref().map(|secret| secret.as_bytes(py)),
+                self.iterations,
+                self.lanes,
+                self.memory_cost,
+                b,
+            )
+            .map_err(CryptographyError::from)?;
+            Ok(())
+        })?)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]

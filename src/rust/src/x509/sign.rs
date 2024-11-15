@@ -119,7 +119,7 @@ fn compute_pss_salt_length<'p>(
         hash_algorithm
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<u16>()
-    } else if py_saltlen.is_instance_of::<pyo3::types::PyLong>() {
+    } else if py_saltlen.is_instance_of::<pyo3::types::PyInt>() {
         py_saltlen.extract::<u16>()
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(

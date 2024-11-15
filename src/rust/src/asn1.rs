@@ -6,7 +6,7 @@ use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo};
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::IntoPyDict;
 use pyo3::types::PyAnyMethods;
-use pyo3::ToPyObject;
+use pyo3::IntoPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
@@ -38,7 +38,7 @@ fn parse_spki_for_data<'p>(
         return Err(pyo3::exceptions::PyValueError::new_err("Invalid public key encoding").into());
     }
 
-    Ok(pyo3::types::PyBytes::new_bound(
+    Ok(pyo3::types::PyBytes::new(
         py,
         spki.subject_public_key.as_bytes(),
     ))
@@ -48,8 +48,8 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
     py: pyo3::Python<'p>,
     v: &'_ [u8],
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let int_type = py.get_type_bound::<pyo3::types::PyLong>();
-    let kwargs = [("signed", true)].into_py_dict_bound(py);
+    let int_type = py.get_type::<pyo3::types::PyInt>();
+    let kwargs = [("signed", true)].into_py_dict(py)?;
     int_type.call_method(pyo3::intern!(py, "from_bytes"), (v, "big"), Some(&kwargs))
 }
 
@@ -64,12 +64,14 @@ fn decode_dss_signature(
         big_byte_slice_to_py_int(py, sig.r.as_bytes())?,
         big_byte_slice_to_py_int(py, sig.s.as_bytes())?,
     )
-        .to_object(py))
+        .into_pyobject(py)?
+        .into_any()
+        .unbind())
 }
 
 pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
-    v: pyo3::Bound<'p, pyo3::types::PyLong>,
+    v: pyo3::Bound<'p, pyo3::types::PyInt>,
 ) -> pyo3::PyResult<PyBackedBytes> {
     if v.lt(0)? {
         return Err(pyo3::exceptions::PyValueError::new_err(
@@ -96,9 +98,9 @@ pub(crate) fn encode_der_data<'p>(
     encoding: &pyo3::Bound<'p, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if encoding.is(&types::ENCODING_DER.get(py)?) {
-        Ok(pyo3::types::PyBytes::new_bound(py, &data))
+        Ok(pyo3::types::PyBytes::new(py, &data))
     } else if encoding.is(&types::ENCODING_PEM.get(py)?) {
-        Ok(pyo3::types::PyBytes::new_bound(
+        Ok(pyo3::types::PyBytes::new(
             py,
             &pem::encode_config(
                 &pem::Pem::new(pem_tag, data),
@@ -117,8 +119,8 @@ pub(crate) fn encode_der_data<'p>(
 #[pyo3::pyfunction]
 fn encode_dss_signature<'p>(
     py: pyo3::Python<'p>,
-    r: pyo3::Bound<'_, pyo3::types::PyLong>,
-    s: pyo3::Bound<'_, pyo3::types::PyLong>,
+    r: pyo3::Bound<'_, pyo3::types::PyInt>,
+    s: pyo3::Bound<'_, pyo3::types::PyInt>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let r_bytes = py_uint_to_big_endian_bytes(py, r)?;
     let s_bytes = py_uint_to_big_endian_bytes(py, s)?;
@@ -127,7 +129,7 @@ fn encode_dss_signature<'p>(
         s: asn1::BigUint::new(&s_bytes).unwrap(),
     };
     let result = asn1::write_single(&sig)?;
-    Ok(pyo3::types::PyBytes::new_bound(py, &result))
+    Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
 #[pyo3::pymodule]

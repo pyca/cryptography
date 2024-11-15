@@ -7,7 +7,6 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, exceptions};
 use pyo3::types::PyAnyMethods;
-use pyo3::ToPyObject;
 
 #[pyo3::pyclass(
     frozen,
@@ -80,10 +79,10 @@ impl DsaPrivateKey {
         signer.sign_to_vec(data.as_bytes(), &mut sig).map_err(|e| {
             pyo3::exceptions::PyValueError::new_err((
                 "DSA signing failed. This generally indicates an invalid key.",
-                error::list_from_openssl_error(py, &e).to_object(py),
+                error::list_from_openssl_error(py, &e).unbind(),
             ))
         })?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &sig))
+        Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     #[getter]
@@ -300,7 +299,7 @@ fn check_dsa_private_numbers(
         ));
     }
 
-    if numbers.public_numbers.get().y.bind(py).ne(params
+    if (**numbers.public_numbers.get().y.bind(py)).ne(params
         .g
         .bind(py)
         .pow(numbers.x.bind(py), Some(params.p.bind(py)))?)?
@@ -320,7 +319,7 @@ fn check_dsa_private_numbers(
 )]
 struct DsaPrivateNumbers {
     #[pyo3(get)]
-    x: pyo3::Py<pyo3::types::PyLong>,
+    x: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     public_numbers: pyo3::Py<DsaPublicNumbers>,
 }
@@ -332,7 +331,7 @@ struct DsaPrivateNumbers {
 )]
 struct DsaPublicNumbers {
     #[pyo3(get)]
-    y: pyo3::Py<pyo3::types::PyLong>,
+    y: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     parameter_numbers: pyo3::Py<DsaParameterNumbers>,
 }
@@ -344,18 +343,18 @@ struct DsaPublicNumbers {
 )]
 struct DsaParameterNumbers {
     #[pyo3(get)]
-    p: pyo3::Py<pyo3::types::PyLong>,
+    p: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    q: pyo3::Py<pyo3::types::PyLong>,
+    q: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    g: pyo3::Py<pyo3::types::PyLong>,
+    g: pyo3::Py<pyo3::types::PyInt>,
 }
 
 #[pyo3::pymethods]
 impl DsaPrivateNumbers {
     #[new]
     fn new(
-        x: pyo3::Py<pyo3::types::PyLong>,
+        x: pyo3::Py<pyo3::types::PyInt>,
         public_numbers: pyo3::Py<DsaPublicNumbers>,
     ) -> DsaPrivateNumbers {
         DsaPrivateNumbers { x, public_numbers }
@@ -391,7 +390,7 @@ impl DsaPrivateNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.x.bind(py).eq(other.x.bind(py))?
+        Ok((**self.x.bind(py)).eq(other.x.bind(py))?
             && self
                 .public_numbers
                 .bind(py)
@@ -403,7 +402,7 @@ impl DsaPrivateNumbers {
 impl DsaPublicNumbers {
     #[new]
     fn new(
-        y: pyo3::Py<pyo3::types::PyLong>,
+        y: pyo3::Py<pyo3::types::PyInt>,
         parameter_numbers: pyo3::Py<DsaParameterNumbers>,
     ) -> DsaPublicNumbers {
         DsaPublicNumbers {
@@ -440,7 +439,7 @@ impl DsaPublicNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.y.bind(py).eq(other.y.bind(py))?
+        Ok((**self.y.bind(py)).eq(other.y.bind(py))?
             && self
                 .parameter_numbers
                 .bind(py)
@@ -460,9 +459,9 @@ impl DsaPublicNumbers {
 impl DsaParameterNumbers {
     #[new]
     fn new(
-        p: pyo3::Py<pyo3::types::PyLong>,
-        q: pyo3::Py<pyo3::types::PyLong>,
-        g: pyo3::Py<pyo3::types::PyLong>,
+        p: pyo3::Py<pyo3::types::PyInt>,
+        q: pyo3::Py<pyo3::types::PyInt>,
+        g: pyo3::Py<pyo3::types::PyInt>,
     ) -> DsaParameterNumbers {
         DsaParameterNumbers { p, q, g }
     }
@@ -491,9 +490,9 @@ impl DsaParameterNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.p.bind(py).eq(other.p.bind(py))?
-            && self.q.bind(py).eq(other.q.bind(py))?
-            && self.g.bind(py).eq(other.g.bind(py))?)
+        Ok((**self.p.bind(py)).eq(other.p.bind(py))?
+            && (**self.q.bind(py)).eq(other.q.bind(py))?
+            && (**self.g.bind(py)).eq(other.g.bind(py))?)
     }
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {

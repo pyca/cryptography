@@ -10,6 +10,7 @@ use pyo3::types::{PyAnyMethods, PyDictMethods};
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::common::cstr_from_literal;
 use crate::{exceptions, types};
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
@@ -34,8 +35,8 @@ fn curve_from_py_curve(
     if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get(py)?)? {
         if allow_curve_class {
             let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-            let warning_msg = "Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.";
-            pyo3::PyErr::warn_bound(py, &warning_cls, warning_msg, 1)?;
+            let message = cstr_from_literal!("Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography");
+            pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         } else {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err("curve must be an EllipticCurve instance"),
@@ -175,7 +176,7 @@ fn generate_private_key(
 #[pyo3::pyfunction]
 fn derive_private_key(
     py: pyo3::Python<'_>,
-    py_private_value: &pyo3::Bound<'_, pyo3::types::PyLong>,
+    py_private_value: &pyo3::Bound<'_, pyo3::types::PyInt>,
     py_curve: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<ECPrivateKey> {
     let curve = curve_from_py_curve(py, py_curve.clone(), false)?;
@@ -257,7 +258,7 @@ impl ECPrivateKey {
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
         let len = deriver.len()?;
-        Ok(pyo3::types::PyBytes::new_bound_with(py, len, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
             let n = deriver.derive(b).map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
             })?;
@@ -314,7 +315,7 @@ impl ECPrivateKey {
         // will be a byte or two shorter than the maximum possible length).
         let mut sig = vec![];
         signer.sign_to_vec(data.as_bytes(), &mut sig)?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &sig))
+        Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<ECPublicKey> {
@@ -464,7 +465,7 @@ impl ECPublicKey {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
 struct EllipticCurvePrivateNumbers {
     #[pyo3(get)]
-    private_value: pyo3::Py<pyo3::types::PyLong>,
+    private_value: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     public_numbers: pyo3::Py<EllipticCurvePublicNumbers>,
 }
@@ -472,9 +473,9 @@ struct EllipticCurvePrivateNumbers {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.primitives.asymmetric.ec")]
 struct EllipticCurvePublicNumbers {
     #[pyo3(get)]
-    x: pyo3::Py<pyo3::types::PyLong>,
+    x: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    y: pyo3::Py<pyo3::types::PyLong>,
+    y: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     curve: pyo3::Py<pyo3::PyAny>,
 }
@@ -512,7 +513,7 @@ fn public_key_from_numbers(
 impl EllipticCurvePrivateNumbers {
     #[new]
     fn new(
-        private_value: pyo3::Py<pyo3::types::PyLong>,
+        private_value: pyo3::Py<pyo3::types::PyInt>,
         public_numbers: pyo3::Py<EllipticCurvePublicNumbers>,
     ) -> EllipticCurvePrivateNumbers {
         EllipticCurvePrivateNumbers {
@@ -563,14 +564,13 @@ impl EllipticCurvePrivateNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self
-            .private_value
-            .bind(py)
-            .eq(other.private_value.bind(py))?
-            && self
-                .public_numbers
-                .bind(py)
-                .eq(other.public_numbers.bind(py))?)
+        Ok(
+            (**self.private_value.bind(py)).eq(other.private_value.bind(py))?
+                && self
+                    .public_numbers
+                    .bind(py)
+                    .eq(other.public_numbers.bind(py))?,
+        )
     }
 
     fn __hash__(&self, py: pyo3::Python<'_>) -> CryptographyResult<u64> {
@@ -586,8 +586,8 @@ impl EllipticCurvePublicNumbers {
     #[new]
     fn new(
         py: pyo3::Python<'_>,
-        x: pyo3::Py<pyo3::types::PyLong>,
-        y: pyo3::Py<pyo3::types::PyLong>,
+        x: pyo3::Py<pyo3::types::PyInt>,
+        y: pyo3::Py<pyo3::types::PyInt>,
         curve: pyo3::Py<pyo3::PyAny>,
     ) -> CryptographyResult<EllipticCurvePublicNumbers> {
         if !curve
@@ -628,8 +628,8 @@ impl EllipticCurvePublicNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.x.bind(py).eq(other.x.bind(py))?
-            && self.y.bind(py).eq(other.y.bind(py))?
+        Ok((**self.x.bind(py)).eq(other.x.bind(py))?
+            && (**self.y.bind(py)).eq(other.y.bind(py))?
             && self
                 .curve
                 .bind(py)

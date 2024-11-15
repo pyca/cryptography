@@ -297,7 +297,7 @@ impl RsaPrivateKey {
         setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), true)?;
 
         let length = ctx.sign(data.as_bytes(), None)?;
-        Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
             let length = ctx.sign(data.as_bytes(), Some(b)).map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err(
                     "Digest or salt length too long for key size. Use a larger key or shorter salt length if you are specifying a PSS salt",
@@ -345,7 +345,7 @@ impl RsaPrivateKey {
         let result = ctx.decrypt(ciphertext, Some(&mut plaintext));
 
         let py_result =
-            pyo3::types::PyBytes::new_bound(py, &plaintext[..*result.as_ref().unwrap_or(&length)]);
+            pyo3::types::PyBytes::new(py, &plaintext[..*result.as_ref().unwrap_or(&length)]);
         if result.is_err() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Decryption failed"),
@@ -458,7 +458,7 @@ impl RsaPublicKey {
         setup_encryption_ctx(py, &mut ctx, padding)?;
 
         let length = ctx.encrypt(plaintext, None)?;
-        Ok(pyo3::types::PyBytes::new_bound_with(py, length, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
             let length = ctx
                 .encrypt(plaintext, Some(b))
                 .map_err(|_| pyo3::exceptions::PyValueError::new_err("Encryption failed"))?;
@@ -492,7 +492,7 @@ impl RsaPublicKey {
             .verify_recover(signature, Some(&mut buf))
             .map_err(|_| exceptions::InvalidSignature::new_err(()))?;
 
-        Ok(pyo3::types::PyBytes::new_bound(py, &buf[..length]))
+        Ok(pyo3::types::PyBytes::new(py, &buf[..length]))
     }
 
     #[getter]
@@ -537,17 +537,17 @@ impl RsaPublicKey {
 )]
 struct RsaPrivateNumbers {
     #[pyo3(get)]
-    p: pyo3::Py<pyo3::types::PyLong>,
+    p: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    q: pyo3::Py<pyo3::types::PyLong>,
+    q: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    d: pyo3::Py<pyo3::types::PyLong>,
+    d: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    dmp1: pyo3::Py<pyo3::types::PyLong>,
+    dmp1: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    dmq1: pyo3::Py<pyo3::types::PyLong>,
+    dmq1: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    iqmp: pyo3::Py<pyo3::types::PyLong>,
+    iqmp: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
     public_numbers: pyo3::Py<RsaPublicNumbers>,
 }
@@ -559,21 +559,21 @@ struct RsaPrivateNumbers {
 )]
 struct RsaPublicNumbers {
     #[pyo3(get)]
-    e: pyo3::Py<pyo3::types::PyLong>,
+    e: pyo3::Py<pyo3::types::PyInt>,
     #[pyo3(get)]
-    n: pyo3::Py<pyo3::types::PyLong>,
+    n: pyo3::Py<pyo3::types::PyInt>,
 }
 
 #[allow(clippy::too_many_arguments)]
 fn check_private_key_components(
-    p: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    q: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    private_exponent: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    dmp1: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    dmq1: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    iqmp: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    public_exponent: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    modulus: &pyo3::Bound<'_, pyo3::types::PyLong>,
+    p: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    q: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    private_exponent: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    dmp1: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    dmq1: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    iqmp: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    public_exponent: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    modulus: &pyo3::Bound<'_, pyo3::types::PyInt>,
 ) -> CryptographyResult<()> {
     if modulus.lt(3)? {
         return Err(CryptographyError::from(
@@ -654,12 +654,12 @@ fn check_private_key_components(
 impl RsaPrivateNumbers {
     #[new]
     fn new(
-        p: pyo3::Py<pyo3::types::PyLong>,
-        q: pyo3::Py<pyo3::types::PyLong>,
-        d: pyo3::Py<pyo3::types::PyLong>,
-        dmp1: pyo3::Py<pyo3::types::PyLong>,
-        dmq1: pyo3::Py<pyo3::types::PyLong>,
-        iqmp: pyo3::Py<pyo3::types::PyLong>,
+        p: pyo3::Py<pyo3::types::PyInt>,
+        q: pyo3::Py<pyo3::types::PyInt>,
+        d: pyo3::Py<pyo3::types::PyInt>,
+        dmp1: pyo3::Py<pyo3::types::PyInt>,
+        dmq1: pyo3::Py<pyo3::types::PyInt>,
+        iqmp: pyo3::Py<pyo3::types::PyInt>,
         public_numbers: pyo3::Py<RsaPublicNumbers>,
     ) -> RsaPrivateNumbers {
         Self {
@@ -716,12 +716,12 @@ impl RsaPrivateNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.p.bind(py).eq(other.p.bind(py))?
-            && self.q.bind(py).eq(other.q.bind(py))?
-            && self.d.bind(py).eq(other.d.bind(py))?
-            && self.dmp1.bind(py).eq(other.dmp1.bind(py))?
-            && self.dmq1.bind(py).eq(other.dmq1.bind(py))?
-            && self.iqmp.bind(py).eq(other.iqmp.bind(py))?
+        Ok((**self.p.bind(py)).eq(other.p.bind(py))?
+            && (**self.q.bind(py)).eq(other.q.bind(py))?
+            && (**self.d.bind(py)).eq(other.d.bind(py))?
+            && (**self.dmp1.bind(py)).eq(other.dmp1.bind(py))?
+            && (**self.dmq1.bind(py)).eq(other.dmq1.bind(py))?
+            && (**self.iqmp.bind(py)).eq(other.iqmp.bind(py))?
             && self
                 .public_numbers
                 .bind(py)
@@ -742,8 +742,8 @@ impl RsaPrivateNumbers {
 }
 
 fn check_public_key_components(
-    e: &pyo3::Bound<'_, pyo3::types::PyLong>,
-    n: &pyo3::Bound<'_, pyo3::types::PyLong>,
+    e: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    n: &pyo3::Bound<'_, pyo3::types::PyInt>,
 ) -> CryptographyResult<()> {
     if n.lt(3)? {
         return Err(CryptographyError::from(
@@ -769,7 +769,7 @@ fn check_public_key_components(
 #[pyo3::pymethods]
 impl RsaPublicNumbers {
     #[new]
-    fn new(e: pyo3::Py<pyo3::types::PyLong>, n: pyo3::Py<pyo3::types::PyLong>) -> RsaPublicNumbers {
+    fn new(e: pyo3::Py<pyo3::types::PyInt>, n: pyo3::Py<pyo3::types::PyInt>) -> RsaPublicNumbers {
         RsaPublicNumbers { e, n }
     }
 
@@ -797,7 +797,10 @@ impl RsaPublicNumbers {
         py: pyo3::Python<'_>,
         other: pyo3::PyRef<'_, Self>,
     ) -> CryptographyResult<bool> {
-        Ok(self.e.bind(py).eq(other.e.bind(py))? && self.n.bind(py).eq(other.n.bind(py))?)
+        Ok(
+            (**self.e.bind(py)).eq(other.e.bind(py))?
+                && (**self.n.bind(py)).eq(other.n.bind(py))?,
+        )
     }
 
     fn __hash__(&self, py: pyo3::Python<'_>) -> CryptographyResult<u64> {

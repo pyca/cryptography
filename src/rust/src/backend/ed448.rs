@@ -68,7 +68,7 @@ impl Ed448PrivateKey {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)?;
         let len = signer.len()?;
-        Ok(pyo3::types::PyBytes::new_bound_with(py, len, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
             let n = signer
                 .sign_oneshot(b, data.as_bytes())
                 .map_err(CryptographyError::from)?;
@@ -92,7 +92,7 @@ impl Ed448PrivateKey {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_private_key()?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
     fn private_bytes<'p>(
@@ -135,7 +135,7 @@ impl Ed448PublicKey {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes))
+        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
     fn public_bytes<'p>(

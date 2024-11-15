@@ -6,7 +6,6 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods};
-use pyo3::ToPyObject;
 
 use crate::error::CryptographyError;
 use crate::types;
@@ -167,7 +166,7 @@ impl Sct {
     fn timestamp<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
 
-        let kwargs = pyo3::types::PyDict::new_bound(py);
+        let kwargs = pyo3::types::PyDict::new(py);
         kwargs.set_item("microsecond", self.timestamp % 1000 * 1000)?;
         kwargs.set_item("tzinfo", None::<Option<pyo3::PyObject>>)?;
 
@@ -226,7 +225,7 @@ pub(crate) fn parse_scts(
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let mut reader = TLSReader::new(data).read_length_prefixed()?;
 
-    let py_scts = pyo3::types::PyList::empty_bound(py);
+    let py_scts = pyo3::types::PyList::empty(py);
     while !reader.is_empty() {
         let mut sct_data = reader.read_length_prefixed()?;
         let raw_sct_data = sct_data.data.to_vec();
@@ -256,7 +255,7 @@ pub(crate) fn parse_scts(
         };
         py_scts.append(pyo3::Bound::new(py, sct)?)?;
     }
-    Ok(py_scts.to_object(py))
+    Ok(py_scts.into_any().unbind())
 }
 
 #[cfg(test)]
