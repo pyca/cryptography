@@ -13,8 +13,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::{certificate, sign};
-use crate::{_str_ref_to_cstr_ref, exceptions, types, x509};
+use crate::x509::{certificate, common::cstr_from_literal, sign};
+use crate::{exceptions, types, x509};
 
 self_cell::self_cell!(
     struct OwnedCsr {
@@ -130,8 +130,8 @@ impl CertificateSigningRequest {
         oid: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let warning_msg = "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.\0".as_bytes();
-        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(warning_msg), 1)?;
+        let warning_msg = cstr_from_literal!("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.");
+        pyo3::PyErr::warn(py, &warning_cls, warning_msg, 1)?;
 
         let rust_oid = py_oid_to_oid(oid.clone())?;
         for attribute in self

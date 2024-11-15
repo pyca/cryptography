@@ -83,10 +83,6 @@ fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
     Ok(())
 }
 
-fn _str_ref_to_cstr_ref(message: &[u8]) -> &std::ffi::CStr {
-    std::ffi::CStr::from_bytes_with_nul(message).unwrap()
-}
-
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 #[pyo3::pyfunction]
 fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {

@@ -20,8 +20,9 @@ use crate::asn1::{
 };
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::common::cstr_from_literal;
 use crate::x509::{certificate, extensions, sign};
-use crate::{_str_ref_to_cstr_ref, exceptions, types, x509};
+use crate::{exceptions, types, x509};
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
@@ -263,8 +264,8 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.\0".as_bytes();
-        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
+        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.");
+        pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
             Some(t) => x509::datetime_to_py(py, t.as_datetime()),
             None => Ok(py.None().into_bound(py)),
@@ -288,8 +289,8 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.\0".as_bytes();
-        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
+        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.");
+        pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         x509::datetime_to_py(
             py,
             self.owned
@@ -552,8 +553,8 @@ impl RevokedCertificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.\0".as_bytes();
-        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
+        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.");
+        pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         x509::datetime_to_py(
             py,
             self.owned.borrow_dependent().revocation_date.as_datetime(),
