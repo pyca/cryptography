@@ -34,7 +34,7 @@ fn curve_from_py_curve(
     if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get(py)?)? {
         if allow_curve_class {
             let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-            let warning_msg = std::ffi::CString::new("Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.").unwrap();
+            let warning_msg = std::ffi::Cstr::from_bytes_with_nul("Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.").unwrap();
             pyo3::PyErr::warn(py, &warning_cls, warning_msg.as_c_str(), 1)?;
         } else {
             return Err(CryptographyError::from(

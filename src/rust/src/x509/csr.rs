@@ -130,7 +130,7 @@ impl CertificateSigningRequest {
         oid: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let warning_msg = std::ffi::CString::new("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.").unwrap();
+        let warning_msg = std::ffi::Cstr::from_bytes_with_nul("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.").unwrap();
         pyo3::PyErr::warn(py, &warning_cls, warning_msg.as_c_str(), 1)?;
 
         let rust_oid = py_oid_to_oid(oid.clone())?;
