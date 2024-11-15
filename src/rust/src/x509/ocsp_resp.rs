@@ -180,7 +180,7 @@ impl OCSPResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to produced_at_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to produced_at_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let resp = self.requires_successful_response()?;
         x509::datetime_to_py(py, resp.tbs_response_data.produced_at.as_datetime())
@@ -335,7 +335,7 @@ impl OCSPResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
@@ -368,7 +368,7 @@ impl OCSPResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to this_update_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to this_update_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
@@ -391,7 +391,7 @@ impl OCSPResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let resp = self.requires_successful_response()?;
         let single_resp = single_response(resp)?;
@@ -956,7 +956,7 @@ impl OCSPSingleResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let single_resp = self.single_response();
         singleresp_py_revocation_time(single_resp, py)
@@ -986,7 +986,7 @@ impl OCSPSingleResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to revocation_time_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let single_resp = self.single_response();
         singleresp_py_this_update(single_resp, py)
@@ -1007,7 +1007,7 @@ impl OCSPSingleResponse {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_43.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.";
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let single_resp = self.single_response();
         singleresp_py_next_update(single_resp, py)
