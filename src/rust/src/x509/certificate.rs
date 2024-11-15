@@ -233,7 +233,7 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.\0\0".as_bytes();
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.\0".as_bytes();
         pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let dt = &self
             .raw
@@ -479,7 +479,7 @@ fn parse_display_text(
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
                 let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-                let message = "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, \0a.as_bytes()n exception will be raised.\0".as_bytes();
+                let message = "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.\0".as_bytes();
                 pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
             }
             Ok(pyo3::types::PyString::new(py, o.as_str())
