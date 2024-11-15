@@ -26,7 +26,7 @@ use crate::backend::{hashes, keys};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::verify::PyCryptoOps;
 use crate::x509::{extensions, sct, sign};
-use crate::{exceptions, types, x509};
+use crate::{_str_ref_to_cstr_ref, exceptions, types, x509};
 
 self_cell::self_cell!(
     pub(crate) struct OwnedCertificate {
@@ -200,8 +200,8 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = std::ffi::Cstr::from_bytes_with_nul("Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_before_utc.").unwrap();
-        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_before_utc.";
+        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let dt = &self
             .raw
             .borrow_dependent()
@@ -233,8 +233,8 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = std::ffi::Cstr::from_bytes_with_nul("Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.").unwrap();
-        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
+        let message = "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.";
+        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         let dt = &self
             .raw
             .borrow_dependent()
@@ -435,8 +435,8 @@ pub(crate) fn load_der_x509_certificate(
 fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let message = std::ffi::Cstr::from_bytes_with_nul("Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.").unwrap();
-        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
+        let message = "Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.";
+        pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
     }
     Ok(())
 }
@@ -457,8 +457,8 @@ fn warn_if_invalid_params(
             // This can also be triggered by an Intel On Die certificate
             // https://github.com/pyca/cryptography/issues/11723
             let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-            let message = std::ffi::Cstr::from_bytes_with_nul("The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.").unwrap();
-            pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 2)?;
+            let message = "The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.";
+            pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 2)?;
         }
         _ => {}
     }
@@ -479,8 +479,8 @@ fn parse_display_text(
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
                 let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-                let message = std::ffi::Cstr::from_bytes_with_nul("Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.").unwrap();
-                pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
+                let message = "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.";
+                pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
             }
             Ok(pyo3::types::PyString::new(py, o.as_str())
                 .into_any()

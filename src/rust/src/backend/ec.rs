@@ -10,7 +10,7 @@ use pyo3::types::{PyAnyMethods, PyDictMethods};
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{exceptions, types};
+use crate::{_str_ref_to_cstr_ref, exceptions, types};
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ec")]
 pub(crate) struct ECPrivateKey {
@@ -34,8 +34,8 @@ fn curve_from_py_curve(
     if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get(py)?)? {
         if allow_curve_class {
             let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-            let warning_msg = std::ffi::Cstr::from_bytes_with_nul("Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.").unwrap();
-            pyo3::PyErr::warn(py, &warning_cls, warning_msg.as_c_str(), 1)?;
+            let message = "Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography.";
+            pyo3::PyErr::warn(py, &warning_cls, _str_ref_to_cstr_ref(message), 1)?;
         } else {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err("curve must be an EllipticCurve instance"),
