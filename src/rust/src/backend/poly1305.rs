@@ -32,7 +32,7 @@ impl Poly1305Boring {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let result = pyo3::types::PyBytes::new_bound_with(py, 16usize, |b| {
+        let result = pyo3::types::PyBytes::new_with(py, 16usize, |b| {
             self.context.finalize(b.as_mut());
             Ok(())
         })?;
@@ -78,7 +78,7 @@ impl Poly1305Open {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let result = pyo3::types::PyBytes::new_bound_with(py, self.signer.len()?, |b| {
+        let result = pyo3::types::PyBytes::new_with(py, self.signer.len()?, |b| {
             let n = self.signer.sign(b).unwrap();
             assert_eq!(n, b.len());
             Ok(())

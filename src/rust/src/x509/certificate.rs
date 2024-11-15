@@ -18,7 +18,6 @@ use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::types::{PyAnyMethods, PyListMethods};
-use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{
     big_byte_slice_to_py_int, encode_der_data, oid_to_py_oid, py_uint_to_big_endian_bytes,
@@ -143,7 +142,7 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(&self.raw.borrow_dependent().tbs_cert)?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &result))
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
@@ -177,13 +176,13 @@ impl Certificate {
 
                 tbs_precert.raw_extensions = Some(filtered_extensions);
                 let result = asn1::write_single(&tbs_precert)?;
-                Ok(pyo3::types::PyBytes::new_bound(py, &result))
+                Ok(pyo3::types::PyBytes::new(py, &result))
             }
             Err(DuplicateExtensionsError(oid)) => {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 Err(exceptions::DuplicateExtension::new_err((
                     format!("Duplicate {} extension found", &oid),
-                    oid_obj.into_py(py),
+                    oid_obj.unbind(),
                 ))
                 .into())
             }
@@ -192,7 +191,7 @@ impl Certificate {
 
     #[getter]
     fn signature<'p>(&self, py: pyo3::Python<'p>) -> pyo3::Bound<'p, pyo3::types::PyBytes> {
-        pyo3::types::PyBytes::new_bound(py, self.raw.borrow_dependent().signature.as_bytes())
+        pyo3::types::PyBytes::new(py, self.raw.borrow_dependent().signature.as_bytes())
     }
 
     #[getter]
@@ -201,12 +200,8 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        pyo3::PyErr::warn_bound(
-                py,
-                &warning_cls,
-                "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_before_utc.",
-                1,
-            )?;
+        let message = std::ffi::CString::new("Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_before_utc.").unwrap();
+        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
         let dt = &self
             .raw
             .borrow_dependent()
@@ -238,12 +233,8 @@ impl Certificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        pyo3::PyErr::warn_bound(
-                py,
-                &warning_cls,
-                "Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.",
-                1,
-            )?;
+        let message = std::ffi::CString::new("Properties that return a naïve datetime object have been deprecated. Please switch to not_valid_after_utc.").unwrap();
+        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
         let dt = &self
             .raw
             .borrow_dependent()
@@ -382,7 +373,7 @@ pub(crate) fn load_pem_x509_certificate(
     )?;
     load_der_x509_certificate(
         py,
-        pyo3::types::PyBytes::new_bound(py, parsed.contents()).unbind(),
+        pyo3::types::PyBytes::new(py, parsed.contents()).unbind(),
         None,
     )
 }
@@ -398,7 +389,7 @@ pub(crate) fn load_pem_x509_certificates(
         .map(|p| {
             load_der_x509_certificate(
                 py,
-                pyo3::types::PyBytes::new_bound(py, p.contents()).unbind(),
+                pyo3::types::PyBytes::new(py, p.contents()).unbind(),
                 None,
             )
         })
@@ -444,12 +435,8 @@ pub(crate) fn load_der_x509_certificate(
 fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        pyo3::PyErr::warn_bound(
-            py,
-            &warning_cls,
-            "Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.",
-            1,
-        )?;
+        let message = std::ffi::CString::new("Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.").unwrap();
+        pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
     }
     Ok(())
 }
@@ -470,12 +457,8 @@ fn warn_if_invalid_params(
             // This can also be triggered by an Intel On Die certificate
             // https://github.com/pyca/cryptography/issues/11723
             let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-            pyo3::PyErr::warn_bound(
-                py,
-                &warning_cls,
-                "The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.",
-                2,
-            )?;
+            let message = std::ffi::CString::new("The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.").unwrap();
+            pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 2)?;
         }
         _ => {}
     }
@@ -487,33 +470,31 @@ fn parse_display_text(
     text: DisplayText<'_>,
 ) -> pyo3::PyResult<pyo3::PyObject> {
     match text {
-        DisplayText::IA5String(o) => {
-            Ok(pyo3::types::PyString::new_bound(py, o.as_str()).to_object(py))
-        }
-        DisplayText::Utf8String(o) => {
-            Ok(pyo3::types::PyString::new_bound(py, o.as_str()).to_object(py))
-        }
+        DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str())
+            .into_any()
+            .unbind()),
+        DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str())
+            .into_any()
+            .unbind()),
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
                 let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-                pyo3::PyErr::warn_bound(
-                    py,
-                    &warning_cls,
-                    "Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.",
-                    1,
-                )?;
+                let message = std::ffi::CString::new("Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.").unwrap();
+                pyo3::PyErr::warn(py, &warning_cls, message.as_c_str(), 1)?;
             }
-            Ok(pyo3::types::PyString::new_bound(py, o.as_str()).to_object(py))
+            Ok(pyo3::types::PyString::new(py, o.as_str())
+                .into_any()
+                .unbind())
         }
         DisplayText::BmpString(o) => {
-            let py_bytes = pyo3::types::PyBytes::new_bound(py, o.as_utf16_be_bytes());
+            let py_bytes = pyo3::types::PyBytes::new(py, o.as_utf16_be_bytes());
             // TODO: do the string conversion in rust perhaps
             Ok(py_bytes
                 .call_method1(
                     pyo3::intern!(py, "decode"),
                     (pyo3::intern!(py, "utf_16_be"),),
                 )?
-                .to_object(py))
+                .unbind())
         }
     }
 }
@@ -529,30 +510,32 @@ fn parse_user_notice(
     let nr = match un.notice_ref {
         Some(data) => {
             let org = parse_display_text(py, data.organization)?;
-            let numbers = pyo3::types::PyList::empty_bound(py);
+            let numbers = pyo3::types::PyList::empty(py);
             for num in data.notice_numbers.unwrap_read().clone() {
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?)?;
             }
             types::NOTICE_REFERENCE
                 .get(py)?
                 .call1((org, numbers))?
-                .to_object(py)
+                .unbind()
         }
         None => py.None(),
     };
-    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.to_object(py))
+    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.unbind())
 }
 
 fn parse_policy_qualifiers<'a>(
     py: pyo3::Python<'_>,
     policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let py_pq = pyo3::types::PyList::empty_bound(py);
+    let py_pq = pyo3::types::PyList::empty(py);
     for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
             Qualifier::CpsUri(data) => {
                 if pqi.policy_qualifier_id == oid::CP_CPS_URI_OID {
-                    pyo3::types::PyString::new_bound(py, data.as_str()).to_object(py)
+                    pyo3::types::PyString::new(py, data.as_str())
+                        .into_any()
+                        .unbind()
                 } else {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
@@ -574,7 +557,7 @@ fn parse_policy_qualifiers<'a>(
         };
         py_pq.append(qualifier)?;
     }
-    Ok(py_pq.to_object(py))
+    Ok(py_pq.into_any().unbind())
 }
 
 fn parse_cp(
@@ -582,7 +565,7 @@ fn parse_cp(
     ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
-    let certificate_policies = pyo3::types::PyList::empty_bound(py);
+    let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
         let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?;
         let py_pqis = match policyinfo.policy_qualifiers {
@@ -596,18 +579,18 @@ fn parse_cp(
             .call1((pi_oid, py_pqis))?;
         certificate_policies.append(pi)?;
     }
-    Ok(certificate_policies.to_object(py))
+    Ok(certificate_policies.into_any().unbind())
 }
 
 fn parse_general_subtrees(
     py: pyo3::Python<'_>,
     subtrees: SequenceOfSubtrees<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let gns = pyo3::types::PyList::empty_bound(py);
+    let gns = pyo3::types::PyList::empty(py);
     for gs in subtrees.unwrap_read().clone() {
         gns.append(x509::parse_general_name(py, gs.base)?)?;
     }
-    Ok(gns.to_object(py))
+    Ok(gns.into_any().unbind())
 }
 
 pub(crate) fn parse_distribution_point_name(
@@ -642,7 +625,7 @@ fn parse_distribution_point(
     Ok(types::DISTRIBUTION_POINT
         .get(py)?
         .call1((full_name, relative_name, reasons, crl_issuer))?
-        .to_object(py))
+        .unbind())
 }
 
 pub(crate) fn parse_distribution_points(
@@ -650,12 +633,12 @@ pub(crate) fn parse_distribution_points(
     ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
     let dps = ext.value::<asn1::SequenceOf<'_, DistributionPoint<'_>>>()?;
-    let py_dps = pyo3::types::PyList::empty_bound(py);
+    let py_dps = pyo3::types::PyList::empty(py);
     for dp in dps {
         let py_dp = parse_distribution_point(py, dp)?;
         py_dps.append(py_dp)?;
     }
-    Ok(py_dps.to_object(py))
+    Ok(py_dps.into_any().unbind())
 }
 
 pub(crate) fn parse_distribution_point_reasons(
@@ -672,7 +655,7 @@ pub(crate) fn parse_distribution_point_reasons(
                     vec.push(reason_bit_mapping.get_item(i)?);
                 }
             }
-            pyo3::types::PyFrozenSet::new_bound(py, &vec)?.to_object(py)
+            pyo3::types::PyFrozenSet::new(py, &vec)?.into_any().unbind()
         }
         None => py.None(),
     })
@@ -685,7 +668,7 @@ pub(crate) fn encode_distribution_point_reasons(
     let reason_flag_mapping = types::CRL_REASON_FLAGS.get(py)?;
 
     let mut bits = vec![0, 0];
-    for py_reason in py_reasons.iter()? {
+    for py_reason in py_reasons.try_iter()? {
         let bit = reason_flag_mapping
             .get_item(py_reason?)?
             .extract::<usize>()?;
@@ -704,7 +687,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
 ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
     let aki = ext.value::<AuthorityKeyIdentifier<'_>>()?;
     let serial = match aki.authority_cert_serial_number {
-        Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.to_object(py),
+        Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.unbind(),
         None => py.None(),
     };
     let issuer = match aki.authority_cert_issuer {
@@ -720,15 +703,15 @@ pub(crate) fn parse_access_descriptions(
     py: pyo3::Python<'_>,
     ext: &Extension<'_>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let ads = pyo3::types::PyList::empty_bound(py);
+    let ads = pyo3::types::PyList::empty(py);
     let parsed = ext.value::<SequenceOfAccessDescriptions<'_>>()?;
     for access in parsed.unwrap_read().clone() {
-        let py_oid = oid_to_py_oid(py, &access.access_method)?.to_object(py);
+        let py_oid = oid_to_py_oid(py, &access.access_method)?.unbind();
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = types::ACCESS_DESCRIPTION.get(py)?.call1((py_oid, gn))?;
         ads.append(ad)?;
     }
-    Ok(ads.to_object(py))
+    Ok(ads.into_any().unbind())
 }
 
 fn parse_naming_authority<'p>(
@@ -740,7 +723,7 @@ fn parse_naming_authority<'p>(
         None => py.None().into_bound(py),
     };
     let py_url = match authority.url {
-        Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+        Some(data) => pyo3::types::PyString::new(py, data.as_str()).into_any(),
         None => py.None().into_bound(py),
     };
     let py_text = match authority.text {
@@ -757,20 +740,20 @@ fn parse_profession_infos<'a>(
     py: pyo3::Python<'a>,
     profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a>>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
-    let py_infos = pyo3::types::PyList::empty_bound(py);
+    let py_infos = pyo3::types::PyList::empty(py);
     for info in profession_infos.clone() {
         let py_naming_authority = match info.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
             None => py.None().into_bound(py),
         };
-        let py_profession_items = pyo3::types::PyList::empty_bound(py);
+        let py_profession_items = pyo3::types::PyList::empty(py);
         for item in info.profession_items.unwrap_read().clone() {
             let py_item = parse_display_text(py, item)?;
             py_profession_items.append(py_item)?;
         }
         let py_profession_oids = match info.profession_oids {
             Some(oids) => {
-                let py_oids = pyo3::types::PyList::empty_bound(py);
+                let py_oids = pyo3::types::PyList::empty(py);
                 for oid in oids.unwrap_read().clone() {
                     let py_oid = oid_to_py_oid(py, &oid)?;
                     py_oids.append(py_oid)?;
@@ -780,11 +763,11 @@ fn parse_profession_infos<'a>(
             None => py.None().into_bound(py),
         };
         let py_registration_number = match info.registration_number {
-            Some(data) => pyo3::types::PyString::new_bound(py, data.as_str()).into_any(),
+            Some(data) => pyo3::types::PyString::new(py, data.as_str()).into_any(),
             None => py.None().into_bound(py),
         };
         let py_add_profession_info = match info.add_profession_info {
-            Some(data) => pyo3::types::PyBytes::new_bound(py, data).into_any(),
+            Some(data) => pyo3::types::PyBytes::new(py, data).into_any(),
             None => py.None().into_bound(py),
         };
         let py_info = types::PROFESSION_INFO.get(py)?.call1((
@@ -803,7 +786,7 @@ fn parse_admissions<'a>(
     py: pyo3::Python<'a>,
     admissions: &asn1::SequenceOf<'a, Admission<'a>>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
-    let py_admissions = pyo3::types::PyList::empty_bound(py);
+    let py_admissions = pyo3::types::PyList::empty(py);
     for admission in admissions.clone() {
         let py_admission_authority = match admission.admission_authority {
             Some(authority) => x509::parse_general_name(py, authority)?,
@@ -851,7 +834,7 @@ pub fn parse_cert_ext<'p>(
         oid::TLS_FEATURE_OID => {
             let tls_feature_type_to_enum = types::TLS_FEATURE_TYPE_TO_ENUM.get(py)?;
 
-            let features = pyo3::types::PyList::empty_bound(py);
+            let features = pyo3::types::PyList::empty(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
                 let py_feature = tls_feature_type_to_enum.get_item(feature)?;
                 features.append(py_feature)?;
@@ -867,7 +850,7 @@ pub fn parse_cert_ext<'p>(
             ))
         }
         oid::EXTENDED_KEY_USAGE_OID => {
-            let ekus = pyo3::types::PyList::empty_bound(py);
+            let ekus = pyo3::types::PyList::empty(py);
             for oid in ext.value::<ExtendedKeyUsage<'_>>()? {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 ekus.append(oid_obj)?;
@@ -1075,11 +1058,7 @@ pub(crate) fn create_x509_certificate(
         signature_alg: sigalg,
         signature: asn1::BitString::new(&signature, 0).unwrap(),
     })?;
-    load_der_x509_certificate(
-        py,
-        pyo3::types::PyBytes::new_bound(py, &data).unbind(),
-        None,
-    )
+    load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &data).unbind(), None)
 }
 
 pub(crate) fn set_bit(vals: &mut [u8], n: usize, set: bool) {

@@ -14,8 +14,6 @@ use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-use pyo3::IntoPy;
 
 use crate::asn1::encode_der_data;
 use crate::buf::CffiBuf;
@@ -441,11 +439,11 @@ fn load_pkcs7_certificates(
             ),
         )),
         Some(certificates) => {
-            let result = pyo3::types::PyList::empty_bound(py);
+            let result = pyo3::types::PyList::empty(py);
             for c in certificates {
-                let cert_der = pyo3::types::PyBytes::new_bound(py, c.to_der()?.as_slice()).unbind();
+                let cert_der = pyo3::types::PyBytes::new(py, c.to_der()?.as_slice()).unbind();
                 let cert = load_der_x509_certificate(py, cert_der, None)?;
-                result.append(cert.into_py(py))?;
+                result.append(cert)?;
             }
             Ok(result)
         }

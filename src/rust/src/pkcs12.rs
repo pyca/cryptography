@@ -10,7 +10,7 @@ use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-use pyo3::IntoPy;
+use pyo3::IntoPyObject;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -205,10 +205,10 @@ impl EncryptionAlgorithm {
 
                 let triple_des = types::TRIPLE_DES
                     .get(py)?
-                    .call1((pyo3::types::PyBytes::new_bound(py, &key),))?;
+                    .call1((pyo3::types::PyBytes::new(py, &key),))?;
                 let cbc = types::CBC
                     .get(py)?
-                    .call1((pyo3::types::PyBytes::new_bound(py, &iv),))?;
+                    .call1((pyo3::types::PyBytes::new(py, &iv),))?;
 
                 symmetric_encrypt(py, triple_des, cbc, data)
             }
@@ -415,7 +415,7 @@ fn decode_encryption_algorithm<'a>(
 
     if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
         Ok((
-            pyo3::types::PyBytes::new_bound(py, b"").extract()?,
+            pyo3::types::PyBytes::new(py, b"").extract()?,
             default_hmac_alg,
             default_hmac_kdf_iter,
             default_cipher_kdf_iter,
@@ -540,7 +540,7 @@ fn serialize_key_and_certificates<'p>(
         }
 
         if let Some(cas) = cas {
-            for cert in cas.iter()? {
+            for cert in cas.try_iter()? {
                 ca_certs.push(cert?.extract::<CertificateOrPKCS12Certificate>()?);
             }
 
@@ -715,10 +715,7 @@ fn serialize_key_and_certificates<'p>(
             iterations: mac_kdf_iter,
         }),
     };
-    Ok(pyo3::types::PyBytes::new_bound(
-        py,
-        &asn1::write_single(&p12)?,
-    ))
+    Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&p12)?))
 }
 
 fn decode_p12(
@@ -767,14 +764,14 @@ fn load_key_and_certificates<'p>(
         py.None()
     };
     let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new_bound(py, &ossl_cert.to_der()?).unbind();
+        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
         Some(x509::certificate::load_der_x509_certificate(
             py, cert_der, None,
         )?)
     } else {
         None
     };
-    let additional_certs = pyo3::types::PyList::empty_bound(py);
+    let additional_certs = pyo3::types::PyList::empty(py);
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
             if #[cfg(any(
@@ -787,9 +784,9 @@ fn load_key_and_certificates<'p>(
         };
 
         for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new_bound(py, &ossl_cert.to_der()?).unbind();
+            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
             let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-            additional_certs.append(cert.into_py(py))?;
+            additional_certs.append(cert)?;
         }
     }
 
@@ -814,17 +811,20 @@ fn load_pkcs12<'p>(
         py.None()
     };
     let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new_bound(py, &ossl_cert.to_der()?).unbind();
+        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
         let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
         let alias = ossl_cert
             .alias()
-            .map(|a| pyo3::types::PyBytes::new_bound(py, a).unbind());
+            .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
 
-        PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias).into_py(py)
+        PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()
     } else {
         py.None()
     };
-    let additional_certs = pyo3::types::PyList::empty_bound(py);
+    let additional_certs = pyo3::types::PyList::empty(py);
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
             if #[cfg(any(
@@ -837,13 +837,13 @@ fn load_pkcs12<'p>(
         };
 
         for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new_bound(py, &ossl_cert.to_der()?).unbind();
+            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
             let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
             let alias = ossl_cert
                 .alias()
-                .map(|a| pyo3::types::PyBytes::new_bound(py, a).unbind());
+                .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
 
-            let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias).into_py(py);
+            let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias);
             additional_certs.append(p12_cert)?;
         }
     }

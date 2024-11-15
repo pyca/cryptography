@@ -8,7 +8,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use crate::types;
 use pyo3::types::PyAnyMethods;
-use pyo3::IntoPy;
+use pyo3::IntoPyObject;
 
 pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,
@@ -160,7 +160,7 @@ impl CipherContext {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut buf = vec![0; data.len() + self.ctx.block_size()];
         let n = self.update_into(py, data, &mut buf)?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &buf[..n]))
+        Ok(pyo3::types::PyBytes::new(py, &buf[..n]))
     }
 
     pub(crate) fn update_into(
@@ -224,7 +224,7 @@ impl CipherContext {
                 ),
             ))
         })?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &out_buf[..n]))
+        Ok(pyo3::types::PyBytes::new(py, &out_buf[..n]))
     }
 }
 
@@ -359,7 +359,7 @@ impl PyAEADEncryptionContext {
         let result = ctx.finalize(py)?;
 
         // XXX: do not hard code 16
-        let tag = pyo3::types::PyBytes::new_bound_with(py, 16, |t| {
+        let tag = pyo3::types::PyBytes::new_with(py, 16, |t| {
             ctx.ctx.tag(t).map_err(CryptographyError::from)?;
             Ok(())
         })?;
@@ -539,9 +539,14 @@ fn create_encryption_ctx(
                 .getattr(pyo3::intern!(py, "_MAX_AAD_BYTES"))?
                 .extract()?,
         }
-        .into_py(py))
+        .into_pyobject(py)?
+        .into_any()
+        .unbind())
     } else {
-        Ok(PyCipherContext { ctx: Some(ctx) }.into_py(py))
+        Ok(PyCipherContext { ctx: Some(ctx) }
+            .into_pyobject(py)?
+            .into_any()
+            .unbind())
     }
 }
 
@@ -571,9 +576,14 @@ fn create_decryption_ctx(
                 .getattr(pyo3::intern!(py, "_MAX_AAD_BYTES"))?
                 .extract()?,
         }
-        .into_py(py))
+        .into_pyobject(py)?
+        .into_any()
+        .unbind())
     } else {
-        Ok(PyCipherContext { ctx: Some(ctx) }.into_py(py))
+        Ok(PyCipherContext { ctx: Some(ctx) }
+            .into_pyobject(py)?
+            .into_any()
+            .unbind())
     }
 }
 

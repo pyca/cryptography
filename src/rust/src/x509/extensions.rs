@@ -21,7 +21,7 @@ fn encode_general_subtrees<'a>(
         Ok(None)
     } else {
         let mut subtree_seq = vec![];
-        for name in subtrees.iter()? {
+        for name in subtrees.try_iter()? {
             let gn = x509::common::encode_general_name(py, ka_bytes, ka_str, &name?)?;
             subtree_seq.push(extensions::GeneralSubtree {
                 base: gn,
@@ -43,7 +43,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     struct PyAuthorityKeyIdentifier<'a> {
         key_identifier: Option<pyo3::pybacked::PyBackedBytes>,
         authority_cert_issuer: Option<pyo3::Bound<'a, pyo3::PyAny>>,
-        authority_cert_serial_number: Option<pyo3::Bound<'a, pyo3::types::PyLong>>,
+        authority_cert_serial_number: Option<pyo3::Bound<'a, pyo3::types::PyInt>>,
     }
     let aki = py_aki.extract::<PyAuthorityKeyIdentifier<'_>>()?;
 
@@ -88,7 +88,7 @@ pub(crate) fn encode_distribution_points<'p>(
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
     let ka_str = cryptography_keepalive::KeepAlive::new();
     let mut dps = vec![];
-    for py_dp in py_dps.iter()? {
+    for py_dp in py_dps.try_iter()? {
         let py_dp = py_dp?.extract::<PyDistributionPoint<'_>>()?;
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
@@ -106,7 +106,7 @@ pub(crate) fn encode_distribution_points<'p>(
             ))
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
-            for py_name_entry in py_relative_name.iter()? {
+            for py_name_entry in py_relative_name.try_iter()? {
                 let ne = x509::common::encode_name_entry(py, &ka_bytes, &py_name_entry?)?;
                 name_entries.push(ne);
             }
@@ -228,13 +228,13 @@ fn encode_certificate_policies(
     let mut policy_informations = vec![];
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
     let ka_str = cryptography_keepalive::KeepAlive::new();
-    for py_policy_info in ext.iter()? {
+    for py_policy_info in ext.try_iter()? {
         let py_policy_info = py_policy_info?;
         let py_policy_qualifiers =
             py_policy_info.getattr(pyo3::intern!(py, "policy_qualifiers"))?;
         let qualifiers = if py_policy_qualifiers.is_truthy()? {
             let mut qualifiers = vec![];
-            for py_qualifier in py_policy_qualifiers.iter()? {
+            for py_qualifier in py_policy_qualifiers.try_iter()? {
                 let py_qualifier = py_qualifier?;
                 let qualifier = if py_qualifier.is_instance_of::<pyo3::types::PyString>() {
                     let py_qualifier_str = ka_str.add(py_qualifier.extract::<PyBackedStr>()?);
@@ -257,7 +257,7 @@ fn encode_certificate_policies(
                         let mut notice_numbers = vec![];
                         for py_num in py_notice
                             .getattr(pyo3::intern!(py, "notice_numbers"))?
-                            .iter()?
+                            .try_iter()?
                         {
                             let bytes = ka_bytes
                                 .add(py_uint_to_big_endian_bytes(ext.py(), py_num?.extract()?)?);
@@ -346,7 +346,10 @@ fn encode_issuing_distribution_point(
         .is_truthy()?
     {
         let mut name_entries = vec![];
-        for py_name_entry in ext.getattr(pyo3::intern!(py, "relative_name"))?.iter()? {
+        for py_name_entry in ext
+            .getattr(pyo3::intern!(py, "relative_name"))?
+            .try_iter()?
+        {
             let name_entry = x509::common::encode_name_entry(ext.py(), &ka_bytes, &py_name_entry?)?;
             name_entries.push(name_entry);
         }
@@ -376,7 +379,7 @@ fn encode_issuing_distribution_point(
 
 fn encode_oid_sequence(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut oids = vec![];
-    for el in ext.iter()? {
+    for el in ext.try_iter()? {
         let oid = py_oid_to_oid(el?)?;
         oids.push(oid);
     }
@@ -392,7 +395,7 @@ fn encode_tls_features(
     // an asn1::Sequence can't return an error, and we need to handle errors
     // from Python.
     let mut els = vec![];
-    for el in ext.iter()? {
+    for el in ext.try_iter()? {
         els.push(el?.getattr(pyo3::intern!(py, "value"))?.extract::<u64>()?);
     }
 
@@ -401,14 +404,14 @@ fn encode_tls_features(
 
 fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut length = 0;
-    for sct in ext.iter()? {
+    for sct in ext.try_iter()? {
         let sct = sct?.downcast::<sct::Sct>()?.clone();
         length += sct.get().sct_data.len() + 2;
     }
 
     let mut result = vec![];
     result.extend_from_slice(&(length as u16).to_be_bytes());
-    for sct in ext.iter()? {
+    for sct in ext.try_iter()? {
         let sct = sct?.downcast::<sct::Sct>()?.clone();
         result.extend_from_slice(&(sct.get().sct_data.len() as u16).to_be_bytes());
         result.extend_from_slice(&sct.get().sct_data);
@@ -454,7 +457,7 @@ fn encode_naming_authority<'a>(
 }
 
 fn encode_profession_info<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_info: &pyo3::Bound<'a, pyo3::PyAny>,
@@ -467,7 +470,7 @@ fn encode_profession_info<'a>(
     };
     let mut profession_items = vec![];
     let py_items = py_info.getattr(pyo3::intern!(py, "profession_items"))?;
-    for py_item in py_items.iter()? {
+    for py_item in py_items.try_iter()? {
         let py_item = py_item?;
         let py_item_str = ka_str.add(py_item.extract::<PyBackedStr>()?);
         let item = extensions::DisplayText::Utf8String(asn1::Utf8String::new(py_item_str));
@@ -478,7 +481,7 @@ fn encode_profession_info<'a>(
     let py_oids = py_info.getattr(pyo3::intern!(py, "profession_oids"))?;
     let profession_oids = if !py_oids.is_none() {
         let mut profession_oids = vec![];
-        for py_oid in py_oids.iter()? {
+        for py_oid in py_oids.try_iter()? {
             let py_oid = py_oid?;
             let oid = py_oid_to_oid(py_oid)?;
             profession_oids.push(oid);
@@ -522,7 +525,7 @@ fn encode_profession_info<'a>(
 }
 
 fn encode_admission<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     py_admission: &pyo3::Bound<'a, pyo3::PyAny>,
@@ -547,7 +550,7 @@ fn encode_admission<'a>(
 
     let py_profession_infos = py_admission.getattr(pyo3::intern!(py, "profession_infos"))?;
     let mut profession_infos = vec![];
-    for py_info in py_profession_infos.iter()? {
+    for py_info in py_profession_infos.try_iter()? {
         profession_infos.push(encode_profession_info(py, ka_bytes, ka_str, &py_info?)?);
     }
     let profession_infos =
@@ -627,7 +630,7 @@ pub(crate) fn encode_extension(
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "skip_certs"))?
-                .downcast::<pyo3::types::PyLong>()?
+                .downcast::<pyo3::types::PyInt>()?
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
@@ -680,7 +683,7 @@ pub(crate) fn encode_extension(
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "crl_number"))?
-                .downcast::<pyo3::types::PyLong>()?
+                .downcast::<pyo3::types::PyInt>()?
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
@@ -721,7 +724,7 @@ pub(crate) fn encode_extension(
                 None
             };
             let mut admissions = vec![];
-            for py_admission in ext.iter()? {
+            for py_admission in ext.try_iter()? {
                 let admission = encode_admission(py, &ka_bytes, &ka_str, &py_admission?)?;
                 admissions.push(admission);
             }

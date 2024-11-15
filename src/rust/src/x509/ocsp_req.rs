@@ -132,7 +132,7 @@ impl OCSPRequest {
                     }
                     oid::ACCEPTABLE_RESPONSES_OID => {
                         let oids = ext.value::<asn1::SequenceOf<'_, asn1::ObjectIdentifier>>()?;
-                        let py_oids = pyo3::types::PyList::empty_bound(py);
+                        let py_oids = pyo3::types::PyList::empty(py);
                         for oid in oids {
                             py_oids.append(oid_to_py_oid(py, &oid)?)?;
                         }
@@ -161,7 +161,7 @@ impl OCSPRequest {
             .into());
         }
         let result = asn1::write_single(self.raw.borrow_dependent())?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &result))
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
 
@@ -188,7 +188,7 @@ pub(crate) fn create_ocsp_request(
         (py_cert, py_issuer, py_hash) = builder_request.extract()?;
         ocsp::certid_new(py, &ka_bytes, &py_cert, &py_issuer, &py_hash)?
     } else {
-        let py_serial: pyo3::Bound<'_, pyo3::types::PyLong>;
+        let py_serial: pyo3::Bound<'_, pyo3::types::PyInt>;
         (issuer_name_hash, issuer_key_hash, py_serial, py_hash) = builder
             .getattr(pyo3::intern!(py, "_request_hash"))?
             .extract()?;
@@ -226,5 +226,5 @@ pub(crate) fn create_ocsp_request(
         optional_signature: None,
     };
     let data = asn1::write_single(&ocsp_req)?;
-    load_der_ocsp_request(py, pyo3::types::PyBytes::new_bound(py, &data).unbind())
+    load_der_ocsp_request(py, pyo3::types::PyBytes::new(py, &data).unbind())
 }

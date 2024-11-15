@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::IntoPy;
+use pyo3::IntoPyObject;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -70,7 +70,9 @@ pub(crate) fn private_key_from_pkey(
             pkey,
             unsafe_skip_rsa_key_validation,
         )?
-        .into_py(py)),
+        .into_pyobject(py)?
+        .unbind()
+        .into_any()),
         openssl::pkey::Id::RSA_PSS => {
             // At the moment the way we handle RSA PSS keys is to strip the
             // PSS constraints from them and treat them as normal RSA keys
@@ -81,34 +83,50 @@ pub(crate) fn private_key_from_pkey(
             let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
             Ok(
                 crate::backend::rsa::private_key_from_pkey(&pkey, unsafe_skip_rsa_key_validation)?
-                    .into_py(py),
+                    .into_pyobject(py)?
+                    .into_any()
+                    .unbind(),
             )
         }
-        openssl::pkey::Id::EC => {
-            Ok(crate::backend::ec::private_key_from_pkey(py, pkey)?.into_py(py))
-        }
-        openssl::pkey::Id::X25519 => {
-            Ok(crate::backend::x25519::private_key_from_pkey(pkey).into_py(py))
-        }
+        openssl::pkey::Id::EC => Ok(crate::backend::ec::private_key_from_pkey(py, pkey)?
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::X25519 => Ok(crate::backend::x25519::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::X448 => {
-            Ok(crate::backend::x448::private_key_from_pkey(pkey).into_py(py))
-        }
+        openssl::pkey::Id::X448 => Ok(crate::backend::x448::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
-        openssl::pkey::Id::ED25519 => {
-            Ok(crate::backend::ed25519::private_key_from_pkey(pkey).into_py(py))
-        }
-
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::ED448 => {
-            Ok(crate::backend::ed448::private_key_from_pkey(pkey).into_py(py))
-        }
-        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::private_key_from_pkey(pkey).into_py(py)),
-        openssl::pkey::Id::DH => Ok(crate::backend::dh::private_key_from_pkey(pkey).into_py(py)),
+        openssl::pkey::Id::ED25519 => Ok(crate::backend::ed25519::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey).into_py(py)),
+        openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::DH => Ok(crate::backend::dh::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+
+        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
@@ -190,29 +208,48 @@ fn public_key_from_pkey(
     // `id` is a separate argument so we can test this while passing something
     // unsupported.
     match id {
-        openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey).into_py(py)),
-        openssl::pkey::Id::EC => {
-            Ok(crate::backend::ec::public_key_from_pkey(py, pkey)?.into_py(py))
-        }
-        openssl::pkey::Id::X25519 => {
-            Ok(crate::backend::x25519::public_key_from_pkey(pkey).into_py(py))
-        }
+        openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::EC => Ok(crate::backend::ec::public_key_from_pkey(py, pkey)?
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::X25519 => Ok(crate::backend::x25519::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::X448 => Ok(crate::backend::x448::public_key_from_pkey(pkey).into_py(py)),
+        openssl::pkey::Id::X448 => Ok(crate::backend::x448::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
-        openssl::pkey::Id::ED25519 => {
-            Ok(crate::backend::ed25519::public_key_from_pkey(pkey).into_py(py))
-        }
+        openssl::pkey::Id::ED25519 => Ok(crate::backend::ed25519::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::ED448 => {
-            Ok(crate::backend::ed448::public_key_from_pkey(pkey).into_py(py))
-        }
+        openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
-        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(pkey).into_py(py)),
-        openssl::pkey::Id::DH => Ok(crate::backend::dh::public_key_from_pkey(pkey).into_py(py)),
+        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
+        openssl::pkey::Id::DH => Ok(crate::backend::dh::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey).into_py(py)),
+        openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey)
+            .into_pyobject(py)?
+            .into_any()
+            .unbind()),
 
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),

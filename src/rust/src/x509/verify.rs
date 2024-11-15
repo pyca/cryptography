@@ -298,7 +298,7 @@ impl PyClientVerifier {
         )
         .or_else(|e| handle_validation_error(py, e))?;
 
-        let py_chain = pyo3::types::PyList::empty_bound(py);
+        let py_chain = pyo3::types::PyList::empty(py);
         for c in &chain {
             py_chain.append(c.extra())?;
         }
@@ -382,7 +382,7 @@ impl PyServerVerifier {
         )
         .or_else(|e| handle_validation_error(py, e))?;
 
-        let result = pyo3::types::PyList::empty_bound(py);
+        let result = pyo3::types::PyList::empty(py);
         for c in chain {
             result.append(c.extra())?;
         }

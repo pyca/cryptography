@@ -5,7 +5,6 @@
 use std::fmt;
 
 use pyo3::types::PyListMethods;
-use pyo3::ToPyObject;
 
 use crate::exceptions;
 
@@ -87,7 +86,7 @@ pub(crate) fn list_from_openssl_error<'p>(
     py: pyo3::Python<'p>,
     error_stack: &openssl::error::ErrorStack,
 ) -> pyo3::Bound<'p, pyo3::types::PyList> {
-    let errors = pyo3::types::PyList::empty_bound(py);
+    let errors = pyo3::types::PyList::empty(py);
     for e in error_stack.errors() {
         errors
             .append(
@@ -146,7 +145,7 @@ impl From<CryptographyError> for pyo3::PyErr {
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::with_gil(|py| {
                 let errors = list_from_openssl_error(py, error_stack);
-                exceptions::InternalError::new_err((e.to_string(), errors.to_object(py)))
+                exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
             }),
         }
     }
@@ -211,7 +210,7 @@ impl OpenSSLError {
 pub(crate) fn capture_error_stack(
     py: pyo3::Python<'_>,
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
-    let errs = pyo3::types::PyList::empty_bound(py);
+    let errs = pyo3::types::PyList::empty(py);
     for e in openssl::error::ErrorStack::get().errors() {
         errs.append(pyo3::Bound::new(py, OpenSSLError { e: e.clone() })?)?;
     }

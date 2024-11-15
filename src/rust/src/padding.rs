@@ -103,7 +103,7 @@ impl PKCS7PaddingContext {
             Some(v) => {
                 let pad_size = self.block_size - (v % self.block_size);
                 let pad = vec![pad_size as u8; pad_size];
-                Ok(pyo3::types::PyBytes::new_bound(py, &pad))
+                Ok(pyo3::types::PyBytes::new(py, &pad))
             }
             None => Err(exceptions::already_finalized_error()),
         }
@@ -137,7 +137,7 @@ impl PKCS7UnpaddingContext {
                 let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
                 let result_size = finished_blocks * self.block_size;
                 let result = v.drain(..result_size);
-                Ok(pyo3::types::PyBytes::new_bound(py, result.as_slice()))
+                Ok(pyo3::types::PyBytes::new(py, result.as_slice()))
             }
             None => Err(exceptions::already_finalized_error()),
         }
@@ -162,7 +162,7 @@ impl PKCS7UnpaddingContext {
 
                 let pad_size = *v.last().unwrap();
                 let result = &v[..v.len() - pad_size as usize];
-                Ok(pyo3::types::PyBytes::new_bound(py, result))
+                Ok(pyo3::types::PyBytes::new(py, result))
             }
             None => Err(exceptions::already_finalized_error()),
         }

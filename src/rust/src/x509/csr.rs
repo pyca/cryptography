@@ -9,7 +9,6 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
 use cryptography_x509::{common, oid};
 use pyo3::types::{PyAnyMethods, PyListMethods};
-use pyo3::IntoPy;
 
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
@@ -80,12 +79,12 @@ impl CertificateSigningRequest {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(&self.raw.borrow_dependent().csr_info)?;
-        Ok(pyo3::types::PyBytes::new_bound(py, &result))
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 
     #[getter]
     fn signature<'p>(&self, py: pyo3::Python<'p>) -> pyo3::Bound<'p, pyo3::types::PyBytes> {
-        pyo3::types::PyBytes::new_bound(py, self.raw.borrow_dependent().signature.as_bytes())
+        pyo3::types::PyBytes::new(py, self.raw.borrow_dependent().signature.as_bytes())
     }
 
     #[getter]
@@ -131,8 +130,8 @@ impl CertificateSigningRequest {
         oid: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let warning_msg = "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.";
-        pyo3::PyErr::warn_bound(py, &warning_cls, warning_msg, 1)?;
+        let warning_msg = std::ffi::CString::new("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.").unwrap();
+        pyo3::PyErr::warn(py, &warning_cls, warning_msg.as_c_str(), 1)?;
 
         let rust_oid = py_oid_to_oid(oid.clone())?;
         for attribute in self
@@ -155,7 +154,7 @@ impl CertificateSigningRequest {
                     || val.tag() == asn1::PrintableString::TAG
                     || val.tag() == asn1::IA5String::TAG
                 {
-                    return Ok(pyo3::types::PyBytes::new_bound(py, val.data()).into_any());
+                    return Ok(pyo3::types::PyBytes::new(py, val.data()).into_any());
                 }
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
                     "OID {} has a disallowed ASN.1 type: {:?}",
@@ -166,13 +165,13 @@ impl CertificateSigningRequest {
         }
         Err(exceptions::AttributeNotFound::new_err((
             format!("No {oid} attribute was found"),
-            oid.into_py(py),
+            oid.unbind(),
         )))
     }
 
     #[getter]
     fn attributes<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let pyattrs = pyo3::types::PyList::empty_bound(py);
+        let pyattrs = pyo3::types::PyList::empty(py);
         for attribute in self
             .raw
             .borrow_dependent()
@@ -188,7 +187,7 @@ impl CertificateSigningRequest {
             })?;
             let oid = oid_to_py_oid(py, &attribute.type_id)?;
             let val = attribute.values.unwrap_read().clone().next().unwrap();
-            let serialized = pyo3::types::PyBytes::new_bound(py, val.data());
+            let serialized = pyo3::types::PyBytes::new(py, val.data());
             let tag = val.tag().as_u8().ok_or_else(|| {
                 CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                     "Long-form tags are not supported in CSR attribute values",
@@ -253,7 +252,7 @@ pub(crate) fn load_pem_x509_csr(
     )?;
     load_der_x509_csr(
         py,
-        pyo3::types::PyBytes::new_bound(py, parsed.contents()).unbind(),
+        pyo3::types::PyBytes::new(py, parsed.contents()).unbind(),
         None,
     )
 }
@@ -329,7 +328,10 @@ pub(crate) fn create_x509_csr(
     }
 
     let mut attr_values = vec![];
-    for py_attr in builder.getattr(pyo3::intern!(py, "_attributes"))?.iter()? {
+    for py_attr in builder
+        .getattr(pyo3::intern!(py, "_attributes"))?
+        .try_iter()?
+    {
         let (py_oid, value, tag): (
             pyo3::Bound<'_, pyo3::PyAny>,
             pyo3::pybacked::PyBackedBytes,
@@ -387,7 +389,7 @@ pub(crate) fn create_x509_csr(
     })?;
     load_der_x509_csr(
         py,
-        pyo3::types::PyBytes::new_bound(py, &data).clone().unbind(),
+        pyo3::types::PyBytes::new(py, &data).clone().unbind(),
         None,
     )
 }

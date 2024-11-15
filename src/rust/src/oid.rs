@@ -29,7 +29,7 @@ impl ObjectIdentifier {
 
     #[getter]
     fn _name<'p>(
-        slf: pyo3::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'p, Self>,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         types::OID_NAMES

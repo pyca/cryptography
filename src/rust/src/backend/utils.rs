@@ -6,7 +6,6 @@ use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
-use pyo3::ToPyObject;
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
@@ -30,7 +29,7 @@ pub(crate) fn bn_to_py_int<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     assert!(!b.is_negative());
 
-    let int_type = py.get_type_bound::<pyo3::types::PyLong>();
+    let int_type = py.get_type::<pyo3::types::PyInt>();
     Ok(int_type.call_method1(
         pyo3::intern!(py, "from_bytes"),
         (b.to_vec(), pyo3::intern!(py, "big")),
@@ -87,7 +86,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 )));
         }
         let raw_bytes = pkey.raw_private_key()?;
-        return Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes));
+        return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
     }
 
     let py_password;
@@ -127,7 +126,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                     password,
                 )?
             };
-            return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+            return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
         } else if encoding.is(&types::ENCODING_DER.get(py)?) {
             let der_bytes = if password.is_empty() {
                 pkey.private_key_to_pkcs8()?
@@ -137,7 +136,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                     password,
                 )?
             };
-            return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+            return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
         }
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Unsupported encoding for PKCS8"),
@@ -162,7 +161,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                         password,
                     )?
                 };
-                return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {
                     return Err(CryptographyError::from(
@@ -173,7 +172,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 }
 
                 let der_bytes = rsa.private_key_to_der()?;
-                return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         } else if let Ok(dsa) = pkey.dsa() {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
@@ -185,7 +184,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                         password,
                     )?
                 };
-                return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {
                     return Err(CryptographyError::from(
@@ -196,7 +195,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 }
 
                 let der_bytes = dsa.private_key_to_der()?;
-                return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         } else if let Ok(ec) = pkey.ec_key() {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
@@ -208,7 +207,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                         password,
                     )?
                 };
-                return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {
                     return Err(CryptographyError::from(
@@ -219,7 +218,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 }
 
                 let der_bytes = ec.private_key_to_der()?;
-                return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         }
     }
@@ -283,17 +282,17 @@ pub(crate) fn pkey_public_bytes<'p>(
             ));
         }
         let raw_bytes = pkey.raw_public_key()?;
-        return Ok(pyo3::types::PyBytes::new_bound(py, &raw_bytes));
+        return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
     }
 
     // SubjectPublicKeyInfo + PEM/DER
     if format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
         if encoding.is(&types::ENCODING_PEM.get(py)?) {
             let pem_bytes = pkey.public_key_to_pem()?;
-            return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+            return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
         } else if encoding.is(&types::ENCODING_DER.get(py)?) {
             let der_bytes = pkey.public_key_to_der()?;
-            return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+            return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
         }
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
@@ -319,7 +318,7 @@ pub(crate) fn pkey_public_bytes<'p>(
             let data = ec
                 .public_key()
                 .to_bytes(ec.group(), point_form, &mut bn_ctx)?;
-            return Ok(pyo3::types::PyBytes::new_bound(py, &data));
+            return Ok(pyo3::types::PyBytes::new(py, &data));
         }
     }
 
@@ -327,10 +326,10 @@ pub(crate) fn pkey_public_bytes<'p>(
         if format.is(&types::PUBLIC_FORMAT_PKCS1.get(py)?) {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
                 let pem_bytes = rsa.public_key_to_pem_pkcs1()?;
-                return Ok(pyo3::types::PyBytes::new_bound(py, &pem_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 let der_bytes = rsa.public_key_to_der_pkcs1()?;
-                return Ok(pyo3::types::PyBytes::new_bound(py, &der_bytes));
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
@@ -393,7 +392,7 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
         (algorithm.clone(), BytesOrPyBytes::PyBytes(h.finalize(py)?))
     };
 
-    if data.as_bytes().len() != algorithm.getattr("digest_size")?.extract()? {
+    if data.as_bytes().len() != (algorithm.getattr("digest_size")?.extract::<usize>()?) {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "The provided data must be the same length as the hash algorithm's digest size.",
@@ -461,7 +460,7 @@ pub(crate) fn handle_key_load_result<T>(
             Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err((
                     "Could not deserialize key data. The data may be in an incorrect format, the provided password may be incorrect, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters).",
-                    errors.to_object(py),
+                    errors.unbind(),
                 ))
             ))
         }

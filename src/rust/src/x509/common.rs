@@ -9,7 +9,6 @@ use cryptography_x509::extensions::{
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
 use pyo3::types::IntoPyDict;
 use pyo3::types::{PyAnyMethods, PyListMethods};
-use pyo3::{IntoPy, ToPyObject};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -38,11 +37,11 @@ pub(crate) fn encode_name<'p>(
 ) -> pyo3::PyResult<Name<'p>> {
     let mut rdns = vec![];
 
-    for py_rdn in py_name.getattr(pyo3::intern!(py, "rdns"))?.iter()? {
+    for py_rdn in py_name.getattr(pyo3::intern!(py, "rdns"))?.try_iter()? {
         let py_rdn = py_rdn?;
         let mut attrs = vec![];
 
-        for py_attr in py_rdn.iter()? {
+        for py_attr in py_rdn.try_iter()? {
             attrs.push(encode_name_entry(py, ka, &py_attr?)?);
         }
         rdns.push(asn1::SetOfWriter::new(attrs));
@@ -96,7 +95,7 @@ pub(crate) fn encode_name_bytes<'p>(
     let ka = cryptography_keepalive::KeepAlive::new();
     let name = encode_name(py, &ka, py_name)?;
     let result = asn1::write_single(&name)?;
-    Ok(pyo3::types::PyBytes::new_bound(py, &result))
+    Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
 pub(crate) fn encode_general_names<'a>(
@@ -106,7 +105,7 @@ pub(crate) fn encode_general_names<'a>(
     py_gns: &pyo3::Bound<'a, pyo3::PyAny>,
 ) -> Result<Vec<GeneralName<'a>>, CryptographyError> {
     let mut gns = vec![];
-    for el in py_gns.iter()? {
+    for el in py_gns.try_iter()? {
         let gn = encode_general_name(py, ka_bytes, ka_str, &el?)?;
         gns.push(gn);
     }
@@ -168,7 +167,7 @@ pub(crate) fn encode_access_descriptions<'a>(
     let mut ads = vec![];
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
     let ka_str = cryptography_keepalive::KeepAlive::new();
-    for py_ad in py_ads.iter()? {
+    for py_ad in py_ads.try_iter()? {
         let py_ad = py_ad?;
         let py_oid = py_ad.getattr(pyo3::intern!(py, "access_method"))?;
         let access_method = py_oid_to_oid(py_oid)?;
@@ -186,7 +185,7 @@ pub(crate) fn parse_name<'p>(
     py: pyo3::Python<'p>,
     name: &NameReadable<'_>,
 ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-    let py_rdns = pyo3::types::PyList::empty_bound(py);
+    let py_rdns = pyo3::types::PyList::empty(py);
     for rdn in name.clone() {
         let py_rdn = parse_rdn(py, &rdn)?;
         py_rdns.append(py_rdn)?;
@@ -207,35 +206,35 @@ fn parse_name_attribute(
     let py_tag = types::ASN1_TYPE_TO_ENUM.get(py)?.get_item(tag_val)?;
     let py_data = match attribute.value.tag().as_u8() {
         // BitString tag value
-        Some(3) => pyo3::types::PyBytes::new_bound(py, attribute.value.data()).into_any(),
+        Some(3) => pyo3::types::PyBytes::new(py, attribute.value.data()).into_any(),
         // BMPString tag value
         Some(30) => {
-            let py_bytes = pyo3::types::PyBytes::new_bound(py, attribute.value.data());
+            let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_16_be",))?
         }
         // UniversalString
         Some(28) => {
-            let py_bytes = pyo3::types::PyBytes::new_bound(py, attribute.value.data());
+            let py_bytes = pyo3::types::PyBytes::new(py, attribute.value.data());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_32_be",))?
         }
         _ => {
             let parsed = std::str::from_utf8(attribute.value.data())
                 .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
-            pyo3::types::PyString::new_bound(py, parsed).into_any()
+            pyo3::types::PyString::new(py, parsed).into_any()
         }
     };
-    let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict_bound(py);
+    let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict(py)?;
     Ok(types::NAME_ATTRIBUTE
         .get(py)?
         .call((oid, py_data, py_tag), Some(&kwargs))?
-        .to_object(py))
+        .unbind())
 }
 
 pub(crate) fn parse_rdn<'a>(
     py: pyo3::Python<'_>,
     rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let py_attrs = pyo3::types::PyList::empty_bound(py);
+    let py_attrs = pyo3::types::PyList::empty(py);
     for attribute in rdn.clone() {
         let na = parse_name_attribute(py, attribute)?;
         py_attrs.append(na)?;
@@ -243,7 +242,7 @@ pub(crate) fn parse_rdn<'a>(
     Ok(types::RELATIVE_DISTINGUISHED_NAME
         .get(py)?
         .call1((py_attrs,))?
-        .to_object(py))
+        .unbind())
 }
 
 pub(crate) fn parse_general_name(
@@ -256,31 +255,28 @@ pub(crate) fn parse_general_name(
             types::OTHER_NAME
                 .get(py)?
                 .call1((oid, data.value.full_data()))?
-                .to_object(py)
+                .unbind()
         }
         GeneralName::RFC822Name(data) => types::RFC822_NAME
             .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
-            .to_object(py),
+            .unbind(),
         GeneralName::DNSName(data) => types::DNS_NAME
             .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
-            .to_object(py),
+            .unbind(),
         GeneralName::DirectoryName(data) => {
             let py_name = parse_name(py, data.unwrap_read())?;
-            types::DIRECTORY_NAME
-                .get(py)?
-                .call1((py_name,))?
-                .to_object(py)
+            types::DIRECTORY_NAME.get(py)?.call1((py_name,))?.unbind()
         }
         GeneralName::UniformResourceIdentifier(data) => types::UNIFORM_RESOURCE_IDENTIFIER
             .get(py)?
             .call_method1(pyo3::intern!(py, "_init_without_validation"), (data.0,))?
-            .to_object(py),
+            .unbind(),
         GeneralName::IPAddress(data) => {
             if data.len() == 4 || data.len() == 16 {
                 let addr = types::IPADDRESS_IPADDRESS.get(py)?.call1((data,))?;
-                types::IP_ADDRESS.get(py)?.call1((addr,))?.to_object(py)
+                types::IP_ADDRESS.get(py)?.call1((addr,))?.unbind()
             } else {
                 // if it's not an IPv4 or IPv6 we assume it's an IPNetwork and
                 // verify length in this function.
@@ -289,7 +285,7 @@ pub(crate) fn parse_general_name(
         }
         GeneralName::RegisteredID(data) => {
             let oid = oid_to_py_oid(py, &data)?;
-            types::REGISTERED_ID.get(py)?.call1((oid,))?.to_object(py)
+            types::REGISTERED_ID.get(py)?.call1((oid,))?.unbind()
         }
         _ => {
             return Err(CryptographyError::from(
@@ -306,12 +302,12 @@ pub(crate) fn parse_general_names<'a>(
     py: pyo3::Python<'_>,
     gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
 ) -> Result<pyo3::PyObject, CryptographyError> {
-    let gns = pyo3::types::PyList::empty_bound(py);
+    let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {
         let py_gn = parse_general_name(py, gn)?;
         gns.append(py_gn)?;
     }
-    Ok(gns.to_object(py))
+    Ok(gns.into_any().unbind())
 }
 
 fn create_ip_network(
@@ -333,7 +329,7 @@ fn create_ip_network(
     };
     let base = types::IPADDRESS_IPADDRESS
         .get(py)?
-        .call1((pyo3::types::PyBytes::new_bound(py, &data[..data.len() / 2]),))?;
+        .call1((pyo3::types::PyBytes::new(py, &data[..data.len() / 2]),))?;
     let net = format!(
         "{}/{}",
         base.getattr(pyo3::intern!(py, "exploded"))?
@@ -341,7 +337,7 @@ fn create_ip_network(
         prefix?
     );
     let addr = types::IPADDRESS_IPNETWORK.get(py)?.call1((net,))?;
-    Ok(types::IP_ADDRESS.get(py)?.call1((addr,))?.to_object(py))
+    Ok(types::IP_ADDRESS.get(py)?.call1((addr,))?.unbind())
 }
 
 fn ipv4_netmask(num: u32) -> Result<u32, CryptographyError> {
@@ -379,12 +375,12 @@ pub(crate) fn parse_and_cache_extensions<
                     let oid_obj = oid_to_py_oid(py, &oid)?;
                     return Err(exceptions::DuplicateExtension::new_err((
                         format!("Duplicate {} extension found", &oid),
-                        oid_obj.into_py(py),
+                        oid_obj.unbind(),
                     )));
                 }
             };
 
-            let exts = pyo3::types::PyList::empty_bound(py);
+            let exts = pyo3::types::PyList::empty(py);
             for raw_ext in extensions.iter() {
                 let oid_obj = oid_to_py_oid(py, &raw_ext.extn_id)?;
 
@@ -400,7 +396,7 @@ pub(crate) fn parse_and_cache_extensions<
                         .call1((oid_obj, raw_ext.critical, extn_value))?;
                 exts.append(ext_obj)?;
             }
-            Ok(types::EXTENSIONS.get(py)?.call1((exts,))?.to_object(py))
+            Ok(types::EXTENSIONS.get(py)?.call1((exts,))?.unbind())
         })
         .map(|p| p.clone_ref(py))
 }
@@ -420,7 +416,7 @@ pub(crate) fn encode_extensions<
     encode_ext: F,
 ) -> pyo3::PyResult<Option<RawExtensions<'p>>> {
     let mut exts = vec![];
-    for py_ext in py_exts.iter()? {
+    for py_ext in py_exts.try_iter()? {
         let py_ext = py_ext?;
         let py_oid = py_ext.getattr(pyo3::intern!(py, "oid"))?;
         let oid = py_oid_to_oid(py_oid)?;
@@ -466,7 +462,7 @@ pub(crate) fn encode_extension_value<'p>(
 
     if let Some(data) = x509::extensions::encode_extension(py, &oid, &py_ext)? {
         // TODO: extra copy
-        let py_data = pyo3::types::PyBytes::new_bound(py, &data);
+        let py_data = pyo3::types::PyBytes::new(py, &data);
         return Ok(py_data);
     }
 
