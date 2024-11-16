@@ -3000,25 +3000,22 @@ X.509 Extensions
 
     .. versionadded:: 44.0.0
 
-    The admissions extension
+    The admissions extension contains information on registration and professional admission,
+    as specified by `Common PKI v2`_.
     It is an iterable, containing one or more :class:`~cryptography.x509.Admission` instances.
-
-    :param list admissions: A list of :class:`Admission` objects.
 
     .. attribute:: oid
 
         :type: :class:`ObjectIdentifier`
 
-        Returns
-        :attr:`~cryptography.x509.oid.ExtensionOID.ADMISSIONS`.
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.ADMISSIONS`.
 
     .. attribute:: authority
 
         :type: :class:`GeneralName` or None
 
-    .. attribute:: admissions
-
-        :type: int or None
+        An optional identifier of the institution who granted the admissions. This serves as the default value
+        for the admission authority in a single :class:`~cryptography.x509.Admission` if it is not specified there.
 
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3100,78 +3097,86 @@ These classes may be present within an :class:`Admissions` instance.
 
     .. versionadded:: 44.0.0
 
-    Contains a policy identifier and an optional list of qualifiers.
+    Contains professional information and optionally the authorization information.
 
     .. attribute:: admission_authority
 
         :type: :class:`GeneralName` or None
 
+        An optional identifier of the institution who granted the admission.
+
     .. attribute:: naming_authority
 
         :type: :class:`NamingAuthority` or None
 
+        An optional identifier of the institution who is administering the information of the professions in this admission.
+        This serves as the default value for the naming authority in a single :class:`~cryptography.x509.ProfessionInfo`
+        if it is not specified there.
+
     .. attribute:: profession_infos
 
         :type: list
+
+        An information on the professions that are part of this admission. This is a list of :class:`ProfessionInfo` objects.
 
 .. class:: ProfessionInfo(naming_authority, profession_items, profession_oids, registration_number, add_profession_info)
     :canonical: cryptography.x509.extensions.ProfessionInfo
 
     .. versionadded:: 44.0.0
 
-    User notices are intended for display to a relying party when a certificate
-    is used. In practice, few if any UIs expose this data and it is a rarely
-    encoded component.
+    Contains the information for a single profession in the admission.
 
     .. attribute:: naming_authority
 
         :type: :class:`NamingAuthority` or None
 
-        The notice reference field names an organization and identifies,
-        by number, a particular statement prepared by that organization.
+        An optional identifier of the institution who is administering the information of this profession.
 
     .. attribute:: profession_items
 
-        This field includes an arbitrary textual statement directly in the
-        certificate.
-
         :type: list
+
+        One or more text strings identifying the profession.
 
     .. attribute:: profession_oids
 
         :type: list or None
 
+        An optional list of :class:`ObjectIdentifier` elements. Each element in the list corresponds to the resp.
+        text string in the :attr:`profession_items` list.
+
     .. attribute:: registration_number
 
         :type: str or None
+
+        An optional registration number for the profession.
 
     .. attribute:: add_profession_info
 
         :type: bytes or None
 
+        Optional additional application-specific information in DER-encoded form.
 
-.. class:: NamingAuthority(notice_reference, explicit_text)
+.. class:: NamingAuthority(id, url, text)
     :canonical: cryptography.x509.extensions.NamingAuthority
 
     .. versionadded:: 44.0.0
 
-    User notices are intended for display to a relying party when a certificate
-    is used. In practice, few if any UIs expose this data and it is a rarely
-    encoded component.
+    Identifies an institution who is responsible for the administration of title registers in an admission. The naming
+    authority can be identified by an object identifier in the field :attr:`id`, by the text in the field :attr:`text`,
+    by a URL address in the field :attr:`url`, or by a combination of them.
 
-    .. attribute:: notice_reference
+    .. attribute:: id
 
-        :type: :class:`NoticeReference` or None
+        :type: :class:`ObjectIdentifier` or None
 
-        The notice reference field names an organization and identifies,
-        by number, a particular statement prepared by that organization.
+    .. attribute:: url
 
-    .. attribute:: explicit_text
+        :type: str or None
 
-        This field includes an arbitrary textual statement directly in the
-        certificate.
+    .. attribute:: text
 
-        :type: str
+        :type: str or None
 
 
 .. _crl_entry_extensions:
@@ -4134,3 +4139,4 @@ Exceptions
 .. _`RFC 5280 section 4.2.1.1`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 .. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/
+.. _`Common PKI v2`: https://www.elektronische-vertrauensdienste.de/EVD/SharedDocuments/Downloads/QES/Common_PKI_v2.0_02.pdf
