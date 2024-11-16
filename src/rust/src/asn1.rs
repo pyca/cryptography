@@ -54,10 +54,10 @@ pub(crate) fn big_byte_slice_to_py_int<'p>(
 }
 
 #[pyo3::pyfunction]
-fn decode_dss_signature(
-    py: pyo3::Python<'_>,
+fn decode_dss_signature<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let sig = asn1::parse_single::<DssSignature<'_>>(data)?;
 
     Ok((
@@ -65,8 +65,7 @@ fn decode_dss_signature(
         big_byte_slice_to_py_int(py, sig.s.as_bytes())?,
     )
         .into_pyobject(py)?
-        .into_any()
-        .unbind())
+        .into_any())
 }
 
 pub(crate) fn py_uint_to_big_endian_bytes<'p>(
