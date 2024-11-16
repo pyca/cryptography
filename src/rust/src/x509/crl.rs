@@ -363,7 +363,7 @@ impl CertificateRevocationList {
                             Some(reasons.unwrap_read()),
                         )?
                     } else {
-                        py.None()
+                        py.None().into_bound(py)
                     };
                     Ok(Some(types::ISSUING_DISTRIBUTION_POINT.get(py)?.call1((
                         full_name,
