@@ -193,10 +193,10 @@ pub(crate) fn parse_name<'p>(
     Ok(types::NAME.get(py)?.call1((py_rdns,))?)
 }
 
-fn parse_name_attribute(
-    py: pyo3::Python<'_>,
+fn parse_name_attribute<'p>(
+    py: pyo3::Python<'p>,
     attribute: AttributeTypeValue<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let oid = oid_to_py_oid(py, &attribute.type_id)?;
     let tag_val = attribute.value.tag().as_u8().ok_or_else(|| {
         CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
@@ -226,8 +226,7 @@ fn parse_name_attribute(
     let kwargs = [(pyo3::intern!(py, "_validate"), false)].into_py_dict(py)?;
     Ok(types::NAME_ATTRIBUTE
         .get(py)?
-        .call((oid, py_data, py_tag), Some(&kwargs))?
-        .unbind())
+        .call((oid, py_data, py_tag), Some(&kwargs))?)
 }
 
 pub(crate) fn parse_rdn<'a>(
