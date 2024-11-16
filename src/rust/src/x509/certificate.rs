@@ -500,10 +500,10 @@ fn parse_display_text(
     }
 }
 
-fn parse_user_notice(
-    py: pyo3::Python<'_>,
+fn parse_user_notice<'p>(
+    py: pyo3::Python<'p>,
     un: UserNotice<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let et = match un.explicit_text {
         Some(data) => parse_display_text(py, data)?,
         None => py.None(),
@@ -515,28 +515,23 @@ fn parse_user_notice(
             for num in data.notice_numbers.unwrap_read().clone() {
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?)?;
             }
-            types::NOTICE_REFERENCE
-                .get(py)?
-                .call1((org, numbers))?
-                .unbind()
+            types::NOTICE_REFERENCE.get(py)?.call1((org, numbers))?
         }
-        None => py.None(),
+        None => py.None().into_bound(py),
     };
-    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?.unbind())
+    Ok(types::USER_NOTICE.get(py)?.call1((nr, et))?)
 }
 
 fn parse_policy_qualifiers<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let py_pq = pyo3::types::PyList::empty(py);
     for pqi in policy_qualifiers.clone() {
         let qualifier = match pqi.qualifier {
             Qualifier::CpsUri(data) => {
                 if pqi.policy_qualifier_id == oid::CP_CPS_URI_OID {
-                    pyo3::types::PyString::new(py, data.as_str())
-                        .into_any()
-                        .unbind()
+                    pyo3::types::PyString::new(py, data.as_str()).into_any()
                 } else {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
@@ -558,13 +553,13 @@ fn parse_policy_qualifiers<'a>(
         };
         py_pq.append(qualifier)?;
     }
-    Ok(py_pq.into_any().unbind())
+    Ok(py_pq.into_any())
 }
 
-fn parse_cp(
-    py: pyo3::Python<'_>,
+fn parse_cp<'p>(
+    py: pyo3::Python<'p>,
     ext: &Extension<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
     let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
@@ -573,14 +568,14 @@ fn parse_cp(
             Some(policy_qualifiers) => {
                 parse_policy_qualifiers(py, policy_qualifiers.unwrap_read())?
             }
-            None => py.None(),
+            None => py.None().into_bound(py),
         };
         let pi = types::POLICY_INFORMATION
             .get(py)?
             .call1((pi_oid, py_pqis))?;
         certificate_policies.append(pi)?;
     }
-    Ok(certificate_policies.into_any().unbind())
+    Ok(certificate_policies.into_any())
 }
 
 fn parse_general_subtrees<'p>(
