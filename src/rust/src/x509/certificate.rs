@@ -700,19 +700,19 @@ pub(crate) fn parse_authority_key_identifier<'p>(
         .call1((aki.key_identifier, issuer, serial))?)
 }
 
-pub(crate) fn parse_access_descriptions(
-    py: pyo3::Python<'_>,
+pub(crate) fn parse_access_descriptions<'p>(
+    py: pyo3::Python<'p>,
     ext: &Extension<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let ads = pyo3::types::PyList::empty(py);
     let parsed = ext.value::<SequenceOfAccessDescriptions<'_>>()?;
     for access in parsed.unwrap_read().clone() {
-        let py_oid = oid_to_py_oid(py, &access.access_method)?.unbind();
+        let py_oid = oid_to_py_oid(py, &access.access_method)?;
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = types::ACCESS_DESCRIPTION.get(py)?.call1((py_oid, gn))?;
         ads.append(ad)?;
     }
-    Ok(ads.into_any().unbind())
+    Ok(ads.into_any())
 }
 
 fn parse_naming_authority<'p>(
