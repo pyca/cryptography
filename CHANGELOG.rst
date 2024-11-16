@@ -25,6 +25,7 @@ Changelog
   forbidden by the CA/Browser BRs.
 * Added support for :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`
   when using OpenSSL 3.2.0+.
+* Added support for the :class:`~cryptography.x509.Admissions` certificate extension.
 
 .. _v43-0-3:
 
