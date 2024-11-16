@@ -183,7 +183,7 @@ impl Subject<'_> {
                 DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
             }
             (GeneralName::IPAddress(addr), Self::IP(name)) => {
-                IPAddress::from_bytes(addr).map_or(false, |addr| addr == *name)
+                IPAddress::from_bytes(addr) == Some(*name)
             }
             _ => false,
         }
