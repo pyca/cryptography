@@ -609,10 +609,10 @@ pub(crate) fn parse_distribution_point_name(
     })
 }
 
-fn parse_distribution_point(
-    py: pyo3::Python<'_>,
+fn parse_distribution_point<'p>(
+    py: pyo3::Python<'p>,
     dp: DistributionPoint<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let (full_name, relative_name) = match dp.distribution_point {
         Some(data) => parse_distribution_point_name(py, data)?,
         None => (py.None(), py.None()),
@@ -625,8 +625,7 @@ fn parse_distribution_point(
     };
     Ok(types::DISTRIBUTION_POINT
         .get(py)?
-        .call1((full_name, relative_name, reasons, crl_issuer))?
-        .unbind())
+        .call1((full_name, relative_name, reasons, crl_issuer))?)
 }
 
 pub(crate) fn parse_distribution_points<'p>(
