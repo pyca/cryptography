@@ -355,7 +355,7 @@ impl CertificateRevocationList {
                     let idp = ext.value::<crl::IssuingDistributionPoint<'_>>()?;
                     let (full_name, relative_name) = match idp.distribution_point {
                         Some(data) => certificate::parse_distribution_point_name(py, data)?,
-                        None => (py.None(), py.None()),
+                        None => (py.None().into_bound(py), py.None().into_bound(py)),
                     };
                     let py_reasons = if let Some(reasons) = idp.only_some_reasons {
                         certificate::parse_distribution_point_reasons(
@@ -611,7 +611,7 @@ pub(crate) fn parse_crl_reason_flags<'p>(
 
 pub fn parse_crl_entry_ext<'p>(
     py: pyo3::Python<'p>,
-    ext: &Extension<'_>,
+    ext: &Extension<'p>,
 ) -> CryptographyResult<Option<pyo3::Bound<'p, pyo3::PyAny>>> {
     match ext.extn_id {
         oid::CRL_REASON_OID => {

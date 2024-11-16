@@ -589,34 +589,35 @@ fn parse_general_subtrees<'p>(
     Ok(gns.into_any())
 }
 
-pub(crate) fn parse_distribution_point_name(
-    py: pyo3::Python<'_>,
-    dp: DistributionPointName<'_>,
-) -> Result<(pyo3::PyObject, pyo3::PyObject), CryptographyError> {
+pub(crate) fn parse_distribution_point_name<'p>(
+    py: pyo3::Python<'p>,
+    dp: DistributionPointName<'p>,
+) -> CryptographyResult<(pyo3::Bound<'p, pyo3::PyAny>, pyo3::Bound<'p, pyo3::PyAny>)> {
     Ok(match dp {
         DistributionPointName::FullName(data) => (
             x509::parse_general_names(py, data.unwrap_read())?,
-            py.None(),
+            py.None().into_bound(py),
         ),
-        DistributionPointName::NameRelativeToCRLIssuer(data) => {
-            (py.None(), x509::parse_rdn(py, data.unwrap_read())?)
-        }
+        DistributionPointName::NameRelativeToCRLIssuer(data) => (
+            py.None().into_bound(py),
+            x509::parse_rdn(py, data.unwrap_read())?,
+        ),
     })
 }
 
 fn parse_distribution_point<'p>(
     py: pyo3::Python<'p>,
-    dp: DistributionPoint<'_>,
+    dp: DistributionPoint<'p>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let (full_name, relative_name) = match dp.distribution_point {
         Some(data) => parse_distribution_point_name(py, data)?,
-        None => (py.None(), py.None()),
+        None => (py.None().into_bound(py), py.None().into_bound(py)),
     };
     let reasons =
         parse_distribution_point_reasons(py, dp.reasons.as_ref().map(|v| v.unwrap_read()))?;
     let crl_issuer = match dp.crl_issuer {
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
-        None => py.None(),
+        None => py.None().into_bound(py),
     };
     Ok(types::DISTRIBUTION_POINT
         .get(py)?
@@ -678,7 +679,7 @@ pub(crate) fn encode_distribution_point_reasons(
 
 pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
-    ext: &Extension<'_>,
+    ext: &Extension<'p>,
 ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
     let aki = ext.value::<AuthorityKeyIdentifier<'_>>()?;
     let serial = match aki.authority_cert_serial_number {
@@ -687,7 +688,7 @@ pub(crate) fn parse_authority_key_identifier<'p>(
     };
     let issuer = match aki.authority_cert_issuer {
         Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
-        None => py.None(),
+        None => py.None().into_bound(py),
     };
     Ok(types::AUTHORITY_KEY_IDENTIFIER
         .get(py)?
@@ -805,7 +806,7 @@ fn parse_admissions<'p, 'a>(
 
 pub fn parse_cert_ext<'p>(
     py: pyo3::Python<'p>,
-    ext: &Extension<'_>,
+    ext: &Extension<'p>,
 ) -> CryptographyResult<Option<pyo3::Bound<'p, pyo3::PyAny>>> {
     match ext.extn_id {
         oid::SUBJECT_ALTERNATIVE_NAME_OID => {

@@ -230,9 +230,9 @@ fn parse_name_attribute<'p>(
 }
 
 pub(crate) fn parse_rdn<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     rdn: &asn1::SetOf<'a, AttributeTypeValue<'a>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let py_attrs = pyo3::types::PyList::empty(py);
     for attribute in rdn.clone() {
         let na = parse_name_attribute(py, attribute)?;
@@ -240,8 +240,7 @@ pub(crate) fn parse_rdn<'a>(
     }
     Ok(types::RELATIVE_DISTINGUISHED_NAME
         .get(py)?
-        .call1((py_attrs,))?
-        .unbind())
+        .call1((py_attrs,))?)
 }
 
 pub(crate) fn parse_general_name<'p>(
@@ -294,15 +293,15 @@ pub(crate) fn parse_general_name<'p>(
 }
 
 pub(crate) fn parse_general_names<'a>(
-    py: pyo3::Python<'_>,
+    py: pyo3::Python<'a>,
     gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {
         let py_gn = parse_general_name(py, gn)?;
         gns.append(py_gn)?;
     }
-    Ok(gns.into_any().unbind())
+    Ok(gns.into_any())
 }
 
 fn create_ip_network<'p>(
@@ -355,11 +354,11 @@ fn ipv6_netmask(num: u128) -> Result<u32, CryptographyError> {
 
 pub(crate) fn parse_and_cache_extensions<
     'p,
-    F: Fn(&Extension<'_>) -> Result<Option<pyo3::Bound<'p, pyo3::PyAny>>, CryptographyError>,
+    F: Fn(&Extension<'p>) -> Result<Option<pyo3::Bound<'p, pyo3::PyAny>>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
     cached_extensions: &pyo3::sync::GILOnceCell<pyo3::PyObject>,
-    raw_extensions: &Option<RawExtensions<'_>>,
+    raw_extensions: &Option<RawExtensions<'p>>,
     parse_ext: F,
 ) -> pyo3::PyResult<pyo3::PyObject> {
     cached_extensions
