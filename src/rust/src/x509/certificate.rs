@@ -583,15 +583,15 @@ fn parse_cp(
     Ok(certificate_policies.into_any().unbind())
 }
 
-fn parse_general_subtrees(
-    py: pyo3::Python<'_>,
+fn parse_general_subtrees<'p>(
+    py: pyo3::Python<'p>,
     subtrees: SequenceOfSubtrees<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let gns = pyo3::types::PyList::empty(py);
     for gs in subtrees.unwrap_read().clone() {
         gns.append(x509::parse_general_name(py, gs.base)?)?;
     }
-    Ok(gns.into_any().unbind())
+    Ok(gns.into_any())
 }
 
 pub(crate) fn parse_distribution_point_name(
@@ -926,11 +926,11 @@ pub fn parse_cert_ext<'p>(
             let nc = ext.value::<NameConstraints<'_>>()?;
             let permitted_subtrees = match nc.permitted_subtrees {
                 Some(data) => parse_general_subtrees(py, data)?,
-                None => py.None(),
+                None => py.None().into_bound(py),
             };
             let excluded_subtrees = match nc.excluded_subtrees {
                 Some(data) => parse_general_subtrees(py, data)?,
-                None => py.None(),
+                None => py.None().into_bound(py),
             };
             Ok(Some(
                 types::NAME_CONSTRAINTS
