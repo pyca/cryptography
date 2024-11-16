@@ -2995,6 +2995,28 @@ X.509 Extensions
         Returns
         :attr:`~cryptography.x509.oid.ExtensionOID.CERTIFICATE_POLICIES`.
 
+.. class:: Admissions(authority, admissions)
+    :canonical: cryptography.x509.extensions.Admissions
+
+    .. versionadded:: 44.0.0
+
+    The admissions extension contains information on registration and professional admission,
+    as specified by `Common PKI v2`_.
+    It is an iterable, containing one or more :class:`~cryptography.x509.Admission` instances.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.ADMISSIONS`.
+
+    .. attribute:: authority
+
+        :type: :class:`GeneralName` or None
+
+        An optional identifier of the institution who granted the admissions. This serves as the default value
+        for the admission authority in a single :class:`~cryptography.x509.Admission` if it is not specified there.
+
 Certificate Policies Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3064,6 +3086,98 @@ These classes may be present within a :class:`CertificatePolicies` instance.
         :type: list
 
         A list of integers.
+
+Admissions Classes
+~~~~~~~~~~~~~~~~~~
+
+These classes may be present within an :class:`Admissions` instance.
+
+.. class:: Admission(admission_authority, naming_authority, profession_infos)
+    :canonical: cryptography.x509.extensions.Admission
+
+    .. versionadded:: 44.0.0
+
+    Contains professional information and optionally the authorization information.
+
+    .. attribute:: admission_authority
+
+        :type: :class:`GeneralName` or None
+
+        An optional identifier of the institution who granted the admission.
+
+    .. attribute:: naming_authority
+
+        :type: :class:`NamingAuthority` or None
+
+        An optional identifier of the institution who is administering the information of the professions in this admission.
+        This serves as the default value for the naming authority in a single :class:`~cryptography.x509.ProfessionInfo`
+        if it is not specified there.
+
+    .. attribute:: profession_infos
+
+        :type: list
+
+        An information on the professions that are part of this admission. This is a list of :class:`ProfessionInfo` objects.
+
+.. class:: ProfessionInfo(naming_authority, profession_items, profession_oids, registration_number, add_profession_info)
+    :canonical: cryptography.x509.extensions.ProfessionInfo
+
+    .. versionadded:: 44.0.0
+
+    Contains the information for a single profession in the admission.
+
+    .. attribute:: naming_authority
+
+        :type: :class:`NamingAuthority` or None
+
+        An optional identifier of the institution who is administering the information of this profession.
+
+    .. attribute:: profession_items
+
+        :type: list
+
+        One or more text strings identifying the profession.
+
+    .. attribute:: profession_oids
+
+        :type: list or None
+
+        An optional list of :class:`ObjectIdentifier` elements. Each element in the list corresponds to the resp.
+        text string in the :attr:`profession_items` list.
+
+    .. attribute:: registration_number
+
+        :type: str or None
+
+        An optional registration number for the profession.
+
+    .. attribute:: add_profession_info
+
+        :type: bytes or None
+
+        Optional additional application-specific information in DER-encoded form.
+
+.. class:: NamingAuthority(id, url, text)
+    :canonical: cryptography.x509.extensions.NamingAuthority
+
+    .. versionadded:: 44.0.0
+
+    Identifies an institution who is responsible for the administration of title registers in an admission. The naming
+    authority can be identified by an object identifier in the field :attr:`id`, by the text in the field :attr:`text`,
+    by a URL address in the field :attr:`url`, or by a combination of them.
+
+    .. attribute:: id
+
+        :type: :class:`ObjectIdentifier` or None
+
+    .. attribute:: url
+
+        :type: str or None
+
+    .. attribute:: text
+
+        :type: str or None
+
 
 .. _crl_entry_extensions:
 
@@ -3831,6 +3945,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.311.21.7"``.
 
+    .. attribute:: ADMISSIONS
+
+        .. versionadded:: 44.0.0
+
+        Corresponds to the dotted string ``"1.3.36.8.3.3"``.
+
 
 .. class:: CRLEntryExtensionOID
     :canonical: cryptography.hazmat._oid.CRLEntryExtensionOID
@@ -4019,3 +4139,4 @@ Exceptions
 .. _`RFC 5280 section 4.2.1.1`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
 .. _`RFC 5280 section 4.2.1.6`: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
 .. _`CABForum Guidelines`: https://cabforum.org/baseline-requirements-documents/
+.. _`Common PKI v2`: https://www.elektronische-vertrauensdienste.de/EVD/SharedDocuments/Downloads/QES/Common_PKI_v2.0_02.pdf
