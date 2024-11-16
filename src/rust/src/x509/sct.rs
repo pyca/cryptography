@@ -7,7 +7,7 @@ use std::hash::{Hash, Hasher};
 
 use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods};
 
-use crate::error::CryptographyError;
+use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 
 struct TLSReader<'a> {
@@ -218,11 +218,11 @@ impl Sct {
     }
 }
 
-pub(crate) fn parse_scts(
-    py: pyo3::Python<'_>,
+pub(crate) fn parse_scts<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
     entry_type: LogEntryType,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let mut reader = TLSReader::new(data).read_length_prefixed()?;
 
     let py_scts = pyo3::types::PyList::empty(py);
@@ -255,7 +255,7 @@ pub(crate) fn parse_scts(
         };
         py_scts.append(pyo3::Bound::new(py, sct)?)?;
     }
-    Ok(py_scts.into_any().unbind())
+    Ok(py_scts.into_any())
 }
 
 #[cfg(test)]
