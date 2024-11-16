@@ -785,7 +785,7 @@ fn parse_admissions<'p, 'a>(
     for admission in admissions.clone() {
         let py_admission_authority = match admission.admission_authority {
             Some(authority) => x509::parse_general_name(py, authority)?,
-            None => py.None(),
+            None => py.None().into_bound(py),
         };
         let py_naming_authority = match admission.naming_authority {
             Some(data) => parse_naming_authority(py, data)?,
@@ -945,7 +945,7 @@ pub fn parse_cert_ext<'p>(
             let admissions = ext.value::<Admissions<'_>>()?;
             let admission_authority = match admissions.admission_authority {
                 Some(authority) => x509::parse_general_name(py, authority)?,
-                None => py.None(),
+                None => py.None().into_bound(py),
             };
             let py_admissions =
                 parse_admissions(py, admissions.contents_of_admissions.unwrap_read())?;
