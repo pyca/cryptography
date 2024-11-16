@@ -629,17 +629,17 @@ fn parse_distribution_point(
         .unbind())
 }
 
-pub(crate) fn parse_distribution_points(
-    py: pyo3::Python<'_>,
+pub(crate) fn parse_distribution_points<'p>(
+    py: pyo3::Python<'p>,
     ext: &Extension<'_>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let dps = ext.value::<asn1::SequenceOf<'_, DistributionPoint<'_>>>()?;
     let py_dps = pyo3::types::PyList::empty(py);
     for dp in dps {
         let py_dp = parse_distribution_point(py, dp)?;
         py_dps.append(py_dp)?;
     }
-    Ok(py_dps.into_any().unbind())
+    Ok(py_dps.into_any())
 }
 
 pub(crate) fn parse_distribution_point_reasons(
