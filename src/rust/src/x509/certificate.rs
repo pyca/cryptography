@@ -642,10 +642,10 @@ pub(crate) fn parse_distribution_points(
     Ok(py_dps.into_any().unbind())
 }
 
-pub(crate) fn parse_distribution_point_reasons(
-    py: pyo3::Python<'_>,
+pub(crate) fn parse_distribution_point_reasons<'p>(
+    py: pyo3::Python<'p>,
     reasons: Option<&asn1::BitString<'_>>,
-) -> Result<pyo3::PyObject, CryptographyError> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let reason_bit_mapping = types::REASON_BIT_MAPPING.get(py)?;
 
     Ok(match reasons {
@@ -656,9 +656,9 @@ pub(crate) fn parse_distribution_point_reasons(
                     vec.push(reason_bit_mapping.get_item(i)?);
                 }
             }
-            pyo3::types::PyFrozenSet::new(py, &vec)?.into_any().unbind()
+            pyo3::types::PyFrozenSet::new(py, &vec)?.into_any()
         }
-        None => py.None(),
+        None => py.None().into_bound(py),
     })
 }
 
