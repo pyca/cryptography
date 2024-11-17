@@ -520,7 +520,6 @@ fn serialize_key_and_certificates<'p>(
             if let Some(ref key) = key {
                 if !cert
                     .public_key(py)?
-                    .into_bound(py)
                     .eq(key.call_method0(pyo3::intern!(py, "public_key"))?)?
                 {
                     return Err(CryptographyError::from(

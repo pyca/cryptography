@@ -31,7 +31,7 @@ impl CryptoOps for PyCryptoOps {
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
-            keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())
+            Ok(keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())?.unbind())
         })
     }
 

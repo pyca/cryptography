@@ -66,7 +66,10 @@ impl Certificate {
         slf
     }
 
-    pub(crate) fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<pyo3::PyObject> {
+    pub(crate) fn public_key<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         keys::load_der_public_key_bytes(
             py,
             self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),

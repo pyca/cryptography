@@ -47,7 +47,10 @@ impl CertificateSigningRequest {
         self.raw.borrow_owner().as_bytes(py) == other.raw.borrow_owner().as_bytes(py)
     }
 
-    fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<pyo3::PyObject> {
+    fn public_key<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         keys::load_der_public_key_bytes(
             py,
             self.raw.borrow_dependent().csr_info.spki.tlv().full_data(),
@@ -225,7 +228,7 @@ impl CertificateSigningRequest {
         let public_key = slf.public_key(py)?;
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key.bind(py).clone(),
+            public_key.clone(),
             &slf.raw.borrow_dependent().signature_alg,
             slf.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
