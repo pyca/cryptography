@@ -520,11 +520,11 @@ impl PyAEADDecryptionContext {
 }
 
 #[pyo3::pyfunction]
-fn create_encryption_ctx(
-    py: pyo3::Python<'_>,
+fn create_encryption_ctx<'p>(
+    py: pyo3::Python<'p>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     mode: pyo3::Bound<'_, pyo3::PyAny>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Encrypt)?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
@@ -540,22 +540,20 @@ fn create_encryption_ctx(
                 .extract()?,
         }
         .into_pyobject(py)?
-        .into_any()
-        .unbind())
+        .into_any())
     } else {
         Ok(PyCipherContext { ctx: Some(ctx) }
             .into_pyobject(py)?
-            .into_any()
-            .unbind())
+            .into_any())
     }
 }
 
 #[pyo3::pyfunction]
-fn create_decryption_ctx(
-    py: pyo3::Python<'_>,
+fn create_decryption_ctx<'p>(
+    py: pyo3::Python<'p>,
     algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     mode: pyo3::Bound<'_, pyo3::PyAny>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let mut ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Decrypt)?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
@@ -577,13 +575,11 @@ fn create_decryption_ctx(
                 .extract()?,
         }
         .into_pyobject(py)?
-        .into_any()
-        .unbind())
+        .into_any())
     } else {
         Ok(PyCipherContext { ctx: Some(ctx) }
             .into_pyobject(py)?
-            .into_any()
-            .unbind())
+            .into_any())
     }
 }
 
