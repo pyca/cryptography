@@ -11,13 +11,13 @@ use crate::exceptions;
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
-fn load_der_private_key(
-    py: pyo3::Python<'_>,
+fn load_der_private_key<'p>(
+    py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
     if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data.as_bytes()) {
         if password.is_some() {
@@ -42,13 +42,13 @@ fn load_der_private_key(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
-fn load_pem_private_key(
-    py: pyo3::Python<'_>,
+fn load_pem_private_key<'p>(
+    py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
     let password = password.as_ref().map(CffiBuf::as_bytes);
     let mut status = utils::PasswordCallbackStatus::Unused;
@@ -60,18 +60,17 @@ fn load_pem_private_key(
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
-pub(crate) fn private_key_from_pkey(
-    py: pyo3::Python<'_>,
+pub(crate) fn private_key_from_pkey<'p>(
+    py: pyo3::Python<'p>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     unsafe_skip_rsa_key_validation: bool,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match pkey.id() {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::private_key_from_pkey(
             pkey,
             unsafe_skip_rsa_key_validation,
         )?
         .into_pyobject(py)?
-        .unbind()
         .into_any()),
         openssl::pkey::Id::RSA_PSS => {
             // At the moment the way we handle RSA PSS keys is to strip the
@@ -84,49 +83,40 @@ pub(crate) fn private_key_from_pkey(
             Ok(
                 crate::backend::rsa::private_key_from_pkey(&pkey, unsafe_skip_rsa_key_validation)?
                     .into_pyobject(py)?
-                    .into_any()
-                    .unbind(),
+                    .into_any(),
             )
         }
         openssl::pkey::Id::EC => Ok(crate::backend::ec::private_key_from_pkey(py, pkey)?
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::X25519 => Ok(crate::backend::x25519::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::X448 => Ok(crate::backend::x448::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         openssl::pkey::Id::ED25519 => Ok(crate::backend::ed25519::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::DSA => Ok(crate::backend::dsa::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::DH => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
