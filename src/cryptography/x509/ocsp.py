@@ -127,49 +127,6 @@ class _SingleResponse:
         self._revocation_reason = revocation_reason
 
 
-class OCSPRequest(metaclass=abc.ABCMeta):
-    @property
-    @abc.abstractmethod
-    def issuer_key_hash(self) -> bytes:
-        """
-        The hash of the issuer public key
-        """
-
-    @property
-    @abc.abstractmethod
-    def issuer_name_hash(self) -> bytes:
-        """
-        The hash of the issuer name
-        """
-
-    @property
-    @abc.abstractmethod
-    def hash_algorithm(self) -> hashes.HashAlgorithm:
-        """
-        The hash algorithm used in the issuer name and key hashes
-        """
-
-    @property
-    @abc.abstractmethod
-    def serial_number(self) -> int:
-        """
-        The serial number of the cert whose status is being checked
-        """
-
-    @abc.abstractmethod
-    def public_bytes(self, encoding: serialization.Encoding) -> bytes:
-        """
-        Serializes the request to DER
-        """
-
-    @property
-    @abc.abstractmethod
-    def extensions(self) -> x509.Extensions:
-        """
-        The list of request extensions. Not single request extensions.
-        """
-
-
 class OCSPSingleResponse(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
@@ -460,7 +417,7 @@ class OCSPResponse(metaclass=abc.ABCMeta):
         """
 
 
-OCSPRequest.register(ocsp.OCSPRequest)
+OCSPRequest = ocsp.OCSPRequest
 OCSPResponse.register(ocsp.OCSPResponse)
 OCSPSingleResponse.register(ocsp.OCSPSingleResponse)
 
