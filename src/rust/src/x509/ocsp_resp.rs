@@ -728,7 +728,8 @@ pub(crate) fn create_ocsp_response(
         };
         // REVOKED
         let py_revocation_time = py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
-        let revocation_time = asn1::GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
+        let revocation_time =
+            asn1::X509GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
         ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
             revocation_time,
             revocation_reason,
@@ -739,7 +740,7 @@ pub(crate) fn create_ocsp_response(
         .is_none()
     {
         let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
-        Some(asn1::GeneralizedTime::new(py_to_datetime(
+        Some(asn1::X509GeneralizedTime::new(py_to_datetime(
             py,
             py_next_update,
         )?)?)
@@ -747,7 +748,7 @@ pub(crate) fn create_ocsp_response(
         None
     };
     let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
-    let this_update = asn1::GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
+    let this_update = asn1::X509GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
@@ -789,7 +790,7 @@ pub(crate) fn create_ocsp_response(
 
     let tbs_response_data = ocsp_resp::ResponseData {
         version: 0,
-        produced_at: asn1::GeneralizedTime::new(x509::common::datetime_now(py)?)?,
+        produced_at: asn1::X509GeneralizedTime::new(x509::common::datetime_now(py)?)?,
         responder_id,
         responses: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
             responses,

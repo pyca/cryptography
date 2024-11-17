@@ -39,7 +39,7 @@ pub struct ResponseData<'a> {
     #[default(0)]
     pub version: u8,
     pub responder_id: ResponderId<'a>,
-    pub produced_at: asn1::GeneralizedTime,
+    pub produced_at: asn1::X509GeneralizedTime,
     pub responses: common::Asn1ReadableOrWritable<
         asn1::SequenceOf<'a, SingleResponse<'a>>,
         asn1::SequenceOfWriter<'a, SingleResponse<'a>, Vec<SingleResponse<'a>>>,
@@ -60,9 +60,9 @@ pub enum ResponderId<'a> {
 pub struct SingleResponse<'a> {
     pub cert_id: ocsp_req::CertID<'a>,
     pub cert_status: CertStatus,
-    pub this_update: asn1::GeneralizedTime,
+    pub this_update: asn1::X509GeneralizedTime,
     #[explicit(0)]
-    pub next_update: Option<asn1::GeneralizedTime>,
+    pub next_update: Option<asn1::X509GeneralizedTime>,
     #[explicit(1)]
     pub raw_single_extensions: Option<extensions::RawExtensions<'a>>,
 }
@@ -79,7 +79,7 @@ pub enum CertStatus {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct RevokedInfo {
-    pub revocation_time: asn1::GeneralizedTime,
+    pub revocation_time: asn1::X509GeneralizedTime,
     #[explicit(0)]
     pub revocation_reason: Option<crl::CRLReason>,
 }
