@@ -12,7 +12,7 @@ import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -232,111 +232,7 @@ class _RawRevokedCertificate(RevokedCertificate):
 
 
 CertificateRevocationList = rust_x509.CertificateRevocationList
-
-
-class CertificateSigningRequest(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def __eq__(self, other: object) -> bool:
-        """
-        Checks equality.
-        """
-
-    @abc.abstractmethod
-    def __hash__(self) -> int:
-        """
-        Computes a hash.
-        """
-
-    @abc.abstractmethod
-    def public_key(self) -> CertificatePublicKeyTypes:
-        """
-        Returns the public key
-        """
-
-    @property
-    @abc.abstractmethod
-    def subject(self) -> Name:
-        """
-        Returns the subject name object.
-        """
-
-    @property
-    @abc.abstractmethod
-    def signature_hash_algorithm(
-        self,
-    ) -> hashes.HashAlgorithm | None:
-        """
-        Returns a HashAlgorithm corresponding to the type of the digest signed
-        in the certificate.
-        """
-
-    @property
-    @abc.abstractmethod
-    def signature_algorithm_oid(self) -> ObjectIdentifier:
-        """
-        Returns the ObjectIdentifier of the signature algorithm.
-        """
-
-    @property
-    @abc.abstractmethod
-    def signature_algorithm_parameters(
-        self,
-    ) -> None | padding.PSS | padding.PKCS1v15 | ec.ECDSA:
-        """
-        Returns the signature algorithm parameters.
-        """
-
-    @property
-    @abc.abstractmethod
-    def extensions(self) -> Extensions:
-        """
-        Returns the extensions in the signing request.
-        """
-
-    @property
-    @abc.abstractmethod
-    def attributes(self) -> Attributes:
-        """
-        Returns an Attributes object.
-        """
-
-    @abc.abstractmethod
-    def public_bytes(self, encoding: serialization.Encoding) -> bytes:
-        """
-        Encodes the request to PEM or DER format.
-        """
-
-    @property
-    @abc.abstractmethod
-    def signature(self) -> bytes:
-        """
-        Returns the signature bytes.
-        """
-
-    @property
-    @abc.abstractmethod
-    def tbs_certrequest_bytes(self) -> bytes:
-        """
-        Returns the PKCS#10 CertificationRequestInfo bytes as defined in RFC
-        2986.
-        """
-
-    @property
-    @abc.abstractmethod
-    def is_signature_valid(self) -> bool:
-        """
-        Verifies signature of signing request.
-        """
-
-    @abc.abstractmethod
-    def get_attribute_for_oid(self, oid: ObjectIdentifier) -> bytes:
-        """
-        Get the attribute value for a given OID.
-        """
-
-
-# Runtime isinstance checks need this since the rust class is not a subclass.
-CertificateSigningRequest.register(rust_x509.CertificateSigningRequest)
+CertificateSigningRequest = rust_x509.CertificateSigningRequest
 
 
 load_pem_x509_certificate = rust_x509.load_pem_x509_certificate
