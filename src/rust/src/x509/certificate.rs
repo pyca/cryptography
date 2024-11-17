@@ -466,36 +466,28 @@ fn warn_if_invalid_params(
     Ok(())
 }
 
-fn parse_display_text(
-    py: pyo3::Python<'_>,
+fn parse_display_text<'p>(
+    py: pyo3::Python<'p>,
     text: DisplayText<'_>,
-) -> pyo3::PyResult<pyo3::PyObject> {
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match text {
-        DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str())
-            .into_any()
-            .unbind()),
-        DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str())
-            .into_any()
-            .unbind()),
+        DisplayText::IA5String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).into_any()),
+        DisplayText::Utf8String(o) => Ok(pyo3::types::PyString::new(py, o.as_str()).into_any()),
         DisplayText::VisibleString(o) => {
             if asn1::VisibleString::new(o.as_str()).is_none() {
                 let warning_cls = types::DEPRECATED_IN_41.get(py)?;
                 let message = cstr_from_literal!("Invalid ASN.1 (UTF-8 characters in a VisibleString) in the explicit text and/or notice reference of the certificate policies extension. In a future version of cryptography, an exception will be raised.");
                 pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
             }
-            Ok(pyo3::types::PyString::new(py, o.as_str())
-                .into_any()
-                .unbind())
+            Ok(pyo3::types::PyString::new(py, o.as_str()).into_any())
         }
         DisplayText::BmpString(o) => {
             let py_bytes = pyo3::types::PyBytes::new(py, o.as_utf16_be_bytes());
             // TODO: do the string conversion in rust perhaps
-            Ok(py_bytes
-                .call_method1(
-                    pyo3::intern!(py, "decode"),
-                    (pyo3::intern!(py, "utf_16_be"),),
-                )?
-                .unbind())
+            Ok(py_bytes.call_method1(
+                pyo3::intern!(py, "decode"),
+                (pyo3::intern!(py, "utf_16_be"),),
+            )?)
         }
     }
 }
@@ -506,7 +498,7 @@ fn parse_user_notice<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let et = match un.explicit_text {
         Some(data) => parse_display_text(py, data)?,
-        None => py.None(),
+        None => py.None().into_bound(py),
     };
     let nr = match un.notice_ref {
         Some(data) => {
@@ -724,7 +716,7 @@ fn parse_naming_authority<'p>(
     };
     let py_text = match authority.text {
         Some(data) => parse_display_text(py, data)?,
-        None => py.None(),
+        None => py.None().into_bound(py),
     };
 
     Ok(types::NAMING_AUTHORITY
