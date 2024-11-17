@@ -678,7 +678,9 @@ pub(crate) fn encode_extension(
         &oid::INVALIDITY_DATE_OID => {
             let py_dt = ext.getattr(pyo3::intern!(py, "invalidity_date_utc"))?;
             let dt = x509::py_to_datetime(py, py_dt)?;
-            Ok(Some(asn1::write_single(&asn1::GeneralizedTime::new(dt)?)?))
+            Ok(Some(asn1::write_single(&asn1::X509GeneralizedTime::new(
+                dt,
+            )?)?))
         }
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
