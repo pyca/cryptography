@@ -138,11 +138,11 @@ impl CertificateRevocationList {
         }
     }
 
-    fn __getitem__(
+    fn __getitem__<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         idx: pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> pyo3::PyResult<pyo3::PyObject> {
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         self.revoked_certs.get_or_init(py, || {
             let mut revoked_certs = vec![];
             let mut it = self.__iter__();
@@ -161,7 +161,7 @@ impl CertificateRevocationList {
                 let revoked_cert = pyo3::Bound::new(py, self.revoked_cert(py, i as usize))?;
                 result.append(revoked_cert)?;
             }
-            Ok(result.into_any().unbind())
+            Ok(result.into_any())
         } else {
             let mut idx = idx.extract::<isize>()?;
             if idx < 0 {
@@ -170,9 +170,7 @@ impl CertificateRevocationList {
             if idx >= (self.len() as isize) || idx < 0 {
                 return Err(pyo3::exceptions::PyIndexError::new_err(()));
             }
-            Ok(pyo3::Bound::new(py, self.revoked_cert(py, idx as usize))?
-                .into_any()
-                .unbind())
+            Ok(pyo3::Bound::new(py, self.revoked_cert(py, idx as usize))?.into_any())
         }
     }
 
