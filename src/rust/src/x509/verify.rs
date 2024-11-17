@@ -318,7 +318,7 @@ impl PyClientVerifier {
         let py_gns = parse_general_names(py, &leaf_gns)?;
 
         Ok(PyVerifiedClient {
-            subjects: Some(py_gns),
+            subjects: Some(py_gns.into()),
             chain: py_chain.unbind(),
         })
     }
