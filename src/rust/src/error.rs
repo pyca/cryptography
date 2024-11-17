@@ -166,7 +166,7 @@ impl CryptographyError {
 // The primary purpose of this alias is for brevity to keep function signatures
 // to a single-line as a work around for coverage issues. See
 // https://github.com/pyca/cryptography/pull/6173
-pub(crate) type CryptographyResult<T = pyo3::PyObject> = Result<T, CryptographyError>;
+pub(crate) type CryptographyResult<T> = Result<T, CryptographyError>;
 
 #[pyo3::pyfunction]
 pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
