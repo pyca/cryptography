@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import abc
 import datetime
 import typing
 
@@ -127,102 +126,9 @@ class _SingleResponse:
         self._revocation_reason = revocation_reason
 
 
-class OCSPSingleResponse(metaclass=abc.ABCMeta):
-    @property
-    @abc.abstractmethod
-    def certificate_status(self) -> OCSPCertStatus:
-        """
-        The status of the certificate (an element from the OCSPCertStatus enum)
-        """
-
-    @property
-    @abc.abstractmethod
-    def revocation_time(self) -> datetime.datetime | None:
-        """
-        The date of when the certificate was revoked or None if not
-        revoked.
-        """
-
-    @property
-    @abc.abstractmethod
-    def revocation_time_utc(self) -> datetime.datetime | None:
-        """
-        The date of when the certificate was revoked or None if not
-        revoked. Represented as a non-naive UTC datetime.
-        """
-
-    @property
-    @abc.abstractmethod
-    def revocation_reason(self) -> x509.ReasonFlags | None:
-        """
-        The reason the certificate was revoked or None if not specified or
-        not revoked.
-        """
-
-    @property
-    @abc.abstractmethod
-    def this_update(self) -> datetime.datetime:
-        """
-        The most recent time at which the status being indicated is known by
-        the responder to have been correct
-        """
-
-    @property
-    @abc.abstractmethod
-    def this_update_utc(self) -> datetime.datetime:
-        """
-        The most recent time at which the status being indicated is known by
-        the responder to have been correct. Represented as a non-naive UTC
-        datetime.
-        """
-
-    @property
-    @abc.abstractmethod
-    def next_update(self) -> datetime.datetime | None:
-        """
-        The time when newer information will be available
-        """
-
-    @property
-    @abc.abstractmethod
-    def next_update_utc(self) -> datetime.datetime | None:
-        """
-        The time when newer information will be available. Represented as a
-        non-naive UTC datetime.
-        """
-
-    @property
-    @abc.abstractmethod
-    def issuer_key_hash(self) -> bytes:
-        """
-        The hash of the issuer public key
-        """
-
-    @property
-    @abc.abstractmethod
-    def issuer_name_hash(self) -> bytes:
-        """
-        The hash of the issuer name
-        """
-
-    @property
-    @abc.abstractmethod
-    def hash_algorithm(self) -> hashes.HashAlgorithm:
-        """
-        The hash algorithm used in the issuer name and key hashes
-        """
-
-    @property
-    @abc.abstractmethod
-    def serial_number(self) -> int:
-        """
-        The serial number of the cert whose status is being checked
-        """
-
-
 OCSPRequest = ocsp.OCSPRequest
 OCSPResponse = ocsp.OCSPResponse
-OCSPSingleResponse.register(ocsp.OCSPSingleResponse)
+OCSPSingleResponse = ocsp.OCSPSingleResponse
 
 
 class OCSPRequestBuilder:
