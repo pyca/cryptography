@@ -125,19 +125,19 @@ pub(crate) fn private_key_from_pkey<'p>(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_der_public_key(
-    py: pyo3::Python<'_>,
+fn load_der_public_key<'p>(
+    py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
     load_der_public_key_bytes(py, data.as_bytes())
 }
 
-pub(crate) fn load_der_public_key_bytes(
-    py: pyo3::Python<'_>,
+pub(crate) fn load_der_public_key_bytes<'p>(
+    py: pyo3::Python<'p>,
     data: &[u8],
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match cryptography_key_parsing::spki::parse_public_key(data) {
         Ok(pkey) => public_key_from_pkey(py, &pkey, pkey.id()),
         // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need
@@ -154,11 +154,11 @@ pub(crate) fn load_der_public_key_bytes(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
-fn load_pem_public_key(
-    py: pyo3::Python<'_>,
+fn load_pem_public_key<'p>(
+    py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
     let p = pem::parse(data.as_bytes())?;
     let pkey = match p.tag() {
@@ -190,56 +190,47 @@ fn load_pem_public_key(
     public_key_from_pkey(py, &pkey, pkey.id())
 }
 
-fn public_key_from_pkey(
-    py: pyo3::Python<'_>,
+fn public_key_from_pkey<'p>(
+    py: pyo3::Python<'p>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
     id: openssl::pkey::Id,
-) -> CryptographyResult<pyo3::PyObject> {
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     // `id` is a separate argument so we can test this while passing something
     // unsupported.
     match id {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::EC => Ok(crate::backend::ec::public_key_from_pkey(py, pkey)?
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::X25519 => Ok(crate::backend::x25519::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::X448 => Ok(crate::backend::x448::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         openssl::pkey::Id::ED25519 => Ok(crate::backend::ed25519::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
         openssl::pkey::Id::DH => Ok(crate::backend::dh::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey)
             .into_pyobject(py)?
-            .into_any()
-            .unbind()),
+            .into_any()),
 
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
