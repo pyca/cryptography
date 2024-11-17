@@ -228,7 +228,7 @@ impl CertificateSigningRequest {
         let public_key = slf.public_key(py)?;
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
-            public_key.clone(),
+            public_key,
             &slf.raw.borrow_dependent().signature_alg,
             slf.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
