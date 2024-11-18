@@ -17,12 +17,6 @@ from ...utils import load_nist_vectors, raises_unsupported_algorithm
 from .utils import _load_all_params, generate_encrypt_test
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.XTS(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES XTS",
-)
 class TestAESModeXTS:
     def test_xts_vectors(self, backend, subtests):
         # This list comprehension excludes any vector that does not have a
@@ -44,9 +38,11 @@ class TestAESModeXTS:
                 tweak = binascii.unhexlify(vector["i"])
                 pt = binascii.unhexlify(vector["pt"])
                 ct = binascii.unhexlify(vector["ct"])
-                cipher = base.Cipher(
-                    algorithms.AES(key), modes.XTS(tweak), backend
-                )
+                alg = algorithms.AES(key)
+                mode = modes.XTS(tweak)
+                if not backend.cipher_supported(alg, mode):
+                    pytest.skip(f"AES-{alg.key_size}-XTS not supported")
+                cipher = base.Cipher(alg, mode, backend)
                 enc = cipher.encryptor()
                 computed_ct = enc.update(pt) + enc.finalize()
                 assert computed_ct == ct
@@ -54,24 +50,38 @@ class TestAESModeXTS:
                 computed_pt = dec.update(ct) + dec.finalize()
                 assert computed_pt == pt
 
-    def test_xts_too_short(self, backend):
-        key = b"thirty_two_byte_keys_are_great!!"
-        tweak = b"\x00" * 16
-        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
-        enc = cipher.encryptor()
-        with pytest.raises(ValueError):
-            enc.update(b"0" * 15)
+    def test_xts_too_short(self, backend, subtests):
+        for key in [
+            b"thirty_two_byte_keys_are_great!!",
+            b"\x00" * 32 + b"\x01" * 32,
+        ]:
+            with subtests.test():
+                key = b"\x00" * 32 + b"\x01" * 32
+                mode = modes.XTS(b"\x00" * 16)
+                alg = algorithms.AES(key)
+                if not backend.cipher_supported(alg, mode):
+                    pytest.skip(f"AES-{alg.key_size}-XTS not supported")
+                cipher = base.Cipher(alg, mode)
+                enc = cipher.encryptor()
+                with pytest.raises(ValueError):
+                    enc.update(b"0" * 15)
 
     @pytest.mark.supported(
         only_if=lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL,
         skip_message="duplicate key encryption error added in OpenSSL 1.1.1d",
     )
-    def test_xts_no_duplicate_keys_encryption(self, backend):
-        key = bytes(range(16)) * 2
-        tweak = b"\x00" * 16
-        cipher = base.Cipher(algorithms.AES(key), modes.XTS(tweak))
-        with pytest.raises(ValueError, match="duplicated keys"):
-            cipher.encryptor()
+    def test_xts_no_duplicate_keys_encryption(self, backend, subtests):
+        key1 = bytes(range(32))
+        key2 = key1 + key1
+        mode = modes.XTS(b"\x00"*16)
+        for key in [key1, key2]:
+            with subtests.test():
+                alg = algorithms.AES(key)
+                cipher = base.Cipher(alg, mode)
+                if not backend.cipher_supported(alg, mode):
+                    pytest.skip(f"AES-{alg.key_size}-XTS not supported")
+                with pytest.raises(ValueError, match="duplicated keys"):
+                    cipher.encryptor()
 
     def test_xts_unsupported_with_aes128_aes256_classes(self):
         with pytest.raises(TypeError):
@@ -274,7 +284,7 @@ def test_buffer_protocol_alternate_modes(mode, backend):
     data = bytearray(b"sixteen_byte_msg")
     key = algorithms.AES(bytearray(os.urandom(32)))
     if not backend.cipher_supported(key, mode):
-        pytest.skip(f"AES in {mode.name} mode not supported")
+        pytest.skip(f"AES-{key.key_size} in {mode.name} mode not supported")
     cipher = base.Cipher(key, mode, backend)
     enc = cipher.encryptor()
     ct = enc.update(data) + enc.finalize()

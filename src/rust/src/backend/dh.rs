@@ -120,10 +120,28 @@ fn dh_parameters_from_numbers(
     let g = utils::py_int_to_bn(py, numbers.g.bind(py))?;
 
     let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
-    if !dh.check_key()? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
-        ));
+
+    const INVALID_PARAMETERS: &str = "Invalid DH parameters";
+    match dh.check_key() {
+        Ok(valid) => {
+            if !valid {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(INVALID_PARAMETERS),
+                ));
+            }
+        }
+        Err(es) => {
+            for e in es.errors() {
+                if let Some(reason) = e.reason() {
+                    if reason == "INVALID_PARAMETERS" {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(INVALID_PARAMETERS),
+                        ));
+                    }
+                }
+            }
+            return Err(CryptographyError::from(es));
+        }
     }
     Ok(dh)
 }

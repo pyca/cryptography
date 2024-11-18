@@ -13,6 +13,10 @@ fn main() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
     }
 
+    if env::var("DEP_OPENSSL_AWSLC").is_ok() {
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
+    }
+
     if let Ok(vars) = env::var("DEP_OPENSSL_CONF") {
         for var in vars.split(',') {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OSSLCONF=\"{var}\"");

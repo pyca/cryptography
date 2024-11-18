@@ -8,6 +8,7 @@ import pytest
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 from .utils import wycheproof_tests
 
@@ -39,7 +40,10 @@ def test_hmac(backend, wycheproof):
     hash_algo = _HMAC_ALGORITHMS[wycheproof.testfiledata["algorithm"]]
     if wycheproof.testgroup["tagSize"] // 8 != hash_algo.digest_size:
         pytest.skip("Truncated HMAC not supported")
-    if not backend.hmac_supported(hash_algo):
+    if not backend.hmac_supported(hash_algo) or (
+        rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        and hash_algo.name.startswith("sha3-")
+    ):
         pytest.skip(f"Hash {hash_algo.name} not supported")
 
     h = hmac.HMAC(

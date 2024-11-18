@@ -40,12 +40,14 @@ CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_ENGINE
 static const long Cryptography_HAS_ENGINE = 0;
 
-#if CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
 typedef void UI_METHOD;
 #endif
 
-/* Despite being OPENSSL_NO_ENGINE, BoringSSL/LibreSSL define these symbols. */
-#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_LIBRESSL
+// Despite being OPENSSL_NO_ENGINE,
+// BoringSSL/LibreSSL/AWS-LC define these symbols.
+#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_LIBRESSL \
+    && !CRYPTOGRAPHY_IS_AWSLC
 int (*ENGINE_free)(ENGINE *) = NULL;
 void (*ENGINE_load_builtin_engines)(void) = NULL;
 #endif

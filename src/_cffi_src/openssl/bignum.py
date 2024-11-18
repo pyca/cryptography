@@ -35,7 +35,7 @@ const int BN_prime_checks_for_size(int);
 """
 
 CUSTOMIZATIONS = """
-#if CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_PRIME_CHECKS = 0;
 int (*BN_prime_checks_for_size)(int) = NULL;
 #else

@@ -44,11 +44,11 @@ pub(crate) fn ec_params_to_group(
                 &cryptography_x509::oid::EC_SECT409K1 => openssl::nid::Nid::SECT409K1,
                 &cryptography_x509::oid::EC_SECT571K1 => openssl::nid::Nid::SECT571K1,
 
-                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,
-                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
                 &cryptography_x509::oid::EC_BRAINPOOLP384R1 => openssl::nid::Nid::BRAINPOOL_P384R1,
-                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
                 &cryptography_x509::oid::EC_BRAINPOOLP512R1 => openssl::nid::Nid::BRAINPOOL_P512R1,
 
                 _ => return Err(KeyParsingError::UnsupportedEllipticCurve(curve_oid.clone())),

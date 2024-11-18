@@ -29,7 +29,11 @@ pub fn parse_public_key(
             openssl::pkey::Id::ED25519,
         )
         .map_err(|_| KeyParsingError::InvalidKey)?),
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         AlgorithmParameters::Ed448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::ED448,
@@ -40,7 +44,11 @@ pub fn parse_public_key(
             openssl::pkey::Id::X25519,
         )
         .map_err(|_| KeyParsingError::InvalidKey)?),
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         AlgorithmParameters::X448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::X448,

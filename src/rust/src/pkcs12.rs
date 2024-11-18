@@ -712,7 +712,7 @@ fn load_key_and_certificates<'p>(
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
             if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL
+                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC
             ))] {
                 let it = ossl_certs.iter();
             } else {
@@ -766,7 +766,7 @@ fn load_pkcs12<'p>(
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
             if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL
+                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC
             ))] {
                 let it = ossl_certs.iter();
             } else {
