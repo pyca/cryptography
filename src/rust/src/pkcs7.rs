@@ -278,12 +278,9 @@ fn deserialize_and_decrypt<'p>(
 
     // Return content in different form, based on options
     let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
-    let plain_data = if options.contains(types::PKCS7_BINARY.get(py)?)? {
-        plain_content
-    } else {
-        let decanonicalized = smime_decanonicalize(plain_content.as_bytes(), text_mode);
-        pyo3::types::PyBytes::new(py, decanonicalized.into_owned().as_slice())
-    };
+    let binary_mode = options.contains(types::PKCS7_BINARY.get(py)?)?;
+    let decanonicalized = smime_decanonicalize(plain_content.as_bytes(), text_mode, binary_mode);
+    let plain_data = pyo3::types::PyBytes::new(py, decanonicalized?.into_owned().as_slice());
 
     Ok(plain_data)
 }
@@ -573,37 +570,50 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     }
 }
 
-fn smime_decanonicalize(data: &[u8], text_mode: bool) -> Cow<'_, [u8]> {
-    let mut new_data = vec![];
-    let mut last_idx = 0;
-
-    // Remove the header if text_mode is true
-    let data = if text_mode {
+fn smime_decanonicalize(
+    data: &[u8],
+    text_mode: bool,
+    binary_mode: bool,
+) -> CryptographyResult<Cow<'_, [u8]>> {
+    // If text_mode is true, remove header. If no header, raise an error.
+    let data: &[u8] = if text_mode {
         let header = b"Content-Type: text/plain\r\n\r\n";
         if data.starts_with(header) {
             &data[header.len()..]
         } else {
-            data
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "No 'Content-Type' header to be deleted in the data. Please remove the 'text' option.",
+                ),
+            ));
         }
     } else {
         data
     };
 
-    // Remove the \r in the data
-    for (i, c) in data.iter().copied().enumerate() {
-        if c == b'\n' && i > 0 && data[i - 1] == b'\r' {
-            new_data.extend_from_slice(&data[last_idx..i - 1]);
-            new_data.push(b'\n');
-            last_idx = i + 1;
+    // If binary_mode is true, return the data as is. Else replaces \n with \r\n.
+    // This behavior seems weird as an encryption-decryption with OpenSSL cycle would change "\n" to
+    // "\r\r\n". See: https://github.com/openssl/openssl/issues/23886#issuecomment-2423684191
+    if binary_mode {
+        return Ok(Cow::Borrowed(data));
+    } else {
+        let mut new_data = vec![];
+        let mut last_idx = 0;
+        for (i, c) in data.iter().copied().enumerate() {
+            if c == b'\n' {
+                new_data.extend_from_slice(&data[last_idx..i]);
+                new_data.push(b'\r');
+                new_data.push(b'\n');
+                last_idx = i + 1;
+            }
         }
-    }
 
-    // Copy the remaining data
-    if last_idx < data.len() {
-        new_data.extend_from_slice(&data[last_idx..]);
+        // Copy the remaining data
+        if last_idx < data.len() {
+            new_data.extend_from_slice(&data[last_idx..]);
+        }
+        return Ok(Cow::Owned(new_data));
     }
-
-    Cow::Owned(new_data)
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
@@ -708,7 +718,7 @@ mod tests {
     use std::borrow::Cow;
     use std::ops::Deref;
 
-    use super::{smime_canonicalize, smime_decanonicalize};
+    use super::smime_canonicalize;
 
     #[test]
     fn test_smime_canonicalize() {
@@ -766,30 +776,6 @@ mod tests {
                 matches!(result_without_header, Cow::Borrowed(_)),
                 expected_is_borrowed
             );
-        }
-    }
-
-    #[test]
-    fn test_smime_decanonicalize() {
-        for (input, text_mode, expected_output) in [
-            // Values with text_mode=false
-            (b"" as &[u8], false, b"" as &[u8]),
-            (b"abc\r\n", false, b"abc\n"),
-            (b"\r\nabc\n", false, b"\nabc\n"),
-            (b"abc\r\ndef\r\n", false, b"abc\ndef\n"),
-            (b"abc\r\ndef\nabc", false, b"abc\ndef\nabc"),
-            // Values with text_mode=true
-            (b"abc\r\n", true, b"abc\n"),
-            (b"Content-Type: text/plain\r\n\r\n", true, b""),
-            (b"Content-Type: text/plain\r\n\r\nabc", true, b"abc"),
-            (
-                b"Content-Type: text/plain\r\n\r\nabc\r\ndef\nabc",
-                true,
-                b"abc\ndef\nabc",
-            ),
-        ] {
-            let result = smime_decanonicalize(input, text_mode);
-            assert_eq!(result.deref(), expected_output);
         }
     }
 }
