@@ -860,6 +860,15 @@ def _load_rsa_cert_key():
     return cert, key
 
 
+def _load_rsa_oaep_pkcs7_pem():
+    enveloped = load_vectors_from_file(
+        os.path.join("pkcs7", "enveloped-rsa-oaep.pem"),
+        loader=lambda pemfile: pemfile.read(),
+        mode="rb",
+    )
+    return enveloped
+
+
 def _load_aes_256_cbc_pkcs7_pem():
     enveloped = load_vectors_from_file(
         os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
@@ -1197,7 +1206,15 @@ class TestPKCS7Decrypt:
                 enveloped, another_cert, another_private_key, []
             )
 
-    def test_smime_decrypt_unsupported_algorithm(
+    def test_smime_decrypt_unsupported_key_encryption_algorithm(
+        self, backend, data, certificate, private_key
+    ):
+        enveloped = _load_rsa_oaep_pkcs7_pem()
+
+        with pytest.raises(exceptions.UnsupportedAlgorithm):
+            pkcs7.pkcs7_decrypt_pem(enveloped, certificate, private_key, [])
+
+    def test_smime_decrypt_unsupported_content_encryption_algorithm(
         self, backend, data, certificate, private_key
     ):
         enveloped = _load_aes_256_cbc_pkcs7_pem()

@@ -216,14 +216,26 @@ fn deserialize_and_decrypt<'p>(
                 }
             };
 
-            // Decrypt the key using the private key
-            let padding = types::PKCS1V15.get(py)?.call0()?;
-            let key = private_key
-                .call_method1(
-                    pyo3::intern!(py, "decrypt"),
-                    (recipient_info.encrypted_key, &padding),
-                )?
-                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            // Raise error when the key encryption algorithm is not RSA
+            let key = match recipient_info.key_encryption_algorithm.oid() {
+                &oid::RSA_OID => {
+                    let padding = types::PKCS1V15.get(py)?.call0()?;
+                    private_key
+                        .call_method1(
+                            pyo3::intern!(py, "decrypt"),
+                            (recipient_info.encrypted_key, &padding),
+                        )?
+                        .extract::<pyo3::pybacked::PyBackedBytes>()?
+                }
+                _ => {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "Only RSA with PKCS #1 v1.5 padding is currently supported for key decryption.",
+                            exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                        )),
+                    ));
+                }
+            };
 
             // Get algorithm
             // TODO: implement all the possible algorithms
@@ -240,7 +252,7 @@ fn deserialize_and_decrypt<'p>(
                 _ => {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
-                            "Only AES-128-CBC is currently supported for decryption.",
+                            "Only AES-128-CBC is currently supported for content decryption.",
                             exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                         )),
                     ));
