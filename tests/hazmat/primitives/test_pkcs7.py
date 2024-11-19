@@ -1192,7 +1192,7 @@ class TestPKCS7Decrypt:
         )
 
         # Test decryption with another RSA chain
-        with pytest.raises(x509.AttributeNotFound):
+        with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_der(
                 enveloped, another_cert, another_private_key, []
             )
@@ -1219,7 +1219,7 @@ class TestPKCS7Decrypt:
         signed = builder.sign(serialization.Encoding.DER, options)
 
         # Test decryption failure with signed email
-        with pytest.raises(exceptions.UnsupportedAlgorithm):
+        with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_der(signed, certificate, private_key, [])
 
     def test_smime_decrypt_smime_not_encrypted(
