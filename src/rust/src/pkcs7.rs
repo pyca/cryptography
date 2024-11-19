@@ -593,7 +593,7 @@ fn smime_decanonicalize(
 
     // If binary_mode is true, return the data as is. Else, remove the \r in the data.
     if binary_mode {
-        return Ok(Cow::Borrowed(data));
+        Ok(Cow::Borrowed(data))
     } else {
         let mut new_data = vec![];
         let mut last_idx = 0;
@@ -609,7 +609,7 @@ fn smime_decanonicalize(
         if last_idx < data.len() {
             new_data.extend_from_slice(&data[last_idx..]);
         }
-        return Ok(Cow::Owned(new_data));
+        Ok(Cow::Owned(new_data))
     }
 }
 
