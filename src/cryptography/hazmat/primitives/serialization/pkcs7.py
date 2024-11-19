@@ -316,7 +316,7 @@ def _pkcs7_decrypt(
         opt not in [PKCS7Options.Text, PKCS7Options.Binary] for opt in options
     ):
         raise ValueError(
-            "Only the following options are supported for encryption: "
+            "Only the following options are supported for decryption: "
             "Text, Binary"
         )
     elif PKCS7Options.Text in options and PKCS7Options.Binary in options:
