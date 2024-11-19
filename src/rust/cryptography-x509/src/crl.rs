@@ -2,10 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::common::Asn1Operation;
 use crate::{common, extensions, name};
 
-pub type ReasonFlags<'a> =
-    Option<common::Asn1ReadableOrWritable<asn1::BitString<'a>, asn1::OwnedBitString>>;
+pub type ReasonFlags<'a, Op> = Option<<Op as Asn1Operation>::OwnedBitString<'a>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]
 pub struct CertificateRevocationList<'a> {
@@ -41,7 +41,7 @@ pub struct RevokedCertificate<'a> {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct IssuingDistributionPoint<'a> {
+pub struct IssuingDistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub distribution_point: Option<extensions::DistributionPointName<'a>>,
 
@@ -54,7 +54,7 @@ pub struct IssuingDistributionPoint<'a> {
     pub only_contains_ca_certs: bool,
 
     #[implicit(3)]
-    pub only_some_reasons: ReasonFlags<'a>,
+    pub only_some_reasons: ReasonFlags<'a, Op>,
 
     #[implicit(4)]
     #[default(false)]

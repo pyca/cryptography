@@ -263,6 +263,20 @@ impl<T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1W
     }
 }
 
+pub trait Asn1Operation {
+    type OwnedBitString<'a>;
+}
+
+pub struct Asn1Read;
+pub struct Asn1Write;
+
+impl Asn1Operation for Asn1Read {
+    type OwnedBitString<'a> = asn1::BitString<'a>;
+}
+impl Asn1Operation for Asn1Write {
+    type OwnedBitString<'a> = asn1::OwnedBitString;
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct DssSignature<'a> {
     pub r: asn1::BigUint<'a>,

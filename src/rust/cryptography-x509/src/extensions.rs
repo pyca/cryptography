@@ -5,6 +5,7 @@
 use std::collections::HashSet;
 
 use crate::common;
+use crate::common::Asn1Operation;
 use crate::crl;
 use crate::name;
 
@@ -183,12 +184,12 @@ pub struct MSCertificateTemplate {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct DistributionPoint<'a> {
+pub struct DistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub distribution_point: Option<DistributionPointName<'a>>,
 
     #[implicit(1)]
-    pub reasons: crl::ReasonFlags<'a>,
+    pub reasons: crl::ReasonFlags<'a, Op>,
 
     #[implicit(2)]
     pub crl_issuer: Option<name::SequenceOfGeneralName<'a>>,
