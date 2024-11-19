@@ -176,7 +176,7 @@ fn pem_to_der<'p>(
     let pem = pem::parse(pem_str)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
 
-    Ok(pyo3::types::PyBytes::new_bound(py, &pem.into_contents()))
+    Ok(pyo3::types::PyBytes::new(py, &pem.into_contents()))
 }
 
 #[pyo3::pyfunction]
@@ -237,7 +237,7 @@ fn deserialize_and_decrypt<'p>(
                     types::AES128.get(py)?.call1((key,))?,
                     types::CBC
                         .get(py)?
-                        .call1((pyo3::types::PyBytes::new_bound(py, &iv),))?,
+                        .call1((pyo3::types::PyBytes::new(py, &iv),))?,
                 ),
                 _ => {
                     return Err(CryptographyError::from(
@@ -255,7 +255,7 @@ fn deserialize_and_decrypt<'p>(
                 .encrypted_content
                 .unwrap();
             let decrypted_content = symmetric_decrypt(py, algorithm, mode, encrypted_content)?;
-            pyo3::types::PyBytes::new_bound(py, decrypted_content.as_slice())
+            pyo3::types::PyBytes::new(py, decrypted_content.as_slice())
         }
         _ => {
             return Err(CryptographyError::from(
@@ -273,7 +273,7 @@ fn deserialize_and_decrypt<'p>(
         plain_content
     } else {
         let decanonicalized = smime_decanonicalize(plain_content.as_bytes(), text_mode);
-        pyo3::types::PyBytes::new_bound(py, decanonicalized.into_owned().as_slice())
+        pyo3::types::PyBytes::new(py, decanonicalized.into_owned().as_slice())
     };
 
     Ok(plain_data)
