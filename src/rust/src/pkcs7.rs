@@ -591,18 +591,15 @@ fn smime_decanonicalize(
         data
     };
 
-    // If binary_mode is true, return the data as is. Else replaces \n with \r\n.
-    // This behavior seems weird as an encryption-decryption with OpenSSL cycle would change "\n" to
-    // "\r\r\n". See: https://github.com/openssl/openssl/issues/23886#issuecomment-2423684191
+    // If binary_mode is true, return the data as is. Else, remove the \r in the data.
     if binary_mode {
         return Ok(Cow::Borrowed(data));
     } else {
         let mut new_data = vec![];
         let mut last_idx = 0;
         for (i, c) in data.iter().copied().enumerate() {
-            if c == b'\n' {
-                new_data.extend_from_slice(&data[last_idx..i]);
-                new_data.push(b'\r');
+            if c == b'\n' && i > 0 && data[i - 1] == b'\r' {
+                new_data.extend_from_slice(&data[last_idx..i - 1]);
                 new_data.push(b'\n');
                 last_idx = i + 1;
             }
