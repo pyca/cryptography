@@ -1181,6 +1181,23 @@ class TestPKCS7Decrypt:
         )
         assert decrypted == data
 
+    def test_pkcs7_decrypt_text_without_header(
+        self, backend, data, certificate, private_key
+    ):
+        # Encryption of data without a header (no "Text" option)
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+        )
+        enveloped = builder.encrypt(serialization.Encoding.DER, [])
+
+        # Test decryption with text option
+        with pytest.raises(ValueError):
+            pkcs7.pkcs7_decrypt_der(
+                enveloped, certificate, private_key, [pkcs7.PKCS7Options.Text]
+            )
+
     def test_smime_decrypt_no_recipient_match(
         self, backend, data, certificate, rsa_key_2048: rsa.RSAPrivateKey
     ):
