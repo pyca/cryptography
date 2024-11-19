@@ -205,15 +205,13 @@ fn deserialize_and_decrypt<'p>(
             });
 
             // Raise error when no recipient is found
-            // Unsure if this is the right exception to raise
             let recipient_info = match found_recipient_info {
                 Some(info) => info,
                 None => {
                     return Err(CryptographyError::from(
-                        exceptions::AttributeNotFound::new_err((
+                        pyo3::exceptions::PyValueError::new_err(
                             "No recipient found that matches the given certificate.",
-                            exceptions::Reasons::UNSUPPORTED_X509,
-                        )),
+                        ),
                     ));
                 }
             };
@@ -259,10 +257,9 @@ fn deserialize_and_decrypt<'p>(
         }
         _ => {
             return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "Only EnvelopedData structures are currently supported.",
-                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
-                )),
+                pyo3::exceptions::PyValueError::new_err(
+                    "The PKCS7 data is not an EnvelopedData structure.",
+                ),
             ));
         }
     };
