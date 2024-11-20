@@ -312,17 +312,12 @@ def _pkcs7_decrypt(
     options = list(options)
     if not all(isinstance(x, PKCS7Options) for x in options):
         raise ValueError("options must be from the PKCS7Options enum")
-    if any(
-        opt not in [PKCS7Options.Text, PKCS7Options.Binary] for opt in options
-    ):
+    if any(opt not in [PKCS7Options.Text] for opt in options):
+        # OpenSSL could accept other options (such as "Binary") but would
+        # ignore them. We fail defensively to avoid unexpected outputs.
         raise ValueError(
-            "Only the following options are supported for decryption: "
-            "Text, Binary"
+            "Only the following options are supported for decryption: Text"
         )
-    elif PKCS7Options.Text in options and PKCS7Options.Binary in options:
-        # OpenSSL accepts both options at the same time, but ignores Text.
-        # We fail defensively to avoid unexpected outputs.
-        raise ValueError("Cannot use Binary and Text options at the same time")
 
     if not isinstance(certificate, x509.Certificate):
         raise TypeError("certificate must be a x509.Certificate")

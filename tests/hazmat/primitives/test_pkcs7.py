@@ -995,9 +995,19 @@ class TestPKCS7EnvelopeBuilder:
         ) in payload
 
         decrypted_bytes = pkcs7.pkcs7_decrypt_smime(
-            enveloped, cert, private_key, options
+            enveloped,
+            cert,
+            private_key,
+            [o for o in options if o != pkcs7.PKCS7Options.Binary],
         )
-        assert decrypted_bytes == data
+
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
 
     @pytest.mark.parametrize(
         "options",
@@ -1027,9 +1037,18 @@ class TestPKCS7EnvelopeBuilder:
         ) in enveloped
 
         decrypted_bytes = pkcs7.pkcs7_decrypt_der(
-            enveloped, cert, private_key, options
+            enveloped,
+            cert,
+            private_key,
+            [o for o in options if o != pkcs7.PKCS7Options.Binary],
         )
-        assert decrypted_bytes == data
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
 
     @pytest.mark.parametrize(
         "options",
@@ -1046,9 +1065,19 @@ class TestPKCS7EnvelopeBuilder:
         )
         enveloped = builder.encrypt(serialization.Encoding.PEM, options)
         decrypted_bytes = pkcs7.pkcs7_decrypt_pem(
-            enveloped, cert, private_key, options
+            enveloped,
+            cert,
+            private_key,
+            [o for o in options if o != pkcs7.PKCS7Options.Binary],
         )
-        assert decrypted_bytes == data
+
+        # New lines are canonicalized to '\r\n' when not using Binary
+        expected_data = (
+            data
+            if pkcs7.PKCS7Options.Binary in options
+            else data.replace(b"\n", b"\r\n")
+        )
+        assert decrypted_bytes == expected_data
 
     def test_smime_encrypt_multiple_recipients(self, backend):
         data = b"hello world\n"
@@ -1107,10 +1136,7 @@ class TestPKCS7Decrypt:
         [
             [b"invalid"],
             [pkcs7.PKCS7Options.NoAttributes],
-            [pkcs7.PKCS7Options.NoCapabilities],
-            [pkcs7.PKCS7Options.NoCerts],
-            [pkcs7.PKCS7Options.DetachedSignature],
-            [pkcs7.PKCS7Options.Binary, pkcs7.PKCS7Options.Text],
+            [pkcs7.PKCS7Options.Binary],
         ],
     )
     def test_pkcs7_decrypt_invalid_options(
@@ -1121,9 +1147,7 @@ class TestPKCS7Decrypt:
                 data, certificate, private_key, invalid_options
             )
 
-    @pytest.mark.parametrize(
-        "options", [[pkcs7.PKCS7Options.Text], [pkcs7.PKCS7Options.Binary]]
-    )
+    @pytest.mark.parametrize("options", [[], [pkcs7.PKCS7Options.Text]])
     def test_pkcs7_decrypt_der(
         self, backend, data, certificate, private_key, options
     ):
@@ -1135,15 +1159,14 @@ class TestPKCS7Decrypt:
         )
         enveloped = builder.encrypt(serialization.Encoding.DER, options)
 
-        # Test decryption
+        # Test decryption: new lines are canonicalized to '\r\n' when
+        # encryption has no Binary option
         decrypted = pkcs7.pkcs7_decrypt_der(
             enveloped, certificate, private_key, options
         )
-        assert decrypted == data
+        assert decrypted == data.replace(b"\n", b"\r\n")
 
-    @pytest.mark.parametrize(
-        "options", [[pkcs7.PKCS7Options.Text], [pkcs7.PKCS7Options.Binary]]
-    )
+    @pytest.mark.parametrize("options", [[], [pkcs7.PKCS7Options.Text]])
     def test_pkcs7_decrypt_pem(
         self, backend, data, certificate, private_key, options
     ):
@@ -1155,15 +1178,14 @@ class TestPKCS7Decrypt:
         )
         enveloped = builder.encrypt(serialization.Encoding.PEM, options)
 
-        # Test decryption
+        # Test decryption: new lines are canonicalized to '\r\n' when
+        # encryption has no Binary option
         decrypted = pkcs7.pkcs7_decrypt_pem(
             enveloped, certificate, private_key, options
         )
-        assert decrypted == data
+        assert decrypted == data.replace(b"\n", b"\r\n")
 
-    @pytest.mark.parametrize(
-        "options", [[pkcs7.PKCS7Options.Text], [pkcs7.PKCS7Options.Binary]]
-    )
+    @pytest.mark.parametrize("options", [[], [pkcs7.PKCS7Options.Text]])
     def test_pkcs7_decrypt_smime(
         self, backend, data, certificate, private_key, options
     ):
@@ -1179,7 +1201,7 @@ class TestPKCS7Decrypt:
         decrypted = pkcs7.pkcs7_decrypt_smime(
             enveloped, certificate, private_key, options
         )
-        assert decrypted == data
+        assert decrypted == data.replace(b"\n", b"\r\n")
 
     def test_pkcs7_decrypt_text_without_header(
         self, backend, data, certificate, private_key

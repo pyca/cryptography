@@ -276,12 +276,24 @@ fn deserialize_and_decrypt<'p>(
         }
     };
 
-    // Return content in different form, based on options
-    let text_mode = options.contains(types::PKCS7_TEXT.get(py)?)?;
-    let binary_mode = options.contains(types::PKCS7_BINARY.get(py)?)?;
-    let decanonicalized = smime_decanonicalize(plain_content.as_bytes(), text_mode, binary_mode);
-    let plain_data = pyo3::types::PyBytes::new(py, decanonicalized?.into_owned().as_slice());
+    // If text_mode, strip the header if possible, else return an error
+    let plain_data = plain_content.as_bytes();
+    let plain_data = if options.contains(types::PKCS7_TEXT.get(py)?)? {
+        let header = b"Content-Type: text/plain\r\n\r\n";
+        if plain_data.starts_with(header) {
+            &plain_data[header.len()..]
+        } else {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "No 'Content-Type' header to be deleted in the decrypted data. Please remove the 'text' option.",
+                ),
+            ));
+        }
+    } else {
+        plain_data
+    };
 
+    let plain_data = pyo3::types::PyBytes::new(py, plain_data);
     Ok(plain_data)
 }
 
@@ -567,49 +579,6 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
         )
     } else {
         (Cow::Borrowed(data), Cow::Borrowed(data))
-    }
-}
-
-fn smime_decanonicalize(
-    data: &[u8],
-    text_mode: bool,
-    binary_mode: bool,
-) -> CryptographyResult<Cow<'_, [u8]>> {
-    // If text_mode is true, remove header. If no header, raise an error.
-    let data: &[u8] = if text_mode {
-        let header = b"Content-Type: text/plain\r\n\r\n";
-        if data.starts_with(header) {
-            &data[header.len()..]
-        } else {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "No 'Content-Type' header to be deleted in the data. Please remove the 'text' option.",
-                ),
-            ));
-        }
-    } else {
-        data
-    };
-
-    // If binary_mode is true, return the data as is. Else, remove the \r in the data.
-    if binary_mode {
-        Ok(Cow::Borrowed(data))
-    } else {
-        let mut new_data = vec![];
-        let mut last_idx = 0;
-        for (i, c) in data.iter().copied().enumerate() {
-            if c == b'\n' && i > 0 && data[i - 1] == b'\r' {
-                new_data.extend_from_slice(&data[last_idx..i - 1]);
-                new_data.push(b'\n');
-                last_idx = i + 1;
-            }
-        }
-
-        // Copy the remaining data
-        if last_idx < data.len() {
-            new_data.extend_from_slice(&data[last_idx..]);
-        }
-        Ok(Cow::Owned(new_data))
     }
 }
 
