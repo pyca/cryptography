@@ -269,7 +269,10 @@ def pkcs7_decrypt_der(
     private_key: rsa.RSAPrivateKey,
     options: typing.Iterable[PKCS7Options],
 ) -> bytes:
-    return _pkcs7_decrypt(data, certificate, private_key, options)
+    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
+    return rust_pkcs7.deserialize_and_decrypt_der(
+        data, certificate, private_key, options
+    )
 
 
 def pkcs7_decrypt_pem(
@@ -278,8 +281,10 @@ def pkcs7_decrypt_pem(
     private_key: rsa.RSAPrivateKey,
     options: typing.Iterable[PKCS7Options],
 ) -> bytes:
-    data = rust_pkcs7.pem_to_der(data)
-    return _pkcs7_decrypt(data, certificate, private_key, options)
+    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
+    return rust_pkcs7.deserialize_and_decrypt_pem(
+        data, certificate, private_key, options
+    )
 
 
 def pkcs7_decrypt_smime(
@@ -288,16 +293,13 @@ def pkcs7_decrypt_smime(
     private_key: rsa.RSAPrivateKey,
     options: typing.Iterable[PKCS7Options],
 ) -> bytes:
-    data = _smime_enveloped_decode(data)
-    return _pkcs7_decrypt(data, certificate, private_key, options)
+    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
+    return rust_pkcs7.deserialize_and_decrypt_smime(
+        data, certificate, private_key, options
+    )
 
 
-def _pkcs7_decrypt(
-    data: bytes,
-    certificate: x509.Certificate,
-    private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[PKCS7Options],
-) -> bytes:
+def _check_pkcs7_decrypt_arguments(options, certificate, private_key):
     from cryptography.hazmat.backends.openssl.backend import (
         backend as ossl,
     )
@@ -327,10 +329,6 @@ def _pkcs7_decrypt(
 
     if not isinstance(private_key, rsa.RSAPrivateKey):
         raise TypeError("Only RSA private keys are supported at this time.")
-
-    return rust_pkcs7.deserialize_and_decrypt(
-        data, certificate, private_key, options
-    )
 
 
 def _smime_signed_encode(

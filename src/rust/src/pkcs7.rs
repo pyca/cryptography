@@ -167,28 +167,58 @@ fn encrypt_and_serialize<'p>(
 }
 
 #[pyo3::pyfunction]
-fn pem_to_der<'p>(
-    py: pyo3::Python<'p>,
-    data: CffiBuf<'p>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let pem_str = std::str::from_utf8(data.as_bytes())
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
-    let pem = pem::parse(pem_str)
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
-
-    Ok(pyo3::types::PyBytes::new(py, &pem.into_contents()))
-}
-
-#[pyo3::pyfunction]
-fn deserialize_and_decrypt<'p>(
+fn deserialize_and_decrypt_pem<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'p>,
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
     private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let pem_str = std::str::from_utf8(data.as_bytes())
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
+    let pem = pem::parse(pem_str)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
+
+    deserialize_and_decrypt(py, &pem.into_contents(), certificate, private_key, options)
+}
+
+#[pyo3::pyfunction]
+fn deserialize_and_decrypt_smime<'p>(
+    py: pyo3::Python<'p>,
+    data: CffiBuf<'p>,
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let decoded_smime_data = types::SMIME_ENVELOPED_DECODE
+        .get(py)?
+        .call1((data.as_bytes(),))?;
+    let data = decoded_smime_data.extract()?;
+
+    deserialize_and_decrypt(py, data, certificate, private_key, options)
+}
+
+#[pyo3::pyfunction]
+fn deserialize_and_decrypt_der<'p>(
+    py: pyo3::Python<'p>,
+    data: CffiBuf<'p>,
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    deserialize_and_decrypt(py, data.as_bytes(), certificate, private_key, options)
+}
+
+#[pyo3::pyfunction]
+fn deserialize_and_decrypt<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     // Deserialize the content info
-    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data.as_bytes()).unwrap();
+    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).unwrap();
     let plain_content = match content_info.content {
         pkcs7::Content::EnvelopedData(data) => {
             // Extract enveloped data
@@ -674,8 +704,9 @@ fn load_der_pkcs7_certificates<'p>(
 pub(crate) mod pkcs7_mod {
     #[pymodule_export]
     use super::{
-        deserialize_and_decrypt, encrypt_and_serialize, load_der_pkcs7_certificates,
-        load_pem_pkcs7_certificates, pem_to_der, serialize_certificates, sign_and_serialize,
+        deserialize_and_decrypt_der, deserialize_and_decrypt_pem, deserialize_and_decrypt_smime,
+        encrypt_and_serialize, load_der_pkcs7_certificates, load_pem_pkcs7_certificates,
+        serialize_certificates, sign_and_serialize,
     };
 }
 
