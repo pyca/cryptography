@@ -268,38 +268,6 @@ pkcs7_decrypt_pem = rust_pkcs7.decrypt_pem
 pkcs7_decrypt_smime = rust_pkcs7.decrypt_smime
 
 
-def _check_pkcs7_decrypt_arguments(options, certificate, private_key):
-    from cryptography.hazmat.backends.openssl.backend import (
-        backend as ossl,
-    )
-
-    if not ossl.rsa_encryption_supported(padding=padding.PKCS1v15()):
-        raise UnsupportedAlgorithm(
-            "RSA with PKCS1 v1.5 padding is not supported by this version"
-            " of OpenSSL.",
-            _Reasons.UNSUPPORTED_PADDING,
-        )
-
-    options = list(options)
-    if not all(isinstance(x, PKCS7Options) for x in options):
-        raise ValueError("options must be from the PKCS7Options enum")
-    if any(opt not in [PKCS7Options.Text] for opt in options):
-        # OpenSSL could accept other options (such as "Binary") but would
-        # ignore them. We fail defensively to avoid unexpected outputs.
-        raise ValueError(
-            "Only the following options are supported for decryption: Text"
-        )
-
-    if not isinstance(certificate, x509.Certificate):
-        raise TypeError("certificate must be a x509.Certificate")
-
-    if not isinstance(certificate.public_key(), rsa.RSAPublicKey):
-        raise TypeError("Only RSA keys are supported at this time.")
-
-    if not isinstance(private_key, rsa.RSAPrivateKey):
-        raise TypeError("Only RSA private keys are supported at this time.")
-
-
 def _smime_signed_encode(
     data: bytes, signature: bytes, micalg: str, text_mode: bool
 ) -> bytes:
