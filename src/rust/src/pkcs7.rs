@@ -209,7 +209,6 @@ fn deserialize_and_decrypt_der<'p>(
     deserialize_and_decrypt(py, data.as_bytes(), certificate, private_key, options)
 }
 
-#[pyo3::pyfunction]
 fn deserialize_and_decrypt<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
