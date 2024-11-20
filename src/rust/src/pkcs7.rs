@@ -217,7 +217,7 @@ fn decrypt<'p>(
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     // Check the decrypt parameters
-    check_decrypt_parameters(py, &certificate, &private_key, options)?;
+    check_decrypt_parameters(py, &certificate, options)?;
 
     // Decrypt the data
     let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).unwrap();
@@ -332,7 +332,6 @@ fn decrypt<'p>(
 fn check_decrypt_parameters<'p>(
     py: pyo3::Python<'p>,
     certificate: &pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: &pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> Result<(), CryptographyError> {
     // Check if RSA encryption with PKCS1 v1.5 padding is supported (dependent of FIPS mode)
