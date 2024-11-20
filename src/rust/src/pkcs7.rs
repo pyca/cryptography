@@ -369,28 +369,14 @@ fn check_decrypt_parameters<'p>(
         ));
     }
 
-    // Check if certificate is an x509::Certificate
-    if !certificate.is_instance_of::<x509::certificate::Certificate>() {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err("certificate must be a x509.Certificate"),
-        ));
-    }
-
     // Check if certificate's public key is an RSA public key
     if !certificate
         .call_method0(pyo3::intern!(py, "public_key"))?
         .is_instance_of::<backend::rsa::RsaPublicKey>()
     {
         return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err("Only RSA keys are supported at this time."),
-        ));
-    }
-
-    // Check if private_key is an RSA private key
-    if !private_key.is_instance_of::<backend::rsa::RsaPrivateKey>() {
-        return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
-                "Only RSA private keys are supported at this time.",
+                "Only certificate with RSA public keys are supported at this time.",
             ),
         ));
     }
