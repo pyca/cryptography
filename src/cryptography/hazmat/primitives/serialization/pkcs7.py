@@ -263,40 +263,9 @@ class PKCS7EnvelopeBuilder:
         return rust_pkcs7.encrypt_and_serialize(self, encoding, options)
 
 
-def pkcs7_decrypt_der(
-    data: bytes,
-    certificate: x509.Certificate,
-    private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[PKCS7Options],
-) -> bytes:
-    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
-    return rust_pkcs7.deserialize_and_decrypt_der(
-        data, certificate, private_key, options
-    )
-
-
-def pkcs7_decrypt_pem(
-    data: bytes,
-    certificate: x509.Certificate,
-    private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[PKCS7Options],
-) -> bytes:
-    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
-    return rust_pkcs7.deserialize_and_decrypt_pem(
-        data, certificate, private_key, options
-    )
-
-
-def pkcs7_decrypt_smime(
-    data: bytes,
-    certificate: x509.Certificate,
-    private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[PKCS7Options],
-) -> bytes:
-    _check_pkcs7_decrypt_arguments(options, certificate, private_key)
-    return rust_pkcs7.deserialize_and_decrypt_smime(
-        data, certificate, private_key, options
-    )
+pkcs7_decrypt_der = rust_pkcs7.decrypt_der
+pkcs7_decrypt_pem = rust_pkcs7.decrypt_pem
+pkcs7_decrypt_smime = rust_pkcs7.decrypt_smime
 
 
 def _check_pkcs7_decrypt_arguments(options, certificate, private_key):

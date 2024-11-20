@@ -167,7 +167,18 @@ fn encrypt_and_serialize<'p>(
 }
 
 #[pyo3::pyfunction]
-fn deserialize_and_decrypt_pem<'p>(
+fn decrypt_der<'p>(
+    py: pyo3::Python<'p>,
+    data: CffiBuf<'p>,
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    decrypt(py, data.as_bytes(), certificate, private_key, options)
+}
+
+#[pyo3::pyfunction]
+fn decrypt_pem<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'p>,
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
@@ -179,11 +190,11 @@ fn deserialize_and_decrypt_pem<'p>(
     let pem = pem::parse(pem_str)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
 
-    deserialize_and_decrypt(py, &pem.into_contents(), certificate, private_key, options)
+    decrypt(py, &pem.into_contents(), certificate, private_key, options)
 }
 
 #[pyo3::pyfunction]
-fn deserialize_and_decrypt_smime<'p>(
+fn decrypt_smime<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'p>,
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
@@ -195,28 +206,20 @@ fn deserialize_and_decrypt_smime<'p>(
         .call1((data.as_bytes(),))?;
     let data = decoded_smime_data.extract()?;
 
-    deserialize_and_decrypt(py, data, certificate, private_key, options)
+    decrypt(py, data, certificate, private_key, options)
 }
 
-#[pyo3::pyfunction]
-fn deserialize_and_decrypt_der<'p>(
-    py: pyo3::Python<'p>,
-    data: CffiBuf<'p>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    deserialize_and_decrypt(py, data.as_bytes(), certificate, private_key, options)
-}
-
-fn deserialize_and_decrypt<'p>(
+fn decrypt<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
     private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    // Deserialize the content info
+    // Check the decrypt parameters
+    check_decrypt_parameters(py, &certificate, &private_key, options)?;
+
+    // Decrypt the data
     let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).unwrap();
     let plain_content = match content_info.content {
         pkcs7::Content::EnvelopedData(data) => {
@@ -324,6 +327,75 @@ fn deserialize_and_decrypt<'p>(
 
     let plain_data = pyo3::types::PyBytes::new(py, plain_data);
     Ok(plain_data)
+}
+
+fn check_decrypt_parameters<'p>(
+    py: pyo3::Python<'p>,
+    certificate: &pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: &pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> Result<(), CryptographyError> {
+    // Check if RSA encryption with PKCS1 v1.5 padding is supported (dependent of FIPS mode)
+    if cryptography_openssl::fips::is_enabled() {
+        return Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err((
+                "RSA with PKCS1 v1.5 padding is not supported by this version of OpenSSL.",
+                exceptions::Reasons::UNSUPPORTED_PADDING,
+            )),
+        ));
+    }
+
+    // Check if all options are from the PKCS7Options enum
+    let pkcs7_option_type = types::PKCS7_TEXT.get(py)?.get_type();
+    if !options
+        .iter()
+        .all(|opt| opt.get_type().eq(pkcs7_option_type.clone()).unwrap())
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("options must be from the PKCS7Options enum"),
+        ));
+    }
+
+    // Check if any option is not PKCS7Options::Text
+    let text_option = types::PKCS7_TEXT.get(py)?;
+    if options
+        .iter()
+        .any(|opt| !opt.eq(text_option.clone()).unwrap())
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Only the following options are supported for decryption: Text",
+            ),
+        ));
+    }
+
+    // Check if certificate is an x509::Certificate
+    if !certificate.is_instance_of::<x509::certificate::Certificate>() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err("certificate must be a x509.Certificate"),
+        ));
+    }
+
+    // Check if certificate's public key is an RSA public key
+    if !certificate
+        .call_method0(pyo3::intern!(py, "public_key"))?
+        .is_instance_of::<backend::rsa::RsaPublicKey>()
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err("Only RSA keys are supported at this time."),
+        ));
+    }
+
+    // Check if private_key is an RSA private key
+    if !private_key.is_instance_of::<backend::rsa::RsaPrivateKey>() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err(
+                "Only RSA private keys are supported at this time.",
+            ),
+        ));
+    }
+
+    Ok(())
 }
 
 pub(crate) fn symmetric_decrypt(
@@ -703,9 +775,9 @@ fn load_der_pkcs7_certificates<'p>(
 pub(crate) mod pkcs7_mod {
     #[pymodule_export]
     use super::{
-        deserialize_and_decrypt_der, deserialize_and_decrypt_pem, deserialize_and_decrypt_smime,
-        encrypt_and_serialize, load_der_pkcs7_certificates, load_pem_pkcs7_certificates,
-        serialize_certificates, sign_and_serialize,
+        decrypt_der, decrypt_pem, decrypt_smime, encrypt_and_serialize,
+        load_der_pkcs7_certificates, load_pem_pkcs7_certificates, serialize_certificates,
+        sign_and_serialize,
     };
 }
 
