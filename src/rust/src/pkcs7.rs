@@ -167,38 +167,11 @@ fn encrypt_and_serialize<'p>(
 }
 
 #[pyo3::pyfunction]
-fn decrypt_der<'p>(
-    py: pyo3::Python<'p>,
-    data: CffiBuf<'p>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    decrypt(py, data.as_bytes(), certificate, private_key, options)
-}
-
-#[pyo3::pyfunction]
-fn decrypt_pem<'p>(
-    py: pyo3::Python<'p>,
-    data: CffiBuf<'p>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let pem_str = std::str::from_utf8(data.as_bytes())
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
-    let pem = pem::parse(pem_str)
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
-
-    decrypt(py, &pem.into_contents(), certificate, private_key, options)
-}
-
-#[pyo3::pyfunction]
 fn decrypt_smime<'p>(
     py: pyo3::Python<'p>,
     data: CffiBuf<'p>,
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    private_key: pyo3::Bound<'p, pyo3::types::PyAny>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let decoded_smime_data = types::SMIME_ENVELOPED_DECODE
@@ -206,18 +179,43 @@ fn decrypt_smime<'p>(
         .call1((data.as_bytes(),))?;
     let data = decoded_smime_data.extract()?;
 
-    decrypt(py, data, certificate, private_key, options)
+    decrypt_der(py, data, certificate, private_key, options)
 }
-
-fn decrypt<'p>(
+#[pyo3::pyfunction]
+fn decrypt_pem<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
     certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    private_key: pyo3::Bound<'p, backend::rsa::RsaPrivateKey>,
+    private_key: pyo3::Bound<'p, pyo3::types::PyAny>,
+    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let pem_str = std::str::from_utf8(data)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
+    let pem = pem::parse(pem_str)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
+
+    // Raise error if the PEM tag is not PKCS7
+    if pem.tag() != "PKCS7" {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "The provided PEM data does not have the PKCS7 tag.",
+            ),
+        ));
+    }
+
+    decrypt_der(py, &pem.into_contents(), certificate, private_key, options)
+}
+
+#[pyo3::pyfunction]
+fn decrypt_der<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: pyo3::Bound<'p, pyo3::types::PyAny>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     // Check the decrypt parameters
-    check_decrypt_parameters(py, &certificate, options)?;
+    check_decrypt_parameters(py, &certificate, &private_key, options)?;
 
     // Decrypt the data
     let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).unwrap();
@@ -311,15 +309,15 @@ fn decrypt<'p>(
     // If text_mode, strip the header if possible, else return an error
     let plain_data = plain_content.as_bytes();
     let plain_data = if options.contains(types::PKCS7_TEXT.get(py)?)? {
-        let header = b"Content-Type: text/plain\r\n\r\n";
-        if plain_data.starts_with(header) {
-            &plain_data[header.len()..]
-        } else {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "No 'Content-Type' header to be deleted in the decrypted data. Please remove the 'text' option.",
-                ),
-            ));
+        match plain_data.strip_prefix(b"Content-Type: text/plain\r\n\r\n") {
+            Some(stripped_data) => stripped_data,
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "No 'Content-Type' header to be deleted in the decrypted data. Please remove the 'text' option.",
+                    ),
+                ));
+            }
         }
     } else {
         plain_data
@@ -332,6 +330,7 @@ fn decrypt<'p>(
 fn check_decrypt_parameters<'p>(
     py: pyo3::Python<'p>,
     certificate: &pyo3::Bound<'p, x509::certificate::Certificate>,
+    private_key: &pyo3::Bound<'p, pyo3::PyAny>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> Result<(), CryptographyError> {
     // Check if RSA encryption with PKCS1 v1.5 padding is supported (dependent of FIPS mode)
@@ -348,7 +347,7 @@ fn check_decrypt_parameters<'p>(
     let pkcs7_option_type = types::PKCS7_TEXT.get(py)?.get_type();
     if !options
         .iter()
-        .all(|opt| opt.get_type().eq(pkcs7_option_type.clone()).unwrap())
+        .all(|opt| opt.is_instance(&pkcs7_option_type).unwrap())
     {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("options must be from the PKCS7Options enum"),
@@ -369,13 +368,24 @@ fn check_decrypt_parameters<'p>(
     }
 
     // Check if certificate's public key is an RSA public key
+    let public_key_type = types::RSA_PUBLIC_KEY.get(py)?.get_type();
     if !certificate
         .call_method0(pyo3::intern!(py, "public_key"))?
-        .is_instance_of::<backend::rsa::RsaPublicKey>()
+        .is_instance(&public_key_type)?
     {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
                 "Only certificate with RSA public keys are supported at this time.",
+            ),
+        ));
+    }
+
+    // Check if private_key is an instance of RSA private key
+    let private_key_type = types::RSA_PRIVATE_KEY.get(py)?.get_type();
+    if !private_key.is_instance(&private_key_type)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err(
+                "Only RSA private keys are supported at this time.",
             ),
         ));
     }
