@@ -1186,7 +1186,7 @@ class TestPKCS7Decrypt:
         assert decrypted == data.replace(b"\n", b"\r\n")
 
     def test_pkcs7_decrypt_pem_with_wrong_tag(
-        self, backend, data, certificate, private_key, options
+        self, backend, data, certificate, private_key
     ):
         with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_pem(

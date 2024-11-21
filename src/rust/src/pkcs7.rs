@@ -23,7 +23,7 @@ use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
-use crate::{backend, exceptions, types, x509};
+use crate::{exceptions, types, x509};
 
 const PKCS7_CONTENT_TYPE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 3);
 const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 4);
@@ -368,7 +368,7 @@ fn check_decrypt_parameters<'p>(
     }
 
     // Check if certificate's public key is an RSA public key
-    let public_key_type = types::RSA_PUBLIC_KEY.get(py)?.get_type();
+    let public_key_type = types::RSA_PUBLIC_KEY.get(py)?;
     if !certificate
         .call_method0(pyo3::intern!(py, "public_key"))?
         .is_instance(&public_key_type)?
@@ -381,7 +381,7 @@ fn check_decrypt_parameters<'p>(
     }
 
     // Check if private_key is an instance of RSA private key
-    let private_key_type = types::RSA_PRIVATE_KEY.get(py)?.get_type();
+    let private_key_type = types::RSA_PRIVATE_KEY.get(py)?;
     if !private_key.is_instance(&private_key_type)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
