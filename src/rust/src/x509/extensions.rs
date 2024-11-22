@@ -275,9 +275,7 @@ fn encode_certificate_policies(
                             organization: extensions::DisplayText::Utf8String(
                                 asn1::Utf8String::new(py_notice_str),
                             ),
-                            notice_numbers: common::Asn1ReadableOrWritable::new_write(
-                                asn1::SequenceOfWriter::new(notice_numbers),
-                            ),
+                            notice_numbers: asn1::SequenceOfWriter::new(notice_numbers),
                         })
                     } else {
                         None
@@ -304,14 +302,12 @@ fn encode_certificate_policies(
                 };
                 qualifiers.push(qualifier);
             }
-            Some(common::Asn1ReadableOrWritable::new_write(
-                asn1::SequenceOfWriter::new(qualifiers),
-            ))
+            Some(asn1::SequenceOfWriter::new(qualifiers))
         } else {
             None
         };
         let py_policy_id = py_policy_info.getattr(pyo3::intern!(py, "policy_identifier"))?;
-        policy_informations.push(extensions::PolicyInformation {
+        policy_informations.push(extensions::PolicyInformation::<Asn1Write> {
             policy_identifier: py_oid_to_oid(py_policy_id)?,
             policy_qualifiers: qualifiers,
         });

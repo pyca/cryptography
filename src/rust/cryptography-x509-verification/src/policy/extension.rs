@@ -530,6 +530,7 @@ pub(crate) mod ca {
 pub(crate) mod common {
     use cryptography_x509::{
         certificate::Certificate,
+        common::Asn1Read,
         extensions::{Extension, SequenceOfAccessDescriptions},
     };
 
@@ -546,7 +547,7 @@ pub(crate) mod common {
         if let Some(extn) = extn {
             // We don't currently do anything useful with these, but we
             // do check that they're well-formed.
-            let _: SequenceOfAccessDescriptions<'_> = extn.value()?;
+            let _: SequenceOfAccessDescriptions<'_, Asn1Read> = extn.value()?;
         }
 
         Ok(())
