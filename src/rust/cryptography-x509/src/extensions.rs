@@ -94,48 +94,41 @@ pub struct AccessDescription<'a> {
     pub access_location: name::GeneralName<'a>,
 }
 
-pub type SequenceOfAccessDescriptions<'a> = common::Asn1ReadableOrWritable<
-    asn1::SequenceOf<'a, AccessDescription<'a>>,
-    asn1::SequenceOfWriter<'a, AccessDescription<'a>, Vec<AccessDescription<'a>>>,
->;
+pub type SequenceOfAccessDescriptions<'a, Op> =
+    <Op as Asn1Operation>::SequenceOfVec<'a, AccessDescription<'a>>;
 
 // Needed due to clippy type complexity warning.
-type SequenceOfPolicyQualifiers<'a> = common::Asn1ReadableOrWritable<
-    asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
-    asn1::SequenceOfWriter<'a, PolicyQualifierInfo<'a>, Vec<PolicyQualifierInfo<'a>>>,
->;
+type SequenceOfPolicyQualifiers<'a, Op> =
+    <Op as Asn1Operation>::SequenceOfVec<'a, PolicyQualifierInfo<'a, Op>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct PolicyInformation<'a> {
+pub struct PolicyInformation<'a, Op: Asn1Operation + 'a> {
     pub policy_identifier: asn1::ObjectIdentifier,
-    pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a>>,
+    pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a, Op>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct PolicyQualifierInfo<'a> {
+pub struct PolicyQualifierInfo<'a, Op: Asn1Operation> {
     pub policy_qualifier_id: asn1::ObjectIdentifier,
-    pub qualifier: Qualifier<'a>,
+    pub qualifier: Qualifier<'a, Op>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub enum Qualifier<'a> {
+pub enum Qualifier<'a, Op: Asn1Operation> {
     CpsUri(asn1::IA5String<'a>),
-    UserNotice(UserNotice<'a>),
+    UserNotice(UserNotice<'a, Op>),
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct UserNotice<'a> {
-    pub notice_ref: Option<NoticeReference<'a>>,
+pub struct UserNotice<'a, Op: Asn1Operation> {
+    pub notice_ref: Option<NoticeReference<'a, Op>>,
     pub explicit_text: Option<DisplayText<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct NoticeReference<'a> {
+pub struct NoticeReference<'a, Op: Asn1Operation> {
     pub organization: DisplayText<'a>,
-    pub notice_numbers: common::Asn1ReadableOrWritable<
-        asn1::SequenceOf<'a, asn1::BigUint<'a>>,
-        asn1::SequenceOfWriter<'a, asn1::BigUint<'a>, Vec<asn1::BigUint<'a>>>,
-    >,
+    pub notice_numbers: Op::SequenceOfVec<'a, asn1::BigUint<'a>>,
 }
 
 // DisplayText also allows BMPString, which we currently do not support.

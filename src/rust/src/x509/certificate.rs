@@ -498,7 +498,7 @@ fn parse_display_text<'p>(
 
 fn parse_user_notice<'p>(
     py: pyo3::Python<'p>,
-    un: UserNotice<'_>,
+    un: UserNotice<'_, Asn1Read>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let et = match un.explicit_text {
         Some(data) => parse_display_text(py, data)?,
@@ -508,7 +508,7 @@ fn parse_user_notice<'p>(
         Some(data) => {
             let org = parse_display_text(py, data.organization)?;
             let numbers = pyo3::types::PyList::empty(py);
-            for num in data.notice_numbers.unwrap_read().clone() {
+            for num in data.notice_numbers.clone() {
                 numbers.append(big_byte_slice_to_py_int(py, num.as_bytes())?)?;
             }
             types::NOTICE_REFERENCE.get(py)?.call1((org, numbers))?
@@ -520,7 +520,7 @@ fn parse_user_notice<'p>(
 
 fn parse_policy_qualifiers<'a>(
     py: pyo3::Python<'a>,
-    policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a>>,
+    policy_qualifiers: &asn1::SequenceOf<'a, PolicyQualifierInfo<'a, Asn1Read>>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let py_pq = pyo3::types::PyList::empty(py);
     for pqi in policy_qualifiers.clone() {
@@ -556,14 +556,12 @@ fn parse_cp<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'_>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_>>>()?;
+    let cp = ext.value::<asn1::SequenceOf<'_, PolicyInformation<'_, Asn1Read>>>()?;
     let certificate_policies = pyo3::types::PyList::empty(py);
     for policyinfo in cp {
         let pi_oid = oid_to_py_oid(py, &policyinfo.policy_identifier)?;
         let py_pqis = match policyinfo.policy_qualifiers {
-            Some(policy_qualifiers) => {
-                parse_policy_qualifiers(py, policy_qualifiers.unwrap_read())?
-            }
+            Some(policy_qualifiers) => parse_policy_qualifiers(py, &policy_qualifiers)?,
             None => py.None().into_bound(py),
         };
         let pi = types::POLICY_INFORMATION
@@ -695,8 +693,8 @@ pub(crate) fn parse_access_descriptions<'p>(
     ext: &Extension<'_>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let ads = pyo3::types::PyList::empty(py);
-    let parsed = ext.value::<SequenceOfAccessDescriptions<'_>>()?;
-    for access in parsed.unwrap_read().clone() {
+    let parsed = ext.value::<SequenceOfAccessDescriptions<'_, Asn1Read>>()?;
+    for access in parsed {
         let py_oid = oid_to_py_oid(py, &access.access_method)?;
         let gn = x509::parse_general_name(py, access.access_location)?;
         let ad = types::ACCESS_DESCRIPTION.get(py)?.call1((py_oid, gn))?;
