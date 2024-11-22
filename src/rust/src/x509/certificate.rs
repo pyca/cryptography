@@ -574,10 +574,10 @@ fn parse_cp<'p>(
 
 fn parse_general_subtrees<'p>(
     py: pyo3::Python<'p>,
-    subtrees: SequenceOfSubtrees<'_>,
+    subtrees: SequenceOfSubtrees<'_, Asn1Read>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let gns = pyo3::types::PyList::empty(py);
-    for gs in subtrees.unwrap_read().clone() {
+    for gs in subtrees {
         gns.append(x509::parse_general_name(py, gs.base)?)?;
     }
     Ok(gns.into_any())
@@ -585,17 +585,16 @@ fn parse_general_subtrees<'p>(
 
 pub(crate) fn parse_distribution_point_name<'p>(
     py: pyo3::Python<'p>,
-    dp: DistributionPointName<'p>,
+    dp: DistributionPointName<'p, Asn1Read>,
 ) -> CryptographyResult<(pyo3::Bound<'p, pyo3::PyAny>, pyo3::Bound<'p, pyo3::PyAny>)> {
     Ok(match dp {
         DistributionPointName::FullName(data) => (
-            x509::parse_general_names(py, data.unwrap_read())?,
+            x509::parse_general_names(py, &data)?,
             py.None().into_bound(py),
         ),
-        DistributionPointName::NameRelativeToCRLIssuer(data) => (
-            py.None().into_bound(py),
-            x509::parse_rdn(py, data.unwrap_read())?,
-        ),
+        DistributionPointName::NameRelativeToCRLIssuer(data) => {
+            (py.None().into_bound(py), x509::parse_rdn(py, &data)?)
+        }
     })
 }
 
@@ -609,7 +608,7 @@ fn parse_distribution_point<'p>(
     };
     let reasons = parse_distribution_point_reasons(py, dp.reasons.as_ref())?;
     let crl_issuer = match dp.crl_issuer {
-        Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
+        Some(aci) => x509::parse_general_names(py, &aci)?,
         None => py.None().into_bound(py),
     };
     Ok(types::DISTRIBUTION_POINT
@@ -674,13 +673,13 @@ pub(crate) fn parse_authority_key_identifier<'p>(
     py: pyo3::Python<'p>,
     ext: &Extension<'p>,
 ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-    let aki = ext.value::<AuthorityKeyIdentifier<'_>>()?;
+    let aki = ext.value::<AuthorityKeyIdentifier<'_, Asn1Read>>()?;
     let serial = match aki.authority_cert_serial_number {
         Some(biguint) => big_byte_slice_to_py_int(py, biguint.as_bytes())?.unbind(),
         None => py.None(),
     };
     let issuer = match aki.authority_cert_issuer {
-        Some(aci) => x509::parse_general_names(py, aci.unwrap_read())?,
+        Some(aci) => x509::parse_general_names(py, &aci)?,
         None => py.None().into_bound(py),
     };
     Ok(types::AUTHORITY_KEY_IDENTIFIER
@@ -911,7 +910,7 @@ pub fn parse_cert_ext<'p>(
             Ok(Some(types::FRESHEST_CRL.get(py)?.call1((dp,))?))
         }
         oid::NAME_CONSTRAINTS_OID => {
-            let nc = ext.value::<NameConstraints<'_>>()?;
+            let nc = ext.value::<NameConstraints<'_, Asn1Read>>()?;
             let permitted_subtrees = match nc.permitted_subtrees {
                 Some(data) => parse_general_subtrees(py, data)?,
                 None => py.None().into_bound(py),

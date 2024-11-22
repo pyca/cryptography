@@ -142,19 +142,15 @@ pub enum DisplayText<'a> {
     BmpString(asn1::BMPString<'a>),
 }
 
-// Needed due to clippy type complexity warning.
-pub type SequenceOfSubtrees<'a> = common::Asn1ReadableOrWritable<
-    asn1::SequenceOf<'a, GeneralSubtree<'a>>,
-    asn1::SequenceOfWriter<'a, GeneralSubtree<'a>, Vec<GeneralSubtree<'a>>>,
->;
+pub type SequenceOfSubtrees<'a, Op> = <Op as Asn1Operation>::SequenceOfVec<'a, GeneralSubtree<'a>>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct NameConstraints<'a> {
+pub struct NameConstraints<'a, Op: Asn1Operation> {
     #[implicit(0)]
-    pub permitted_subtrees: Option<SequenceOfSubtrees<'a>>,
+    pub permitted_subtrees: Option<SequenceOfSubtrees<'a, Op>>,
 
     #[implicit(1)]
-    pub excluded_subtrees: Option<SequenceOfSubtrees<'a>>,
+    pub excluded_subtrees: Option<SequenceOfSubtrees<'a, Op>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -179,39 +175,30 @@ pub struct MSCertificateTemplate {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct DistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
-    pub distribution_point: Option<DistributionPointName<'a>>,
+    pub distribution_point: Option<DistributionPointName<'a, Op>>,
 
     #[implicit(1)]
     pub reasons: crl::ReasonFlags<'a, Op>,
 
     #[implicit(2)]
-    pub crl_issuer: Option<name::SequenceOfGeneralName<'a>>,
+    pub crl_issuer: Option<name::SequenceOfGeneralName<'a, Op>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub enum DistributionPointName<'a> {
+pub enum DistributionPointName<'a, Op: Asn1Operation> {
     #[implicit(0)]
-    FullName(name::SequenceOfGeneralName<'a>),
+    FullName(name::SequenceOfGeneralName<'a, Op>),
 
     #[implicit(1)]
-    NameRelativeToCRLIssuer(
-        common::Asn1ReadableOrWritable<
-            asn1::SetOf<'a, common::AttributeTypeValue<'a>>,
-            asn1::SetOfWriter<
-                'a,
-                common::AttributeTypeValue<'a>,
-                Vec<common::AttributeTypeValue<'a>>,
-            >,
-        >,
-    ),
+    NameRelativeToCRLIssuer(Op::SetOfVec<'a, common::AttributeTypeValue<'a>>),
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct AuthorityKeyIdentifier<'a> {
+pub struct AuthorityKeyIdentifier<'a, Op: Asn1Operation> {
     #[implicit(0)]
     pub key_identifier: Option<&'a [u8]>,
     #[implicit(1)]
-    pub authority_cert_issuer: Option<name::SequenceOfGeneralName<'a>>,
+    pub authority_cert_issuer: Option<name::SequenceOfGeneralName<'a, Op>>,
     #[implicit(2)]
     pub authority_cert_serial_number: Option<asn1::BigUint<'a>>,
 }
