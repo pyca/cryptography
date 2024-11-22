@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
 
-use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
+use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters, Asn1Read, Asn1Write};
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
@@ -63,19 +63,17 @@ fn serialize_certificates<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
+        digest_algorithms: asn1::SetOfWriter::new([].as_slice()),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(None),
         },
-        certificates: Some(common::Asn1ReadableOrWritable::new_write(
-            asn1::SetOfWriter::new(&raw_certs),
-        )),
+        certificates: Some(asn1::SetOfWriter::new(raw_certs.as_slice())),
         crls: None,
-        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
+        signer_infos: asn1::SetOfWriter::new([].as_slice()),
     };
 
-    let content_info = pkcs7::ContentInfo {
+    let content_info = pkcs7::ContentInfo::<Asn1Write> {
         _content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
@@ -157,9 +155,7 @@ fn encrypt_and_serialize<'p>(
 
     let enveloped_data = pkcs7::EnvelopedData {
         version: 0,
-        recipient_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
-            &recipient_infos,
-        )),
+        recipient_infos: asn1::SetOfWriter::new(recipient_infos.as_slice()),
 
         encrypted_content_info: pkcs7::EncryptedContentInfo {
             content_type: PKCS7_DATA_OID,
@@ -171,7 +167,7 @@ fn encrypt_and_serialize<'p>(
         },
     };
 
-    let content_info = pkcs7::ContentInfo {
+    let content_info = pkcs7::ContentInfo::<Asn1Write> {
         _content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::EnvelopedData(asn1::Explicit::new(Box::new(enveloped_data))),
     };
@@ -240,18 +236,17 @@ fn decrypt_der<'p>(
     check_decrypt_parameters(py, &certificate, &private_key, options)?;
 
     // Decrypt the data
-    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data)?;
+    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_, Asn1Read>>(data)?;
     let plain_content = match content_info.content {
         pkcs7::Content::EnvelopedData(data) => {
             // Extract enveloped data
             let enveloped_data = data.into_inner();
 
             // Get recipients, and the one matching with the given certificate (if any)
-            let mut recipient_infos = enveloped_data.recipient_infos.unwrap_read().clone();
             let recipient_certificate = certificate.get().raw.borrow_dependent();
             let recipient_serial_number = recipient_certificate.tbs_cert.serial;
             let recipient_issuer = recipient_certificate.tbs_cert.issuer.clone();
-            let found_recipient_info = recipient_infos.find(|info| {
+            let found_recipient_info = enveloped_data.recipient_infos.find(|info| {
                 info.issuer_and_serial_number.serial_number == recipient_serial_number
                     && info.issuer_and_serial_number.issuer == recipient_issuer
             });
@@ -610,9 +605,7 @@ fn sign_and_serialize<'p>(
 
     let signed_data = pkcs7::SignedData {
         version: 1,
-        digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
-            &digest_algs,
-        )),
+        digest_algorithms: asn1::SetOfWriter::new(digest_algs.as_slice()),
         content_info: pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
@@ -620,17 +613,13 @@ fn sign_and_serialize<'p>(
         certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
-            Some(common::Asn1ReadableOrWritable::new_write(
-                asn1::SetOfWriter::new(&certs),
-            ))
+            Some(asn1::SetOfWriter::new(certs.as_slice()))
         },
         crls: None,
-        signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
-            &signer_infos,
-        )),
+        signer_infos: asn1::SetOfWriter::new(signer_infos.as_slice()),
     };
 
-    let content_info = pkcs7::ContentInfo {
+    let content_info = pkcs7::ContentInfo::<Asn1Write> {
         _content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
