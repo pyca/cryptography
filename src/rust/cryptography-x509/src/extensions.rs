@@ -273,45 +273,34 @@ pub struct NamingAuthority<'a> {
     pub text: Option<DisplayText<'a>>,
 }
 
-type SequenceOfDisplayTexts<'a> = common::Asn1ReadableOrWritable<
-    asn1::SequenceOf<'a, DisplayText<'a>>,
-    asn1::SequenceOfWriter<'a, DisplayText<'a>, Vec<DisplayText<'a>>>,
->;
+type SequenceOfDisplayTexts<'a, Op> = <Op as Asn1Operation>::SequenceOfVec<'a, DisplayText<'a>>;
 
-type SequenceOfObjectIdentifiers<'a> = common::Asn1ReadableOrWritable<
-    asn1::SequenceOf<'a, asn1::ObjectIdentifier>,
-    asn1::SequenceOfWriter<'a, asn1::ObjectIdentifier, Vec<asn1::ObjectIdentifier>>,
->;
+type SequenceOfObjectIdentifiers<'a, Op> =
+    <Op as Asn1Operation>::SequenceOfVec<'a, asn1::ObjectIdentifier>;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct ProfessionInfo<'a> {
+pub struct ProfessionInfo<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
-    pub profession_items: SequenceOfDisplayTexts<'a>,
-    pub profession_oids: Option<SequenceOfObjectIdentifiers<'a>>,
+    pub profession_items: SequenceOfDisplayTexts<'a, Op>,
+    pub profession_oids: Option<SequenceOfObjectIdentifiers<'a, Op>>,
     pub registration_number: Option<asn1::PrintableString<'a>>,
     pub add_profession_info: Option<&'a [u8]>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct Admission<'a> {
+pub struct Admission<'a, Op: Asn1Operation + 'a> {
     #[explicit(0)]
     pub admission_authority: Option<name::GeneralName<'a>>,
     #[explicit(1)]
     pub naming_authority: Option<NamingAuthority<'a>>,
-    pub profession_infos: common::Asn1ReadableOrWritable<
-        asn1::SequenceOf<'a, ProfessionInfo<'a>>,
-        asn1::SequenceOfWriter<'a, ProfessionInfo<'a>, Vec<ProfessionInfo<'a>>>,
-    >,
+    pub profession_infos: Op::SequenceOfVec<'a, ProfessionInfo<'a, Op>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct Admissions<'a> {
+pub struct Admissions<'a, Op: Asn1Operation> {
     pub admission_authority: Option<name::GeneralName<'a>>,
-    pub contents_of_admissions: common::Asn1ReadableOrWritable<
-        asn1::SequenceOf<'a, Admission<'a>>,
-        asn1::SequenceOfWriter<'a, Admission<'a>, Vec<Admission<'a>>>,
-    >,
+    pub contents_of_admissions: Op::SequenceOfVec<'a, Admission<'a, Op>>,
 }
 
 #[cfg(test)]

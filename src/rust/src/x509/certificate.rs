@@ -726,7 +726,7 @@ fn parse_naming_authority<'p>(
 
 fn parse_profession_infos<'p, 'a>(
     py: pyo3::Python<'p>,
-    profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a>>,
+    profession_infos: &asn1::SequenceOf<'a, ProfessionInfo<'a, Asn1Read>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_infos = pyo3::types::PyList::empty(py);
     for info in profession_infos.clone() {
@@ -735,14 +735,14 @@ fn parse_profession_infos<'p, 'a>(
             None => py.None().into_bound(py),
         };
         let py_profession_items = pyo3::types::PyList::empty(py);
-        for item in info.profession_items.unwrap_read().clone() {
+        for item in info.profession_items {
             let py_item = parse_display_text(py, item)?;
             py_profession_items.append(py_item)?;
         }
         let py_profession_oids = match info.profession_oids {
             Some(oids) => {
                 let py_oids = pyo3::types::PyList::empty(py);
-                for oid in oids.unwrap_read().clone() {
+                for oid in oids {
                     let py_oid = oid_to_py_oid(py, &oid)?;
                     py_oids.append(py_oid)?;
                 }
@@ -772,7 +772,7 @@ fn parse_profession_infos<'p, 'a>(
 
 fn parse_admissions<'p, 'a>(
     py: pyo3::Python<'p>,
-    admissions: &asn1::SequenceOf<'a, Admission<'a>>,
+    admissions: &asn1::SequenceOf<'a, Admission<'a, Asn1Read>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_admissions = pyo3::types::PyList::empty(py);
     for admission in admissions.clone() {
@@ -784,7 +784,7 @@ fn parse_admissions<'p, 'a>(
             Some(data) => parse_naming_authority(py, data)?,
             None => py.None().into_bound(py),
         };
-        let py_infos = parse_profession_infos(py, admission.profession_infos.unwrap_read())?;
+        let py_infos = parse_profession_infos(py, &admission.profession_infos)?;
 
         let py_entry = types::ADMISSION.get(py)?.call1((
             py_admission_authority,
@@ -935,13 +935,12 @@ pub fn parse_cert_ext<'p>(
             ))?))
         }
         oid::ADMISSIONS_OID => {
-            let admissions = ext.value::<Admissions<'_>>()?;
+            let admissions = ext.value::<Admissions<'_, Asn1Read>>()?;
             let admission_authority = match admissions.admission_authority {
                 Some(authority) => x509::parse_general_name(py, authority)?,
                 None => py.None().into_bound(py),
             };
-            let py_admissions =
-                parse_admissions(py, admissions.contents_of_admissions.unwrap_read())?;
+            let py_admissions = parse_admissions(py, &admissions.contents_of_admissions)?;
             Ok(Some(
                 types::ADMISSIONS
                     .get(py)?
