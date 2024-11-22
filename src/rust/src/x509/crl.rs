@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
 use cryptography_x509::{
-    common,
+    common::{self, Asn1Read},
     crl::{
         self, CertificateRevocationList as RawCertificateRevocationList,
         RevokedCertificate as RawRevokedCertificate,
@@ -350,16 +350,13 @@ impl CertificateRevocationList {
                     Ok(Some(certificate::parse_authority_key_identifier(py, ext)?))
                 }
                 oid::ISSUING_DISTRIBUTION_POINT_OID => {
-                    let idp = ext.value::<crl::IssuingDistributionPoint<'_>>()?;
+                    let idp = ext.value::<crl::IssuingDistributionPoint<'_, Asn1Read>>()?;
                     let (full_name, relative_name) = match idp.distribution_point {
                         Some(data) => certificate::parse_distribution_point_name(py, data)?,
                         None => (py.None().into_bound(py), py.None().into_bound(py)),
                     };
                     let py_reasons = if let Some(reasons) = idp.only_some_reasons {
-                        certificate::parse_distribution_point_reasons(
-                            py,
-                            Some(reasons.unwrap_read()),
-                        )?
+                        certificate::parse_distribution_point_reasons(py, Some(&reasons))?
                     } else {
                         py.None().into_bound(py)
                     };
