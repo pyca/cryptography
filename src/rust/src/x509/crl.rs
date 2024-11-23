@@ -93,7 +93,7 @@ pub(crate) struct CertificateRevocationList {
 
 impl CertificateRevocationList {
     fn public_bytes_der(&self) -> CryptographyResult<Vec<u8>> {
-        Ok(asn1::write_single(&self.owned.borrow_dependent())?)
+        Ok(asn1::write_single(self.owned.borrow_dependent())?)
     }
 
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
@@ -239,7 +239,7 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
         encoding: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let result = asn1::write_single(&self.owned.borrow_dependent())?;
+        let result = asn1::write_single(self.owned.borrow_dependent())?;
 
         encode_der_data(py, "X509 CRL".to_string(), result, &encoding)
     }

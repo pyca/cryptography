@@ -592,7 +592,7 @@ mod tests {
         critical: bool,
         ext: &T,
     ) -> Vec<u8> {
-        let ext_value = asn1::write_single(&ext).unwrap();
+        let ext_value = asn1::write_single(ext).unwrap();
         let ext = Extension {
             extn_id: oid,
             critical,
