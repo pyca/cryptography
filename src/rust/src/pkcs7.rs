@@ -351,26 +351,26 @@ fn check_decrypt_parameters<'p>(
 
     // Check if all options are from the PKCS7Options enum
     let pkcs7_option_type = types::PKCS7_TEXT.get(py)?.get_type();
-    if !options
-        .iter()
-        .all(|opt| opt.is_instance(&pkcs7_option_type).unwrap())
-    {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("options must be from the PKCS7Options enum"),
-        ));
+    for opt in options.iter() {
+        if !opt.is_instance(&pkcs7_option_type)? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "options must be from the PKCS7Options enum",
+                ),
+            ));
+        }
     }
 
     // Check if any option is not PKCS7Options::Text
     let text_option = types::PKCS7_TEXT.get(py)?;
-    if options
-        .iter()
-        .any(|opt| !opt.eq(text_option.clone()).unwrap())
-    {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "Only the following options are supported for decryption: Text",
-            ),
-        ));
+    for opt in options.iter() {
+        if !opt.eq(text_option.clone())? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Only the following options are supported for decryption: Text",
+                ),
+            ));
+        }
     }
 
     // Check if certificate's public key is an RSA public key
