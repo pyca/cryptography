@@ -19,7 +19,7 @@ fn encode_general_subtrees<'a>(
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
     ka_str: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedStr>,
     subtrees: &pyo3::Bound<'a, pyo3::PyAny>,
-) -> Result<Option<extensions::SequenceOfSubtrees<'a>>, CryptographyError> {
+) -> Result<Option<extensions::SequenceOfSubtrees<'a, Asn1Write>>, CryptographyError> {
     if subtrees.is_none() {
         Ok(None)
     } else {
@@ -32,9 +32,7 @@ fn encode_general_subtrees<'a>(
                 maximum: None,
             });
         }
-        Ok(Some(common::Asn1ReadableOrWritable::new_write(
-            asn1::SequenceOfWriter::new(subtree_seq),
-        )))
+        Ok(Some(asn1::SequenceOfWriter::new(subtree_seq)))
     }
 }
 
@@ -55,9 +53,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     let authority_cert_issuer = if let Some(authority_cert_issuer) = aki.authority_cert_issuer {
         let gns =
             x509::common::encode_general_names(py, &ka_bytes, &ka_str, &authority_cert_issuer)?;
-        Some(common::Asn1ReadableOrWritable::new_write(
-            asn1::SequenceOfWriter::new(gns),
-        ))
+        Some(asn1::SequenceOfWriter::new(gns))
     } else {
         None
     };
@@ -69,7 +65,9 @@ pub(crate) fn encode_authority_key_identifier<'a>(
         } else {
             None
         };
-    Ok(asn1::write_single(&extensions::AuthorityKeyIdentifier {
+    Ok(asn1::write_single(&extensions::AuthorityKeyIdentifier::<
+        Asn1Write,
+    > {
         authority_cert_issuer,
         authority_cert_serial_number,
         key_identifier: aki.key_identifier.as_deref(),
@@ -96,16 +94,14 @@ pub(crate) fn encode_distribution_points<'p>(
 
         let crl_issuer = if let Some(py_crl_issuer) = py_dp.crl_issuer {
             let gns = x509::common::encode_general_names(py, &ka_bytes, &ka_str, &py_crl_issuer)?;
-            Some(common::Asn1ReadableOrWritable::new_write(
-                asn1::SequenceOfWriter::new(gns),
-            ))
+            Some(asn1::SequenceOfWriter::new(gns))
         } else {
             None
         };
         let distribution_point = if let Some(py_full_name) = py_dp.full_name {
             let gns = x509::common::encode_general_names(py, &ka_bytes, &ka_str, &py_full_name)?;
             Some(extensions::DistributionPointName::FullName(
-                common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+                asn1::SequenceOfWriter::new(gns),
             ))
         } else if let Some(py_relative_name) = py_dp.relative_name {
             let mut name_entries = vec![];
@@ -114,7 +110,7 @@ pub(crate) fn encode_distribution_points<'p>(
                 name_entries.push(ne);
             }
             Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
-                common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+                asn1::SetOfWriter::new(name_entries),
             ))
         } else {
             None
@@ -338,7 +334,7 @@ fn encode_issuing_distribution_point(
         let py_full_name = ext.getattr(pyo3::intern!(py, "full_name"))?;
         let gns = x509::common::encode_general_names(ext.py(), &ka_bytes, &ka_str, &py_full_name)?;
         Some(extensions::DistributionPointName::FullName(
-            common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(gns)),
+            asn1::SequenceOfWriter::new(gns),
         ))
     } else if ext
         .getattr(pyo3::intern!(py, "relative_name"))?
@@ -353,7 +349,7 @@ fn encode_issuing_distribution_point(
             name_entries.push(name_entry);
         }
         Some(extensions::DistributionPointName::NameRelativeToCRLIssuer(
-            common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(name_entries)),
+            asn1::SetOfWriter::new(name_entries),
         ))
     } else {
         None
@@ -610,7 +606,7 @@ pub(crate) fn encode_extension(
 
             let permitted = ext.getattr(pyo3::intern!(py, "permitted_subtrees"))?;
             let excluded = ext.getattr(pyo3::intern!(py, "excluded_subtrees"))?;
-            let nc = extensions::NameConstraints {
+            let nc = extensions::NameConstraints::<Asn1Write> {
                 permitted_subtrees: encode_general_subtrees(
                     ext.py(),
                     &ka_bytes,

@@ -267,6 +267,9 @@ pub trait Asn1Operation {
     type SequenceOfVec<'a, T>
     where
         T: 'a;
+    type SetOfVec<'a, T>
+    where
+        T: 'a;
     type OwnedBitString<'a>;
 }
 
@@ -278,11 +281,19 @@ impl Asn1Operation for Asn1Read {
         = asn1::SequenceOf<'a, T>
     where
         T: 'a;
+    type SetOfVec<'a, T>
+        = asn1::SetOf<'a, T>
+    where
+        T: 'a;
     type OwnedBitString<'a> = asn1::BitString<'a>;
 }
 impl Asn1Operation for Asn1Write {
     type SequenceOfVec<'a, T>
         = asn1::SequenceOfWriter<'a, T, Vec<T>>
+    where
+        T: 'a;
+    type SetOfVec<'a, T>
+        = asn1::SetOfWriter<'a, T, Vec<T>>
     where
         T: 'a;
     type OwnedBitString<'a> = asn1::OwnedBitString;

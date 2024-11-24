@@ -43,7 +43,7 @@ pub struct RevokedCertificate<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct IssuingDistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
-    pub distribution_point: Option<extensions::DistributionPointName<'a>>,
+    pub distribution_point: Option<extensions::DistributionPointName<'a, Op>>,
 
     #[implicit(1)]
     #[default(false)]

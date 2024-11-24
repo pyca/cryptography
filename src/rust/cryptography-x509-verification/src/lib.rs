@@ -18,6 +18,7 @@ use std::vec;
 use asn1::ObjectIdentifier;
 use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
 use cryptography_x509::{
+    common::Asn1Read,
     extensions::{NameConstraints, SubjectAlternativeName},
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
@@ -216,7 +217,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
     fn evaluate_constraints<B: CryptoOps>(
         &self,
-        constraints: &NameConstraints<'chain>,
+        constraints: &NameConstraints<'chain, Asn1Read>,
         budget: &mut Budget,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(child) = self.child {
@@ -227,7 +228,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             // If there are no applicable constraints, the SAN is considered valid so the default is true.
             let mut permit = true;
             if let Some(permitted_subtrees) = &constraints.permitted_subtrees {
-                for p in permitted_subtrees.unwrap_read().clone() {
+                for p in permitted_subtrees.clone() {
                     let status = self.evaluate_single_constraint(&p.base, &san, budget)?;
                     if status.is_applied() {
                         permit = status.is_match();
@@ -245,7 +246,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             }
 
             if let Some(excluded_subtrees) = &constraints.excluded_subtrees {
-                for e in excluded_subtrees.unwrap_read().clone() {
+                for e in excluded_subtrees.clone() {
                     let status = self.evaluate_single_constraint(&e.base, &san, budget)?;
                     if status.is_match() {
                         return Err(ValidationError::new(ValidationErrorKind::Other(

@@ -381,6 +381,7 @@ pub(crate) mod ee {
 pub(crate) mod ca {
     use cryptography_x509::{
         certificate::Certificate,
+        common::Asn1Read,
         extensions::{
             AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
             NameConstraints,
@@ -413,7 +414,7 @@ pub(crate) mod ca {
         // some chains that are not strictly CABF compliant (e.g. ones where intermediate
         // CAs are missing AKIs), but this is a relatively minor discrepancy.
         if let Some(extn) = extn {
-            let aki: AuthorityKeyIdentifier<'_> = extn.value()?;
+            let aki: AuthorityKeyIdentifier<'_, Asn1Read> = extn.value()?;
             // 7.1.2.11.1 Authority Key Identifier:
 
             // keyIdentifier MUST be present.
@@ -478,16 +479,16 @@ pub(crate) mod ca {
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
-            let name_constraints: NameConstraints<'_> = extn.value()?;
+            let name_constraints: NameConstraints<'_, Asn1Read> = extn.value()?;
 
             let permitted_subtrees_empty = name_constraints
                 .permitted_subtrees
                 .as_ref()
-                .map_or(true, |pst| pst.unwrap_read().is_empty());
+                .map_or(true, |pst| pst.is_empty());
             let excluded_subtrees_empty = name_constraints
                 .excluded_subtrees
                 .as_ref()
-                .map_or(true, |est| est.unwrap_read().is_empty());
+                .map_or(true, |est| est.is_empty());
 
             if permitted_subtrees_empty && excluded_subtrees_empty {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
