@@ -41,7 +41,7 @@ pub struct SignedData<'a> {
     pub certificates: Option<
         common::Asn1ReadableOrWritable<
             asn1::SetOf<'a, certificate::Certificate<'a>>,
-            asn1::SetOfWriter<'a, &'a certificate::Certificate<'a>>,
+            asn1::SetOfWriter<'a, certificate::Certificate<'a>>,
         >,
     >,
 

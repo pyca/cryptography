@@ -52,7 +52,7 @@ fn serialize_certificates<'p>(
 
     let raw_certs = py_certs
         .iter()
-        .map(|c| c.raw.borrow_dependent())
+        .map(|c| c.raw.borrow_dependent().clone())
         .collect::<Vec<_>>();
 
     let signed_data = pkcs7::SignedData {
@@ -211,7 +211,7 @@ fn sign_and_serialize<'p>(
     let mut digest_algs = vec![];
     let mut certs = py_certs
         .iter()
-        .map(|p| p.raw.borrow_dependent())
+        .map(|p| p.raw.borrow_dependent().clone())
         .collect::<Vec<_>>();
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();
@@ -288,7 +288,7 @@ fn sign_and_serialize<'p>(
         if !digest_algs.contains(&digest_alg) {
             digest_algs.push(digest_alg.clone());
         }
-        certs.push(cert.raw.borrow_dependent());
+        certs.push(cert.raw.borrow_dependent().clone());
 
         signer_infos.push(pkcs7::SignerInfo {
             version: 1,
