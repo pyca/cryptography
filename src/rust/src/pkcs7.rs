@@ -218,7 +218,7 @@ fn decrypt_der<'p>(
     check_decrypt_parameters(py, &certificate, &private_key, options)?;
 
     // Decrypt the data
-    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).unwrap();
+    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(data)?;
     let plain_content = match content_info.content {
         pkcs7::Content::EnvelopedData(data) => {
             // Extract enveloped data
@@ -290,10 +290,16 @@ fn decrypt_der<'p>(
             };
 
             // Decrypt the content using the key and proper algorithm
-            let encrypted_content = enveloped_data
-                .encrypted_content_info
-                .encrypted_content
-                .unwrap();
+            let encrypted_content = match enveloped_data.encrypted_content_info.encrypted_content {
+                Some(content) => content,
+                None => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "The EnvelopedData structure does not contain encrypted content.",
+                        ),
+                    ));
+                }
+            };
             let decrypted_content = symmetric_decrypt(py, algorithm, mode, encrypted_content)?;
             pyo3::types::PyBytes::new(py, decrypted_content.as_slice())
         }

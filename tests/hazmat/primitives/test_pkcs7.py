@@ -860,24 +860,6 @@ def _load_rsa_cert_key():
     return cert, key
 
 
-def _load_rsa_oaep_pkcs7_pem():
-    enveloped = load_vectors_from_file(
-        os.path.join("pkcs7", "enveloped-rsa-oaep.pem"),
-        loader=lambda pemfile: pemfile.read(),
-        mode="rb",
-    )
-    return enveloped
-
-
-def _load_aes_256_cbc_pkcs7_pem():
-    enveloped = load_vectors_from_file(
-        os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
-        loader=lambda pemfile: pemfile.read(),
-        mode="rb",
-    )
-    return enveloped
-
-
 @pytest.mark.supported(
     only_if=lambda backend: backend.pkcs7_supported()
     and backend.rsa_encryption_supported(padding.PKCS1v15()),
@@ -1214,6 +1196,19 @@ class TestPKCS7Decrypt:
         )
         assert decrypted == data.replace(b"\n", b"\r\n")
 
+    def test_pkcs7_decrypt_without_encrypted_content(
+        self, backend, data, certificate, private_key
+    ):
+        enveloped = load_vectors_from_file(
+            os.path.join("pkcs7", "enveloped-no-content.der"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        # Test decryption with text option
+        with pytest.raises(ValueError):
+            pkcs7.pkcs7_decrypt_der(enveloped, certificate, private_key, [])
+
     def test_pkcs7_decrypt_text_without_header(
         self, backend, data, certificate, private_key
     ):
@@ -1259,7 +1254,11 @@ class TestPKCS7Decrypt:
     def test_smime_decrypt_unsupported_key_encryption_algorithm(
         self, backend, data, certificate, private_key
     ):
-        enveloped = _load_rsa_oaep_pkcs7_pem()
+        enveloped = load_vectors_from_file(
+            os.path.join("pkcs7", "enveloped-rsa-oaep.pem"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
 
         with pytest.raises(exceptions.UnsupportedAlgorithm):
             pkcs7.pkcs7_decrypt_pem(enveloped, certificate, private_key, [])
@@ -1267,7 +1266,11 @@ class TestPKCS7Decrypt:
     def test_smime_decrypt_unsupported_content_encryption_algorithm(
         self, backend, data, certificate, private_key
     ):
-        enveloped = _load_aes_256_cbc_pkcs7_pem()
+        enveloped = load_vectors_from_file(
+            os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
 
         with pytest.raises(exceptions.UnsupportedAlgorithm):
             pkcs7.pkcs7_decrypt_pem(enveloped, certificate, private_key, [])
