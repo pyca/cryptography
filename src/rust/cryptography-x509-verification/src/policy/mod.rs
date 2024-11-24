@@ -680,7 +680,7 @@ mod tests {
             assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA256.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x01\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x01\x05\x00\xa2\x03\x02\x01 ";
             assert_eq!(
-                asn1::write_single(&RSASSA_PSS_SHA256.deref()).unwrap(),
+                asn1::write_single(RSASSA_PSS_SHA256.deref()).unwrap(),
                 exp_encoding
             );
         }
@@ -689,7 +689,7 @@ mod tests {
             assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA384.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x02\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x02\x05\x00\xa2\x03\x02\x010";
             assert_eq!(
-                asn1::write_single(&RSASSA_PSS_SHA384.deref()).unwrap(),
+                asn1::write_single(RSASSA_PSS_SHA384.deref()).unwrap(),
                 exp_encoding
             );
         }
@@ -698,7 +698,7 @@ mod tests {
             assert!(WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS.contains(&RSASSA_PSS_SHA512.deref()));
             let exp_encoding = b"0A\x06\t*\x86H\x86\xf7\r\x01\x01\n04\xa0\x0f0\r\x06\t`\x86H\x01e\x03\x04\x02\x03\x05\x00\xa1\x1c0\x1a\x06\t*\x86H\x86\xf7\r\x01\x01\x080\r\x06\t`\x86H\x01e\x03\x04\x02\x03\x05\x00\xa2\x03\x02\x01@";
             assert_eq!(
-                asn1::write_single(&RSASSA_PSS_SHA512.deref()).unwrap(),
+                asn1::write_single(RSASSA_PSS_SHA512.deref()).unwrap(),
                 exp_encoding
             );
         }
