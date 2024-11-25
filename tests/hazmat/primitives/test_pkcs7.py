@@ -1148,6 +1148,37 @@ class TestPKCS7Decrypt:
         )
         assert decrypted == data.replace(b"\n", b"\r\n")
 
+    @pytest.mark.parametrize(
+        "header",
+        [
+            "content-type: text/plain",
+            "CONTENT-TYPE: text/plain",
+            "MIME-Version: 1.0\r\nContent-Type: text/plain; charset='UTF-8'"
+            "\r\nContent-Transfer-Encoding: 7bit\r\nFrom: sender@example.com"
+            "\r\nTo: recipient@example.com\r\nSubject: Test Email",
+        ],
+    )
+    def test_pkcs7_decrypt_der_text_handmade_header(
+        self, backend, certificate, private_key, header
+    ):
+        # Encryption of data with a custom header
+        base_data = "Hello world!\r\n"
+        data = f"{header}\r\n\r\n{base_data}".encode()
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+        )
+        enveloped = builder.encrypt(
+            serialization.Encoding.DER, [pkcs7.PKCS7Options.Binary]
+        )
+
+        # Test decryption with text option
+        decrypted = pkcs7.pkcs7_decrypt_der(
+            enveloped, certificate, private_key, [pkcs7.PKCS7Options.Text]
+        )
+        assert decrypted == base_data.encode()
+
     @pytest.mark.parametrize("options", [[], [pkcs7.PKCS7Options.Text]])
     def test_pkcs7_decrypt_pem(
         self, backend, data, certificate, private_key, options
@@ -1219,6 +1250,26 @@ class TestPKCS7Decrypt:
             .add_recipient(certificate)
         )
         enveloped = builder.encrypt(serialization.Encoding.DER, [])
+
+        # Test decryption with text option
+        with pytest.raises(ValueError):
+            pkcs7.pkcs7_decrypt_der(
+                enveloped, certificate, private_key, [pkcs7.PKCS7Options.Text]
+            )
+
+    def test_pkcs7_decrypt_text_with_html_data(
+        self, backend, certificate, private_key
+    ):
+        # Encryption of data with a text/html content type header
+        data = b"Content-Type: text/html\r\n\r\nHello world!<br>"
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+        )
+        enveloped = builder.encrypt(
+            serialization.Encoding.DER, [pkcs7.PKCS7Options.Binary]
+        )
 
         # Test decryption with text option
         with pytest.raises(ValueError):

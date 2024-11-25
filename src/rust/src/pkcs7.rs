@@ -312,24 +312,16 @@ fn decrypt_der<'p>(
         }
     };
 
-    // If text_mode, strip the header if possible, else return an error
-    let plain_data = plain_content.as_bytes();
+    // If text_mode, remove the headers after checking the content type
     let plain_data = if options.contains(types::PKCS7_TEXT.get(py)?)? {
-        match plain_data.strip_prefix(b"Content-Type: text/plain\r\n\r\n") {
-            Some(stripped_data) => stripped_data,
-            None => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "No 'Content-Type' header to be deleted in the decrypted data. Please remove the 'text' option.",
-                    ),
-                ));
-            }
-        }
+        let stripped_data = types::SMIME_REMOVE_TEXT_HEADERS
+            .get(py)?
+            .call1((plain_content.as_bytes(),))?;
+        pyo3::types::PyBytes::new(py, stripped_data.extract()?)
     } else {
-        plain_data
+        pyo3::types::PyBytes::new(py, plain_content.as_bytes())
     };
 
-    let plain_data = pyo3::types::PyBytes::new(py, plain_data);
     Ok(plain_data)
 }
 

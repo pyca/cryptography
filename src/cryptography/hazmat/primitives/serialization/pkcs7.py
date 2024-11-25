@@ -343,6 +343,23 @@ def _smime_enveloped_decode(data: bytes) -> bytes:
     return bytes(m.get_payload(decode=True))
 
 
+def _smime_remove_text_headers(data: bytes) -> bytes:
+    m = email.message_from_bytes(data)
+    headers = {key.title(): value for key, value in m.items()}
+    if "Content-Type" not in headers:
+        raise ValueError(
+            "Decrypted MIME data has no 'Content-Type' header. "
+            "Please remove the 'Text' option to visualize it."
+        )
+    content_type = headers["Content-Type"]
+    if "text/plain" not in content_type:
+        raise ValueError(
+            f"Decrypted MIME data content is of type '{content_type}', not "
+            "'text/plain'. Please remove the 'Text' option to visualize it."
+        )
+    return bytes(m.get_payload(decode=True))
+
+
 class OpenSSLMimePart(email.message.MIMEPart):
     # A MIMEPart subclass that replicates OpenSSL's behavior of not including
     # a newline if there are no headers.

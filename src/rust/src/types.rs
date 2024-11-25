@@ -355,6 +355,11 @@ pub static SMIME_ENVELOPED_DECODE: LazyPyImport = LazyPyImport::new(
     &["_smime_enveloped_decode"],
 );
 
+pub static SMIME_REMOVE_TEXT_HEADERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs7",
+    &["_smime_remove_text_headers"],
+);
+
 pub static SMIME_SIGNED_ENCODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["_smime_signed_encode"],
