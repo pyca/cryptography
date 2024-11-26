@@ -345,16 +345,17 @@ def _smime_enveloped_decode(data: bytes) -> bytes:
 
 def _smime_remove_text_headers(data: bytes) -> bytes:
     m = email.message_from_bytes(data)
-    headers = {key.lower(): value for key, value in m.items()}
-    if "content-type" not in headers:
+    # Using get() instead of get_content_type() since it has None as default,
+    # where the latter has "text/plain". Both methods are case-insensitive.
+    content_type = m.get("content-type")
+    if content_type is None:
         raise ValueError(
             "Decrypted MIME data has no 'Content-Type' header. "
             "Please remove the 'Text' option to parse it manually."
         )
-    content_type = headers["content-type"]
     if "text/plain" not in content_type:
         raise ValueError(
-            f"Decrypted MIME data content is of type '{content_type}', not "
+            f"Decrypted MIME data content type is '{content_type}', not "
             "'text/plain'. Remove the 'Text' option to parse it manually."
         )
     return bytes(m.get_payload(decode=True))

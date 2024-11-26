@@ -1227,7 +1227,7 @@ class TestPKCS7Decrypt:
         )
         assert decrypted == data.replace(b"\n", b"\r\n")
 
-    def test_pkcs7_decrypt_without_encrypted_content(
+    def test_pkcs7_decrypt_no_encrypted_content(
         self, backend, data, certificate, private_key
     ):
         enveloped = load_vectors_from_file(
@@ -1240,7 +1240,7 @@ class TestPKCS7Decrypt:
         with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_der(enveloped, certificate, private_key, [])
 
-    def test_pkcs7_decrypt_text_without_header(
+    def test_pkcs7_decrypt_text_no_header(
         self, backend, data, certificate, private_key
     ):
         # Encryption of data without a header (no "Text" option)
@@ -1257,7 +1257,7 @@ class TestPKCS7Decrypt:
                 enveloped, certificate, private_key, [pkcs7.PKCS7Options.Text]
             )
 
-    def test_pkcs7_decrypt_text_with_html_data(
+    def test_pkcs7_decrypt_text_html_content_type(
         self, backend, certificate, private_key
     ):
         # Encryption of data with a text/html content type header

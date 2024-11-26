@@ -1001,11 +1001,6 @@ PKCS7 is a format described in :rfc:`2315`, among other specifications. It can
 contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 ``p7m``, or ``p7s`` file suffix but other suffixes are also seen in the wild.
 
-.. note::
-
-    ``cryptography`` only supports parsing certificates from PKCS7 files at
-    this time.
-
 .. data:: PKCS7HashTypes
 
     .. versionadded:: 40.0.0
@@ -1261,28 +1256,183 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
             this operation only
             :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` and
             :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Binary`
-            are supported.
+            are supported, and cannot be used at the same time.
 
         :returns bytes: The enveloped PKCS7 message.
+
+.. function:: pkcs7_decrypt_der(data, certificate, private_key, options)
+
+    .. versionadded:: 44.0.0
+
+    .. doctest::
+
+    >>> from cryptography import x509
+    >>> from cryptography.hazmat.primitives import serialization
+    >>> from cryptography.hazmat.primitives.serialization import pkcs7
+    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+    >>> key = serialization.load_pem_private_key(ca_key, None)
+    >>> options = [pkcs7.PKCS7Options.Text]
+    >>> pkcs7.pkcs7_decrypt_der(b"...", cert, key, options)
+    b'...'
+
+    Deserialize and decrypt a DER-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
+    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+
+    :param data: The data, encoded in DER format.
+    :type data: bytes
+
+    :param certificate: A :class:`~cryptography.x509.Certificate` for an intended
+        recipient of the encrypted message. Only certificates with public RSA keys
+        are currently supported.
+
+    :param private_key: The :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        associated with the certificate provided. Only private RSA keys are supported.
+
+    :param options: A list of
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        this operation only
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+    
+    :returns bytes: The decrypted message.
+
+    :raises ValueError: If the recipient certificate does not match any of the encrypted keys in the
+        PKCS7 data.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If any of the PKCS7 keys are encrypted
+        with another algorithm than RSA with PKCS1 v1.5 padding.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
+        another algorithm than AES-128-CBC.
+
+    :raises ValueError: If the PKCS7 data does not contain encrypted content.
+    
+    :raises ValueError: If the PKCS7 data is not of the enveloped data type.
+
+.. function:: pkcs7_decrypt_pem(data, certificate, private_key, options)
+
+    .. versionadded:: 44.0.0
+
+    .. doctest::
+
+    >>> from cryptography import x509
+    >>> from cryptography.hazmat.primitives import serialization
+    >>> from cryptography.hazmat.primitives.serialization import pkcs7
+    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+    >>> key = serialization.load_pem_private_key(ca_key, None)
+    >>> options = [pkcs7.PKCS7Options.Text]
+    >>> pkcs7.pkcs7_decrypt_pem(b"...", cert, key, options)
+    b'...'
+
+    Deserialize and decrypt a PEM-encoded PKCS7E message. PKCS7 (or S/MIME) has multiple versions,
+    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+
+    :param data: The data, encoded in PEM format.
+    :type data: bytes
+
+    :param certificate: A :class:`~cryptography.x509.Certificate` for an intended
+        recipient of the encrypted message. Only certificates with public RSA keys
+        are currently supported.
+
+    :param private_key: The :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        associated with the certificate provided. Only private RSA keys are supported.
+
+    :param options: A list of
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        this operation only
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+    
+    :returns bytes: The decrypted message.
+
+    :raises ValueError: If the PEM data does not have the PKCS7 tag.
+
+    :raises ValueError: If the recipient certificate does not match any of the encrypted keys in the
+        PKCS7 data.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If any of the PKCS7 keys are encrypted
+        with another algorithm than RSA with PKCS1 v1.5 padding.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
+        another algorithm than AES-128-CBC.
+
+    :raises ValueError: If the PKCS7 data does not contain encrypted content.
+    
+    :raises ValueError: If the PKCS7 data is not of the enveloped data type.
+
+.. function:: pkcs7_decrypt_smime(data, certificate, private_key, options)
+
+    .. versionadded:: 44.0.0
+
+    .. doctest::
+
+    >>> from cryptography import x509
+    >>> from cryptography.hazmat.primitives import serialization
+    >>> from cryptography.hazmat.primitives.serialization import pkcs7
+    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+    >>> key = serialization.load_pem_private_key(ca_key, None)
+    >>> options = [pkcs7.PKCS7Options.Text]
+    >>> pkcs7.pkcs7_decrypt_smime(b"...", cert, key, options)
+    b'...'
+
+    Deserialize and decrypt a S/MIME-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
+    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+
+    :param data: The data. It should be in S/MIME format, meaning MIME with content type
+        ``application/pkcs7-mime`` or ``application/x-pkcs7-mime``.
+    :type data: bytes
+
+    :param certificate: A :class:`~cryptography.x509.Certificate` for an intended
+        recipient of the encrypted message. Only certificates with public RSA keys
+        are currently supported.
+
+    :param private_key: The :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
+        associated with the certificate provided. Only private RSA keys are supported.
+
+    :param options: A list of
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        this operation only
+        :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+    
+    :returns bytes: The decrypted message.
+
+    :raises ValueError: If the S/MIME data is not one of the correct content types.
+
+    :raises ValueError: If the recipient certificate does not match any of the encrypted keys in the
+        PKCS7 data.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If any of the PKCS7 keys are encrypted
+        with another algorithm than RSA with PKCS1 v1.5 padding.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
+        another algorithm than AES-128-CBC.
+
+    :raises ValueError: If the PKCS7 data does not contain encrypted content.
+    
+    :raises ValueError: If the PKCS7 data is not of the enveloped data type.
 
 
 .. class:: PKCS7Options
 
     .. versionadded:: 3.2
 
-    An enumeration of options for PKCS7 signature and envelope creation.
+    An enumeration of options for PKCS7 signature, envelope creation, and decryption.
 
     .. attribute:: Text
 
-        The text option adds ``text/plain`` headers to an S/MIME message when
-        serializing to
+        For signing, the text option adds ``text/plain`` headers to an S/MIME message when
+        serializing to 
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`.
         This option is disallowed with ``DER`` serialization.
+        For envelope creation, it adds ``text/plain`` headers to the encrypted content, regardless
+        of the specified encoding.
+        For envelope decryption, it parses the decrypted content headers (if any), checks if the
+        content type is 'text/plain', then removes all headers (keeping only the payload) of this
+        decrypted content. If there is no header, or the content type is not "text/plain", it
+        raises an error.
 
     .. attribute:: Binary
 
-        Signing normally converts line endings (LF to CRLF). When
-        passing this option the data will not be converted.
+        Signature and envelope creation normally converts line endings (LF to CRLF). When
+        passing this option, the data will not be converted.
 
     .. attribute:: DetachedSignature
 

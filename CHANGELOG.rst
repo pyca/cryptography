@@ -26,6 +26,10 @@ Changelog
 * Added support for :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`
   when using OpenSSL 3.2.0+.
 * Added support for the :class:`~cryptography.x509.Admissions` certificate extension.
+* Added basic support for PKCS7 decryption (including S/MIME 3.2) via
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`, 
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_pem`, and
+  :class:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_smime`.
 
 .. _v43-0-3:
 
