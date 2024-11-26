@@ -342,9 +342,9 @@ fn check_decrypt_parameters<'p>(
     }
 
     // Check if all options are from the PKCS7Options enum
-    let pkcs7_option_type = types::PKCS7_TEXT.get(py)?.get_type();
+    let pkcs7_options = types::PKCS7_OPTIONS.get(py)?;
     for opt in options.iter() {
-        if !opt.is_instance(&pkcs7_option_type)? {
+        if !opt.is_instance(&pkcs7_options)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "options must be from the PKCS7Options enum",
