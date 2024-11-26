@@ -263,6 +263,11 @@ class PKCS7EnvelopeBuilder:
         return rust_pkcs7.encrypt_and_serialize(self, encoding, options)
 
 
+pkcs7_decrypt_der = rust_pkcs7.decrypt_der
+pkcs7_decrypt_pem = rust_pkcs7.decrypt_pem
+pkcs7_decrypt_smime = rust_pkcs7.decrypt_smime
+
+
 def _smime_signed_encode(
     data: bytes, signature: bytes, micalg: str, text_mode: bool
 ) -> bytes:
@@ -326,6 +331,34 @@ def _smime_enveloped_encode(data: bytes) -> bytes:
     m.set_payload(email.base64mime.body_encode(data, maxlinelen=65))
 
     return m.as_bytes(policy=m.policy.clone(linesep="\n", max_line_length=0))
+
+
+def _smime_enveloped_decode(data: bytes) -> bytes:
+    m = email.message_from_bytes(data)
+    if m.get_content_type() not in {
+        "application/x-pkcs7-mime",
+        "application/pkcs7-mime",
+    }:
+        raise ValueError("Not an S/MIME enveloped message")
+    return bytes(m.get_payload(decode=True))
+
+
+def _smime_remove_text_headers(data: bytes) -> bytes:
+    m = email.message_from_bytes(data)
+    # Using get() instead of get_content_type() since it has None as default,
+    # where the latter has "text/plain". Both methods are case-insensitive.
+    content_type = m.get("content-type")
+    if content_type is None:
+        raise ValueError(
+            "Decrypted MIME data has no 'Content-Type' header. "
+            "Please remove the 'Text' option to parse it manually."
+        )
+    if "text/plain" not in content_type:
+        raise ValueError(
+            f"Decrypted MIME data content type is '{content_type}', not "
+            "'text/plain'. Remove the 'Text' option to parse it manually."
+        )
+    return bytes(m.get_payload(decode=True))
 
 
 class OpenSSLMimePart(email.message.MIMEPart):

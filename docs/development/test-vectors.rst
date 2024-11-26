@@ -882,6 +882,9 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/enveloped-rsa-oaep.pem``- A PEM encoded PKCS7 file with 
   enveloped data, with key encrypted using RSA-OAEP, under the public key of 
   ``x509/custom/ca/rsa_ca.pem``.
+* ``pkcs7/enveloped-no-content.der``- A DER encoded PKCS7 file with 
+  enveloped data, without encrypted content, with key encrypted under the 
+  public key of ``x509/custom/ca/rsa_ca.pem``.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -320,6 +320,11 @@ pub static ASN1_TYPE_BMP_STRING: LazyPyImport =
 pub static ASN1_TYPE_UNIVERSAL_STRING: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "UniversalString"]);
 
+pub static PKCS7_OPTIONS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs7",
+    &["PKCS7Options"],
+);
+
 pub static PKCS7_BINARY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options", "Binary"],
@@ -348,6 +353,16 @@ pub static PKCS7_DETACHED_SIGNATURE: LazyPyImport = LazyPyImport::new(
 pub static SMIME_ENVELOPED_ENCODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["_smime_enveloped_encode"],
+);
+
+pub static SMIME_ENVELOPED_DECODE: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs7",
+    &["_smime_enveloped_decode"],
+);
+
+pub static SMIME_REMOVE_TEXT_HEADERS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs7",
+    &["_smime_remove_text_headers"],
 );
 
 pub static SMIME_SIGNED_ENCODE: LazyPyImport = LazyPyImport::new(
