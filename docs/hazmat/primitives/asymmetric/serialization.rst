@@ -1334,7 +1334,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         ...     serialization.Encoding.DER, options
         ... )
         >>> pkcs7.pkcs7_decrypt_der(enveloped, cert, key, options)
-        b"data to encrypt"
+        b'data to encrypt'
 
     Deserialize and decrypt a DER-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
@@ -1389,7 +1389,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         ...     serialization.Encoding.PEM, options
         ... )
         >>> pkcs7.pkcs7_decrypt_pem(enveloped, cert, key, options)
-        b"data to encrypt"
+        b'data to encrypt'
 
     Deserialize and decrypt a PEM-encoded PKCS7E message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
@@ -1446,7 +1446,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         ...     serialization.Encoding.SMIME, options
         ... )
         >>> pkcs7.pkcs7_decrypt_smime(enveloped, cert, key, options)
-        b"data to encrypt"
+        b'data to encrypt'
 
     Deserialize and decrypt a S/MIME-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
