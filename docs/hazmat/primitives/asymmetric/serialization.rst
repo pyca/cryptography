@@ -1266,21 +1266,21 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. doctest::
 
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.primitives import serialization
-    >>> from cryptography.hazmat.primitives.serialization import pkcs7
-    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
-    >>> key = serialization.load_pem_private_key(ca_key, None)
-    >>> options = [pkcs7.PKCS7Options.Text]
-    >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+        >>> key = serialization.load_pem_private_key(ca_key, None)
+        >>> options = [pkcs7.PKCS7Options.Text]
+        >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
         ...     b"data to encrypt"
         ... ).add_recipient(
         ...     cert
         ... ).encrypt(
         ...     serialization.Encoding.DER, options
         ... )
-    >>> pkcs7.pkcs7_decrypt_der(enveloped, cert, key, options)
-    b"data to encrypt"
+        >>> pkcs7.pkcs7_decrypt_der(enveloped, cert, key, options)
+        b"data to encrypt"
 
     Deserialize and decrypt a DER-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
@@ -1321,21 +1321,21 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. doctest::
 
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.primitives import serialization
-    >>> from cryptography.hazmat.primitives.serialization import pkcs7
-    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
-    >>> key = serialization.load_pem_private_key(ca_key, None)
-    >>> options = [pkcs7.PKCS7Options.Text]
-    >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+        >>> key = serialization.load_pem_private_key(ca_key, None)
+        >>> options = [pkcs7.PKCS7Options.Text]
+        >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
         ...     b"data to encrypt"
         ... ).add_recipient(
         ...     cert
         ... ).encrypt(
         ...     serialization.Encoding.PEM, options
         ... )
-    >>> pkcs7.pkcs7_decrypt_pem(enveloped, cert, key, options)
-    b"data to encrypt"
+        >>> pkcs7.pkcs7_decrypt_pem(enveloped, cert, key, options)
+        b"data to encrypt"
 
     Deserialize and decrypt a PEM-encoded PKCS7E message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
@@ -1378,21 +1378,21 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. doctest::
 
-    >>> from cryptography import x509
-    >>> from cryptography.hazmat.primitives import serialization
-    >>> from cryptography.hazmat.primitives.serialization import pkcs7
-    >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
-    >>> key = serialization.load_pem_private_key(ca_key, None)
-    >>> options = [pkcs7.PKCS7Options.Text]
-    >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
+        >>> key = serialization.load_pem_private_key(ca_key, None)
+        >>> options = [pkcs7.PKCS7Options.Text]
+        >>> enveloped = pkcs7.PKCS7EnvelopeBuilder().set_data(
         ...     b"data to encrypt"
         ... ).add_recipient(
         ...     cert
         ... ).encrypt(
         ...     serialization.Encoding.SMIME, options
         ... )
-    >>> pkcs7.pkcs7_decrypt_smime(enveloped, cert, key, options)
-    b"data to encrypt"
+        >>> pkcs7.pkcs7_decrypt_smime(enveloped, cert, key, options)
+        b"data to encrypt"
 
     Deserialize and decrypt a S/MIME-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
