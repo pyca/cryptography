@@ -3,16 +3,14 @@ Changelog
 
 .. _v44-0-0:
 
-44.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
-
+44.0.0 - 2024-11-27
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 3.9.
 * Deprecated Python 3.7 support. Python 3.7 is no longer supported by the
   Python core team. Support for Python 3.7 will be removed in a future
   ``cryptography`` release.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.4.0.
 * macOS wheels are now built against the macOS 10.13 SDK. Users on older
   versions of macOS should upgrade, or they will need to build
   ``cryptography`` themselves.
