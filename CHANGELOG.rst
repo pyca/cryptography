@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v45-0-0:
+
+45.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+
 .. _v44-0-0:
 
 44.0.0 - 2024-11-27
@@ -25,7 +33,7 @@ Changelog
   when using OpenSSL 3.2.0+.
 * Added support for the :class:`~cryptography.x509.Admissions` certificate extension.
 * Added basic support for PKCS7 decryption (including S/MIME 3.2) via
-  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`, 
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`,
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_pem`, and
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_smime`.
 
