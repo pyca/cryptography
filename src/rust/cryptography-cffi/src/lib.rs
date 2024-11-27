@@ -20,7 +20,7 @@ pub fn create_module(
     let openssl_mod = unsafe {
         let res = Cryptography_make_openssl_module();
         assert_eq!(res, 0);
-        pyo3::types::PyModule::import_bound(py, "_openssl")?.clone()
+        pyo3::types::PyModule::import(py, "_openssl")?.clone()
     };
     #[cfg(not(python_implementation = "PyPy"))]
     // SAFETY: `PyInit__openssl` returns an owned reference.
