@@ -15,18 +15,15 @@ INCLUDES = """
  * Note that the result is an opaque type.
  */
 typedef STACK_OF(X509) Cryptography_STACK_OF_X509;
-typedef STACK_OF(X509_REVOKED) Cryptography_STACK_OF_X509_REVOKED;
 """
 
 TYPES = """
 typedef ... Cryptography_STACK_OF_X509;
-typedef ... Cryptography_STACK_OF_X509_REVOKED;
 
 typedef ... X509_ALGOR;
 typedef ... X509_EXTENSION;
 typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
-typedef ... X509_REVOKED;
 typedef ... X509_CRL;
 typedef ... X509;
 
@@ -78,25 +75,7 @@ X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
 int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
 ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
 
-X509_REVOKED *X509_REVOKED_new(void);
-void X509_REVOKED_free(X509_REVOKED *);
-
-int X509_REVOKED_set_serialNumber(X509_REVOKED *, ASN1_INTEGER *);
-
-int X509_REVOKED_add1_ext_i2d(X509_REVOKED *, int, void *, int, unsigned long);
-X509_EXTENSION *X509_REVOKED_delete_ext(X509_REVOKED *, int);
-
-int X509_REVOKED_set_revocationDate(X509_REVOKED *, ASN1_TIME *);
-
-X509_CRL *X509_CRL_new(void);
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
-int X509_CRL_add0_revoked(X509_CRL *, X509_REVOKED *);
-int X509_CRL_print(BIO *, X509_CRL *);
-int X509_CRL_set_issuer_name(X509_CRL *, X509_NAME *);
-int X509_CRL_set_version(X509_CRL *, long);
-int X509_CRL_sign(X509_CRL *, EVP_PKEY *, const EVP_MD *);
-int X509_CRL_sort(X509_CRL *);
-int i2d_X509_CRL_bio(BIO *, X509_CRL *);
 void X509_CRL_free(X509_CRL *);
 
 /*  ASN1 serialization */
@@ -128,11 +107,6 @@ X509_NAME *X509_get_issuer_name(const X509 *);
 
 int X509_EXTENSION_get_critical(const X509_EXTENSION *);
 
-int X509_REVOKED_get_ext_count(const X509_REVOKED *);
-X509_EXTENSION *X509_REVOKED_get_ext(const X509_REVOKED *, int);
-
-X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
-
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
 long X509_get_version(X509 *);
@@ -155,18 +129,6 @@ X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
 int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
 void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
 void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
-
-int sk_X509_REVOKED_num(Cryptography_STACK_OF_X509_REVOKED *);
-X509_REVOKED *sk_X509_REVOKED_value(Cryptography_STACK_OF_X509_REVOKED *, int);
-
-X509_NAME *X509_CRL_get_issuer(X509_CRL *);
-Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
-
-int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
-int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
-
-const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
-const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
 
 void X509_ALGOR_get0(const ASN1_OBJECT **, int *, const void **,
                      const X509_ALGOR *);
