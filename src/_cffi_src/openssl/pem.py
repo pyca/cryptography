@@ -26,10 +26,6 @@ int PEM_write_bio_X509_REQ(BIO *, X509_REQ *);
 
 X509_REQ *PEM_read_bio_X509_REQ(BIO *, X509_REQ **, pem_password_cb *, void *);
 
-X509_CRL *PEM_read_bio_X509_CRL(BIO *, X509_CRL **, pem_password_cb *, void *);
-
-int PEM_write_bio_X509_CRL(BIO *, X509_CRL *);
-
 DH *PEM_read_bio_DHparams(BIO *, DH **, pem_password_cb *, void *);
 
 EVP_PKEY *PEM_read_bio_PUBKEY(BIO *, EVP_PKEY **, pem_password_cb *, void *);
