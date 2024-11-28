@@ -10,7 +10,11 @@ import os
 import pytest
 
 from cryptography import utils
-from cryptography.exceptions import InvalidSignature, InvalidTag
+from cryptography.exceptions import (
+    InvalidSignature,
+    InvalidTag,
+    UnsupportedAlgorithm,
+)
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -254,6 +258,26 @@ class TestOpenSSHSerialization:
         # make sure multi-line base64 is used
         maxline = max(map(len, priv_data2.split(b"\n")))
         assert maxline < 80
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires Ed25519 support",
+    )
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "sk-ecdsa-nopsw.key",
+            "sk-ed25519-nopsw.key",
+        ],
+    )
+    def test_load_unsupported_ssh_private_key(self, key_file):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", key_file),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(UnsupportedAlgorithm):
+            load_ssh_private_key(data, None)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
