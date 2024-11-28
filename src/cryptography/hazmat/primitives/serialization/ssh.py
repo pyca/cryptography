@@ -612,6 +612,13 @@ class _SSHFormatSKEd25519:
         _, data = load_application(data)
         return public_key, data
 
+    def get_public(self, data: memoryview) -> typing.Never:
+        # Confusingly `get_public` is an entry point used by private key
+        # loading.
+        raise UnsupportedAlgorithm(
+            "sk-ssh-ed25519 private keys cannot be loaded"
+        )
+
 
 class _SSHFormatSKECDSA:
     """
@@ -630,6 +637,13 @@ class _SSHFormatSKECDSA:
         public_key, data = _lookup_kformat(_ECDSA_NISTP256).load_public(data)
         _, data = load_application(data)
         return public_key, data
+
+    def get_public(self, data: memoryview) -> typing.Never:
+        # Confusingly `get_public` is an entry point used by private key
+        # loading.
+        raise UnsupportedAlgorithm(
+            "sk-ecdsa-sha2-nistp256 private keys cannot be loaded"
+        )
 
 
 _KEY_FORMATS = {
