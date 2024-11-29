@@ -14,7 +14,6 @@ TYPES = """
 FUNCTIONS = """
 void RAND_add(const void *, int, double);
 int RAND_status(void);
-int RAND_bytes(unsigned char *, int);
 """
 
 CUSTOMIZATIONS = """
