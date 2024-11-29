@@ -12,7 +12,12 @@ import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.x509.oid import NameOID, ObjectIdentifier
+from cryptography.x509.oid import (
+    BytesObjectIdentifier,
+    NameOID,
+    ObjectIdentifier,
+    StringObjectIdentifier,
+)
 
 
 class _ASN1Type(utils.Enum):
@@ -59,7 +64,7 @@ _NAMEOID_TO_NAME: _OidNameMap = {
 }
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
-_NAMEOID_LENGTH_LIMIT = {
+_NAMEOID_LENGTH_LIMIT: typing.Mapping[ObjectIdentifier, tuple[int, int]] = {
     NameOID.COUNTRY_NAME: (2, 2),
     NameOID.JURISDICTION_COUNTRY_NAME: (2, 2),
     NameOID.COMMON_NAME: (1, 64),
@@ -169,8 +174,8 @@ class NameAttribute(typing.Generic[NameAttributeValueType]):
             raise TypeError("_type must be from the _ASN1Type enum")
 
         self._oid = oid
-        self._value = value
-        self._type = _type
+        self._value: NameAttributeValueType = value
+        self._type: _ASN1Type = _type
 
     @property
     def oid(self) -> ObjectIdentifier:
@@ -236,13 +241,13 @@ class RelativeDistinguishedName:
     @typing.overload
     def get_attributes_for_oid(
         self,
-        oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+        oid: BytesObjectIdentifier,
     ) -> list[NameAttribute[bytes]]: ...
 
     @typing.overload
     def get_attributes_for_oid(
         self,
-        oid: ObjectIdentifier,
+        oid: StringObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
@@ -341,13 +346,13 @@ class Name:
     @typing.overload
     def get_attributes_for_oid(
         self,
-        oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+        oid: BytesObjectIdentifier,
     ) -> list[NameAttribute[bytes]]: ...
 
     @typing.overload
     def get_attributes_for_oid(
         self,
-        oid: ObjectIdentifier,
+        oid: StringObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
