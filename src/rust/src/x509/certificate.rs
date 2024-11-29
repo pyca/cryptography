@@ -39,7 +39,7 @@ self_cell::self_cell!(
     }
 );
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+#[pyo3::pyclass(frozen, subclass, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
