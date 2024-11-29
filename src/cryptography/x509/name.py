@@ -235,12 +235,14 @@ class RelativeDistinguishedName:
 
     @typing.overload
     def get_attributes_for_oid(
-        self, oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+        self,
+        oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
     ) -> list[NameAttribute[bytes]]: ...
 
     @typing.overload
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier,
+        self,
+        oid: ObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
@@ -338,12 +340,14 @@ class Name:
 
     @typing.overload
     def get_attributes_for_oid(
-        self, oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+        self,
+        oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
     ) -> list[NameAttribute[bytes]]: ...
 
     @typing.overload
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier,
+        self,
+        oid: ObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
