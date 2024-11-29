@@ -114,11 +114,14 @@ def _unescape_dn_value(val: str) -> str:
     return _RFC4514NameParser._PAIR_RE.sub(sub, val)
 
 
-class NameAttribute:
+NameAttributeValueType = typing.TypeVar("NameAttributeValueType", str, bytes)
+
+
+class NameAttribute(typing.Generic[NameAttributeValueType]):
     def __init__(
         self,
         oid: ObjectIdentifier,
-        value: str | bytes,
+        value: NameAttributeValueType,
         _type: _ASN1Type | None = None,
         *,
         _validate: bool = True,
@@ -174,7 +177,7 @@ class NameAttribute:
         return self._oid
 
     @property
-    def value(self) -> str | bytes:
+    def value(self) -> NameAttributeValueType:
         return self._value
 
     @property
@@ -229,6 +232,16 @@ class RelativeDistinguishedName:
 
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+    ) -> list[NameAttribute[bytes]]: ...
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
@@ -322,6 +335,16 @@ class Name:
             attr.rfc4514_string(attr_name_overrides)
             for attr in reversed(self._attributes)
         )
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: typing.Literal[NameOID.X500_UNIQUE_IDENTIFIER],
+    ) -> list[NameAttribute[bytes]]: ...
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str]]: ...
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
