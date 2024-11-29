@@ -250,6 +250,12 @@ class RelativeDistinguishedName:
         oid: StringObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
 
+    @typing.overload
+    def get_attributes_for_oid(
+        self,
+        oid: ObjectIdentifier,
+    ) -> list[NameAttribute]: ...
+
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
     ) -> list[NameAttribute]:
@@ -354,6 +360,12 @@ class Name:
         self,
         oid: StringObjectIdentifier,
     ) -> list[NameAttribute[str]]: ...
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self,
+        oid: ObjectIdentifier,
+    ) -> list[NameAttribute]: ...
 
     def get_attributes_for_oid(
         self, oid: ObjectIdentifier
