@@ -30,30 +30,30 @@ use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
 // RSA key constraints, as defined in CA/B 6.1.5.
-static WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
+const WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
 
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
 // RSA
-static SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Rsa(Some(())),
 };
 
 // SECP256R1
-static SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP256R1)),
 };
 
 // SECP384R1
-static SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP384R1)),
 };
 
 // SECP521R1
-static SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP521R1)),
 };
@@ -73,19 +73,19 @@ pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: Lazy<Arc<HashSet<AlgorithmIdentifie
 // Signature AlgorithmIdentifier constants, as defined in CA/B 7.1.3.2.
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
-static RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha256(Some(())),
 };
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐384
-static RSASSA_PKCS1V15_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const RSASSA_PKCS1V15_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha384(Some(())),
 };
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐512
-static RSASSA_PKCS1V15_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const RSASSA_PKCS1V15_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha512(Some(())),
 };
@@ -124,19 +124,19 @@ static RSASSA_PSS_SHA512: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| Algorithm
 });
 
 // For P-256: the signature MUST use ECDSA with SHA‐256
-static ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha256(None),
 };
 
 // For P-384: the signature MUST use ECDSA with SHA‐384
-static ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha384(None),
 };
 
 // For P-521: the signature MUST use ECDSA with SHA‐512
-static ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha512(None),
 };
