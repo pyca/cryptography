@@ -8,7 +8,7 @@ use std::str::FromStr;
 use asn1::IA5String;
 
 // RFC 2822 3.2.4
-static ATEXT_CHARS: &str = "!#$%&'*+-/=?^_`{|}~";
+const ATEXT_CHARS: &str = "!#$%&'*+-/=?^_`{|}~";
 
 /// Represents a DNS name can be used in X.509 name matching.
 ///
