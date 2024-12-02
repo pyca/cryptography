@@ -39,7 +39,6 @@ const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *);
 
 /*  ASN1 INTEGER */
 void ASN1_INTEGER_free(ASN1_INTEGER *);
-int ASN1_INTEGER_set(ASN1_INTEGER *, long);
 
 /*  ASN1 TIME */
 ASN1_TIME *ASN1_TIME_new(void);
@@ -48,11 +47,6 @@ int ASN1_TIME_set_string(ASN1_TIME *, const char *);
 
 /*  ASN1 GENERALIZEDTIME */
 void ASN1_GENERALIZEDTIME_free(ASN1_GENERALIZEDTIME *);
-
-/*  ASN1 ENUMERATED */
-ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
-void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
-int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
 
 int ASN1_STRING_type(const ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, const ASN1_STRING *);
