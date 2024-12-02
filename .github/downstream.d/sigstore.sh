@@ -11,7 +11,8 @@ case "${1}" in
         ;;
     run)
         cd /tmp/sigstore-python
-        pytest test
+        # Run only the unit tests, and skip any that require network access.
+        pytest test/unit --skip-online
         ;;
     *)
         exit 1
