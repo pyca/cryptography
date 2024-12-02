@@ -514,10 +514,6 @@ pub static AES128: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["AES128"],
 );
-pub static AES192: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
-    &["AES192"],
-);
 pub static AES256: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["AES256"],

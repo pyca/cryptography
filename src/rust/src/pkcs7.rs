@@ -282,7 +282,7 @@ fn decrypt_der<'p>(
                         .call1((pyo3::types::PyBytes::new(py, &iv),))?,
                 ),
                 AlgorithmParameters::Aes192Cbc(iv) => (
-                    types::AES192.get(py)?.call1((key,))?,
+                    types::AES.get(py)?.call1((key,))?,
                     types::CBC
                         .get(py)?
                         .call1((pyo3::types::PyBytes::new(py, &iv),))?,
