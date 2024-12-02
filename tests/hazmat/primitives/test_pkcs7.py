@@ -1148,16 +1148,12 @@ class TestPKCS7Decrypt:
         )
         assert decrypted == data.replace(b"\n", b"\r\n")
 
-    @pytest.mark.parametrize(
-        "vector",
-        ["enveloped-aes-192-cbc.pem", "enveloped-aes-256-cbc.pem"],
-    )
-    def test_pkcs7_decrypt_more_content_encryption_algorithms(
-        self, backend, data, certificate, private_key, vector
+    def test_pkcs7_decrypt_aes_256_cbc_encrypted_content(
+        self, backend, data, certificate, private_key
     ):
         # Loading encrypted content (for now, not possible natively)
         enveloped = load_vectors_from_file(
-            os.path.join("pkcs7", vector),
+            os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
             loader=lambda pemfile: pemfile.read(),
             mode="rb",
         )

@@ -268,7 +268,7 @@ fn decrypt_der<'p>(
             };
 
             // The function can decrypt content encrypted with AES-128-CBC, which the S/MIME v3.2
-            // RFC specifies as MUST support, and AES-192-CBC and AES-256-CBC, which are SHOULD+
+            // RFC specifies as MUST support, and AES-256-CBC, which is specified as SHOULD+
             // support. More info: https://datatracker.ietf.org/doc/html/rfc5751#section-2.7
             // TODO: implement the possible algorithms from S/MIME 3.2 (and 4.0?)
             let algorithm_identifier = enveloped_data
@@ -277,12 +277,6 @@ fn decrypt_der<'p>(
             let (algorithm, mode) = match algorithm_identifier.params {
                 AlgorithmParameters::Aes128Cbc(iv) => (
                     types::AES128.get(py)?.call1((key,))?,
-                    types::CBC
-                        .get(py)?
-                        .call1((pyo3::types::PyBytes::new(py, &iv),))?,
-                ),
-                AlgorithmParameters::Aes192Cbc(iv) => (
-                    types::AES.get(py)?.call1((key,))?,
                     types::CBC
                         .get(py)?
                         .call1((pyo3::types::PyBytes::new(py, &iv),))?,
