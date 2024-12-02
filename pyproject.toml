@@ -101,15 +101,17 @@ include = [
     "src/_cffi_src/**/*.c",
     "src/_cffi_src/**/*.h",
 
-    "**/Cargo.toml",
-    "**/Cargo.lock",
+    "Cargo.toml",
+    "Cargo.lock",
+    "src/rust/**/Cargo.toml",
+    "src/rust/**/Cargo.lock",
     "src/rust/**/*.rs",
 
     "tests/**/*.py",
 ]
 exclude = [
     "vectors/**/*",
-    "src/rust/target/**/*",
+    "target/**/*",
     "docs/_build/**/*",
     ".github/**/*",
     ".readthedocs.yml",
