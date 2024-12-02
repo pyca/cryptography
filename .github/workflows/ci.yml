@@ -371,6 +371,7 @@ jobs:
           - certbot-josepy
           - mitmproxy
           - scapy
+          - sigstore
         PYTHON:
           - '3.12'
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
