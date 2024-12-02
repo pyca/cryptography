@@ -290,7 +290,7 @@ fn decrypt_der<'p>(
                 _ => {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
-                            "Only AES (with key sizes 128, 192 or 256) with CBC mode is currently supported for content decryption.",
+                            "Only AES (with key sizes 128 or 256) with CBC mode is currently supported for content decryption.",
                             exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                         )),
                     ));
