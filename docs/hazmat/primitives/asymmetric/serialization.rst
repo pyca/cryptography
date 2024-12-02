@@ -1363,7 +1363,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         with another algorithm than RSA with PKCS1 v1.5 padding.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
-        another algorithm than AES-128-CBC.
+        another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
     
@@ -1420,7 +1420,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         with another algorithm than RSA with PKCS1 v1.5 padding.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
-        another algorithm than AES-128-CBC.
+        another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
     
@@ -1478,7 +1478,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         with another algorithm than RSA with PKCS1 v1.5 padding.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the content is encrypted with
-        another algorithm than AES-128-CBC.
+        another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
     
