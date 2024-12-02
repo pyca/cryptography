@@ -1149,6 +1149,27 @@ class TestPKCS7Decrypt:
         assert decrypted == data.replace(b"\n", b"\r\n")
 
     @pytest.mark.parametrize(
+        "vector",
+        ["enveloped-aes-192-cbc.pem", "enveloped-aes-256-cbc.pem"],
+    )
+    def test_pkcs7_decrypt_more_content_encryption_algorithms(
+        self, backend, data, certificate, private_key, vector
+    ):
+        # Loading encrypted content (for now, not possible natively)
+        enveloped = load_vectors_from_file(
+            os.path.join("pkcs7", vector),
+            loader=lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        # Test decryption: new lines are canonicalized to '\r\n' when
+        # encryption has no Binary option
+        decrypted = pkcs7.pkcs7_decrypt_pem(
+            enveloped, certificate, private_key, []
+        )
+        assert decrypted == data.replace(b"\n", b"\r\n")
+
+    @pytest.mark.parametrize(
         "header",
         [
             "content-type: text/plain",
@@ -1318,7 +1339,7 @@ class TestPKCS7Decrypt:
         self, backend, data, certificate, private_key
     ):
         enveloped = load_vectors_from_file(
-            os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
+            os.path.join("pkcs7", "enveloped-triple-des.pem"),
             loader=lambda pemfile: pemfile.read(),
             mode="rb",
         )

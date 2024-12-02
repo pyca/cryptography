@@ -54,6 +54,16 @@ class AES128(BlockCipherAlgorithm):
         self.key = _verify_key_size(self, key)
 
 
+class AES192(BlockCipherAlgorithm):
+    name = "AES"
+    block_size = 128
+    key_sizes = frozenset([192])
+    key_size = 192
+
+    def __init__(self, key: bytes):
+        self.key = _verify_key_size(self, key)
+
+
 class AES256(BlockCipherAlgorithm):
     name = "AES"
     block_size = 128

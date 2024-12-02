@@ -146,6 +146,8 @@ pub enum AlgorithmParameters<'a> {
     // AES-IV ::= OCTET STRING (SIZE(16))
     #[defined_by(oid::AES_128_CBC_OID)]
     Aes128Cbc([u8; 16]),
+    #[defined_by(oid::AES_192_CBC_OID)]
+    Aes192Cbc([u8; 16]),
     #[defined_by(oid::AES_256_CBC_OID)]
     Aes256Cbc([u8; 16]),
 

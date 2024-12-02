@@ -267,8 +267,10 @@ fn decrypt_der<'p>(
                 }
             };
 
-            // Get algorithm
-            // TODO: implement all the possible algorithms
+            // The function can decrypt content encrypted with AES-128-CBC, which the S/MIME v3.2
+            // RFC specifies as MUST support, and AES-192-CBC and AES-256-CBC, which are SHOULD+
+            // support. More info: https://datatracker.ietf.org/doc/html/rfc5751#section-2.7
+            // TODO: implement the possible algorithms from S/MIME 3.2 (and 4.0?)
             let algorithm_identifier = enveloped_data
                 .encrypted_content_info
                 .content_encryption_algorithm;
@@ -279,10 +281,22 @@ fn decrypt_der<'p>(
                         .get(py)?
                         .call1((pyo3::types::PyBytes::new(py, &iv),))?,
                 ),
+                AlgorithmParameters::Aes192Cbc(iv) => (
+                    types::AES192.get(py)?.call1((key,))?,
+                    types::CBC
+                        .get(py)?
+                        .call1((pyo3::types::PyBytes::new(py, &iv),))?,
+                ),
+                AlgorithmParameters::Aes256Cbc(iv) => (
+                    types::AES256.get(py)?.call1((key,))?,
+                    types::CBC
+                        .get(py)?
+                        .call1((pyo3::types::PyBytes::new(py, &iv),))?,
+                ),
                 _ => {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
-                            "Only AES-128-CBC is currently supported for content decryption.",
+                            "Only AES (with key sizes 128, 192 or 256) with CBC mode is currently supported for content decryption.",
                             exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
                         )),
                     ));
