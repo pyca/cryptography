@@ -116,7 +116,9 @@ def _unescape_dn_value(val: str) -> str:
 
 NameAttributeValueType = typing.TypeVar(
     "NameAttributeValueType",
-    str | bytes, str, bytes,
+    str | bytes,
+    str,
+    bytes,
 )
 
 
@@ -237,7 +239,8 @@ class RelativeDistinguishedName:
             raise ValueError("duplicate attributes are not allowed")
 
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier,
+        self,
+        oid: ObjectIdentifier,
     ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
@@ -330,7 +333,8 @@ class Name:
         )
 
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier,
+        self,
+        oid: ObjectIdentifier,
     ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
