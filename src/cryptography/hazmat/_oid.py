@@ -10,15 +10,6 @@ from cryptography.hazmat.bindings._rust import (
 from cryptography.hazmat.primitives import hashes
 
 
-# use subtypes here to improve detection by typing
-class BytesObjectIdentifier(ObjectIdentifier):
-    pass
-
-
-class StringObjectIdentifier(ObjectIdentifier):
-    pass
-
-
 class ExtensionOID:
     SUBJECT_DIRECTORY_ATTRIBUTES = ObjectIdentifier("2.5.29.9")
     SUBJECT_KEY_IDENTIFIER = ObjectIdentifier("2.5.29.14")
@@ -63,42 +54,38 @@ class CRLEntryExtensionOID:
 
 
 class NameOID:
-    COMMON_NAME = StringObjectIdentifier("2.5.4.3")
-    COUNTRY_NAME = StringObjectIdentifier("2.5.4.6")
-    LOCALITY_NAME = StringObjectIdentifier("2.5.4.7")
-    STATE_OR_PROVINCE_NAME = StringObjectIdentifier("2.5.4.8")
-    STREET_ADDRESS = StringObjectIdentifier("2.5.4.9")
-    ORGANIZATION_IDENTIFIER = StringObjectIdentifier("2.5.4.97")
-    ORGANIZATION_NAME = StringObjectIdentifier("2.5.4.10")
-    ORGANIZATIONAL_UNIT_NAME = StringObjectIdentifier("2.5.4.11")
-    SERIAL_NUMBER = StringObjectIdentifier("2.5.4.5")
-    SURNAME = StringObjectIdentifier("2.5.4.4")
-    GIVEN_NAME = StringObjectIdentifier("2.5.4.42")
-    TITLE = StringObjectIdentifier("2.5.4.12")
-    INITIALS = StringObjectIdentifier("2.5.4.43")
-    GENERATION_QUALIFIER = StringObjectIdentifier("2.5.4.44")
-    X500_UNIQUE_IDENTIFIER = BytesObjectIdentifier("2.5.4.45")
-    DN_QUALIFIER = StringObjectIdentifier("2.5.4.46")
-    PSEUDONYM = StringObjectIdentifier("2.5.4.65")
-    USER_ID = StringObjectIdentifier("0.9.2342.19200300.100.1.1")
-    DOMAIN_COMPONENT = StringObjectIdentifier("0.9.2342.19200300.100.1.25")
-    EMAIL_ADDRESS = StringObjectIdentifier("1.2.840.113549.1.9.1")
-    JURISDICTION_COUNTRY_NAME = StringObjectIdentifier(
-        "1.3.6.1.4.1.311.60.2.1.3"
-    )
-    JURISDICTION_LOCALITY_NAME = StringObjectIdentifier(
-        "1.3.6.1.4.1.311.60.2.1.1"
-    )
-    JURISDICTION_STATE_OR_PROVINCE_NAME = StringObjectIdentifier(
+    COMMON_NAME = ObjectIdentifier("2.5.4.3")
+    COUNTRY_NAME = ObjectIdentifier("2.5.4.6")
+    LOCALITY_NAME = ObjectIdentifier("2.5.4.7")
+    STATE_OR_PROVINCE_NAME = ObjectIdentifier("2.5.4.8")
+    STREET_ADDRESS = ObjectIdentifier("2.5.4.9")
+    ORGANIZATION_IDENTIFIER = ObjectIdentifier("2.5.4.97")
+    ORGANIZATION_NAME = ObjectIdentifier("2.5.4.10")
+    ORGANIZATIONAL_UNIT_NAME = ObjectIdentifier("2.5.4.11")
+    SERIAL_NUMBER = ObjectIdentifier("2.5.4.5")
+    SURNAME = ObjectIdentifier("2.5.4.4")
+    GIVEN_NAME = ObjectIdentifier("2.5.4.42")
+    TITLE = ObjectIdentifier("2.5.4.12")
+    INITIALS = ObjectIdentifier("2.5.4.43")
+    GENERATION_QUALIFIER = ObjectIdentifier("2.5.4.44")
+    X500_UNIQUE_IDENTIFIER = ObjectIdentifier("2.5.4.45")
+    DN_QUALIFIER = ObjectIdentifier("2.5.4.46")
+    PSEUDONYM = ObjectIdentifier("2.5.4.65")
+    USER_ID = ObjectIdentifier("0.9.2342.19200300.100.1.1")
+    DOMAIN_COMPONENT = ObjectIdentifier("0.9.2342.19200300.100.1.25")
+    EMAIL_ADDRESS = ObjectIdentifier("1.2.840.113549.1.9.1")
+    JURISDICTION_COUNTRY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.3")
+    JURISDICTION_LOCALITY_NAME = ObjectIdentifier("1.3.6.1.4.1.311.60.2.1.1")
+    JURISDICTION_STATE_OR_PROVINCE_NAME = ObjectIdentifier(
         "1.3.6.1.4.1.311.60.2.1.2"
     )
-    BUSINESS_CATEGORY = StringObjectIdentifier("2.5.4.15")
-    POSTAL_ADDRESS = StringObjectIdentifier("2.5.4.16")
-    POSTAL_CODE = StringObjectIdentifier("2.5.4.17")
-    INN = StringObjectIdentifier("1.2.643.3.131.1.1")
-    OGRN = StringObjectIdentifier("1.2.643.100.1")
-    SNILS = StringObjectIdentifier("1.2.643.100.3")
-    UNSTRUCTURED_NAME = StringObjectIdentifier("1.2.840.113549.1.9.2")
+    BUSINESS_CATEGORY = ObjectIdentifier("2.5.4.15")
+    POSTAL_ADDRESS = ObjectIdentifier("2.5.4.16")
+    POSTAL_CODE = ObjectIdentifier("2.5.4.17")
+    INN = ObjectIdentifier("1.2.643.3.131.1.1")
+    OGRN = ObjectIdentifier("1.2.643.100.1")
+    SNILS = ObjectIdentifier("1.2.643.100.3")
+    UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
 
 
 class SignatureAlgorithmOID:

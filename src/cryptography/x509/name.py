@@ -12,12 +12,7 @@ import warnings
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.x509.oid import (
-    BytesObjectIdentifier,
-    NameOID,
-    ObjectIdentifier,
-    StringObjectIdentifier,
-)
+from cryptography.x509.oid import NameOID, ObjectIdentifier
 
 
 class _ASN1Type(utils.Enum):
@@ -64,7 +59,7 @@ _NAMEOID_TO_NAME: _OidNameMap = {
 }
 _NAME_TO_NAMEOID = {v: k for k, v in _NAMEOID_TO_NAME.items()}
 
-_NAMEOID_LENGTH_LIMIT: typing.Mapping[ObjectIdentifier, tuple[int, int]] = {
+_NAMEOID_LENGTH_LIMIT = {
     NameOID.COUNTRY_NAME: (2, 2),
     NameOID.JURISDICTION_COUNTRY_NAME: (2, 2),
     NameOID.COMMON_NAME: (1, 64),
@@ -119,7 +114,10 @@ def _unescape_dn_value(val: str) -> str:
     return _RFC4514NameParser._PAIR_RE.sub(sub, val)
 
 
-NameAttributeValueType = typing.TypeVar("NameAttributeValueType", str, bytes)
+NameAttributeValueType = typing.TypeVar(
+    "NameAttributeValueType",
+    str | bytes, str, bytes,
+)
 
 
 class NameAttribute(typing.Generic[NameAttributeValueType]):
@@ -238,27 +236,9 @@ class RelativeDistinguishedName:
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
-    @typing.overload
     def get_attributes_for_oid(
-        self,
-        oid: BytesObjectIdentifier,
-    ) -> list[NameAttribute[bytes]]: ...
-
-    @typing.overload
-    def get_attributes_for_oid(
-        self,
-        oid: StringObjectIdentifier,
-    ) -> list[NameAttribute[str]]: ...
-
-    @typing.overload
-    def get_attributes_for_oid(
-        self,
-        oid: ObjectIdentifier,
-    ) -> list[NameAttribute]: ...
-
-    def get_attributes_for_oid(
-        self, oid: ObjectIdentifier
-    ) -> list[NameAttribute]:
+        self, oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(
@@ -349,27 +329,9 @@ class Name:
             for attr in reversed(self._attributes)
         )
 
-    @typing.overload
     def get_attributes_for_oid(
-        self,
-        oid: BytesObjectIdentifier,
-    ) -> list[NameAttribute[bytes]]: ...
-
-    @typing.overload
-    def get_attributes_for_oid(
-        self,
-        oid: StringObjectIdentifier,
-    ) -> list[NameAttribute[str]]: ...
-
-    @typing.overload
-    def get_attributes_for_oid(
-        self,
-        oid: ObjectIdentifier,
-    ) -> list[NameAttribute]: ...
-
-    def get_attributes_for_oid(
-        self, oid: ObjectIdentifier
-    ) -> list[NameAttribute]:
+        self, oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
     @property

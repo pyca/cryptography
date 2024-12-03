@@ -7,7 +7,6 @@ from __future__ import annotations
 from cryptography.hazmat._oid import (
     AttributeOID,
     AuthorityInformationAccessOID,
-    BytesObjectIdentifier,
     CertificatePoliciesOID,
     CRLEntryExtensionOID,
     ExtendedKeyUsageOID,
@@ -17,14 +16,12 @@ from cryptography.hazmat._oid import (
     OCSPExtensionOID,
     PublicKeyAlgorithmOID,
     SignatureAlgorithmOID,
-    StringObjectIdentifier,
     SubjectInformationAccessOID,
 )
 
 __all__ = [
     "AttributeOID",
     "AuthorityInformationAccessOID",
-    "BytesObjectIdentifier",
     "CRLEntryExtensionOID",
     "CertificatePoliciesOID",
     "ExtendedKeyUsageOID",
@@ -34,6 +31,5 @@ __all__ = [
     "ObjectIdentifier",
     "PublicKeyAlgorithmOID",
     "SignatureAlgorithmOID",
-    "StringObjectIdentifier",
     "SubjectInformationAccessOID",
 ]
