@@ -116,7 +116,7 @@ def _unescape_dn_value(val: str) -> str:
 
 NameAttributeValueType = typing.TypeVar(
     "NameAttributeValueType",
-    str | bytes,
+    typing.Union[str, bytes],
     str,
     bytes,
 )
