@@ -16,5 +16,5 @@ runs:
       with:
         repository: "C2SP/x509-limbo"
         path: "x509-limbo"
-        # Latest commit on the x509-limbo main branch, as of Nov 27, 2024.
-        ref: "793e65108940143e97abff5250aecd02f1d5316d" # x509-limbo-ref
+        # Latest commit on the x509-limbo main branch, as of Dec 03, 2024.
+        ref: "960f0edbdd7785c6e48d7c9b5b63cdad18e1b2a5" # x509-limbo-ref
