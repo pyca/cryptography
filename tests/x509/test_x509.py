@@ -6135,7 +6135,15 @@ class TestRelativeDistinguishedName:
         attr = x509.NameAttribute(oid, "value1")
         rdn = x509.RelativeDistinguishedName([attr])
         assert rdn.get_attributes_for_oid(oid) == [attr]
+        assert rdn.get_attributes_for_oid(oid, return_string=True) == [attr]
         assert rdn.get_attributes_for_oid(x509.ObjectIdentifier("1.2.3")) == []
+
+    def test_get_attributes_for_oid_string_x500_unique_identifier(self):
+        oid = NameOID.X500_UNIQUE_IDENTIFIER
+        attr = x509.NameAttribute(oid, b"value1", _ASN1Type.BitString)
+        rdn = x509.RelativeDistinguishedName([attr])
+        with pytest.raises(TypeError):
+            rdn.get_attributes_for_oid(oid, return_string=True)
 
 
 class TestObjectIdentifier:

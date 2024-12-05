@@ -238,10 +238,29 @@ class RelativeDistinguishedName:
         if len(self._attribute_set) != len(attributes):
             raise ValueError("duplicate attributes are not allowed")
 
+    @typing.overload
     def get_attributes_for_oid(
         self,
         oid: ObjectIdentifier,
-    ) -> list[NameAttribute[str | bytes]]:
+        *,
+        return_string: typing.Literal[False] = False,
+    ) -> list[NameAttribute[str | bytes]]: ...
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier, *, return_string: typing.Literal[True]
+    ) -> list[NameAttribute[str]]: ...
+
+    def get_attributes_for_oid(
+        self,
+        oid: ObjectIdentifier,
+        *,
+        return_string: bool = False,
+    ) -> list[NameAttribute[str | bytes]] | list[NameAttribute[str]]:
+        if return_string is True and oid == NameOID.X500_UNIQUE_IDENTIFIER:
+            raise TypeError(
+                "oid must not be X500_UNIQUE_IDENTIFIER with return_string=True."
+            )
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(
@@ -332,10 +351,29 @@ class Name:
             for attr in reversed(self._attributes)
         )
 
+    @typing.overload
     def get_attributes_for_oid(
         self,
         oid: ObjectIdentifier,
-    ) -> list[NameAttribute[str | bytes]]:
+        *,
+        return_string: typing.Literal[False] = False,
+    ) -> list[NameAttribute[str | bytes]]: ...
+
+    @typing.overload
+    def get_attributes_for_oid(
+        self, oid: ObjectIdentifier, *, return_string: typing.Literal[True]
+    ) -> list[NameAttribute[str]]: ...
+
+    def get_attributes_for_oid(
+        self,
+        oid: ObjectIdentifier,
+        *,
+        return_string: bool = False,
+    ) -> list[NameAttribute[str | bytes]] | list[NameAttribute[str]]:
+        if return_string is True and oid == NameOID.X500_UNIQUE_IDENTIFIER:
+            raise TypeError(
+                "oid must not be X500_UNIQUE_IDENTIFIER with return_string=True."
+            )
         return [i for i in self if i.oid == oid]
 
     @property
