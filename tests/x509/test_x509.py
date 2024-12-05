@@ -6399,6 +6399,21 @@ class TestName:
             b"2e000000690000006f310d300b060355040a0c0450794341"
         )
 
+    def test_get_attributes_for_oid(self):
+        oid = x509.ObjectIdentifier("2.999.1")
+        attr = x509.NameAttribute(oid, "value1")
+        name = x509.Name([attr])
+        assert name.get_attributes_for_oid(oid) == [attr]
+        assert name.get_attributes_for_oid(oid, return_string=True) == [attr]
+        assert name.get_attributes_for_oid(x509.ObjectIdentifier("1.2")) == []
+
+    def test_get_attributes_for_oid_string_x500_unique_identifier(self):
+        oid = NameOID.X500_UNIQUE_IDENTIFIER
+        attr = x509.NameAttribute(oid, b"value1", _ASN1Type.BitString)
+        name = x509.Name([attr])
+        with pytest.raises(TypeError):
+            name.get_attributes_for_oid(oid, return_string=True)
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.ed25519_supported(),
