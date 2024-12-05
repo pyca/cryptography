@@ -259,7 +259,8 @@ class RelativeDistinguishedName:
     ) -> list[NameAttribute[str | bytes]] | list[NameAttribute[str]]:
         if return_string is True and oid == NameOID.X500_UNIQUE_IDENTIFIER:
             raise TypeError(
-                "oid must not be X500_UNIQUE_IDENTIFIER with return_string=True."
+                "oid must not be X500_UNIQUE_IDENTIFIER with "
+                "return_string=True."
             )
         return [i for i in self if i.oid == oid]
 
@@ -372,7 +373,8 @@ class Name:
     ) -> list[NameAttribute[str | bytes]] | list[NameAttribute[str]]:
         if return_string is True and oid == NameOID.X500_UNIQUE_IDENTIFIER:
             raise TypeError(
-                "oid must not be X500_UNIQUE_IDENTIFIER with return_string=True."
+                "oid must not be X500_UNIQUE_IDENTIFIER with "
+                "return_string=True."
             )
         return [i for i in self if i.oid == oid]
 
