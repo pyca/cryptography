@@ -1578,9 +1578,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :param oid: An :class:`ObjectIdentifier` instance.
 
-        :param return_string: Set to True to point static type checkers that
-            resulting :class:`NameAttribute` instances will only contain
-            string values.
+        :param return_string:
+
+            .. versionadded:: 45.0.0
+
+            Set to True to point static type checkers that resulting
+            :class:`NameAttribute` instances will only contain string values.
 
         :raise TypeError: If `return_string` is set to True but OID is
             ``NameOID.X500_UNIQUE_IDENTIFIER``.
@@ -1713,9 +1716,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :param oid: An :class:`ObjectIdentifier` instance.
 
-        :param return_string: Set to True to point static type checkers that
-            resulting :class:`NameAttribute` instances will only contain
-            string values.
+        :param return_string:
+
+            .. versionadded:: 45.0.0
+
+            Set to True to point static type checkers that resulting
+            :class:`NameAttribute` instances will only contain string values.
 
         :raise TypeError: If `return_string` is set to True but OID is
             ``NameOID.X500_UNIQUE_IDENTIFIER``.
