@@ -466,6 +466,18 @@ class TestECDSAVectors:
                 backend=backend,
             )
 
+    def test_load_invalid_private_scalar_pem(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec-invalid-private-scalar.pem"
+            ),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(data, None)
+
     def test_signatures(self, backend, subtests):
         vectors = itertools.chain(
             load_vectors_from_file(
