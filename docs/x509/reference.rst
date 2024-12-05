@@ -1574,19 +1574,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
             >>> x509.Name.from_rfc4514_string("E=pyca@cryptography.io", {"E": NameOID.EMAIL_ADDRESS})
             <Name(1.2.840.113549.1.9.1=pyca@cryptography.io)>
 
-    .. method:: get_attributes_for_oid(oid, *, return_string=False)
+    .. method:: get_attributes_for_oid(oid)
 
         :param oid: An :class:`ObjectIdentifier` instance.
-
-        :param return_string:
-
-            .. versionadded:: 45.0.0
-
-            Set to True to point static type checkers that resulting
-            :class:`NameAttribute` instances will only contain string values.
-
-        :raise TypeError: If `return_string` is set to True but OID is
-            ``NameOID.X500_UNIQUE_IDENTIFIER``.
 
         :returns: A list of :class:`NameAttribute` instances that match the
             OID provided. If nothing matches an empty list will be returned.
@@ -1712,19 +1702,9 @@ X.509 CSR (Certificate Signing Request) Builder Object
     object is iterable to get every attribute, preserving the original order.
     Passing duplicate attributes to the constructor raises ``ValueError``.
 
-    .. method:: get_attributes_for_oid(oid, *, return_string=False)
+    .. method:: get_attributes_for_oid(oid)
 
         :param oid: An :class:`ObjectIdentifier` instance.
-
-        :param return_string:
-
-            .. versionadded:: 45.0.0
-
-            Set to True to point static type checkers that resulting
-            :class:`NameAttribute` instances will only contain string values.
-
-        :raise TypeError: If `return_string` is set to True but OID is
-            ``NameOID.X500_UNIQUE_IDENTIFIER``.
 
         :returns: A list of :class:`NameAttribute` instances that match the OID
             provided.  The list should contain zero or one values.
