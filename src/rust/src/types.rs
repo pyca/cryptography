@@ -349,6 +349,8 @@ pub static PKCS7_DETACHED_SIGNATURE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options", "DetachedSignature"],
 );
+
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 pub static PKCS7_NO_VERIFY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options", "NoVerify"],
