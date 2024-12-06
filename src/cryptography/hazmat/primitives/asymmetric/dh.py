@@ -81,6 +81,12 @@ class DHPublicKey(metaclass=abc.ABCMeta):
         Checks equality.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> DHPublicKey:
+        """
+        Returns a copy.
+        """
+
 
 DHPublicKeyWithSerialization = DHPublicKey
 DHPublicKey.register(rust_openssl.dh.DHPublicKey)
@@ -128,6 +134,12 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
     ) -> bytes:
         """
         Returns the key serialized as bytes.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> DHPrivateKey:
+        """
+        Returns a copy.
         """
 
 

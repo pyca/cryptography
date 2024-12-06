@@ -77,6 +77,12 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         Returns the key serialized as bytes.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> DSAPrivateKey:
+        """
+        Returns a copy.
+        """
+
 
 DSAPrivateKeyWithSerialization = DSAPrivateKey
 DSAPrivateKey.register(rust_openssl.dsa.DSAPrivateKey)
@@ -127,6 +133,12 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> DSAPublicKey:
+        """
+        Returns a copy.
         """
 
 

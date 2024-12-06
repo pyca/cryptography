@@ -114,6 +114,10 @@ impl X448PrivateKey {
             true,
         )
     }
+
+    fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
+        slf
+    }
 }
 
 #[pyo3::pymethods]

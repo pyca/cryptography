@@ -2781,3 +2781,9 @@ class TestRSAPEMPublicKeySerialization:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    def test_private_key_copy(self, rsa_key_2048: rsa.RSAPrivateKey):
+        key1 = rsa_key_2048
+        key2 = copy.copy(key1)
+
+        assert key1 == key2

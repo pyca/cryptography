@@ -53,6 +53,12 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         Checks equality.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> Ed25519PublicKey:
+        """
+        Returns a copy.
+        """
+
 
 Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
 
@@ -110,6 +116,12 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     def sign(self, data: bytes) -> bytes:
         """
         Signs the data.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> Ed25519PrivateKey:
+        """
+        Returns a copy.
         """
 
 
