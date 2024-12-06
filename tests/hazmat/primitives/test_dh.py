@@ -483,6 +483,7 @@ class TestDH:
 
         assert key1 == key2
 
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_private_key_copy(self, backend):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "DH", "dhkey.pem"),
