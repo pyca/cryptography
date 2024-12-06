@@ -1,11 +1,19 @@
 Installation
 ============
 
-You can install ``cryptography`` with ``pip``:
+You can install ``cryptography``:
 
-.. code-block:: console
+.. tab:: ``pip``
 
-    $ pip install cryptography
+    .. code-block:: console
+
+        $ pip install cryptography
+
+.. tab:: ``uv``
+
+    .. code-block:: console
+
+        $ uv add cryptography
 
 If this does not work please **upgrade your pip** first, as that is the
 single most common cause of installation problems.
@@ -35,6 +43,7 @@ above supported platforms:
 * ``OpenSSL 3.1-latest``
 * ``OpenSSL 3.2-latest``
 * ``OpenSSL 3.3-latest``
+* ``OpenSSL 3.4-latest``
 
 We also test against the latest commit of BoringSSL as well as versions of
 LibreSSL that are receiving security support at the time of a given
@@ -99,49 +108,46 @@ for the OpenSSL and ``libffi`` libraries available on your system.
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
 
-Alpine
-~~~~~~
+.. tab:: Alpine
 
-.. warning::
+    .. warning::
 
-    The Rust available by default in Alpine < 3.17 is older than the minimum
-    supported version. See the :ref:`Rust installation instructions
-    <installation:Rust>` for information about installing a newer Rust.
+        The Rust available by default in Alpine < 3.17 is older than the minimum
+        supported version. See the :ref:`Rust installation instructions
+        <installation:Rust>` for information about installing a newer Rust.
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo pkgconfig
+        $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo pkgconfig
 
-If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
+    If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
-Debian/Ubuntu
-~~~~~~~~~~~~~
+.. tab:: Debian/Ubuntu
 
-.. warning::
+    .. warning::
 
-    The Rust available in Debian versions prior to Bookworm are older than the
-    minimum supported version. See the :ref:`Rust installation instructions
-    <installation:Rust>` for information about installing a newer Rust.
+        The Rust available in Debian versions prior to Bookworm are older than the
+        minimum supported version. See the :ref:`Rust installation instructions
+        <installation:Rust>` for information about installing a newer Rust.
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ sudo apt-get install build-essential libssl-dev libffi-dev \
-        python3-dev cargo pkg-config
+        $ sudo apt-get install build-essential libssl-dev libffi-dev \
+            python3-dev cargo pkg-config
 
-Fedora/RHEL/CentOS
-~~~~~~~~~~~~~~~~~~
+.. tab:: Fedora/RHEL/CentOS
 
-.. warning::
+    .. warning::
 
-    For RHEL and CentOS you must be on version 8.8 or newer for the command
-    below to install a sufficiently new Rust. If your Rust is less than 1.65.0
-    please see the :ref:`Rust installation instructions <installation:Rust>`
-    for information about installing a newer Rust.
+        For RHEL and CentOS you must be on version 8.8 or newer for the command
+        below to install a sufficiently new Rust. If your Rust is less than 1.65.0
+        please see the :ref:`Rust installation instructions <installation:Rust>`
+        for information about installing a newer Rust.
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
-        openssl-devel cargo pkg-config
+        $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
+            openssl-devel cargo pkg-config
 
 
 Building
