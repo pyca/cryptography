@@ -483,6 +483,17 @@ class TestDH:
 
         assert key1 == key2
 
+    def test_private_key_copy(self):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        key1 = serialization.load_pem_private_key(key_bytes)
+        key2 = copy.copy(key1)
+
+        assert key1 == key2
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.dh_supported(),
