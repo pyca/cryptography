@@ -56,7 +56,7 @@ class EllipticCurve(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def group_order(self) -> int:
         """
-        The order of the curve's group
+        The order of the curve's group.
         """
 
 
