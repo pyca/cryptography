@@ -47,6 +47,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "cryptography-docs",
     "sphinx_rtd_theme",
+    "sphinx_inline_tabs",
 ]
 
 if spelling is not None:
