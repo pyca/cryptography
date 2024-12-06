@@ -24,11 +24,21 @@ Challenges`_.
 
 Installation
 ------------
-You can install ``cryptography`` with ``pip``:
 
-.. code-block:: console
+To install ``cryptography``:
 
-    $ pip install cryptography
+.. tab:: ``pip``
+
+    .. code-block:: console
+
+        $ pip install cryptography
+
+.. tab:: ``uv``
+
+    .. code-block:: console
+
+        $ uv add cryptography
+
 
 See :doc:`Installation <installation>` for more information.
 
