@@ -484,12 +484,8 @@ class TestDH:
         assert key1 == key2
 
     def test_private_key_copy(self, backend):
-        key_bytes = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhkey.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        key1 = serialization.load_pem_private_key(key_bytes, None, backend)
+        parameters = FFDH3072_P.parameters(backend)
+        key1 = parameters.generate_private_key()
         key2 = copy.copy(key1)
 
         assert key1 == key2
