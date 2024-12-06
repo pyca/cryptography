@@ -47,6 +47,12 @@ class X448PublicKey(metaclass=abc.ABCMeta):
         Checks equality.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> X448PublicKey:
+        """
+        Returns a copy.
+        """
+
 
 if hasattr(rust_openssl, "x448"):
     X448PublicKey.register(rust_openssl.x448.X448PublicKey)
@@ -105,6 +111,12 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
     def exchange(self, peer_public_key: X448PublicKey) -> bytes:
         """
         Performs a key exchange operation using the provided peer's public key.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> X448PrivateKey:
+        """
+        Returns a copy.
         """
 
 

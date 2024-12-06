@@ -47,6 +47,12 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         Checks equality.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> X25519PublicKey:
+        """
+        Returns a copy.
+        """
+
 
 X25519PublicKey.register(rust_openssl.x25519.X25519PublicKey)
 
@@ -103,6 +109,12 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
     def exchange(self, peer_public_key: X25519PublicKey) -> bytes:
         """
         Performs a key exchange operation using the provided peer's public key.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> X25519PrivateKey:
+        """
+        Returns a copy.
         """
 
 

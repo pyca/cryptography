@@ -63,6 +63,12 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         Returns the key serialized as bytes.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> RSAPrivateKey:
+        """
+        Returns a copy.
+        """
+
 
 RSAPrivateKeyWithSerialization = RSAPrivateKey
 RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
@@ -125,6 +131,12 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> RSAPublicKey:
+        """
+        Returns a copy.
         """
 
 

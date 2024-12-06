@@ -53,6 +53,12 @@ class Ed448PublicKey(metaclass=abc.ABCMeta):
         Checks equality.
         """
 
+    @abc.abstractmethod
+    def __copy__(self) -> Ed448PublicKey:
+        """
+        Returns a copy.
+        """
+
 
 if hasattr(rust_openssl, "ed448"):
     Ed448PublicKey.register(rust_openssl.ed448.Ed448PublicKey)
@@ -111,6 +117,12 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
         """
         The raw bytes of the private key.
         Equivalent to private_bytes(Raw, Raw, NoEncryption()).
+        """
+
+    @abc.abstractmethod
+    def __copy__(self) -> Ed448PrivateKey:
+        """
+        Returns a copy.
         """
 
 
