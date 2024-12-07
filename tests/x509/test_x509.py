@@ -5946,9 +5946,9 @@ class TestNameAttribute:
 
     def test_init_none_value(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(
+            x509.NameAttribute(  # type:ignore[type-var]
                 NameOID.ORGANIZATION_NAME,
-                None,  # type:ignore[arg-type]
+                None,
             )
 
     def test_init_bad_length(self):
@@ -6010,12 +6010,12 @@ class TestNameAttribute:
         assert na.rfc4514_string() == "2.5.4.15=banking"
 
         # non-utf8 attribute (bitstring with raw bytes)
-        na = x509.NameAttribute(
+        na_bytes = x509.NameAttribute(
             x509.ObjectIdentifier("2.5.4.45"),
             b"\x01\x02\x03\x04",
             _ASN1Type.BitString,
         )
-        assert na.rfc4514_string() == "2.5.4.45=#01020304"
+        assert na_bytes.rfc4514_string() == "2.5.4.45=#01020304"
 
     def test_distinguished_name_custom_attrs(self):
         name = x509.Name(

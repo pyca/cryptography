@@ -114,11 +114,20 @@ def _unescape_dn_value(val: str) -> str:
     return _RFC4514NameParser._PAIR_RE.sub(sub, val)
 
 
-class NameAttribute:
+NameAttributeValueType = typing.TypeVar(
+    "NameAttributeValueType",
+    typing.Union[str, bytes],
+    str,
+    bytes,
+    covariant=True,
+)
+
+
+class NameAttribute(typing.Generic[NameAttributeValueType]):
     def __init__(
         self,
         oid: ObjectIdentifier,
-        value: str | bytes,
+        value: NameAttributeValueType,
         _type: _ASN1Type | None = None,
         *,
         _validate: bool = True,
@@ -166,15 +175,15 @@ class NameAttribute:
             raise TypeError("_type must be from the _ASN1Type enum")
 
         self._oid = oid
-        self._value = value
-        self._type = _type
+        self._value: NameAttributeValueType = value
+        self._type: _ASN1Type = _type
 
     @property
     def oid(self) -> ObjectIdentifier:
         return self._oid
 
     @property
-    def value(self) -> str | bytes:
+    def value(self) -> NameAttributeValueType:
         return self._value
 
     @property
@@ -231,8 +240,9 @@ class RelativeDistinguishedName:
             raise ValueError("duplicate attributes are not allowed")
 
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier
-    ) -> list[NameAttribute]:
+        self,
+        oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
     def rfc4514_string(
@@ -324,8 +334,9 @@ class Name:
         )
 
     def get_attributes_for_oid(
-        self, oid: ObjectIdentifier
-    ) -> list[NameAttribute]:
+        self,
+        oid: ObjectIdentifier,
+    ) -> list[NameAttribute[str | bytes]]:
         return [i for i in self if i.oid == oid]
 
     @property
