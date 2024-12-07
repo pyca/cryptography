@@ -2,8 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use cryptography_x509::common::{Asn1Read, Asn1Write};
 use cryptography_x509::{
-    common,
     ocsp_req::{self, OCSPRequest as RawOCSPRequest},
     oid,
 };
@@ -14,11 +14,12 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{extensions, ocsp};
 use crate::{exceptions, types, x509};
 
+type ReadRawOCSPRequest<'a> = RawOCSPRequest<'a, Asn1Read>;
 self_cell::self_cell!(
     struct OwnedOCSPRequest {
         owner: pyo3::Py<pyo3::types::PyBytes>,
         #[covariant]
-        dependent: RawOCSPRequest,
+        dependent: ReadRawOCSPRequest,
     }
 );
 
@@ -29,14 +30,7 @@ pub(crate) fn load_der_ocsp_request(
 ) -> CryptographyResult<OCSPRequest> {
     let raw = OwnedOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
-    if raw
-        .borrow_dependent()
-        .tbs_request
-        .request_list
-        .unwrap_read()
-        .len()
-        != 1
-    {
+    if raw.borrow_dependent().tbs_request.request_list.len() != 1 {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyNotImplementedError::new_err(
                 "OCSP request contains more than one request",
@@ -63,7 +57,6 @@ impl OCSPRequest {
             .borrow_dependent()
             .tbs_request
             .request_list
-            .unwrap_read()
             .clone()
             .next()
             .unwrap()
@@ -214,13 +207,11 @@ pub(crate) fn create_ocsp_request(
         req_cert,
         single_request_extensions: None,
     }];
-    let ocsp_req = ocsp_req::OCSPRequest {
+    let ocsp_req = ocsp_req::OCSPRequest::<Asn1Write> {
         tbs_request: ocsp_req::TBSRequest {
             version: 0,
             requestor_name: None,
-            request_list: common::Asn1ReadableOrWritable::new_write(asn1::SequenceOfWriter::new(
-                &reqs,
-            )),
+            request_list: asn1::SequenceOfWriter::new(&reqs),
             raw_request_extensions: extensions,
         },
         optional_signature: None,
