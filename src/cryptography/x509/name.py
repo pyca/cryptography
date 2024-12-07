@@ -119,6 +119,7 @@ NameAttributeValueType = typing.TypeVar(
     typing.Union[str, bytes],
     str,
     bytes,
+    covariant=True,
 )
 
 
