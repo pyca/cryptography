@@ -82,6 +82,7 @@ def test_get_curve_for_oid():
 class DummyCurve(ec.EllipticCurve):
     name = "dummy-curve"
     key_size = 1
+    group_order = 1
 
 
 class DummySignatureAlgorithm(ec.EllipticCurveSignatureAlgorithm):

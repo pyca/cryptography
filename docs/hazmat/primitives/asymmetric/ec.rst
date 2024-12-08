@@ -500,6 +500,14 @@ Key Interfaces
         Size (in :term:`bits`) of a secret scalar for the curve (as generated
         by :func:`generate_private_key`).
 
+    .. attribute:: group_order
+
+        .. versionadded:: 45
+
+        :type: int
+
+        The order of the curve's group.
+
 
 .. class:: EllipticCurveSignatureAlgorithm
 
