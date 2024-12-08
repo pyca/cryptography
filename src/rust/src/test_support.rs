@@ -81,6 +81,9 @@ fn pkcs7_verify(
     if options.contains(types::PKCS7_TEXT.get(py)?)? {
         flags |= openssl::pkcs7::Pkcs7Flags::TEXT;
     }
+    if options.contains(types::PKCS7_NO_VERIFY.get(py)?)? {
+        flags |= openssl::pkcs7::Pkcs7Flags::NOVERIFY;
+    }
 
     let store = {
         let mut b = openssl::x509::store::X509StoreBuilder::new()?;
