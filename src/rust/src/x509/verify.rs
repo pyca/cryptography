@@ -2,9 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-mod extension_policy_builder;
+mod extension_policy;
 mod py_policy;
-pub(crate) use extension_policy_builder::{PyCriticality, PyExtensionPolicy};
+pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 use py_policy::PyCryptoPolicy;
 pub(crate) use py_policy::PyPolicy;
 
