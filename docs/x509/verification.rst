@@ -307,13 +307,17 @@ the root of trust:
 
     .. versionadded:: 44.0.0
 
-    An ExtensionPolicy provides a builder-style interface for constructing an 
-    :class:`ExtensionPolicy`.
+    ExtensionPolicy provides a set of static methods to construct predefined
+    extension policies, and a builder-style interface for modifying them.
+
+    .. note:: Calling any of the builder methods (:meth:`require_not_present`, :meth:`may_be_present`, or :meth:`require_present`)
+        multiple times with the same extension OID will raise an exception.
 
     .. staticmethod:: permit_all()
 
         Creates an ExtensionPolicy initialized with a policy that does 
         not put any constraints on a certificate's extensions. 
+        This can serve as a base for a fully custom extension policy.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
