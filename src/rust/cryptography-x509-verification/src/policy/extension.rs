@@ -19,20 +19,21 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct ExtensionPolicy<'a, B: CryptoOps> {
-    pub authority_information_access: ExtensionValidator<'a, B>,
-    pub authority_key_identifier: ExtensionValidator<'a, B>,
-    pub subject_key_identifier: ExtensionValidator<'a, B>,
-    pub key_usage: ExtensionValidator<'a, B>,
-    pub subject_alternative_name: ExtensionValidator<'a, B>,
-    pub basic_constraints: ExtensionValidator<'a, B>,
-    pub name_constraints: ExtensionValidator<'a, B>,
-    pub extended_key_usage: ExtensionValidator<'a, B>,
+pub struct ExtensionPolicy<'cb, B: CryptoOps> {
+    pub authority_information_access: ExtensionValidator<'cb, B>,
+    pub authority_key_identifier: ExtensionValidator<'cb, B>,
+    pub subject_key_identifier: ExtensionValidator<'cb, B>,
+    pub key_usage: ExtensionValidator<'cb, B>,
+    pub subject_alternative_name: ExtensionValidator<'cb, B>,
+    pub basic_constraints: ExtensionValidator<'cb, B>,
+    pub name_constraints: ExtensionValidator<'cb, B>,
+    pub extended_key_usage: ExtensionValidator<'cb, B>,
 }
 
-impl<'a, B: CryptoOps + 'a> ExtensionPolicy<'a, B> {
+impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     pub fn new_permit_all() -> Self {
-        const fn make_permissive_validator<'a, B: CryptoOps + 'a>() -> ExtensionValidator<'a, B> {
+        const fn make_permissive_validator<'cb, B: CryptoOps + 'cb>() -> ExtensionValidator<'cb, B>
+        {
             ExtensionValidator::MaybePresent {
                 criticality: Criticality::Agnostic,
                 validator: None,
@@ -259,7 +260,7 @@ impl Criticality {
     }
 }
 
-type PresentExtensionValidatorCallback<'callback, B> = Arc<
+pub type PresentExtensionValidatorCallback<'cb, B> = Arc<
     dyn for<'chain> Fn(
             &Policy<'_, B>,
             &Certificate<'chain>,
@@ -267,10 +268,10 @@ type PresentExtensionValidatorCallback<'callback, B> = Arc<
         ) -> ValidationResult<'chain, (), B>
         + Send
         + Sync
-        + 'callback,
+        + 'cb,
 >;
 
-type MaybeExtensionValidatorCallback<'callback, B> = Arc<
+pub type MaybeExtensionValidatorCallback<'cb, B> = Arc<
     dyn for<'chain> Fn(
             &Policy<'_, B>,
             &Certificate<'chain>,
@@ -278,12 +279,12 @@ type MaybeExtensionValidatorCallback<'callback, B> = Arc<
         ) -> ValidationResult<'chain, (), B>
         + Send
         + Sync
-        + 'callback,
+        + 'cb,
 >;
 
 /// Represents different validation states for an extension.
 #[derive(Clone)]
-pub enum ExtensionValidator<'a, B: CryptoOps> {
+pub enum ExtensionValidator<'cb, B: CryptoOps> {
     /// The extension MUST NOT be present.
     NotPresent,
     /// The extension MUST be present.
@@ -292,24 +293,24 @@ pub enum ExtensionValidator<'a, B: CryptoOps> {
         criticality: Criticality,
         /// An optional validator over the extension's inner contents, with
         /// the surrounding `Policy` as context.
-        validator: Option<PresentExtensionValidatorCallback<'a, B>>,
+        validator: Option<PresentExtensionValidatorCallback<'cb, B>>,
     },
     /// The extension MAY be present; the interior validator is
     /// always called if supplied, including if the extension is not present.
     MaybePresent {
         criticality: Criticality,
-        validator: Option<MaybeExtensionValidatorCallback<'a, B>>,
+        validator: Option<MaybeExtensionValidatorCallback<'cb, B>>,
     },
 }
 
-impl<'a, B: CryptoOps> ExtensionValidator<'a, B> {
+impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
     pub(crate) fn not_present() -> Self {
         Self::NotPresent
     }
 
     pub(crate) fn present(
         criticality: Criticality,
-        validator: Option<PresentExtensionValidatorCallback<'a, B>>,
+        validator: Option<PresentExtensionValidatorCallback<'cb, B>>,
     ) -> Self {
         Self::Present {
             criticality,
@@ -319,7 +320,7 @@ impl<'a, B: CryptoOps> ExtensionValidator<'a, B> {
 
     pub(crate) fn maybe_present(
         criticality: Criticality,
-        validator: Option<MaybeExtensionValidatorCallback<'a, B>>,
+        validator: Option<MaybeExtensionValidatorCallback<'cb, B>>,
     ) -> Self {
         Self::MaybePresent {
             criticality,
@@ -404,7 +405,7 @@ pub(crate) mod ee {
 
     pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -422,7 +423,7 @@ pub(crate) mod ee {
 
     pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
-        cert: &Certificate<'_>,
+        cert: &Certificate<'chain>,
         extn: &Extension<'_>,
     ) -> ValidationResult<'chain, (), B> {
         match (cert.subject().is_empty(), extn.critical) {
@@ -459,7 +460,7 @@ pub(crate) mod ee {
 
     pub(crate) fn extended_key_usage<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -485,7 +486,7 @@ pub(crate) mod ee {
 
     pub(crate) fn key_usage<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -520,7 +521,7 @@ pub(crate) mod ca {
 
     pub(crate) fn authority_key_identifier<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         // CABF: AKI is required on all CA certificates *except* root CA certificates,
@@ -563,7 +564,7 @@ pub(crate) mod ca {
 
     pub(crate) fn key_usage<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: &Extension<'_>,
     ) -> ValidationResult<'chain, (), B> {
         let key_usage: KeyUsage<'_> = extn.value()?;
@@ -579,7 +580,7 @@ pub(crate) mod ca {
 
     pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: &Extension<'_>,
     ) -> ValidationResult<'chain, (), B> {
         let basic_constraints: BasicConstraints = extn.value()?;
@@ -599,7 +600,7 @@ pub(crate) mod ca {
 
     pub(crate) fn name_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -631,7 +632,7 @@ pub(crate) mod ca {
 
     pub(crate) fn extended_key_usage<'chain, B: CryptoOps>(
         policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -666,7 +667,7 @@ pub(crate) mod common {
 
     pub(crate) fn authority_information_access<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -730,7 +731,7 @@ mod tests {
 
     fn present_extension_validator<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         _ext: &Extension<'_>,
     ) -> ValidationResult<'chain, (), B> {
         Ok(())
@@ -774,7 +775,7 @@ mod tests {
 
     fn maybe_extension_validator<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &Certificate<'_>,
+        _cert: &Certificate<'chain>,
         _ext: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         Ok(())

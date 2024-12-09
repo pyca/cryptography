@@ -49,11 +49,11 @@ pub struct ValidationError<'chain, B: CryptoOps> {
 }
 
 impl<'chain, B: CryptoOps> ValidationError<'chain, B> {
-    pub(crate) fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
+    pub fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
         ValidationError { kind, cert: None }
     }
 
-    pub(crate) fn set_cert(mut self, cert: VerificationCertificate<'chain, B>) -> Self {
+    pub fn set_cert(mut self, cert: VerificationCertificate<'chain, B>) -> Self {
         self.cert = Some(cert);
         self
     }

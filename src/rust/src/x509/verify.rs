@@ -19,7 +19,7 @@ use cryptography_x509_verification::{
 };
 use pyo3::{
     types::{PyAnyMethods, PyListMethods},
-    IntoPy,
+    IntoPyObjectExt,
 };
 
 use crate::error::{CryptographyError, CryptographyResult};
@@ -297,8 +297,7 @@ impl PyPolicyCache {
         match &self.py_policy {
             Some(p) => Ok(p.clone_ref(py)),
             None => {
-                let py_policy = PyPolicy::from_rust_policy(py, rust_policy)?;
-                let py_policy = py_policy.into_py(py);
+                let py_policy = PyPolicy::from_rust_policy(py, rust_policy)?.into_py_any(py)?;
                 self.py_policy = Some(py_policy.clone_ref(py));
                 Ok(py_policy)
             }
@@ -364,7 +363,7 @@ impl PyClientVerifier {
         {
             Some(leaf_san) => {
                 let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
-                Some(parse_general_names(py, &leaf_gns)?)
+                Some(parse_general_names(py, &leaf_gns)?.unbind())
             }
             None => None,
         };

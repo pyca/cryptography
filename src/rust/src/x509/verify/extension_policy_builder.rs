@@ -12,7 +12,7 @@ use cryptography_x509_verification::policy::{
     Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback, Policy,
     PresentExtensionValidatorCallback,
 };
-use cryptography_x509_verification::ValidationError;
+use cryptography_x509_verification::{ValidationError, ValidationErrorKind, ValidationResult};
 use pyo3::types::PyAnyMethods;
 use pyo3::PyResult;
 
@@ -138,9 +138,7 @@ fn cert_to_py_cert(
     // TODO: can this be done better?..
     let data = asn1::write_single(cert)?;
     let owned_cert = OwnedCertificate::try_new(
-        pyo3::types::PyBytes::new_bound(py, data.as_slice())
-            .as_unbound()
-            .clone_ref(py),
+        pyo3::types::PyBytes::new(py, data.as_slice()).unbind(),
         |bytes| asn1::parse_single(bytes.as_bytes(py)),
     )?;
     Ok(PyCertificate {
@@ -149,52 +147,54 @@ fn cert_to_py_cert(
     })
 }
 
-fn make_python_callback_args<'p>(
+fn _make_validation_error(msg: String) -> ValidationError<'static, PyCryptoOps> {
+    ValidationError::new(ValidationErrorKind::Other(msg))
+}
+
+fn make_python_callback_args<'chain, 'p>(
     py: pyo3::Python<'p>,
     policy: &Policy<'_, PyCryptoOps>,
-    cert: &Certificate<'_>,
-    ext: Option<&Extension<'_>>,
-) -> Result<
+    cert: &Certificate<'chain>,
+    ext: Option<&Extension<'p>>,
+) -> ValidationResult<
+    'chain,
     (
         PyPolicy,
         PyCertificate,
         Option<pyo3::Bound<'p, pyo3::types::PyAny>>,
     ),
-    ValidationError,
+    PyCryptoOps,
 > {
     let py_policy = PyPolicy::from_rust_policy(py, policy).map_err(|e| {
-        ValidationError::Other(format!("{e} (while converting Policy object to python)"))
+        _make_validation_error(format!("{e} (while converting Policy to Python object)"))
     })?;
     let py_cert = cert_to_py_cert(py, cert).map_err(|e| {
-        ValidationError::Other(format!(
-            "{e} (while converting to python certificate object)"
+        _make_validation_error(format!(
+            "{e} (while converting Certificate to Python object)"
         ))
     })?;
     let py_ext = match ext {
         None => None,
         Some(ext) => parse_cert_ext(py, ext).map_err(|e| {
-            ValidationError::Other(format!(
-                "{} (while converting to python extension object)",
-                Into::<pyo3::PyErr>::into(e)
-            ))
+            _make_validation_error(format!("{e} (while converting Extension to Python object)"))
         })?,
     };
 
     Ok((py_policy, py_cert, py_ext))
 }
 
-fn invoke_py_validator_callback(
-    py: pyo3::Python<'_>,
+fn invoke_py_validator_callback<'py>(
+    py: pyo3::Python<'py>,
     py_cb: &pyo3::PyObject,
-    args: impl pyo3::IntoPy<pyo3::Py<pyo3::types::PyTuple>>,
-) -> Result<(), ValidationError> {
+    args: impl pyo3::IntoPyObject<'py, Target = pyo3::types::PyTuple>,
+) -> ValidationResult<'static, (), PyCryptoOps> {
     let result = py_cb
         .bind(py)
         .call1(args)
-        .map_err(|e| ValidationError::Other(format!("Python extension validator failed: {}", e)))?;
+        .map_err(|e| _make_validation_error(format!("Python extension validator failed: {}", e)))?;
 
     if !result.is_none() {
-        Err(ValidationError::Other(
+        Err(_make_validation_error(
             "Python validator must return None.".to_string(),
         ))
     } else {
@@ -206,15 +206,14 @@ fn make_rust_maybe_validator(
     criticality: PyCriticality,
     validator: Option<pyo3::PyObject>,
 ) -> ExtensionValidator<'static, PyCryptoOps> {
-    fn make_rust_callback<'a>(
+    fn wrap_py_validator<'a>(
         py_cb: pyo3::PyObject,
     ) -> MaybeExtensionValidatorCallback<'a, PyCryptoOps> {
         Arc::new(
             move |policy: &Policy<'_, PyCryptoOps>,
                   cert: &Certificate<'_>,
-                  ext: Option<&Extension<'_>>|
-                  -> Result<(), ValidationError> {
-                pyo3::Python::with_gil(|py| -> Result<(), ValidationError> {
+                  ext: Option<&Extension<'_>>| {
+                pyo3::Python::with_gil(|py| {
                     let args = make_python_callback_args(py, policy, cert, ext)?;
                     invoke_py_validator_callback(py, &py_cb, args)
                 })
@@ -223,10 +222,7 @@ fn make_rust_maybe_validator(
     }
     ExtensionValidator::MaybePresent {
         criticality: criticality.into(),
-        validator: match validator {
-            None => None,
-            Some(py_cb) => Some(make_rust_callback(py_cb)),
-        },
+        validator: validator.map(wrap_py_validator),
     }
 }
 
@@ -234,15 +230,12 @@ fn make_rust_present_validator(
     criticality: PyCriticality,
     validator: Option<pyo3::PyObject>,
 ) -> ExtensionValidator<'static, PyCryptoOps> {
-    fn make_rust_callback<'a>(
+    fn wrap_py_validator<'a>(
         py_cb: pyo3::PyObject,
     ) -> PresentExtensionValidatorCallback<'a, PyCryptoOps> {
         Arc::new(
-            move |policy: &Policy<'_, PyCryptoOps>,
-                  cert: &Certificate<'_>,
-                  ext: &Extension<'_>|
-                  -> Result<(), ValidationError> {
-                pyo3::Python::with_gil(|py| -> Result<(), ValidationError> {
+            move |policy: &Policy<'_, PyCryptoOps>, cert: &Certificate<'_>, ext: &Extension<'_>| {
+                pyo3::Python::with_gil(|py| {
                     let args = make_python_callback_args(py, policy, cert, Some(ext))?;
                     let args = (args.0, args.1, args.2.unwrap());
 
@@ -254,9 +247,6 @@ fn make_rust_present_validator(
 
     ExtensionValidator::Present {
         criticality: criticality.into(),
-        validator: match validator {
-            None => None,
-            Some(py_cb) => Some(make_rust_callback(py_cb)),
-        },
+        validator: validator.map(wrap_py_validator),
     }
 }
