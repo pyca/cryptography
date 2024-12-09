@@ -167,8 +167,8 @@ impl PolicyBuilder {
         policy_builder_set_once_check!(self, ca_ext_policy, "extension policies");
 
         Ok(PolicyBuilder {
-            ca_ext_policy: Some(new_ca_policy.borrow().0.clone()),
-            ee_ext_policy: Some(new_ee_policy.borrow().0.clone()),
+            ca_ext_policy: Some(new_ca_policy.get().get_rust_policy()),
+            ee_ext_policy: Some(new_ee_policy.get().get_rust_policy()),
             ..self.py_clone(py)
         })
     }

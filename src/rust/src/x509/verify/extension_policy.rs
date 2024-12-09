@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use cryptography_x509::oid::{
@@ -56,16 +57,38 @@ impl From<PyCriticality> for Criticality {
     module = "cryptography.x509.verification",
     name = "ExtensionPolicy"
 )]
-pub(crate) struct PyExtensionPolicy(pub(super) ExtensionPolicy<'static, PyCryptoOps>);
+pub(crate) struct PyExtensionPolicy {
+    rust_policy: ExtensionPolicy<'static, PyCryptoOps>,
+    already_set_oids: HashSet<asn1::ObjectIdentifier>,
+}
 
 impl PyExtensionPolicy {
+    pub(super) fn get_rust_policy(&self) -> ExtensionPolicy<'static, PyCryptoOps> {
+        self.rust_policy.clone()
+    }
+
+    fn new(rust_policy: ExtensionPolicy<'static, PyCryptoOps>) -> Self {
+        PyExtensionPolicy {
+            rust_policy,
+            already_set_oids: HashSet::new(),
+        }
+    }
+
+    fn check_duplicate_oid(&self, oid: &asn1::ObjectIdentifier) -> PyResult<()> {
+        if self.already_set_oids.contains(oid) {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "Custom ExtensionPolicy configuration already applied for extension with OID {oid}"
+            )));
+        }
+        Ok(())
+    }
+
     fn with_assigned_validator(
         &self,
-        oid: pyo3::Bound<'_, pyo3::types::PyAny>,
+        oid: asn1::ObjectIdentifier,
         validator: ExtensionValidator<'static, PyCryptoOps>,
     ) -> PyResult<PyExtensionPolicy> {
-        let oid = py_oid_to_oid(oid)?;
-        let mut policy = self.0.clone();
+        let mut policy = self.rust_policy.clone();
         match oid {
             AUTHORITY_INFORMATION_ACCESS_OID => policy.authority_information_access = validator,
             AUTHORITY_KEY_IDENTIFIER_OID => policy.authority_key_identifier = validator,
@@ -82,7 +105,13 @@ impl PyExtensionPolicy {
                 )))
             }
         }
-        Ok(PyExtensionPolicy(policy))
+
+        let mut already_set_oids = self.already_set_oids.clone();
+        already_set_oids.insert(oid);
+        Ok(PyExtensionPolicy {
+            rust_policy: policy,
+            already_set_oids,
+        })
     }
 }
 
@@ -90,23 +119,25 @@ impl PyExtensionPolicy {
 impl PyExtensionPolicy {
     #[staticmethod]
     pub(crate) fn permit_all() -> Self {
-        PyExtensionPolicy(ExtensionPolicy::new_permit_all())
+        PyExtensionPolicy::new(ExtensionPolicy::new_permit_all())
     }
 
     #[staticmethod]
     pub(crate) fn webpki_defaults_ca() -> Self {
-        PyExtensionPolicy(ExtensionPolicy::new_default_webpki_ca())
+        PyExtensionPolicy::new(ExtensionPolicy::new_default_webpki_ca())
     }
 
     #[staticmethod]
     pub(crate) fn webpki_defaults_ee() -> Self {
-        PyExtensionPolicy(ExtensionPolicy::new_default_webpki_ee())
+        PyExtensionPolicy::new(ExtensionPolicy::new_default_webpki_ee())
     }
 
     pub(crate) fn require_not_present(
         &self,
         oid: pyo3::Bound<'_, pyo3::types::PyAny>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
+        let oid = py_oid_to_oid(oid)?;
+        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(oid, ExtensionValidator::<'static, PyCryptoOps>::NotPresent)
     }
 
@@ -117,6 +148,8 @@ impl PyExtensionPolicy {
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
+        let oid = py_oid_to_oid(oid)?;
+        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(oid, make_rust_maybe_validator(criticality, validator_cb))
     }
 
@@ -127,6 +160,8 @@ impl PyExtensionPolicy {
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
+        let oid = py_oid_to_oid(oid)?;
+        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(oid, make_rust_present_validator(criticality, validator_cb))
     }
 }
