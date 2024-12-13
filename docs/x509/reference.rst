@@ -3737,7 +3737,17 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.17"``. This
         is used to denote that a certificate may be assigned to an IPSEC SA,
         and can be used by the assignee to initiate an IPSec Internet Key
-        Exchange. For more information see :rfc:`4945`.
+        Exchange (IKE). For more information see :rfc:`4945`.
+
+    .. attribute:: BUNDLE_SECURITY
+
+        .. versionadded:: 45.0.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.35"``. This
+        is used to denote that a certificate is used by a Bundle Protocol
+        Node to secure data either in transit (e.g. via TLS/TCPCL) or at
+        rest (e.g. via BPSec).
+        For more information see :rfc:`9172` and :rfc:`9174`.
 
     .. attribute:: CERTIFICATE_TRANSPARENCY
 
@@ -3747,6 +3757,70 @@ instances. The following common OIDs are available as constants.
         is used to denote that a certificate may be used as a pre-certificate
         signing certificate for Certificate Transparency log operation
         purposes. For more information see :rfc:`6962`.
+
+
+.. class:: OtherNameFormOID
+    :canonical: cryptography.hazmat._oid.OtherNameFormOID
+
+    .. versionadded:: 45.0.0
+
+    .. attribute:: PERMANENT_IDENTIFIER
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.3"``.
+        This is used to correlate multiple certificates which relate to
+        the same entity, as identified by this Other Name value.
+        The Other Name value is encoded as sequence of optional
+        UTF-8 value and optional OID assigner.
+        For more information see :rfc:`4043`.
+
+    .. attribute:: HW_MODULE_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.4"``.
+        This is used to identify hardware module components when
+        protecting firmware packages.
+        The Other Name value is encoded as sequence of OID hardware-type
+        and octet-string serial number.
+        For more information see :rfc:`4108`.
+
+    .. attribute:: DNS_SRV
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.7"``.
+        This is used to identify service names using qualified DNS name
+        of the form ``_Service.Name``.
+        The Other Name value is encoded as IA5 text.
+        For more information see :rfc:`4985`.
+
+    .. attribute:: NAI_REALM
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.8"``.
+        This is used to identify realms for RADIUS dynamic peer discovery
+        using Network Access Identifier (NAI) values.
+        The Other Name value is encoded as UTF-8 text.
+        For more information see :rfc:`7585`.
+
+    .. attribute:: SMTP_UTF8_MAILBOX
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.9"``.
+        This is used to identify an internationalized email address associated
+        with an entity.
+        The Other Name value is encoded as UTF-8 text.
+        For more information see :rfc:`9598`.
+
+    .. attribute:: ACP_NODE_NAME
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.10"``.
+        This is used to identify a single node within an
+        Autonomic Control Plane (ACP).
+        The Other Name value is encoded as IA5 text.
+        For more information see :rfc:`8994`.
+
+    .. attribute:: BUNDLE_EID
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.8.11"``.
+        This is used to contain the text form of an endpoint identifier (EID)
+        for the Bundle Protocol Version 7.
+        The Other Name value is encoded as IA5 text.
+        For more information see :rfc:`9171` and :rfc:`9174`.
 
 
 .. class:: AuthorityInformationAccessOID
