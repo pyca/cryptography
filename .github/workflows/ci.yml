@@ -169,7 +169,7 @@ jobs:
           - {IMAGE: "fedora", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "centos-stream9", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "centos-stream9-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
           - {IMAGE: "centos-stream10", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream10-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
 
