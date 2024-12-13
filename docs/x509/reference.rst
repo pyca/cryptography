@@ -3741,7 +3741,7 @@ instances. The following common OIDs are available as constants.
 
     .. attribute:: BUNDLE_SECURITY
 
-        .. versionadded:: TBD
+        .. versionadded:: 45.0.0
 
         Corresponds to the dotted string ``"1.3.6.1.5.5.7.3.35"``. This
         is used to denote that a certificate is used by a Bundle Protocol
@@ -3762,7 +3762,7 @@ instances. The following common OIDs are available as constants.
 .. class:: OtherNameFormOID
     :canonical: cryptography.hazmat._oid.OtherNameFormOID
 
-    .. versionadded:: TBD
+    .. versionadded:: 45.0.0
 
     .. attribute:: PERMANENT_IDENTIFIER
 
