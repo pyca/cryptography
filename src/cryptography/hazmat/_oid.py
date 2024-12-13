@@ -184,8 +184,6 @@ class ExtendedKeyUsageOID:
 class OtherNameFormOID:
     PERMANENT_IDENTIFIER = ObjectIdentifier("1.3.6.1.5.5.7.8.3")
     HW_MODULE_NAME = ObjectIdentifier("1.3.6.1.5.5.7.8.4")
-    XMPP_ADDR = ObjectIdentifier("1.3.6.1.5.5.7.8.5")
-    SIM = ObjectIdentifier("1.3.6.1.5.5.7.8.6")
     DNS_SRV = ObjectIdentifier("1.3.6.1.5.5.7.8.7")
     NAI_REALM = ObjectIdentifier("1.3.6.1.5.5.7.8.8")
     SMTP_UTF8_MAILBOX = ObjectIdentifier("1.3.6.1.5.5.7.8.9")
