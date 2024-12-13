@@ -180,6 +180,7 @@ class ExtendedKeyUsageOID:
     BUNDLE_SECURITY = ObjectIdentifier("1.3.6.1.5.5.7.3.35")
     CERTIFICATE_TRANSPARENCY = ObjectIdentifier("1.3.6.1.4.1.11129.2.4.4")
 
+
 class OtherNameFormOID:
     PERMANENT_IDENTIFIER = ObjectIdentifier("1.3.6.1.5.5.7.8.3")
     HW_MODULE_NAME = ObjectIdentifier("1.3.6.1.5.5.7.8.4")
@@ -190,6 +191,7 @@ class OtherNameFormOID:
     SMTP_UTF8_MAILBOX = ObjectIdentifier("1.3.6.1.5.5.7.8.9")
     ACP_NODE_NAME = ObjectIdentifier("1.3.6.1.5.5.7.8.10")
     BUNDLE_EID = ObjectIdentifier("1.3.6.1.5.5.7.8.11")
+
 
 class AuthorityInformationAccessOID:
     CA_ISSUERS = ObjectIdentifier("1.3.6.1.5.5.7.48.2")
