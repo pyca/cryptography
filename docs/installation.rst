@@ -25,7 +25,7 @@ Currently we test ``cryptography`` on Python 3.7+ and PyPy3 7.3.11+ on these
 operating systems.
 
 * x86-64 RHEL 8.x
-* x86-64 CentOS 9 Stream
+* x86-64 CentOS Stream 9, 10
 * x86-64 Fedora (latest)
 * x86-64 macOS 13 Ventura and ARM64 macOS 14 Sonoma
 * x86-64 Ubuntu 20.04, 22.04, 24.04, rolling
