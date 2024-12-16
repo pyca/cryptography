@@ -155,6 +155,18 @@ _SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
 }
 
 
+class HashAlgorithmOID:
+    SHA1 = ObjectIdentifier("1.3.14.3.2.26")
+    SHA224 = ObjectIdentifier("2.16.840.1.101.3.4.2.4")
+    SHA256 = ObjectIdentifier("2.16.840.1.101.3.4.2.1")
+    SHA384 = ObjectIdentifier("2.16.840.1.101.3.4.2.2")
+    SHA512 = ObjectIdentifier("2.16.840.1.101.3.4.2.3")
+    SHA3_224 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.224")
+    SHA3_256 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.256")
+    SHA3_384 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.384")
+    SHA3_512 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.512")
+
+
 class PublicKeyAlgorithmOID:
     DSA = ObjectIdentifier("1.2.840.10040.4.1")
     EC_PUBLIC_KEY = ObjectIdentifier("1.2.840.10045.2.1")
@@ -268,6 +280,15 @@ _OID_NAMES = {
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: (
         "GOST R 34.10-2012 with GOST R 34.11-2012 (512 bit)"
     ),
+    HashAlgorithmOID.SHA1: "sha1",
+    HashAlgorithmOID.SHA224: "sha224",
+    HashAlgorithmOID.SHA256: "sha256",
+    HashAlgorithmOID.SHA384: "sha384",
+    HashAlgorithmOID.SHA512: "sha512",
+    HashAlgorithmOID.SHA3_224: "sha3_224",
+    HashAlgorithmOID.SHA3_256: "sha3_256",
+    HashAlgorithmOID.SHA3_384: "sha3_384",
+    HashAlgorithmOID.SHA3_512: "sha3_512",
     PublicKeyAlgorithmOID.DSA: "dsaEncryption",
     PublicKeyAlgorithmOID.EC_PUBLIC_KEY: "id-ecPublicKey",
     PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5: "rsaEncryption",
