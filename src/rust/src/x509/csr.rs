@@ -221,17 +221,14 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn is_signature_valid(
-        slf: pyo3::PyRef<'_, Self>,
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<bool> {
-        let public_key = slf.public_key(py)?;
+    fn is_signature_valid(&self, py: pyo3::Python<'_>) -> CryptographyResult<bool> {
+        let public_key = self.public_key(py)?;
         Ok(sign::verify_signature_with_signature_algorithm(
             py,
             public_key,
-            &slf.raw.borrow_dependent().signature_alg,
-            slf.raw.borrow_dependent().signature.as_bytes(),
-            &asn1::write_single(&slf.raw.borrow_dependent().csr_info)?,
+            &self.raw.borrow_dependent().signature_alg,
+            self.raw.borrow_dependent().signature.as_bytes(),
+            &asn1::write_single(&self.raw.borrow_dependent().csr_info)?,
         )
         .is_ok())
     }

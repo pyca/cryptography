@@ -32,7 +32,7 @@ check-sdist==1.2.0 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 click==8.1.7
     # via cryptography (pyproject.toml)
-colorama==0.4.6 ; (platform_system != 'Windows' and sys_platform == 'win32') or platform_system == 'Windows' or os_name == 'nt'
+colorama==0.4.6 ; os_name == 'nt' or (platform_system == 'Windows' and sys_platform != 'win32') or sys_platform == 'win32'
     # via
     #   build
     #   click
