@@ -11,7 +11,7 @@ argcomplete==3.0.8
     # via nox
 babel==2.12.1
     # via sphinx
-black==23.3.0
+black>=24.3.0
     # via cryptography (pyproject.toml)
 bleach==6.0.0
     # via readme-renderer
@@ -44,7 +44,7 @@ execnet==1.9.0
     # via pytest-xdist
 filelock==3.12.0
     # via virtualenv
-idna==3.4
+idna>=3.7
     # via requests
 imagesize==1.4.1
     # via sphinx
