@@ -1,0 +1,52 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "name": "@VCS_SBOM_AUTHORS@"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/pyca/cryptography@@VCS_TAG@",
+      "cpe": "cpe:2.3:a:cryptography.io:cryptography:@VCS_TAG@:*:*:*:*:python:*:*",
+      "name": "Python Cryptography",
+      "version": "@VCS_VERSION@",
+      "description": "Cryptographic standard library for Python",
+      "authors": [
+        {
+          "name": "@VCS_AUTHORS@"
+        }
+      ],
+      "supplier": {
+        "name": "cryptography.io"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://cryptography.io/en/latest/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/pyca/cryptography"
+        }
+      ]
+    }
+  ]
+}
