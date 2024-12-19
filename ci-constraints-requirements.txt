@@ -19,7 +19,7 @@ build==0.10.0
     # via
     #   check-sdist
     #   cryptography (pyproject.toml)
-certifi==2022.12.7
+certifi>=2024.07.04
     # via requests
 charset-normalizer==3.1.0
     # via requests
@@ -181,7 +181,7 @@ twine==4.0.2
     # via cryptography (pyproject.toml)
 typing-extensions==4.5.0
     # via mypy
-urllib3==1.26.15
+urllib3>=1.26.19
     # via
     #   requests
     #   twine
