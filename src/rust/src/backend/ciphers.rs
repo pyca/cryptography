@@ -179,22 +179,26 @@ impl CipherContext {
         }
 
         let mut total_written = 0;
-        for chunk in data.chunks(1 << 29) {
-            // SAFETY: We ensure that outbuf is sufficiently large above.
-            unsafe {
-                let n = if self.py_mode.bind(py).is_instance(&types::XTS.get(py)?)? {
-                    self.ctx.cipher_update_unchecked(chunk, Some(&mut buf[total_written..])).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "In XTS mode you must supply at least a full block in the first update call. For AES this is 16 bytes."
-                    )
-                })?
-                } else {
-                    self.ctx
-                        .cipher_update_unchecked(chunk, Some(&mut buf[total_written..]))?
-                };
-                total_written += n;
+        let is_xts = self.py_mode.bind(py).is_instance(&types::XTS.get(py)?)?;
+        py.allow_threads::<CryptographyResult<()>, _>(|| {
+            for chunk in data.chunks(1 << 29) {
+                // SAFETY: We ensure that outbuf is sufficiently large above.
+                unsafe {
+                    let n = if is_xts {
+                        self.ctx.cipher_update_unchecked(chunk, Some(&mut buf[total_written..])).map_err(|_| {
+                            pyo3::exceptions::PyValueError::new_err(
+                                "In XTS mode you must supply at least a full block in the first update call. For AES this is 16 bytes."
+                            )
+                        })?
+                    } else {
+                        self.ctx
+                            .cipher_update_unchecked(chunk, Some(&mut buf[total_written..]))?
+                    };
+                    total_written += n;
+                }
             }
-        }
+            Ok(())
+        })?;
 
         Ok(total_written)
     }
