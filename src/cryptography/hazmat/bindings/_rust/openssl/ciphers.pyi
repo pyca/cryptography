@@ -13,7 +13,7 @@ def create_encryption_ctx(
 ) -> ciphers.AEADEncryptionContext: ...
 @typing.overload
 def create_encryption_ctx(
-    algorithm: ciphers.CipherAlgorithm, mode: modes.Mode
+    algorithm: ciphers.CipherAlgorithm, mode: modes.Mode | None
 ) -> ciphers.CipherContext: ...
 @typing.overload
 def create_decryption_ctx(
@@ -21,7 +21,7 @@ def create_decryption_ctx(
 ) -> ciphers.AEADDecryptionContext: ...
 @typing.overload
 def create_decryption_ctx(
-    algorithm: ciphers.CipherAlgorithm, mode: modes.Mode
+    algorithm: ciphers.CipherAlgorithm, mode: modes.Mode | None
 ) -> ciphers.CipherContext: ...
 def cipher_supported(
     algorithm: ciphers.CipherAlgorithm, mode: modes.Mode
