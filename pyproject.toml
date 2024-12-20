@@ -187,12 +187,3 @@ git-only = [
     ".gitignore",
 ]
 
-[tool.uv]
-# These cover all Python versions, but by expressing multiple environments we
-# force uv's resolver to pick the latest versions of packages for each version.
-environments = [
-    "python_version >= '3.10'",
-    "python_version >= '3.9' and python_version < '3.10'",
-    "python_version >= '3.8' and python_version < '3.9'",
-    "python_version < '3.8'",
-]

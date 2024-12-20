@@ -32,7 +32,7 @@ check-sdist==1.2.0 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 click==8.1.7
     # via cryptography (pyproject.toml)
-colorama==0.4.6 ; os_name == 'nt' or (platform_system == 'Windows' and sys_platform != 'win32') or sys_platform == 'win32'
+colorama==0.4.6 ; os_name == 'nt' or sys_platform == 'win32'
     # via
     #   build
     #   click
@@ -201,7 +201,9 @@ readme-renderer==44.0 ; python_full_version >= '3.9'
 requests==2.31.0 ; python_full_version < '3.8'
     # via sphinx
 requests==2.32.3 ; python_full_version >= '3.8'
-    # via sphinx
+    # via
+    #   sphinx
+    #   sphinxcontrib-spelling
 ruff==0.8.4
     # via cryptography (pyproject.toml)
 six==1.17.0 ; python_full_version < '3.8'
@@ -265,7 +267,9 @@ sphinxcontrib-serializinghtml==1.1.5 ; python_full_version < '3.9'
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0 ; python_full_version >= '3.9'
     # via sphinx
-sphinxcontrib-spelling==8.0.1
+sphinxcontrib-spelling==8.0.0 ; python_full_version < '3.10'
+    # via cryptography (pyproject.toml)
+sphinxcontrib-spelling==8.0.1 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml)
 tomli==2.0.1 ; python_full_version < '3.8'
     # via
@@ -312,7 +316,9 @@ zipp==3.20.2 ; python_full_version == '3.8.*'
     #   importlib-metadata
     #   importlib-resources
 zipp==3.21.0 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
-    # via importlib-metadata
+    # via
+    #   importlib-metadata
+    #   importlib-resources
 
 # The following packages were excluded from the output:
 # cffi
