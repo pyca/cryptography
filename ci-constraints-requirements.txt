@@ -265,7 +265,7 @@ sphinxcontrib-serializinghtml==1.1.5 ; python_full_version < '3.9'
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0 ; python_full_version >= '3.9'
     # via sphinx
-sphinxcontrib-spelling==8.0.0
+sphinxcontrib-spelling==8.0.1
     # via cryptography (pyproject.toml)
 tomli==2.0.1 ; python_full_version < '3.8'
     # via
