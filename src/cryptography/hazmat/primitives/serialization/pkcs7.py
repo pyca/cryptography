@@ -17,7 +17,6 @@ from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.hazmat.primitives.ciphers import (
-    CipherAlgorithm,
     algorithms,
 )
 from cryptography.utils import _check_byteslike
@@ -38,6 +37,8 @@ PKCS7HashTypes = typing.Union[
 PKCS7PrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
 ]
+
+ContentEncryptionAlgorithm = type[algorithms.AES128] | type[algorithms.AES256]
 
 
 class PKCS7Options(utils.Enum):
@@ -188,7 +189,8 @@ class PKCS7EnvelopeBuilder:
         *,
         _data: bytes | None = None,
         _recipients: list[x509.Certificate] | None = None,
-        _algorithm: type[CipherAlgorithm] | None = None,
+        _content_encryption_algorithm: ContentEncryptionAlgorithm
+        | None = None,
     ):
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
@@ -202,10 +204,7 @@ class PKCS7EnvelopeBuilder:
             )
         self._data = _data
         self._recipients = _recipients if _recipients is not None else []
-
-        # The default content encryption algorithm is AES-128, which the S/MIME
-        # v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
-        self._algorithm = _algorithm or algorithms.AES128
+        self._content_encryption_algorithm = _content_encryption_algorithm
 
     def set_data(self, data: bytes) -> PKCS7EnvelopeBuilder:
         _check_byteslike("data", data)
@@ -215,7 +214,7 @@ class PKCS7EnvelopeBuilder:
         return PKCS7EnvelopeBuilder(
             _data=data,
             _recipients=self._recipients,
-            _algorithm=self._algorithm,
+            _content_encryption_algorithm=self._content_encryption_algorithm,
         )
 
     def add_recipient(
@@ -234,19 +233,24 @@ class PKCS7EnvelopeBuilder:
                 *self._recipients,
                 certificate,
             ],
-            _algorithm=self._algorithm,
+            _content_encryption_algorithm=self._content_encryption_algorithm,
         )
 
-    def set_algorithm(
-        self, algorithm: type[CipherAlgorithm]
+    def set_content_encryption_algorithm(
+        self, content_encryption_algorithm: ContentEncryptionAlgorithm
     ) -> PKCS7EnvelopeBuilder:
-        if not issubclass(algorithm, CipherAlgorithm):
-            raise TypeError("Algorithm must be a CipherAlgorithm")
+        if self._content_encryption_algorithm is not None:
+            raise ValueError("Content encryption algo may only be set once")
+        if content_encryption_algorithm not in {
+            algorithms.AES128,
+            algorithms.AES256,
+        }:
+            raise TypeError("Only AES128 and AES256 are supported")
 
         return PKCS7EnvelopeBuilder(
             _data=self._data,
             _recipients=self._recipients,
-            _algorithm=algorithm,
+            _content_encryption_algorithm=content_encryption_algorithm,
         )
 
     def encrypt(
@@ -258,6 +262,13 @@ class PKCS7EnvelopeBuilder:
             raise ValueError("Must have at least one recipient")
         if self._data is None:
             raise ValueError("You must add data to encrypt")
+
+        # The default content encryption algorithm is AES-128, which the S/MIME
+        # v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
+        self._content_encryption_algorithm = (
+            self._content_encryption_algorithm or algorithms.AES128
+        )
+
         options = list(options)
         if not all(isinstance(x, PKCS7Options) for x in options):
             raise ValueError("options must be from the PKCS7Options enum")

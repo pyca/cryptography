@@ -900,12 +900,18 @@ class TestPKCS7EnvelopeBuilder:
                 b"notacert",  # type: ignore[arg-type]
             )
 
-    def test_invalid_algorithm(self, backend):
+    def test_set_content_encryption_algorithm_twice(self, backend):
+        builder = pkcs7.PKCS7EnvelopeBuilder()
+        builder = builder.set_content_encryption_algorithm(algorithms.AES128)
+        with pytest.raises(ValueError):
+            builder.set_content_encryption_algorithm(algorithms.AES128)
+
+    def test_invalid_content_encryption_algorithm(self, backend):
         class InvalidAlgorithm:
             pass
 
         with pytest.raises(TypeError):
-            pkcs7.PKCS7EnvelopeBuilder().set_algorithm(
+            pkcs7.PKCS7EnvelopeBuilder().set_content_encryption_algorithm(
                 InvalidAlgorithm,  # type: ignore[arg-type]
             )
 
@@ -1088,23 +1094,6 @@ class TestPKCS7EnvelopeBuilder:
         )
         assert enveloped.count(common_name_bytes) == 2
 
-    def test_encrypt_unsupported_algorithm(self, backend):
-        cert, _ = _load_rsa_cert_key()
-
-        # Prepare an unsupported algorithm
-        camellia = algorithms.Camellia
-        camellia.key_size = 128  # type: ignore
-
-        builder = (
-            pkcs7.PKCS7EnvelopeBuilder()
-            .set_data(b"hello world\n")
-            .set_algorithm(camellia)
-            .add_recipient(cert)
-        )
-
-        with pytest.raises(exceptions.UnsupportedAlgorithm):
-            builder.encrypt(serialization.Encoding.DER, [])
-
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.pkcs7_supported()
@@ -1182,7 +1171,7 @@ class TestPKCS7Decrypt:
         builder = (
             pkcs7.PKCS7EnvelopeBuilder()
             .set_data(data)
-            .set_algorithm(algorithms.AES256)
+            .set_content_encryption_algorithm(algorithms.AES256)
             .add_recipient(certificate)
         )
         enveloped = builder.encrypt(serialization.Encoding.PEM, [])
