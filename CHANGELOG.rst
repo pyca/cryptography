@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for PKCS7 decryption & encryption using AES-256 as content algorithm, 
+  in addition to AES-128. 
 
 .. _v44-0-0:
 
