@@ -98,7 +98,7 @@ importlib-resources==6.4.5 ; python_full_version == '3.8.*'
     # via check-sdist
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.4
+jinja2==3.1.5
     # via sphinx
 markupsafe==2.1.5 ; python_full_version < '3.9'
     # via jinja2
