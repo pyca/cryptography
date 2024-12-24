@@ -5,7 +5,7 @@
 import binascii
 
 from cryptography.hazmat.primitives import ciphers
-from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 _RFC6229_KEY_MATERIALS = [
     (
@@ -61,8 +61,8 @@ def _build_vectors():
         for keyinfo in _RFC6229_KEY_MATERIALS:
             key = _key_for_size(size, keyinfo)
             cipher = ciphers.Cipher(
-                algorithms.ARC4(binascii.unhexlify(key)),
-                None,
+                algorithms.AES(binascii.unhexlify(key[:32])),
+                modes.ECB(),
             )
             encryptor = cipher.encryptor()
             current_offset = 0
