@@ -258,7 +258,8 @@ def test_update_auto_chunking():
     large_data = large_mmap(length=2**29 + 2**20)
 
     key = b"\x00" * 16
-    c = ciphers.Cipher(AES(key), modes.ECB())
+    iv = b"\x00" * 12
+    c = ciphers.Cipher(AES(key), modes.GCM(iv))
     encryptor = c.encryptor()
 
     result = encryptor.update(memoryview(large_data))
