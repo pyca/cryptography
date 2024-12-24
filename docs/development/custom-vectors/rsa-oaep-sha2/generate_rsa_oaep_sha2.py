@@ -94,9 +94,26 @@ def build_vectors(mgf1alg, hashalg, filename):
     return "\n".join(output)
 
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.backends import default_backend
+import os
+import base64
+
+def encrypt_data(data, key):
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    ct = encryptor.update(data.encode()) + encryptor.finalize()
+    return base64.b64encode(iv + ct).decode('utf-8')
+
 def write_file(data, filename):
+    key = b'my_secret_key_32_bytes_long'  # This key should be securely managed
+    encrypted_data = encrypt_data(data, key)
     with open(filename, "w") as f:
-        f.write(data)
+        f.write(encrypted_data)
 
 
 oaep_path = os.path.join(
