@@ -8,7 +8,7 @@ import typing
 
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
-from cryptography.hazmat.primitives.ciphers.modes import ECB
+from cryptography.hazmat.primitives.ciphers.modes import GCM
 from cryptography.hazmat.primitives.constant_time import bytes_eq
 
 
@@ -18,7 +18,8 @@ def _wrap_core(
     r: list[bytes],
 ) -> bytes:
     # RFC 3394 Key Wrap - 2.2.1 (index method)
-    encryptor = Cipher(AES(wrapping_key), ECB()).encryptor()
+    iv = os.urandom(12)
+    encryptor = Cipher(AES(wrapping_key), GCM(iv)).encryptor()
     n = len(r)
     for j in range(6):
         for i in range(n):
@@ -33,7 +34,7 @@ def _wrap_core(
 
     assert encryptor.finalize() == b""
 
-    return a + b"".join(r)
+    return iv + a + b"".join(r)
 
 
 def aes_key_wrap(
@@ -61,7 +62,9 @@ def _unwrap_core(
     r: list[bytes],
 ) -> tuple[bytes, list[bytes]]:
     # Implement RFC 3394 Key Unwrap - 2.2.2 (index method)
-    decryptor = Cipher(AES(wrapping_key), ECB()).decryptor()
+    iv = a[:12]
+    a = a[12:]
+    decryptor = Cipher(AES(wrapping_key), GCM(iv)).decryptor()
     n = len(r)
     for j in reversed(range(6)):
         for i in reversed(range(n)):
