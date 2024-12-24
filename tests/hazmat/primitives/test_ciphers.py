@@ -222,7 +222,8 @@ class TestCipherUpdateInto:
 
     def test_update_into_buffer_too_small(self, backend):
         key = b"\x00" * 16
-        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
+        iv = os.urandom(12)
+        c = ciphers.Cipher(AES(key), modes.GCM(iv), backend)
         encryptor = c.encryptor()
         buf = bytearray(16)
         with pytest.raises(ValueError):
@@ -230,7 +231,8 @@ class TestCipherUpdateInto:
 
     def test_update_into_immutable(self, backend):
         key = b"\x00" * 16
-        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
+        iv = os.urandom(12)
+        c = ciphers.Cipher(AES(key), modes.GCM(iv), backend)
         encryptor = c.encryptor()
         buf = b"\x00" * 32
         with pytest.raises((TypeError, BufferError)):
