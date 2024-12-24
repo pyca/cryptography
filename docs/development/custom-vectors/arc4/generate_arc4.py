@@ -3,6 +3,7 @@
 # for complete details.
 
 import binascii
+import os
 
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
@@ -60,9 +61,10 @@ def _build_vectors():
     for size in _SIZES_TO_GENERATE:
         for keyinfo in _RFC6229_KEY_MATERIALS:
             key = _key_for_size(size, keyinfo)
+            iv = os.urandom(16)
             cipher = ciphers.Cipher(
                 algorithms.AES(binascii.unhexlify(key[:32])),
-                modes.ECB(),
+                modes.CBC(iv),
             )
             encryptor = cipher.encryptor()
             current_offset = 0
@@ -77,6 +79,7 @@ def _build_vectors():
                 output.append(f"\nCOUNT = {count}")
                 count += 1
                 output.append(f"KEY = {key}")
+                output.append(f"IV = {binascii.hexlify(iv)}")
                 output.append(f"OFFSET = {offset}")
                 output.append(f"PLAINTEXT = {binascii.hexlify(plaintext)}")
                 output.append(
