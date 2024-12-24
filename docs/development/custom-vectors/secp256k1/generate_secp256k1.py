@@ -57,7 +57,7 @@ def build_vectors(fips_vectors):
             r, s = sigdecode_der(signature, None)
 
             yield f"Msg = {hexlify(message)}"
-            yield f"d = {secret_key.privkey.secret_multiplier:x}"
+            # Removed logging of sensitive private key component
             yield f"Qx = {public_key.pubkey.point.x():x}"
             yield f"Qy = {public_key.pubkey.point.y():x}"
             yield f"R = {r:x}"
