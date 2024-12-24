@@ -86,8 +86,9 @@ class TestCipherContext:
             encryptor.update_into(b"b" * 16, buf)
 
     def test_unaligned_block_encryption(self, backend):
+        iv = binascii.unhexlify(b"0" * 32)
         cipher = Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.ECB(), backend
+            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.CBC(iv), backend
         )
         encryptor = cipher.encryptor()
         ct = encryptor.update(b"a" * 15)
