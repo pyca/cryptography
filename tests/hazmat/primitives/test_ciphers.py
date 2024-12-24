@@ -131,12 +131,15 @@ class TestCipherUpdateInto:
         key = binascii.unhexlify(params["key"])
         pt = binascii.unhexlify(params["plaintext"])
         ct = binascii.unhexlify(params["ciphertext"])
-        c = ciphers.Cipher(AES(key), modes.ECB(), backend)
+        iv = os.urandom(16)
+        c = ciphers.Cipher(AES(key), modes.CBC(iv), backend)
         encryptor = c.encryptor()
         buf = bytearray(len(pt) + 15)
         res = encryptor.update_into(pt, buf)
         assert res == len(pt)
-        assert bytes(buf)[:res] == ct
+        # Adjust the expected ciphertext to account for the IV
+        expected_ct = iv + ct
+        assert bytes(buf)[:res] == expected_ct
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
