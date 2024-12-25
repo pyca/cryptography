@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for Python 3.7 is deprecated and will be removed in the next
+  ``cryptography`` release.
+
 
 .. _v44-0-0:
 
