@@ -19,8 +19,8 @@ __all__ = [
 if sys.version_info[:2] == (3, 7):
     warnings.warn(
         "Python 3.7 is no longer supported by the Python core team "
-        "and support for it is deprecated in cryptography. A future "
-        "release of cryptography will remove support for Python 3.7.",
+        "and support for it is deprecated in cryptography. The next release "
+        "of cryptography will remove support for Python 3.7.",
         utils.CryptographyDeprecationWarning,
         stacklevel=2,
     )
