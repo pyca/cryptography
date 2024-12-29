@@ -15,6 +15,7 @@ def serialize_certificates(
 ) -> bytes: ...
 def encrypt_and_serialize(
     builder: pkcs7.PKCS7EnvelopeBuilder,
+    content_encryption_algorithm: pkcs7.ContentEncryptionAlgorithm,
     encoding: serialization.Encoding,
     options: typing.Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
