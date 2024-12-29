@@ -900,6 +900,12 @@ class TestPKCS7EnvelopeBuilder:
                 b"notacert",  # type: ignore[arg-type]
             )
 
+    def test_invalid_algorithm(self, backend):
+        with pytest.raises(TypeError):
+            pkcs7.PKCS7EnvelopeBuilder().set_algorithm(
+                b"invalid",  # type: ignore[arg-type]
+            )
+
     def test_encrypt_invalid_options(self, backend):
         cert, _ = _load_rsa_cert_key()
         builder = (
@@ -1079,17 +1085,17 @@ class TestPKCS7EnvelopeBuilder:
         )
         assert enveloped.count(common_name_bytes) == 2
 
-    def test_smime_encrypt_unsupported_algorithm(self, backend):
+    def test_encrypt_unsupported_algorithm(self, backend):
         cert, _ = _load_rsa_cert_key()
 
-        class AES192(algorithms.AES):
-            key_sizes = frozenset([192])
-            key_size = 192
+        # Prepare an unsupported algorithm
+        camellia = algorithms.Camellia
+        camellia.key_size = 128  # type: ignore
 
         builder = (
             pkcs7.PKCS7EnvelopeBuilder()
             .set_data(b"hello world\n")
-            .set_algorithm(AES192)
+            .set_algorithm(camellia)
             .add_recipient(cert)
         )
 
