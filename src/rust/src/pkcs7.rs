@@ -95,14 +95,19 @@ fn encrypt_and_serialize<'p>(
         smime_canonicalize(raw_data.as_bytes(), text_mode).0
     };
 
-    // The message is encrypted with AES-128-CBC, which the S/MIME v3.2 RFC
-    // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
-    let key = types::OS_URANDOM.get(py)?.call1((16,))?;
-    let aes128_algorithm = types::AES128.get(py)?.call1((&key,))?;
+    // Get the algorithm
+    let algorithm_type = builder.getattr(pyo3::intern!(py, "_algorithm"))?;
+    let key_size = algorithm_type.getattr(pyo3::intern!(py, "key_size"))?;
+    let key = types::OS_URANDOM
+        .get(py)?
+        .call1((key_size.floor_div(8)?,))?;
+    let algorithm = algorithm_type.call1((&key,))?;
+
+    // Get the mode
     let iv = types::OS_URANDOM.get(py)?.call1((16,))?;
     let cbc_mode = types::CBC.get(py)?.call1((&iv,))?;
 
-    let encrypted_content = symmetric_encrypt(py, aes128_algorithm, cbc_mode, &data_with_header)?;
+    let encrypted_content = symmetric_encrypt(py, algorithm, cbc_mode, &data_with_header)?;
 
     let py_recipients: Vec<pyo3::Bound<'p, x509::certificate::Certificate>> = builder
         .getattr(pyo3::intern!(py, "_recipients"))?
@@ -133,6 +138,20 @@ fn encrypt_and_serialize<'p>(
         });
     }
 
+    // Prepare the algorithm parameters
+    let algorithm_parameters = if algorithm_type.eq(types::AES128.get(py)?)? {
+        AlgorithmParameters::Aes128Cbc(iv.extract()?)
+    } else if algorithm_type.eq(types::AES256.get(py)?)? {
+        AlgorithmParameters::Aes256Cbc(iv.extract()?)
+    } else {
+        return Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err((
+                "Unsupported content encryption algorithm: only AES128 and AES256 are supported.",
+                exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+            )),
+        ));
+    };
+
     let enveloped_data = pkcs7::EnvelopedData {
         version: 0,
         recipient_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
@@ -143,7 +162,7 @@ fn encrypt_and_serialize<'p>(
             content_type: PKCS7_DATA_OID,
             content_encryption_algorithm: AlgorithmIdentifier {
                 oid: asn1::DefinedByMarker::marker(),
-                params: AlgorithmParameters::Aes128Cbc(iv.extract()?),
+                params: algorithm_parameters,
             },
             encrypted_content: Some(&encrypted_content),
         },

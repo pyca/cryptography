@@ -16,6 +16,10 @@ from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
+from cryptography.hazmat.primitives.ciphers import (
+    CipherAlgorithm,
+    algorithms,
+)
 from cryptography.utils import _check_byteslike
 
 load_pem_pkcs7_certificates = rust_pkcs7.load_pem_pkcs7_certificates
@@ -184,6 +188,7 @@ class PKCS7EnvelopeBuilder:
         *,
         _data: bytes | None = None,
         _recipients: list[x509.Certificate] | None = None,
+        _algorithm: type[CipherAlgorithm] | None = None,
     ):
         from cryptography.hazmat.backends.openssl.backend import (
             backend as ossl,
@@ -198,12 +203,20 @@ class PKCS7EnvelopeBuilder:
         self._data = _data
         self._recipients = _recipients if _recipients is not None else []
 
+        # The default content encryption algorithm is AES-128, which the S/MIME
+        # v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
+        self._algorithm = _algorithm or algorithms.AES128
+
     def set_data(self, data: bytes) -> PKCS7EnvelopeBuilder:
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")
 
-        return PKCS7EnvelopeBuilder(_data=data, _recipients=self._recipients)
+        return PKCS7EnvelopeBuilder(
+            _data=data,
+            _recipients=self._recipients,
+            _algorithm=self._algorithm,
+        )
 
     def add_recipient(
         self,
@@ -221,6 +234,19 @@ class PKCS7EnvelopeBuilder:
                 *self._recipients,
                 certificate,
             ],
+            _algorithm=self._algorithm,
+        )
+
+    def set_algorithm(
+        self, algorithm: type[CipherAlgorithm]
+    ) -> PKCS7EnvelopeBuilder:
+        if not issubclass(algorithm, CipherAlgorithm):
+            raise TypeError("Algorithm must be a CipherAlgorithm")
+
+        return PKCS7EnvelopeBuilder(
+            _data=self._data,
+            _recipients=self._recipients,
+            _algorithm=algorithm,
         )
 
     def encrypt(

@@ -10,7 +10,8 @@ Changelog
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
-
+* Added support for PKCS7 decryption & encryption using AES-256 as content algorithm, 
+  in addition to AES-128. 
 
 .. _v44-0-0:
 

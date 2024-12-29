@@ -1268,10 +1268,13 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         >>> from cryptography import x509
         >>> from cryptography.hazmat.primitives import serialization
         >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> from cryptography.hazmat.primitives.ciphers import algorithms
         >>> cert = x509.load_pem_x509_certificate(ca_cert_rsa)
         >>> options = [pkcs7.PKCS7Options.Text]
         >>> pkcs7.PKCS7EnvelopeBuilder().set_data(
         ...     b"data to encrypt"
+        ... ).set_algorithm(
+        ...     algorithms.AES128
         ... ).add_recipient(
         ...     cert
         ... ).encrypt(
@@ -1283,6 +1286,13 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
         :param data: The data to be encrypted.
         :type data: :term:`bytes-like`
+
+    .. method:: set_algorithm(algorithm)
+
+        Sets the content encryption algorithm to use. Only AES-128 and AES-256 are supported.
+        
+        :type algorithm: A :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES`
+            with a key size of 128 or 256 bits.
 
     .. method:: add_recipient(certificate)
 

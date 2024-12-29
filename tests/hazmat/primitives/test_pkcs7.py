@@ -15,6 +15,7 @@ from cryptography.exceptions import _Reasons
 from cryptography.hazmat.bindings._rust import test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
 from tests.x509.test_x509 import _generate_ca_and_leaf
 
@@ -1078,6 +1079,23 @@ class TestPKCS7EnvelopeBuilder:
         )
         assert enveloped.count(common_name_bytes) == 2
 
+    def test_smime_encrypt_unsupported_algorithm(self, backend):
+        cert, _ = _load_rsa_cert_key()
+
+        class AES192(algorithms.AES):
+            key_sizes = frozenset([192])
+            key_size = 192
+
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(b"hello world\n")
+            .set_algorithm(AES192)
+            .add_recipient(cert)
+        )
+
+        with pytest.raises(exceptions.UnsupportedAlgorithm):
+            builder.encrypt(serialization.Encoding.DER, [])
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.pkcs7_supported()
@@ -1151,12 +1169,14 @@ class TestPKCS7Decrypt:
     def test_pkcs7_decrypt_aes_256_cbc_encrypted_content(
         self, backend, data, certificate, private_key
     ):
-        # Loading encrypted content (for now, not possible natively)
-        enveloped = load_vectors_from_file(
-            os.path.join("pkcs7", "enveloped-aes-256-cbc.pem"),
-            loader=lambda pemfile: pemfile.read(),
-            mode="rb",
+        # Encryption
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .set_algorithm(algorithms.AES256)
+            .add_recipient(certificate)
         )
+        enveloped = builder.encrypt(serialization.Encoding.PEM, [])
 
         # Test decryption: new lines are canonicalized to '\r\n' when
         # encryption has no Binary option
