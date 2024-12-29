@@ -267,7 +267,7 @@ class PKCS7EnvelopeBuilder:
 
         # The default content encryption algorithm is AES-128, which the S/MIME
         # v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
-        self._content_encryption_algorithm = (
+        content_encryption_algorithm = (
             self._content_encryption_algorithm or algorithms.AES128
         )
 
@@ -299,7 +299,9 @@ class PKCS7EnvelopeBuilder:
                 "Cannot use Binary and Text options at the same time"
             )
 
-        return rust_pkcs7.encrypt_and_serialize(self, encoding, options)
+        return rust_pkcs7.encrypt_and_serialize(
+            self, content_encryption_algorithm, encoding, options
+        )
 
 
 pkcs7_decrypt_der = rust_pkcs7.decrypt_der

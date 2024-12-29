@@ -84,6 +84,7 @@ fn serialize_certificates<'p>(
 fn encrypt_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
+    content_encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     encoding: &pyo3::Bound<'p, pyo3::PyAny>,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
@@ -96,8 +97,7 @@ fn encrypt_and_serialize<'p>(
     };
 
     // Get the content encryption algorithm
-    let content_encryption_algorithm_type =
-        builder.getattr(pyo3::intern!(py, "_content_encryption_algorithm"))?;
+    let content_encryption_algorithm_type = content_encryption_algorithm;
     let key_size = content_encryption_algorithm_type.getattr(pyo3::intern!(py, "key_size"))?;
     let key = types::OS_URANDOM
         .get(py)?
