@@ -901,9 +901,12 @@ class TestPKCS7EnvelopeBuilder:
             )
 
     def test_invalid_algorithm(self, backend):
+        class InvalidAlgorithm:
+            pass
+
         with pytest.raises(TypeError):
             pkcs7.PKCS7EnvelopeBuilder().set_algorithm(
-                b"invalid",  # type: ignore[arg-type]
+                InvalidAlgorithm,  # type: ignore[arg-type]
             )
 
     def test_encrypt_invalid_options(self, backend):
