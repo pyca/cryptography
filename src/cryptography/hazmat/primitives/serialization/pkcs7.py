@@ -38,7 +38,9 @@ PKCS7PrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
 ]
 
-ContentEncryptionAlgorithm = type[algorithms.AES128] | type[algorithms.AES256]
+ContentEncryptionAlgorithm = typing.Union[
+    typing.Type[algorithms.AES128], typing.Type[algorithms.AES256]
+]
 
 
 class PKCS7Options(utils.Enum):
