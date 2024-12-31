@@ -14,4 +14,4 @@ __version__ = "45.0.0.dev1"
 
 
 __author__ = "The Python Cryptographic Authority and individual contributors"
-__copyright__ = f"Copyright 2013-2024 {__author__}"
+__copyright__ = f"Copyright 2013-2025 {__author__}"
