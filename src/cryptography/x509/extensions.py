@@ -9,6 +9,7 @@ import datetime
 import hashlib
 import ipaddress
 import typing
+from collections.abc import Iterable, Iterator
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import asn1
@@ -109,9 +110,7 @@ class ExtensionType(metaclass=abc.ABCMeta):
 
 
 class Extensions:
-    def __init__(
-        self, extensions: typing.Iterable[Extension[ExtensionType]]
-    ) -> None:
+    def __init__(self, extensions: Iterable[Extension[ExtensionType]]) -> None:
         self._extensions = list(extensions)
 
     def get_extension_for_oid(
@@ -182,7 +181,7 @@ class AuthorityKeyIdentifier(ExtensionType):
     def __init__(
         self,
         key_identifier: bytes | None,
-        authority_cert_issuer: typing.Iterable[GeneralName] | None,
+        authority_cert_issuer: Iterable[GeneralName] | None,
         authority_cert_serial_number: int | None,
     ) -> None:
         if (authority_cert_issuer is None) != (
@@ -323,9 +322,7 @@ class SubjectKeyIdentifier(ExtensionType):
 class AuthorityInformationAccess(ExtensionType):
     oid = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 
-    def __init__(
-        self, descriptions: typing.Iterable[AccessDescription]
-    ) -> None:
+    def __init__(self, descriptions: Iterable[AccessDescription]) -> None:
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -356,9 +353,7 @@ class AuthorityInformationAccess(ExtensionType):
 class SubjectInformationAccess(ExtensionType):
     oid = ExtensionOID.SUBJECT_INFORMATION_ACCESS
 
-    def __init__(
-        self, descriptions: typing.Iterable[AccessDescription]
-    ) -> None:
+    def __init__(self, descriptions: Iterable[AccessDescription]) -> None:
         descriptions = list(descriptions)
         if not all(isinstance(x, AccessDescription) for x in descriptions):
             raise TypeError(
@@ -506,7 +501,7 @@ class CRLDistributionPoints(ExtensionType):
     oid = ExtensionOID.CRL_DISTRIBUTION_POINTS
 
     def __init__(
-        self, distribution_points: typing.Iterable[DistributionPoint]
+        self, distribution_points: Iterable[DistributionPoint]
     ) -> None:
         distribution_points = list(distribution_points)
         if not all(
@@ -543,7 +538,7 @@ class FreshestCRL(ExtensionType):
     oid = ExtensionOID.FRESHEST_CRL
 
     def __init__(
-        self, distribution_points: typing.Iterable[DistributionPoint]
+        self, distribution_points: Iterable[DistributionPoint]
     ) -> None:
         distribution_points = list(distribution_points)
         if not all(
@@ -579,10 +574,10 @@ class FreshestCRL(ExtensionType):
 class DistributionPoint:
     def __init__(
         self,
-        full_name: typing.Iterable[GeneralName] | None,
+        full_name: Iterable[GeneralName] | None,
         relative_name: RelativeDistinguishedName | None,
         reasons: frozenset[ReasonFlags] | None,
-        crl_issuer: typing.Iterable[GeneralName] | None,
+        crl_issuer: Iterable[GeneralName] | None,
     ) -> None:
         if full_name and relative_name:
             raise ValueError(
@@ -824,7 +819,7 @@ class PolicyConstraints(ExtensionType):
 class CertificatePolicies(ExtensionType):
     oid = ExtensionOID.CERTIFICATE_POLICIES
 
-    def __init__(self, policies: typing.Iterable[PolicyInformation]) -> None:
+    def __init__(self, policies: Iterable[PolicyInformation]) -> None:
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
@@ -856,7 +851,7 @@ class PolicyInformation:
     def __init__(
         self,
         policy_identifier: ObjectIdentifier,
-        policy_qualifiers: typing.Iterable[str | UserNotice] | None,
+        policy_qualifiers: Iterable[str | UserNotice] | None,
     ) -> None:
         if not isinstance(policy_identifier, ObjectIdentifier):
             raise TypeError("policy_identifier must be an ObjectIdentifier")
@@ -956,7 +951,7 @@ class NoticeReference:
     def __init__(
         self,
         organization: str | None,
-        notice_numbers: typing.Iterable[int],
+        notice_numbers: Iterable[int],
     ) -> None:
         self._organization = organization
         notice_numbers = list(notice_numbers)
@@ -995,7 +990,7 @@ class NoticeReference:
 class ExtendedKeyUsage(ExtensionType):
     oid = ExtensionOID.EXTENDED_KEY_USAGE
 
-    def __init__(self, usages: typing.Iterable[ObjectIdentifier]) -> None:
+    def __init__(self, usages: Iterable[ObjectIdentifier]) -> None:
         usages = list(usages)
         if not all(isinstance(x, ObjectIdentifier) for x in usages):
             raise TypeError(
@@ -1063,7 +1058,7 @@ class PrecertPoison(ExtensionType):
 class TLSFeature(ExtensionType):
     oid = ExtensionOID.TLS_FEATURE
 
-    def __init__(self, features: typing.Iterable[TLSFeatureType]) -> None:
+    def __init__(self, features: Iterable[TLSFeatureType]) -> None:
         features = list(features)
         if (
             not all(isinstance(x, TLSFeatureType) for x in features)
@@ -1278,8 +1273,8 @@ class NameConstraints(ExtensionType):
 
     def __init__(
         self,
-        permitted_subtrees: typing.Iterable[GeneralName] | None,
-        excluded_subtrees: typing.Iterable[GeneralName] | None,
+        permitted_subtrees: Iterable[GeneralName] | None,
+        excluded_subtrees: Iterable[GeneralName] | None,
     ) -> None:
         if permitted_subtrees is not None:
             permitted_subtrees = list(permitted_subtrees)
@@ -1327,11 +1322,11 @@ class NameConstraints(ExtensionType):
             and self.permitted_subtrees == other.permitted_subtrees
         )
 
-    def _validate_tree(self, tree: typing.Iterable[GeneralName]) -> None:
+    def _validate_tree(self, tree: Iterable[GeneralName]) -> None:
         self._validate_ip_name(tree)
         self._validate_dns_name(tree)
 
-    def _validate_ip_name(self, tree: typing.Iterable[GeneralName]) -> None:
+    def _validate_ip_name(self, tree: Iterable[GeneralName]) -> None:
         if any(
             isinstance(name, IPAddress)
             and not isinstance(
@@ -1344,7 +1339,7 @@ class NameConstraints(ExtensionType):
                 " IPv6Network object"
             )
 
-    def _validate_dns_name(self, tree: typing.Iterable[GeneralName]) -> None:
+    def _validate_dns_name(self, tree: Iterable[GeneralName]) -> None:
         if any(
             isinstance(name, DNSName) and "*" in name.value for name in tree
         ):
@@ -1437,7 +1432,7 @@ class Extension(typing.Generic[ExtensionTypeVar]):
 
 
 class GeneralNames:
-    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+    def __init__(self, general_names: Iterable[GeneralName]) -> None:
         general_names = list(general_names)
         if not all(isinstance(x, GeneralName) for x in general_names):
             raise TypeError(
@@ -1519,7 +1514,7 @@ class GeneralNames:
 class SubjectAlternativeName(ExtensionType):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
-    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+    def __init__(self, general_names: Iterable[GeneralName]) -> None:
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1591,7 +1586,7 @@ class SubjectAlternativeName(ExtensionType):
 class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
-    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+    def __init__(self, general_names: Iterable[GeneralName]) -> None:
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1663,7 +1658,7 @@ class IssuerAlternativeName(ExtensionType):
 class CertificateIssuer(ExtensionType):
     oid = CRLEntryExtensionOID.CERTIFICATE_ISSUER
 
-    def __init__(self, general_names: typing.Iterable[GeneralName]) -> None:
+    def __init__(self, general_names: Iterable[GeneralName]) -> None:
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1802,9 +1797,7 @@ class PrecertificateSignedCertificateTimestamps(ExtensionType):
 
     def __init__(
         self,
-        signed_certificate_timestamps: typing.Iterable[
-            SignedCertificateTimestamp
-        ],
+        signed_certificate_timestamps: Iterable[SignedCertificateTimestamp],
     ) -> None:
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
@@ -1845,9 +1838,7 @@ class SignedCertificateTimestamps(ExtensionType):
 
     def __init__(
         self,
-        signed_certificate_timestamps: typing.Iterable[
-            SignedCertificateTimestamp
-        ],
+        signed_certificate_timestamps: Iterable[SignedCertificateTimestamp],
     ) -> None:
         signed_certificate_timestamps = list(signed_certificate_timestamps)
         if not all(
@@ -1915,7 +1906,7 @@ class OCSPNonce(ExtensionType):
 class OCSPAcceptableResponses(ExtensionType):
     oid = OCSPExtensionOID.ACCEPTABLE_RESPONSES
 
-    def __init__(self, responses: typing.Iterable[ObjectIdentifier]) -> None:
+    def __init__(self, responses: Iterable[ObjectIdentifier]) -> None:
         responses = list(responses)
         if any(not isinstance(r, ObjectIdentifier) for r in responses):
             raise TypeError("All responses must be ObjectIdentifiers")
@@ -1934,7 +1925,7 @@ class OCSPAcceptableResponses(ExtensionType):
     def __repr__(self) -> str:
         return f"<OCSPAcceptableResponses(responses={self._responses})>"
 
-    def __iter__(self) -> typing.Iterator[ObjectIdentifier]:
+    def __iter__(self) -> Iterator[ObjectIdentifier]:
         return iter(self._responses)
 
     def public_bytes(self) -> bytes:
@@ -1946,7 +1937,7 @@ class IssuingDistributionPoint(ExtensionType):
 
     def __init__(
         self,
-        full_name: typing.Iterable[GeneralName] | None,
+        full_name: Iterable[GeneralName] | None,
         relative_name: RelativeDistinguishedName | None,
         only_contains_user_certs: bool,
         only_contains_ca_certs: bool,
@@ -2224,8 +2215,8 @@ class ProfessionInfo:
     def __init__(
         self,
         naming_authority: NamingAuthority | None,
-        profession_items: typing.Iterable[str],
-        profession_oids: typing.Iterable[ObjectIdentifier] | None,
+        profession_items: Iterable[str],
+        profession_oids: Iterable[ObjectIdentifier] | None,
         registration_number: str | None,
         add_profession_info: bytes | None,
     ) -> None:
@@ -2328,7 +2319,7 @@ class Admission:
         self,
         admission_authority: GeneralName | None,
         naming_authority: NamingAuthority | None,
-        profession_infos: typing.Iterable[ProfessionInfo],
+        profession_infos: Iterable[ProfessionInfo],
     ) -> None:
         if admission_authority is not None and not isinstance(
             admission_authority, GeneralName
@@ -2398,7 +2389,7 @@ class Admissions(ExtensionType):
     def __init__(
         self,
         authority: GeneralName | None,
-        admissions: typing.Iterable[Admission],
+        admissions: Iterable[Admission],
     ) -> None:
         if authority is not None and not isinstance(authority, GeneralName):
             raise TypeError("authority must be a GeneralName")

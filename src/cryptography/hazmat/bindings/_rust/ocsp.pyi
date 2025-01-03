@@ -3,7 +3,7 @@
 # for complete details.
 
 import datetime
-import typing
+from collections.abc import Iterator
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -25,7 +25,7 @@ class OCSPRequest:
 
 class OCSPResponse:
     @property
-    def responses(self) -> typing.Iterator[OCSPSingleResponse]: ...
+    def responses(self) -> Iterator[OCSPSingleResponse]: ...
     @property
     def response_status(self) -> ocsp.OCSPResponseStatus: ...
     @property

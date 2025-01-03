@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import typing
+from collections.abc import Callable
 
 from cryptography import utils
 from cryptography.exceptions import (
@@ -36,7 +37,7 @@ class CounterLocation(utils.Enum):
 class _KBKDFDeriver:
     def __init__(
         self,
-        prf: typing.Callable,
+        prf: Callable,
         mode: Mode,
         length: int,
         rlen: int,

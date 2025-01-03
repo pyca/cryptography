@@ -1148,7 +1148,7 @@ class TestRSACertificate:
 
         with pytest.raises(
             x509.DuplicateExtension,
-            match="Duplicate 2.5.29.19 extension found",
+            match=r"Duplicate 2\.5\.29\.19 extension found",
         ):
             cert.tbs_precertificate_bytes
 

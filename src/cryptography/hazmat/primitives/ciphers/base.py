@@ -134,9 +134,9 @@ _CIPHER_TYPE = Cipher[
     typing.Union[
         modes.ModeWithNonce,
         modes.ModeWithTweak,
-        None,
         modes.ECB,
         modes.ModeWithInitializationVector,
+        None,
     ]
 ]
 

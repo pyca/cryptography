@@ -10,6 +10,7 @@ import email.message
 import email.policy
 import io
 import typing
+from collections.abc import Iterable
 
 from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
@@ -133,7 +134,7 @@ class PKCS7SignatureBuilder:
     def sign(
         self,
         encoding: serialization.Encoding,
-        options: typing.Iterable[PKCS7Options],
+        options: Iterable[PKCS7Options],
         backend: typing.Any = None,
     ) -> bytes:
         if len(self._signers) == 0:
@@ -258,7 +259,7 @@ class PKCS7EnvelopeBuilder:
     def encrypt(
         self,
         encoding: serialization.Encoding,
-        options: typing.Iterable[PKCS7Options],
+        options: Iterable[PKCS7Options],
     ) -> bytes:
         if len(self._recipients) == 0:
             raise ValueError("Must have at least one recipient")

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import typing
+from collections.abc import Iterable
 
 from cryptography import x509
 from cryptography.hazmat.bindings._rust import pkcs12 as rust_pkcs12
@@ -122,7 +123,7 @@ def serialize_key_and_certificates(
     name: bytes | None,
     key: PKCS12PrivateKeyTypes | None,
     cert: x509.Certificate | None,
-    cas: typing.Iterable[_PKCS12CATypes] | None,
+    cas: Iterable[_PKCS12CATypes] | None,
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
     if key is not None and not isinstance(

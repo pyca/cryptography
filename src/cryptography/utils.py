@@ -7,8 +7,8 @@ from __future__ import annotations
 import enum
 import sys
 import types
-import typing
 import warnings
+from collections.abc import Callable, Sequence
 
 
 # We use a UserWarning subclass, instead of DeprecationWarning, because CPython
@@ -81,7 +81,7 @@ class _ModuleWithDeprecations(types.ModuleType):
 
         delattr(self._module, attr)
 
-    def __dir__(self) -> typing.Sequence[str]:
+    def __dir__(self) -> Sequence[str]:
         return ["_module", *dir(self._module)]
 
 
@@ -102,7 +102,7 @@ def deprecated(
     return dv
 
 
-def cached_property(func: typing.Callable) -> property:
+def cached_property(func: Callable) -> property:
     cached_name = f"_cached_{func}"
     sentinel = object()
 
