@@ -13,8 +13,10 @@ runs:
   steps:
     - name: Normalize key
       id: normalized-key
-      run: echo "key=$(echo "${{ inputs.key }}" | tr -d ',')" >> $GITHUB_OUTPUT
+      run: echo "key=$(echo "${KEY}" | tr -d ',')" >> $GITHUB_OUTPUT
       shell: bash
+      env:
+        KEY: "${{ inputs.key }}"
     - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099b1eeec3  # v2.7.7
       with:
         key: ${{ steps.normalized-key.outputs.key }}-3
