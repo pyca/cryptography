@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import typing
+from collections.abc import Callable
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized, InvalidKey
@@ -31,7 +32,7 @@ def _common_args_checks(
 def _concatkdf_derive(
     key_material: bytes,
     length: int,
-    auxfn: typing.Callable[[], hashes.HashContext],
+    auxfn: Callable[[], hashes.HashContext],
     otherinfo: bytes,
 ) -> bytes:
     utils._check_byteslike("key_material", key_material)

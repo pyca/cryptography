@@ -9,6 +9,7 @@ import binascii
 import os
 import time
 import typing
+from collections.abc import Iterable
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
@@ -168,7 +169,7 @@ class Fernet:
 
 
 class MultiFernet:
-    def __init__(self, fernets: typing.Iterable[Fernet]):
+    def __init__(self, fernets: Iterable[Fernet]):
         fernets = list(fernets)
         if not fernets:
             raise ValueError(

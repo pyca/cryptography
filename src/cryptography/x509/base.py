@@ -9,6 +9,7 @@ import datetime
 import os
 import typing
 import warnings
+from collections.abc import Iterable
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
@@ -131,7 +132,7 @@ class Attribute:
 class Attributes:
     def __init__(
         self,
-        attributes: typing.Iterable[Attribute],
+        attributes: Iterable[Attribute],
     ) -> None:
         self._attributes = list(attributes)
 

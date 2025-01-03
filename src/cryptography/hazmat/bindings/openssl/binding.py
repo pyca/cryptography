@@ -10,6 +10,7 @@ import threading
 import types
 import typing
 import warnings
+from collections.abc import Callable
 
 import cryptography
 from cryptography.exceptions import InternalError
@@ -35,7 +36,7 @@ def _openssl_assert(ok: bool) -> None:
 
 def build_conditional_library(
     lib: typing.Any,
-    conditional_names: dict[str, typing.Callable[[], list[str]]],
+    conditional_names: dict[str, Callable[[], list[str]]],
 ) -> typing.Any:
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib  # type: ignore[attr-defined]

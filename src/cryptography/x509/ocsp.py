@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import datetime
-import typing
+from collections.abc import Iterable
 
 from cryptography import utils, x509
 from cryptography.hazmat.bindings._rust import ocsp
@@ -280,7 +280,7 @@ class OCSPResponseBuilder:
         )
 
     def certificates(
-        self, certs: typing.Iterable[x509.Certificate]
+        self, certs: Iterable[x509.Certificate]
     ) -> OCSPResponseBuilder:
         if self._certs is not None:
             raise ValueError("certificates may only be set once")

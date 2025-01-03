@@ -2,7 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import typing
+from collections.abc import Iterable
 
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -17,30 +17,30 @@ def encrypt_and_serialize(
     builder: pkcs7.PKCS7EnvelopeBuilder,
     content_encryption_algorithm: pkcs7.ContentEncryptionAlgorithm,
     encoding: serialization.Encoding,
-    options: typing.Iterable[pkcs7.PKCS7Options],
+    options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
 def sign_and_serialize(
     builder: pkcs7.PKCS7SignatureBuilder,
     encoding: serialization.Encoding,
-    options: typing.Iterable[pkcs7.PKCS7Options],
+    options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
 def decrypt_der(
     data: bytes,
     certificate: x509.Certificate,
     private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[pkcs7.PKCS7Options],
+    options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
 def decrypt_pem(
     data: bytes,
     certificate: x509.Certificate,
     private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[pkcs7.PKCS7Options],
+    options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
 def decrypt_smime(
     data: bytes,
     certificate: x509.Certificate,
     private_key: rsa.RSAPrivateKey,
-    options: typing.Iterable[pkcs7.PKCS7Options],
+    options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
 def load_pem_pkcs7_certificates(
     data: bytes,

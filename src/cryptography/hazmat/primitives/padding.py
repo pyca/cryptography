@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import abc
-import typing
+from collections.abc import Callable
 
 from cryptography import utils
 from cryptography.exceptions import AlreadyFinalized
@@ -59,7 +59,7 @@ def _byte_padding_update(
 def _byte_padding_pad(
     buffer_: bytes | None,
     block_size: int,
-    paddingfn: typing.Callable[[int], bytes],
+    paddingfn: Callable[[int], bytes],
 ) -> bytes:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
@@ -89,7 +89,7 @@ def _byte_unpadding_update(
 def _byte_unpadding_check(
     buffer_: bytes | None,
     block_size: int,
-    checkfn: typing.Callable[[bytes], int],
+    checkfn: Callable[[bytes], int],
 ) -> bytes:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")

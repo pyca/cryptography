@@ -9,6 +9,7 @@ import re
 import sys
 import typing
 import warnings
+from collections.abc import Iterable, Iterator
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
@@ -225,7 +226,7 @@ class NameAttribute(typing.Generic[NameAttributeValueType]):
 
 
 class RelativeDistinguishedName:
-    def __init__(self, attributes: typing.Iterable[NameAttribute]):
+    def __init__(self, attributes: Iterable[NameAttribute]):
         attributes = list(attributes)
         if not attributes:
             raise ValueError("a relative distinguished name cannot be empty")
@@ -268,7 +269,7 @@ class RelativeDistinguishedName:
     def __hash__(self) -> int:
         return hash(self._attribute_set)
 
-    def __iter__(self) -> typing.Iterator[NameAttribute]:
+    def __iter__(self) -> Iterator[NameAttribute]:
         return iter(self._attributes)
 
     def __len__(self) -> int:
@@ -280,16 +281,16 @@ class RelativeDistinguishedName:
 
 class Name:
     @typing.overload
-    def __init__(self, attributes: typing.Iterable[NameAttribute]) -> None: ...
+    def __init__(self, attributes: Iterable[NameAttribute]) -> None: ...
 
     @typing.overload
     def __init__(
-        self, attributes: typing.Iterable[RelativeDistinguishedName]
+        self, attributes: Iterable[RelativeDistinguishedName]
     ) -> None: ...
 
     def __init__(
         self,
-        attributes: typing.Iterable[NameAttribute | RelativeDistinguishedName],
+        attributes: Iterable[NameAttribute | RelativeDistinguishedName],
     ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
@@ -357,7 +358,7 @@ class Name:
         # for you, consider optimizing!
         return hash(tuple(self._attributes))
 
-    def __iter__(self) -> typing.Iterator[NameAttribute]:
+    def __iter__(self) -> Iterator[NameAttribute]:
         for rdn in self._attributes:
             yield from rdn
 
