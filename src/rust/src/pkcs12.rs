@@ -8,7 +8,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
-use cryptography_x509::common::Utf8StoredBMPString;
+use cryptography_x509::common::{Asn1Write, Utf8StoredBMPString};
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::IntoPyObject;
 use std::collections::hash_map::DefaultHasher;
@@ -577,7 +577,7 @@ fn serialize_key_and_certificates<'p>(
                 &cert_bag_contents,
             )?;
 
-            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo::<Asn1Write> {
                 _content_type: asn1::DefinedByMarker::marker(),
                 content: cryptography_x509::pkcs7::Content::EncryptedData(asn1::Explicit::new(
                     cryptography_x509::pkcs7::EncryptedData {
@@ -595,7 +595,7 @@ fn serialize_key_and_certificates<'p>(
                 )),
             })
         } else {
-            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo::<Asn1Write> {
                 _content_type: asn1::DefinedByMarker::marker(),
                 content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
                     &cert_bag_contents,
