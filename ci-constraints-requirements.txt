@@ -307,7 +307,7 @@ uv==0.5.13 ; python_full_version >= '3.8'
     # via nox
 virtualenv==20.26.6 ; python_full_version < '3.8'
     # via nox
-virtualenv==20.28.0 ; python_full_version >= '3.8'
+virtualenv==20.28.1 ; python_full_version >= '3.8'
     # via nox
 webencodings==0.5.1 ; python_full_version < '3.8'
     # via bleach
