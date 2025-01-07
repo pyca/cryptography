@@ -665,8 +665,8 @@ HKDF
                                                           called more than
                                                           once.
 
-        Derives a new key from the input key material by performing both the
-        extract and expand operations.
+        Derives a new key from the input key material by only performing the
+        expand operation.
 
     .. method:: verify(key_material, expected_key)
 
