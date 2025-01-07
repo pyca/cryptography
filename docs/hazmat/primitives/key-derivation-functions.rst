@@ -162,7 +162,7 @@ PBKDF2
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     salt=salt,
-        ...     iterations=480000,
+        ...     iterations=1_000_000,
         ... )
         >>> key = kdf.derive(b"my great password")
         >>> # verify
@@ -170,7 +170,7 @@ PBKDF2
         ...     algorithm=hashes.SHA256(),
         ...     length=32,
         ...     salt=salt,
-        ...     iterations=480000,
+        ...     iterations=1_000_000,
         ... )
         >>> kdf.verify(b"my great password", key)
 
