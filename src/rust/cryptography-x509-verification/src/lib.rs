@@ -180,7 +180,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     IPConstraint::from_bytes(constraint),
                     IPAddress::from_bytes(name),
                 ) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable IP name constraint: malformed SAN {:?}",
                         name,
@@ -191,16 +191,16 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     )))),
                 }
             }
-            (GeneralName::RFC822Name(pattern), GeneralName::RFC822Name(name)) => {
-                match (RFC822Constraint::new(pattern.0), RFC822Name::new(name.0)) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+            (GeneralName::RFC822Name(constraint), GeneralName::RFC822Name(name)) => {
+                match (RFC822Constraint::new(constraint.0), RFC822Name::new(name.0)) {
+                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable RFC822 name constraint: malformed SAN {:?}",
                         name.0,
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "malformed RFC822 name constraints: {:?}",
-                        pattern.0
+                        constraint.0
                     )))),
                 }
             }
