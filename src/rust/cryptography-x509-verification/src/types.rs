@@ -138,6 +138,13 @@ impl<'a> DNSPattern<'a> {
             },
         }
     }
+
+    pub fn inner_name(&self) -> &DNSName<'a> {
+        match self {
+            DNSPattern::Exact(dnsname) => dnsname,
+            DNSPattern::Wildcard(dnsname) => dnsname,
+        }
+    }
 }
 
 /// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
