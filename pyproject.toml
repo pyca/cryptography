@@ -6,8 +6,9 @@ requires = [
 
     # Must be kept in sync with `project.dependencies`
     "cffi>=1.12; platform_python_implementation != 'PyPy'",
-    # Needed because cffi imports distutils, and in Python 3.12, distutils has
-    # been removed from the stdlib, but installing setuptools puts it back.
+    # Used by cffi (which import distutils, and in Python 3.12, distutils has
+    # been removed from the stdlib, but installing setuptools puts it back) as
+    # well as our build.rs for the rust/cffi bridge.
     "setuptools!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2",
 ]
 build-backend = "maturin"
@@ -16,11 +17,11 @@ build-backend = "maturin"
 name = "cryptography"
 version = "45.0.0.dev1"
 authors = [
-    {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
+    { name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org" },
 ]
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 readme = "README.rst"
-license = {text = "Apache-2.0 OR BSD-3-Clause"}
+license = { text = "Apache-2.0 OR BSD-3-Clause" }
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -74,11 +75,24 @@ test = [
     "certifi >=2024",
 ]
 test-randomorder = ["pytest-randomly"]
-docs = ["sphinx >=5.3.0", "sphinx-rtd-theme >=3.0.0; python_version >= '3.8'", "sphinx-inline-tabs; python_version >= '3.8'"]
-docstest = ["pyenchant >=3", "readme-renderer >=30.0", "sphinxcontrib-spelling >=7.3.1"]
+docs = [
+    "sphinx >=5.3.0",
+    "sphinx-rtd-theme >=3.0.0; python_version >= '3.8'",
+    "sphinx-inline-tabs; python_version >= '3.8'",
+]
+docstest = [
+    "pyenchant >=3",
+    "readme-renderer >=30.0",
+    "sphinxcontrib-spelling >=7.3.1",
+]
 sdist = ["build >=1.0.0"]
 # `click` included because its needed to type check `release.py`
-pep8test = ["ruff >=0.3.6", "mypy >=1.4", "check-sdist; python_version >= '3.8'", "click >=8.0.1"]
+pep8test = [
+    "ruff >=0.3.6",
+    "mypy >=1.4",
+    "check-sdist; python_version >= '3.8'",
+    "click >=8.0.1",
+]
 
 [tool.maturin]
 python-source = "src"
@@ -137,18 +151,13 @@ warn_unused_configs = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = [
-    "pretend"
-]
+module = ["pretend"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
 branch = true
 relative_files = true
-source = [
-    "cryptography",
-    "tests/",
-]
+source = ["cryptography", "tests/"]
 
 [tool.coverage.paths]
 source = [
@@ -157,10 +166,7 @@ source = [
     "*.nox\\*\\Lib\\site-packages\\cryptography",
     "*.nox/pypy/site-packages/cryptography",
 ]
-tests = [
-    "tests/",
-    "*tests\\",
-]
+tests = ["tests/", "*tests\\"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -186,4 +192,3 @@ git-only = [
     ".gitattributes",
     ".gitignore",
 ]
-
