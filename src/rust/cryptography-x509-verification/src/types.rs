@@ -139,6 +139,12 @@ impl<'a> DNSPattern<'a> {
         }
     }
 
+    /// Returns the inner `DNSName` within this `DNSPattern`, e.g.
+    /// `foo.com` for `*.foo.com` or `example.com` for `example.com`.
+    ///
+    /// This API must not be used to bypass pattern matching; it exists
+    /// solely to enable checks that only require the inner name, such
+    /// as Name Constraint checks.
     pub fn inner_name(&self) -> &DNSName<'a> {
         match self {
             DNSPattern::Exact(dnsname) => dnsname,
