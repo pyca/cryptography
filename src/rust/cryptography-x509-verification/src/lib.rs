@@ -23,13 +23,12 @@ use cryptography_x509::{
     name::GeneralName,
     oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
 };
-use types::{RFC822Constraint, RFC822Name};
+use types::{DNSPattern, RFC822Constraint, RFC822Name};
 
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
 use crate::trust_store::Store;
-use crate::types::DNSName;
 use crate::types::{DNSConstraint, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 
@@ -155,45 +154,53 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         budget.name_constraint_check()?;
 
         match (constraint, san) {
-            (GeneralName::DNSName(pattern), GeneralName::DNSName(name)) => {
-                match (DNSConstraint::new(pattern.0), DNSName::new(name.0)) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+            (GeneralName::DNSName(constraint), GeneralName::DNSName(name)) => {
+                // NOTE: A DNS SAN can be a wildcard pattern instead of a normal DNS name.
+                // These are handled by matching unconditionally on the inner name,
+                // since a NC of `foo.com` will match both `foo.com` and any arbitrarily deep
+                // subdomain of `foo.com`, where a wildcard SAN like `*.foo.com` will only
+                // match exactly one subdomain of `foo.com`. Therefore, the NC's matching
+                // set is a strict superset of any possible wildcard SAN pattern.
+                match (DNSConstraint::new(constraint.0), DNSPattern::new(name.0)) {
+                    (Some(constraint), Some(name)) => {
+                        Ok(Applied(constraint.matches(name.inner_name())))
+                    }
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable DNS name constraint: malformed SAN {}",
                         name.0
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "malformed DNS name constraint: {}",
-                        pattern.0
+                        constraint.0
                     )))),
                 }
             }
-            (GeneralName::IPAddress(pattern), GeneralName::IPAddress(name)) => {
+            (GeneralName::IPAddress(constraint), GeneralName::IPAddress(name)) => {
                 match (
-                    IPConstraint::from_bytes(pattern),
+                    IPConstraint::from_bytes(constraint),
                     IPAddress::from_bytes(name),
                 ) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable IP name constraint: malformed SAN {:?}",
                         name,
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "malformed IP name constraints: {:?}",
-                        pattern
+                        constraint
                     )))),
                 }
             }
-            (GeneralName::RFC822Name(pattern), GeneralName::RFC822Name(name)) => {
-                match (RFC822Constraint::new(pattern.0), RFC822Name::new(name.0)) {
-                    (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
+            (GeneralName::RFC822Name(constraint), GeneralName::RFC822Name(name)) => {
+                match (RFC822Constraint::new(constraint.0), RFC822Name::new(name.0)) {
+                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable RFC822 name constraint: malformed SAN {:?}",
                         name.0,
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "malformed RFC822 name constraints: {:?}",
-                        pattern.0
+                        constraint.0
                     )))),
                 }
             }
