@@ -486,8 +486,7 @@ class TestNoticeReference:
         nr = x509.NoticeReference("org", [1, 3, 4])
 
         assert repr(nr) == (
-            "<NoticeReference(organization='org', notice_numbers=[1, 3, 4"
-            "])>"
+            "<NoticeReference(organization='org', notice_numbers=[1, 3, 4])>"
         )
 
     def test_eq(self):

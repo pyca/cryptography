@@ -250,8 +250,7 @@ EC_KEY_SECP256K1 = ec.EllipticCurvePrivateNumbers(
 
 EC_KEY_SECP224R1 = ec.EllipticCurvePrivateNumbers(
     private_value=int(
-        "234854340492774342642505519082413233282383066880756900834047566251"
-        "50"
+        "23485434049277434264250551908241323328238306688075690083404756625150"
     ),
     public_numbers=ec.EllipticCurvePublicNumbers(
         curve=ec.SECP224R1(),

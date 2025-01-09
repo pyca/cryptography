@@ -511,8 +511,7 @@ class CertificateBuilder:
         time = _convert_to_naive_utc_time(time)
         if time < _EARLIEST_UTC_TIME:
             raise ValueError(
-                "The not valid after date must be on or after"
-                " 1950 January 1."
+                "The not valid after date must be on or after 1950 January 1."
             )
         if (
             self._not_valid_before is not None

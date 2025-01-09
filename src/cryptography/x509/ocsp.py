@@ -109,8 +109,7 @@ class _SingleResponse:
             revocation_time = _convert_to_naive_utc_time(revocation_time)
             if revocation_time < _EARLIEST_UTC_TIME:
                 raise ValueError(
-                    "The revocation_time must be on or after"
-                    " 1950 January 1."
+                    "The revocation_time must be on or after 1950 January 1."
                 )
 
             if revocation_reason is not None and not isinstance(

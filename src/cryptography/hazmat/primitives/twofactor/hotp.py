@@ -84,7 +84,7 @@ class HOTP:
         try:
             ctx.update(counter.to_bytes(length=8, byteorder="big"))
         except OverflowError:
-            raise ValueError(f"Counter must be between 0 and {2 ** 64 - 1}.")
+            raise ValueError(f"Counter must be between 0 and {2**64 - 1}.")
 
         hmac_value = ctx.finalize()
 
