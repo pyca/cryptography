@@ -147,8 +147,7 @@ class TestConcatKDFHMAC:
         )
 
         okm = binascii.unhexlify(
-            b"64ce901db10d558661f10b6836a122a7"
-            b"605323ce2f39bf27eaaac8b34cf89f2f"
+            b"64ce901db10d558661f10b6836a122a7605323ce2f39bf27eaaac8b34cf89f2f"
         )
 
         oinfo = binascii.unhexlify(
@@ -168,8 +167,7 @@ class TestConcatKDFHMAC:
         )
 
         okm = binascii.unhexlify(
-            b"64ce901db10d558661f10b6836a122a7"
-            b"605323ce2f39bf27eaaac8b34cf89f2f"
+            b"64ce901db10d558661f10b6836a122a7605323ce2f39bf27eaaac8b34cf89f2f"
         )
 
         oinfo = binascii.unhexlify(
@@ -189,8 +187,7 @@ class TestConcatKDFHMAC:
         )
 
         okm = binascii.unhexlify(
-            b"64ce901db10d558661f10b6836a122a7"
-            b"605323ce2f39bf27eaaac8b34cf89f2f"
+            b"64ce901db10d558661f10b6836a122a7605323ce2f39bf27eaaac8b34cf89f2f"
         )
 
         oinfo = binascii.unhexlify(
@@ -212,8 +209,7 @@ class TestConcatKDFHMAC:
         )
 
         okm = binascii.unhexlify(
-            b"64ce901db10d558661f10b6836a122a7"
-            b"605323ce2f39bf27eaaac8b34cf89f2f"
+            b"64ce901db10d558661f10b6836a122a7605323ce2f39bf27eaaac8b34cf89f2f"
         )
 
         oinfo = binascii.unhexlify(

@@ -62,12 +62,10 @@ class TestX25519Exchange:
 
     def test_rfc7748_1000_iteration(self, backend):
         old_private = private = public = binascii.unhexlify(
-            b"090000000000000000000000000000000000000000000000000000000000"
-            b"0000"
+            b"0900000000000000000000000000000000000000000000000000000000000000"
         )
         shared_key = binascii.unhexlify(
-            b"684cf59ba83309552800ef566f2f4d3c1c3887c49360e3875f2eb94d9953"
-            b"2c51"
+            b"684cf59ba83309552800ef566f2f4d3c1c3887c49360e3875f2eb94d99532c51"
         )
         private_key = X25519PrivateKey.from_private_bytes(private)
         public_key = X25519PublicKey.from_public_bytes(public)

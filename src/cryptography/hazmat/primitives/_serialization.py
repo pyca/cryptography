@@ -126,8 +126,7 @@ class KeySerializationEncryptionBuilder:
     ) -> KeySerializationEncryptionBuilder:
         if self._format is not PrivateFormat.PKCS12:
             raise TypeError(
-                "key_cert_algorithm only supported with "
-                "PrivateFormat.PKCS12"
+                "key_cert_algorithm only supported with PrivateFormat.PKCS12"
             )
         if self._key_cert_algorithm is not None:
             raise ValueError("key_cert_algorithm already set")

@@ -451,8 +451,7 @@ class BasicConstraints(ExtensionType):
 
     def __repr__(self) -> str:
         return (
-            f"<BasicConstraints(ca={self.ca}, "
-            f"path_length={self.path_length})>"
+            f"<BasicConstraints(ca={self.ca}, path_length={self.path_length})>"
         )
 
     def __eq__(self, other: object) -> bool:
@@ -823,8 +822,7 @@ class CertificatePolicies(ExtensionType):
         policies = list(policies)
         if not all(isinstance(x, PolicyInformation) for x in policies):
             raise TypeError(
-                "Every item in the policies list must be a "
-                "PolicyInformation"
+                "Every item in the policies list must be a PolicyInformation"
             )
 
         self._policies = policies
@@ -2450,10 +2448,7 @@ class UnrecognizedExtension(ExtensionType):
         return self._value
 
     def __repr__(self) -> str:
-        return (
-            f"<UnrecognizedExtension(oid={self.oid}, "
-            f"value={self.value!r})>"
-        )
+        return f"<UnrecognizedExtension(oid={self.oid}, value={self.value!r})>"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UnrecognizedExtension):
