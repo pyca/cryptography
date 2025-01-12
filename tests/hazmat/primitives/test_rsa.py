@@ -2400,6 +2400,10 @@ class TestRSAPrimeFactorRecovery:
             rsa.rsa_recover_prime_factors(34, 3, 7)
         with pytest.raises(ValueError):
             rsa.rsa_recover_prime_factors(629, 17, 20)
+        with pytest.raises(ValueError):
+            rsa.rsa_recover_prime_factors(21, 1, 1)
+        with pytest.raises(ValueError):
+            rsa.rsa_recover_prime_factors(21, -1, -1)
 
 
 class TestRSAPrivateKeySerialization:

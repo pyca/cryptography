@@ -235,6 +235,8 @@ def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
     no more than two factors. This function is adapted from code in PyCrypto.
     """
     # reject invalid values early
+    if d <= 1 or e <= 1:
+        raise ValueError("d, e can't be <= 1")
     if 17 != pow(17, e * d, n):
         raise ValueError("n, d, e don't match")
     # See 8.2.2(i) in Handbook of Applied Cryptography.
