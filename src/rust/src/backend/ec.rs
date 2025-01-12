@@ -45,7 +45,8 @@ fn curve_from_py_curve(
     }
 
     let py_curve_name = py_curve.getattr(pyo3::intern!(py, "name"))?;
-    let nid = match &*py_curve_name.extract::<pyo3::pybacked::PyBackedStr>()? {
+    let curve_name = &*py_curve_name.extract::<pyo3::pybacked::PyBackedStr>()?;
+    let nid = match curve_name {
         "secp192r1" => openssl::nid::Nid::X9_62_PRIME192V1,
         "secp224r1" => openssl::nid::Nid::SECP224R1,
         "secp256r1" => openssl::nid::Nid::X9_62_PRIME256V1,
@@ -84,7 +85,12 @@ fn curve_from_py_curve(
         }
     };
 
-    Ok(openssl::ec::EcGroup::from_curve_name(nid)?)
+    Ok(openssl::ec::EcGroup::from_curve_name(nid).map_err(|_| {
+        exceptions::UnsupportedAlgorithm::new_err((
+            format!("Curve {curve_name} is not supported"),
+            exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
+        ))
+    })?)
 }
 
 fn py_curve_from_curve<'p>(
