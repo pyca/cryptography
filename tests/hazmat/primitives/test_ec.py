@@ -331,6 +331,21 @@ class TestECDSAVectors:
             is False
         )
 
+    @pytest.mark.skip_fips(
+        reason="Some FIPS curves aren't supported but work anyways"
+    )
+    @pytest.mark.parametrize("curve", ec._CURVE_TYPES.values())
+    def test_generate_unsupported_curve(
+        self, backend, curve: ec.EllipticCurve
+    ):
+        if backend.elliptic_curve_supported(curve):
+            return
+
+        with raises_unsupported_algorithm(
+            exceptions._Reasons.UNSUPPORTED_ELLIPTIC_CURVE
+        ):
+            ec.generate_private_key(curve)
+
     def test_unknown_signature_algoritm(self, backend):
         _skip_curve_unsupported(backend, ec.SECP192R1())
 
