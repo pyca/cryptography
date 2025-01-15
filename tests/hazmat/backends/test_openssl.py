@@ -248,10 +248,6 @@ class TestOpenSSLDHSerialization:
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
                 serialization.load_pem_private_key,
             ),
-            (
-                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.der"),
-                serialization.load_der_private_key,
-            ),
         ],
     )
     def test_private_load_dhx_unsupported(

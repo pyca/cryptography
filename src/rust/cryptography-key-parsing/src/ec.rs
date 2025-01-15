@@ -6,6 +6,17 @@ use cryptography_x509::common::EcParameters;
 
 use crate::{KeyParsingError, KeyParsingResult};
 
+// From RFC 5915 Section 3
+#[derive(asn1::Asn1Read)]
+pub(crate) struct EcPrivateKey<'a> {
+    pub(crate) version: u8,
+    pub(crate) private_key: &'a [u8],
+    #[explicit(0)]
+    pub(crate) parameters: Option<EcParameters<'a>>,
+    #[explicit(1)]
+    pub(crate) public_key: Option<asn1::BitString<'a>>,
+}
+
 pub(crate) fn ec_params_to_group(
     params: &EcParameters<'_>,
 ) -> KeyParsingResult<openssl::ec::EcGroup> {
@@ -51,3 +62,43 @@ pub(crate) fn ec_params_to_group(
         }
     }
 }
+
+pub fn parse_pkcs1_private_key(
+    data: &[u8],
+    ec_params: Option<EcParameters<'_>>,
+) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
+    let ec_private_key = asn1::parse_single::<EcPrivateKey<'_>>(data)?;
+    if ec_private_key.version != 1 {
+        return Err(crate::KeyParsingError::InvalidKey);
+    }
+
+    let group = match (ec_params, ec_private_key.parameters) {
+        (Some(outer_params), Some(inner_params)) => {
+            if outer_params != inner_params {
+                return Err(crate::KeyParsingError::InvalidKey);
+            }
+            ec_params_to_group(&outer_params)?
+        }
+        (Some(outer_params), None) => ec_params_to_group(&outer_params)?,
+        (None, Some(inner_params)) => ec_params_to_group(&inner_params)?,
+        (None, None) => return Err(crate::KeyParsingError::InvalidKey),
+    };
+
+    let private_number = openssl::bn::BigNum::from_slice(ec_private_key.private_key)?;
+    let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+    let public_point = if let Some(point_bytes) = ec_private_key.public_key {
+        openssl::ec::EcPoint::from_bytes(&group, point_bytes.as_bytes(), &mut bn_ctx)
+            .map_err(|_| crate::KeyParsingError::InvalidKey)?
+    } else {
+        let mut public_point = openssl::ec::EcPoint::new(&group)?;
+        public_point
+            .mul(&group, group.generator(), &private_number, &bn_ctx)
+            .map_err(|_| crate::KeyParsingError::InvalidKey)?;
+        public_point
+    };
+
+    let ec_key =
+        openssl::ec::EcKey::from_private_components(&group, &private_number, &public_point)?;
+    Ok(openssl::pkey::PKey::from_ec_key(ec_key)?)
+}
+>>>>>>> 1a8c3d5ef (Migrate parsing of unencrypted PKCS#8 private keys to Rust)
