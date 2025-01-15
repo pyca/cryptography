@@ -887,6 +887,7 @@ class TestPKCS7Verify:
         "invalid_options",
         [
             [b"invalid"],
+            [pkcs7.PKCS7Options.Binary],
         ],
     )
     def test_pkcs7_verify_invalid_options(self, backend, invalid_options):

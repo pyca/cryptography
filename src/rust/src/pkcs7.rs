@@ -740,10 +740,10 @@ fn verify_der<'p>(
 ) -> CryptographyResult<()> {
     // Check the verify options
     let options = match options {
-        Some(options) => options,
-        None => &pyo3::types::PyList::empty(py),
+        Some(options) => Cow::Borrowed(options),
+        None => Cow::Owned(pyo3::types::PyList::empty(py)),
     };
-    check_verify_options(py, options)?;
+    check_verify_options(py, &options)?;
 
     // Verify the data
     let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(signature)?;
