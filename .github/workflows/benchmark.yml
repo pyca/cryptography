@@ -2,14 +2,13 @@ name: Benchmark
 on:
   pull_request:
     paths:
-      - '.github/workflows/benchmark.yml'
-      - 'src/**'
-      - 'tests/**'
+      - ".github/workflows/benchmark.yml"
+      - "src/**"
+      - "tests/**"
   workflow_dispatch:
     inputs:
       base_commit:
         description: The base commit to compare against
-
 
 permissions:
   contents: read
@@ -63,4 +62,4 @@ jobs:
         run: .venv-pr/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-pr.json --x509-limbo-root=x509-limbo/
 
       - name: Compare results
-        run: python ./cryptography-pr/.github/compare_benchmarks.py bench-base.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY
+        run: python ./cryptography-pr/.github/bin/compare_benchmarks.py bench-base.json bench-pr.json | tee -a $GITHUB_STEP_SUMMARY
