@@ -449,50 +449,21 @@ jobs:
         id: combinecoverage
         run: |
           set +e
-          python -m coverage combine
-          echo "## Python Coverage" >> $GITHUB_STEP_SUMMARY
-          python -m coverage report -m --fail-under=100 > COV_REPORT
+          echo "## Coverage" >> $GITHUB_STEP_SUMMARY
+          python .github/bin/merge_rust_coverage.py *.lcov > COV_REPORT
           COV_EXIT_CODE=$?
           cat COV_REPORT
           if [ $COV_EXIT_CODE -ne 0 ]; then
-            echo "🚨 Python Coverage failed. Under 100" | tee -a $GITHUB_STEP_SUMMARY
+            echo "🚨 Coverage failed. Under 100" | tee -a $GITHUB_STEP_SUMMARY
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat COV_REPORT >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           exit $COV_EXIT_CODE
-      - name: Combine rust coverage and fail if it's <100%.
-        if: ${{ always() }}
-        id: combinerustcoverage
-        run: |
-          set +e
-          sudo apt-get install -y lcov
-          RUST_COVERAGE_OUTPUT=$(lcov $(for f in *.lcov; do echo --add-tracefile "$f"; done) -o combined.lcov | grep lines)
-          echo "## Rust Coverage" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo $RUST_COVERAGE_OUTPUT >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          if ! echo "$RUST_COVERAGE_OUTPUT" | grep "100.0%"; then
-            echo "🚨 Rust Coverage failed. Under 100" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-      - name: Create rust coverage HTML
-        run: genhtml combined.lcov -o rust-coverage
-        if: ${{ failure() && steps.combinerustcoverage.outcome == 'failure' }}
-      - name: Create coverage HTML
-        run: python -m coverage html
-        if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
       - name: Upload HTML report.
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: _html-report
+          name: _html-coverage-report
           path: htmlcov
           if-no-files-found: ignore
         if: ${{ failure() && steps.combinecoverage.outcome == 'failure' }}
-      - name: Upload rust HTML report.
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        with:
-          name: _html-rust-report
-          path: rust-coverage
-          if-no-files-found: ignore
-        if: ${{ failure() && steps.combinerustcoverage.outcome == 'failure' }}
