@@ -375,7 +375,7 @@ class TestOpenSSHSerialization:
             )
             assert pub1 == pub2
 
-            with pytest.raises(ValueError):
+            with pytest.raises(TypeError):
                 decoded_key = load_ssh_private_key(encdata, None, backend)
             with pytest.raises(ValueError):
                 decoded_key = load_ssh_private_key(encdata, b"wrong", backend)
@@ -610,6 +610,15 @@ class TestOpenSSHSerialization:
         data = self.make_file(pad=b"")
         with pytest.raises(ValueError):
             load_ssh_private_key(data, None, backend)
+
+    def test_ssh_errors_unencrypted_with_password(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(TypeError):
+            load_ssh_private_key(data, password=b"password")
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.elliptic_curve_supported(

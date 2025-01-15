@@ -196,7 +196,9 @@ def _init_cipher(
 ) -> Cipher[modes.CBC | modes.CTR | modes.GCM]:
     """Generate key + iv and return cipher."""
     if not password:
-        raise ValueError("Key is password-protected.")
+        raise TypeError(
+            "Key is password-protected, but password was not provided."
+        )
 
     ciph = _SSH_CIPHERS[ciphername]
     seed = _bcrypt_kdf(
@@ -745,6 +747,10 @@ def load_ssh_private_key(
             # should be no output from finalize
             _check_empty(dec.finalize())
     else:
+        if password:
+            raise TypeError(
+                "Password was given but private key is not encrypted."
+            )
         # load secret data
         edata, data = _get_sshstr(data)
         _check_empty(data)
