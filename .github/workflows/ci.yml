@@ -106,7 +106,7 @@ jobs:
           key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-14
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
-        run: .github/workflows/build_openssl.sh
+        run: .github/bin/build_openssl.sh
         env:
           TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
           VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
