@@ -1016,6 +1016,22 @@ class TestPKCS7Verify:
         with pytest.raises(ValueError):
             pkcs7.pkcs7_verify_der(signature)
 
+    def test_pkcs7_verify_der_ecdsa_certificate(self, backend, data):
+        # Getting an ECDSA certificate
+        certificate, private_key = _load_cert_key()
+
+        # Signature
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(certificate, private_key, hashes.SHA256())
+        )
+        signature = builder.sign(serialization.Encoding.DER, [])
+
+        # Verification with another certificate
+        options = [pkcs7.PKCS7Options.NoVerify]
+        pkcs7.pkcs7_verify_der(signature, options=options)
+
     def test_pkcs7_verify_invalid_signature(
         self, backend, data, certificate, private_key
     ):
@@ -1050,6 +1066,21 @@ class TestPKCS7Verify:
         rsa_certificate, _ = _load_rsa_cert_key()
         with pytest.raises(ValueError):
             pkcs7.pkcs7_verify_der(signature, certificate=rsa_certificate)
+
+    def test_pkcs7_verify_der_unsupported_digest_algorithm(
+        self, backend, data, certificate, private_key
+    ):
+        # Signature
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(certificate, private_key, hashes.SHA384())
+        )
+        signature = builder.sign(serialization.Encoding.DER, [])
+
+        # Verification with another certificate
+        with pytest.raises(exceptions.UnsupportedAlgorithm):
+            pkcs7.pkcs7_verify_der(signature)
 
     def test_pkcs7_verify_pem(self, backend, data, certificate, private_key):
         # Signature

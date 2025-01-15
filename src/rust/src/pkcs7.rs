@@ -844,9 +844,10 @@ fn verify_der<'p>(
                         },
                         _ => {
                             return Err(CryptographyError::from(
-                                pyo3::exceptions::PyValueError::new_err(
-                                    "Unsupported hash algorithm with RSA.",
-                                ),
+                                exceptions::UnsupportedAlgorithm::new_err((
+                                    "Only SHA-256 is currently supported for content verification with RSA.",
+                                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                                )),
                             ))
                         }
                     },
