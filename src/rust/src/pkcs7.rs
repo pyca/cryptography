@@ -771,7 +771,7 @@ fn verify_der<'p>(
                                 None => {
                                     return Err(CryptographyError::from(
                                         pyo3::exceptions::PyValueError::new_err(
-                                            "The PKCS7 data does not contain any certificate.",
+                                            "The PKCS7 data has an empty certificates attributes.",
                                         ),
                                     ));
                                 }
