@@ -353,6 +353,10 @@ pub static PKCS7_NO_VERIFY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options", "NoVerify"],
 );
+pub static PKCS7_NO_SIGS: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.serialization.pkcs7",
+    &["PKCS7Options", "NoSigs"],
+);
 
 pub static SMIME_ENVELOPED_ENCODE: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",

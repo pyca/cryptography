@@ -670,13 +670,13 @@ fn compute_pkcs7_signature_algorithm<'p>(
 }
 
 #[pyo3::pyfunction]
-#[pyo3(signature = (signature, content, certificate, options))]
+#[pyo3(signature = (signature, content = None, certificate = None, options = None))]
 fn verify_smime<'p>(
     py: pyo3::Python<'p>,
     signature: &[u8],
     content: Option<&[u8]>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+    options: Option<&pyo3::Bound<'p, pyo3::types::PyList>>,
 ) -> CryptographyResult<()> {
     // Parse the email
     let py_content_and_signature = types::SMIME_SIGNED_DECODE.get(py)?.call1((signature,))?;
@@ -704,13 +704,13 @@ fn verify_smime<'p>(
 }
 
 #[pyo3::pyfunction]
-#[pyo3(signature = (signature, content, certificate, options))]
+#[pyo3(signature = (signature, content = None, certificate = None, options = None))]
 fn verify_pem<'p>(
     py: pyo3::Python<'p>,
     signature: &[u8],
     content: Option<&[u8]>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+    options: Option<&pyo3::Bound<'p, pyo3::types::PyList>>,
 ) -> CryptographyResult<()> {
     let pem_str = std::str::from_utf8(signature)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
@@ -730,15 +730,19 @@ fn verify_pem<'p>(
 }
 
 #[pyo3::pyfunction]
-#[pyo3(signature = (signature, content, certificate, options))]
+#[pyo3(signature = (signature, content = None, certificate = None, options = None))]
 fn verify_der<'p>(
     py: pyo3::Python<'p>,
     signature: &[u8],
     content: Option<&[u8]>,
-    certificate: pyo3::Bound<'p, x509::certificate::Certificate>,
-    options: &pyo3::Bound<'p, pyo3::types::PyList>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+    options: Option<&pyo3::Bound<'p, pyo3::types::PyList>>,
 ) -> CryptographyResult<()> {
     // Check the verify options
+    let options = match options {
+        Some(options) => options,
+        None => &pyo3::types::PyList::empty(py),
+    };
     check_verify_options(py, options)?;
 
     // Verify the data
@@ -748,57 +752,116 @@ fn verify_der<'p>(
             // Extract signed data
             let signed_data = signed_data.into_inner();
 
-            // Get recipients, and find the one matching with the signer infos (if any)
-            // TODO: what to do for multiple certificates?
-            let mut signer_infos = signed_data.signer_infos.unwrap_read().clone();
-            let signer_certificate = certificate.get().raw.borrow_dependent();
-            let signer_serial_number = signer_certificate.tbs_cert.serial;
-            let signer_issuer = signer_certificate.tbs_cert.issuer.clone();
-            let found_signer_info = signer_infos.find(|info| {
-                info.issuer_and_serial_number.serial_number == signer_serial_number
-                    && info.issuer_and_serial_number.issuer == signer_issuer
-            });
-
-            // Raise error when no signer is found
-            let signer_info = match found_signer_info {
-                Some(info) => info,
+            // Extract the signer certificate: either from given value, or from signed data
+            let certificate = match certificate {
+                Some(cert) => cert,
                 None => {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyValueError::new_err(
-                            "No signer found that matches the given certificate.",
-                        ),
-                    ));
-                }
-            };
-
-            // Prepare the content: try to use the authenticated attributes, then the content stored
-            // in the signed data, then the provided content. If None of these are available, raise
-            // an error.  TODO: what should the order be?
-            let data = match signer_info.authenticated_attributes {
-                Some(attrs) => Cow::Owned(asn1::write_single(&attrs)?),
-                None => match content {
-                    Some(data) => Cow::Borrowed(data),
-                    None => match signed_data.content_info.content {
-                        pkcs7::Content::Data(Some(data)) => Cow::Borrowed(data.into_inner()),
-                        _ => {
+                    let certificates = signed_data.certificates;
+                    match certificates {
+                        Some(certificates) => {
+                            let mut certificates = certificates.unwrap_read().clone();
+                            match certificates.next() {
+                                Some(cert) => {
+                                    let cert_bytes =
+                                        pyo3::types::PyBytes::new(py, &asn1::write_single(&cert)?)
+                                            .unbind();
+                                    let py_cert = load_der_x509_certificate(py, cert_bytes, None)?;
+                                    pyo3::Bound::new(py, py_cert)?
+                                }
+                                None => {
+                                    return Err(CryptographyError::from(
+                                        pyo3::exceptions::PyValueError::new_err(
+                                            "The PKCS7 data does not contain any certificate.",
+                                        ),
+                                    ));
+                                }
+                            }
+                        }
+                        None => {
                             return Err(CryptographyError::from(
                                 pyo3::exceptions::PyValueError::new_err(
-                                    "No content stored in the signature or provided.",
+                                    "The PKCS7 data does not contain any certificate.",
                                 ),
                             ));
                         }
-                    },
-                },
+                    }
+                }
             };
 
-            // Verify the signature
-            x509::sign::verify_signature_with_signature_algorithm(
-                py,
-                certificate.call_method0(pyo3::intern!(py, "public_key"))?,
-                &signer_info.digest_encryption_algorithm,
-                signer_info.encrypted_digest,
-                &data,
-            )?;
+            // Get recipients, and find the one matching with the signer infos (if any)
+            // TODO: what to do for multiple certificates?
+            if !options.contains(types::PKCS7_NO_SIGS.get(py)?)? {
+                let mut signer_infos = signed_data.signer_infos.unwrap_read().clone();
+                let signer_certificate = certificate.get().raw.borrow_dependent();
+                let signer_serial_number = signer_certificate.tbs_cert.serial;
+                let signer_issuer = signer_certificate.tbs_cert.issuer.clone();
+                let found_signer_info = signer_infos.find(|info| {
+                    info.issuer_and_serial_number.serial_number == signer_serial_number
+                        && info.issuer_and_serial_number.issuer == signer_issuer
+                });
+
+                // Raise error when no signer is found
+                let signer_info = match found_signer_info {
+                    Some(info) => info,
+                    None => {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "No signer found that matches the given certificate.",
+                            ),
+                        ));
+                    }
+                };
+
+                // Prepare the content: try to use the authenticated attributes, then the content stored
+                // in the signed data, then the provided content. If None of these are available, raise
+                // an error.  TODO: what should the order be?
+                let data = match signer_info.authenticated_attributes {
+                    Some(attrs) => Cow::Owned(asn1::write_single(&attrs)?),
+                    None => match content {
+                        Some(data) => Cow::Borrowed(data),
+                        None => match signed_data.content_info.content {
+                            pkcs7::Content::Data(Some(data)) => Cow::Borrowed(data.into_inner()),
+                            _ => {
+                                return Err(CryptographyError::from(
+                                    pyo3::exceptions::PyValueError::new_err(
+                                        "No content stored in the signature or provided.",
+                                    ),
+                                ));
+                            }
+                        },
+                    },
+                };
+
+                // For RSA signatures (with no PSS padding), the OID is always the same no matter the
+                // digest algorithm. We need to modify the algorithm identifier to add the hash
+                // algorithm information. We are checking for RSA-256, which the S/MIME v3.2 RFC
+                // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.2)
+                let signature_algorithm = match signer_info.digest_encryption_algorithm.oid() {
+                    &oid::RSA_OID => match signer_info.digest_algorithm.oid() {
+                        &oid::SHA256_OID => common::AlgorithmIdentifier {
+                            oid: asn1::DefinedByMarker::marker(),
+                            params: common::AlgorithmParameters::RsaWithSha256(Some(())),
+                        },
+                        _ => {
+                            return Err(CryptographyError::from(
+                                pyo3::exceptions::PyValueError::new_err(
+                                    "Unsupported hash algorithm with RSA.",
+                                ),
+                            ))
+                        }
+                    },
+                    _ => signer_info.digest_encryption_algorithm,
+                };
+
+                // Verify the signature
+                x509::sign::verify_signature_with_signature_algorithm(
+                    py,
+                    certificate.call_method0(pyo3::intern!(py, "public_key"))?,
+                    &signature_algorithm,
+                    signer_info.encrypted_digest,
+                    &data,
+                )?;
+            }
 
             // Verify the certificate
             if !options.contains(types::PKCS7_NO_VERIFY.get(py)?)? {
@@ -839,11 +902,12 @@ fn check_verify_options<'p>(
 
     // Check if any option is not PKCS7Options::NoVerify
     let no_verify_option = types::PKCS7_NO_VERIFY.get(py)?;
+    let no_sigs_option = types::PKCS7_NO_SIGS.get(py)?;
     for opt in options.iter() {
-        if !opt.eq(no_verify_option.clone())? {
+        if opt.ne(no_verify_option.clone())? & opt.ne(no_sigs_option.clone())? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
-                    "Only the following options are supported for verification: NoVerify",
+                    "Only the following options are supported for verification: NoVerify, NoSigs",
                 ),
             ));
         }
