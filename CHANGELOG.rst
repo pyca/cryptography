@@ -10,8 +10,15 @@ Changelog
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
-* Added support for PKCS7 decryption & encryption using AES-256 as content algorithm, 
-  in addition to AES-128. 
+* Added support for PKCS7 decryption & encryption using AES-256 as content algorithm,
+  in addition to AES-128.
+* **BACKWARDS INCOMPATIBLE:** Made SSH private key loading more consistent with
+  other private key loading:
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
+  now raises a ``TypeError`` if the key is unencrypted but a password is
+  provided (previously no exception was raised), and raises a ``TypeError`` if
+  the key is encrypted but no password is provided (previously a ``ValueError``
+  was raised).
 
 .. _v44-0-0:
 
