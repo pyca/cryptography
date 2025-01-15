@@ -34,7 +34,18 @@ pub(crate) fn load_der_private_key_bytes<'p>(
     password: Option<&[u8]>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data) {
+    let pkey = if let Ok(pkey) = cryptography_key_parsing::pkcs8::parse_private_key(data) {
+        Some(pkey)
+    } else if let Ok(pkey) = cryptography_key_parsing::dsa::parse_pkcs1_private_key(data) {
+        Some(pkey)
+    } else if let Ok(pkey) = cryptography_key_parsing::ec::parse_pkcs1_private_key(data, None) {
+        Some(pkey)
+    } else if let Ok(pkey) = cryptography_key_parsing::rsa::parse_pkcs1_private_key(data) {
+        Some(pkey)
+    } else {
+        None
+    };
+    if let Some(pkey) = pkey {
         if password.is_some() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
