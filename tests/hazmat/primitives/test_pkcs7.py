@@ -951,6 +951,18 @@ class TestPKCS7Verify:
         # Verification
         pkcs7.pkcs7_verify_der(signature, certificate=certificate)
 
+    def test_pkcs7_verify_der_empty_certificates(self, backend):
+        # Getting a signature without certificates: empty list, not None
+        signature_empty_certificates = load_vectors_from_file(
+            os.path.join("pkcs7", "signature-empty-certs.der"),
+            loader=lambda derfile: derfile.read(),
+            mode="rb",
+        )
+
+        # Verification
+        with pytest.raises(ValueError):
+            pkcs7.pkcs7_verify_der(signature_empty_certificates)
+
     def test_pkcs7_verify_der_no_certificates(
         self, backend, data, certificate, private_key
     ):
