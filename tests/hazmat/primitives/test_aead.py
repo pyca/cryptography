@@ -11,6 +11,7 @@ import sys
 import pytest
 
 from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
     AESGCM,
@@ -919,6 +920,12 @@ class TestAESGCMSIV:
                 ct = binascii.unhexlify(vector["ciphertext"])
                 tag = binascii.unhexlify(vector["tag"])
                 pt = binascii.unhexlify(vector.get("plaintext", b""))
+
+                # BoringSSL only supports AES-GCM-SIV with 128- and 256-bit
+                # keys
+                if len(key) == 24 and rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+                    continue
+
                 aesgcmsiv = AESGCMSIV(key)
                 computed_ct = aesgcmsiv.encrypt(nonce, pt, aad)
                 assert computed_ct[:-16] == ct
@@ -941,6 +948,12 @@ class TestAESGCMSIV:
                 nonce = binascii.unhexlify(vector["iv"])
                 aad = binascii.unhexlify(vector.get("aad", b""))
                 ct = binascii.unhexlify(vector["ciphertext"])
+
+                # BoringSSL only supports AES-GCM-SIV with 128- and 256-bit
+                # keys
+                if len(key) == 24 and rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+                    continue
+
                 aesgcmsiv = AESGCMSIV(key)
                 with pytest.raises(InvalidTag):
                     badkey = AESGCMSIV(AESGCMSIV.generate_key(256))
@@ -973,6 +986,10 @@ class TestAESGCMSIV:
 
         with pytest.raises(ValueError):
             AESGCMSIV(b"0" * 31)
+
+        if rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+            with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
+                AESGCMSIV(b"0" * 24)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):

@@ -1051,6 +1051,9 @@ impl AesOcb3 {
     name = "AESGCMSIV"
 )]
 struct AesGcmSiv {
+    #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+    ctx: EvpAead,
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     ctx: EvpCipherAead,
 }
 
@@ -1072,7 +1075,22 @@ impl AesGcmSiv {
         };
 
         cfg_if::cfg_if! {
-            if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                let _ = cipher_name;
+                let aead_type = match key.as_bytes().len() {
+                    16 => cryptography_openssl::aead::AeadType::Aes128GcmSiv,
+                    32 => cryptography_openssl::aead::AeadType::Aes256GcmSiv,
+                    _ => return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "Only 128-bit and 256-bit keys are supported for AES-GCM-SIV with BoringSSL",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ))
+                };
+                Ok(AesGcmSiv {
+                    ctx: EvpAead::new(aead_type, key.as_bytes(), 16)?,
+                })
+            } else if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
                 let _ = cipher_name;
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
