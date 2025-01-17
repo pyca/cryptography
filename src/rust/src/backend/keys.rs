@@ -74,6 +74,37 @@ fn load_pem_private_key<'p>(
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let p = pem::parse(data.as_bytes())?;
+    if p.headers().get("Proc-Type").is_none() {
+        let pkey = match p.tag() {
+            "PRIVATE KEY" => Some(cryptography_key_parsing::pkcs8::parse_private_key(
+                p.contents(),
+            )?),
+            "ENCRYPTED PRIVATE KEY" => None,
+            "RSA PRIVATE KEY" => Some(cryptography_key_parsing::rsa::parse_pkcs1_private_key(
+                p.contents(),
+            )?),
+            "EC PRIVATE KEY" => Some(cryptography_key_parsing::ec::parse_pkcs1_private_key(
+                p.contents(),
+                None,
+            )?),
+            "DSA PRIVATE KEY" => Some(cryptography_key_parsing::dsa::parse_pkcs1_private_key(
+                p.contents(),
+            )?),
+            _ => panic!("{:?}", p.tag()),
+        };
+        if let Some(pkey) = pkey {
+            if password.is_some() {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyTypeError::new_err(
+                        "Password was given but private key is not encrypted.",
+                    ),
+                ));
+            }
+            return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
+        }
+    }
+
     let _ = backend;
     let password = password.as_ref().map(CffiBuf::as_bytes);
     let mut status = utils::PasswordCallbackStatus::Unused;

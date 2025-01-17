@@ -482,14 +482,7 @@ class TestECDSAVectors:
                 backend=backend,
             )
 
-    @pytest.mark.supported(
-        only_if=(
-            lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-        ),
-        skip_message="LibreSSL and OpenSSL 1.1.1 handle this differently",
-    )
-    def test_load_invalid_private_scalar_pem(self, backend):
+    def test_load_large_private_scalar_pem(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
         data = load_vectors_from_file(
@@ -498,8 +491,11 @@ class TestECDSAVectors:
             ),
             lambda pemfile: pemfile.read().encode(),
         )
-        with pytest.raises(ValueError):
-            serialization.load_pem_private_key(data, None)
+        key = serialization.load_pem_private_key(data, password=None)
+        assert isinstance(key, EllipticCurvePrivateKey)
+        assert key.private_numbers().private_value == (
+            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+        )
 
     def test_signatures(self, backend, subtests):
         vectors = itertools.chain(
