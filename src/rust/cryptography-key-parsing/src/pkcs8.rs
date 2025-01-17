@@ -25,7 +25,9 @@ pub fn parse_private_key(
         return Err(crate::KeyParsingError::InvalidKey);
     }
     match k.algorithm.params {
-        AlgorithmParameters::Rsa(_) => rsa::parse_pkcs1_private_key(k.private_key),
+        AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_) => {
+            rsa::parse_pkcs1_private_key(k.private_key)
+        }
         AlgorithmParameters::Ec(ec_params) => {
             ec::parse_pkcs1_private_key(k.private_key, Some(ec_params))
         }
