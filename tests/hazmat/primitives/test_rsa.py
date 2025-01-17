@@ -10,12 +10,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import (
-    InvalidSignature,
-    UnsupportedAlgorithm,
-    _Reasons,
-)
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.exceptions import InvalidSignature, _Reasons
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
