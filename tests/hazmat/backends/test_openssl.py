@@ -230,31 +230,3 @@ class TestRSAPEMSerialization:
                 serialization.PrivateFormat.PKCS8,
                 serialization.BestAvailableEncryption(password),
             )
-
-
-@pytest.mark.skipif(
-    backend._lib.Cryptography_HAS_EVP_PKEY_DHX == 1,
-    reason="Requires OpenSSL without EVP_PKEY_DHX",
-)
-@pytest.mark.supported(
-    only_if=lambda backend: backend.dh_supported(),
-    skip_message="Requires DH support",
-)
-class TestOpenSSLDHSerialization:
-    @pytest.mark.parametrize(
-        ("key_path", "loader_func"),
-        [
-            (
-                os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
-                serialization.load_pem_private_key,
-            ),
-        ],
-    )
-    def test_private_load_dhx_unsupported(
-        self, key_path, loader_func, backend
-    ):
-        key_bytes = load_vectors_from_file(
-            key_path, lambda pemfile: pemfile.read(), mode="rb"
-        )
-        with pytest.raises(ValueError):
-            loader_func(key_bytes, None, backend)
