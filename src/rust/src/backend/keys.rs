@@ -8,6 +8,7 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use crate::x509;
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
@@ -74,7 +75,11 @@ fn load_pem_private_key<'p>(
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let p = pem::parse(data.as_bytes())?;
+    let p = x509::find_in_pem(
+        data.as_bytes(),
+        |p| ["PRIVATE KEY", "ENCRYPTED PRIVATE KEY", "RSA PRIVATE KEY", "EC PRIVATE KEY", "DSA PRIVATE KEY"].contains(&p.tag()),
+        "Valid PEM but no BEGIN/END delimiters for a private key found. Are you sure this is a private key?"
+    )?;
     if p.headers().get("Proc-Type").is_none() {
         let pkey = match p.tag() {
             "PRIVATE KEY" => Some(cryptography_key_parsing::pkcs8::parse_private_key(
@@ -91,7 +96,7 @@ fn load_pem_private_key<'p>(
             "DSA PRIVATE KEY" => Some(cryptography_key_parsing::dsa::parse_pkcs1_private_key(
                 p.contents(),
             )?),
-            _ => panic!("{:?}", p.tag()),
+            _ => unreachable!(),
         };
         if let Some(pkey) = pkey {
             if password.is_some() {
