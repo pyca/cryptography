@@ -450,13 +450,7 @@ class TestECDSAVectors:
     def test_load_invalid_ec_key_from_pem(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
-        # BoringSSL rejects infinity points before it ever gets to us, so it
-        # uses a more generic error message.
-        match = (
-            r"infinity|invalid form"
-            if not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            else None
-        )
+        match = r"infinity|invalid form|Invalid key"
         with pytest.raises(ValueError, match=match):
             serialization.load_pem_public_key(
                 textwrap.dedent(
@@ -482,7 +476,7 @@ class TestECDSAVectors:
                 backend=backend,
             )
 
-    def test_load_large_private_scalar_pem(self, backend):
+    def test_load_private_scalar_greater_than_order_pem(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
         data = load_vectors_from_file(
@@ -491,11 +485,8 @@ class TestECDSAVectors:
             ),
             lambda pemfile: pemfile.read().encode(),
         )
-        key = serialization.load_pem_private_key(data, password=None)
-        assert isinstance(key, EllipticCurvePrivateKey)
-        assert key.private_numbers().private_value == (
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
-        )
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(data, password=None)
 
     def test_signatures(self, backend, subtests):
         vectors = itertools.chain(
