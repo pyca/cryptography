@@ -33,9 +33,9 @@ pub fn parse_private_key(
         }
 
         AlgorithmParameters::Dsa(dsa_params) => {
-            let dsa_private_key = openssl::bn::BigNum::from_slice(
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes(),
-            )?;
+            let private_key_bytes =
+                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
+            let dsa_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
             let p = openssl::bn::BigNum::from_slice(dsa_params.p.as_bytes())?;
             let q = openssl::bn::BigNum::from_slice(dsa_params.q.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dsa_params.g.as_bytes())?;
@@ -51,9 +51,9 @@ pub fn parse_private_key(
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::Dh(dh_params) => {
-            let dh_private_key = openssl::bn::BigNum::from_slice(
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes(),
-            )?;
+            let private_key_bytes =
+                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
+            let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
             let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
             let q = openssl::bn::BigNum::from_slice(dh_params.q.as_bytes())?;
@@ -65,9 +65,9 @@ pub fn parse_private_key(
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::DhKeyAgreement(dh_params) => {
-            let dh_private_key = openssl::bn::BigNum::from_slice(
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes(),
-            )?;
+            let private_key_bytes =
+                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
+            let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
             let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
 
@@ -76,24 +76,36 @@ pub fn parse_private_key(
             Ok(openssl::pkey::PKey::from_dh(dh)?)
         }
 
-        AlgorithmParameters::X25519 => Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
-            asn1::parse_single(k.private_key)?,
-            openssl::pkey::Id::X25519,
-        )?),
+        AlgorithmParameters::X25519 => {
+            let key_bytes = asn1::parse_single(k.private_key)?;
+            Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
+                key_bytes,
+                openssl::pkey::Id::X25519,
+            )?)
+        }
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        AlgorithmParameters::X448 => Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
-            asn1::parse_single(k.private_key)?,
-            openssl::pkey::Id::X448,
-        )?),
-        AlgorithmParameters::Ed25519 => Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
-            asn1::parse_single(k.private_key)?,
-            openssl::pkey::Id::ED25519,
-        )?),
+        AlgorithmParameters::X448 => {
+            let key_bytes = asn1::parse_single(k.private_key)?;
+            Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
+                key_bytes,
+                openssl::pkey::Id::X448,
+            )?)
+        }
+        AlgorithmParameters::Ed25519 => {
+            let key_bytes = asn1::parse_single(k.private_key)?;
+            Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
+                key_bytes,
+                openssl::pkey::Id::ED25519,
+            )?)
+        }
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
-        AlgorithmParameters::Ed448 => Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
-            asn1::parse_single(k.private_key)?,
-            openssl::pkey::Id::ED448,
-        )?),
+        AlgorithmParameters::Ed448 => {
+            let key_bytes = asn1::parse_single(k.private_key)?;
+            Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
+                key_bytes,
+                openssl::pkey::Id::ED448,
+            )?)
+        }
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
