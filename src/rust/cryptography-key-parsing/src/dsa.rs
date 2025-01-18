@@ -21,12 +21,11 @@ pub fn parse_pkcs1_private_key(
     if dsa_private_key.version != 0 {
         return Err(crate::KeyParsingError::InvalidKey);
     }
-    let dsa = openssl::dsa::Dsa::from_private_components(
-        openssl::bn::BigNum::from_slice(dsa_private_key.p.as_bytes())?,
-        openssl::bn::BigNum::from_slice(dsa_private_key.q.as_bytes())?,
-        openssl::bn::BigNum::from_slice(dsa_private_key.g.as_bytes())?,
-        openssl::bn::BigNum::from_slice(dsa_private_key.priv_key.as_bytes())?,
-        openssl::bn::BigNum::from_slice(dsa_private_key.pub_key.as_bytes())?,
-    )?;
+    let p = openssl::bn::BigNum::from_slice(dsa_private_key.p.as_bytes())?;
+    let q = openssl::bn::BigNum::from_slice(dsa_private_key.q.as_bytes())?;
+    let g = openssl::bn::BigNum::from_slice(dsa_private_key.g.as_bytes())?;
+    let priv_key = openssl::bn::BigNum::from_slice(dsa_private_key.priv_key.as_bytes())?;
+    let pub_key = openssl::bn::BigNum::from_slice(dsa_private_key.pub_key.as_bytes())?;
+    let dsa = openssl::dsa::Dsa::from_private_components(p, q, g, priv_key, pub_key)?;
     Ok(openssl::pkey::PKey::from_dsa(dsa)?)
 }
