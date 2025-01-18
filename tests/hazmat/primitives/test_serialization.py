@@ -1251,7 +1251,6 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"\xff")
 
-    @pytest.mark.xfail()
     def test_rsa_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join(
@@ -1265,7 +1264,6 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=None)
 
-    @pytest.mark.xfail()
     def test_dsa_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join(
