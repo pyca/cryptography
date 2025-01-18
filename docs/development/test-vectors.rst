@@ -189,6 +189,10 @@ Custom asymmetric vectors
   ``TEST(DSATest, NilpotentGenerator)``).
 * ``asymmetric/PKCS8/ec-invalid-private-scalar.pem`` - Contains a PKCS8 encoded
   PEM with a ``secp256r1`` OID and an invalid (very large) private scalar.
+* ``asymmetric/PKCS8/invalid-version.der`` - Contains a PKCS8 encoded DER with
+  an invalid version field.
+* ``asymmetric/PKCS8/unknown-oid.der`` - Contains a PKCS8 encoded DER with an
+  unknown OID.
 
 
 Key exchange
