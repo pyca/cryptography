@@ -193,6 +193,12 @@ Custom asymmetric vectors
   an invalid version field.
 * ``asymmetric/PKCS8/unknown-oid.der`` - Contains a PKCS8 encoded DER with an
   unknown OID.
+* ``asymmetric/Traditional_OpenSSL_Serialization/rsa-wrong-version.pem`` - An
+  RSA key, encoded as a "traditional" ``RSA PRIVATE KEY`` PEM block, with an
+  invalid version number.
+* ``asymmetric/Traditional_OpenSSL_Serialization/dsa-wrong-version.pem`` - A
+  DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, with an
+  invalid version number.
 
 
 Key exchange
