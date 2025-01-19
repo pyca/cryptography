@@ -206,6 +206,12 @@ Custom asymmetric vectors
   the key (the OIDs are reversed from ``ec-inconsistent-curve.pem``).
 * ``asymmetric/EC/ec-missing-curve.pem`` - A PKCS#1 encoded EC key where the
   curve OID is missing.
+* ``asymmetric/PKCS8/ec-consistent-curve.pem`` - A PKCS8 encoded EC key where
+  the the curve OID in the parameters is the same as the curve OID in the key
+  (encoding the curve OID twice is duplicative, as the inner curve is
+  optional).
+* ``asymmetric/PKCS8/ec-invalid-version.pem`` - A PKCS8 encoded EC key with an
+  invalid elliptic curve version field.
 
 
 Key exchange
