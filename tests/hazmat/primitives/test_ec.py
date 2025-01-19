@@ -1114,7 +1114,6 @@ class TestECSerialization:
         assert isinstance(key, ec.EllipticCurvePublicKey)
         assert isinstance(key.curve, curve)
 
-    @pytest.mark.xfail
     def test_pkcs8_inconsistent_curve(self):
         # The curve can appear twice in a PKCS8 EC key, error if they're not
         # consistent
