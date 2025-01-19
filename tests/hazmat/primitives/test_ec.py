@@ -1147,9 +1147,31 @@ class TestECSerialization:
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(data, password=None)
 
+    def test_pkcs8_consistent_curve(self):
+        # Like the above, but both the inner and outer curves match
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec-consistent-curve.pem"),
+            lambda f: serialization.load_pem_private_key(
+                f.read(), password=None
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, EllipticCurvePrivateKey)
+        assert isinstance(key.curve, ec.SECP256R1)
+
     def test_load_private_key_missing_curve(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "EC", "ec-missing-curve.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(data, password=None)
+
+    @pytest.mark.xfail
+    def test_load_private_key_invalid_version(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec-invalid-version.pem"),
             lambda f: f.read(),
             mode="rb",
         )
