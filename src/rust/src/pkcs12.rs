@@ -638,7 +638,7 @@ fn serialize_key_and_certificates<'p>(
                 _bag_id: asn1::DefinedByMarker::marker(),
                 bag_value: asn1::Explicit::new(
                     cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
-                        cryptography_x509::pkcs12::EncryptedPrivateKeyInfo {
+                        cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
                             encryption_algorithm: e.algorithm_identifier(
                                 cipher_kdf_iter,
                                 &key_salt,
