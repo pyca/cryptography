@@ -57,6 +57,7 @@ pub(crate) fn load_der_private_key_bytes<'p>(
         return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
     }
 
+    // TODO: parse as encrypted private key
     let mut status = utils::PasswordCallbackStatus::Unused;
     let pkey = openssl::pkey::PKey::private_key_from_pkcs8_callback(
         data,
@@ -80,11 +81,13 @@ fn load_pem_private_key<'p>(
         |p| ["PRIVATE KEY", "ENCRYPTED PRIVATE KEY", "RSA PRIVATE KEY", "EC PRIVATE KEY", "DSA PRIVATE KEY"].contains(&p.tag()),
         "Valid PEM but no BEGIN/END delimiters for a private key found. Are you sure this is a private key?"
     )?;
+    // TODO: if proc-type is present, decrypt PEM layer.
     if p.headers().get("Proc-Type").is_none() {
         let pkey = match p.tag() {
             "PRIVATE KEY" => Some(cryptography_key_parsing::pkcs8::parse_private_key(
                 p.contents(),
             )?),
+            // TODO: Add ENCRYPTED PRIVATE KEY support
             "ENCRYPTED PRIVATE KEY" => None,
             "RSA PRIVATE KEY" => Some(cryptography_key_parsing::rsa::parse_pkcs1_private_key(
                 p.contents(),
