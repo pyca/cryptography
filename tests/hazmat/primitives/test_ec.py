@@ -1154,7 +1154,6 @@ class TestECSerialization:
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(data, password=None)
 
-    @pytest.mark.xfail
     def test_load_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec-invalid-version.pem"),
