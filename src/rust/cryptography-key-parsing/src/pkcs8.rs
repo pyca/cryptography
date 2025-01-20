@@ -4,6 +4,7 @@
 
 use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attributes;
+use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
 use crate::{ec, rsa, KeyParsingError, KeyParsingResult};
 
@@ -109,6 +110,24 @@ pub fn parse_private_key(
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
+        )),
+    }
+}
+
+pub fn parse_encrypted_private_key(
+    data: &[u8],
+    _password: Option<&[u8]>,
+) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
+    let epki = asn1::parse_single::<EncryptedPrivateKeyInfo<'_>>(data)?;
+    match epki.encryption_algorithm.params {
+        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(_params) => {
+            todo!()
+        }
+        AlgorithmParameters::Pbes2(_params) => {
+            todo!()
+        }
+        _ => Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
+            epki.encryption_algorithm.oid().clone(),
         )),
     }
 }
