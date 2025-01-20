@@ -57,13 +57,7 @@ pub(crate) fn load_der_private_key_bytes<'p>(
         return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
     }
 
-    // TODO: parse as encrypted private key
-    let mut status = utils::PasswordCallbackStatus::Unused;
-    let pkey = openssl::pkey::PKey::private_key_from_pkcs8_callback(
-        data,
-        utils::password_callback(&mut status, password),
-    );
-    let pkey = utils::handle_key_load_result(py, pkey, status, password)?;
+    let pkey = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
@@ -84,33 +78,32 @@ fn load_pem_private_key<'p>(
     // TODO: if proc-type is present, decrypt PEM layer.
     if p.headers().get("Proc-Type").is_none() {
         let pkey = match p.tag() {
-            "PRIVATE KEY" => Some(cryptography_key_parsing::pkcs8::parse_private_key(
-                p.contents(),
-            )?),
-            // TODO: Add ENCRYPTED PRIVATE KEY support
-            "ENCRYPTED PRIVATE KEY" => None,
-            "RSA PRIVATE KEY" => Some(cryptography_key_parsing::rsa::parse_pkcs1_private_key(
-                p.contents(),
-            )?),
-            "EC PRIVATE KEY" => Some(cryptography_key_parsing::ec::parse_pkcs1_private_key(
-                p.contents(),
-                None,
-            )?),
-            "DSA PRIVATE KEY" => Some(cryptography_key_parsing::dsa::parse_pkcs1_private_key(
-                p.contents(),
-            )?),
+            "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(p.contents())?,
+            "ENCRYPTED PRIVATE KEY" => {
+                cryptography_key_parsing::pkcs8::parse_encrypted_private_key(
+                    p.contents(),
+                    password.as_ref().map(|v| v.as_bytes()),
+                )?
+            }
+            "RSA PRIVATE KEY" => {
+                cryptography_key_parsing::rsa::parse_pkcs1_private_key(p.contents())?
+            }
+            "EC PRIVATE KEY" => {
+                cryptography_key_parsing::ec::parse_pkcs1_private_key(p.contents(), None)?
+            }
+            "DSA PRIVATE KEY" => {
+                cryptography_key_parsing::dsa::parse_pkcs1_private_key(p.contents())?
+            }
             _ => unreachable!(),
         };
-        if let Some(pkey) = pkey {
-            if password.is_some() {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyTypeError::new_err(
-                        "Password was given but private key is not encrypted.",
-                    ),
-                ));
-            }
-            return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
+        if password.is_some() && p.tag() != "ENCRYPTED PRIVATE KEY" {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(
+                    "Password was given but private key is not encrypted.",
+                ),
+            ));
         }
+        return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
     }
 
     let _ = backend;

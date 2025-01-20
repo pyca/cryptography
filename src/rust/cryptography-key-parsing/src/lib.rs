@@ -19,6 +19,7 @@ pub enum KeyParsingError {
     UnsupportedEllipticCurve(asn1::ObjectIdentifier),
     Parse(asn1::ParseError),
     OpenSSL(openssl::error::ErrorStack),
+    UnsupportedEncryptionAlgorithm(asn1::ObjectIdentifier),
 }
 
 impl From<asn1::ParseError> for KeyParsingError {
