@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "src/rust/",
     "src/rust/cryptography-cffi",
+    "src/rust/cryptography-crypto",
     "src/rust/cryptography-keepalive",
     "src/rust/cryptography-key-parsing",
     "src/rust/cryptography-openssl",
@@ -21,6 +22,7 @@ rust-version = "1.65.0"
 [workspace.dependencies]
 asn1 = { version = "0.20.0", default-features = false }
 pyo3 = { version = "0.23.4", features = ["abi3"] }
+openssl = "0.10.68"
 
 [profile.release]
 overflow-checks = true
