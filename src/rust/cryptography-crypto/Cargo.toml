@@ -1,0 +1,10 @@
+[package]
+name = "cryptography-crypto"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+openssl.workspace = true
