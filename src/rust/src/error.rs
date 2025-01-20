@@ -78,6 +78,9 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
                     exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
                 )))
             }
+            cryptography_key_parsing::KeyParsingError::UnsupportedEncryptionAlgorithm(_oid) => {
+                todo!()
+            }
         }
     }
 }
