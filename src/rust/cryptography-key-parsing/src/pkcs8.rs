@@ -116,18 +116,86 @@ pub fn parse_private_key(
 
 pub fn parse_encrypted_private_key(
     data: &[u8],
-    _password: Option<&[u8]>,
+    password: Option<&[u8]>,
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
     let epki = asn1::parse_single::<EncryptedPrivateKeyInfo<'_>>(data)?;
-    match epki.encryption_algorithm.params {
-        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(_params) => {
-            todo!()
+    let password = match password {
+        None | Some(b"") => return Err(KeyParsingError::EncryptedKeyWithoutPassword),
+        Some(p) => p,
+    };
+
+    let plaintext = match epki.encryption_algorithm.params {
+        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(params) => {
+            // XXX:
+            // - handle invalid utf8
+            let password = std::str::from_utf8(password).unwrap();
+            let key = cryptography_crypto::pkcs12::kdf(
+                password,
+                &params.salt,
+                cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
+                params.iterations,
+                24,
+                openssl::hash::MessageDigest::sha1(),
+            )?;
+            let iv = cryptography_crypto::pkcs12::kdf(
+                password,
+                &params.salt,
+                cryptography_crypto::pkcs12::KDF_IV_ID,
+                params.iterations,
+                8,
+                openssl::hash::MessageDigest::sha1(),
+            )?;
+
+            openssl::symm::decrypt(
+                openssl::symm::Cipher::des_ede3_cbc(),
+                &key,
+                Some(&iv),
+                epki.encrypted_data,
+            )
+            .map_err(|_| KeyParsingError::IncorrectPassword)?
         }
-        AlgorithmParameters::Pbes2(_params) => {
-            todo!()
+        AlgorithmParameters::Pbes2(params) => {
+            let (cipher, iv) = match params.encryption_scheme.params {
+                AlgorithmParameters::Aes128Cbc(iv) => (openssl::symm::Cipher::aes_128_cbc(), iv),
+                AlgorithmParameters::Aes256Cbc(iv) => (openssl::symm::Cipher::aes_256_cbc(), iv),
+                _ => todo!(),
+            };
+
+            let key = match params.key_derivation_func.params {
+                AlgorithmParameters::Pbkdf2(pbkdf2_params) => {
+                    let mut key = vec![0; cipher.key_len()];
+                    let md = match pbkdf2_params.prf.params {
+                        AlgorithmParameters::HmacWithSha1(_) => {
+                            openssl::hash::MessageDigest::sha1()
+                        }
+                        AlgorithmParameters::HmacWithSha256(_) => {
+                            openssl::hash::MessageDigest::sha256()
+                        }
+                        _ => todo!(),
+                    };
+                    openssl::pkcs5::pbkdf2_hmac(
+                        password,
+                        pbkdf2_params.salt,
+                        // XXX
+                        pbkdf2_params.iteration_count.try_into().expect("XXX"),
+                        md,
+                        &mut key,
+                    )
+                    .unwrap();
+                    key
+                }
+                _ => todo!(),
+            };
+
+            openssl::symm::decrypt(cipher, &key, Some(&iv), epki.encrypted_data)
+                .map_err(|_| KeyParsingError::IncorrectPassword)?
         }
-        _ => Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
-            epki.encryption_algorithm.oid().clone(),
-        )),
-    }
+        _ => {
+            return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
+                epki.encryption_algorithm.oid().clone(),
+            ))
+        }
+    };
+
+    parse_private_key(&plaintext)
 }
