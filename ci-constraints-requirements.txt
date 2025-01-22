@@ -71,7 +71,9 @@ execnet==2.1.1 ; python_full_version >= '3.8'
     # via pytest-xdist
 filelock==3.12.2 ; python_full_version < '3.8'
     # via virtualenv
-filelock==3.16.1 ; python_full_version >= '3.8'
+filelock==3.16.1 ; python_full_version == '3.8.*'
+    # via virtualenv
+filelock==3.17.0 ; python_full_version >= '3.9'
     # via virtualenv
 idna==3.10
     # via requests
@@ -89,7 +91,12 @@ importlib-metadata==6.7.0 ; python_full_version < '3.8'
     #   sphinx
     #   sphinxcontrib-spelling
     #   virtualenv
-importlib-metadata==8.5.0 ; python_full_version >= '3.8' and python_full_version < '3.10.2'
+importlib-metadata==8.5.0 ; python_full_version == '3.8.*'
+    # via
+    #   build
+    #   pytest-randomly
+    #   sphinx
+importlib-metadata==8.6.1 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
     # via
     #   build
     #   pytest-randomly
