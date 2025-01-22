@@ -78,8 +78,20 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
                     exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
                 )))
             }
-            cryptography_key_parsing::KeyParsingError::UnsupportedEncryptionAlgorithm(_oid) => {
-                todo!()
+            cryptography_key_parsing::KeyParsingError::UnsupportedEncryptionAlgorithm(oid) => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(format!(
+                    "Unknown key encryption algorithm: {oid}"
+                )))
+            }
+            cryptography_key_parsing::KeyParsingError::EncryptedKeyWithoutPassword => {
+                CryptographyError::Py(pyo3::exceptions::PyTypeError::new_err(
+                    "Password was not given but private key is encrypted",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::IncorrectPassword => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Incorrect password, could not decrypt key",
+                ))
             }
         }
     }

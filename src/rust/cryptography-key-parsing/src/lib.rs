@@ -20,6 +20,8 @@ pub enum KeyParsingError {
     Parse(asn1::ParseError),
     OpenSSL(openssl::error::ErrorStack),
     UnsupportedEncryptionAlgorithm(asn1::ObjectIdentifier),
+    EncryptedKeyWithoutPassword,
+    IncorrectPassword,
 }
 
 impl From<asn1::ParseError> for KeyParsingError {
