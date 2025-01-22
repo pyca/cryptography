@@ -19,7 +19,7 @@ jobs:
           persist-credentials: true
       - id: check-sha-boring
         run: |
-          SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/master | cut -f1)
+          SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/main | cut -f1)
           LAST_COMMIT=$(grep boringssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-f0-9]{40}')
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
@@ -30,7 +30,7 @@ jobs:
           fi
       - id: check-sha-openssl
         run: |
-          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/master | cut -f1)
+          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/main | cut -f1)
           LAST_COMMIT=$(grep openssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-f0-9]{40}')
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
