@@ -156,8 +156,15 @@ pub fn parse_encrypted_private_key(
         }
         AlgorithmParameters::Pbes2(params) => {
             let (cipher, iv) = match params.encryption_scheme.params {
-                AlgorithmParameters::Aes128Cbc(iv) => (openssl::symm::Cipher::aes_128_cbc(), iv),
-                AlgorithmParameters::Aes256Cbc(iv) => (openssl::symm::Cipher::aes_256_cbc(), iv),
+                AlgorithmParameters::DesEde3Cbc(ref iv) => {
+                    (openssl::symm::Cipher::des_ede3_cbc(), &iv[..])
+                }
+                AlgorithmParameters::Aes128Cbc(ref iv) => {
+                    (openssl::symm::Cipher::aes_128_cbc(), &iv[..])
+                }
+                AlgorithmParameters::Aes256Cbc(ref iv) => {
+                    (openssl::symm::Cipher::aes_256_cbc(), &iv[..])
+                }
                 _ => todo!(),
             };
 
@@ -187,7 +194,7 @@ pub fn parse_encrypted_private_key(
                 _ => todo!(),
             };
 
-            openssl::symm::decrypt(cipher, &key, Some(&iv), epki.encrypted_data)
+            openssl::symm::decrypt(cipher, &key, Some(iv), epki.encrypted_data)
                 .map_err(|_| KeyParsingError::IncorrectPassword)?
         }
         _ => {
