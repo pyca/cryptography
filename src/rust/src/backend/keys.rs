@@ -114,7 +114,9 @@ fn load_pem_private_key<'p>(
                     ))
                 }
             };
-            let iv = utils::hex_decode(iv)?;
+            let iv = utils::hex_decode(iv).ok_or_else(|| {
+                pyo3::exceptions::PyValueError::new_err("DEK-Info IV is not valid hex")
+            })?;
             let key = cryptography_crypto::pbkdf1::openssl_kdf(
                 openssl::hash::MessageDigest::md5(),
                 password,
