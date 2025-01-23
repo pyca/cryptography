@@ -175,20 +175,6 @@ fn private_key_from_pkey<'p>(
         )?
         .into_pyobject(py)?
         .into_any()),
-        openssl::pkey::Id::RSA_PSS => {
-            // At the moment the way we handle RSA PSS keys is to strip the
-            // PSS constraints from them and treat them as normal RSA keys
-            // Unfortunately the RSA * itself tracks this data so we need to
-            // extract, serialize, and reload it without the constraints.
-            let der_bytes = pkey.rsa()?.private_key_to_der()?;
-            let rsa = openssl::rsa::Rsa::private_key_from_der(&der_bytes)?;
-            let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-            Ok(
-                crate::backend::rsa::private_key_from_pkey(&pkey, unsafe_skip_rsa_key_validation)?
-                    .into_pyobject(py)?
-                    .into_any(),
-            )
-        }
         openssl::pkey::Id::EC => Ok(crate::backend::ec::private_key_from_pkey(py, pkey)?
             .into_pyobject(py)?
             .into_any()),
