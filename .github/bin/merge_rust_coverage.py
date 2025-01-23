@@ -91,7 +91,7 @@ def main(*lcov_paths: str):
     cov.combine()
     coverage_percent = cov.report(show_missing=True)
     if coverage_percent < 100:
-        print("+++ Python coverage under 100% +++")
+        print("+++ Combined coverage under 100% +++")
         cov.html_report()
         sys.exit(1)
 
