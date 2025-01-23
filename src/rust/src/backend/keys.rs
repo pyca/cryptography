@@ -122,7 +122,12 @@ fn load_pem_private_key<'p>(
                 password,
                 &iv,
                 cipher.key_len(),
-            )?;
+            )
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "Unable to derive key from password (are you in FIPS mode?)",
+                )
+            })?;
             openssl::symm::decrypt(cipher, &key, Some(&iv), p.contents()).map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err("Incorrect password, could not decrypt key")
             })?
