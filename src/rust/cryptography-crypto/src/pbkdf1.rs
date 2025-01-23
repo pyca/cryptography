@@ -12,7 +12,6 @@ pub fn openssl_kdf(
 ) -> Result<Vec<u8>, openssl::error::ErrorStack> {
     let mut key = Vec::with_capacity(length);
 
-    while key.len() < length {
         let mut h = openssl::hash::Hasher::new(hash_alg)?;
 
         if !key.is_empty() {
