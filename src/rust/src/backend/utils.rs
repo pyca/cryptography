@@ -404,11 +404,9 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
     Ok((data, algorithm))
 }
 
-pub(crate) fn hex_decode(v: &str) -> CryptographyResult<Vec<u8>> {
+pub(crate) fn hex_decode(v: &str) -> Option<Vec<u8>> {
     if v.len() % 2 != 0 {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Invalid hex value - odd length"),
-        ));
+        return None;
     }
 
     let mut b = Vec::with_capacity(v.len() / 2);
@@ -418,26 +416,18 @@ pub(crate) fn hex_decode(v: &str) -> CryptographyResult<Vec<u8>> {
             b @ b'0'..=b'9' => b - b'0',
             b @ b'a'..=b'f' => b - b'a' + 10,
             b @ b'A'..=b'F' => b - b'A' + 10,
-            _ => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err("Invalid hex value"),
-                ))
-            }
+            _ => return None,
         };
 
         let low = match v[i + 1] {
             b @ b'0'..=b'9' => b - b'0',
             b @ b'a'..=b'f' => b - b'a' + 10,
             b @ b'A'..=b'F' => b - b'A' + 10,
-            _ => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err("Invalid hex value"),
-                ))
-            }
+            _ => return None,
         };
 
         b.push((high << 4) | low);
     }
 
-    Ok(b)
+    Some(b)
 }
