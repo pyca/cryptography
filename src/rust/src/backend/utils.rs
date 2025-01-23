@@ -444,6 +444,8 @@ mod tests {
             ("0", None),
             ("12-0", None),
             ("120-", None),
+            ("ab", Some(vec![0xAB])),
+            ("AB", Some(vec![0xAB])),
         ] {
             assert_eq!(hex_decode(text), expected);
         }
