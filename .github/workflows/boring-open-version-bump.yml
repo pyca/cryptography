@@ -30,7 +30,7 @@ jobs:
           fi
       - id: check-sha-openssl
         run: |
-          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/main | cut -f1)
+          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/master | cut -f1)
           LAST_COMMIT=$(grep openssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-f0-9]{40}')
           if ! grep -q "$SHA" .github/workflows/ci.yml; then
             echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
@@ -42,7 +42,7 @@ jobs:
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the BoringSSL master branch.*/Latest commit on the BoringSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
+          sed -E -i "s/Latest commit on the BoringSSL main branch.*/Latest commit on the BoringSSL main branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
           sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${COMMIT_SHA}\"/" .github/workflows/ci.yml
           git status
         if: steps.check-sha-boring.outputs.COMMIT_SHA
