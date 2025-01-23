@@ -404,66 +404,40 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
     Ok((data, algorithm))
 }
 
-pub(crate) enum PasswordCallbackStatus {
-    Unused,
-    Used,
-    BufferTooSmall(usize),
-}
-
-pub(crate) fn password_callback<'a>(
-    status: &'a mut PasswordCallbackStatus,
-    password: Option<&'a [u8]>,
-) -> impl FnOnce(&mut [u8]) -> Result<usize, openssl::error::ErrorStack> + 'a {
-    move |buf| {
-        *status = PasswordCallbackStatus::Used;
-        match password.as_ref() {
-            Some(p) if p.len() <= buf.len() => {
-                buf[..p.len()].copy_from_slice(p);
-                Ok(p.len())
-            }
-            Some(_) => {
-                *status = PasswordCallbackStatus::BufferTooSmall(buf.len());
-                Ok(0)
-            }
-            None => Ok(0),
-        }
+pub(crate) fn hex_decode(v: &str) -> CryptographyResult<Vec<u8>> {
+    if v.len() % 2 != 0 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid hex value - odd length"),
+        ));
     }
-}
 
-pub(crate) fn handle_key_load_result<T>(
-    py: pyo3::Python<'_>,
-    pkey: Result<openssl::pkey::PKey<T>, openssl::error::ErrorStack>,
-    status: PasswordCallbackStatus,
-    password: Option<&[u8]>,
-) -> CryptographyResult<openssl::pkey::PKey<T>> {
-    match (pkey, status, password) {
-        (Ok(k), PasswordCallbackStatus::Unused, None)
-        | (Ok(k), PasswordCallbackStatus::Used, Some(_)) => Ok(k),
-
-        (Ok(_), PasswordCallbackStatus::Unused, Some(_)) => Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "Password was given but private key is not encrypted.",
-            ),
-        )),
-
-        (_, PasswordCallbackStatus::Used, None | Some(b"")) => Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "Password was not given but private key is encrypted",
-            ),
-        )),
-        (_, PasswordCallbackStatus::BufferTooSmall(size), _) => Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(format!(
-                "Passwords longer than {size} bytes are not supported"
-            )),
-        )),
-        (Err(e), _, _) => {
-            let errors = error::list_from_openssl_error(py, &e);
-            Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err((
-                    "Could not deserialize key data. The data may be in an incorrect format, the provided password may be incorrect, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters).",
-                    errors.unbind(),
+    let mut b = Vec::with_capacity(v.len() / 2);
+    let v = v.as_bytes();
+    for i in (0..v.len()).step_by(2) {
+        let high = match v[i] {
+            b @ b'0'..=b'9' => b - b'0',
+            b @ b'a'..=b'f' => b - b'a' + 10,
+            b @ b'A'..=b'F' => b - b'A' + 10,
+            _ => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err("Invalid hex value"),
                 ))
-            ))
-        }
+            }
+        };
+
+        let low = match v[i + 1] {
+            b @ b'0'..=b'9' => b - b'0',
+            b @ b'a'..=b'f' => b - b'a' + 10,
+            b @ b'A'..=b'F' => b - b'A' + 10,
+            _ => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err("Invalid hex value"),
+                ))
+            }
+        };
+
+        b.push((high << 4) | low);
     }
+
+    Ok(b)
 }

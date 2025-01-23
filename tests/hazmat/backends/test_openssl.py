@@ -4,7 +4,6 @@
 
 
 import itertools
-import os
 
 import pytest
 
@@ -22,10 +21,7 @@ from ...doubles import (
     DummyMode,
 )
 from ...hazmat.primitives.test_rsa import rsa_key_2048
-from ...utils import (
-    load_vectors_from_file,
-    raises_unsupported_algorithm,
-)
+from ...utils import raises_unsupported_algorithm
 
 # Make ruff happy since we're importing fixtures that pytest patches in as
 # func args
@@ -196,27 +192,6 @@ class TestOpenSSLRSA:
                     mgf=padding.MGF1(algorithm=hashes.MD5()),
                     algorithm=hashes.MD5(),
                     label=None,
-                ),
-            )
-
-
-class TestOpenSSLSerializationWithOpenSSL:
-    def test_very_long_pem_serialization_password(self):
-        password = b"x" * 1025
-
-        with pytest.raises(ValueError, match="Passwords longer than"):
-            load_vectors_from_file(
-                os.path.join(
-                    "asymmetric",
-                    "Traditional_OpenSSL_Serialization",
-                    "key1.pem",
-                ),
-                lambda pemfile: (
-                    serialization.load_pem_private_key(
-                        pemfile.read().encode(),
-                        password,
-                        unsafe_skip_rsa_key_validation=False,
-                    )
                 ),
             )
 

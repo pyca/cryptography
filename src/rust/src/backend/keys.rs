@@ -70,50 +70,89 @@ fn load_pem_private_key<'p>(
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let _ = backend;
+
     let p = x509::find_in_pem(
         data.as_bytes(),
         |p| ["PRIVATE KEY", "ENCRYPTED PRIVATE KEY", "RSA PRIVATE KEY", "EC PRIVATE KEY", "DSA PRIVATE KEY"].contains(&p.tag()),
         "Valid PEM but no BEGIN/END delimiters for a private key found. Are you sure this is a private key?"
     )?;
-    // TODO: if proc-type is present, decrypt PEM layer.
-    if p.headers().get("Proc-Type").is_none() {
-        let pkey = match p.tag() {
-            "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(p.contents())?,
-            "ENCRYPTED PRIVATE KEY" => {
-                cryptography_key_parsing::pkcs8::parse_encrypted_private_key(
-                    p.contents(),
-                    password.as_ref().map(|v| v.as_bytes()),
-                )?
-            }
-            "RSA PRIVATE KEY" => {
-                cryptography_key_parsing::rsa::parse_pkcs1_private_key(p.contents())?
-            }
-            "EC PRIVATE KEY" => {
-                cryptography_key_parsing::ec::parse_pkcs1_private_key(p.contents(), None)?
-            }
-            "DSA PRIVATE KEY" => {
-                cryptography_key_parsing::dsa::parse_pkcs1_private_key(p.contents())?
-            }
-            _ => unreachable!(),
-        };
-        if password.is_some() && p.tag() != "ENCRYPTED PRIVATE KEY" {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "Password was given but private key is not encrypted.",
-                ),
-            ));
-        }
-        return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
-    }
+    let password = password.as_ref().map(|v| v.as_bytes());
+    let mut password_used = false;
+    // TODO: Surely we can avoid this clone?
+    let tag = p.tag().to_string();
+    let data = match p.headers().get("Proc-Type") {
+        Some("4,ENCRYPTED") => {
+            password_used = true;
+            let Some(dek_info) = p.headers().get("DEK-Info") else {
+                todo!()
+            };
+            let Some((cipher_algorithm, iv)) = dek_info.split_once(',') else {
+                todo!()
+            };
 
-    let _ = backend;
-    let password = password.as_ref().map(CffiBuf::as_bytes);
-    let mut status = utils::PasswordCallbackStatus::Unused;
-    let pkey = openssl::pkey::PKey::private_key_from_pem_callback(
-        data.as_bytes(),
-        utils::password_callback(&mut status, password),
-    );
-    let pkey = utils::handle_key_load_result(py, pkey, status, password)?;
+            let password = match password {
+                None | Some(b"") => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Password was not given but private key is encrypted",
+                        ),
+                    ))
+                }
+                Some(p) => p,
+            };
+
+            let cipher = match cipher_algorithm {
+                "AES-128-CBC" => openssl::symm::Cipher::aes_128_cbc(),
+                "AES-256-CBC" => openssl::symm::Cipher::aes_256_cbc(),
+                "DES-EDE3-CBC" => openssl::symm::Cipher::des_ede3_cbc(),
+                _ => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Key encrypted with unknown cipher.",
+                        ),
+                    ))
+                }
+            };
+            let iv = utils::hex_decode(iv)?;
+            let key = cryptography_crypto::pbkdf1::openssl_kdf(
+                openssl::hash::MessageDigest::md5(),
+                password,
+                &iv,
+                cipher.key_len(),
+            )?;
+            openssl::symm::decrypt(cipher, &key, Some(&iv), p.contents()).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("Incorrect password, could not decrypt key")
+            })?
+        }
+        Some(_) => {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Proc-Type PEM header is not valid, key could not be decrypted.",
+                ),
+            ))
+        }
+        None => p.into_contents(),
+    };
+
+    let pkey = match tag.as_str() {
+        "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
+        "ENCRYPTED PRIVATE KEY" => {
+            password_used = true;
+            cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password)?
+        }
+        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data)?,
+        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None)?,
+        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data)?,
+        _ => unreachable!(),
+    };
+    if password.is_some() && !password_used {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err(
+                "Password was given but private key is not encrypted.",
+            ),
+        ));
+    }
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
