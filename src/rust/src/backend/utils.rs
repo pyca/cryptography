@@ -431,3 +431,21 @@ pub(crate) fn hex_decode(v: &str) -> Option<Vec<u8>> {
 
     Some(b)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::hex_decode;
+
+    #[test]
+    fn test_hex_decode() {
+        for (text, expected) in [
+            ("", Some(vec![])),
+            ("00", Some(vec![0])),
+            ("0", None),
+            ("12-0", None),
+            ("120-", None),
+        ] {
+            assert_eq!(hex_decode(text), expected);
+        }
+    }
+}
