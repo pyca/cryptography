@@ -19,7 +19,22 @@ fn load_der_private_key<'p>(
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
-    if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data.as_bytes()) {
+
+    load_der_private_key_bytes(
+        py,
+        data.as_bytes(),
+        password.as_ref().map(|v| v.as_bytes()),
+        unsafe_skip_rsa_key_validation,
+    )
+}
+
+pub(crate) fn load_der_private_key_bytes<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+    password: Option<&[u8]>,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    if let Ok(pkey) = openssl::pkey::PKey::private_key_from_der(data) {
         if password.is_some() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
@@ -30,10 +45,9 @@ fn load_der_private_key<'p>(
         return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
     }
 
-    let password = password.as_ref().map(CffiBuf::as_bytes);
     let mut status = utils::PasswordCallbackStatus::Unused;
     let pkey = openssl::pkey::PKey::private_key_from_pkcs8_callback(
-        data.as_bytes(),
+        data,
         utils::password_callback(&mut status, password),
     );
     let pkey = utils::handle_key_load_result(py, pkey, status, password)?;
@@ -60,7 +74,7 @@ fn load_pem_private_key<'p>(
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
-pub(crate) fn private_key_from_pkey<'p>(
+fn private_key_from_pkey<'p>(
     py: pyo3::Python<'p>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     unsafe_skip_rsa_key_validation: bool,
