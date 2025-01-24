@@ -443,6 +443,24 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
+    def test_load_pkcs8_private_key_unknown_pbkdf2_prf(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-pbkdf2-prf.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
+    def test_load_pkcs8_private_key_unknown_kdf(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-kdf.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
 
 class TestPEMSerialization:
     @pytest.mark.parametrize(
