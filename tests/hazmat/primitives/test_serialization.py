@@ -436,7 +436,7 @@ class TestDERSerialization:
 
     def test_load_pkcs8_private_key_unknown_encryption_algorithm(self):
         data = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "enc-unknown-alogrithm.pem"),
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-algorithm.pem"),
             lambda f: f.read(),
             mode="rb",
         )
