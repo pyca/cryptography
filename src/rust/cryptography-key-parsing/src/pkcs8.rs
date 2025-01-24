@@ -165,7 +165,11 @@ pub fn parse_encrypted_private_key(
                 AlgorithmParameters::Aes256Cbc(ref iv) => {
                     (openssl::symm::Cipher::aes_256_cbc(), &iv[..])
                 }
-                _ => todo!(),
+                _ => {
+                    return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
+                        params.encryption_scheme.oid().clone(),
+                    ))
+                }
             };
 
             let key = match params.key_derivation_func.params {
@@ -178,7 +182,11 @@ pub fn parse_encrypted_private_key(
                         AlgorithmParameters::HmacWithSha256(_) => {
                             openssl::hash::MessageDigest::sha256()
                         }
-                        _ => todo!(),
+                        _ => {
+                            return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
+                                pbkdf2_params.prf.oid().clone(),
+                            ))
+                        }
                     };
                     openssl::pkcs5::pbkdf2_hmac(
                         password,
@@ -191,7 +199,11 @@ pub fn parse_encrypted_private_key(
                     .unwrap();
                     key
                 }
-                _ => todo!(),
+                _ => {
+                    return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
+                        params.key_derivation_func.oid().clone(),
+                    ))
+                }
             };
 
             openssl::symm::decrypt(cipher, &key, Some(iv), epki.encrypted_data)
