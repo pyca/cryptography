@@ -58,6 +58,7 @@ pub(crate) fn load_der_private_key_bytes<'p>(
     }
 
     let pkey = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
+
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
 
