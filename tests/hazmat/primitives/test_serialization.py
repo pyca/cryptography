@@ -1155,6 +1155,45 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=None)
 
+    def test_pem_encryption_missing_dek_info(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "key1-no-dek-info.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=None)
+
+    def test_pem_encryption_malformed_dek_info(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "key1-malformed-dek-info.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=None)
+
+    def test_pem_encryption_malformed_iv(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "key1-malformed-iv.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=None)
+
 
 class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
