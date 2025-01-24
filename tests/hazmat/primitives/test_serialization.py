@@ -424,6 +424,43 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_der_private_key(data, password=None)
 
+    @pytest.mark.skip_fips(reason="3DES is not FIPS")
+    def test_load_pkcs8_private_key_3des_encryption(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-rsa-3des.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"password"),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 2048
+
+    def test_load_pkcs8_private_key_unknown_encryption_algorithm(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-algorithm.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
+    def test_load_pkcs8_private_key_unknown_pbkdf2_prf(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-pbkdf2-prf.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
+    def test_load_pkcs8_private_key_unknown_kdf(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-unknown-kdf.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
 
 class TestPEMSerialization:
     @pytest.mark.parametrize(

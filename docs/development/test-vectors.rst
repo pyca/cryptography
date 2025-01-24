@@ -212,7 +212,14 @@ Custom asymmetric vectors
   optional).
 * ``asymmetric/PKCS8/ec-invalid-version.pem`` - A PKCS8 encoded EC key with an
   invalid elliptic curve version field.
-
+* ``asymmetric/PKCS8/enc-rsa-3des.pem`` - A PKCS8 encoded RSA key encrypted
+  with 3DES, with the password "password".
+* ``asymmetric/PKCS8/enc-unknown-algorithm.pem`` - A PKCS8 encoded key with an
+  unknown encryption algorithm.
+* ``asymmetric/PKCS8/enc-unknown-pbkdf2-prf.pem`` - A PKCS8 encoded key
+  encrypted using PBKDF2 with an unknown PRF.
+* ``asymmetric/PKCS8/enc-unknown-kdf.pem`` - A PKCS8 encoded key encrypted
+  using an unknown KDF.
 
 Key exchange
 ~~~~~~~~~~~~
