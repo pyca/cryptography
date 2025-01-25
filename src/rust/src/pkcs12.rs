@@ -657,7 +657,8 @@ fn load_key_and_certificates<'p>(
     let p12 = decode_p12(data, password)?;
 
     let private_key = if let Some(pkey) = p12.pkey {
-        keys::private_key_from_pkey(py, &pkey, false)?
+        let pkey_bytes = pkey.private_key_to_pkcs8()?;
+        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
     } else {
         py.None().into_bound(py)
     };
@@ -704,7 +705,8 @@ fn load_pkcs12<'p>(
     let p12 = decode_p12(data, password)?;
 
     let private_key = if let Some(pkey) = p12.pkey {
-        keys::private_key_from_pkey(py, &pkey, false)?
+        let pkey_bytes = pkey.private_key_to_pkcs8()?;
+        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
     } else {
         py.None().into_bound(py)
     };
