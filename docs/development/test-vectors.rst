@@ -220,6 +220,13 @@ Custom asymmetric vectors
   encrypted using PBKDF2 with an unknown PRF.
 * ``asymmetric/PKCS8/enc-unknown-kdf.pem`` - A PKCS8 encoded key encrypted
   using an unknown KDF.
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1-no-dek-info.pem`` - An
+  RSA key in an encrypted PEM with no ``DEK-Info`` header.
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1-malformed-dek-info.pem``
+  - An RSA key in an encrypted PEM with a malformed ``DEK-Info`` header (no
+  comma).
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1-malformed-iv.pem`` - An
+  RSA key in an encrypted PEM with a malformed IV (not valid hex).
 
 Key exchange
 ~~~~~~~~~~~~
