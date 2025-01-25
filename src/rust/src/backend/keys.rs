@@ -86,10 +86,18 @@ fn load_pem_private_key<'p>(
         Some("4,ENCRYPTED") => {
             password_used = true;
             let Some(dek_info) = p.headers().get("DEK-Info") else {
-                todo!()
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Encrypted PEM doesn't have a DEK-Info header.",
+                    ),
+                ));
             };
             let Some((cipher_algorithm, iv)) = dek_info.split_once(',') else {
-                todo!()
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Encrypted PEM's DEK-Info header is not valid.",
+                    ),
+                ));
             };
 
             let password = match password {
