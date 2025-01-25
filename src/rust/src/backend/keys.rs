@@ -153,14 +153,14 @@ fn load_pem_private_key<'p>(
 
     let pkey = match tag.as_str() {
         "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
-        "ENCRYPTED PRIVATE KEY" => {
-            password_used = true;
-            cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password)?
-        }
         "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data)?,
         "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None)?,
         "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data)?,
-        _ => unreachable!(),
+        _ => {
+            assert_eq!(tag, "ENCRYPTED PRIVATE KEY");
+            password_used = true;
+            cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password)?
+        }
     };
     if password.is_some() && !password_used {
         return Err(CryptographyError::from(
