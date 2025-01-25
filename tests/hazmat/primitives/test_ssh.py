@@ -868,6 +868,16 @@ class TestRSASSHSerialization:
 
         assert numbers == expected
 
+    def test_unsafe_skip_rsa_key_validation(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key"),
+            lambda f: load_ssh_private_key(
+                f.read(), password=None, unsafe_skip_rsa_key_validation=True
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+
 
 class TestDSSSSHSerialization:
     def test_load_ssh_public_key_dss_too_short(self, backend):

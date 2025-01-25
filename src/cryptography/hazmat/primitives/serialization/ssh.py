@@ -331,7 +331,7 @@ class _SSHFormatRSA:
         return public_key, data
 
     def load_private(
-        self, data: memoryview, pubfields
+        self, data: memoryview, pubfields, unsafe_skip_rsa_key_validation: bool
     ) -> tuple[rsa.RSAPrivateKey, memoryview]:
         """Make RSA private key from data."""
         n, data = _get_mpint(data)
@@ -349,7 +349,9 @@ class _SSHFormatRSA:
         private_numbers = rsa.RSAPrivateNumbers(
             p, q, d, dmp1, dmq1, iqmp, public_numbers
         )
-        private_key = private_numbers.private_key()
+        private_key = private_numbers.private_key(
+            unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation
+        )
         return private_key, data
 
     def encode_public(
@@ -405,7 +407,7 @@ class _SSHFormatDSA:
         return public_key, data
 
     def load_private(
-        self, data: memoryview, pubfields
+        self, data: memoryview, pubfields, unsafe_skip_rsa_key_validation: bool
     ) -> tuple[dsa.DSAPrivateKey, memoryview]:
         """Make DSA private key from data."""
         (p, q, g, y), data = self.get_public(data)
@@ -485,7 +487,7 @@ class _SSHFormatECDSA:
         return public_key, data
 
     def load_private(
-        self, data: memoryview, pubfields
+        self, data: memoryview, pubfields, unsafe_skip_rsa_key_validation: bool
     ) -> tuple[ec.EllipticCurvePrivateKey, memoryview]:
         """Make ECDSA private key from data."""
         (curve_name, point), data = self.get_public(data)
@@ -545,7 +547,7 @@ class _SSHFormatEd25519:
         return public_key, data
 
     def load_private(
-        self, data: memoryview, pubfields
+        self, data: memoryview, pubfields, unsafe_skip_rsa_key_validation: bool
     ) -> tuple[ed25519.Ed25519PrivateKey, memoryview]:
         """Make Ed25519 private key from data."""
         (point,), data = self.get_public(data)
@@ -681,6 +683,8 @@ def load_ssh_private_key(
     data: bytes,
     password: bytes | None,
     backend: typing.Any = None,
+    *,
+    unsafe_skip_rsa_key_validation: bool = False,
 ) -> SSHPrivateKeyTypes:
     """Load private key from OpenSSH custom encoding."""
     utils._check_byteslike("data", data)
@@ -765,7 +769,11 @@ def load_ssh_private_key(
     key_type, edata = _get_sshstr(edata)
     if key_type != pub_key_type:
         raise ValueError("Corrupt data: key type mismatch")
-    private_key, edata = kformat.load_private(edata, pubfields)
+    private_key, edata = kformat.load_private(
+        edata,
+        pubfields,
+        unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
+    )
     # We don't use the comment
     _, edata = _get_sshstr(edata)
 

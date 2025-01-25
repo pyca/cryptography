@@ -19,6 +19,8 @@ Changelog
   provided (previously no exception was raised), and raises a ``TypeError`` if
   the key is encrypted but no password is provided (previously a ``ValueError``
   was raised).
+* Added ``unsafe_skip_rsa_key_validation`` keyword-argument to
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`.
 
 .. _v44-0-0:
 
