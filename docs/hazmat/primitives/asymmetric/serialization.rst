@@ -456,7 +456,7 @@ An example ECDSA key in OpenSSH format::
     :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`.
 
 
-.. function:: load_ssh_private_key(data, password)
+.. function:: load_ssh_private_key(data, password, *, unsafe_skip_rsa_key_validation=False)
 
     .. versionadded:: 3.0
 
@@ -473,6 +473,19 @@ An example ECDSA key in OpenSSH format::
 
     :param bytes password: Password bytes to use to decrypt
         password-protected key. Or ``None`` if not needed.
+
+    :param unsafe_skip_rsa_key_validation:
+
+        .. versionadded:: 45.0.0
+
+        A keyword-only argument that defaults to ``False``. If ``True``
+        RSA private keys will not be validated. This significantly speeds up
+        loading the keys, but is :term:`unsafe` unless you are certain the
+        key is valid. User supplied keys should never be loaded with this
+        parameter set to ``True``. If you do load an invalid key this way and
+        attempt to use it OpenSSL may hang, crash, or otherwise misbehave.
+
+    :type unsafe_skip_rsa_key_validation: bool
 
     :returns: One of :data:`SSHPrivateKeyTypes` depending on the contents of
         ``data``.
@@ -1289,11 +1302,11 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     .. method:: set_content_encryption_algorithm(content_encryption_algorithm)
 
-        :param content_encryption_algorithm: the content encryption algorithm to use. 
+        :param content_encryption_algorithm: the content encryption algorithm to use.
             Only AES is supported, with a key size of 128 or 256 bits.
-        :type content_encryption_algorithm: 
-            :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES128` 
-            or :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES256` 
+        :type content_encryption_algorithm:
+            :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES128`
+            or :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES256`
 
     .. method:: add_recipient(certificate)
 
@@ -1361,10 +1374,10 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         associated with the certificate provided. Only private RSA keys are supported.
 
     :param options: A list of
-        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
-    
+
     :returns bytes: The decrypted message.
 
     :raises ValueError: If the recipient certificate does not match any of the encrypted keys in the
@@ -1377,7 +1390,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
-    
+
     :raises ValueError: If the PKCS7 data is not of the enveloped data type.
 
 .. function:: pkcs7_decrypt_pem(data, certificate, private_key, options)
@@ -1416,10 +1429,10 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         associated with the certificate provided. Only private RSA keys are supported.
 
     :param options: A list of
-        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
-    
+
     :returns bytes: The decrypted message.
 
     :raises ValueError: If the PEM data does not have the PKCS7 tag.
@@ -1434,7 +1447,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
-    
+
     :raises ValueError: If the PKCS7 data is not of the enveloped data type.
 
 .. function:: pkcs7_decrypt_smime(data, certificate, private_key, options)
@@ -1474,10 +1487,10 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         associated with the certificate provided. Only private RSA keys are supported.
 
     :param options: A list of
-        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For 
+        :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
-    
+
     :returns bytes: The decrypted message.
 
     :raises ValueError: If the S/MIME data is not one of the correct content types.
@@ -1492,7 +1505,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         another algorithm than AES (with key sizes 128 and 256), with CBC mode.
 
     :raises ValueError: If the PKCS7 data does not contain encrypted content.
-    
+
     :raises ValueError: If the PKCS7 data is not of the enveloped data type.
 
 
@@ -1505,7 +1518,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     .. attribute:: Text
 
         For signing, the text option adds ``text/plain`` headers to an S/MIME message when
-        serializing to 
+        serializing to
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.SMIME`.
         This option is disallowed with ``DER`` serialization.
         For envelope creation, it adds ``text/plain`` headers to the encrypted content, regardless
