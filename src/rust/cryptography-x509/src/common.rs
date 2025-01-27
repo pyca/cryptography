@@ -149,6 +149,9 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::AES_256_CBC_OID)]
     Aes256Cbc([u8; 16]),
 
+    #[defined_by(oid::DES_EDE3_CBC_OID)]
+    DesEde3Cbc([u8; 8]),
+
     #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
     Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
 

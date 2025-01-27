@@ -159,5 +159,7 @@ pub const AES_256_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 10
 pub const AES_192_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 22);
 pub const AES_128_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 1, 2);
 
+pub const DES_EDE3_CBC_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 3, 7);
+
 pub const HMAC_WITH_SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 7);
 pub const HMAC_WITH_SHA256_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 9);
