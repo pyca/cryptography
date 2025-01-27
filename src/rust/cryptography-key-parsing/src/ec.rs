@@ -105,4 +105,3 @@ pub fn parse_pkcs1_private_key(
         .map_err(|_| KeyParsingError::InvalidKey)?;
     Ok(openssl::pkey::PKey::from_ec_key(ec_key)?)
 }
->>>>>>> 1a8c3d5ef (Migrate parsing of unencrypted PKCS#8 private keys to Rust)
