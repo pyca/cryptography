@@ -1166,7 +1166,7 @@ class TestPEMSerialization:
             mode="rb",
         )
         with pytest.raises(ValueError):
-            load_pem_private_key(data, password=None)
+            load_pem_private_key(data, password=b"password")
 
     def test_pem_encryption_malformed_dek_info(self):
         data = load_vectors_from_file(
@@ -1179,7 +1179,7 @@ class TestPEMSerialization:
             mode="rb",
         )
         with pytest.raises(ValueError):
-            load_pem_private_key(data, password=None)
+            load_pem_private_key(data, password=b"password")
 
     def test_pem_encryption_malformed_iv(self):
         data = load_vectors_from_file(
@@ -1192,7 +1192,7 @@ class TestPEMSerialization:
             mode="rb",
         )
         with pytest.raises(ValueError):
-            load_pem_private_key(data, password=None)
+            load_pem_private_key(data, password=b"password")
 
 
 class TestKeySerializationEncryptionTypes:
