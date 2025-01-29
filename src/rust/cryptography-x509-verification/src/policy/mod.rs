@@ -179,7 +179,7 @@ pub enum Subject<'a> {
     IP(IPAddress),
 }
 
-impl<'a> Subject<'a> {
+impl Subject<'_> {
     fn subject_alt_name_matches(&self, general_name: &GeneralName<'_>) -> bool {
         match (general_name, self) {
             (GeneralName::DNSName(pattern), Self::DNS(name)) => {
