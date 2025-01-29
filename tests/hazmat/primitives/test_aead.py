@@ -892,13 +892,29 @@ class TestAESGCMSIV:
         with pytest.raises(ValueError):
             aesgcmsiv.decrypt(nonce, pt, None)
 
-    def test_no_empty_encryption(self):
+    def test_empty(self):
         key = AESGCMSIV.generate_key(256)
         aesgcmsiv = AESGCMSIV(key)
         nonce = os.urandom(12)
 
-        with pytest.raises(ValueError):
-            aesgcmsiv.encrypt(nonce, b"", None)
+        if (
+            not rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+            and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        ):
+            with pytest.raises(ValueError):
+                aesgcmsiv.encrypt(nonce, b"", None)
+        else:
+            # From RFC 8452
+            assert (
+                AESGCMSIV(
+                    b"\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+                ).encrypt(
+                    b"\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+                    b"",
+                    b"",
+                )
+                == b"\xdc \xe2\xd8?%p[\xb4\x9eC\x9e\xcaV\xde%"
+            )
 
         with pytest.raises(InvalidTag):
             aesgcmsiv.decrypt(nonce, b"", None)

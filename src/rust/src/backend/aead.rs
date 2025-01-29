@@ -1141,6 +1141,7 @@ impl AesGcmSiv {
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
+        #[cfg(not(any(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL)))]
         if data_bytes.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
