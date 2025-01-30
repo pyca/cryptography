@@ -223,6 +223,9 @@ Loading Certificates
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
+    :raises ValueError: If there isn't at least one certificate, or if any
+        certificate is malformed.
+
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
