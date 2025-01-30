@@ -223,6 +223,9 @@ Loading Certificates
 
     :returns: An instance of :class:`~cryptography.x509.Certificate`.
 
+    :raises ValueError: If a certificate cannot be parsed from the provided
+        data.
+
 Loading Certificate Revocation Lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
