@@ -2,4 +2,5 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+pub mod pbkdf1;
 pub mod pkcs12;
