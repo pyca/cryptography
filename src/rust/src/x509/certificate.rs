@@ -440,7 +440,7 @@ pub(crate) fn load_der_x509_certificate(
 fn warn_if_negative_serial(py: pyo3::Python<'_>, bytes: &'_ [u8]) -> pyo3::PyResult<()> {
     if bytes[0] & 0x80 != 0 {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let message = cstr_from_literal!("Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in the next release of cryptography.");
+        let message = cstr_from_literal!("Parsed a negative serial number, which is disallowed by RFC 5280. Loading this certificate will cause an exception in a future release of cryptography.");
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
     }
     Ok(())
