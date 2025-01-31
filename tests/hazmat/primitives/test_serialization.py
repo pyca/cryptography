@@ -1127,7 +1127,7 @@ class TestPEMSerialization:
                 ),
             )
 
-    def test_encrypted_pkcs8_non_utf_passowrd(self):
+    def test_encrypted_pkcs8_non_utf_password(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
             lambda f: f.read(),
