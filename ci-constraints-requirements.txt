@@ -22,7 +22,7 @@ build==1.2.2.post1 ; python_full_version >= '3.8'
     # via
     #   cryptography (pyproject.toml)
     #   check-sdist
-certifi==2024.12.14
+certifi==2025.1.31
     # via
     #   cryptography (pyproject.toml)
     #   requests
