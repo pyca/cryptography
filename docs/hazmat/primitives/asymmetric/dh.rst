@@ -314,6 +314,8 @@ Numbers
 
         :returns: A new instance of :class:`DHParameters`.
 
+        :raises ValueError: If the parameters are invalid.
+
 .. class:: DHPrivateNumbers(x, public_numbers)
 
     .. versionadded:: 0.8

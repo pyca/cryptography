@@ -119,7 +119,13 @@ fn dh_parameters_from_numbers(
         .transpose()?;
     let g = utils::py_int_to_bn(py, numbers.g.bind(py))?;
 
-    Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
+    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
+    if !dh.check_key()? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
+        ));
+    }
+    Ok(dh)
 }
 
 fn clone_dh<T: openssl::pkey::HasParams>(
