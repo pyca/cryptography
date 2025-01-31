@@ -530,11 +530,3 @@ pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTim
             .call_method1(pyo3::intern!(py, "now"), (utc,))?,
     )
 }
-
-macro_rules! cstr_from_literal {
-    ($str:expr) => {
-        std::ffi::CStr::from_bytes_with_nul(concat!($str, "\0").as_bytes()).unwrap()
-    };
-}
-
-pub(crate) use cstr_from_literal;

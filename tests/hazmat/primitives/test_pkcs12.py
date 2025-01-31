@@ -3,7 +3,9 @@
 # for complete details.
 
 
+import contextlib
 import os
+import typing
 from datetime import datetime, timezone
 
 import pytest
@@ -87,7 +89,13 @@ class TestPKCS12Loading:
         skip_message="Does not support RC2",
     )
     def test_load_pkcs12_ec_keys_rc2(self, filename, password, backend):
-        self._test_load_pkcs12_ec_keys(filename, password, backend)
+        if filename == "no-password.p12":
+            ctx: typing.Any = pytest.warns(UserWarning)
+        else:
+            ctx = contextlib.nullcontext()
+
+        with ctx:
+            self._test_load_pkcs12_ec_keys(filename, password, backend)
 
     def test_load_key_and_cert_cert_only(self, backend):
         cert, _ = _load_ca(backend)

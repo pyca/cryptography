@@ -14,6 +14,8 @@ use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use pyo3::PyTypeInfo;
 
 use crate::asn1::encode_der_data;
 use crate::backend::ciphers;
@@ -21,6 +23,8 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use crate::utils::cstr_from_literal;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
@@ -744,12 +748,16 @@ fn load_pem_pkcs7_certificates<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
     cfg_if::cfg_if! {
         if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
-            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_pem(data).map_err(|_| {
-                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "Unable to parse PKCS7 data",
-                ))
-            })?;
-            load_pkcs7_certificates(py, pkcs7_decoded)
+            let pem_block = pem::parse(data)?;
+            if pem_block.tag() != "PKCS7" {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "The provided PEM data does not have the PKCS7 tag.",
+                    ),
+                ));
+            }
+
+            load_der_pkcs7_certificates(py, pem_block.contents())
         } else {
             let _ = py;
             let _ = data;
@@ -775,7 +783,14 @@ fn load_der_pkcs7_certificates<'p>(
                     "Unable to parse PKCS7 data",
                 ))
             })?;
-            load_pkcs7_certificates(py, pkcs7_decoded)
+            let result = load_pkcs7_certificates(py, pkcs7_decoded)?;
+            if asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).is_err() {
+                let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
+                let message = cstr_from_literal!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates was created. In the future, this may become an exception.");
+                pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
+            }
+
+            Ok(result)
         } else {
             let _ = py;
             let _ = data;

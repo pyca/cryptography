@@ -20,7 +20,7 @@ use crate::asn1::{
 };
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::common::cstr_from_literal;
+use crate::utils::cstr_from_literal;
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, types, x509};
 
