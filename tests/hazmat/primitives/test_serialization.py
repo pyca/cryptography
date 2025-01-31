@@ -1127,6 +1127,15 @@ class TestPEMSerialization:
                 ),
             )
 
+    def test_encrypted_pkcs8_non_utf_passowrd(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-rsa-pkcs8.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"\xff")
+
     @pytest.mark.xfail()
     def test_rsa_private_key_invalid_version(self):
         data = load_vectors_from_file(
@@ -1187,6 +1196,19 @@ class TestPEMSerialization:
                 "asymmetric",
                 "Traditional_OpenSSL_Serialization",
                 "key1-malformed-iv.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
+    def test_pem_encryption_short_iv(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "key1-short-iv.pem",
             ),
             lambda f: f.read(),
             mode="rb",

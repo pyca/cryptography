@@ -227,6 +227,8 @@ Custom asymmetric vectors
   comma).
 * ``asymmetric/Traditional_OpenSSL_Serialization/key1-malformed-iv.pem`` - An
   RSA key in an encrypted PEM with a malformed IV (not valid hex).
+* ``asymmetric/Traditional_OpenSSL_Serialization/key1-short-iv.pem`` - An
+  RSA key in an encrypted PEM with an IV that's too short (less than 8 bytes).
 
 Key exchange
 ~~~~~~~~~~~~
