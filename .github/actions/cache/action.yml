@@ -20,4 +20,3 @@ runs:
     - uses: Swatinem/rust-cache@f0deed1e0edfc6a9be95417288c0e1099b1eeec3  # v2.7.7
       with:
         key: ${{ steps.normalized-key.outputs.key }}-3
-        workspaces: "./src/rust/ -> target"
