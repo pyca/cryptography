@@ -126,9 +126,9 @@ pub fn parse_encrypted_private_key(
 
     let plaintext = match epki.encryption_algorithm.params {
         AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(params) => {
-            // XXX:
-            // - handle invalid utf8
-            let password = std::str::from_utf8(password).unwrap();
+            let Ok(password) = std::str::from_utf8(password) else {
+                return Err(KeyParsingError::IncorrectPassword);
+            };
             let key = cryptography_crypto::pkcs12::kdf(
                 password,
                 &params.salt,
@@ -191,8 +191,10 @@ pub fn parse_encrypted_private_key(
                     openssl::pkcs5::pbkdf2_hmac(
                         password,
                         pbkdf2_params.salt,
-                        // XXX
-                        pbkdf2_params.iteration_count.try_into().expect("XXX"),
+                        pbkdf2_params
+                            .iteration_count
+                            .try_into()
+                            .map_err(|_| KeyParsingError::InvalidKey)?,
                         md,
                         &mut key,
                     )
