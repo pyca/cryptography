@@ -129,7 +129,14 @@ fn load_pem_private_key<'p>(
             let key = cryptography_crypto::pbkdf1::openssl_kdf(
                 openssl::hash::MessageDigest::md5(),
                 password,
-                &iv,
+                iv.get(..8)
+                    .ok_or_else(|| {
+                        pyo3::exceptions::PyValueError::new_err(
+                            "DEK-Info IV must be at least 8 bytes",
+                        )
+                    })?
+                    .try_into()
+                    .unwrap(),
                 cipher.key_len(),
             )
             .map_err(|_| {
