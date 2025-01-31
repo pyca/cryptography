@@ -13,14 +13,14 @@ pub const X509_CERTIFICATE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1
 pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 20);
 pub const LOCAL_KEY_ID_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 21);
 
-#[derive(asn1::Asn1Write)]
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct Pfx<'a> {
     pub version: u8,
     pub auth_safe: pkcs7::ContentInfo<'a>,
     pub mac_data: Option<MacData<'a>>,
 }
 
-#[derive(asn1::Asn1Write)]
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct MacData<'a> {
     pub mac: pkcs7::DigestInfo<'a>,
     pub salt: &'a [u8],

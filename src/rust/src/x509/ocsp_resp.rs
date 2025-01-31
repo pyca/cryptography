@@ -14,7 +14,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::common::cstr_from_literal;
+use crate::utils::cstr_from_literal;
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
 use crate::{exceptions, types, x509};
 

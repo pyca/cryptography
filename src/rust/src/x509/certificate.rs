@@ -25,7 +25,7 @@ use crate::asn1::{
 };
 use crate::backend::{hashes, keys};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::common::cstr_from_literal;
+use crate::utils::cstr_from_literal;
 use crate::x509::verify::PyCryptoOps;
 use crate::x509::{extensions, sct, sign};
 use crate::{exceptions, types, x509};

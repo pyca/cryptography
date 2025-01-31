@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import contextlib
 import email.parser
 import os
 import typing
@@ -43,6 +44,12 @@ class TestPKCS7Loading:
         with pytest.raises(ValueError):
             pkcs7.load_pem_pkcs7_certificates(b"nonsense")
 
+        with pytest.raises(ValueError):
+            pkcs7.load_pem_pkcs7_certificates(b"""
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+            """)
+
     def test_not_bytes_der(self, backend):
         with pytest.raises(TypeError):
             pkcs7.load_der_pkcs7_certificates(38)  # type: ignore[arg-type]
@@ -70,11 +77,19 @@ class TestPKCS7Loading:
         ],
     )
     def test_load_pkcs7_der(self, filepath, backend):
-        certs = load_vectors_from_file(
-            filepath,
-            lambda derfile: pkcs7.load_der_pkcs7_certificates(derfile.read()),
-            mode="rb",
-        )
+        if filepath.endswith("p7b"):
+            ctx: typing.Any = pytest.warns(UserWarning)
+        else:
+            ctx = contextlib.nullcontext()
+
+        with ctx:
+            certs = load_vectors_from_file(
+                filepath,
+                lambda derfile: pkcs7.load_der_pkcs7_certificates(
+                    derfile.read()
+                ),
+                mode="rb",
+            )
         assert len(certs) == 2
         assert certs[0].subject.get_attributes_for_oid(
             x509.oid.NameOID.COMMON_NAME

@@ -23,6 +23,7 @@ mod pkcs12;
 mod pkcs7;
 mod test_support;
 pub(crate) mod types;
+pub(crate) mod utils;
 mod x509;
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]

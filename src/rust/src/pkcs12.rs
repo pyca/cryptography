@@ -6,11 +6,13 @@ use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
+use crate::utils::cstr_from_literal;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 use cryptography_x509::common::Utf8StoredBMPString;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::IntoPyObject;
+use pyo3::PyTypeInfo;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -617,6 +619,7 @@ fn serialize_key_and_certificates<'p>(
 }
 
 fn decode_p12(
+    py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
 ) -> CryptographyResult<openssl::pkcs12::ParsedPkcs12_2> {
@@ -637,6 +640,12 @@ fn decode_p12(
         .parse2(password)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"))?;
 
+    if asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_bytes()).is_err() {
+        let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
+        let message = cstr_from_literal!("PKCS#12 bundle could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#12 bundle was created. In the future, this may become an exception.");
+        pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
+    }
+
     Ok(parsed)
 }
 
@@ -654,7 +663,7 @@ fn load_key_and_certificates<'p>(
 )> {
     let _ = backend;
 
-    let p12 = decode_p12(data, password)?;
+    let p12 = decode_p12(py, data, password)?;
 
     let private_key = if let Some(pkey) = p12.pkey {
         let pkey_bytes = pkey.private_key_to_pkcs8()?;
@@ -702,7 +711,7 @@ fn load_pkcs12<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
 
-    let p12 = decode_p12(data, password)?;
+    let p12 = decode_p12(py, data, password)?;
 
     let private_key = if let Some(pkey) = p12.pkey {
         let pkey_bytes = pkey.private_key_to_pkcs8()?;
