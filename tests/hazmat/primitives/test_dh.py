@@ -72,6 +72,14 @@ def test_dh_parameternumbers():
         dh.DHParameterNumbers(P_1536, 2, "hello")  # type: ignore[arg-type]
 
 
+@pytest.mark.skip_fips(reason="RHEL8 FIPS doesn't like this")
+def test_dh_invalid_parameter_numbers():
+    # invalid q
+    params = dh.DHParameterNumbers(P_1536, 2, 12345)
+    with pytest.raises(ValueError):
+        params.parameters()
+
+
 def test_dh_numbers():
     params = dh.DHParameterNumbers(P_1536, 2)
 
