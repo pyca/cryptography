@@ -22,3 +22,4 @@ pub(crate) mod utils;
 pub(crate) mod x25519;
 #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
 pub(crate) mod x448;
+pub(crate) mod xofhash;

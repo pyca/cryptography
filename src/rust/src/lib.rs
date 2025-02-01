@@ -192,6 +192,8 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::x448::x448;
         #[pymodule_export]
+        use crate::backend::xofhash::xofhash;
+        #[pymodule_export]
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
         #[pymodule_init]

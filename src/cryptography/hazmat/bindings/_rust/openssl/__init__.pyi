@@ -21,6 +21,7 @@ from cryptography.hazmat.bindings._rust.openssl import (
     rsa,
     x448,
     x25519,
+    xofhash,
 )
 
 __all__ = [
@@ -43,6 +44,7 @@ __all__ = [
     "rsa",
     "x448",
     "x25519",
+    "xofhash",
 ]
 
 CRYPTOGRAPHY_IS_LIBRESSL: bool

@@ -35,7 +35,7 @@ Message digests (Hashing)
 
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
-        instance such as those described in
+        instance such as those described
         :ref:`below <cryptographic-hash-algorithms>`.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
@@ -44,14 +44,14 @@ Message digests (Hashing)
     .. method:: update(data)
 
         :param bytes data: The bytes to be hashed.
-        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`finalize`.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`.finalize`.
         :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
 
     .. method:: copy()
 
         Copy this :class:`Hash` instance, usually so that you may call
-        :meth:`finalize` to get an intermediate digest value while we continue
-        to call :meth:`update` on the original instance.
+        :meth:`.finalize` to get an intermediate digest value while we continue
+        to call :meth:`.update` on the original instance.
 
         :return: A new instance of :class:`Hash` that can be updated
              and finalized independently of the original instance.
@@ -62,10 +62,66 @@ Message digests (Hashing)
         Finalize the current context and return the message digest as bytes.
 
         After ``finalize`` has been called this object can no longer be used
-        and :meth:`update`, :meth:`copy`, and :meth:`finalize` will raise an
+        and :meth:`.update`, :meth:`.copy`, and :meth:`.finalize` will raise an
         :class:`~cryptography.exceptions.AlreadyFinalized` exception.
 
         :return bytes: The message digest as bytes.
+
+.. class:: XOFHash(algorithm)
+
+    An extendable output function (XOF) is a cryptographic hash function that
+    can produce an arbitrary amount of output for a given input. The output
+    can be obtained by repeatedly calling :meth:`.squeeze` with the desired
+    length.
+
+    .. doctest::
+
+        >>> import sys
+        >>> from cryptography.hazmat.primitives import hashes
+        >>> digest = hashes.XOFHash(hashes.SHAKE128(digest_size=sys.maxsize))
+        >>> digest.update(b"abc")
+        >>> digest.update(b"123")
+        >>> digest.squeeze(32)
+        b'\x18\xd6\xbd\xeb5u\x83[@\xfa%/\xdc\xca\x9f\x1b\xc2\xeb\x12\x05\xc3\xf9Bu\x88\xe0\xda\x80FvAV'
+
+    :param algorithm: A
+        :class:`~cryptography.hazmat.primitives.hashes.ExtendableOutputFunction`
+        instance such as those described
+        :ref:`below <extendable-output-functions>`. The ``digest_size``
+        parameter for :class:`SHAKE128` and :class:`SHAKE256`
+        is the maximum number of bytes that can be squeezed from the XOF when
+        using this class.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
+        provided ``algorithm`` is unsupported.
+
+    .. method:: update(data)
+
+        :param bytes data: The bytes to be hashed.
+        :raises cryptography.exceptions.AlreadyFinalized: If already squeezed.
+        :raises TypeError: This exception is raised if ``data`` is not ``bytes``.
+
+    .. method:: copy()
+
+        Copy this :class:`XOFHash` instance, usually so that you may call
+        :meth:`.squeeze` to get an intermediate digest value while we continue
+        to call :meth:`.update` on the original instance.
+
+        :return: A new instance of :class:`XOFHash` that can be updated
+            and squeezed independently of the original instance. If
+            you copy an instance that has already been squeezed, the copy will
+            also be in a squeezed state.
+        :raises cryptography.exceptions.AlreadyFinalized: See :meth:`.squeeze`.
+
+    .. method:: squeeze(length)
+
+        :param int length: The number of bytes to squeeze.
+
+        After :meth:`.squeeze` has been called this object can no longer be updated
+        and :meth:`.update`, will raise an
+        :class:`~cryptography.exceptions.AlreadyFinalized` exception.
+
+        :return bytes: ``length`` bytes of output from the extendable output function (XOF).
 
 
 .. _cryptographic-hash-algorithms:
@@ -176,36 +232,6 @@ than SHA-2 so at this time most users should choose SHA-2.
     SHA3/512 is a cryptographic hash function from the SHA-3 family and is
     standardized by NIST. It produces a 512-bit message digest.
 
-.. class:: SHAKE128(digest_size)
-
-    .. versionadded:: 2.5
-
-    SHAKE128 is an extendable output function (XOF) based on the same core
-    permutations as SHA3. It allows the caller to obtain an arbitrarily long
-    digest length. Longer lengths, however, do not increase security or
-    collision resistance and lengths shorter than 128 bit (16 bytes) will
-    decrease it.
-
-    :param int digest_size: The length of output desired. Must be greater than
-        zero.
-
-    :raises ValueError: If the ``digest_size`` is invalid.
-
-.. class:: SHAKE256(digest_size)
-
-    .. versionadded:: 2.5
-
-    SHAKE256 is an extendable output function (XOF) based on the same core
-    permutations as SHA3. It allows the caller to obtain an arbitrarily long
-    digest length. Longer lengths, however, do not increase security or
-    collision resistance and lengths shorter than 256 bit (32 bytes) will
-    decrease it.
-
-    :param int digest_size: The length of output desired. Must be greater than
-        zero.
-
-    :raises ValueError: If the ``digest_size`` is invalid.
-
 SHA-1
 ~~~~~
 
@@ -250,6 +276,54 @@ SM3
     `draft-sca-cfrg-sm3`_.) This hash should be used for compatibility
     purposes where required and is not otherwise recommended for use.
 
+.. _extendable-output-functions:
+
+Extendable Output Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These cryptographic hashes
+
+.. class:: SHAKE128(digest_size)
+
+    .. versionadded:: 2.5
+
+    SHAKE128 is an extendable output function (XOF) based on the same core
+    permutations as SHA3. It allows the caller to obtain an arbitrarily long
+    digest length. Longer lengths, however, do not increase security or
+    collision resistance and lengths shorter than 128 bit (16 bytes) will
+    decrease it.
+
+    This class can be used with :class:`Hash` or :class:`XOFHash`. When used
+    in :class:`Hash` :meth:`~cryptography.hazmat.primitives.hashes.Hash.finalize`
+    will return ``digest_size`` bytes. When used in :class:`XOFHash` this
+    defines the total number of bytes allowed to be squeezed.
+
+    :param int digest_size: The length of output desired. Must be greater than
+        zero.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
+
+.. class:: SHAKE256(digest_size)
+
+    .. versionadded:: 2.5
+
+    SHAKE256 is an extendable output function (XOF) based on the same core
+    permutations as SHA3. It allows the caller to obtain an arbitrarily long
+    digest length. Longer lengths, however, do not increase security or
+    collision resistance and lengths shorter than 256 bit (32 bytes) will
+    decrease it.
+
+    This class can be used with :class:`Hash` or :class:`XOFHash`. When used
+    in :class:`Hash` :meth:`~cryptography.hazmat.primitives.hashes.Hash.finalize`
+    will return ``digest_size`` bytes. When used in :class:`XOFHash` this
+    defines the total number of bytes allowed to be squeezed.
+
+    :param int digest_size: The length of output desired. Must be greater than
+        zero.
+
+    :raises ValueError: If the ``digest_size`` is invalid.
+
+
 
 Interfaces
 ~~~~~~~~~~
@@ -269,6 +343,10 @@ Interfaces
 
         The size of the resulting digest in bytes.
 
+.. class:: ExtendableOutputFunction
+
+    An interface applied to hashes that act as extendable output functions (XOFs).
+    The currently supported XOFs are :class:`SHAKE128` and :class:`SHAKE256`.
 
 .. class:: HashContext
 
