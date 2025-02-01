@@ -160,38 +160,40 @@ impl XOFHash {
         py: pyo3::Python<'_>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<XOFHash> {
-        #[cfg(any(
+        cfg_if::cfg_if! {
+            if #[cfg(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
             not(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER)
-        ))]
-        {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "Extendable output functions are not supported on LibreSSL or BoringSSL.",
-                )),
-            ));
-        }
-        if !algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "Expected instance of an extendable output function.",
-                ),
-            ));
-        }
-        let md = message_digest_from_algorithm(py, algorithm)?;
-        let ctx = openssl::hash::Hasher::new(md)?;
-        // We treat digest_size as the maximum total output for this API
-        let bytes_remaining = algorithm
-            .getattr(pyo3::intern!(py, "digest_size"))?
-            .extract::<u64>()?;
+            ))] {
+                return Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err((
+                        "Extendable output functions are not supported on LibreSSL or BoringSSL.",
+                    )),
+                ));
+            } else {
+                if !algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected instance of an extendable output function.",
+                        ),
+                    ));
+                }
+                let md = message_digest_from_algorithm(py, algorithm)?;
+                let ctx = openssl::hash::Hasher::new(md)?;
+                // We treat digest_size as the maximum total output for this API
+                let bytes_remaining = algorithm
+                    .getattr(pyo3::intern!(py, "digest_size"))?
+                    .extract::<u64>()?;
 
-        Ok(XOFHash {
-            algorithm: algorithm.clone().unbind(),
-            ctx,
-            bytes_remaining,
-            squeezed: false,
-        })
+                Ok(XOFHash {
+                    algorithm: algorithm.clone().unbind(),
+                    ctx,
+                    bytes_remaining,
+                    squeezed: false,
+                })
+            }
+        }
     }
 
     fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
