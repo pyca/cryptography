@@ -111,7 +111,7 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    .. versionchanged:: 44.0.0
+    .. versionchanged:: 45.0.0
         Made ``subjects`` optional with the addition of custom extension policies.
 
     .. attribute:: subjects
@@ -133,7 +133,7 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    .. versionchanged:: 44.0.0
+    .. versionchanged:: 45.0.0
         ``verification_time`` and ``max_chain_depth`` were replaced by the 
         ``policy`` property that provides access to these values.
 
@@ -179,7 +179,7 @@ the root of trust:
 
     .. versionadded:: 42.0.0
 
-    .. versionchanged:: 44.0.0
+    .. versionchanged:: 45.0.0
         ``subject``, ``verification_time`` and ``max_chain_depth`` were replaced by the 
         ``policy`` property that provides access to these values.
 
@@ -269,7 +269,7 @@ the root of trust:
 
     .. method:: extension_policies(new_ee_policy, new_ca_policy)
 
-        .. versionadded:: 44.0.0
+        .. versionadded:: 45.0.0
 
         Sets the EE and CA extension policies for the verifier.
         The default policies used are those returned by :meth:`ExtensionPolicy.webpki_defaults_ee`
@@ -305,7 +305,7 @@ the root of trust:
 
 .. class:: ExtensionPolicy
 
-    .. versionadded:: 44.0.0
+    .. versionadded:: 45.0.0
 
     ExtensionPolicy provides a set of static methods to construct predefined
     extension policies, and a builder-style interface for modifying them.
@@ -382,7 +382,7 @@ the root of trust:
 
 .. class:: Criticality
 
-    .. versionadded:: 44.0.0
+    .. versionadded:: 45.0.0
 
     An enumeration of criticality constraints for certificate extensions.
 
@@ -400,7 +400,7 @@ the root of trust:
 
 .. class:: Policy
 
-    .. versionadded:: 44.0.0
+    .. versionadded:: 45.0.0
 
     Represents a policy for certificate verification. Passed to extension validator callbacks and 
     accessible via :class:`ClientVerifier` and :class:`ServerVerifier`.
@@ -439,7 +439,7 @@ the root of trust:
 .. type:: MaybeExtensionValidatorCallback
     :canonical: Callable[[Policy, Certificate, Optional[ExtensionType]], None]
     
-    .. versionadded:: 44.0.0
+    .. versionadded:: 45.0.0
 
 
     A Python callback that validates an extension that may or may not be present.
@@ -457,7 +457,7 @@ the root of trust:
 .. type:: PresentExtensionValidatorCallback
     :canonical: Callable[[Policy, Certificate, ExtensionType], None]
 
-    .. versionadded:: 44.0.0
+    .. versionadded:: 45.0.0
 
 
     A Python callback that validates an extension that must be present.
