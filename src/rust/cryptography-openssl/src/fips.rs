@@ -2,6 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
+use openssl_sys as ffi;
+
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use crate::{cvt, OpenSSLResult};
 #[cfg(all(

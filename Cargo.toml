@@ -23,6 +23,7 @@ rust-version = "1.65.0"
 asn1 = { version = "0.20.0", default-features = false }
 pyo3 = { version = "0.23.4", features = ["abi3"] }
 openssl = "0.10.69"
+openssl-sys = "0.9.104"
 
 [profile.release]
 overflow-checks = true

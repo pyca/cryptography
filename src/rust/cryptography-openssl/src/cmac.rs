@@ -5,6 +5,7 @@
 use std::ptr;
 
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
+use openssl_sys as ffi;
 
 use crate::hmac::DigestBytes;
 use crate::{cvt, cvt_p, OpenSSLResult};
