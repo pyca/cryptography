@@ -44,8 +44,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL main branch, as of Jan 30, 2025.
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "2b19cd39ba3adcba04640dfb840666ec1874afcc"}}
-          # Latest commit on the OpenSSL master branch, as of Jan 28, 2025.
-          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "aa52ec9b0ae5c32bb4759b71117737002cbd1263"}}
+          # Latest commit on the OpenSSL master branch, as of Feb 01, 2025.
+          - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "12baad7ed47fce8977929cec4eafa0912bab8756"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.70: crates.io sparse protocol by default
