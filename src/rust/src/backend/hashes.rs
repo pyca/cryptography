@@ -166,6 +166,8 @@ impl XOFHash {
             CRYPTOGRAPHY_IS_BORINGSSL,
             not(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER)
             ))] {
+                let _ = py;
+                let _ = algorithm;
                 return Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "Extendable output functions are not supported on LibreSSL or BoringSSL.",
