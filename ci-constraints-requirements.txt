@@ -12,7 +12,7 @@ argcomplete==3.5.3 ; python_full_version >= '3.8'
     # via nox
 babel==2.14.0 ; python_full_version < '3.8'
     # via sphinx
-babel==2.16.0 ; python_full_version >= '3.8'
+babel==2.17.0 ; python_full_version >= '3.8'
     # via sphinx
 bleach==6.0.0 ; python_full_version < '3.8'
     # via readme-renderer
