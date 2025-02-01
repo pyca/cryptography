@@ -20,7 +20,7 @@ cryptography-x509-verification = { path = "cryptography-x509-verification" }
 cryptography-openssl = { path = "cryptography-openssl" }
 pem = { version = "3", default-features = false }
 openssl.workspace = true
-openssl-sys = "0.9.104"
+openssl-sys.workspace = true
 foreign-types-shared = "0.1"
 self_cell = "1"
 

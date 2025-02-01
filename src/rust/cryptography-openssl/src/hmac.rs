@@ -5,6 +5,7 @@
 use std::ptr;
 
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
+use openssl_sys as ffi;
 
 use crate::{cvt, cvt_p, OpenSSLResult};
 
@@ -92,6 +93,7 @@ impl std::ops::Deref for DigestBytes {
 #[cfg(test)]
 mod tests {
     use super::DigestBytes;
+    use openssl_sys as ffi;
 
     #[test]
     fn test_digest_bytes() {

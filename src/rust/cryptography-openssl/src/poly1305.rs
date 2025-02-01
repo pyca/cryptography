@@ -4,6 +4,8 @@
 
 use std::mem::MaybeUninit;
 
+use openssl_sys as ffi;
+
 pub struct Poly1305State {
     // The state data must be allocated in the heap so that its address does not change. This is
     // because BoringSSL APIs that take a `poly1305_state*` ignore all the data before an aligned
