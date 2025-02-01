@@ -21,7 +21,6 @@ from cryptography.hazmat.bindings._rust.openssl import (
     rsa,
     x448,
     x25519,
-    xofhash,
 )
 
 __all__ = [
@@ -44,7 +43,6 @@ __all__ = [
     "rsa",
     "x448",
     "x25519",
-    "xofhash",
 ]
 
 CRYPTOGRAPHY_IS_LIBRESSL: bool
@@ -52,6 +50,7 @@ CRYPTOGRAPHY_IS_BORINGSSL: bool
 CRYPTOGRAPHY_OPENSSL_300_OR_GREATER: bool
 CRYPTOGRAPHY_OPENSSL_309_OR_GREATER: bool
 CRYPTOGRAPHY_OPENSSL_320_OR_GREATER: bool
+CRYPTOGRAPHY_OPENSSL_330_OR_GREATER: bool
 CRYPTOGRAPHY_OPENSSL_350_OR_GREATER: bool
 
 class Providers: ...

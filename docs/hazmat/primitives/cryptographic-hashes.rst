@@ -81,16 +81,17 @@ Message digests (Hashing)
         >>> digest = hashes.XOFHash(hashes.SHAKE128(digest_size=sys.maxsize))
         >>> digest.update(b"abc")
         >>> digest.update(b"123")
-        >>> digest.squeeze(32)
-        b'\x18\xd6\xbd\xeb5u\x83[@\xfa%/\xdc\xca\x9f\x1b\xc2\xeb\x12\x05\xc3\xf9Bu\x88\xe0\xda\x80FvAV'
+        >>> digest.squeeze(16)
+        b'\x18\xd6\xbd\xeb5u\x83[@\xfa%/\xdc\xca\x9f\x1b'
+        >>> digest.squeeze(16)
+        b'\xc2\xeb\x12\x05\xc3\xf9Bu\x88\xe0\xda\x80FvAV'
 
     :param algorithm: A
         :class:`~cryptography.hazmat.primitives.hashes.ExtendableOutputFunction`
         instance such as those described
         :ref:`below <extendable-output-functions>`. The ``digest_size``
-        parameter for :class:`SHAKE128` and :class:`SHAKE256`
-        is the maximum number of bytes that can be squeezed from the XOF when
-        using this class.
+        passed is the maximum number of bytes that can be squeezed from the XOF
+        when using this class.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
         provided ``algorithm`` is unsupported.
@@ -122,6 +123,8 @@ Message digests (Hashing)
         :class:`~cryptography.exceptions.AlreadyFinalized` exception.
 
         :return bytes: ``length`` bytes of output from the extendable output function (XOF).
+        :raises ValueError: If the maximum number of bytes that can be squeezed
+            has been exceeded.
 
 
 .. _cryptographic-hash-algorithms:
@@ -280,8 +283,6 @@ SM3
 
 Extendable Output Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-These cryptographic hashes
 
 .. class:: SHAKE128(digest_size)
 

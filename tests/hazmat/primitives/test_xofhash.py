@@ -11,6 +11,7 @@ import sys
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes
 
 from ...utils import load_nist_vectors, raises_unsupported_algorithm
@@ -18,8 +19,10 @@ from .utils import _load_all_params
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: not backend.xofhash_supported(
-        hashes.SHAKE128(digest_size=32)
+    only_if=lambda backend: (
+        not rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
+        or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
     ),
     skip_message="Requires backend without XOF support",
 )
@@ -29,10 +32,8 @@ def test_unsupported_boring_libre(backend):
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.xofhash_supported(
-        hashes.SHAKE128(digest_size=65536)
-    ),
-    skip_message="Does not support squeezing SHAKE128",
+    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    skip_message="Requires backend with XOF support",
 )
 class TestXOFHash:
     def test_hash_reject_unicode(self, backend):
@@ -75,10 +76,8 @@ class TestXOFHash:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.xofhash_supported(
-        hashes.SHAKE128(digest_size=65536)
-    ),
-    skip_message="Does not support squeezing SHAKE128",
+    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE128:
     def test_shake128_variable(self, backend, subtests):
@@ -105,10 +104,8 @@ class TestXOFSHAKE128:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.xofhash_supported(
-        hashes.SHAKE256(digest_size=65536)
-    ),
-    skip_message="Does not support squeezing SHAKE256",
+    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE256:
     def test_shake256_variable(self, backend, subtests):

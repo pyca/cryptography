@@ -192,8 +192,6 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::x448::x448;
         #[pymodule_export]
-        use crate::backend::xofhash::xofhash;
-        #[pymodule_export]
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
         #[pymodule_init]
@@ -209,6 +207,10 @@ mod _rust {
             openssl_mod.add(
                 "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
                 cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
+            )?;
+            openssl_mod.add(
+                "CRYPTOGRAPHY_OPENSSL_330_OR_GREATER",
+                cfg!(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER),
             )?;
             openssl_mod.add(
                 "CRYPTOGRAPHY_OPENSSL_350_OR_GREATER",

@@ -88,7 +88,7 @@ class HashContext(metaclass=abc.ABCMeta):
 Hash = rust_openssl.hashes.Hash
 HashContext.register(Hash)
 
-XOFHash = rust_openssl.xofhash.XOFHash
+XOFHash = rust_openssl.hashes.XOFHash
 
 
 class ExtendableOutputFunction(metaclass=abc.ABCMeta):

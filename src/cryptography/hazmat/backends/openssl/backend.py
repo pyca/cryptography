@@ -107,11 +107,6 @@ class Backend:
 
         return rust_openssl.hashes.hash_supported(algorithm)
 
-    def xofhash_supported(
-        self, algorithm: hashes.ExtendableOutputFunction
-    ) -> bool:
-        return rust_openssl.xofhash.xofhash_supported(algorithm)
-
     def signature_hash_supported(
         self, algorithm: hashes.HashAlgorithm
     ) -> bool:
