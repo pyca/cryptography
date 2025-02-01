@@ -203,8 +203,8 @@ class PolicyBuilder:
     def max_chain_depth(self, new_max_chain_depth: int) -> PolicyBuilder: ...
     def extension_policies(
         self,
-        new_ee_extension_policy: ExtensionPolicy,
         new_ca_extension_policy: ExtensionPolicy,
+        new_ee_extension_policy: ExtensionPolicy,
     ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(

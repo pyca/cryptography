@@ -275,8 +275,8 @@ the root of trust:
         The default policies used are those returned by :meth:`ExtensionPolicy.webpki_defaults_ee`
         and :meth:`ExtensionPolicy.webpki_defaults_ca`.
 
-        :param ExtensionPolicy new_ee_policy: The CA extension policy to use. 
-        :param ExtensionPolicy new_ca_policy: The EE extension policy to use.
+        :param ExtensionPolicy new_ca_policy: The CA extension policy to use.
+        :param ExtensionPolicy new_ee_policy: The EE extension policy to use. 
 
         :returns: A new instance of :class:`PolicyBuilder`
 

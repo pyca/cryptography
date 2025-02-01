@@ -298,7 +298,7 @@ class TestCustomExtensionPolicy:
 
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time).max_chain_depth(16)
-        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
 
         builder.build_client_verifier().verify(self.leaf, [])
         assert ca_validator_called
@@ -329,7 +329,7 @@ class TestCustomExtensionPolicy:
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
 
         for verifier in (
             builder.build_client_verifier(),
@@ -360,7 +360,7 @@ class TestCustomExtensionPolicy:
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.extension_policies(ee_ext_policy, ca_ext_policy)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
 
         for verifier in (
             builder.build_client_verifier(),
