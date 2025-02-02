@@ -6,7 +6,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{error, types};
+use crate::types;
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
