@@ -95,7 +95,7 @@ class TestXOFSHAKE128:
                 m.update(msg)
                 remaining = output_length
                 data = b""
-                stride = random.randint(32, 128)
+                stride = random.randint(1, 128)
                 while remaining > 0:
                     stride = remaining if remaining < stride else stride
                     data += m.squeeze(stride)
@@ -123,7 +123,7 @@ class TestXOFSHAKE256:
                 m.update(msg)
                 remaining = output_length
                 data = b""
-                stride = random.randint(32, 128)
+                stride = random.randint(1, 128)
                 while remaining > 0:
                     stride = remaining if remaining < stride else stride
                     data += m.squeeze(stride)
