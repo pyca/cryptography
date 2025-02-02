@@ -30,6 +30,7 @@ __all__ = [
     "Hash",
     "HashAlgorithm",
     "HashContext",
+    "XOFHash",
 ]
 
 
@@ -86,6 +87,8 @@ class HashContext(metaclass=abc.ABCMeta):
 
 Hash = rust_openssl.hashes.Hash
 HashContext.register(Hash)
+
+XOFHash = rust_openssl.hashes.XOFHash
 
 
 class ExtendableOutputFunction(metaclass=abc.ABCMeta):

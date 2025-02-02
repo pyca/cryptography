@@ -21,6 +21,9 @@ Changelog
   was raised).
 * Added ``unsafe_skip_rsa_key_validation`` keyword-argument to
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`.
+* Added :class:`~cryptography.hazmat.primitives.hashes.XOFHash` to support
+  repeated :meth:`~cryptography.hazmat.primitives.hashes.XOFHash.squeeze`
+  operations on extendable output functions.
 
 .. _v44-0-0:
 
