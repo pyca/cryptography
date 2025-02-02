@@ -168,11 +168,11 @@ impl XOFHash {
             ))] {
                 let _ = py;
                 let _ = algorithm;
-                return Err(CryptographyError::from(
+                Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
                         "Extendable output functions are not supported on LibreSSL or BoringSSL.",
                     )),
-                ));
+                ))
             } else {
                 if !algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
                     return Err(CryptographyError::from(

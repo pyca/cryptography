@@ -10,11 +10,11 @@ import sys
 
 import pytest
 
-from cryptography.exceptions import AlreadyFinalized, _Reasons
+from cryptography.exceptions import AlreadyFinalized, UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes
 
-from ...utils import load_nist_vectors, raises_unsupported_algorithm
+from ...utils import load_nist_vectors
 from .utils import _load_all_params
 
 
@@ -27,7 +27,7 @@ from .utils import _load_all_params
     skip_message="Requires backend without XOF support",
 )
 def test_unsupported_boring_libre(backend):
-    with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+    with pytest.raises(UnsupportedAlgorithm):
         hashes.XOFHash(hashes.SHAKE128(digest_size=32))
 
 
