@@ -6,11 +6,13 @@
 #![allow(unknown_lints, non_local_definitions, clippy::result_large_err)]
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-use crate::error::CryptographyResult;
+use std::env;
+
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
+
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-use std::env;
+use crate::error::CryptographyResult;
 
 mod asn1;
 mod backend;

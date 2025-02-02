@@ -2,25 +2,22 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::{
-    certificate::Certificate, extensions::SubjectAlternativeName, oid::SUBJECT_ALTERNATIVE_NAME_OID,
-};
-use cryptography_x509_verification::{
-    ops::{CryptoOps, VerificationCertificate},
-    policy::{Policy, Subject},
-    trust_store::Store,
-    types::{DNSName, IPAddress},
-};
+use cryptography_x509::certificate::Certificate;
+use cryptography_x509::extensions::SubjectAlternativeName;
+use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
+use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
+use cryptography_x509_verification::policy::{Policy, Subject};
+use cryptography_x509_verification::trust_store::Store;
+use cryptography_x509_verification::types::{DNSName, IPAddress};
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
+use super::parse_general_names;
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
 use crate::x509::sign;
-
-use super::parse_general_names;
 
 pub(crate) struct PyCryptoOps {}
 

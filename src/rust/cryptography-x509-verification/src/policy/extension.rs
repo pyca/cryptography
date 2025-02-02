@@ -2,19 +2,17 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use cryptography_x509::certificate::Certificate;
+use cryptography_x509::extensions::{Extension, Extensions};
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
     EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
     SUBJECT_KEY_IDENTIFIER_OID,
 };
-use cryptography_x509::{
-    certificate::Certificate,
-    extensions::{Extension, Extensions},
-};
 
-use crate::{
-    ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
-};
+use crate::ops::CryptoOps;
+use crate::policy::Policy;
+use crate::{ValidationError, ValidationErrorKind, ValidationResult};
 
 pub(crate) struct ExtensionPolicy<B: CryptoOps> {
     pub(crate) authority_information_access: ExtensionValidator<B>,
@@ -266,17 +264,13 @@ impl<B: CryptoOps> ExtensionValidator<B> {
 }
 
 pub(crate) mod ee {
-    use cryptography_x509::{
-        certificate::Certificate,
-        extensions::{
-            BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage, SubjectAlternativeName,
-        },
+    use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::extensions::{
+        BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage, SubjectAlternativeName,
     };
 
-    use crate::{
-        ops::CryptoOps,
-        policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult},
-    };
+    use crate::ops::CryptoOps;
+    use crate::policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult};
 
     pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
@@ -379,20 +373,16 @@ pub(crate) mod ee {
 }
 
 pub(crate) mod ca {
-    use cryptography_x509::{
-        certificate::Certificate,
-        common::Asn1Read,
-        extensions::{
-            AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
-            NameConstraints,
-        },
-        oid::EKU_ANY_KEY_USAGE_OID,
+    use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::common::Asn1Read;
+    use cryptography_x509::extensions::{
+        AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
+        NameConstraints,
     };
+    use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 
-    use crate::{
-        ops::CryptoOps,
-        policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult},
-    };
+    use crate::ops::CryptoOps;
+    use crate::policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult};
 
     pub(crate) fn authority_key_identifier<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
@@ -529,16 +519,12 @@ pub(crate) mod ca {
 }
 
 pub(crate) mod common {
-    use cryptography_x509::{
-        certificate::Certificate,
-        common::Asn1Read,
-        extensions::{Extension, SequenceOfAccessDescriptions},
-    };
+    use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::common::Asn1Read;
+    use cryptography_x509::extensions::{Extension, SequenceOfAccessDescriptions};
 
-    use crate::{
-        ops::CryptoOps,
-        policy::{Policy, ValidationResult},
-    };
+    use crate::ops::CryptoOps;
+    use crate::policy::{Policy, ValidationResult};
 
     pub(crate) fn authority_information_access<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,

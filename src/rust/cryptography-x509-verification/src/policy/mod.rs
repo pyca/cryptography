@@ -601,10 +601,8 @@ mod tests {
 
     use asn1::{DateTime, SequenceOfWriter};
     use cryptography_x509::common::Time;
-    use cryptography_x509::{
-        extensions::SubjectAlternativeName,
-        name::{GeneralName, UnvalidatedIA5String},
-    };
+    use cryptography_x509::extensions::SubjectAlternativeName;
+    use cryptography_x509::name::{GeneralName, UnvalidatedIA5String};
 
     use super::{
         permits_validity_date, ECDSA_SHA256, ECDSA_SHA384, ECDSA_SHA512, RSASSA_PKCS1V15_SHA256,
@@ -612,13 +610,11 @@ mod tests {
         RSASSA_PSS_SHA512, WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS,
     };
     use crate::certificate::tests::PublicKeyErrorOps;
-    use crate::{
-        policy::{
-            Subject, SPKI_RSA, SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1,
-            WEBPKI_PERMITTED_SPKI_ALGORITHMS,
-        },
-        types::{DNSName, IPAddress},
+    use crate::policy::{
+        Subject, SPKI_RSA, SPKI_SECP256R1, SPKI_SECP384R1, SPKI_SECP521R1,
+        WEBPKI_PERMITTED_SPKI_ALGORITHMS,
     };
+    use crate::types::{DNSName, IPAddress};
 
     #[test]
     fn test_webpki_permitted_spki_algorithms_canonical_encodings() {

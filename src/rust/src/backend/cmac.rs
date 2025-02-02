@@ -2,11 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
+
 use crate::backend::cipher_registry;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 #[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.cmac",

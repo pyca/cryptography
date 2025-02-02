@@ -4,8 +4,7 @@
 
 use cryptography_x509::common::{DssSignature, SubjectPublicKeyInfo};
 use pyo3::pybacked::PyBackedBytes;
-use pyo3::types::IntoPyDict;
-use pyo3::types::PyAnyMethods;
+use pyo3::types::{IntoPyDict, PyAnyMethods};
 use pyo3::IntoPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};

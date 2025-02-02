@@ -2,10 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::{PyAnyMethods, PyListMethods};
+
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
-use pyo3::types::{PyAnyMethods, PyListMethods};
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {

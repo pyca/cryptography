@@ -2,13 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::PyAnyMethods;
+use pyo3::IntoPyObject;
+
 use crate::backend::cipher_registry;
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
-use crate::types;
-use pyo3::types::PyAnyMethods;
-use pyo3::IntoPyObject;
+use crate::{exceptions, types};
 
 pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,

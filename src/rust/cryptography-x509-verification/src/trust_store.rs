@@ -6,8 +6,7 @@ use std::collections::HashMap;
 
 use cryptography_x509::name::Name;
 
-use crate::CryptoOps;
-use crate::VerificationCertificate;
+use crate::{CryptoOps, VerificationCertificate};
 
 /// A `Store` represents the core state needed for X.509 path validation.
 pub struct Store<'a, B: CryptoOps> {

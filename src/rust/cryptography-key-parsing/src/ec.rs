@@ -2,9 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{KeyParsingError, KeyParsingResult};
-
 use cryptography_x509::common::EcParameters;
+
+use crate::{KeyParsingError, KeyParsingResult};
 
 pub(crate) fn ec_params_to_group(
     params: &EcParameters<'_>,

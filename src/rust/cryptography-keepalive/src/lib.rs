@@ -4,9 +4,10 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
-use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 use std::cell::UnsafeCell;
 use std::ops::Deref;
+
+use pyo3::pybacked::{PyBackedBytes, PyBackedStr};
 
 pub struct KeepAlive<T: StableDeref> {
     values: UnsafeCell<Vec<T>>,
