@@ -394,93 +394,48 @@ enum CertificateOrPKCS12Certificate {
     PKCS12Certificate(pyo3::Py<PKCS12Certificate>),
 }
 
-#[pyo3::pyfunction]
-#[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
-fn serialize_key_and_certificates<'p>(
+fn serialize_bags<'p>(
     py: pyo3::Python<'p>,
-    name: Option<&[u8]>,
-    key: Option<pyo3::Bound<'_, pyo3::PyAny>>,
-    cert: Option<&Certificate>,
-    cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
-    encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+    safebags: &[cryptography_x509::pkcs12::SafeBag<'_>],
+    encryption_details: &KeySerializationEncryption<'_>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
-
     let mut auth_safe_contents = vec![];
     let (
-        cert_bag_contents,
-        cert_salt,
-        cert_iv,
-        cert_ciphertext,
-        key_bag_contents,
-        key_salt,
-        key_iv,
-        key_ciphertext,
+        plain_safebag_contents,
+        shrouded_safebag_contents,
+        auth_safe_salt,
+        auth_safe_iv,
+        auth_safe_ciphertext,
     );
-    let mut ca_certs = vec![];
-    let mut key_id = None;
-    if cert.is_some() || cas.is_some() {
-        let mut cert_bags = vec![];
 
-        if let Some(cert) = cert {
-            if let Some(ref key) = key {
-                if !cert
-                    .public_key(py)?
-                    .eq(key.call_method0(pyo3::intern!(py, "public_key"))?)?
-                {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyValueError::new_err(
-                            "Certificate public key and provided private key do not match",
-                        ),
-                    ));
-                }
-                key_id = Some(cert.fingerprint(py, &types::SHA1.get(py)?.call0()?)?);
+    if let Some(e) = &encryption_details.encryption_algorithm {
+        let mut shrouded_safebags = vec![];
+        let mut plain_safebags = vec![];
+        for safebag in safebags {
+            match safebag.bag_value.as_inner() {
+                cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(_) => &mut shrouded_safebags,
+                _ => &mut plain_safebags,
             }
-
-            cert_bags.push(cert_to_bag(
-                cert,
-                name,
-                key_id.as_ref().map(|v| v.as_bytes()),
-            )?);
+            .push(safebag);
         }
-
-        if let Some(cas) = cas {
-            for cert in cas.try_iter()? {
-                ca_certs.push(cert?.extract::<CertificateOrPKCS12Certificate>()?);
-            }
-
-            for cert in &ca_certs {
-                let bag = match cert {
-                    CertificateOrPKCS12Certificate::Certificate(c) => {
-                        cert_to_bag(c.get(), None, None)?
-                    }
-                    CertificateOrPKCS12Certificate::PKCS12Certificate(c) => cert_to_bag(
-                        c.get().certificate.get(),
-                        c.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
-                        None,
-                    )?,
-                };
-                cert_bags.push(bag);
-            }
-        }
-
-        cert_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(cert_bags))?;
-        if let Some(e) = &encryption_details.encryption_algorithm {
-            cert_salt = types::OS_URANDOM
+        if !plain_safebags.is_empty() {
+            plain_safebag_contents =
+                asn1::write_single(&asn1::SequenceOfWriter::new(plain_safebags))?;
+            auth_safe_salt = types::OS_URANDOM
                 .get(py)?
                 .call1((e.salt_length(),))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            cert_iv = types::OS_URANDOM
+            auth_safe_iv = types::OS_URANDOM
                 .get(py)?
                 .call1((16,))?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            cert_ciphertext = e.encrypt(
+            auth_safe_ciphertext = e.encrypt(
                 py,
                 encryption_details.password.as_str(),
                 encryption_details.cipher_kdf_iter,
-                &cert_salt,
-                &cert_iv,
-                &cert_bag_contents,
+                &auth_safe_salt,
+                &auth_safe_iv,
+                &plain_safebag_contents,
             )?;
 
             auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
@@ -492,87 +447,31 @@ fn serialize_key_and_certificates<'p>(
                             content_type: cryptography_x509::pkcs7::PKCS7_DATA_OID,
                             content_encryption_algorithm: e.algorithm_identifier(
                                 encryption_details.cipher_kdf_iter,
-                                &cert_salt,
-                                &cert_iv,
+                                &auth_safe_salt,
+                                &auth_safe_iv,
                             ),
-                            encrypted_content: Some(&cert_ciphertext),
+                            encrypted_content: Some(&auth_safe_ciphertext),
                         },
                     },
                 )),
-            })
-        } else {
+            });
+        }
+        if !shrouded_safebags.is_empty() {
+            shrouded_safebag_contents =
+                asn1::write_single(&asn1::SequenceOfWriter::new(shrouded_safebags))?;
             auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
                 _content_type: asn1::DefinedByMarker::marker(),
                 content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                    &cert_bag_contents,
+                    &shrouded_safebag_contents,
                 ))),
             });
         }
-    }
-
-    if let Some(key) = key {
-        let der = types::ENCODING_DER.get(py)?;
-        let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
-        let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
-
-        let pkcs8_bytes = key
-            .call_method1(
-                pyo3::intern!(py, "private_bytes"),
-                (der, pkcs8, no_encryption),
-            )?
-            .extract::<pyo3::pybacked::PyBackedBytes>()?;
-
-        let key_bag = if let Some(e) = encryption_details.encryption_algorithm {
-            key_salt = types::OS_URANDOM
-                .get(py)?
-                .call1((e.salt_length(),))?
-                .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            key_iv = types::OS_URANDOM
-                .get(py)?
-                .call1((16,))?
-                .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            key_ciphertext = e.encrypt(
-                py,
-                encryption_details.password.as_str(),
-                encryption_details.cipher_kdf_iter,
-                &key_salt,
-                &key_iv,
-                &pkcs8_bytes,
-            )?;
-
-            cryptography_x509::pkcs12::SafeBag {
-                _bag_id: asn1::DefinedByMarker::marker(),
-                bag_value: asn1::Explicit::new(
-                    cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
-                        cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
-                            encryption_algorithm: e.algorithm_identifier(
-                                encryption_details.cipher_kdf_iter,
-                                &key_salt,
-                                &key_iv,
-                            ),
-                            encrypted_data: &key_ciphertext,
-                        },
-                    ),
-                ),
-                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
-            }
-        } else {
-            let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
-
-            cryptography_x509::pkcs12::SafeBag {
-                _bag_id: asn1::DefinedByMarker::marker(),
-                bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(
-                    pkcs8_tlv,
-                )),
-                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
-            }
-        };
-
-        key_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new([key_bag]))?;
+    } else {
+        plain_safebag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(safebags))?;
         auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
             _content_type: asn1::DefinedByMarker::marker(),
             content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                &key_bag_contents,
+                &plain_safebag_contents,
             ))),
         });
     }
@@ -623,6 +522,130 @@ fn serialize_key_and_certificates<'p>(
         }),
     };
     Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&p12)?))
+}
+
+#[pyo3::pyfunction]
+#[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
+fn serialize_key_and_certificates<'p>(
+    py: pyo3::Python<'p>,
+    name: Option<&[u8]>,
+    key: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    cert: Option<&Certificate>,
+    cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
+
+    let mut safebags = vec![];
+    let (key_salt, key_iv, key_ciphertext, pkcs8_bytes);
+    let mut ca_certs = vec![];
+    let mut key_id = None;
+    if cert.is_some() || cas.is_some() {
+        if let Some(cert) = cert {
+            if let Some(ref key) = key {
+                if !cert
+                    .public_key(py)?
+                    .eq(key.call_method0(pyo3::intern!(py, "public_key"))?)?
+                {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Certificate public key and provided private key do not match",
+                        ),
+                    ));
+                }
+                key_id = Some(cert.fingerprint(py, &types::SHA1.get(py)?.call0()?)?);
+            }
+
+            safebags.push(cert_to_bag(
+                cert,
+                name,
+                key_id.as_ref().map(|v| v.as_bytes()),
+            )?);
+        }
+
+        if let Some(cas) = cas {
+            for cert in cas.try_iter()? {
+                ca_certs.push(cert?.extract::<CertificateOrPKCS12Certificate>()?);
+            }
+
+            for cert in &ca_certs {
+                let bag = match cert {
+                    CertificateOrPKCS12Certificate::Certificate(c) => {
+                        cert_to_bag(c.get(), None, None)?
+                    }
+                    CertificateOrPKCS12Certificate::PKCS12Certificate(c) => cert_to_bag(
+                        c.get().certificate.get(),
+                        c.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
+                        None,
+                    )?,
+                };
+                safebags.push(bag);
+            }
+        }
+    }
+
+    if let Some(key) = key {
+        let der = types::ENCODING_DER.get(py)?;
+        let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
+        let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
+
+        pkcs8_bytes = key
+            .call_method1(
+                pyo3::intern!(py, "private_bytes"),
+                (der, pkcs8, no_encryption),
+            )?
+            .extract::<pyo3::pybacked::PyBackedBytes>()?;
+
+        let key_bag = if let Some(ref e) = encryption_details.encryption_algorithm {
+            key_salt = types::OS_URANDOM
+                .get(py)?
+                .call1((e.salt_length(),))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            key_iv = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            key_ciphertext = e.encrypt(
+                py,
+                encryption_details.password.as_str(),
+                encryption_details.cipher_kdf_iter,
+                &key_salt,
+                &key_iv,
+                &pkcs8_bytes,
+            )?;
+
+            cryptography_x509::pkcs12::SafeBag {
+                _bag_id: asn1::DefinedByMarker::marker(),
+                bag_value: asn1::Explicit::new(
+                    cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
+                        cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
+                            encryption_algorithm: e.algorithm_identifier(
+                                encryption_details.cipher_kdf_iter,
+                                &key_salt,
+                                &key_iv,
+                            ),
+                            encrypted_data: &key_ciphertext,
+                        },
+                    ),
+                ),
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
+            }
+        } else {
+            let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
+
+            cryptography_x509::pkcs12::SafeBag {
+                _bag_id: asn1::DefinedByMarker::marker(),
+                bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(
+                    pkcs8_tlv,
+                )),
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
+            }
+        };
+
+        safebags.push(key_bag);
+    }
+
+    serialize_bags(py, &safebags, &encryption_details)
 }
 
 fn decode_p12(
