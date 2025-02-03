@@ -9,14 +9,16 @@ use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
 use cryptography_x509_verification::policy::{Policy, PolicyDefinition, Subject};
 use cryptography_x509_verification::trust_store::Store;
 use cryptography_x509_verification::types::{DNSName, IPAddress};
+use py_policy::PyPolicyDefinition;
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
+mod py_policy;
 use super::parse_general_names;
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
-use crate::x509::common::{datetime_now, datetime_to_py, py_to_datetime};
+use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
 
 pub(crate) struct PyCryptoOps {}
@@ -25,7 +27,7 @@ impl CryptoOps for PyCryptoOps {
     type Key = pyo3::Py<pyo3::PyAny>;
     type Err = CryptographyError;
     type CertificateExtra = pyo3::Py<PyCertificate>;
-    type PolicyExtra = ();
+    type PolicyExtra = pyo3::Py<PyPolicyDefinition>;
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
@@ -158,9 +160,13 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
+        let policy_definition = OwnedPolicyDefinition::new(SubjectOwner::None, |_subject| {
+            // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
+            PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth)
+        });
+
         Ok(PyClientVerifier {
-            policy_definition: PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth),
+            policy_definition: pyo3::Py::new(py, PyPolicyDefinition(policy_definition))?,
             store,
         })
     }
@@ -200,8 +206,7 @@ impl PolicyBuilder {
         })?;
 
         Ok(PyServerVerifier {
-            py_subject: subject,
-            policy_definition,
+            policy_definition: pyo3::Py::new(py, PyPolicyDefinition(policy_definition))?,
             store,
         })
     }
@@ -209,8 +214,9 @@ impl PolicyBuilder {
 
 type PyCryptoPolicyDefinition<'a> = PolicyDefinition<'a, PyCryptoOps>;
 
-/// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
+/// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicyDefinition`.
 enum SubjectOwner {
+    None,
     // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
     // lifetime relationship between an a `PyString` and its borrowed `&str`
     // reference in all limited API builds. PyO3 can't currently do that in
@@ -247,39 +253,27 @@ pub(crate) struct PyVerifiedClient {
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
 pub(crate) struct PyClientVerifier {
-    policy_definition: PyCryptoPolicyDefinition<'static>,
+    #[pyo3(get, name = "policy")]
+    policy_definition: pyo3::Py<PyPolicyDefinition>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyClientVerifier {
     fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
-        &self.policy_definition
+        self.policy_definition.get().0.borrow_dependent()
     }
 }
 
 #[pyo3::pymethods]
 impl PyClientVerifier {
-    #[getter]
-    fn validation_time<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        datetime_to_py(py, &self.as_policy_def().validation_time)
-    }
-
-    #[getter]
-    fn max_chain_depth(&self) -> u8 {
-        self.as_policy_def().max_chain_depth
-    }
-
     fn verify(
         &self,
         py: pyo3::Python<'_>,
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<PyVerifiedClient> {
-        let policy = Policy::new(self.as_policy_def(), ());
+        let policy = Policy::new(self.as_policy_def(), self.policy_definition.clone_ref(py));
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -329,41 +323,27 @@ impl PyClientVerifier {
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
 pub(crate) struct PyServerVerifier {
-    #[pyo3(get, name = "subject")]
-    py_subject: pyo3::Py<pyo3::PyAny>,
-    policy_definition: OwnedPolicyDefinition,
+    #[pyo3(get, name = "policy")]
+    policy_definition: pyo3::Py<PyPolicyDefinition>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyServerVerifier {
     fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
-        self.policy_definition.borrow_dependent()
+        self.policy_definition.get().0.borrow_dependent()
     }
 }
 
 #[pyo3::pymethods]
 impl PyServerVerifier {
-    #[getter]
-    fn validation_time<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        datetime_to_py(py, &self.as_policy_def().validation_time)
-    }
-
-    #[getter]
-    fn max_chain_depth(&self) -> u8 {
-        self.as_policy_def().max_chain_depth
-    }
-
     fn verify<'p>(
         &self,
         py: pyo3::Python<'p>,
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
-        let policy = Policy::new(self.as_policy_def(), ());
+        let policy = Policy::new(self.as_policy_def(), self.policy_definition.clone_ref(py));
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -433,6 +413,9 @@ fn build_subject<'a>(
 
             Ok(Subject::IP(ip_addr))
         }
+        SubjectOwner::None => Err(pyo3::exceptions::PyRuntimeError::new_err(
+            "subject must be set for ServerVerifiers",
+        )),
     }
 }
 
