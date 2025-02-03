@@ -552,7 +552,7 @@ mod tests {
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::CryptoOps;
-    use crate::policy::{Policy, Subject, ValidationResult};
+    use crate::policy::{Policy, PolicyDefinition, Subject, ValidationResult};
     use crate::types::DNSName;
 
     #[test]
@@ -602,12 +602,13 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::server(
+        let policy_def = PolicyDefinition::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
         );
+        let policy = Policy::new(&policy_def, ());
 
         // Test a policy that stipulates that a given extension MUST be present.
         let extension_validator =
@@ -642,12 +643,13 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::server(
+        let policy_def = PolicyDefinition::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
         );
+        let policy = Policy::new(&policy_def, ());
 
         // Test a validator that stipulates that a given extension CAN be present.
         let extension_validator = ExtensionValidator::maybe_present(
@@ -676,12 +678,13 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::server(
+        let policy_def = PolicyDefinition::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
         );
+        let policy = Policy::new(&policy_def, ());
 
         // Test a validator that stipulates that a given extension MUST NOT be present.
         let extension_validator = ExtensionValidator::not_present();
@@ -707,12 +710,13 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::server(
+        let policy_def = PolicyDefinition::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
         );
+        let policy = Policy::new(&policy_def, ());
 
         // Test a present policy that stipulates that a given extension MUST be critical.
         let extension_validator =
@@ -736,12 +740,13 @@ mod tests {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
         let ops = PublicKeyErrorOps {};
-        let policy = Policy::server(
+        let policy_def = PolicyDefinition::server(
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
         );
+        let policy = Policy::new(&policy_def, ());
 
         // Test a maybe present validator that stipulates that a given extension MUST be critical.
         let extension_validator = ExtensionValidator::maybe_present(

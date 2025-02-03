@@ -5,7 +5,7 @@
 mod extension;
 
 use std::collections::HashSet;
-use std::ops::Range;
+use std::ops::{Deref, Range};
 use std::sync::Arc;
 
 use asn1::ObjectIdentifier;
@@ -196,8 +196,8 @@ impl Subject<'_> {
     }
 }
 
-/// A `Policy` describes user-configurable aspects of X.509 path validation.
-pub struct Policy<'a, B: CryptoOps> {
+/// A `PolicyDefinition` describes user-configurable aspects of X.509 path validation.
+pub struct PolicyDefinition<'a, B: CryptoOps> {
     pub ops: B,
 
     /// A top-level constraint on the length of intermediate CA paths
@@ -234,7 +234,7 @@ pub struct Policy<'a, B: CryptoOps> {
     ee_extension_policy: ExtensionPolicy<B>,
 }
 
-impl<'a, B: CryptoOps> Policy<'a, B> {
+impl<'a, B: CryptoOps> PolicyDefinition<'a, B> {
     fn new(
         ops: B,
         subject: Option<Subject<'a>>,
@@ -371,6 +371,25 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             max_chain_depth,
             EKU_SERVER_AUTH_OID.clone(),
         )
+    }
+}
+
+pub struct Policy<'a, B: CryptoOps> {
+    definition: &'a PolicyDefinition<'a, B>,
+    pub extra: B::PolicyExtra,
+}
+
+impl<'a, B: CryptoOps> Deref for Policy<'a, B> {
+    type Target = PolicyDefinition<'a, B>;
+
+    fn deref(&self) -> &Self::Target {
+        self.definition
+    }
+}
+
+impl<'a, B: CryptoOps> Policy<'a, B> {
+    pub fn new(definition: &'a PolicyDefinition<'a, B>, extra: B::PolicyExtra) -> Self {
+        Self { definition, extra }
     }
 
     fn permits_basic<'chain>(&self, cert: &Certificate<'_>) -> ValidationResult<'chain, (), B> {

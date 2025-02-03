@@ -72,6 +72,9 @@ pub trait CryptoOps {
     /// Extra data that's passed around with the certificate.
     type CertificateExtra;
 
+    /// Extra data that's accessible alongside the PolicyDefinition.
+    type PolicyExtra;
+
     /// Extracts the public key from the given `Certificate` in
     /// a `Key` format known by the cryptographic backend, or `None`
     /// if the key is malformed.

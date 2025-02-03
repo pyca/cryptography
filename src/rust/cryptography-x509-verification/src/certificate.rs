@@ -55,6 +55,7 @@ Xw4nMqk=
         type Key = ();
         type Err = ();
         type CertificateExtra = ();
+        type PolicyExtra = ();
 
         fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
             // Simulate failing to retrieve a public key.

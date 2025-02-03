@@ -6,7 +6,7 @@ use cryptography_x509::certificate::Certificate;
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
-use cryptography_x509_verification::policy::{Policy, Subject};
+use cryptography_x509_verification::policy::{Policy, PolicyDefinition, Subject};
 use cryptography_x509_verification::trust_store::Store;
 use cryptography_x509_verification::types::{DNSName, IPAddress};
 use pyo3::types::{PyAnyMethods, PyListMethods};
@@ -25,6 +25,7 @@ impl CryptoOps for PyCryptoOps {
     type Key = pyo3::Py<pyo3::PyAny>;
     type Err = CryptographyError;
     type CertificateExtra = pyo3::Py<PyCertificate>;
+    type PolicyExtra = ();
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
@@ -158,9 +159,10 @@ impl PolicyBuilder {
         };
 
         // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
-        let policy = Policy::client(PyCryptoOps {}, time, self.max_chain_depth);
-
-        Ok(PyClientVerifier { policy, store })
+        Ok(PyClientVerifier {
+            policy_definition: PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth),
+            store,
+        })
     }
 
     fn build_server_verifier(
@@ -185,11 +187,11 @@ impl PolicyBuilder {
         };
         let subject_owner = build_subject_owner(py, &subject)?;
 
-        let policy = OwnedPolicy::try_new(subject_owner, |subject_owner| {
+        let policy_definition = OwnedPolicyDefinition::try_new(subject_owner, |subject_owner| {
             let subject = build_subject(py, subject_owner)?;
 
             // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
-            Ok::<PyCryptoPolicy<'_>, pyo3::PyErr>(Policy::server(
+            Ok::<PyCryptoPolicyDefinition<'_>, pyo3::PyErr>(PolicyDefinition::server(
                 PyCryptoOps {},
                 subject,
                 time,
@@ -199,13 +201,13 @@ impl PolicyBuilder {
 
         Ok(PyServerVerifier {
             py_subject: subject,
-            policy,
+            policy_definition,
             store,
         })
     }
 }
 
-type PyCryptoPolicy<'a> = Policy<'a, PyCryptoOps>;
+type PyCryptoPolicyDefinition<'a> = PolicyDefinition<'a, PyCryptoOps>;
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicy`.
 enum SubjectOwner {
@@ -219,11 +221,11 @@ enum SubjectOwner {
 }
 
 self_cell::self_cell!(
-    struct OwnedPolicy {
+    struct OwnedPolicyDefinition {
         owner: SubjectOwner,
 
         #[covariant]
-        dependent: PyCryptoPolicy,
+        dependent: PyCryptoPolicyDefinition,
     }
 );
 
@@ -245,14 +247,14 @@ pub(crate) struct PyVerifiedClient {
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
 pub(crate) struct PyClientVerifier {
-    policy: PyCryptoPolicy<'static>,
+    policy_definition: PyCryptoPolicyDefinition<'static>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyClientVerifier {
-    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        &self.policy
+    fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
+        &self.policy_definition
     }
 }
 
@@ -263,12 +265,12 @@ impl PyClientVerifier {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        datetime_to_py(py, &self.as_policy().validation_time)
+        datetime_to_py(py, &self.as_policy_def().validation_time)
     }
 
     #[getter]
     fn max_chain_depth(&self) -> u8 {
-        self.as_policy().max_chain_depth
+        self.as_policy_def().max_chain_depth
     }
 
     fn verify(
@@ -277,7 +279,7 @@ impl PyClientVerifier {
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<PyVerifiedClient> {
-        let policy = self.as_policy();
+        let policy = Policy::new(self.as_policy_def(), ());
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -290,7 +292,7 @@ impl PyClientVerifier {
         let chain = cryptography_x509_verification::verify(
             &v,
             &intermediates,
-            policy,
+            &policy,
             store.raw.borrow_dependent(),
         )
         .or_else(|e| handle_validation_error(py, e))?;
@@ -329,14 +331,14 @@ impl PyClientVerifier {
 pub(crate) struct PyServerVerifier {
     #[pyo3(get, name = "subject")]
     py_subject: pyo3::Py<pyo3::PyAny>,
-    policy: OwnedPolicy,
+    policy_definition: OwnedPolicyDefinition,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyServerVerifier {
-    fn as_policy(&self) -> &Policy<'_, PyCryptoOps> {
-        self.policy.borrow_dependent()
+    fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
+        self.policy_definition.borrow_dependent()
     }
 }
 
@@ -347,12 +349,12 @@ impl PyServerVerifier {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        datetime_to_py(py, &self.as_policy().validation_time)
+        datetime_to_py(py, &self.as_policy_def().validation_time)
     }
 
     #[getter]
     fn max_chain_depth(&self) -> u8 {
-        self.as_policy().max_chain_depth
+        self.as_policy_def().max_chain_depth
     }
 
     fn verify<'p>(
@@ -361,7 +363,7 @@ impl PyServerVerifier {
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
-        let policy = self.as_policy();
+        let policy = Policy::new(self.as_policy_def(), ());
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -374,7 +376,7 @@ impl PyServerVerifier {
         let chain = cryptography_x509_verification::verify(
             &v,
             &intermediates,
-            policy,
+            &policy,
             store.raw.borrow_dependent(),
         )
         .or_else(|e| handle_validation_error(py, e))?;
