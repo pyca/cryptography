@@ -27,6 +27,7 @@ __all__ = [
     "PKCS12PrivateKeyTypes",
     "load_key_and_certificates",
     "load_pkcs12",
+    "serialize_java_truststore",
     "serialize_key_and_certificates",
 ]
 
@@ -117,6 +118,24 @@ _PKCS12CATypes = typing.Union[
     x509.Certificate,
     PKCS12Certificate,
 ]
+
+
+def serialize_java_truststore(
+    certs: Iterable[PKCS12Certificate],
+    encryption_algorithm: serialization.KeySerializationEncryption,
+) -> bytes:
+    if not certs:
+        raise ValueError("You must supply at least one cert")
+
+    if not isinstance(
+        encryption_algorithm, serialization.KeySerializationEncryption
+    ):
+        raise TypeError(
+            "Key encryption algorithm must be a "
+            "KeySerializationEncryption instance"
+        )
+
+    return rust_pkcs12.serialize_java_truststore(certs, encryption_algorithm)
 
 
 def serialize_key_and_certificates(
