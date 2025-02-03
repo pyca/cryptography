@@ -142,6 +142,8 @@ TLS
 toolchain
 totient
 Trixie
+truststore
+truststores
 tunable
 Ubuntu
 unencrypted
