@@ -2,7 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 --branch=unpad-keys https://github.com/alex/paramiko
+        git clone --depth=1 https://github.com/paramiko/paramiko
         cd paramiko
         git rev-parse HEAD
         pip install -e .
