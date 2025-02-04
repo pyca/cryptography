@@ -12,10 +12,10 @@ use super::OwnedPolicyDefinition;
 
 /// Python-accessible wrapper for a cryptography_x509_verification::policy::Policy.
 #[pyo3::pyclass(module = "cryptography.x509.verification", name = "Policy", frozen)]
-pub(crate) struct PyPolicyDefinition(pub(super) OwnedPolicyDefinition);
+pub(crate) struct PyPolicy(pub(super) OwnedPolicyDefinition);
 
 #[pyo3::pymethods]
-impl PyPolicyDefinition {
+impl PyPolicy {
     #[getter]
     fn max_chain_depth(&self) -> u8 {
         self.0.borrow_dependent().max_chain_depth

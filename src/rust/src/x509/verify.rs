@@ -19,7 +19,7 @@ use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
-pub(crate) use py_policy::PyPolicyDefinition;
+pub(crate) use py_policy::PyPolicy;
 
 pub(crate) struct PyCryptoOps {}
 
@@ -27,7 +27,7 @@ impl CryptoOps for PyCryptoOps {
     type Key = pyo3::Py<pyo3::PyAny>;
     type Err = CryptographyError;
     type CertificateExtra = pyo3::Py<PyCertificate>;
-    type PolicyExtra = pyo3::Py<PyPolicyDefinition>;
+    type PolicyExtra = pyo3::Py<PyPolicy>;
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
@@ -166,7 +166,7 @@ impl PolicyBuilder {
         });
 
         Ok(PyClientVerifier {
-            policy_definition: pyo3::Py::new(py, PyPolicyDefinition(policy_definition))?,
+            policy_definition: pyo3::Py::new(py, PyPolicy(policy_definition))?,
             store,
         })
     }
@@ -206,7 +206,7 @@ impl PolicyBuilder {
         })?;
 
         Ok(PyServerVerifier {
-            policy_definition: pyo3::Py::new(py, PyPolicyDefinition(policy_definition))?,
+            policy_definition: pyo3::Py::new(py, PyPolicy(policy_definition))?,
             store,
         })
     }
@@ -254,7 +254,7 @@ pub(crate) struct PyVerifiedClient {
 )]
 pub(crate) struct PyClientVerifier {
     #[pyo3(get, name = "policy")]
-    policy_definition: pyo3::Py<PyPolicyDefinition>,
+    policy_definition: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
@@ -324,7 +324,7 @@ impl PyClientVerifier {
 )]
 pub(crate) struct PyServerVerifier {
     #[pyo3(get, name = "policy")]
-    policy_definition: pyo3::Py<PyPolicyDefinition>,
+    policy_definition: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
