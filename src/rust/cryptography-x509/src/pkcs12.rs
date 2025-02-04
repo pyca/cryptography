@@ -16,6 +16,7 @@ pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1135
 pub const LOCAL_KEY_ID_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 21);
 pub const JDK_TRUSTSTORE_USAGE: asn1::ObjectIdentifier =
     asn1::oid!(2, 16, 840, 1, 113894, 746875, 1, 1);
+pub const ANY_EXTENDED_KEY_USAGE: asn1::ObjectIdentifier = asn1::oid!(2, 5, 29, 37, 0);
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct Pfx<'a> {

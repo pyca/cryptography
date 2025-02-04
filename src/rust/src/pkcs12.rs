@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use cryptography_x509::common::Utf8StoredBMPString;
-use cryptography_x509::pkcs12::JDK_TRUSTSTORE_USAGE;
+use cryptography_x509::pkcs12::ANY_EXTENDED_KEY_USAGE;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
@@ -276,7 +276,7 @@ fn pkcs12_attributes<'a>(
         attrs.push(cryptography_x509::pkcs12::Attribute {
             _attr_id: asn1::DefinedByMarker::marker(),
             attr_values: cryptography_x509::pkcs12::AttributeSet::JDKTruststoreUsage(
-                asn1::SetOfWriter::new([JDK_TRUSTSTORE_USAGE]),
+                asn1::SetOfWriter::new([ANY_EXTENDED_KEY_USAGE]),
             ),
         });
     }
