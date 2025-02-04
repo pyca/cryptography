@@ -10,6 +10,7 @@ from ipaddress import IPv4Address
 import pytest
 
 from cryptography import x509
+from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
     PolicyBuilder,
@@ -17,6 +18,8 @@ from cryptography.x509.verification import (
     VerificationError,
 )
 from tests.x509.test_x509 import _load_cert
+
+WEBPKI_MINIMUM_RSA_MODULUS = 2048
 
 
 @lru_cache(maxsize=1)
@@ -90,6 +93,13 @@ class TestPolicyBuilder:
         assert verifier.policy.subject == DNSName("cryptography.io")
         assert verifier.policy.validation_time == now
         assert verifier.policy.max_chain_depth == max_chain_depth
+        assert (
+            verifier.policy.extended_key_usage
+            == ExtendedKeyUsageOID.SERVER_AUTH
+        )
+        assert (
+            verifier.policy.minimum_rsa_modulus == WEBPKI_MINIMUM_RSA_MODULUS
+        )
         assert verifier.store == store
 
     def test_build_server_verifier_missing_store(self):
@@ -132,8 +142,16 @@ class TestClientVerifier:
         builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
 
+        assert verifier.policy.subject is None
         assert verifier.policy.validation_time == validation_time.replace(
             tzinfo=None
+        )
+        assert (
+            verifier.policy.extended_key_usage
+            == ExtendedKeyUsageOID.CLIENT_AUTH
+        )
+        assert (
+            verifier.policy.minimum_rsa_modulus == WEBPKI_MINIMUM_RSA_MODULUS
         )
         assert verifier.policy.max_chain_depth == 16
         assert verifier.store is store

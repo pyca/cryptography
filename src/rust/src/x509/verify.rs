@@ -470,3 +470,15 @@ impl PyStore {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{build_subject, SubjectOwner};
+
+    #[test]
+    fn test_build_subject_none() {
+        // build_subject is never called with SubjectOwner::None, so we need a rust test to get coverage.
+        let result = pyo3::Python::with_gil(|py| build_subject(py, &SubjectOwner::None));
+        assert!(result.is_err())
+    }
+}
