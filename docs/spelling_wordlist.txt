@@ -84,7 +84,7 @@ kibibytes
 Koblitz
 Lange
 logins
-Mbed-TLS
+Mbed
 metadata
 MGF
 Monterey
