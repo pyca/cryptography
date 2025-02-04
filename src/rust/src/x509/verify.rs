@@ -9,7 +9,6 @@ use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
 use cryptography_x509_verification::policy::{Policy, PolicyDefinition, Subject};
 use cryptography_x509_verification::trust_store::Store;
 use cryptography_x509_verification::types::{DNSName, IPAddress};
-use py_policy::PyPolicyDefinition;
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
 mod py_policy;
@@ -20,6 +19,7 @@ use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
+pub(crate) use py_policy::PyPolicyDefinition;
 
 pub(crate) struct PyCryptoOps {}
 

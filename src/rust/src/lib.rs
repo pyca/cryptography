@@ -135,8 +135,8 @@ mod _rust {
         use crate::x509::sct::Sct;
         #[pymodule_export]
         use crate::x509::verify::{
-            PolicyBuilder, PyClientVerifier, PyServerVerifier, PyStore, PyVerifiedClient,
-            VerificationError,
+            PolicyBuilder, PyClientVerifier, PyPolicyDefinition, PyServerVerifier, PyStore,
+            PyVerifiedClient, VerificationError,
         };
     }
 
