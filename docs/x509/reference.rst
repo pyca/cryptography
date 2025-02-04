@@ -885,6 +885,11 @@ X.509 Certificate Builder
     :canonical: cryptography.x509.base.CertificateBuilder
 
     .. versionadded:: 1.0
+    
+    .. note::
+       All methods, except :meth:`sign`, return a **new** CertificateBuilder
+       instance with the corresponding updated value. They do not modify the
+       existing builder in place.
 
     .. doctest::
 
@@ -931,6 +936,8 @@ X.509 Certificate Builder
 
         :param name: The :class:`~cryptography.x509.Name` that describes the
             issuer (CA).
+        
+        :return: A new :class:`CertificateBuilder` with the updated issuer name.
 
     .. method:: subject_name(name)
 
@@ -938,6 +945,8 @@ X.509 Certificate Builder
 
         :param name: The :class:`~cryptography.x509.Name` that describes the
             subject.
+        
+        :return: A new :class:`CertificateBuilder` with the updated subject name.
 
     .. method:: public_key(public_key)
 
@@ -945,6 +954,8 @@ X.509 Certificate Builder
 
         :param public_key: The subject's public key. This can be one of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
+        
+        :return: A new :class:`CertificateBuilder` with the updated public key.
 
     .. method:: serial_number(serial_number)
 
@@ -960,6 +971,8 @@ X.509 Certificate Builder
             identify this certificate (most notably during certificate
             revocation checking). Users should consider using
             :func:`~cryptography.x509.random_serial_number` when possible.
+        
+        :return: A new :class:`CertificateBuilder` with the updated serial number.
 
     .. method:: not_valid_before(time)
 
@@ -970,6 +983,8 @@ X.509 Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             activation time for the certificate.  The certificate may not be
             trusted clients if it is used before this time.
+        
+        :return: A new :class:`CertificateBuilder` with the updated activation time.
 
     .. method:: not_valid_after(time)
 
@@ -980,6 +995,8 @@ X.509 Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             expiration time for the certificate.  The certificate may not be
             trusted clients if it is used after this time.
+        
+        :return: A new :class:`CertificateBuilder` with the updated expiration time.
 
     .. method:: add_extension(extval, critical)
 
@@ -990,6 +1007,8 @@ X.509 Certificate Builder
 
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
+        
+        :return: A new :class:`CertificateBuilder` with the additional extension.
 
     .. method:: sign(private_key, algorithm, *, rsa_padding=None)
 
