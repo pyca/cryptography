@@ -84,6 +84,7 @@ kibibytes
 Koblitz
 Lange
 logins
+Mbed-TLS
 metadata
 MGF
 Monterey
@@ -120,6 +121,7 @@ pytest
 relicensed
 responder
 runtime
+RustCrypto
 Schneier
 scrypt
 serializer
