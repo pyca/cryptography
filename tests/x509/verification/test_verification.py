@@ -44,20 +44,20 @@ class TestPolicyBuilder:
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
 
     def test_ipaddress_subject(self):
-        policy = (
+        verifier = (
             PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(IPAddress(IPv4Address("0.0.0.0")))
         )
-        assert policy.subject == IPAddress(IPv4Address("0.0.0.0"))
+        assert verifier.policy.subject == IPAddress(IPv4Address("0.0.0.0"))
 
     def test_dnsname_subject(self):
-        policy = (
+        verifier = (
             PolicyBuilder()
             .store(dummy_store())
             .build_server_verifier(DNSName("cryptography.io"))
         )
-        assert policy.subject == DNSName("cryptography.io")
+        assert verifier.policy.subject == DNSName("cryptography.io")
 
     def test_subject_bad_types(self):
         # Subject must be a supported GeneralName type
@@ -87,10 +87,10 @@ class TestPolicyBuilder:
         builder = builder.max_chain_depth(max_chain_depth)
 
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))
-        assert verifier.subject == DNSName("cryptography.io")
-        assert verifier.validation_time == now
+        assert verifier.policy.subject == DNSName("cryptography.io")
+        assert verifier.policy.validation_time == now
+        assert verifier.policy.max_chain_depth == max_chain_depth
         assert verifier.store == store
-        assert verifier.max_chain_depth == max_chain_depth
 
     def test_build_server_verifier_missing_store(self):
         with pytest.raises(
@@ -132,8 +132,10 @@ class TestClientVerifier:
         builder = builder.time(validation_time).max_chain_depth(16)
         verifier = builder.build_client_verifier()
 
-        assert verifier.validation_time == validation_time.replace(tzinfo=None)
-        assert verifier.max_chain_depth == 16
+        assert verifier.policy.validation_time == validation_time.replace(
+            tzinfo=None
+        )
+        assert verifier.policy.max_chain_depth == 16
         assert verifier.store is store
 
         verified_client = verifier.verify(leaf, [])
