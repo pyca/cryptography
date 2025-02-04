@@ -138,6 +138,7 @@ testability
 Thawte
 timestamp
 timestamps
+TLS
 toolchain
 totient
 Trixie
