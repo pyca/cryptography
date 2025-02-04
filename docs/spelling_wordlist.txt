@@ -84,6 +84,7 @@ kibibytes
 Koblitz
 Lange
 logins
+Mbed
 metadata
 MGF
 Monterey
@@ -120,6 +121,7 @@ pytest
 relicensed
 responder
 runtime
+RustCrypto
 Schneier
 scrypt
 serializer
@@ -136,6 +138,7 @@ testability
 Thawte
 timestamp
 timestamps
+TLS
 toolchain
 totient
 Trixie
