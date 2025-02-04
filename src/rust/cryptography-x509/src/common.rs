@@ -133,8 +133,14 @@ pub enum AlgorithmParameters<'a> {
 
     #[defined_by(oid::HMAC_WITH_SHA1_OID)]
     HmacWithSha1(Option<asn1::Null>),
+    #[defined_by(oid::HMAC_WITH_SHA224_OID)]
+    HmacWithSha224(Option<asn1::Null>),
     #[defined_by(oid::HMAC_WITH_SHA256_OID)]
     HmacWithSha256(Option<asn1::Null>),
+    #[defined_by(oid::HMAC_WITH_SHA384_OID)]
+    HmacWithSha384(Option<asn1::Null>),
+    #[defined_by(oid::HMAC_WITH_SHA512_OID)]
+    HmacWithSha512(Option<asn1::Null>),
 
     // Used only in PKCS#7 AlgorithmIdentifiers
     // https://datatracker.ietf.org/doc/html/rfc3565#section-4.1
@@ -154,6 +160,8 @@ pub enum AlgorithmParameters<'a> {
 
     #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
     Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
+    #[defined_by(oid::PBES1_WITH_SHA_AND_40_BIT_RC2_CBC)]
+    Pbe1WithShaAnd40BitRc2Cbc(PBES1Params),
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
