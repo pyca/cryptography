@@ -9,7 +9,7 @@ from ipaddress import IPv4Address
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
@@ -89,10 +89,18 @@ class TestPolicyBuilder:
         builder = builder.store(store)
         builder = builder.max_chain_depth(max_chain_depth)
 
-        verifier = builder.build_server_verifier(DNSName("cryptography.io"))
-        assert verifier.policy.subject == DNSName("cryptography.io")
+        subject = DNSName("cryptography.io")
+        verifier = builder.build_server_verifier(subject)
+        assert verifier.policy.subject == subject
         assert verifier.policy.validation_time == now
         assert verifier.policy.max_chain_depth == max_chain_depth
+        with pytest.warns(utils.DeprecatedIn45):
+            assert verifier.subject == subject
+        with pytest.warns(utils.DeprecatedIn45):
+            assert verifier.validation_time == now
+        with pytest.warns(utils.DeprecatedIn45):
+            assert verifier.max_chain_depth == max_chain_depth
+
         assert (
             verifier.policy.extended_key_usage
             == ExtendedKeyUsageOID.SERVER_AUTH
@@ -138,14 +146,26 @@ class TestClientVerifier:
         validation_time = datetime.datetime.fromisoformat(
             "2018-11-16T00:00:00+00:00"
         )
+        max_chain_depth = 16
+
         builder = PolicyBuilder().store(store)
-        builder = builder.time(validation_time).max_chain_depth(16)
+        builder = builder.time(validation_time).max_chain_depth(
+            max_chain_depth
+        )
         verifier = builder.build_client_verifier()
 
         assert verifier.policy.subject is None
         assert verifier.policy.validation_time == validation_time.replace(
             tzinfo=None
         )
+        assert verifier.policy.max_chain_depth == max_chain_depth
+        with pytest.warns(utils.DeprecatedIn45):
+            assert verifier.validation_time == validation_time.replace(
+                tzinfo=None
+            )
+        with pytest.warns(utils.DeprecatedIn45):
+            assert verifier.max_chain_depth == max_chain_depth
+
         assert (
             verifier.policy.extended_key_usage
             == ExtendedKeyUsageOID.CLIENT_AUTH
@@ -153,7 +173,6 @@ class TestClientVerifier:
         assert (
             verifier.policy.minimum_rsa_modulus == WEBPKI_MINIMUM_RSA_MODULUS
         )
-        assert verifier.policy.max_chain_depth == 16
         assert verifier.store is store
 
         verified_client = verifier.verify(leaf, [])

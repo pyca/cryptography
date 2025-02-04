@@ -17,12 +17,12 @@ pub(crate) struct PyPolicy(pub(super) OwnedPolicyDefinition);
 #[pyo3::pymethods]
 impl PyPolicy {
     #[getter]
-    fn max_chain_depth(&self) -> u8 {
+    pub(super) fn max_chain_depth(&self) -> u8 {
         self.0.borrow_dependent().max_chain_depth
     }
 
     #[getter]
-    fn subject(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    pub(super) fn subject(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         let policy_def = self.0.borrow_dependent();
         Ok(match &policy_def.subject {
             Some(Subject::DNS(dns_name)) => types::DNS_NAME
@@ -47,7 +47,7 @@ impl PyPolicy {
     }
 
     #[getter]
-    fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    pub(super) fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         Ok(
             datetime_to_py(py, &self.0.borrow_dependent().validation_time)?
                 .as_unbound()

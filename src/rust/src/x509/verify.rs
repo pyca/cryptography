@@ -16,6 +16,7 @@ use super::parse_general_names;
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
+use crate::utils::cstr_from_literal;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
@@ -247,6 +248,25 @@ pub(crate) struct PyVerifiedClient {
     chain: pyo3::Py<pyo3::types::PyList>,
 }
 
+macro_rules! warn_verifier_deprecated_getter {
+    ($py: expr, $class_name: literal, $property_name: literal) => {{
+        let warning_cls = types::DEPRECATED_IN_45.get($py)?;
+        let message = cstr_from_literal!(concat!(
+            "The `",
+            $property_name,
+            "` property on `",
+            $class_name,
+            "` is deprecated and will be removed in cryptography 46.0.",
+            " Access via `",
+            $class_name,
+            ".policy.",
+            $property_name,
+            "` instead."
+        ));
+        pyo3::PyErr::warn($py, &warning_cls, message, 1)
+    }};
+}
+
 #[pyo3::pyclass(
     frozen,
     name = "ClientVerifier",
@@ -267,6 +287,18 @@ impl PyClientVerifier {
 
 #[pyo3::pymethods]
 impl PyClientVerifier {
+    #[getter]
+    fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        warn_verifier_deprecated_getter!(py, "ClientVerifier", "validation_time")?;
+        self.policy_definition.get().validation_time(py)
+    }
+
+    #[getter]
+    fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<u8> {
+        warn_verifier_deprecated_getter!(py, "ClientVerifier", "max_chain_depth")?;
+        Ok(self.policy_definition.get().max_chain_depth())
+    }
+
     fn verify(
         &self,
         py: pyo3::Python<'_>,
@@ -337,6 +369,24 @@ impl PyServerVerifier {
 
 #[pyo3::pymethods]
 impl PyServerVerifier {
+    #[getter]
+    fn subject(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        warn_verifier_deprecated_getter!(py, "ServerVerifier", "subject")?;
+        self.policy_definition.get().subject(py)
+    }
+
+    #[getter]
+    fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+        warn_verifier_deprecated_getter!(py, "ServerVerifier", "validation_time")?;
+        self.policy_definition.get().validation_time(py)
+    }
+
+    #[getter]
+    fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<u8> {
+        warn_verifier_deprecated_getter!(py, "ServerVerifier", "max_chain_depth")?;
+        Ok(self.policy_definition.get().max_chain_depth())
+    }
+
     fn verify<'p>(
         &self,
         py: pyo3::Python<'p>,
