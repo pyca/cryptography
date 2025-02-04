@@ -240,6 +240,7 @@ pub fn parse_encrypted_private_key(
                     .unwrap();
                     key
                 }
+                #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
                 AlgorithmParameters::Scrypt(scrypt_params) => {
                     let mut key = vec![0; cipher.key_len()];
                     openssl::pkcs5::scrypt(
