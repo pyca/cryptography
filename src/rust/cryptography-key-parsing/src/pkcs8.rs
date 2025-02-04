@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
+use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters, PBES1Params};
 use cryptography_x509::csr::Attributes;
 use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
@@ -114,6 +114,37 @@ pub fn parse_private_key(
     }
 }
 
+fn pbes1_decrypt(
+    data: &[u8],
+    password: &[u8],
+    cipher: openssl::symm::Cipher,
+    hash: openssl::hash::MessageDigest,
+    params: &PBES1Params,
+) -> KeyParsingResult<Vec<u8>> {
+    let Ok(password) = std::str::from_utf8(password) else {
+        return Err(KeyParsingError::IncorrectPassword);
+    };
+    let key = cryptography_crypto::pkcs12::kdf(
+        password,
+        &params.salt,
+        cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
+        params.iterations,
+        cipher.key_len(),
+        hash,
+    )?;
+    let iv = cryptography_crypto::pkcs12::kdf(
+        password,
+        &params.salt,
+        cryptography_crypto::pkcs12::KDF_IV_ID,
+        params.iterations,
+        cipher.block_size(),
+        hash,
+    )?;
+
+    openssl::symm::decrypt(cipher, &key, Some(&iv), data)
+        .map_err(|_| KeyParsingError::IncorrectPassword)
+}
+
 pub fn parse_encrypted_private_key(
     data: &[u8],
     password: Option<&[u8]>,
@@ -125,35 +156,20 @@ pub fn parse_encrypted_private_key(
     };
 
     let plaintext = match epki.encryption_algorithm.params {
-        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(params) => {
-            let Ok(password) = std::str::from_utf8(password) else {
-                return Err(KeyParsingError::IncorrectPassword);
-            };
-            let key = cryptography_crypto::pkcs12::kdf(
-                password,
-                &params.salt,
-                cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
-                params.iterations,
-                24,
-                openssl::hash::MessageDigest::sha1(),
-            )?;
-            let iv = cryptography_crypto::pkcs12::kdf(
-                password,
-                &params.salt,
-                cryptography_crypto::pkcs12::KDF_IV_ID,
-                params.iterations,
-                8,
-                openssl::hash::MessageDigest::sha1(),
-            )?;
-
-            openssl::symm::decrypt(
-                openssl::symm::Cipher::des_ede3_cbc(),
-                &key,
-                Some(&iv),
-                epki.encrypted_data,
-            )
-            .map_err(|_| KeyParsingError::IncorrectPassword)?
-        }
+        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(params) => pbes1_decrypt(
+            epki.encrypted_data,
+            password,
+            openssl::symm::Cipher::des_ede3_cbc(),
+            openssl::hash::MessageDigest::sha1(),
+            &params,
+        )?,
+        AlgorithmParameters::Pbe1WithShaAnd40BitRc2Cbc(params) => pbes1_decrypt(
+            epki.encrypted_data,
+            password,
+            openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_40_CBC).unwrap(),
+            openssl::hash::MessageDigest::sha1(),
+            &params,
+        )?,
         AlgorithmParameters::Pbes2(params) => {
             let (cipher, iv) = match params.encryption_scheme.params {
                 AlgorithmParameters::DesEde3Cbc(ref iv) => {
@@ -162,8 +178,22 @@ pub fn parse_encrypted_private_key(
                 AlgorithmParameters::Aes128Cbc(ref iv) => {
                     (openssl::symm::Cipher::aes_128_cbc(), &iv[..])
                 }
+                AlgorithmParameters::Aes192Cbc(ref iv) => {
+                    (openssl::symm::Cipher::aes_192_cbc(), &iv[..])
+                }
                 AlgorithmParameters::Aes256Cbc(ref iv) => {
                     (openssl::symm::Cipher::aes_256_cbc(), &iv[..])
+                }
+                AlgorithmParameters::Rc2Cbc(ref params) => {
+                    // A version of 58 == 128 bits effective key length. The
+                    // default is 32. See RFC 8018 B.2.3.
+                    if params.version.unwrap_or(32) != 58 {
+                        return Err(KeyParsingError::InvalidKey);
+                    }
+                    (
+                        openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_CBC).unwrap(),
+                        &params.iv[..],
+                    )
                 }
                 _ => {
                     return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
@@ -179,8 +209,17 @@ pub fn parse_encrypted_private_key(
                         AlgorithmParameters::HmacWithSha1(_) => {
                             openssl::hash::MessageDigest::sha1()
                         }
+                        AlgorithmParameters::HmacWithSha224(_) => {
+                            openssl::hash::MessageDigest::sha224()
+                        }
                         AlgorithmParameters::HmacWithSha256(_) => {
                             openssl::hash::MessageDigest::sha256()
+                        }
+                        AlgorithmParameters::HmacWithSha384(_) => {
+                            openssl::hash::MessageDigest::sha384()
+                        }
+                        AlgorithmParameters::HmacWithSha512(_) => {
+                            openssl::hash::MessageDigest::sha512()
                         }
                         _ => {
                             return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
@@ -199,6 +238,19 @@ pub fn parse_encrypted_private_key(
                         &mut key,
                     )
                     .unwrap();
+                    key
+                }
+                AlgorithmParameters::Scrypt(scrypt_params) => {
+                    let mut key = vec![0; cipher.key_len()];
+                    openssl::pkcs5::scrypt(
+                        password,
+                        scrypt_params.salt,
+                        scrypt_params.cost_parameter,
+                        scrypt_params.block_size,
+                        scrypt_params.parallelization_parameter,
+                        (usize::MAX / 2).try_into().unwrap(),
+                        &mut key,
+                    )?;
                     key
                 }
                 _ => {
