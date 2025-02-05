@@ -161,7 +161,7 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        let policy_definition = OwnedPolicyDefinition::new(SubjectOwner::None, |_subject| {
+        let policy_definition = OwnedPolicyDefinition::new(None, |_subject| {
             // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
             PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth)
         });
@@ -194,17 +194,23 @@ impl PolicyBuilder {
         };
         let subject_owner = build_subject_owner(py, &subject)?;
 
-        let policy_definition = OwnedPolicyDefinition::try_new(subject_owner, |subject_owner| {
-            let subject = build_subject(py, subject_owner)?;
+        let policy_definition =
+            OwnedPolicyDefinition::try_new(Some(subject_owner), |subject_owner| {
+                let subject = build_subject(
+                    py,
+                    subject_owner
+                        .as_ref()
+                        .expect("subject_owner for ServerVerifier can not be None"),
+                )?;
 
-            // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
-            Ok::<PyCryptoPolicyDefinition<'_>, pyo3::PyErr>(PolicyDefinition::server(
-                PyCryptoOps {},
-                subject,
-                time,
-                self.max_chain_depth,
-            ))
-        })?;
+                // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
+                Ok::<PyCryptoPolicyDefinition<'_>, pyo3::PyErr>(PolicyDefinition::server(
+                    PyCryptoOps {},
+                    subject,
+                    time,
+                    self.max_chain_depth,
+                ))
+            })?;
 
         Ok(PyServerVerifier {
             policy_definition: pyo3::Py::new(py, PyPolicy(policy_definition))?,
@@ -217,7 +223,6 @@ type PyCryptoPolicyDefinition<'a> = PolicyDefinition<'a, PyCryptoOps>;
 
 /// This enum exists solely to provide heterogeneously typed ownership for `OwnedPolicyDefinition`.
 enum SubjectOwner {
-    None,
     // TODO: Switch this to `Py<PyString>` once Pyo3's `to_str()` preserves a
     // lifetime relationship between an a `PyString` and its borrowed `&str`
     // reference in all limited API builds. PyO3 can't currently do that in
@@ -229,7 +234,7 @@ enum SubjectOwner {
 
 self_cell::self_cell!(
     struct OwnedPolicyDefinition {
-        owner: SubjectOwner,
+        owner: Option<SubjectOwner>,
 
         #[covariant]
         dependent: PyCryptoPolicyDefinition,
@@ -463,9 +468,6 @@ fn build_subject<'a>(
 
             Ok(Subject::IP(ip_addr))
         }
-        SubjectOwner::None => Err(pyo3::exceptions::PyRuntimeError::new_err(
-            "subject must be set for ServerVerifiers",
-        )),
     }
 }
 
@@ -518,17 +520,5 @@ impl PyStore {
                 }))
             }),
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{build_subject, SubjectOwner};
-
-    #[test]
-    fn test_build_subject_none() {
-        // build_subject is never called with SubjectOwner::None, so we need a rust test to get coverage.
-        let result = pyo3::Python::with_gil(|py| build_subject(py, &SubjectOwner::None));
-        assert!(result.is_err())
     }
 }
