@@ -10,7 +10,6 @@ import textwrap
 
 import pytest
 
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
