@@ -166,8 +166,13 @@ impl PolicyBuilder {
             PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth)
         });
 
+        let py_policy = PyPolicy {
+            policy_definition,
+            subject: py.None(),
+        };
+
         Ok(PyClientVerifier {
-            policy_definition: pyo3::Py::new(py, PyPolicy(policy_definition))?,
+            py_policy: pyo3::Py::new(py, py_policy)?,
             store,
         })
     }
@@ -212,8 +217,13 @@ impl PolicyBuilder {
                 ))
             })?;
 
+        let py_policy = PyPolicy {
+            policy_definition,
+            subject,
+        };
+
         Ok(PyServerVerifier {
-            policy_definition: pyo3::Py::new(py, PyPolicy(policy_definition))?,
+            py_policy: pyo3::Py::new(py, py_policy)?,
             store,
         })
     }
@@ -279,14 +289,14 @@ macro_rules! warn_verifier_deprecated_getter {
 )]
 pub(crate) struct PyClientVerifier {
     #[pyo3(get, name = "policy")]
-    policy_definition: pyo3::Py<PyPolicy>,
+    py_policy: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyClientVerifier {
     fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
-        self.policy_definition.get().0.borrow_dependent()
+        self.py_policy.get().policy_definition.borrow_dependent()
     }
 }
 
@@ -295,13 +305,13 @@ impl PyClientVerifier {
     #[getter]
     fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         warn_verifier_deprecated_getter!(py, "ClientVerifier", "validation_time")?;
-        self.policy_definition.get().validation_time(py)
+        self.py_policy.get().validation_time(py)
     }
 
     #[getter]
     fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<u8> {
         warn_verifier_deprecated_getter!(py, "ClientVerifier", "max_chain_depth")?;
-        Ok(self.policy_definition.get().max_chain_depth())
+        Ok(self.py_policy.get().max_chain_depth())
     }
 
     fn verify(
@@ -310,7 +320,7 @@ impl PyClientVerifier {
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<PyVerifiedClient> {
-        let policy = Policy::new(self.as_policy_def(), self.policy_definition.clone_ref(py));
+        let policy = Policy::new(self.as_policy_def(), self.py_policy.clone_ref(py));
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -361,14 +371,14 @@ impl PyClientVerifier {
 )]
 pub(crate) struct PyServerVerifier {
     #[pyo3(get, name = "policy")]
-    policy_definition: pyo3::Py<PyPolicy>,
+    py_policy: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
 impl PyServerVerifier {
     fn as_policy_def(&self) -> &PyCryptoPolicyDefinition<'_> {
-        self.policy_definition.get().0.borrow_dependent()
+        self.py_policy.get().policy_definition.borrow_dependent()
     }
 }
 
@@ -377,19 +387,19 @@ impl PyServerVerifier {
     #[getter]
     fn subject(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         warn_verifier_deprecated_getter!(py, "ServerVerifier", "subject")?;
-        self.policy_definition.get().subject(py)
+        Ok(self.py_policy.get().subject(py))
     }
 
     #[getter]
     fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
         warn_verifier_deprecated_getter!(py, "ServerVerifier", "validation_time")?;
-        self.policy_definition.get().validation_time(py)
+        self.py_policy.get().validation_time(py)
     }
 
     #[getter]
     fn max_chain_depth(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<u8> {
         warn_verifier_deprecated_getter!(py, "ServerVerifier", "max_chain_depth")?;
-        Ok(self.policy_definition.get().max_chain_depth())
+        Ok(self.py_policy.get().max_chain_depth())
     }
 
     fn verify<'p>(
@@ -398,7 +408,7 @@ impl PyServerVerifier {
         leaf: pyo3::Py<PyCertificate>,
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
-        let policy = Policy::new(self.as_policy_def(), self.policy_definition.clone_ref(py));
+        let policy = Policy::new(self.as_policy_def(), self.py_policy.clone_ref(py));
         let store = self.store.get();
 
         let intermediates = intermediates

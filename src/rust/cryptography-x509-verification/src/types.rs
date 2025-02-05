@@ -287,12 +287,6 @@ impl From<IpAddr> for IPAddress {
     }
 }
 
-impl From<IPAddress> for IpAddr {
-    fn from(address: IPAddress) -> Self {
-        address.0
-    }
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub struct IPConstraint {
     address: IPAddress,
