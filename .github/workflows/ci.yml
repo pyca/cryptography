@@ -176,15 +176,6 @@ jobs:
     env:
       RUSTUP_HOME: /root/.rustup
     steps:
-      - name: Ridiculous alpine workaround for actions support on arm64
-        run: |
-          # This modifies /etc/os-release so the JS actions
-          # from GH can't detect that it's on alpine:aarch64. It will
-          # then use a glibc nodejs, which works fine when gcompat
-          # is installed in the container (which it is)
-          sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
-        if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
-
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         timeout-minutes: 3
         with:
