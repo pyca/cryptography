@@ -25,4 +25,5 @@ VerifiedClient = rust_x509.VerifiedClient
 ClientVerifier = rust_x509.ClientVerifier
 ServerVerifier = rust_x509.ServerVerifier
 PolicyBuilder = rust_x509.PolicyBuilder
+Policy = rust_x509.Policy
 VerificationError = rust_x509.VerificationError
