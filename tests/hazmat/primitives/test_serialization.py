@@ -10,6 +10,8 @@ import textwrap
 
 import pytest
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -19,6 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     x448,
     x25519,
 )
+from cryptography.hazmat.primitives.ciphers import modes
 from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
@@ -460,6 +463,102 @@ class TestDERSerialization:
         )
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
+
+    @pytest.mark.xfail(
+        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
+        strict=True,
+        reason="Temp fail on boring",
+    )
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "rsa_pkcs8_pbes2_pbkdf2_2048_3des_sha224.pem",
+            "rsa_pkcs8_pbes2_pbkdf2_2048_3des_sha384.pem",
+            "rsa_pkcs8_pbes2_pbkdf2_2048_3des_sha512.pem",
+        ],
+    )
+    @pytest.mark.skip_fips(reason="3DES unsupported in FIPS")
+    def test_load_pkscs8_pbkdf_prf(self, filename: str):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", filename),
+            lambda f: load_pem_private_key(f.read(), password=b"PolarSSLTest"),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 2048
+
+    @pytest.mark.xfail(
+        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
+        strict=True,
+        reason="Temp fail on boring",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
+        ),
+        skip_message="Does not support RC2 CBC",
+    )
+    def test_load_pkcs8_40_bit_rc2(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-40bitrc2.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"baz"),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 1024
+
+    @pytest.mark.xfail(
+        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
+        strict=True,
+        reason="Temp fail on boring",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
+        ),
+        skip_message="Does not support RC2 CBC",
+    )
+    def test_load_pkcs8_rc2_cbc(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-rc2-cbc.pem"),
+            lambda f: load_pem_private_key(
+                f.read(), password=b"Red Hat Enterprise Linux 7.4"
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 2048
+
+    @pytest.mark.xfail(
+        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
+        strict=True,
+        reason="Temp fail on boring",
+    )
+    def test_load_pkcs8_aes_192_cbc(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-aes-192-cbc.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"PolarSSLTest"),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 2048
+
+    @pytest.mark.xfail(
+        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
+        strict=True,
+        reason="Temp fail on boring",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.scrypt_supported(),
+        skip_message="Scrypt required",
+    )
+    def test_load_pkcs8_scrypt(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ed25519-scrypt.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"hunter42"),
+            mode="rb",
+        )
+        assert isinstance(key, ed25519.Ed25519PrivateKey)
 
 
 class TestPEMSerialization:
