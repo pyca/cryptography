@@ -166,6 +166,7 @@ pub fn parse_encrypted_private_key(
         AlgorithmParameters::Pbe1WithShaAnd40BitRc2Cbc(params) => pbes1_decrypt(
             epki.encrypted_data,
             password,
+            // XXX: unwrwap
             openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_40_CBC).unwrap(),
             openssl::hash::MessageDigest::sha1(),
             &params,
@@ -191,6 +192,7 @@ pub fn parse_encrypted_private_key(
                         return Err(KeyParsingError::InvalidKey);
                     }
                     (
+                        // XXX: unwrap
                         openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_CBC).unwrap(),
                         &params.iv[..],
                     )
