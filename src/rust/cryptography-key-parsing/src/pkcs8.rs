@@ -166,8 +166,7 @@ pub fn parse_encrypted_private_key(
         AlgorithmParameters::Pbe1WithShaAnd40BitRc2Cbc(params) => pbes1_decrypt(
             epki.encrypted_data,
             password,
-            // XXX: unwrwap
-            openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_40_CBC).unwrap(),
+            openssl::symm::Cipher::rc2_40_cbc(),
             openssl::hash::MessageDigest::sha1(),
             &params,
         )?,
@@ -191,11 +190,7 @@ pub fn parse_encrypted_private_key(
                     if params.version.unwrap_or(32) != 58 {
                         return Err(KeyParsingError::InvalidKey);
                     }
-                    (
-                        // XXX: unwrap
-                        openssl::symm::Cipher::from_nid(openssl::nid::Nid::RC2_CBC).unwrap(),
-                        &params.iv[..],
-                    )
+                    (openssl::symm::Cipher::rc2_cbc(), &params.iv[..])
                 }
                 _ => {
                     return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(

@@ -199,8 +199,7 @@ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 [[package]]
 name = "openssl"
 version = "0.10.70"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61cfb4e166a8bb8c9b55c500bc2308550148ece889be90f609377e58140f42c6"
+source = "git+https://github.com/alex/rust-openssl?branch=rc2#ae495dc27d9a20ab943c06085c8bb9c47ee90b5c"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -214,8 +213,7 @@ dependencies = [
 [[package]]
 name = "openssl-macros"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
+source = "git+https://github.com/alex/rust-openssl?branch=rc2#ae495dc27d9a20ab943c06085c8bb9c47ee90b5c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -225,8 +223,7 @@ dependencies = [
 [[package]]
 name = "openssl-sys"
 version = "0.9.105"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b22d5b84be05a8d6947c7cb71f7c849aa0f112acd4bf51c2a7c1c988ac0a9dc"
+source = "git+https://github.com/alex/rust-openssl?branch=rc2#ae495dc27d9a20ab943c06085c8bb9c47ee90b5c"
 dependencies = [
  "cc",
  "libc",
