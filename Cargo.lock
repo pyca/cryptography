@@ -214,7 +214,8 @@ dependencies = [
 [[package]]
 name = "openssl-macros"
 version = "0.1.1"
-source = "git+https://github.com/alex/rust-openssl?branch=rc2#ae495dc27d9a20ab943c06085c8bb9c47ee90b5c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
 dependencies = [
  "proc-macro2",
  "quote",
