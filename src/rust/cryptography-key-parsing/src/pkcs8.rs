@@ -163,6 +163,7 @@ pub fn parse_encrypted_private_key(
             openssl::hash::MessageDigest::sha1(),
             &params,
         )?,
+        #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
         AlgorithmParameters::Pbe1WithShaAnd40BitRc2Cbc(params) => pbes1_decrypt(
             epki.encrypted_data,
             password,
@@ -184,6 +185,7 @@ pub fn parse_encrypted_private_key(
                 AlgorithmParameters::Aes256Cbc(ref iv) => {
                     (openssl::symm::Cipher::aes_256_cbc(), &iv[..])
                 }
+                #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
                 AlgorithmParameters::Rc2Cbc(ref params) => {
                     // A version of 58 == 128 bits effective key length. The
                     // default is 32. See RFC 8018 B.2.3.
