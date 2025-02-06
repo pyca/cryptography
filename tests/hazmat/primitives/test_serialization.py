@@ -537,7 +537,9 @@ class TestDERSerialization:
     )
     def test_load_pkcs8_rc2_cbc_effective_key_length(self):
         data = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "rsa-rc2-cbc.pem"),
+            os.path.join(
+                "asymmetric", "PKCS8", "rsa-rc2-cbc-effective-key-length.pem"
+            ),
             lambda f: f.read(),
             mode="rb",
         )
