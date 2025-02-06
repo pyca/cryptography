@@ -66,7 +66,7 @@ Asymmetric ciphers
   RustCrypto using scrypt as the KDF. The password is ``hunter42``.
 * ``asymmetric/PKCS8/rsa-rc2-cbc-effective-key-length.pem`` a PKCS8 encoded key
   encrypted with ``RC2-CBC`` with the ``effectiveKeyLength`` parameter set to
-  258.
+  258. This is an invalid key.
 
 
 Custom asymmetric vectors
