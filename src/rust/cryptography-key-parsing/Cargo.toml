@@ -15,4 +15,4 @@ cryptography-crypto = { path = "../cryptography-crypto" }
 cryptography-x509 = { path = "../cryptography-x509" }
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_RC2"))'] }
