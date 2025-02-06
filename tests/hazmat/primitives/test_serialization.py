@@ -10,6 +10,7 @@ import textwrap
 
 import pytest
 
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
@@ -483,7 +484,8 @@ class TestDERSerialization:
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        ),
+        )
+        and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RC2 CBC",
     )
     def test_load_pkcs8_40_bit_rc2(self):
@@ -498,7 +500,8 @@ class TestDERSerialization:
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        ),
+        )
+        and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RC2 CBC",
     )
     def test_load_pkcs8_rc2_cbc(self):
