@@ -529,6 +529,21 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 2048
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
+        ),
+        skip_message="Does not support RC2 CBC",
+    )
+    def test_load_pkcs8_rc2_cbc_effective_key_length(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-rc2-cbc.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
     @pytest.mark.xfail(
         rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         strict=True,
