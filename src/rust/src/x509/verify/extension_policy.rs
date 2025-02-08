@@ -11,7 +11,7 @@ pub(crate) struct PyExtensionPolicy {
 }
 
 impl PyExtensionPolicy {
-    pub(super) fn get_rust_policy(&self) -> ExtensionPolicy<'static, PyCryptoOps> {
+    pub(super) fn clone_rust_policy(&self) -> ExtensionPolicy<'static, PyCryptoOps> {
         self.rust_policy.clone()
     }
 
