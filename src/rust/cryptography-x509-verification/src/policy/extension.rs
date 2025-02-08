@@ -26,6 +26,92 @@ pub(crate) struct ExtensionPolicy<B: CryptoOps> {
 }
 
 impl<B: CryptoOps> ExtensionPolicy<B> {
+    pub fn new_default_webpki_ca() -> Self {
+        ExtensionPolicy {
+            // 5280 4.2.2.1: Authority Information Access
+            authority_information_access: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                Some(common::authority_information_access),
+            ),
+            // 5280 4.2.1.1: Authority Key Identifier
+            authority_key_identifier: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                Some(ca::authority_key_identifier),
+            ),
+            // 5280 4.2.1.2: Subject Key Identifier
+            // NOTE: CABF requires SKI in CA certificates, but many older CAs lack it.
+            // We choose to be permissive here.
+            subject_key_identifier: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                None,
+            ),
+            // 5280 4.2.1.3: Key Usage
+            key_usage: ExtensionValidator::present(Criticality::Agnostic, Some(ca::key_usage)),
+            subject_alternative_name: ExtensionValidator::maybe_present(
+                Criticality::Agnostic,
+                None,
+            ),
+            // 5280 4.2.1.9: Basic Constraints
+            basic_constraints: ExtensionValidator::present(
+                Criticality::Critical,
+                Some(ca::basic_constraints),
+            ),
+            // 5280 4.2.1.10: Name Constraints
+            // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
+            name_constraints: ExtensionValidator::maybe_present(
+                Criticality::Agnostic,
+                Some(ca::name_constraints),
+            ),
+            // 5280: 4.2.1.12: Extended Key Usage
+            // NOTE: CABF requires EKUs in many non-root CA certs, but validators widely
+            // ignore this requirement and treat a missing EKU as "any EKU".
+            // We choose to be permissive here.
+            extended_key_usage: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                Some(ca::extended_key_usage),
+            ),
+        }
+    }
+
+    pub fn new_default_webpki_ee() -> Self {
+        ExtensionPolicy {
+            // 5280 4.2.2.1: Authority Information Access
+            authority_information_access: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                Some(common::authority_information_access),
+            ),
+            // 5280 4.2.1.1.: Authority Key Identifier
+            authority_key_identifier: ExtensionValidator::present(Criticality::NonCritical, None),
+            subject_key_identifier: ExtensionValidator::maybe_present(Criticality::Agnostic, None),
+            // 5280 4.2.1.3: Key Usage
+            key_usage: ExtensionValidator::maybe_present(
+                Criticality::Agnostic,
+                Some(ee::key_usage),
+            ),
+            // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
+            // This validator handles both client and server cases by only matching against
+            // the SAN if the profile contains a subject, which it won't in the client
+            // validation case.
+            subject_alternative_name: ExtensionValidator::present(
+                Criticality::Agnostic,
+                Some(ee::subject_alternative_name),
+            ),
+            // 5280 4.2.1.9: Basic Constraints
+            basic_constraints: ExtensionValidator::maybe_present(
+                Criticality::Agnostic,
+                Some(ee::basic_constraints),
+            ),
+            // 5280 4.2.1.10: Name Constraints
+            name_constraints: ExtensionValidator::not_present(),
+            // CA/B: 7.1.2.7.10: Subscriber Certificate Extended Key Usage
+            // NOTE: CABF requires EKUs in EE certs, while RFC 5280 does not.
+            extended_key_usage: ExtensionValidator::maybe_present(
+                Criticality::NonCritical,
+                Some(ee::extended_key_usage),
+            ),
+        }
+    }
+
     pub(crate) fn permits<'chain>(
         &self,
         policy: &Policy<'_, B>,
@@ -263,7 +349,7 @@ impl<B: CryptoOps> ExtensionValidator<B> {
     }
 }
 
-pub(crate) mod ee {
+mod ee {
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::extensions::{
         BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage, SubjectAlternativeName,
@@ -372,7 +458,7 @@ pub(crate) mod ee {
     }
 }
 
-pub(crate) mod ca {
+mod ca {
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::common::Asn1Read;
     use cryptography_x509::extensions::{
@@ -518,7 +604,7 @@ pub(crate) mod ca {
     }
 }
 
-pub(crate) mod common {
+mod common {
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::common::Asn1Read;
     use cryptography_x509::extensions::{Extension, SequenceOfAccessDescriptions};
