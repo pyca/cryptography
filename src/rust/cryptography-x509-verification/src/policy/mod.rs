@@ -25,7 +25,10 @@ use cryptography_x509::oid::{
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
-use crate::policy::extension::ExtensionPolicy;
+pub use crate::policy::extension::{
+    Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback,
+    PresentExtensionValidatorCallback,
+};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
@@ -230,11 +233,11 @@ pub struct PolicyDefinition<'a, B: CryptoOps> {
     /// algorithm identifiers.
     pub permitted_signature_algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
 
-    ca_extension_policy: ExtensionPolicy<B>,
-    ee_extension_policy: ExtensionPolicy<B>,
+    ca_extension_policy: ExtensionPolicy<'a, B>,
+    ee_extension_policy: ExtensionPolicy<'a, B>,
 }
 
-impl<'a, B: CryptoOps> PolicyDefinition<'a, B> {
+impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
     fn new(
         ops: B,
         subject: Option<Subject<'a>>,
@@ -373,11 +376,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Checks whether the given CA certificate is compatible with this policy.
     pub(crate) fn permits_ca<'chain>(
         &self,
-        cert: &Certificate<'chain>,
+        cert: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert.certificate())?;
 
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
@@ -413,10 +416,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Checks whether the given EE certificate is compatible with this policy.
     pub(crate) fn permits_ee<'chain>(
         &self,
-        cert: &Certificate<'chain>,
+        cert: &VerificationCertificate<'chain, B>,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert.certificate())?;
 
         self.ee_extension_policy.permits(self, cert, extensions)?;
 
@@ -444,7 +447,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         issuer_extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
-        self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)
+        self.permits_ca(issuer, current_depth, issuer_extensions)
             .map_err(|e| e.set_cert(issuer.clone()))?;
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo

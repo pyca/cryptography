@@ -463,7 +463,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         let leaf_extensions = leaf.certificate().extensions()?;
 
         self.policy
-            .permits_ee(leaf.certificate(), &leaf_extensions)
+            .permits_ee(leaf, &leaf_extensions)
             .map_err(|e| e.set_cert(leaf.clone()))?;
 
         let mut chain = self.build_chain_inner(
