@@ -376,11 +376,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Checks whether the given CA certificate is compatible with this policy.
     pub(crate) fn permits_ca<'chain>(
         &self,
-        cert: &Certificate<'chain>,
+        cert: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert.certificate())?;
 
         // 5280 4.1.2.6: Subject
         // CA certificates MUST have a subject populated with a non-empty distinguished name.
@@ -416,10 +416,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     /// Checks whether the given EE certificate is compatible with this policy.
     pub(crate) fn permits_ee<'chain>(
         &self,
-        cert: &Certificate<'chain>,
+        cert: &VerificationCertificate<'chain, B>,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
-        self.permits_basic(cert)?;
+        self.permits_basic(cert.certificate())?;
 
         self.ee_extension_policy.permits(self, cert, extensions)?;
 
@@ -447,7 +447,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         issuer_extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
-        self.permits_ca(issuer.certificate(), current_depth, issuer_extensions)
+        self.permits_ca(issuer, current_depth, issuer_extensions)
             .map_err(|e| e.set_cert(issuer.clone()))?;
 
         // CA/B 7.1.3.1 SubjectPublicKeyInfo
