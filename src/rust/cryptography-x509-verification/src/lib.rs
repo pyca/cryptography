@@ -49,7 +49,7 @@ pub struct ValidationError<'chain, B: CryptoOps> {
 }
 
 impl<'chain, B: CryptoOps> ValidationError<'chain, B> {
-    pub(crate) fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
+    pub fn new(kind: ValidationErrorKind<'chain, B>) -> Self {
         ValidationError { kind, cert: None }
     }
 
