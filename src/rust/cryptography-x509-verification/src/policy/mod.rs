@@ -25,7 +25,10 @@ use cryptography_x509::oid::{
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
-use crate::policy::extension::ExtensionPolicy;
+pub use crate::policy::extension::{
+    Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback,
+    PresentExtensionValidatorCallback,
+};
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
@@ -230,11 +233,11 @@ pub struct PolicyDefinition<'a, B: CryptoOps> {
     /// algorithm identifiers.
     pub permitted_signature_algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
 
-    ca_extension_policy: ExtensionPolicy<B>,
-    ee_extension_policy: ExtensionPolicy<B>,
+    ca_extension_policy: ExtensionPolicy<'a, B>,
+    ee_extension_policy: ExtensionPolicy<'a, B>,
 }
 
-impl<'a, B: CryptoOps> PolicyDefinition<'a, B> {
+impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
     fn new(
         ops: B,
         subject: Option<Subject<'a>>,
