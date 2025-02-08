@@ -18,7 +18,6 @@ use crate::{
     ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
 };
 
-#[derive(Clone)]
 pub struct ExtensionPolicy<'cb, B: CryptoOps> {
     pub authority_information_access: ExtensionValidator<'cb, B>,
     pub authority_key_identifier: ExtensionValidator<'cb, B>,
@@ -31,27 +30,6 @@ pub struct ExtensionPolicy<'cb, B: CryptoOps> {
 }
 
 impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
-    pub fn new_permit_all() -> Self {
-        const fn make_permissive_validator<'cb, B: CryptoOps + 'cb>() -> ExtensionValidator<'cb, B>
-        {
-            ExtensionValidator::MaybePresent {
-                criticality: Criticality::Agnostic,
-                validator: None,
-            }
-        }
-
-        ExtensionPolicy {
-            authority_information_access: make_permissive_validator(),
-            authority_key_identifier: make_permissive_validator(),
-            subject_key_identifier: make_permissive_validator(),
-            key_usage: make_permissive_validator(),
-            subject_alternative_name: make_permissive_validator(),
-            basic_constraints: make_permissive_validator(),
-            name_constraints: make_permissive_validator(),
-            extended_key_usage: make_permissive_validator(),
-        }
-    }
-
     pub fn new_default_webpki_ca() -> Self {
         ExtensionPolicy {
             // 5280 4.2.2.1: Authority Information Access
@@ -238,7 +216,6 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
 }
 
 /// Represents different criticality states for an extension.
-#[derive(Clone)]
 pub enum Criticality {
     /// The extension MUST be marked as critical.
     Critical,
@@ -283,7 +260,6 @@ pub type MaybeExtensionValidatorCallback<'cb, B> = Arc<
 >;
 
 /// Represents different validation states for an extension.
-#[derive(Clone)]
 pub enum ExtensionValidator<'cb, B: CryptoOps> {
     /// The extension MUST NOT be present.
     NotPresent,
