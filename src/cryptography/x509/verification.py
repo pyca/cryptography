@@ -11,6 +11,8 @@ from cryptography.x509.general_name import DNSName, IPAddress
 
 __all__ = [
     "ClientVerifier",
+    "ExtensionPolicy",
+    "Policy",
     "PolicyBuilder",
     "ServerVerifier",
     "Store",
@@ -26,4 +28,5 @@ ClientVerifier = rust_x509.ClientVerifier
 ServerVerifier = rust_x509.ServerVerifier
 PolicyBuilder = rust_x509.PolicyBuilder
 Policy = rust_x509.Policy
+ExtensionPolicy = rust_x509.ExtensionPolicy
 VerificationError = rust_x509.VerificationError
