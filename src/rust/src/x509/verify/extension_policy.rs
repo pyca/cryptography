@@ -16,10 +16,12 @@ use cryptography_x509_verification::policy::{
 };
 use cryptography_x509_verification::{ValidationError, ValidationErrorKind, ValidationResult};
 use pyo3::types::PyAnyMethods;
-use pyo3::PyResult;
+use pyo3::types::PyTypeMethods;
+use pyo3::{intern, PyResult};
 
 use crate::asn1::py_oid_to_oid;
 
+use crate::types;
 use crate::x509::certificate::parse_cert_ext;
 use crate::x509::certificate::Certificate as PyCertificate;
 
@@ -115,6 +117,19 @@ impl PyExtensionPolicy {
     }
 }
 
+fn oid_from_py_extension_type(
+    py: pyo3::Python<'_>,
+    extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
+) -> pyo3::PyResult<asn1::ObjectIdentifier> {
+    if !extension_type.is_subclass(&types::EXTENSION_TYPE.get(py)?)? {
+        return Err(pyo3::exceptions::PyTypeError::new_err(
+            "extension_type must be a subclass of ExtensionType",
+        ));
+    }
+
+    py_oid_to_oid(extension_type.getattr(intern!(py, "oid"))?)
+}
+
 #[pyo3::pymethods]
 impl PyExtensionPolicy {
     #[staticmethod]
@@ -134,21 +149,23 @@ impl PyExtensionPolicy {
 
     pub(crate) fn require_not_present(
         &self,
-        oid: pyo3::Bound<'_, pyo3::types::PyAny>,
+        py: pyo3::Python<'_>,
+        extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
-        let oid = py_oid_to_oid(oid)?;
+        let oid = oid_from_py_extension_type(py, extension_type)?;
         self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(oid, ExtensionValidator::NotPresent)
     }
 
-    #[pyo3(signature = (oid, criticality, validator_cb))]
+    #[pyo3(signature = (extension_type, criticality, validator_cb))]
     pub(crate) fn may_be_present(
         &self,
-        oid: pyo3::Bound<'_, pyo3::types::PyAny>,
+        py: pyo3::Python<'_>,
+        extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
-        let oid = py_oid_to_oid(oid)?;
+        let oid = oid_from_py_extension_type(py, extension_type)?;
         self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(
             oid,
@@ -159,14 +176,15 @@ impl PyExtensionPolicy {
         )
     }
 
-    #[pyo3(signature = (oid, criticality, validator_cb))]
+    #[pyo3(signature = (extension_type, criticality, validator_cb))]
     pub(crate) fn require_present(
         &self,
-        oid: pyo3::Bound<'_, pyo3::types::PyAny>,
+        py: pyo3::Python<'_>,
+        extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
         criticality: PyCriticality,
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
-        let oid = py_oid_to_oid(oid)?;
+        let oid = oid_from_py_extension_type(py, extension_type)?;
         self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(
             oid,

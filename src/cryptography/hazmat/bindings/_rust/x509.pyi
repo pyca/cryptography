@@ -226,19 +226,21 @@ class Criticality:
     AGNOSTIC: Criticality
     NON_CRITICAL: Criticality
 
-MaybeExtensionValidatorCallback = typing.Callable[
+type MaybeExtensionValidatorCallback[T: x509.ExtensionType] = typing.Callable[
     [
         Policy,
         x509.Certificate,
-        x509.ExtensionType | None,
+        T | None,
     ],
     None,
 ]
 
-PresentExtensionValidatorCallback = typing.Callable[
-    [Policy, x509.Certificate, x509.ExtensionType],
-    None,
-]
+type PresentExtensionValidatorCallback[T: x509.ExtensionType] = (
+    typing.Callable[
+        [Policy, x509.Certificate, T],
+        None,
+    ]
+)
 
 class ExtensionPolicy:
     @staticmethod
@@ -248,19 +250,19 @@ class ExtensionPolicy:
     @staticmethod
     def webpki_defaults_ee() -> ExtensionPolicy: ...
     def require_not_present(
-        self, oid: x509.ObjectIdentifier
+        self, extension_type: type[x509.ExtensionType]
     ) -> ExtensionPolicy: ...
-    def may_be_present(
+    def may_be_present[T: x509.ExtensionType](
         self,
-        oid: x509.ObjectIdentifier,
+        extension_type: type[T],
         criticality: Criticality,
-        validator: MaybeExtensionValidatorCallback | None,
+        validator: MaybeExtensionValidatorCallback[T] | None,
     ) -> ExtensionPolicy: ...
-    def require_present(
+    def require_present[T: x509.ExtensionType](
         self,
-        oid: x509.ObjectIdentifier,
+        extension_type: type[T],
         criticality: Criticality,
-        validator: PresentExtensionValidatorCallback | None,
+        validator: PresentExtensionValidatorCallback[T] | None,
     ) -> ExtensionPolicy: ...
 
 class VerifiedClient:
