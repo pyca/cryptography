@@ -13,6 +13,7 @@ from cryptography import utils, x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
+    ExtensionPolicy,
     PolicyBuilder,
     Store,
     VerificationError,
@@ -261,3 +262,31 @@ class TestServerVerifier:
             match=r"<Certificate\(subject=.*?CN=www.cryptography.io.*?\)>",
         ):
             verifier.verify(leaf, [])
+
+
+class TestCustomExtensionPolicies:
+    leaf = _load_cert(
+        os.path.join("x509", "cryptography.io.pem"),
+        x509.load_pem_x509_certificate,
+    )
+    ca = _load_cert(
+        os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+        x509.load_pem_x509_certificate,
+    )
+    store = Store([ca])
+    validation_time = datetime.datetime.fromisoformat(
+        "2018-11-16T00:00:00+00:00"
+    )
+
+    def test_static_methods(self):
+        builder = PolicyBuilder().store(self.store)
+        builder = builder.time(self.validation_time).max_chain_depth(16)
+        builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(),
+            ExtensionPolicy.webpki_defaults_ee(),
+        )
+
+        builder.build_client_verifier().verify(self.leaf, [])
+        builder.build_server_verifier(DNSName("cryptography.io")).verify(
+            self.leaf, []
+        )
