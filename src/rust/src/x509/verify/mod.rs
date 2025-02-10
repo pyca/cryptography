@@ -163,7 +163,7 @@ impl PolicyBuilder {
 
         let policy_definition = OwnedPolicyDefinition::new(None, |_subject| {
             // TODO: Pass extension policies here once implemented in cryptography-x509-verification.
-            PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth)
+            PolicyDefinition::client(PyCryptoOps {}, time, self.max_chain_depth, None, None)
         });
 
         let py_policy = PyPolicy {
@@ -214,6 +214,8 @@ impl PolicyBuilder {
                     subject,
                     time,
                     self.max_chain_depth,
+                    None,
+                    None,
                 ))
             })?;
 

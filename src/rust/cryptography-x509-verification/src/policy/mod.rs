@@ -244,6 +244,8 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
         extended_key_usage: ObjectIdentifier,
+        ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
     ) -> Self {
         Self {
             ops,
@@ -254,8 +256,10 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             minimum_rsa_modulus: WEBPKI_MINIMUM_RSA_MODULUS,
             permitted_public_key_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SPKI_ALGORITHMS),
             permitted_signature_algorithms: Arc::clone(&*WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS),
-            ca_extension_policy: ExtensionPolicy::new_default_webpki_ca(),
-            ee_extension_policy: ExtensionPolicy::new_default_webpki_ee(),
+            ca_extension_policy: ca_extension_policy
+                .unwrap_or_else(ExtensionPolicy::new_default_webpki_ca),
+            ee_extension_policy: ee_extension_policy
+                .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
         }
     }
 
@@ -265,13 +269,21 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
     /// **IMPORTANT**: This is **not** the appropriate API for verifying
     /// website (i.e. server) certificates. For that, you **must** use
     /// [`Policy::server`].
-    pub fn client(ops: B, time: asn1::DateTime, max_chain_depth: Option<u8>) -> Self {
+    pub fn client(
+        ops: B,
+        time: asn1::DateTime,
+        max_chain_depth: Option<u8>,
+        ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+    ) -> Self {
         Self::new(
             ops,
             None,
             time,
             max_chain_depth,
             EKU_CLIENT_AUTH_OID.clone(),
+            ca_extension_policy,
+            ee_extension_policy,
         )
     }
 
@@ -282,6 +294,8 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         subject: Subject<'a>,
         time: asn1::DateTime,
         max_chain_depth: Option<u8>,
+        ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
     ) -> Self {
         Self::new(
             ops,
@@ -289,6 +303,8 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             time,
             max_chain_depth,
             EKU_SERVER_AUTH_OID.clone(),
+            ca_extension_policy,
+            ee_extension_policy,
         )
     }
 }
