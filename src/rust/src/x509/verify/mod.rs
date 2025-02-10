@@ -573,3 +573,15 @@ impl PyStore {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::PyCryptoOps;
+
+    #[test]
+    fn test_crypto_ops_clone() {
+        // Just for coverage.
+        // The trait is needed to be able to clone ExtensionPolicy<'_, PyCryptoOps>.
+        let _ = PyCryptoOps {}.clone();
+    }
+}
