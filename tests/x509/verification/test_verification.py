@@ -214,6 +214,38 @@ class TestClientVerifier:
         ):
             verifier.verify(leaf, [])
 
+    def test_custom_ext_policy_no_san(self):
+        leaf = _load_cert(
+            os.path.join("x509", "custom", "no_sans.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+        validation_time = datetime.datetime.fromisoformat(
+            "2025-04-14T00:00:00+00:00"
+        )
+
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(validation_time)
+
+        with pytest.raises(
+            VerificationError,
+            match="missing required extension",
+        ):
+            builder.build_client_verifier().verify(leaf, [])
+
+        ee_extension_policy = ExtensionPolicy.webpki_defaults_ee()
+        ee_extension_policy = ee_extension_policy.require_not_present(
+            x509.SubjectAlternativeName
+        )
+
+        builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(), ee_extension_policy
+        )
+
+        verified_client = builder.build_client_verifier().verify(leaf, [])
+        assert verified_client.subjects is None
+
 
 class TestServerVerifier:
     @pytest.mark.parametrize(
