@@ -103,7 +103,7 @@ jobs:
           # When altering the openssl build process you may need to increment
           # the value on the end of this cache key so that you can prevent it
           # from fetching the cache and skipping the build step.
-          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-14
+          key: ${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-15
         if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
         run: .github/bin/build_openssl.sh
