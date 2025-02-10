@@ -382,22 +382,24 @@ impl PyClientVerifier {
             py_chain.append(c.extra())?;
         }
 
-        // NOTE: These `unwrap()`s cannot fail, since the underlying policy
-        // enforces the presence of a SAN and the well-formedness of the
-        // extension set.
-        let leaf_san = &chain[0]
+        // NOTE: The `unwrap()` cannot fail, since the underlying policy
+        // enforces the well-formedness of the extension set.
+        let subjects = match &chain[0]
             .certificate()
             .extensions()
             .ok()
             .unwrap()
             .get_extension(&SUBJECT_ALTERNATIVE_NAME_OID)
-            .unwrap();
-
-        let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
-        let py_gns = parse_general_names(py, &leaf_gns)?;
+        {
+            Some(leaf_san) => {
+                let leaf_gns = leaf_san.value::<SubjectAlternativeName<'_>>()?;
+                Some(parse_general_names(py, &leaf_gns)?.unbind())
+            }
+            None => None,
+        };
 
         Ok(PyVerifiedClient {
-            subjects: Some(py_gns.into()),
+            subjects,
             chain: py_chain.unbind(),
         })
     }
