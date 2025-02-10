@@ -621,6 +621,8 @@ Custom X.509 Vectors
 * ``admissions_extension_authority_not_provided.pem`` - A certificate containing
   the ``Admissions`` extension with no admissions and no admission authority,
   signed by ``x509/custom/ca/rsa_ca.pem`` CA.
+* ``no_sans.pem`` - Leaf certificate issued by ``x509/custom/ca/rsa_ca.pem``
+  with no SAN extension.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
