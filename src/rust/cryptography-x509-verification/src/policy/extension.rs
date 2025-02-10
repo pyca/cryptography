@@ -707,6 +707,8 @@ mod tests {
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
+            None,
+            None,
         );
         let policy = Policy::new(&policy_def, ());
 
@@ -753,6 +755,8 @@ mod tests {
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
+            None,
+            None,
         );
         let policy = Policy::new(&policy_def, ());
 
@@ -791,6 +795,8 @@ mod tests {
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
             None,
+            None,
+            None,
         );
         let policy = Policy::new(&policy_def, ());
 
@@ -824,6 +830,8 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
+            None,
             None,
         );
         let policy = Policy::new(&policy_def, ());
@@ -860,6 +868,8 @@ mod tests {
             ops,
             Subject::DNS(DNSName::new("example.com").unwrap()),
             epoch(),
+            None,
+            None,
             None,
         );
         let policy = Policy::new(&policy_def, ());
