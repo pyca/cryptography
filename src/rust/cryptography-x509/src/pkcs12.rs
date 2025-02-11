@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::common::Utf8StoredBMPString;
+use crate::common::{Asn1Operation, Utf8StoredBMPString};
 use crate::{pkcs7, pkcs8};
 
 pub const CERT_BAG_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 3);
@@ -14,9 +14,9 @@ pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1135
 pub const LOCAL_KEY_ID_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 21);
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
-pub struct Pfx<'a> {
+pub struct Pfx<'a, Op: Asn1Operation> {
     pub version: u8,
-    pub auth_safe: pkcs7::ContentInfo<'a>,
+    pub auth_safe: pkcs7::ContentInfo<'a, Op>,
     pub mac_data: Option<MacData<'a>>,
 }
 

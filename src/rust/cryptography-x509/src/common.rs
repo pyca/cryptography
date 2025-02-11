@@ -278,6 +278,9 @@ pub trait Asn1Operation {
     type SequenceOfVec<'a, T>
     where
         T: 'a;
+    type SetOf<'a, T>
+    where
+        T: 'a;
     type SetOfVec<'a, T>
     where
         T: 'a;
@@ -292,6 +295,10 @@ impl Asn1Operation for Asn1Read {
         = asn1::SequenceOf<'a, T>
     where
         T: 'a;
+    type SetOf<'a, T>
+        = asn1::SetOf<'a, T>
+    where
+        T: 'a;
     type SetOfVec<'a, T>
         = asn1::SetOf<'a, T>
     where
@@ -301,6 +308,10 @@ impl Asn1Operation for Asn1Read {
 impl Asn1Operation for Asn1Write {
     type SequenceOfVec<'a, T>
         = asn1::SequenceOfWriter<'a, T, Vec<T>>
+    where
+        T: 'a;
+    type SetOf<'a, T>
+        = asn1::SetOfWriter<'a, T>
     where
         T: 'a;
     type SetOfVec<'a, T>
