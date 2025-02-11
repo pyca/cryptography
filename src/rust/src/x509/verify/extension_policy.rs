@@ -171,7 +171,7 @@ impl PyExtensionPolicy {
             oid,
             ExtensionValidator::MaybePresent {
                 criticality: criticality.into(),
-                validator: validator_cb.map(make_rust_maybe_validator_cb),
+                validator: validator_cb.map(wrap_maybe_validator_callback),
             },
         )
     }
@@ -190,13 +190,13 @@ impl PyExtensionPolicy {
             oid,
             ExtensionValidator::Present {
                 criticality: criticality.into(),
-                validator: validator_cb.map(make_rust_present_validator_cb),
+                validator: validator_cb.map(wrap_present_validator_callback),
             },
         )
     }
 }
 
-fn make_rust_maybe_validator_cb(
+fn wrap_maybe_validator_callback(
     py_cb: pyo3::PyObject,
 ) -> MaybeExtensionValidatorCallback<'static, PyCryptoOps> {
     Arc::new(
@@ -211,7 +211,7 @@ fn make_rust_maybe_validator_cb(
     )
 }
 
-fn make_rust_present_validator_cb(
+fn wrap_present_validator_callback(
     py_cb: pyo3::PyObject,
 ) -> PresentExtensionValidatorCallback<'static, PyCryptoOps> {
     Arc::new(
