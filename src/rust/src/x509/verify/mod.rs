@@ -21,7 +21,7 @@ use crate::utils::cstr_from_literal;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
-pub(crate) use extension_policy::PyExtensionPolicy;
+pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
 
 #[derive(Clone)]
