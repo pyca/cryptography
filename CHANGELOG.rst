@@ -6,6 +6,7 @@ Changelog
 44.0.1 - 2025-02-11
 ~~~~~~~~~~~~~~~~~~~
 
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.4.1.
 * We now build ``armv7l`` ``manylinux`` wheels and publish them to PyPI.
 
 .. _v44-0-0:
