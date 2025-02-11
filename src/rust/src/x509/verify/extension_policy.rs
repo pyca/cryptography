@@ -23,9 +23,7 @@ use crate::asn1::py_oid_to_oid;
 
 use crate::types;
 use crate::x509::certificate::parse_cert_ext;
-use crate::x509::certificate::Certificate as PyCertificate;
 
-use super::policy::PyPolicy;
 use super::PyCryptoOps;
 
 #[pyo3::pyclass(
@@ -204,8 +202,15 @@ fn wrap_maybe_validator_callback(
               cert: &VerificationCertificate<'_, PyCryptoOps>,
               ext: Option<&Extension<'_>>| {
             pyo3::Python::with_gil(|py| {
-                let args = make_python_callback_args(py, policy, cert, ext)?;
-                invoke_py_validator_callback(py, &py_cb, args)
+                invoke_py_validator_callback(
+                    py,
+                    &py_cb,
+                    (
+                        policy.extra.clone_ref(py),
+                        cert.extra().clone_ref(py),
+                        make_py_extension(py, ext)?,
+                    ),
+                )
             })
         },
     )
@@ -219,8 +224,15 @@ fn wrap_present_validator_callback(
               cert: &VerificationCertificate<'_, PyCryptoOps>,
               ext: &Extension<'_>| {
             pyo3::Python::with_gil(|py| {
-                let (policy, cert, ext) = make_python_callback_args(py, policy, cert, Some(ext))?;
-                invoke_py_validator_callback(py, &py_cb, (policy, cert, ext.unwrap()))
+                invoke_py_validator_callback(
+                    py,
+                    &py_cb,
+                    (
+                        policy.extra.clone_ref(py),
+                        cert.extra().clone_ref(py),
+                        make_py_extension(py, Some(ext))?.unwrap(),
+                    ),
+                )
             })
         },
     )
@@ -230,28 +242,16 @@ fn make_validation_error(msg: String) -> ValidationError<'static, PyCryptoOps> {
     ValidationError::new(ValidationErrorKind::Other(msg))
 }
 
-type PyCallbackArgs<'p> = (
-    pyo3::Py<PyPolicy>,
-    pyo3::Py<PyCertificate>,
-    Option<pyo3::Bound<'p, pyo3::types::PyAny>>,
-);
-
-fn make_python_callback_args<'chain, 'p>(
+fn make_py_extension<'chain, 'p>(
     py: pyo3::Python<'p>,
-    policy: &Policy<'_, PyCryptoOps>,
-    cert: &VerificationCertificate<'chain, PyCryptoOps>,
     ext: Option<&Extension<'p>>,
-) -> ValidationResult<'chain, PyCallbackArgs<'p>, PyCryptoOps> {
-    let py_policy = policy.extra.clone_ref(py);
-    let py_cert = cert.extra().clone_ref(py);
-    let py_ext = match ext {
+) -> ValidationResult<'chain, Option<pyo3::Bound<'p, pyo3::types::PyAny>>, PyCryptoOps> {
+    Ok(match ext {
         None => None,
         Some(ext) => parse_cert_ext(py, ext).map_err(|e| {
             make_validation_error(format!("{e} (while converting Extension to Python object)"))
         })?,
-    };
-
-    Ok((py_policy, py_cert, py_ext))
+    })
 }
 
 fn invoke_py_validator_callback<'py>(
@@ -270,5 +270,26 @@ fn invoke_py_validator_callback<'py>(
         ))
     } else {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use cryptography_x509::extensions::Extension;
+
+    #[test]
+    fn test_make_py_extension_fail() {
+        pyo3::Python::with_gil(|py| {
+            let invalid_extension = Extension {
+                // SubjectAlternativeName
+                extn_id: asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap(),
+                critical: false,
+                extn_value: &[],
+            };
+            let result = super::make_py_extension(py, Some(&invalid_extension));
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}").contains("(while converting Extension to Python object)"));
+        })
     }
 }
