@@ -207,7 +207,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - name: Setup python
         run: |
-          curl "$PYTHON_DOWNLOAD_URL" -o python.pkg
+          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
