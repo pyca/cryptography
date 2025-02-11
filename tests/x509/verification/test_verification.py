@@ -6,14 +6,18 @@ import datetime
 import os
 from functools import lru_cache
 from ipaddress import IPv4Address
+from typing import Optional, Type
 
 import pytest
 
 from cryptography import utils, x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
+from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
+    Criticality,
     ExtensionPolicy,
+    Policy,
     PolicyBuilder,
     Store,
     VerificationError,
@@ -291,6 +295,18 @@ class TestServerVerifier:
             verifier.verify(leaf, [])
 
 
+SUPPORTED_EXTENSION_TYPES = (
+    x509.AuthorityInformationAccess,
+    x509.AuthorityKeyIdentifier,
+    x509.SubjectKeyIdentifier,
+    x509.KeyUsage,
+    x509.SubjectAlternativeName,
+    x509.BasicConstraints,
+    x509.NameConstraints,
+    x509.ExtendedKeyUsage,
+)
+
+
 class TestCustomExtensionPolicies:
     leaf = _load_cert(
         os.path.join("x509", "cryptography.io.pem"),
@@ -305,15 +321,234 @@ class TestCustomExtensionPolicies:
         "2018-11-16T00:00:00+00:00"
     )
 
-    def test_static_methods(self):
-        builder = PolicyBuilder().store(self.store)
-        builder = builder.time(self.validation_time).max_chain_depth(16)
-        builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(),
-            ExtensionPolicy.webpki_defaults_ee(),
+    def test_builder_methods(self):
+        ext_policy = ExtensionPolicy.permit_all()
+        ext_policy = ext_policy.require_not_present(x509.BasicConstraints)
+        with pytest.raises(
+            ValueError, match=x509.BasicConstraints.oid.dotted_string
+        ):
+            ext_policy.require_not_present(x509.BasicConstraints)
+        with pytest.raises(
+            ValueError, match=x509.BasicConstraints.oid.dotted_string
+        ):
+            ext_policy.may_be_present(
+                x509.BasicConstraints, Criticality.NON_CRITICAL, None
+            )
+        with pytest.raises(
+            ValueError, match=x509.BasicConstraints.oid.dotted_string
+        ):
+            ext_policy.require_present(
+                x509.BasicConstraints, Criticality.CRITICAL, None
+            )
+
+        with pytest.raises(TypeError):
+
+            class _Extension:
+                pass
+
+            ext_policy.require_present(
+                _Extension,  # type: ignore
+                Criticality.AGNOSTIC,
+                None,
+            )
+
+    def test_unsupported_extension(self):
+        ext_policy = ExtensionPolicy.permit_all()
+        message = (
+            f"Unsupported extension OID: {x509.Admissions.oid.dotted_string}"
+        )
+        with pytest.raises(
+            ValueError,
+            match=message,
+        ):
+            ext_policy.may_be_present(
+                x509.Admissions,
+                Criticality.AGNOSTIC,
+                None,
+            )
+
+    @staticmethod
+    def _make_validator_cb(extension_type: Type[ExtensionType]):
+        def validator_cb(policy, cert, ext: Optional[ExtensionType]):
+            assert isinstance(policy, Policy)
+            assert (
+                policy.validation_time
+                == TestCustomExtensionPolicies.validation_time.replace(
+                    tzinfo=None
+                )
+            )
+            assert isinstance(cert, x509.Certificate)
+            assert ext is None or isinstance(ext, extension_type)
+
+        return validator_cb
+
+    def test_require_not_present(self):
+        default_ee = ExtensionPolicy.webpki_defaults_ee()
+        no_basic_constraints_ee = default_ee.require_not_present(
+            x509.BasicConstraints
         )
 
-        builder.build_client_verifier().verify(self.leaf, [])
-        builder.build_server_verifier(DNSName("cryptography.io")).verify(
-            self.leaf, []
+        default_builder = (
+            PolicyBuilder().store(self.store).time(self.validation_time)
         )
+        builder_no_basic_constraints = default_builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(), no_basic_constraints_ee
+        )
+
+        default_builder.build_client_verifier().verify(self.leaf, [])
+
+        with pytest.raises(
+            VerificationError,
+            match="Certificate contains prohibited extension",
+        ):
+            builder_no_basic_constraints.build_client_verifier().verify(
+                self.leaf, []
+            )
+
+    def test_require_present(self):
+        default_builder = (
+            PolicyBuilder().store(self.store).time(self.validation_time)
+        )
+        builder_require_subject_keyid = default_builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(),
+            ExtensionPolicy.webpki_defaults_ee().require_present(
+                x509.SubjectKeyIdentifier,
+                Criticality.AGNOSTIC,
+                self._make_validator_cb(x509.SubjectKeyIdentifier),
+            ),
+        )
+        builder_require_san = default_builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(),
+            ExtensionPolicy.webpki_defaults_ee().require_present(
+                x509.SubjectAlternativeName,
+                Criticality.AGNOSTIC,
+                self._make_validator_cb(x509.SubjectAlternativeName),
+            ),
+        )
+
+        default_builder.build_client_verifier().verify(self.leaf, [])
+        builder_require_san.build_client_verifier().verify(self.leaf, [])
+
+        with pytest.raises(
+            VerificationError,
+            match="missing required extension",
+        ):
+            builder_require_subject_keyid.build_client_verifier().verify(
+                self.leaf, []
+            )
+
+    def test_criticality_constraints(self):
+        builder = PolicyBuilder().store(self.store).time(self.validation_time)
+        noncrit_key_usage_builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(),
+            ExtensionPolicy.webpki_defaults_ee().require_present(
+                x509.KeyUsage, Criticality.NON_CRITICAL, None
+            ),
+        )
+        critical_eku_builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(),
+            ExtensionPolicy.webpki_defaults_ee().require_present(
+                x509.ExtendedKeyUsage, Criticality.CRITICAL, None
+            ),
+        )
+
+        def make_pattern(extension_type: Type[ExtensionType]):
+            return (
+                f"invalid extension: {extension_type.oid.dotted_string}:"
+                " Certificate extension has incorrect criticality"
+            )
+
+        builder.build_client_verifier().verify(self.leaf, [])
+        with pytest.raises(
+            VerificationError,
+            match=make_pattern(x509.KeyUsage),
+        ):
+            noncrit_key_usage_builder.build_client_verifier().verify(
+                self.leaf, []
+            )
+        with pytest.raises(
+            VerificationError,
+            match=make_pattern(x509.ExtendedKeyUsage),
+        ):
+            critical_eku_builder.build_client_verifier().verify(self.leaf, [])
+
+    @pytest.mark.parametrize(
+        "extension_type",
+        SUPPORTED_EXTENSION_TYPES,
+    )
+    def test_custom_cb_pass(self, extension_type: Type[x509.ExtensionType]):
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
+
+        ee_ext_policy = ee_ext_policy.may_be_present(
+            extension_type,
+            Criticality.AGNOSTIC,
+            self._make_validator_cb(extension_type),
+        )
+
+        builder = PolicyBuilder().store(self.store)
+        builder = builder.time(self.validation_time).max_chain_depth(16)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+
+        builder.build_client_verifier().verify(self.leaf, [])
+
+        path = builder.build_server_verifier(
+            DNSName("cryptography.io")
+        ).verify(self.leaf, [])
+        assert path == [self.leaf, self.ca]
+
+    @pytest.mark.parametrize(
+        "extension_type",
+        SUPPORTED_EXTENSION_TYPES,
+    )
+    def test_custom_cb_exception_fails_verification(self, extension_type):
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
+
+        def validator(*_):
+            raise ValueError("test")
+
+        ca_ext_policy = ca_ext_policy.may_be_present(
+            extension_type,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+
+        builder = PolicyBuilder().store(self.store).time(self.validation_time)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+
+        for verifier in (
+            builder.build_client_verifier(),
+            builder.build_server_verifier(DNSName("cryptography.io")),
+        ):
+            with pytest.raises(
+                VerificationError,
+                match="Python extension validator failed: ValueError: test",
+            ):
+                verifier.verify(self.leaf, [])
+
+    def test_custom_cb_no_retval_enforced(self):
+        ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
+        ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
+
+        def validator(*_):
+            return False
+
+        ee_ext_policy = ee_ext_policy.may_be_present(
+            x509.ExtendedKeyUsage,
+            Criticality.AGNOSTIC,
+            validator,
+        )
+
+        builder = PolicyBuilder().store(self.store).time(self.validation_time)
+        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+
+        for verifier in (
+            builder.build_client_verifier(),
+            builder.build_server_verifier(DNSName("cryptography.io")),
+        ):
+            with pytest.raises(
+                VerificationError,
+                match="Python validator must return None.",
+            ):
+                verifier.verify(self.leaf, [])
