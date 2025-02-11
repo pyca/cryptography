@@ -324,22 +324,23 @@ class TestCustomExtensionPolicies:
     def test_builder_methods(self):
         ext_policy = ExtensionPolicy.permit_all()
         ext_policy = ext_policy.require_not_present(x509.BasicConstraints)
-        with pytest.raises(
-            ValueError, match=x509.BasicConstraints.oid.dotted_string
-        ):
-            ext_policy.require_not_present(x509.BasicConstraints)
-        with pytest.raises(
-            ValueError, match=x509.BasicConstraints.oid.dotted_string
-        ):
-            ext_policy.may_be_present(
-                x509.BasicConstraints, Criticality.NON_CRITICAL, None
-            )
-        with pytest.raises(
-            ValueError, match=x509.BasicConstraints.oid.dotted_string
-        ):
-            ext_policy.require_present(
-                x509.BasicConstraints, Criticality.CRITICAL, None
-            )
+
+        def ensure_duplicate_ext_throws(method, *args):
+            oid_str = x509.BasicConstraints.oid.dotted_string
+            with pytest.raises(
+                ValueError,
+                match="ExtensionPolicy already configured for"
+                f" extension with OID {oid_str}",
+            ):
+                method(ext_policy, x509.BasicConstraints, *args)
+
+        ensure_duplicate_ext_throws(ExtensionPolicy.require_not_present)
+        ensure_duplicate_ext_throws(
+            ExtensionPolicy.may_be_present, Criticality.AGNOSTIC, None
+        )
+        ensure_duplicate_ext_throws(
+            ExtensionPolicy.require_present, Criticality.AGNOSTIC, None
+        )
 
         with pytest.raises(TypeError):
 
@@ -354,12 +355,12 @@ class TestCustomExtensionPolicies:
 
     def test_unsupported_extension(self):
         ext_policy = ExtensionPolicy.permit_all()
-        message = (
+        pattern = (
             f"Unsupported extension OID: {x509.Admissions.oid.dotted_string}"
         )
         with pytest.raises(
             ValueError,
-            match=message,
+            match=pattern,
         ):
             ext_policy.may_be_present(
                 x509.Admissions,
