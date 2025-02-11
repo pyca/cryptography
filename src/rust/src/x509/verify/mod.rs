@@ -193,10 +193,10 @@ impl PolicyBuilder {
                 self.max_chain_depth,
                 self.ca_ext_policy
                     .as_ref()
-                    .map(|p| p.get().clone_rust_policy()),
+                    .map(|p| p.get().clone_inner_policy()),
                 self.ee_ext_policy
                     .as_ref()
-                    .map(|p| p.get().clone_rust_policy()),
+                    .map(|p| p.get().clone_inner_policy()),
             )
         });
 
@@ -249,10 +249,10 @@ impl PolicyBuilder {
                     self.max_chain_depth,
                     self.ca_ext_policy
                         .as_ref()
-                        .map(|p| p.get().clone_rust_policy()),
+                        .map(|p| p.get().clone_inner_policy()),
                     self.ee_ext_policy
                         .as_ref()
-                        .map(|p| p.get().clone_rust_policy()),
+                        .map(|p| p.get().clone_inner_policy()),
                 ))
             })?;
 

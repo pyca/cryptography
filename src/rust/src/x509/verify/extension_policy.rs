@@ -7,16 +7,16 @@ use cryptography_x509_verification::policy::ExtensionPolicy;
     name = "ExtensionPolicy"
 )]
 pub(crate) struct PyExtensionPolicy {
-    rust_policy: ExtensionPolicy<'static, PyCryptoOps>,
+    inner_policy: ExtensionPolicy<'static, PyCryptoOps>,
 }
 
 impl PyExtensionPolicy {
-    pub(super) fn clone_rust_policy(&self) -> ExtensionPolicy<'static, PyCryptoOps> {
-        self.rust_policy.clone()
+    pub(super) fn clone_inner_policy(&self) -> ExtensionPolicy<'static, PyCryptoOps> {
+        self.inner_policy.clone()
     }
 
-    fn new(rust_policy: ExtensionPolicy<'static, PyCryptoOps>) -> Self {
-        PyExtensionPolicy { rust_policy }
+    fn new(inner_policy: ExtensionPolicy<'static, PyCryptoOps>) -> Self {
+        PyExtensionPolicy { inner_policy }
     }
 }
 
