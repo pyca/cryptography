@@ -123,7 +123,7 @@ nh3==0.2.20 ; python_full_version >= '3.8'
     # via readme-renderer
 nox==2024.4.15 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
-nox==2024.10.9 ; python_full_version >= '3.8'
+nox==2025.2.9 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 packaging==24.0 ; python_full_version < '3.8'
     # via
