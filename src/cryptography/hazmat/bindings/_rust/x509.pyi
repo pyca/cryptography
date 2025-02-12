@@ -221,6 +221,27 @@ class Policy:
     @property
     def minimum_rsa_modulus(self) -> int: ...
 
+class Criticality:
+    CRITICAL: Criticality
+    AGNOSTIC: Criticality
+    NON_CRITICAL: Criticality
+
+type MaybeExtensionValidatorCallback[T: x509.ExtensionType] = typing.Callable[
+    [
+        Policy,
+        x509.Certificate,
+        T | None,
+    ],
+    None,
+]
+
+type PresentExtensionValidatorCallback[T: x509.ExtensionType] = (
+    typing.Callable[
+        [Policy, x509.Certificate, T],
+        None,
+    ]
+)
+
 class ExtensionPolicy:
     @staticmethod
     def permit_all() -> ExtensionPolicy: ...
@@ -228,6 +249,21 @@ class ExtensionPolicy:
     def webpki_defaults_ca() -> ExtensionPolicy: ...
     @staticmethod
     def webpki_defaults_ee() -> ExtensionPolicy: ...
+    def require_not_present(
+        self, extension_type: type[x509.ExtensionType]
+    ) -> ExtensionPolicy: ...
+    def may_be_present[T: x509.ExtensionType](
+        self,
+        extension_type: type[T],
+        criticality: Criticality,
+        validator: MaybeExtensionValidatorCallback[T] | None,
+    ) -> ExtensionPolicy: ...
+    def require_present[T: x509.ExtensionType](
+        self,
+        extension_type: type[T],
+        criticality: Criticality,
+        validator: PresentExtensionValidatorCallback[T] | None,
+    ) -> ExtensionPolicy: ...
 
 class VerifiedClient:
     @property

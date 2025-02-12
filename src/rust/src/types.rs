@@ -181,6 +181,9 @@ pub static REASON_FLAGS: LazyPyImport = LazyPyImport::new("cryptography.x509", &
 pub static ATTRIBUTE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Attribute"]);
 pub static ATTRIBUTES: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Attributes"]);
 
+pub static EXTENSION_TYPE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["ExtensionType"]);
+
 pub static CRL_NUMBER: LazyPyImport = LazyPyImport::new("cryptography.x509", &["CRLNumber"]);
 pub static DELTA_CRL_INDICATOR: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["DeltaCRLIndicator"]);
