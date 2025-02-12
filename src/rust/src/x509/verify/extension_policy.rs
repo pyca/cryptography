@@ -74,20 +74,17 @@ impl PyExtensionPolicy {
         }
     }
 
-    fn check_duplicate_oid(&self, oid: &asn1::ObjectIdentifier) -> PyResult<()> {
-        if self.already_set_oids.contains(oid) {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "ExtensionPolicy already configured for extension with OID {oid}"
-            )));
-        }
-        Ok(())
-    }
-
     fn with_assigned_validator(
         &self,
         oid: asn1::ObjectIdentifier,
         validator: ExtensionValidator<'static, PyCryptoOps>,
     ) -> PyResult<PyExtensionPolicy> {
+        if self.already_set_oids.contains(&oid) {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "ExtensionPolicy already configured for extension with OID {oid}"
+            )));
+        }
+
         let mut policy = self.inner_policy.clone();
         match oid {
             AUTHORITY_INFORMATION_ACCESS_OID => policy.authority_information_access = validator,
@@ -151,7 +148,6 @@ impl PyExtensionPolicy {
         extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(oid, ExtensionValidator::NotPresent)
     }
 
@@ -164,7 +160,6 @@ impl PyExtensionPolicy {
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(
             oid,
             ExtensionValidator::MaybePresent {
@@ -183,7 +178,6 @@ impl PyExtensionPolicy {
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.check_duplicate_oid(&oid)?;
         self.with_assigned_validator(
             oid,
             ExtensionValidator::Present {
@@ -238,10 +232,6 @@ fn wrap_present_validator_callback(
     )
 }
 
-fn make_validation_error(msg: String) -> ValidationError<'static, PyCryptoOps> {
-    ValidationError::new(ValidationErrorKind::Other(msg))
-}
-
 fn make_py_extension<'chain, 'p>(
     py: pyo3::Python<'p>,
     ext: Option<&Extension<'p>>,
@@ -249,7 +239,9 @@ fn make_py_extension<'chain, 'p>(
     Ok(match ext {
         None => None,
         Some(ext) => parse_cert_ext(py, ext).map_err(|e| {
-            make_validation_error(format!("{e} (while converting Extension to Python object)"))
+            ValidationError::new(ValidationErrorKind::Other(format!(
+                "{e} (while converting Extension to Python object)"
+            )))
         })?,
     })
 }
@@ -259,15 +251,17 @@ fn invoke_py_validator_callback<'py>(
     py_cb: &pyo3::PyObject,
     args: impl pyo3::IntoPyObject<'py, Target = pyo3::types::PyTuple>,
 ) -> ValidationResult<'static, (), PyCryptoOps> {
-    let result = py_cb
-        .bind(py)
-        .call1(args)
-        .map_err(|e| make_validation_error(format!("Python extension validator failed: {}", e)))?;
+    let result = py_cb.bind(py).call1(args).map_err(|e| {
+        ValidationError::new(ValidationErrorKind::Other(format!(
+            "Python extension validator failed: {}",
+            e
+        )))
+    })?;
 
     if !result.is_none() {
-        Err(make_validation_error(
-            "Python validator must return None.".to_string(),
-        ))
+        let error_kind =
+            ValidationErrorKind::Other("Python validator must return None.".to_string());
+        Err(ValidationError::new(error_kind))
     } else {
         Ok(())
     }
