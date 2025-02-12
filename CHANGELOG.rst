@@ -19,6 +19,13 @@ Changelog
   provided (previously no exception was raised), and raises a ``TypeError`` if
   the key is encrypted but no password is provided (previously a ``ValueError``
   was raised).
+* We significantly refactored how private key loading (
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`)
+  works. This is intended to be backwards compatible for all well-formed keys,
+  therefore if you discover a key that now raises an exception, please file a
+  bug with instructions for reproducing.
 * Added ``unsafe_skip_rsa_key_validation`` keyword-argument to
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`.
 * Added :class:`~cryptography.hazmat.primitives.hashes.XOFHash` to support
