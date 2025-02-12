@@ -59,10 +59,11 @@ def tests(session: nox.Session) -> None:
         pathlib.Path(".") / ".rust-cov" / str(uuid.uuid4())
     ).absolute()
     if session.name != "tests-nocoverage":
+        rustflags = session.env.get("RUSTFLAGS", "")
+        assert rustflags is not None
         session.env.update(
             {
-                "RUSTFLAGS": "-Cinstrument-coverage "
-                + session.env.get("RUSTFLAGS", ""),
+                "RUSTFLAGS": f"-Cinstrument-coverage {rustflags}",
                 "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
             }
         )
@@ -218,10 +219,11 @@ def rust(session: nox.Session) -> None:
     prof_location = (
         pathlib.Path(".") / ".rust-cov" / str(uuid.uuid4())
     ).absolute()
+    rustflags = session.env.get("RUSTFLAGS", "")
+    assert rustflags is not None
     session.env.update(
         {
-            "RUSTFLAGS": "-Cinstrument-coverage  "
-            + session.env.get("RUSTFLAGS", ""),
+            "RUSTFLAGS": f"-Cinstrument-coverage  {rustflags}",
             "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
         }
     )
