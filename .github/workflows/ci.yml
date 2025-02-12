@@ -24,6 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
+          - {VERSION: "3.7", NOXSESSION: "flake"}
           - {VERSION: "3.12", NOXSESSION: "flake"}
           - {VERSION: "3.12", NOXSESSION: "rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.4.1"}}
