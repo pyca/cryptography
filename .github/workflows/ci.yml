@@ -19,7 +19,7 @@ env:
 
 jobs:
   linux:
-    runs-on: ${{ matrix.PYTHON.RUNNER || "ubuntu-latest" }}
+    runs-on: ${{ matrix.PYTHON.RUNNER || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
