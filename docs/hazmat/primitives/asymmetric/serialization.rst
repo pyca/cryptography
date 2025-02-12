@@ -946,6 +946,42 @@ file suffix.
         ...     b"friendlyname", key, cert, None, encryption
         ... )
 
+.. function:: serialize_java_truststore(certs, encryption_algorithm)
+
+    .. versionadded:: 45.0.0
+
+    .. warning::
+
+        PKCS12 encryption is typically not secure and should not be used as a
+        security mechanism. Wrap a PKCS12 blob in a more secure envelope if you
+        need to store or send it safely.
+
+    Serialize a PKCS12 blob containing provided certificates. Java expects an
+    internal flag to denote truststore usage, which this function adds.
+
+    :param certs: A set of certificates to also include in the structure.
+    :type certs:
+
+        A list of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        instances.
+
+    :param encryption_algorithm: The encryption algorithm that should be used
+        for the key and certificate. An instance of an object conforming to the
+        :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+        interface. PKCS12 encryption is typically **very weak** and should not
+        be used as a security boundary.
+
+    :return bytes: Serialized PKCS12.
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives.serialization import BestAvailableEncryption, pkcs12
+        >>> cert = x509.load_pem_x509_certificate(ca_cert)
+        >>> p12 = pkcs12.serialize_java_truststore(
+        ...     [pkcs12.PKCS12Certificate(cert, b"friendlyname")], BestAvailableEncryption(b"password")
+        ... )
+
 .. class:: PKCS12Certificate
 
     .. versionadded:: 36.0.0
