@@ -347,7 +347,7 @@ the root of trust:
 
         :returns: An instance of :class:`ExtensionPolicy`
 
-    .. method:: may_be_present(oid, criticality, validator_cb)
+    .. method:: may_be_present(extension_type, criticality, validator_cb)
 
         Specifies that the extension identified by the given OID is optional.
         If it is present, it must conform to the given criticality constraint. 
@@ -357,14 +357,16 @@ the root of trust:
         when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
         that uses the extension policy. For details on the callback signature, see :type:`MaybeExtensionValidatorCallback`.
 
-        :param ObjectIdentifier oid: The OID of the extension that may be present
+        :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
+            indicating which extension may be present.
         :param Criticality criticality: The criticality of the extension
         :param validator_cb: An optional Python callback to validate the extension value. 
+            Must accept extensions of type `extension_type`.
         :type validator_cb: :type:`MaybeExtensionValidatorCallback` or None
 
         :returns: An instance of :class:`ExtensionPolicy`
 
-    .. method:: require_present(oid, criticality, validator_cb)
+    .. method:: require_present(extension_type, criticality, validator_cb)
 
         Specifies that the extension identified by the given OID must be present and conform to the given criticality constraint.
         An optional validator callback may be provided.
@@ -373,9 +375,11 @@ the root of trust:
         when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
         that uses the extension policy. For details on the callback signature, see :type:`PresentExtensionValidatorCallback`.
 
-        :param ObjectIdentifier oid: The OID of the extension that must be present
+        :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
+            indicating which extension is required to be present.
         :param Criticality criticality: The criticality of the extension
-        :param validator_cb: An optional Python callback to validate the extension
+        :param validator_cb: An optional Python callback to validate the extension value.
+            Must accept extensions of type `extension_type`.
         :type validator_cb: :type:`PresentExtensionValidatorCallback` or None
 
         :returns: An instance of :class:`ExtensionPolicy`
