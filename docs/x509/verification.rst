@@ -134,8 +134,9 @@ the root of trust:
     .. versionadded:: 43.0.0
 
     .. versionchanged:: 45.0.0
-        ``verification_time`` and ``max_chain_depth`` were replaced by the 
-        ``policy`` property that provides access to these values.
+        ``verification_time`` and ``max_chain_depth`` were deprecated and will be 
+        removed in version 46.0.0.
+        The new ``policy`` property should be used to access these values instead.
 
     A ClientVerifier verifies client certificates.
 
@@ -150,7 +151,7 @@ the root of trust:
 
         :type: :class:`Policy`
 
-        The policy used by the verifier. Can be used to access verification time, chain depth, etc.
+        The policy used by the verifier. Can be used to access verification time, maximum chain depth, etc.
 
     .. attribute:: store
 
@@ -180,8 +181,9 @@ the root of trust:
     .. versionadded:: 42.0.0
 
     .. versionchanged:: 45.0.0
-        ``subject``, ``verification_time`` and ``max_chain_depth`` were replaced by the 
-        ``policy`` property that provides access to these values.
+        ``subject``, ``verification_time`` and ``max_chain_depth`` were deprecated and will be 
+        removed in version 46.0.0.
+        The new ``policy`` property should be used to access these values instead.
 
 
     A ServerVerifier verifies server certificates.
@@ -198,7 +200,7 @@ the root of trust:
 
         :type: :class:`Policy`
 
-        The policy used by the verifier. Can be used to access verification time, chain depth, etc.
+        The policy used by the verifier. Can be used to access verification time, maximum chain depth, etc.
 
     .. attribute:: store
 
