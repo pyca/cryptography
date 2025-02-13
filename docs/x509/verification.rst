@@ -311,7 +311,7 @@ the root of trust:
     extension policies, and a builder-style interface for modifying them.
 
     .. note:: Calling any of the builder methods (:meth:`require_not_present`, :meth:`may_be_present`, or :meth:`require_present`)
-        multiple times with the same extension OID will raise an exception.
+        multiple times with the same extension type will raise an exception.
 
     .. staticmethod:: permit_all()
 
@@ -339,17 +339,17 @@ the root of trust:
 
         :returns: An instance of :class:`ExtensionPolicy`
 
-    .. method:: require_not_present(oid)
+    .. method:: require_not_present(extension_type)
 
-        Specifies that the extension identified by the given OID must not be present (must be absent). 
+        Specifies that the extension identified by `extension_type` must not be present (must be absent).
 
-        :param oid: The OID of the extension that must not be present.
+        :param type[ExtensionType] extension_type: The extension_type of the extension that must not be present.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
     .. method:: may_be_present(extension_type, criticality, validator_cb)
 
-        Specifies that the extension identified by the given OID is optional.
+        Specifies that the extension identified by `extension_type` is optional.
         If it is present, it must conform to the given criticality constraint. 
         An optional validator callback may be provided.
 
@@ -368,8 +368,8 @@ the root of trust:
 
     .. method:: require_present(extension_type, criticality, validator_cb)
 
-        Specifies that the extension identified by the given OID must be present and conform to the given criticality constraint.
-        An optional validator callback may be provided.
+        Specifies that the extension identified by `extension_type`` must be present
+        and conform to the given criticality constraint. An optional validator callback may be provided.
 
         If a validator callback is provided, the callback will be invoked 
         when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
