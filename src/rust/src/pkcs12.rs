@@ -413,10 +413,11 @@ fn serialize_bags<'p>(
         let mut plain_safebags = vec![];
         for safebag in safebags {
             match safebag.bag_value.as_inner() {
-                cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(_) => &mut shrouded_safebags,
-                _ => &mut plain_safebags,
+                cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(_) => {
+                    shrouded_safebags.push(safebag)
+                }
+                _ => plain_safebags.push(safebag),
             }
-            .push(safebag);
         }
         if !plain_safebags.is_empty() {
             plain_safebag_contents =
