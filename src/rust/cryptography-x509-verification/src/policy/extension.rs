@@ -477,7 +477,7 @@ mod ee {
         };
 
         // NOTE: policy.subject is checked against SAN elsewhere (see `ExtensionPolicy::permits`)
-        // since we want to check that even if a custom ExtensionPolicy with a lax validator is used.
+        // since we always want to check that, even if a custom ExtensionPolicy with a lax validator is used.
 
         Ok(())
     }
