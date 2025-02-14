@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use cryptography_x509::common::Utf8StoredBMPString;
-use cryptography_x509::pkcs12::ANY_EXTENDED_KEY_USAGE;
+use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
@@ -276,7 +276,7 @@ fn pkcs12_attributes<'a>(
         attrs.push(cryptography_x509::pkcs12::Attribute {
             _attr_id: asn1::DefinedByMarker::marker(),
             attr_values: cryptography_x509::pkcs12::AttributeSet::JDKTruststoreUsage(
-                asn1::SetOfWriter::new([ANY_EXTENDED_KEY_USAGE]),
+                asn1::SetOfWriter::new([EKU_ANY_KEY_USAGE_OID]),
             ),
         });
     }
@@ -539,18 +539,13 @@ fn serialize_safebags<'p>(
 #[pyo3(signature = (certs, encryption_algorithm))]
 fn serialize_java_truststore<'p>(
     py: pyo3::Python<'p>,
-    certs: pyo3::Bound<'_, pyo3::PyAny>,
+    certs: Vec<pyo3::Py<PKCS12Certificate>>,
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
     let mut safebags = vec![];
-    let mut ca_certs = vec![];
 
-    for cert in certs.try_iter()? {
-        ca_certs.push(cert?.extract::<pyo3::Py<PKCS12Certificate>>()?);
-    }
-
-    for cert in &ca_certs {
+    for cert in &certs {
         safebags.push(cert_to_bag(
             cert.get().certificate.get(),
             cert.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
