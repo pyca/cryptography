@@ -495,13 +495,26 @@ class TestPKCS12Creation:
             exc.value
         )
 
-    def test_generate_no_cert(self, backend):
+    @pytest.mark.parametrize(
+        ("encryption_algorithm", "password"),
+        [
+            (serialization.BestAvailableEncryption(b"password"), b"password"),
+            (
+                serialization.PrivateFormat.PKCS12.encryption_builder().build(
+                    b"not a password"
+                ),
+                b"not a password",
+            ),
+            (serialization.NoEncryption(), None),
+        ],
+    )
+    def test_generate_no_cert(self, backend, encryption_algorithm, password):
         _, key = _load_ca(backend)
         p12 = serialize_key_and_certificates(
-            None, key, None, None, serialization.NoEncryption()
+            None, key, None, None, encryption_algorithm
         )
         parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
-            p12, None, backend
+            p12, password, backend
         )
         assert parsed_cert is None
         assert isinstance(parsed_key, ec.EllipticCurvePrivateKey)

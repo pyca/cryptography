@@ -297,29 +297,31 @@ fn cert_to_bag<'a>(
     })
 }
 
+struct KeySerializationEncryption<'a> {
+    password: pyo3::pybacked::PyBackedBytes,
+    mac_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
+    mac_kdf_iter: u64,
+    cipher_kdf_iter: u64,
+    encryption_algorithm: Option<EncryptionAlgorithm>,
+}
+
 #[allow(clippy::type_complexity)]
 fn decode_encryption_algorithm<'a>(
     py: pyo3::Python<'a>,
     encryption_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
-) -> CryptographyResult<(
-    pyo3::pybacked::PyBackedBytes,
-    pyo3::Bound<'a, pyo3::PyAny>,
-    u64,
-    u64,
-    Option<EncryptionAlgorithm>,
-)> {
+) -> CryptographyResult<KeySerializationEncryption<'a>> {
     let default_hmac_alg = types::SHA256.get(py)?.call0()?;
     let default_hmac_kdf_iter = 2048;
     let default_cipher_kdf_iter = 20000;
 
     if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
-        Ok((
-            pyo3::types::PyBytes::new(py, b"").extract()?,
-            default_hmac_alg,
-            default_hmac_kdf_iter,
-            default_cipher_kdf_iter,
-            None,
-        ))
+        Ok(KeySerializationEncryption {
+            password: pyo3::types::PyBytes::new(py, b"").extract()?,
+            mac_algorithm: default_hmac_alg,
+            mac_kdf_iter: default_hmac_kdf_iter,
+            cipher_kdf_iter: default_cipher_kdf_iter,
+            encryption_algorithm: None,
+        })
     } else if encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
         && encryption_algorithm
             .getattr(pyo3::intern!(py, "_format"))?
@@ -354,25 +356,25 @@ fn decode_encryption_algorithm<'a>(
             default_cipher_kdf_iter
         };
 
-        Ok((
-            encryption_algorithm
+        Ok(KeySerializationEncryption {
+            password: encryption_algorithm
                 .getattr(pyo3::intern!(py, "password"))?
                 .extract()?,
-            hmac_alg,
-            default_hmac_kdf_iter,
+            mac_algorithm: hmac_alg,
+            mac_kdf_iter: default_hmac_kdf_iter,
             cipher_kdf_iter,
-            Some(cipher),
-        ))
+            encryption_algorithm: Some(cipher),
+        })
     } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)? {
-        Ok((
-            encryption_algorithm
+        Ok(KeySerializationEncryption {
+            password: encryption_algorithm
                 .getattr(pyo3::intern!(py, "password"))?
                 .extract()?,
-            default_hmac_alg,
-            default_hmac_kdf_iter,
-            default_cipher_kdf_iter,
-            Some(EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
-        ))
+            mac_algorithm: default_hmac_alg,
+            mac_kdf_iter: default_hmac_kdf_iter,
+            cipher_kdf_iter: default_cipher_kdf_iter,
+            encryption_algorithm: Some(EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
+        })
     } else {
         Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Unsupported key encryption type"),
@@ -386,6 +388,139 @@ enum CertificateOrPKCS12Certificate {
     PKCS12Certificate(pyo3::Py<PKCS12Certificate>),
 }
 
+fn serialize_bags<'p>(
+    py: pyo3::Python<'p>,
+    safebags: &[cryptography_x509::pkcs12::SafeBag<'_>],
+    encryption_details: &KeySerializationEncryption<'_>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let password = std::str::from_utf8(&encryption_details.password)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
+    let mut auth_safe_contents = vec![];
+    let (
+        plain_safebag_contents,
+        shrouded_safebag_contents,
+        auth_safe_salt,
+        auth_safe_iv,
+        auth_safe_ciphertext,
+    );
+
+    if let Some(e) = &encryption_details.encryption_algorithm {
+        let mut shrouded_safebags = vec![];
+        let mut plain_safebags = vec![];
+        for safebag in safebags {
+            match safebag.bag_value.as_inner() {
+                cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(_) => {
+                    shrouded_safebags.push(safebag)
+                }
+                _ => plain_safebags.push(safebag),
+            }
+        }
+        if !plain_safebags.is_empty() {
+            plain_safebag_contents =
+                asn1::write_single(&asn1::SequenceOfWriter::new(plain_safebags))?;
+            auth_safe_salt = types::OS_URANDOM
+                .get(py)?
+                .call1((e.salt_length(),))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            auth_safe_iv = types::OS_URANDOM
+                .get(py)?
+                .call1((16,))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?;
+            auth_safe_ciphertext = e.encrypt(
+                py,
+                password,
+                encryption_details.cipher_kdf_iter,
+                &auth_safe_salt,
+                &auth_safe_iv,
+                &plain_safebag_contents,
+            )?;
+
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+                _content_type: asn1::DefinedByMarker::marker(),
+                content: cryptography_x509::pkcs7::Content::EncryptedData(asn1::Explicit::new(
+                    cryptography_x509::pkcs7::EncryptedData {
+                        version: 0,
+                        encrypted_content_info: cryptography_x509::pkcs7::EncryptedContentInfo {
+                            content_type: cryptography_x509::pkcs7::PKCS7_DATA_OID,
+                            content_encryption_algorithm: e.algorithm_identifier(
+                                encryption_details.cipher_kdf_iter,
+                                &auth_safe_salt,
+                                &auth_safe_iv,
+                            ),
+                            encrypted_content: Some(&auth_safe_ciphertext),
+                        },
+                    },
+                )),
+            });
+        }
+        if !shrouded_safebags.is_empty() {
+            shrouded_safebag_contents =
+                asn1::write_single(&asn1::SequenceOfWriter::new(shrouded_safebags))?;
+            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+                _content_type: asn1::DefinedByMarker::marker(),
+                content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
+                    &shrouded_safebag_contents,
+                ))),
+            });
+        }
+    } else {
+        plain_safebag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(safebags))?;
+        auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
+            _content_type: asn1::DefinedByMarker::marker(),
+            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
+                &plain_safebag_contents,
+            ))),
+        });
+    }
+
+    let auth_safe_content = asn1::write_single(&asn1::SequenceOfWriter::new(auth_safe_contents))?;
+
+    let salt = types::OS_URANDOM
+        .get(py)?
+        .call1((8,))?
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
+    let mac_algorithm_md =
+        hashes::message_digest_from_algorithm(py, &encryption_details.mac_algorithm)?;
+    let mac_key = cryptography_crypto::pkcs12::kdf(
+        password,
+        &salt,
+        cryptography_crypto::pkcs12::KDF_MAC_KEY_ID,
+        encryption_details.mac_kdf_iter,
+        mac_algorithm_md.size(),
+        mac_algorithm_md,
+    )?;
+    let mac_digest = {
+        let mut h = hmac::Hmac::new_bytes(py, &mac_key, &encryption_details.mac_algorithm)?;
+        h.update_bytes(&auth_safe_content)?;
+        h.finalize(py)?
+    };
+    let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
+        [&*encryption_details
+            .mac_algorithm
+            .getattr(pyo3::intern!(py, "name"))?
+            .extract::<pyo3::pybacked::PyBackedStr>()?]
+        .clone();
+
+    let p12 = cryptography_x509::pkcs12::Pfx {
+        version: 3,
+        auth_safe: cryptography_x509::pkcs7::ContentInfo {
+            _content_type: asn1::DefinedByMarker::marker(),
+            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
+                &auth_safe_content,
+            ))),
+        },
+        mac_data: Some(cryptography_x509::pkcs12::MacData {
+            mac: cryptography_x509::pkcs7::DigestInfo {
+                algorithm: mac_algorithm_identifier,
+                digest: mac_digest.as_bytes(),
+            },
+            salt: &salt,
+            iterations: encryption_details.mac_kdf_iter,
+        }),
+    };
+    Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&p12)?))
+}
+
 #[pyo3::pyfunction]
 #[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
 fn serialize_key_and_certificates<'p>(
@@ -396,28 +531,15 @@ fn serialize_key_and_certificates<'p>(
     cas: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let (password, mac_algorithm, mac_kdf_iter, cipher_kdf_iter, encryption_algorithm) =
-        decode_encryption_algorithm(py, encryption_algorithm)?;
-
-    let password = std::str::from_utf8(&password)
+    let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
+    let password = std::str::from_utf8(&encryption_details.password)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
 
-    let mut auth_safe_contents = vec![];
-    let (
-        cert_bag_contents,
-        cert_salt,
-        cert_iv,
-        cert_ciphertext,
-        key_bag_contents,
-        key_salt,
-        key_iv,
-        key_ciphertext,
-    );
+    let mut safebags = vec![];
+    let (key_salt, key_iv, key_ciphertext, pkcs8_bytes);
     let mut ca_certs = vec![];
     let mut key_id = None;
     if cert.is_some() || cas.is_some() {
-        let mut cert_bags = vec![];
-
         if let Some(cert) = cert {
             if let Some(ref key) = key {
                 if !cert
@@ -433,7 +555,7 @@ fn serialize_key_and_certificates<'p>(
                 key_id = Some(cert.fingerprint(py, &types::SHA1.get(py)?.call0()?)?);
             }
 
-            cert_bags.push(cert_to_bag(
+            safebags.push(cert_to_bag(
                 cert,
                 name,
                 key_id.as_ref().map(|v| v.as_bytes()),
@@ -456,53 +578,8 @@ fn serialize_key_and_certificates<'p>(
                         None,
                     )?,
                 };
-                cert_bags.push(bag);
+                safebags.push(bag);
             }
-        }
-
-        cert_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(cert_bags))?;
-        if let Some(e) = &encryption_algorithm {
-            cert_salt = types::OS_URANDOM
-                .get(py)?
-                .call1((e.salt_length(),))?
-                .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            cert_iv = types::OS_URANDOM
-                .get(py)?
-                .call1((16,))?
-                .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            cert_ciphertext = e.encrypt(
-                py,
-                password,
-                cipher_kdf_iter,
-                &cert_salt,
-                &cert_iv,
-                &cert_bag_contents,
-            )?;
-
-            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-                _content_type: asn1::DefinedByMarker::marker(),
-                content: cryptography_x509::pkcs7::Content::EncryptedData(asn1::Explicit::new(
-                    cryptography_x509::pkcs7::EncryptedData {
-                        version: 0,
-                        encrypted_content_info: cryptography_x509::pkcs7::EncryptedContentInfo {
-                            content_type: cryptography_x509::pkcs7::PKCS7_DATA_OID,
-                            content_encryption_algorithm: e.algorithm_identifier(
-                                cipher_kdf_iter,
-                                &cert_salt,
-                                &cert_iv,
-                            ),
-                            encrypted_content: Some(&cert_ciphertext),
-                        },
-                    },
-                )),
-            })
-        } else {
-            auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-                _content_type: asn1::DefinedByMarker::marker(),
-                content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                    &cert_bag_contents,
-                ))),
-            });
         }
     }
 
@@ -511,14 +588,14 @@ fn serialize_key_and_certificates<'p>(
         let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
         let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
 
-        let pkcs8_bytes = key
+        pkcs8_bytes = key
             .call_method1(
                 pyo3::intern!(py, "private_bytes"),
                 (der, pkcs8, no_encryption),
             )?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
-        let key_bag = if let Some(e) = encryption_algorithm {
+        let key_bag = if let Some(ref e) = encryption_details.encryption_algorithm {
             key_salt = types::OS_URANDOM
                 .get(py)?
                 .call1((e.salt_length(),))?
@@ -530,7 +607,7 @@ fn serialize_key_and_certificates<'p>(
             key_ciphertext = e.encrypt(
                 py,
                 password,
-                cipher_kdf_iter,
+                encryption_details.cipher_kdf_iter,
                 &key_salt,
                 &key_iv,
                 &pkcs8_bytes,
@@ -542,7 +619,7 @@ fn serialize_key_and_certificates<'p>(
                     cryptography_x509::pkcs12::BagValue::ShroudedKeyBag(
                         cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
                             encryption_algorithm: e.algorithm_identifier(
-                                cipher_kdf_iter,
+                                encryption_details.cipher_kdf_iter,
                                 &key_salt,
                                 &key_iv,
                             ),
@@ -564,59 +641,10 @@ fn serialize_key_and_certificates<'p>(
             }
         };
 
-        key_bag_contents = asn1::write_single(&asn1::SequenceOfWriter::new([key_bag]))?;
-        auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
-            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                &key_bag_contents,
-            ))),
-        });
+        safebags.push(key_bag);
     }
 
-    let auth_safe_content = asn1::write_single(&asn1::SequenceOfWriter::new(auth_safe_contents))?;
-
-    let salt = types::OS_URANDOM
-        .get(py)?
-        .call1((8,))?
-        .extract::<pyo3::pybacked::PyBackedBytes>()?;
-    let mac_algorithm_md = hashes::message_digest_from_algorithm(py, &mac_algorithm)?;
-    let mac_key = cryptography_crypto::pkcs12::kdf(
-        password,
-        &salt,
-        cryptography_crypto::pkcs12::KDF_MAC_KEY_ID,
-        mac_kdf_iter,
-        mac_algorithm_md.size(),
-        mac_algorithm_md,
-    )?;
-    let mac_digest = {
-        let mut h = hmac::Hmac::new_bytes(py, &mac_key, &mac_algorithm)?;
-        h.update_bytes(&auth_safe_content)?;
-        h.finalize(py)?
-    };
-    let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
-        [&*mac_algorithm
-            .getattr(pyo3::intern!(py, "name"))?
-            .extract::<pyo3::pybacked::PyBackedStr>()?]
-        .clone();
-
-    let p12 = cryptography_x509::pkcs12::Pfx {
-        version: 3,
-        auth_safe: cryptography_x509::pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
-            content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
-                &auth_safe_content,
-            ))),
-        },
-        mac_data: Some(cryptography_x509::pkcs12::MacData {
-            mac: cryptography_x509::pkcs7::DigestInfo {
-                algorithm: mac_algorithm_identifier,
-                digest: mac_digest.as_bytes(),
-            },
-            salt: &salt,
-            iterations: mac_kdf_iter,
-        }),
-    };
-    Ok(pyo3::types::PyBytes::new(py, &asn1::write_single(&p12)?))
+    serialize_bags(py, &safebags, &encryption_details)
 }
 
 fn decode_p12(
