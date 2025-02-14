@@ -298,7 +298,7 @@ fn cert_to_bag<'a>(
 }
 
 struct KeySerializationEncryption<'a> {
-    password: String,
+    password: pyo3::pybacked::PyBackedBytes,
     mac_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
     mac_kdf_iter: u64,
     cipher_kdf_iter: u64,
@@ -316,7 +316,7 @@ fn decode_encryption_algorithm<'a>(
 
     if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
         Ok(KeySerializationEncryption {
-            password: "".to_string(),
+            password: pyo3::types::PyBytes::new(py, b"").extract()?,
             mac_algorithm: default_hmac_alg,
             mac_kdf_iter: default_hmac_kdf_iter,
             cipher_kdf_iter: default_cipher_kdf_iter,
@@ -356,26 +356,20 @@ fn decode_encryption_algorithm<'a>(
             default_cipher_kdf_iter
         };
 
-        let password = encryption_algorithm
-            .getattr(pyo3::intern!(py, "password"))?
-            .extract()?;
-        let password_string = String::from_utf8(password)
-            .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
         Ok(KeySerializationEncryption {
-            password: password_string,
+            password: encryption_algorithm
+                .getattr(pyo3::intern!(py, "password"))?
+                .extract()?,
             mac_algorithm: hmac_alg,
             mac_kdf_iter: default_hmac_kdf_iter,
             cipher_kdf_iter,
             encryption_algorithm: Some(cipher),
         })
     } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)? {
-        let password = encryption_algorithm
-            .getattr(pyo3::intern!(py, "password"))?
-            .extract()?;
-        let password_string = String::from_utf8(password)
-            .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
         Ok(KeySerializationEncryption {
-            password: password_string,
+            password: encryption_algorithm
+                .getattr(pyo3::intern!(py, "password"))?
+                .extract()?,
             mac_algorithm: default_hmac_alg,
             mac_kdf_iter: default_hmac_kdf_iter,
             cipher_kdf_iter: default_cipher_kdf_iter,
@@ -399,6 +393,8 @@ fn serialize_bags<'p>(
     safebags: &[cryptography_x509::pkcs12::SafeBag<'_>],
     encryption_details: &KeySerializationEncryption<'_>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let password = std::str::from_utf8(&encryption_details.password)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
     let mut auth_safe_contents = vec![];
     let (
         plain_safebag_contents,
@@ -432,7 +428,7 @@ fn serialize_bags<'p>(
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             auth_safe_ciphertext = e.encrypt(
                 py,
-                encryption_details.password.as_str(),
+                password,
                 encryption_details.cipher_kdf_iter,
                 &auth_safe_salt,
                 &auth_safe_iv,
@@ -486,7 +482,7 @@ fn serialize_bags<'p>(
     let mac_algorithm_md =
         hashes::message_digest_from_algorithm(py, &encryption_details.mac_algorithm)?;
     let mac_key = cryptography_crypto::pkcs12::kdf(
-        encryption_details.password.as_str(),
+        password,
         &salt,
         cryptography_crypto::pkcs12::KDF_MAC_KEY_ID,
         encryption_details.mac_kdf_iter,
@@ -536,6 +532,8 @@ fn serialize_key_and_certificates<'p>(
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
+    let password = std::str::from_utf8(&encryption_details.password)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
 
     let mut safebags = vec![];
     let (key_salt, key_iv, key_ciphertext, pkcs8_bytes);
@@ -608,7 +606,7 @@ fn serialize_key_and_certificates<'p>(
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             key_ciphertext = e.encrypt(
                 py,
-                encryption_details.password.as_str(),
+                password,
                 encryption_details.cipher_kdf_iter,
                 &key_salt,
                 &key_iv,
