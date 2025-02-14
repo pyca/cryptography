@@ -129,7 +129,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // invoked for all EE certificates, irrespective of this field's contents.
             subject_alternative_name: ExtensionValidator::present(
                 Criticality::Agnostic,
-                Some(Arc::new(ee::subject_alternative_name_criticality)),
+                Some(Arc::new(ee::subject_alternative_name)),
             ),
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::maybe_present(
@@ -455,7 +455,7 @@ mod ee {
         Ok(())
     }
 
-    pub(crate) fn subject_alternative_name_criticality<'chain, B: CryptoOps>(
+    pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
         _: &Policy<'_, B>,
         cert: &VerificationCertificate<'chain, B>,
         extn: &Extension<'_>,
@@ -475,6 +475,9 @@ mod ee {
             }
             _ => (),
         };
+
+        // NOTE: policy.subject is checked against SAN elsewhere (see `ExtensionPolicy::permits`)
+        // since we want to check that even if a custom ExtensionPolicy with a lax validator is used.
 
         Ok(())
     }
