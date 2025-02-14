@@ -19,6 +19,7 @@ on:
       - pyproject.toml
       - vectors/pyproject.toml
 
+
 env:
   BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
   UV_REQUIREMENTS_PATH: .github/requirements/uv-requirements.txt
