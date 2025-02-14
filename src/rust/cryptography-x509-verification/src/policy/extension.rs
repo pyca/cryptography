@@ -702,10 +702,11 @@ mod tests {
     use cryptography_x509::extensions::{BasicConstraints, Extension};
     use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
-    use super::{Criticality, ExtensionValidator};
+    use super::{Criticality, ExtensionPolicy, ExtensionValidator};
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, v1_cert_pem};
     use crate::ops::{CryptoOps, VerificationCertificate};
+    use crate::policy::extension::CertificateType;
     use crate::policy::{Policy, PolicyDefinition, Subject, ValidationResult};
     use crate::types::DNSName;
 
@@ -764,7 +765,8 @@ mod tests {
             None,
             None,
             None,
-        );
+        )
+        .expect("failed to create policy definition");
         let policy = Policy::new(&policy_def, ());
 
         // Test a policy that stipulates that a given extension MUST be present.
@@ -812,7 +814,8 @@ mod tests {
             None,
             None,
             None,
-        );
+        )
+        .expect("failed to create policy definition");
         let policy = Policy::new(&policy_def, ());
 
         // Test a validator that stipulates that a given extension CAN be present.
@@ -852,7 +855,8 @@ mod tests {
             None,
             None,
             None,
-        );
+        )
+        .expect("failed to create policy definition");
         let policy = Policy::new(&policy_def, ());
 
         // Test a validator that stipulates that a given extension MUST NOT be present.
@@ -888,7 +892,8 @@ mod tests {
             None,
             None,
             None,
-        );
+        )
+        .expect("failed to create policy definition");
         let policy = Policy::new(&policy_def, ());
 
         // Test a present policy that stipulates that a given extension MUST be critical.
@@ -926,7 +931,8 @@ mod tests {
             None,
             None,
             None,
-        );
+        )
+        .expect("failed to create policy definition");
         let policy = Policy::new(&policy_def, ());
 
         // Test a maybe present validator that stipulates that a given extension MUST be critical.
@@ -949,5 +955,43 @@ mod tests {
                 Some(&raw_ext)
             )
             .is_err());
+    }
+
+    #[test]
+    fn test_subject_alt_name_absent_in_server_profile() {
+        // This certificate doesn't have a SAN extension.
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let ops = PublicKeyErrorOps {};
+
+        let policy_def = PolicyDefinition::server(
+            ops,
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+            None,
+            None,
+        )
+        .expect("failed to create policy definition");
+        let policy = Policy::new(&policy_def, ());
+
+        let extensions = &cert
+            .extensions()
+            .map_err(|_| "duplicate extensions")
+            .expect("failed to get extensions");
+
+        let result = ExtensionPolicy::new_permit_all().permits(
+            &policy,
+            CertificateType::EE,
+            &VerificationCertificate::new(&cert, ()),
+            &extensions,
+        );
+        let err = result.expect_err(
+            "ee_ext_policy must not permit certificate with no SAN if policy.subject is set",
+        );
+        assert_eq!(
+            err.to_string(),
+            "leaf server certificate has no subjectAltName"
+        );
     }
 }
