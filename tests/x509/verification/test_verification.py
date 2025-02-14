@@ -214,33 +214,6 @@ class TestClientVerifier:
         ):
             verifier.verify(leaf, [])
 
-    def test_custom_ext_policy_no_san(self):
-        leaf = _load_cert(
-            os.path.join("x509", "custom", "no_sans.pem"),
-            x509.load_pem_x509_certificate,
-        )
-
-        store = Store([leaf])
-        validation_time = datetime.datetime.fromisoformat(
-            "2025-04-14T00:00:00+00:00"
-        )
-
-        builder = PolicyBuilder().store(store)
-        builder = builder.time(validation_time)
-
-        with pytest.raises(
-            VerificationError,
-            match="missing required extension",
-        ):
-            builder.build_client_verifier().verify(leaf, [])
-
-        builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(), ExtensionPolicy.permit_all()
-        )
-
-        verified_client = builder.build_client_verifier().verify(leaf, [])
-        assert verified_client.subjects is None
-
 
 class TestServerVerifier:
     @pytest.mark.parametrize(
@@ -553,3 +526,68 @@ class TestCustomExtensionPolicies:
                 match="Python validator must return None.",
             ):
                 verifier.verify(self.leaf, [])
+
+    def test_no_subject_alt_name(self):
+        leaf = _load_cert(
+            os.path.join("x509", "custom", "no_sans.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        store = Store([leaf])
+        validation_time = datetime.datetime.fromisoformat(
+            "2025-04-14T00:00:00+00:00"
+        )
+
+        builder = PolicyBuilder().store(store)
+        builder = builder.time(validation_time)
+
+        with pytest.raises(
+            VerificationError,
+            match="missing required extension",
+        ):
+            builder.build_client_verifier().verify(leaf, [])
+        with pytest.raises(
+            VerificationError,
+            match="missing required extension",
+        ):
+            builder.build_server_verifier(DNSName("example.com")).verify(
+                leaf, []
+            )
+
+        builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(), ExtensionPolicy.permit_all()
+        )
+
+        verified_client = builder.build_client_verifier().verify(leaf, [])
+        assert verified_client.subjects is None
+
+        # For ServerVerifier, SAN must be present,
+        # even if the ExtensionPolicy permits it's absence.
+        with pytest.raises(
+            VerificationError,
+            match="leaf server certificate has no subjectAltName",
+        ):
+            # SAN must be present for ServerVerifier,
+            #
+            builder.build_server_verifier(DNSName("example.com")).verify(
+                leaf, []
+            )
+
+    def test_wrong_subject_alt_name(self):
+        builder = PolicyBuilder().store(self.store)
+        builder = builder.time(self.validation_time)
+        builder = builder.extension_policies(
+            ExtensionPolicy.webpki_defaults_ca(), ExtensionPolicy.permit_all()
+        )
+
+        builder.build_client_verifier().verify(self.leaf, [])
+
+        # For ServerVerifier, SAN must be matched against the subject
+        # even if the extension policy permits any SANs.
+        with pytest.raises(
+            VerificationError,
+            match="leaf certificate has no matching subjectAltName",
+        ):
+            builder.build_server_verifier(DNSName("wrong.io")).verify(
+                self.leaf, []
+            )

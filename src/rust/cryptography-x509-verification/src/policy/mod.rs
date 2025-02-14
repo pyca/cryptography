@@ -22,6 +22,7 @@ use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
     EKU_SERVER_AUTH_OID,
 };
+use extension::CertificateType;
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
@@ -424,7 +425,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
-        self.ca_extension_policy.permits(self, cert, extensions)?;
+        self.ca_extension_policy
+            .permits(self, CertificateType::CA, cert, extensions)?;
 
         Ok(())
     }
@@ -437,7 +439,8 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert.certificate())?;
 
-        self.ee_extension_policy.permits(self, cert, extensions)?;
+        self.ee_extension_policy
+            .permits(self, CertificateType::EE, cert, extensions)?;
 
         Ok(())
     }
