@@ -123,9 +123,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 Some(Arc::new(ee::key_usage)),
             ),
             // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
-            // This validator handles both client and server cases by only matching against
-            // the SAN if the profile contains a subject, which it won't in the client
-            // validation case.
+            // This validator only handles the criticality checks. Matching
+            // SANs against the subject in the profile is handled by
+            // `validate_subject_alternative_name_match` which is
+            // invoked for all EE certificates, irrespective of this field's contents.
             subject_alternative_name: ExtensionValidator::present(
                 Criticality::Agnostic,
                 Some(Arc::new(ee::subject_alternative_name_criticality)),
@@ -258,14 +259,13 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     }
 }
 
+/// This only verifies the SAN against `subject` if `subject` is not None.
+/// This allows us to handle both client and server profiles,
+/// **with the expectation** that `subject` is always set for server profiles.
 pub(crate) fn validate_subject_alternative_name_match<'chain, B: CryptoOps>(
     subject: &Option<Subject<'_>>,
     extn: &Extension<'_>,
 ) -> ValidationResult<'chain, (), B> {
-    // NOTE: We only verify the SAN against the policy's subject if the
-    // policy actually contains one. This allows us to handle both client and server
-    // profiles, **with the expectation** that
-    // server profile construction requires a subject to be present.
     if let Some(sub) = subject {
         let san: SubjectAlternativeName<'_> = extn.value()?;
         if !sub.matches(&san) {
@@ -455,9 +455,6 @@ mod ee {
         Ok(())
     }
 
-    /// This only checks the criticality of the SAN extension. Matching the SAN
-    /// against the subject is handled in `validate_subject_alternative_name_match`
-    /// which is always called, irrespective of how the ExtensionPolicy is configured.
     pub(crate) fn subject_alternative_name_criticality<'chain, B: CryptoOps>(
         _: &Policy<'_, B>,
         cert: &VerificationCertificate<'chain, B>,
