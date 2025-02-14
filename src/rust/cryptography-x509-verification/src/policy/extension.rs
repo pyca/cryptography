@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use cryptography_x509::extensions::{Extension, Extensions};
+use cryptography_x509::extensions::{Extension, Extensions, SubjectAlternativeName};
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
     EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
@@ -15,6 +15,13 @@ use crate::ops::VerificationCertificate;
 use crate::{
     ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
 };
+
+use super::Subject;
+
+pub(crate) enum CertificateType {
+    EE,
+    CA,
+}
 
 #[derive(Clone)]
 pub struct ExtensionPolicy<'cb, B: CryptoOps> {
@@ -121,7 +128,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // validation case.
             subject_alternative_name: ExtensionValidator::present(
                 Criticality::Agnostic,
-                Some(Arc::new(ee::subject_alternative_name)),
+                Some(Arc::new(ee::subject_alternative_name_criticality)),
             ),
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::maybe_present(
@@ -142,6 +149,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     pub(crate) fn permits<'chain>(
         &self,
         policy: &Policy<'_, B>,
+        certificate_type: CertificateType,
         cert: &VerificationCertificate<'chain, B>,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
@@ -180,6 +188,12 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                     subject_alternative_name_seen = true;
                     self.subject_alternative_name
                         .permits(policy, cert, Some(&ext))?;
+
+                    if let CertificateType::EE = certificate_type {
+                        // This ensures that even custom ExtensionPolicies will always
+                        // check the SAN against the policy's subject
+                        validate_subject_alternative_name_match(&policy.subject, &ext)?;
+                    }
                 }
                 BASIC_CONSTRAINTS_OID => {
                     basic_constraints_seen = true;
@@ -231,8 +245,37 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             self.extended_key_usage.permits(policy, cert, None)?;
         }
 
+        if let CertificateType::EE = certificate_type {
+            // SAN is always required if the policy contains a specific subject (server profile).
+            if policy.subject.is_some() && !subject_alternative_name_seen {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "leaf server certificate has no subjectAltName".into(),
+                )));
+            }
+        }
+
         Ok(())
     }
+}
+
+pub(crate) fn validate_subject_alternative_name_match<'chain, B: CryptoOps>(
+    subject: &Option<Subject<'_>>,
+    extn: &Extension<'_>,
+) -> ValidationResult<'chain, (), B> {
+    // NOTE: We only verify the SAN against the policy's subject if the
+    // policy actually contains one. This allows us to handle both client and server
+    // profiles, **with the expectation** that
+    // server profile construction requires a subject to be present.
+    if let Some(sub) = subject {
+        let san: SubjectAlternativeName<'_> = extn.value()?;
+        if !sub.matches(&san) {
+            return Err(ValidationError::new(ValidationErrorKind::Other(
+                "leaf certificate has no matching subjectAltName".into(),
+            )));
+        }
+    }
+
+    Ok(())
 }
 
 /// Represents different criticality states for an extension.
@@ -389,9 +432,7 @@ impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
 }
 
 mod ee {
-    use cryptography_x509::extensions::{
-        BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage, SubjectAlternativeName,
-    };
+    use cryptography_x509::extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage};
 
     use crate::ops::{CryptoOps, VerificationCertificate};
     use crate::policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult};
@@ -414,8 +455,11 @@ mod ee {
         Ok(())
     }
 
-    pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
-        policy: &Policy<'_, B>,
+    /// This only checks the criticality of the SAN extension. Matching the SAN
+    /// against the subject is handled in `validate_subject_alternative_name_match`
+    /// which is always called, irrespective of how the ExtensionPolicy is configured.
+    pub(crate) fn subject_alternative_name_criticality<'chain, B: CryptoOps>(
+        _: &Policy<'_, B>,
         cert: &VerificationCertificate<'chain, B>,
         extn: &Extension<'_>,
     ) -> ValidationResult<'chain, (), B> {
@@ -434,19 +478,6 @@ mod ee {
             }
             _ => (),
         };
-
-        // NOTE: We only verify the SAN against the policy's subject if the
-        // policy actually contains one. This enables both client and server
-        // profiles to use this validator, **with the expectation** that
-        // server profile construction requires a subject to be present.
-        if let Some(sub) = policy.subject.as_ref() {
-            let san: SubjectAlternativeName<'_> = extn.value()?;
-            if !sub.matches(&san) {
-                return Err(ValidationError::new(ValidationErrorKind::Other(
-                    "leaf certificate has no matching subjectAltName".into(),
-                )));
-            }
-        }
 
         Ok(())
     }
