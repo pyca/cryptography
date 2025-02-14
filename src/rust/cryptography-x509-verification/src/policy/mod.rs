@@ -262,7 +262,22 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             ee_extension_policy: ee_extension_policy
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
         };
-        retval.validate()?;
+
+        // NOTE: If subject is set (server profile), we do not accept
+        // EE extension policies that allow the SAN extension to be absent.
+        // Even without this check, `self.ee_extension_policy.permits(self, CertificateType::EE, ...)`
+        // would fail, but we want to fail early and provide a more specific error message.
+        if retval.subject.is_some()
+            && !matches!(
+                retval.ee_extension_policy.subject_alternative_name,
+                ExtensionValidator::Present { .. }
+            )
+        {
+            return Err(
+                "An EE extension policy used for server verification must require the subjectAltName extension to be present.",
+            );
+        }
+
         Ok(retval)
     }
 
@@ -309,28 +324,6 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             ca_extension_policy,
             ee_extension_policy,
         )
-    }
-
-    fn validate(&self) -> Result<(), &'static str> {
-        // NOTE: If subject is set (server profile), we do not accept
-        // EE extension policies that allow the SAN extension to be absent.
-        // Even without this check, `self.ee_extension_policy.permits(self, CertificateType::EE, ...)`
-        // would fail, but we want to fail early and provide a more specific error message.
-
-        if self.subject.is_none() {
-            // If subject is not set, this is a client profile policy.
-            return Ok(());
-        }
-
-        match self.ee_extension_policy.subject_alternative_name {
-            ExtensionValidator::Present {
-                criticality: _,
-                validator: _,
-            } => Ok(()),
-            _ => Err(
-                "An EE extension policy used for server verification must require the subjectAltName extension to be present.",
-            ),
-        }
     }
 }
 
