@@ -331,27 +331,26 @@ the root of trust:
 
     .. staticmethod:: permit_all()
 
-        Creates an ExtensionPolicy initialized with a policy that does 
-        not put any constraints on a certificate's extensions. 
+        Creates an ExtensionPolicy that does not put any constraints on a certificate's extensions. 
         This can serve as a base for a fully custom extension policy.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
     .. staticmethod:: webpki_defaults_ca()
 
-        Creates an ExtensionPolicy initialized with a 
-        CA extension policy based on CA/B Forum guidelines.
+        Creates an ExtensionPolicy for CA certificates,
+        based on CA/B Forum guidelines.
 
-        This is the CA extension policy used by :class:`PolicyBuilder`.
+        This is the default CA extension policy used by :class:`PolicyBuilder`.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
     .. staticmethod:: webpki_defaults_ee()
 
-        Creates an ExtensionPolicy initialized with an
-        EE extension policy based on CA/B Forum guidelines.
+        Creates an ExtensionPolicy for EE certificates,
+        based on CA/B Forum guidelines.
 
-        This is the EE extension policy used by :class:`PolicyBuilder`.
+        This is the default EE extension policy used by :class:`PolicyBuilder`.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
