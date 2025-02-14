@@ -24,6 +24,17 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.hashes.XOFHash` to support
   repeated :meth:`~cryptography.hazmat.primitives.hashes.XOFHash.squeeze`
   operations on extendable output functions.
+* Extended the :mod:`X.509 path validation <cryptography.x509.verification>` API to 
+  support user-configured extension policies via the
+  :meth:`PolicyBuilder.extension_policies <cryptography.x509.verification.PolicyBuilder.extension_policies>` method.
+* Deprecated the ``subject``, ``verification_time`` and ``max_chain_depth`` 
+  properties on :class:`~cryptography.x509.verification.ClientVerifier` and
+  :class:`~cryptography.x509.verification.ServerVerifier` in favor of a new ``policy`` property.
+  These properties will be removed in the next release of ``cryptography``.
+* **BACKWARDS INCOMPATIBLE:** The 
+  :meth:`VerifiedClient.subject <cryptography.x509.verification.VerifiedClient.subjects>`
+  property can now be `None` since a custom extension policy may allow certificates 
+  without a Subject Alternative Name extension.
 
 .. _v44-0-1:
 
