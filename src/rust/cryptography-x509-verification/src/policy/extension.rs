@@ -986,11 +986,8 @@ mod tests {
             &VerificationCertificate::new(&cert, ()),
             &extensions,
         );
-        let err = result.expect_err(
-            "ee_ext_policy must not permit certificate with no SAN if policy.subject is set",
-        );
         assert_eq!(
-            err.to_string(),
+            result.unwrap_err().to_string(),
             "leaf server certificate has no subjectAltName"
         );
     }
