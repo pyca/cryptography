@@ -186,7 +186,7 @@ impl PolicyBuilder {
             None => datetime_now(py)?,
         };
 
-        let policy_definition = OwnedPolicyDefinition::new(None, |_subject| {
+        let policy_definition = OwnedPolicyDefinition::try_new(None, |_subject| {
             PolicyDefinition::client(
                 PyCryptoOps {},
                 time,
@@ -198,7 +198,8 @@ impl PolicyBuilder {
                     .as_ref()
                     .map(|p| p.get().clone_inner_policy()),
             )
-        });
+            .map_err(pyo3::exceptions::PyValueError::new_err)
+        })?;
 
         let py_policy = PyPolicy {
             policy_definition,
@@ -242,7 +243,7 @@ impl PolicyBuilder {
                         .expect("subject_owner for ServerVerifier can not be None"),
                 )?;
 
-                Ok::<PyCryptoPolicyDefinition<'_>, pyo3::PyErr>(PolicyDefinition::server(
+                PolicyDefinition::server(
                     PyCryptoOps {},
                     subject,
                     time,
@@ -253,7 +254,8 @@ impl PolicyBuilder {
                     self.ee_ext_policy
                         .as_ref()
                         .map(|p| p.get().clone_inner_policy()),
-                ))
+                )
+                .map_err(pyo3::exceptions::PyValueError::new_err)
             })?;
 
         let py_policy = PyPolicy {

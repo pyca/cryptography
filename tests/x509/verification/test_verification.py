@@ -454,11 +454,19 @@ class TestCustomExtensionPolicies:
         ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
         ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
 
-        ee_ext_policy = ee_ext_policy.may_be_present(
-            extension_type,
-            Criticality.AGNOSTIC,
-            self._make_validator_cb(extension_type),
-        )
+        if extension_type is x509.SubjectAlternativeName:
+            # subjectAltName must be required for server verification
+            ee_ext_policy = ee_ext_policy.require_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                self._make_validator_cb(extension_type),
+            )
+        else:
+            ee_ext_policy = ee_ext_policy.may_be_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                self._make_validator_cb(extension_type),
+            )
 
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time).max_chain_depth(16)
@@ -561,23 +569,27 @@ class TestCustomExtensionPolicies:
         verified_client = builder.build_client_verifier().verify(leaf, [])
         assert verified_client.subjects is None
 
-        # For ServerVerifier, SAN must be present,
-        # even if the ExtensionPolicy permits it's absence.
+        # Trying to build a ServerVerifier with an EE ExtensionPolicy
+        # that doesn't require SAN extension must fail.
         with pytest.raises(
-            VerificationError,
-            match="leaf server certificate has no subjectAltName",
+            ValueError,
+            match=(
+                "An EE extension policy used for server verification"
+                " must require the subjectAltName extension to be present."
+            ),
         ):
-            # SAN must be present for ServerVerifier,
-            #
-            builder.build_server_verifier(DNSName("example.com")).verify(
-                leaf, []
-            )
+            builder.build_server_verifier(DNSName("example.com"))
 
     def test_wrong_subject_alt_name(self):
+        ee_extension_policy = (
+            ExtensionPolicy.webpki_defaults_ee().require_present(
+                x509.SubjectAlternativeName, Criticality.AGNOSTIC, None
+            )
+        )
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time)
         builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(), ExtensionPolicy.permit_all()
+            ExtensionPolicy.webpki_defaults_ca(), ee_extension_policy
         )
 
         builder.build_client_verifier().verify(self.leaf, [])

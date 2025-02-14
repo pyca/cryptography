@@ -247,8 +247,8 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         extended_key_usage: ObjectIdentifier,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, &'static str> {
+        let retval = Self {
             ops,
             max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
             subject,
@@ -261,7 +261,24 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ca),
             ee_extension_policy: ee_extension_policy
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
+        };
+
+        // NOTE: If subject is set (server profile), we do not accept
+        // EE extension policies that allow the SAN extension to be absent.
+        // Even without this check, `self.ee_extension_policy.permits(self, CertificateType::EE, ...)`
+        // would fail, but we want to fail early and provide a more specific error message.
+        if retval.subject.is_some()
+            && !matches!(
+                retval.ee_extension_policy.subject_alternative_name,
+                ExtensionValidator::Present { .. }
+            )
+        {
+            return Err(
+                "An EE extension policy used for server verification must require the subjectAltName extension to be present.",
+            );
         }
+
+        Ok(retval)
     }
 
     /// Create a new policy with suitable defaults for client certification
@@ -276,7 +293,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         max_chain_depth: Option<u8>,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
-    ) -> Self {
+    ) -> Result<Self, &'static str> {
         Self::new(
             ops,
             None,
@@ -297,7 +314,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         max_chain_depth: Option<u8>,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
-    ) -> Self {
+    ) -> Result<Self, &'static str> {
         Self::new(
             ops,
             Some(subject),
