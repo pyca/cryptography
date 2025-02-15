@@ -134,7 +134,6 @@ jobs:
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
@@ -142,7 +141,6 @@ jobs:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
           CRYPTOGRAPHY_OPENSSL_NO_LEGACY: ${{ matrix.PYTHON.OPENSSL.NO_LEGACY }}
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
 
@@ -209,7 +207,6 @@ jobs:
       - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' 'nox[uv]; python_version >= "3.8"' 'tomli; python_version < "3.11"'
       - run: '/venv/bin/nox -v --install-only'
         env:
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
@@ -280,7 +277,6 @@ jobs:
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
           MACOSX_DEPLOYMENT_TARGET: "10.13"
       - name: Tests
         run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
@@ -346,13 +342,11 @@ jobs:
         run: nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       - name: Tests
         run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
 
       - uses: ./.github/actions/upload-coverage
 
@@ -394,8 +388,6 @@ jobs:
         timeout-minutes: 3
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: pip install .
-        env:
-          CARGO_TARGET_DIR: ${{ format('{0}/src/rust/target/', github.workspace) }}
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
