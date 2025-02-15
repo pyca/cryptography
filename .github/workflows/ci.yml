@@ -342,6 +342,9 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Build nox environment
         run: nox -v --install-only
         env:
