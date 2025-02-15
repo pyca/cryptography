@@ -2,12 +2,6 @@
 set -e
 set -x
 
-shlib_sed() {
-  # modify the shlib version to a unique one to make sure the dynamic
-  # linker doesn't load the system one.
-  sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
-}
-
 if [[ "${TYPE}" == "openssl" ]]; then
   if [[ "${VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
     git clone https://github.com/openssl/openssl
@@ -19,7 +13,9 @@ if [[ "${TYPE}" == "openssl" ]]; then
     pushd "openssl-${VERSION}"
   fi
 
-  shlib_sed
+  # modify the shlib version to a unique one to make sure the dynamic
+  # linker doesn't load the system one.
+  sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
 
   # CONFIG_FLAGS is a global coming from a previous step
   ./config ${CONFIG_FLAGS} -fPIC --prefix="${OSSL_PATH}"
