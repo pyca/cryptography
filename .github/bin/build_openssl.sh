@@ -3,7 +3,8 @@ set -e
 set -x
 
 shlib_sed() {
-  # OpenSSL 3 changes how it does the shlib versioning
+  # modify the shlib version to a unique one to make sure the dynamic
+  # linker doesn't load the system one.
   sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
 }
 
