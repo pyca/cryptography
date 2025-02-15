@@ -32,15 +32,13 @@ succeeded, even by timing variability.
 fact that RSA decryption raises an exception on failure, which takes a
 different amount of time than returning a value in the success case.
 
-Fixing this would require a new API in ``cryptography``, but OpenSSL does
-not expose an API for straightforwardly implementing this while reusing
-its own constant-time logic. See `issue 6167`_ for more information.
+In OpenSSL 3.2.0 and newer, this is automatically mitigated by OpenSSL (by
+returning a random value and never raising an exception). If you are using
+cryptography with an older version of OpenSSL, such attacks are still possible.
 
-For this reason we recommend not implementing online protocols
-that use RSA PKCS1 v1.5 decryption with ``cryptography`` -- independent of this
-limitation, such protocols generally have poor security properties due to their
-lack of forward security.
+Regardless of OpenSSL version, we recommend not implementing or using online
+protocols that use RSA PKCS1 v1.5 decryption, as such protocols generally have
+poor security properties due to their lack of forward security.
 
 .. _`Memory wiping`: https://devblogs.microsoft.com/oldnewthing/?p=4223
 .. _`CERT secure coding guidelines`: https://wiki.sei.cmu.edu/confluence/display/c/MEM03-C.+Clear+sensitive+information+stored+in+reusable+resources
-.. _`issue 6167`: https://github.com/pyca/cryptography/issues/6167#issuecomment-1276151799
