@@ -269,7 +269,7 @@ the root of trust:
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: extension_policies(new_ee_policy, new_ca_policy)
+    .. method:: extension_policies(*, ee_policy, ca_policy)
 
         .. versionadded:: 45.0.0
 
@@ -281,8 +281,8 @@ the root of trust:
             If the PolicyBuilder will be used to build a :class:`ServerVerifier`, the EE extension policy
             `must require` the :class:`~cryptography.x509.SubjectAlternativeName` extension to be present.
 
-        :param ExtensionPolicy new_ca_policy: The CA extension policy to use.
-        :param ExtensionPolicy new_ee_policy: The EE extension policy to use. 
+        :param ExtensionPolicy ca_policy: The CA extension policy to use.
+        :param ExtensionPolicy ee_policy: The EE extension policy to use. 
 
         :returns: A new instance of :class:`PolicyBuilder`
 
