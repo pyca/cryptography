@@ -117,12 +117,12 @@ impl PolicyBuilder {
     fn time(
         &self,
         py: pyo3::Python<'_>,
-        new_time: pyo3::Bound<'_, pyo3::PyAny>,
+        time: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<PolicyBuilder> {
         policy_builder_set_once_check!(self, time, "validation time");
 
         Ok(PolicyBuilder {
-            time: Some(py_to_datetime(py, new_time)?),
+            time: Some(py_to_datetime(py, time)?),
             ..self.py_clone(py)
         })
     }
@@ -130,12 +130,12 @@ impl PolicyBuilder {
     fn store(
         &self,
         py: pyo3::Python<'_>,
-        new_store: pyo3::Py<PyStore>,
+        store: pyo3::Py<PyStore>,
     ) -> CryptographyResult<PolicyBuilder> {
         policy_builder_set_once_check!(self, store, "trust store");
 
         Ok(PolicyBuilder {
-            store: Some(new_store),
+            store: Some(store),
             ..self.py_clone(py)
         })
     }
@@ -143,12 +143,12 @@ impl PolicyBuilder {
     fn max_chain_depth(
         &self,
         py: pyo3::Python<'_>,
-        new_max_chain_depth: u8,
+        max_chain_depth: u8,
     ) -> CryptographyResult<PolicyBuilder> {
         policy_builder_set_once_check!(self, max_chain_depth, "maximum chain depth");
 
         Ok(PolicyBuilder {
-            max_chain_depth: Some(new_max_chain_depth),
+            max_chain_depth: Some(max_chain_depth),
             ..self.py_clone(py)
         })
     }

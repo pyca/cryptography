@@ -234,11 +234,12 @@ the root of trust:
 
     .. versionchanged:: 45.0.0
         Added the ``extension_policies`` method. 
+        Removed the ``new_`` prefix from all parameter names.
 
     A PolicyBuilder provides a builder-style interface for constructing a
     Verifier.
 
-    .. method:: time(new_time)
+    .. method:: time(time)
 
         Sets the verifier's verification time.
 
@@ -246,19 +247,19 @@ the root of trust:
         when :meth:`build_server_verifier` or :meth:`build_client_verifier`
         is called.
 
-        :param new_time: The :class:`datetime.datetime` to use in the verifier
+        :param time: The :class:`datetime.datetime` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: store(new_store)
+    .. method:: store(store)
 
         Sets the verifier's trust store.
 
-        :param new_store: The :class:`Store` to use in the verifier
+        :param store: The :class:`Store` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: max_chain_depth(new_max_chain_depth)
+    .. method:: max_chain_depth(max_chain_depth)
 
         Sets the verifier's maximum chain building depth.
 
@@ -268,7 +269,7 @@ the root of trust:
         one intermediate CA, and so forth. Note that self-issued intermediates
         don't count against the chain depth, per RFC 5280.
 
-        :param new_max_chain_depth: The maximum depth to allow in the verifier
+        :param max_chain_depth: The maximum depth to allow in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
