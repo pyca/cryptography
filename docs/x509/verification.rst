@@ -232,6 +232,9 @@ the root of trust:
 
     .. versionadded:: 42.0.0
 
+    .. versionchanged:: 45.0.0
+        Added the ``extension_policies`` method. 
+
     A PolicyBuilder provides a builder-style interface for constructing a
     Verifier.
 
