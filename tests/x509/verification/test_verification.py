@@ -366,7 +366,8 @@ class TestCustomExtensionPolicies:
             PolicyBuilder().store(self.store).time(self.validation_time)
         )
         builder_no_basic_constraints = default_builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(), no_basic_constraints_ee
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=no_basic_constraints_ee,
         )
 
         default_builder.build_client_verifier().verify(self.leaf, [])
@@ -384,16 +385,16 @@ class TestCustomExtensionPolicies:
             PolicyBuilder().store(self.store).time(self.validation_time)
         )
         builder_require_subject_keyid = default_builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(),
-            ExtensionPolicy.webpki_defaults_ee().require_present(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().require_present(
                 x509.SubjectKeyIdentifier,
                 Criticality.AGNOSTIC,
                 self._make_validator_cb(x509.SubjectKeyIdentifier),
             ),
         )
         builder_require_san = default_builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(),
-            ExtensionPolicy.webpki_defaults_ee().require_present(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().require_present(
                 x509.SubjectAlternativeName,
                 Criticality.AGNOSTIC,
                 self._make_validator_cb(x509.SubjectAlternativeName),
@@ -414,14 +415,14 @@ class TestCustomExtensionPolicies:
     def test_criticality_constraints(self):
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
         noncrit_key_usage_builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(),
-            ExtensionPolicy.webpki_defaults_ee().require_present(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().require_present(
                 x509.KeyUsage, Criticality.NON_CRITICAL, None
             ),
         )
         critical_eku_builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(),
-            ExtensionPolicy.webpki_defaults_ee().require_present(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().require_present(
                 x509.ExtendedKeyUsage, Criticality.CRITICAL, None
             ),
         )
@@ -470,7 +471,9 @@ class TestCustomExtensionPolicies:
 
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time).max_chain_depth(16)
-        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+        builder = builder.extension_policies(
+            ca_policy=ca_ext_policy, ee_policy=ee_ext_policy
+        )
 
         builder.build_client_verifier().verify(self.leaf, [])
 
@@ -497,7 +500,9 @@ class TestCustomExtensionPolicies:
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+        builder = builder.extension_policies(
+            ca_policy=ca_ext_policy, ee_policy=ee_ext_policy
+        )
 
         for verifier in (
             builder.build_client_verifier(),
@@ -523,7 +528,9 @@ class TestCustomExtensionPolicies:
         )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
-        builder = builder.extension_policies(ca_ext_policy, ee_ext_policy)
+        builder = builder.extension_policies(
+            ca_policy=ca_ext_policy, ee_policy=ee_ext_policy
+        )
 
         for verifier in (
             builder.build_client_verifier(),
@@ -563,7 +570,8 @@ class TestCustomExtensionPolicies:
             )
 
         builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(), ExtensionPolicy.permit_all()
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.permit_all(),
         )
 
         verified_client = builder.build_client_verifier().verify(leaf, [])
@@ -589,7 +597,8 @@ class TestCustomExtensionPolicies:
         builder = PolicyBuilder().store(self.store)
         builder = builder.time(self.validation_time)
         builder = builder.extension_policies(
-            ExtensionPolicy.webpki_defaults_ca(), ee_extension_policy
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ee_extension_policy,
         )
 
         builder.build_client_verifier().verify(self.leaf, [])

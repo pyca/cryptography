@@ -153,18 +153,19 @@ impl PolicyBuilder {
         })
     }
 
+    #[pyo3(signature = (*, ca_policy, ee_policy))]
     fn extension_policies(
         &self,
         py: pyo3::Python<'_>,
-        new_ca_policy: pyo3::Py<PyExtensionPolicy>,
-        new_ee_policy: pyo3::Py<PyExtensionPolicy>,
+        ca_policy: pyo3::Py<PyExtensionPolicy>,
+        ee_policy: pyo3::Py<PyExtensionPolicy>,
     ) -> CryptographyResult<PolicyBuilder> {
         // Enough to check one of the two, since they can only be set together.
         policy_builder_set_once_check!(self, ca_ext_policy, "extension policies");
 
         Ok(PolicyBuilder {
-            ca_ext_policy: Some(new_ca_policy),
-            ee_ext_policy: Some(new_ee_policy),
+            ca_ext_policy: Some(ca_policy),
+            ee_ext_policy: Some(ee_policy),
             ..self.py_clone(py)
         })
     }
