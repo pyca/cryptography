@@ -232,10 +232,14 @@ the root of trust:
 
     .. versionadded:: 42.0.0
 
+    .. versionchanged:: 45.0.0
+        Added the ``extension_policies`` method. 
+        Removed the ``new_`` prefix from all parameter names.
+
     A PolicyBuilder provides a builder-style interface for constructing a
     Verifier.
 
-    .. method:: time(new_time)
+    .. method:: time(time)
 
         Sets the verifier's verification time.
 
@@ -243,19 +247,19 @@ the root of trust:
         when :meth:`build_server_verifier` or :meth:`build_client_verifier`
         is called.
 
-        :param new_time: The :class:`datetime.datetime` to use in the verifier
+        :param time: The :class:`datetime.datetime` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: store(new_store)
+    .. method:: store(store)
 
         Sets the verifier's trust store.
 
-        :param new_store: The :class:`Store` to use in the verifier
+        :param store: The :class:`Store` to use in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: max_chain_depth(new_max_chain_depth)
+    .. method:: max_chain_depth(max_chain_depth)
 
         Sets the verifier's maximum chain building depth.
 
@@ -265,11 +269,11 @@ the root of trust:
         one intermediate CA, and so forth. Note that self-issued intermediates
         don't count against the chain depth, per RFC 5280.
 
-        :param new_max_chain_depth: The maximum depth to allow in the verifier
+        :param max_chain_depth: The maximum depth to allow in the verifier
 
         :returns: A new instance of :class:`PolicyBuilder`
 
-    .. method:: extension_policies(new_ee_policy, new_ca_policy)
+    .. method:: extension_policies(*, ee_policy, ca_policy)
 
         .. versionadded:: 45.0.0
 
@@ -281,8 +285,8 @@ the root of trust:
             If the PolicyBuilder will be used to build a :class:`ServerVerifier`, the EE extension policy
             `must require` the :class:`~cryptography.x509.SubjectAlternativeName` extension to be present.
 
-        :param ExtensionPolicy new_ca_policy: The CA extension policy to use.
-        :param ExtensionPolicy new_ee_policy: The EE extension policy to use. 
+        :param ExtensionPolicy ca_policy: The CA extension policy to use.
+        :param ExtensionPolicy ee_policy: The EE extension policy to use. 
 
         :returns: A new instance of :class:`PolicyBuilder`
 
