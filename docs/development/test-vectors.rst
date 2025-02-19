@@ -948,6 +948,9 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/enveloped-no-content.der``- A DER encoded PKCS7 file with
   enveloped data, without encrypted content, with key encrypted under the
   public key of ``x509/custom/ca/rsa_ca.pem``.
+* ``pkcs7/signed-opaque.msg``- A PKCS7 signed message, signed using opaque 
+  signing (``application/pkcs7-mime`` content type), signed under the
+  private key of ``x509/custom/ca/ca.pem``, ``x509/custom/ca/ca_key.pem``.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
