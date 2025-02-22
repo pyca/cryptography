@@ -1,0 +1,4 @@
+style_edition = "2024"
+# Ideally we would enable these, but they're not stable yet
+# group_imports = "StdExternalCrate"
+# imports_granularity = "Module"
