@@ -80,7 +80,7 @@ fn _initialize_providers() -> CryptographyResult<LoadedProviders> {
 fn _legacy_provider_error(success: bool) -> pyo3::PyResult<()> {
     if !success {
         return Err(pyo3::exceptions::PyRuntimeError::new_err(
-            "OpenSSL 3.0's legacy provider failed to load. This is a fatal error by default, but cryptography supports running without legacy algorithms by setting the environment variable CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error, you have likely made a mistake with your OpenSSL configuration."
+            "OpenSSL 3.0's legacy provider failed to load. This is a fatal error by default, but cryptography supports running without legacy algorithms by setting the environment variable CRYPTOGRAPHY_OPENSSL_NO_LEGACY. If you did not expect this error, you have likely made a mistake with your OpenSSL configuration.",
         ));
     }
     Ok(())
@@ -105,11 +105,11 @@ mod _rust {
     #[pymodule_export]
     use crate::oid::ObjectIdentifier;
     #[pymodule_export]
-    use crate::padding::{check_ansix923_padding, PKCS7PaddingContext, PKCS7UnpaddingContext};
-    #[pymodule_export]
-    use crate::pkcs12::pkcs12;
+    use crate::padding::{PKCS7PaddingContext, PKCS7UnpaddingContext, check_ansix923_padding};
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
+    #[pymodule_export]
+    use crate::pkcs12::pkcs12;
     #[pymodule_export]
     use crate::test_support::test_support;
 
@@ -117,19 +117,19 @@ mod _rust {
     mod x509 {
         #[pymodule_export]
         use crate::x509::certificate::{
-            create_x509_certificate, load_der_x509_certificate, load_pem_x509_certificate,
-            load_pem_x509_certificates, Certificate,
+            Certificate, create_x509_certificate, load_der_x509_certificate,
+            load_pem_x509_certificate, load_pem_x509_certificates,
         };
         #[pymodule_export]
         use crate::x509::common::{encode_extension_value, encode_name_bytes};
         #[pymodule_export]
         use crate::x509::crl::{
-            create_x509_crl, load_der_x509_crl, load_pem_x509_crl, CertificateRevocationList,
-            RevokedCertificate,
+            CertificateRevocationList, RevokedCertificate, create_x509_crl, load_der_x509_crl,
+            load_pem_x509_crl,
         };
         #[pymodule_export]
         use crate::x509::csr::{
-            create_x509_csr, load_der_x509_csr, load_pem_x509_csr, CertificateSigningRequest,
+            CertificateSigningRequest, create_x509_csr, load_der_x509_csr, load_pem_x509_csr,
         };
         #[pymodule_export]
         use crate::x509::sct::Sct;
@@ -143,10 +143,10 @@ mod _rust {
     #[pyo3::pymodule]
     mod ocsp {
         #[pymodule_export]
-        use crate::x509::ocsp_req::{create_ocsp_request, load_der_ocsp_request, OCSPRequest};
+        use crate::x509::ocsp_req::{OCSPRequest, create_ocsp_request, load_der_ocsp_request};
         #[pymodule_export]
         use crate::x509::ocsp_resp::{
-            create_ocsp_response, load_der_ocsp_response, OCSPResponse, OCSPSingleResponse,
+            OCSPResponse, OCSPSingleResponse, create_ocsp_response, load_der_ocsp_response,
         };
     }
 
@@ -171,11 +171,11 @@ mod _rust {
         use crate::backend::dsa::dsa;
         #[pymodule_export]
         use crate::backend::ec::ec;
-        #[pymodule_export]
-        use crate::backend::ed25519::ed25519;
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         #[pymodule_export]
         use crate::backend::ed448::ed448;
+        #[pymodule_export]
+        use crate::backend::ed25519::ed25519;
         #[pymodule_export]
         use crate::backend::hashes::hashes;
         #[pymodule_export]
@@ -188,13 +188,13 @@ mod _rust {
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]
         use crate::backend::rsa::rsa;
-        #[pymodule_export]
-        use crate::backend::x25519::x25519;
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         #[pymodule_export]
         use crate::backend::x448::x448;
         #[pymodule_export]
-        use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
+        use crate::backend::x25519::x25519;
+        #[pymodule_export]
+        use crate::error::{OpenSSLError, capture_error_stack, raise_openssl_error};
 
         #[pymodule_init]
         fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {

@@ -325,9 +325,9 @@ impl Argon2id {
 #[pyo3::pymodule]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::derive_pbkdf2_hmac;
-    #[pymodule_export]
     use super::Argon2id;
     #[pymodule_export]
     use super::Scrypt;
+    #[pymodule_export]
+    use super::derive_pbkdf2_hmac;
 }

@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use asn1::SimpleAsn1Readable;
-use cryptography_x509::csr::{check_attribute_length, Attribute, CertificationRequestInfo, Csr};
+use cryptography_x509::csr::{Attribute, CertificationRequestInfo, Csr, check_attribute_length};
 use cryptography_x509::{common, oid};
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
@@ -134,7 +134,9 @@ impl CertificateSigningRequest {
         oid: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let warning_msg = cstr_from_literal!("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.");
+        let warning_msg = cstr_from_literal!(
+            "CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid."
+        );
         pyo3::PyErr::warn(py, &warning_cls, warning_msg, 1)?;
 
         let rust_oid = py_oid_to_oid(oid.clone())?;

@@ -617,7 +617,7 @@ impl AesGcm {
                     pyo3::exceptions::PyValueError::new_err(
                         "AESGCM key must be 128, 192, or 256 bits.",
                     ),
-                ))
+                ));
             }
         };
 
@@ -860,7 +860,7 @@ impl AesSiv {
                     pyo3::exceptions::PyValueError::new_err(
                         "AESSIV key must be 256, 384, or 512 bits.",
                     ),
-                ))
+                ));
             }
         };
 
@@ -1071,7 +1071,7 @@ impl AesGcmSiv {
                     pyo3::exceptions::PyValueError::new_err(
                         "AES-GCM-SIV key must be 128, 192 or 256 bits.",
                     ),
-                ))
+                ));
             }
         };
 

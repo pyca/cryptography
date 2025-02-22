@@ -164,6 +164,6 @@ impl Ed448PublicKey {
 pub(crate) mod ed448 {
     #[pymodule_export]
     use super::{
-        from_private_bytes, from_public_bytes, generate_key, Ed448PrivateKey, Ed448PublicKey,
+        Ed448PrivateKey, Ed448PublicKey, from_private_bytes, from_public_bytes, generate_key,
     };
 }

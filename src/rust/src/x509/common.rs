@@ -285,7 +285,7 @@ pub(crate) fn parse_general_name<'p>(
                 exceptions::UnsupportedGeneralNameType::new_err(
                     "x400Address/EDIPartyName are not supported types",
                 ),
-            ))
+            ));
         }
     };
     Ok(py_gn)
@@ -316,9 +316,12 @@ fn create_ip_network<'p>(
             let num = u128::from_be_bytes(data[16..].try_into().unwrap());
             ipv6_netmask(num)
         }
-        _ => Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            format!("Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}", data.len()),
-        ))),
+        _ => Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "Invalid IPNetwork, must be 8 bytes for IPv4 and 32 bytes for IPv6. Found length: {}",
+                data.len()
+            )),
+        )),
     };
     let base = types::IPADDRESS_IPADDRESS
         .get(py)?
@@ -434,7 +437,7 @@ pub(crate) fn encode_extensions<
             None => {
                 return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
                     "Extension not supported: {oid}"
-                )))
+                )));
             }
         }
     }

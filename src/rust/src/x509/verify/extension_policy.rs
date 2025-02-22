@@ -1,30 +1,25 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use cryptography_x509::extensions::Extension;
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
     EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
     SUBJECT_KEY_IDENTIFIER_OID,
 };
-
-use cryptography_x509::extensions::Extension;
-
 use cryptography_x509_verification::ops::VerificationCertificate;
 use cryptography_x509_verification::policy::{
     Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback, Policy,
     PresentExtensionValidatorCallback,
 };
 use cryptography_x509_verification::{ValidationError, ValidationErrorKind, ValidationResult};
-use pyo3::types::PyAnyMethods;
-use pyo3::types::PyTypeMethods;
-use pyo3::{intern, PyResult};
-
-use crate::asn1::py_oid_to_oid;
-
-use crate::types;
-use crate::x509::certificate::parse_cert_ext;
+use pyo3::types::{PyAnyMethods, PyTypeMethods};
+use pyo3::{PyResult, intern};
 
 use super::PyCryptoOps;
+use crate::asn1::py_oid_to_oid;
+use crate::types;
+use crate::x509::certificate::parse_cert_ext;
 
 #[pyo3::pyclass(
     frozen,
@@ -99,7 +94,7 @@ impl PyExtensionPolicy {
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
                     "Unsupported extension OID: {}",
                     oid
-                )))
+                )));
             }
         }
 

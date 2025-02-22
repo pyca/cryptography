@@ -241,7 +241,7 @@ fn encode_certificate_policies(
                             return Err(pyo3::exceptions::PyValueError::new_err(
                                 "Qualifier must be an ASCII-string.",
                             )
-                            .into())
+                            .into());
                         }
                     };
                     extensions::PolicyQualifierInfo {
@@ -431,7 +431,7 @@ fn encode_naming_authority<'a>(
             None => {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err("url value must be a valid IA5String"),
-                ))
+                ));
             }
         }
     } else {
@@ -493,7 +493,7 @@ fn encode_profession_info<'a>(
                     pyo3::exceptions::PyValueError::new_err(
                         "registration_number value must be a valid PrintableString",
                     ),
-                ))
+                ));
             }
         }
     } else {

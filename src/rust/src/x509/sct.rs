@@ -74,7 +74,7 @@ impl TryFrom<u8> for HashAlgorithm {
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
                     "Invalid/unsupported hash algorithm for SCT: {value}"
-                )))
+                )));
             }
         })
     }
@@ -121,7 +121,7 @@ impl TryFrom<u8> for SignatureAlgorithm {
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(format!(
                     "Invalid/unsupported signature algorithm for SCT: {value}"
-                )))
+                )));
             }
         })
     }

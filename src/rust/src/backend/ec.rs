@@ -35,7 +35,9 @@ fn curve_from_py_curve(
     if !py_curve.is_instance(&types::ELLIPTIC_CURVE.get(py)?)? {
         if allow_curve_class {
             let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-            let message = cstr_from_literal!("Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography");
+            let message = cstr_from_literal!(
+                "Curve argument must be an instance of an EllipticCurve class. Did you pass a class by mistake? This will be an exception in a future version of cryptography"
+            );
             pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         } else {
             return Err(CryptographyError::from(
@@ -689,7 +691,7 @@ impl EllipticCurvePublicNumbers {
 pub(crate) mod ec {
     #[pymodule_export]
     use super::{
-        curve_supported, derive_private_key, from_public_bytes, generate_private_key, ECPrivateKey,
-        ECPublicKey, EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
+        ECPrivateKey, ECPublicKey, EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
+        curve_supported, derive_private_key, from_public_bytes, generate_private_key,
     };
 }

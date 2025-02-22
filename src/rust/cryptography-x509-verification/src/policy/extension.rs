@@ -11,12 +11,10 @@ use cryptography_x509::oid::{
     SUBJECT_KEY_IDENTIFIER_OID,
 };
 
-use crate::ops::VerificationCertificate;
-use crate::{
-    ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
-};
-
 use super::Subject;
+use crate::ops::{CryptoOps, VerificationCertificate};
+use crate::policy::Policy;
+use crate::{ValidationError, ValidationErrorKind, ValidationResult};
 
 pub(crate) enum CertificateType {
     EE,
@@ -471,7 +469,7 @@ mod ee {
             (false, true) => {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
                     "EE subjectAltName MUST NOT be critical when subject is nonempty".to_string(),
-                )))
+                )));
             }
             _ => (),
         };
@@ -782,14 +780,18 @@ mod tests {
         };
         let der_ext = create_encoded_extension(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_ext = asn1::parse_single(&der_ext).unwrap();
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, Some(&raw_ext))
-            .is_ok());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, Some(&raw_ext))
+                .is_ok()
+        );
 
         // Check the case where the extension isn't present.
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, None)
-            .is_err());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, None)
+                .is_err()
+        );
     }
 
     fn maybe_extension_validator<'chain, B: CryptoOps>(
@@ -831,14 +833,18 @@ mod tests {
         };
         let der_ext = create_encoded_extension(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_ext = asn1::parse_single(&der_ext).unwrap();
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, Some(&raw_ext))
-            .is_ok());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, Some(&raw_ext))
+                .is_ok()
+        );
 
         // Check the case where the extension isn't present.
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, None)
-            .is_ok());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, None)
+                .is_ok()
+        );
     }
 
     #[test]
@@ -869,14 +875,18 @@ mod tests {
         };
         let der_ext = create_encoded_extension(BASIC_CONSTRAINTS_OID, true, &bc);
         let raw_ext = asn1::parse_single(&der_ext).unwrap();
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, Some(&raw_ext))
-            .is_err());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, Some(&raw_ext))
+                .is_err()
+        );
 
         // Check the case where the extension isn't present.
-        assert!(extension_validator
-            .permits(&policy, &verification_cert, None)
-            .is_ok());
+        assert!(
+            extension_validator
+                .permits(&policy, &verification_cert, None)
+                .is_ok()
+        );
     }
 
     #[test]
@@ -909,13 +919,15 @@ mod tests {
         };
         let der_ext = create_encoded_extension(BASIC_CONSTRAINTS_OID, false, &bc);
         let raw_ext = asn1::parse_single(&der_ext).unwrap();
-        assert!(extension_validator
-            .permits(
-                &policy,
-                &VerificationCertificate::new(&cert, ()),
-                Some(&raw_ext)
-            )
-            .is_err());
+        assert!(
+            extension_validator
+                .permits(
+                    &policy,
+                    &VerificationCertificate::new(&cert, ()),
+                    Some(&raw_ext)
+                )
+                .is_err()
+        );
     }
 
     #[test]
@@ -948,13 +960,15 @@ mod tests {
         };
         let der_ext = create_encoded_extension(BASIC_CONSTRAINTS_OID, false, &bc);
         let raw_ext = asn1::parse_single(&der_ext).unwrap();
-        assert!(extension_validator
-            .permits(
-                &policy,
-                &VerificationCertificate::new(&cert, ()),
-                Some(&raw_ext)
-            )
-            .is_err());
+        assert!(
+            extension_validator
+                .permits(
+                    &policy,
+                    &VerificationCertificate::new(&cert, ()),
+                    Some(&raw_ext)
+                )
+                .is_err()
+        );
     }
 
     #[test]

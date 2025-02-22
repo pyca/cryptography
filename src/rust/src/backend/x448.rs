@@ -152,6 +152,6 @@ impl X448PublicKey {
 pub(crate) mod x448 {
     #[pymodule_export]
     use super::{
-        from_private_bytes, from_public_bytes, generate_key, X448PrivateKey, X448PublicKey,
+        X448PrivateKey, X448PublicKey, from_private_bytes, from_public_bytes, generate_key,
     };
 }

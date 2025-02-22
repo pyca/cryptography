@@ -8,7 +8,7 @@ use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use openssl_sys as ffi;
 
 use crate::hmac::DigestBytes;
-use crate::{cvt, cvt_p, OpenSSLResult};
+use crate::{OpenSSLResult, cvt, cvt_p};
 
 foreign_types::foreign_type! {
     type CType = ffi::CMAC_CTX;

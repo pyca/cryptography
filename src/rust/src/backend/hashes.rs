@@ -247,5 +247,5 @@ impl XOFHash {
 #[pyo3::pymodule]
 pub(crate) mod hashes {
     #[pymodule_export]
-    use super::{hash_supported, Hash, XOFHash};
+    use super::{Hash, XOFHash, hash_supported};
 }

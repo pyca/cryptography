@@ -82,9 +82,11 @@ pub(crate) fn pkey_private_bytes<'p>(
             || !format.is(&types::PRIVATE_FORMAT_RAW.get(py)?)
             || !encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)?
         {
-            return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()"
-                )));
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()",
+                ),
+            ));
         }
         let raw_bytes = pkey.raw_private_key()?;
         return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
@@ -311,8 +313,8 @@ pub(crate) fn pkey_public_bytes<'p>(
             } else {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
-                        "X962 encoding must be used with CompressedPoint or UncompressedPoint format"
-                    )
+                        "X962 encoding must be used with CompressedPoint or UncompressedPoint format",
+                    ),
                 ));
             };
             let mut bn_ctx = openssl::bn::BigNumContext::new()?;
@@ -462,7 +464,7 @@ pub(crate) fn handle_key_load_result<T>(
                 pyo3::exceptions::PyValueError::new_err((
                     "Could not deserialize key data. The data may be in an incorrect format, the provided password may be incorrect, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters).",
                     errors.unbind(),
-                ))
+                )),
             ))
         }
     }

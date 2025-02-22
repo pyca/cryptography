@@ -861,8 +861,12 @@ mod tests {
             assert!(in_domain.matches(&RFC822Name::new("foo@sub.example.com").unwrap()));
             assert!(in_domain.matches(&RFC822Name::new("foo@sub.sub.example.com").unwrap()));
             assert!(in_domain.matches(&RFC822Name::new("foo@com.example.example.com").unwrap()));
-            assert!(in_domain.matches(&RFC822Name::new("foo.bar@com.example.example.com").unwrap()));
-            assert!(in_domain.matches(&RFC822Name::new("foo!bar@com.example.example.com").unwrap()));
+            assert!(
+                in_domain.matches(&RFC822Name::new("foo.bar@com.example.example.com").unwrap())
+            );
+            assert!(
+                in_domain.matches(&RFC822Name::new("foo!bar@com.example.example.com").unwrap())
+            );
             assert!(in_domain.matches(&RFC822Name::new("bar@com.example.example.com").unwrap()));
             // Case changes are okay in the subdomains and in the mailbox, since any mailbox
             // in the domain is okay.

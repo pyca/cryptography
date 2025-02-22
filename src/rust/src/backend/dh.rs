@@ -544,7 +544,7 @@ impl DHParameterNumbers {
 pub(crate) mod dh {
     #[pymodule_export]
     use super::{
-        from_der_parameters, from_pem_parameters, generate_parameters, DHParameterNumbers,
-        DHParameters, DHPrivateKey, DHPrivateNumbers, DHPublicKey, DHPublicNumbers,
+        DHParameterNumbers, DHParameters, DHPrivateKey, DHPrivateNumbers, DHPublicKey,
+        DHPublicNumbers, from_der_parameters, from_pem_parameters, generate_parameters,
     };
 }

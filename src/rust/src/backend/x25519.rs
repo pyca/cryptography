@@ -153,6 +153,6 @@ impl X25519PublicKey {
 pub(crate) mod x25519 {
     #[pymodule_export]
     use super::{
-        from_private_bytes, from_public_bytes, generate_key, X25519PrivateKey, X25519PublicKey,
+        X25519PrivateKey, X25519PublicKey, from_private_bytes, from_public_bytes, generate_key,
     };
 }

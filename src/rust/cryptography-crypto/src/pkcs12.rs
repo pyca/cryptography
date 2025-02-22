@@ -107,7 +107,7 @@ pub fn kdf(
 
 #[cfg(test)]
 mod tests {
-    use super::{kdf, KDF_ENCRYPTION_KEY_ID, KDF_IV_ID, KDF_MAC_KEY_ID};
+    use super::{KDF_ENCRYPTION_KEY_ID, KDF_IV_ID, KDF_MAC_KEY_ID, kdf};
 
     #[test]
     fn test_pkcs12_kdf() {

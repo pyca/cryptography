@@ -5,7 +5,7 @@
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use openssl_sys as ffi;
 
-use crate::{cvt, cvt_p, OpenSSLResult};
+use crate::{OpenSSLResult, cvt, cvt_p};
 
 pub enum AeadType {
     ChaCha20Poly1305,

@@ -23,6 +23,7 @@ use cryptography_x509::extensions::{
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID};
 
+use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
@@ -30,7 +31,6 @@ use crate::trust_store::Store;
 use crate::types::{
     DNSConstraint, DNSPattern, IPAddress, IPConstraint, RFC822Constraint, RFC822Name,
 };
-use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 
 pub enum ValidationErrorKind<'chain, B: CryptoOps> {
     CandidatesExhausted(Box<ValidationError<'chain, B>>),

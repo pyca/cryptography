@@ -197,9 +197,13 @@ fn load_pem_public_key<'p>(
             }
         }
         "PUBLIC KEY" => cryptography_key_parsing::spki::parse_public_key(p.contents())?,
-        _ => return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "Valid PEM but no BEGIN PUBLIC KEY/END PUBLIC KEY delimiters. Are you sure this is a public key?"
-        ))),
+        _ => {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "Valid PEM but no BEGIN PUBLIC KEY/END PUBLIC KEY delimiters. Are you sure this is a public key?",
+                ),
+            ));
+        }
     };
     public_key_from_pkey(py, &pkey, pkey.id())
 }

@@ -512,7 +512,7 @@ impl DsaParameterNumbers {
 pub(crate) mod dsa {
     #[pymodule_export]
     use super::{
-        generate_parameters, DsaParameterNumbers, DsaParameters, DsaPrivateKey, DsaPrivateNumbers,
-        DsaPublicKey, DsaPublicNumbers,
+        DsaParameterNumbers, DsaParameters, DsaPrivateKey, DsaPrivateNumbers, DsaPublicKey,
+        DsaPublicNumbers, generate_parameters,
     };
 }

@@ -167,6 +167,6 @@ impl Ed25519PublicKey {
 pub(crate) mod ed25519 {
     #[pymodule_export]
     use super::{
-        from_private_bytes, from_public_bytes, generate_key, Ed25519PrivateKey, Ed25519PublicKey,
+        Ed25519PrivateKey, Ed25519PublicKey, from_private_bytes, from_public_bytes, generate_key,
     };
 }

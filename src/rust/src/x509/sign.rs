@@ -526,8 +526,8 @@ mod tests {
     use cryptography_x509::{common, oid};
 
     use super::{
-        identify_alg_params_for_hash_type, identify_key_type_for_algorithm_params, HashType,
-        KeyType,
+        HashType, KeyType, identify_alg_params_for_hash_type,
+        identify_key_type_for_algorithm_params,
     };
 
     #[test]

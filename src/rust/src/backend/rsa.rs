@@ -826,6 +826,6 @@ impl RsaPublicNumbers {
 pub(crate) mod rsa {
     #[pymodule_export]
     use super::{
-        generate_private_key, RsaPrivateKey, RsaPrivateNumbers, RsaPublicKey, RsaPublicNumbers,
+        RsaPrivateKey, RsaPrivateNumbers, RsaPublicKey, RsaPublicNumbers, generate_private_key,
     };
 }

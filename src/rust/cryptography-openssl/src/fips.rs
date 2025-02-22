@@ -12,7 +12,7 @@ use std::ptr;
 use openssl_sys as ffi;
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
-use crate::{cvt, OpenSSLResult};
+use crate::{OpenSSLResult, cvt};
 
 pub fn is_enabled() -> bool {
     cfg_if::cfg_if! {

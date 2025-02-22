@@ -13,9 +13,9 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use pyo3::PyTypeInfo;
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
 use crate::asn1::encode_der_data;
 use crate::backend::ciphers;
@@ -716,7 +716,10 @@ fn load_pkcs7_certificates(
         let nid_string = nid.map_or("empty".to_string(), |n| n.as_raw().to_string());
         return Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
-                format!("Only basic signed structures are currently supported. NID for this data was {}", nid_string),
+                format!(
+                    "Only basic signed structures are currently supported. NID for this data was {}",
+                    nid_string
+                ),
                 exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
             )),
         ));

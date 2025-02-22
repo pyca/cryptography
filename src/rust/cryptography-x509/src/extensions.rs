@@ -325,9 +325,11 @@ mod tests {
         let extensions = Extensions::from_raw_extensions(Some(&raw)).ok().unwrap();
 
         assert!(&extensions.get_extension(&BASIC_CONSTRAINTS_OID).is_some());
-        assert!(&extensions
-            .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
-            .is_none());
+        assert!(
+            &extensions
+                .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
+                .is_none()
+        );
     }
 
     #[test]

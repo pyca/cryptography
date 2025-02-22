@@ -43,9 +43,9 @@ impl<'a, B: CryptoOps> Store<'a, B> {
 #[cfg(test)]
 mod tests {
     use super::Store;
+    use crate::VerificationCertificate;
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, v1_cert_pem};
-    use crate::VerificationCertificate;
 
     #[test]
     fn test_store() {

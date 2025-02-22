@@ -2,8 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::PyAnyMethods;
 use pyo3::IntoPyObject;
+use pyo3::types::PyAnyMethods;
 
 use crate::backend::cipher_registry;
 use crate::buf::{CffiBuf, CffiMutBuf};
@@ -41,7 +41,7 @@ impl CipherContext {
                             ),
                             exceptions::Reasons::UNSUPPORTED_CIPHER,
                         )),
-                    ))
+                    ));
                 }
             };
 
@@ -614,7 +614,7 @@ fn _advance_aad(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
 pub(crate) mod ciphers {
     #[pymodule_export]
     use super::{
-        _advance, _advance_aad, cipher_supported, create_decryption_ctx, create_encryption_ctx,
-        PyAEADDecryptionContext, PyAEADEncryptionContext, PyCipherContext,
+        _advance, _advance_aad, PyAEADDecryptionContext, PyAEADEncryptionContext, PyCipherContext,
+        cipher_supported, create_decryption_ctx, create_encryption_ctx,
     };
 }
