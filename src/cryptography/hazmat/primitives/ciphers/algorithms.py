@@ -36,7 +36,7 @@ class AES(BlockCipherAlgorithm):
     # 512 added to support AES-256-XTS, which uses 512-bit keys
     key_sizes = frozenset([128, 192, 256, 512])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key: utils.Buffer):
         self.key = _verify_key_size(self, key)
 
     @property
@@ -50,7 +50,7 @@ class AES128(BlockCipherAlgorithm):
     key_sizes = frozenset([128])
     key_size = 128
 
-    def __init__(self, key: bytes):
+    def __init__(self, key: utils.Buffer):
         self.key = _verify_key_size(self, key)
 
 
@@ -60,7 +60,7 @@ class AES256(BlockCipherAlgorithm):
     key_sizes = frozenset([256])
     key_size = 256
 
-    def __init__(self, key: bytes):
+    def __init__(self, key: utils.Buffer):
         self.key = _verify_key_size(self, key)
 
 
@@ -69,7 +69,7 @@ class Camellia(BlockCipherAlgorithm):
     block_size = 128
     key_sizes = frozenset([128, 192, 256])
 
-    def __init__(self, key: bytes):
+    def __init__(self, key: utils.Buffer):
         self.key = _verify_key_size(self, key)
 
     @property
@@ -152,7 +152,7 @@ class ChaCha20(CipherAlgorithm):
     name = "ChaCha20"
     key_sizes = frozenset([256])
 
-    def __init__(self, key: bytes, nonce: bytes):
+    def __init__(self, key: utils.Buffer, nonce: utils.Buffer):
         self.key = _verify_key_size(self, key)
         utils._check_byteslike("nonce", nonce)
 
@@ -162,7 +162,7 @@ class ChaCha20(CipherAlgorithm):
         self._nonce = nonce
 
     @property
-    def nonce(self) -> bytes:
+    def nonce(self) -> utils.Buffer:
         return self._nonce
 
     @property

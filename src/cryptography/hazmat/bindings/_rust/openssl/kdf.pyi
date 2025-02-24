@@ -5,9 +5,10 @@
 import typing
 
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
+from cryptography.utils import Buffer
 
 def derive_pbkdf2_hmac(
-    key_material: bytes,
+    key_material: Buffer,
     algorithm: HashAlgorithm,
     salt: bytes,
     iterations: int,
@@ -24,7 +25,7 @@ class Scrypt:
         p: int,
         backend: typing.Any = None,
     ) -> None: ...
-    def derive(self, key_material: bytes) -> bytes: ...
+    def derive(self, key_material: Buffer) -> bytes: ...
     def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
 
 class Argon2id:

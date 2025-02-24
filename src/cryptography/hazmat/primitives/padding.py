@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import abc
 
+from cryptography import utils
 from cryptography.hazmat.bindings._rust import (
     ANSIX923PaddingContext,
     ANSIX923UnpaddingContext,
@@ -16,7 +17,7 @@ from cryptography.hazmat.bindings._rust import (
 
 class PaddingContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def update(self, data: bytes) -> bytes:
+    def update(self, data: utils.Buffer) -> bytes:
         """
         Pads the provided bytes and returns any available data as bytes.
         """

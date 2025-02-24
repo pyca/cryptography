@@ -149,6 +149,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unused_configs = true
 strict_equality = true
+strict_bytes = true
 
 [[tool.mypy.overrides]]
 module = ["pretend"]

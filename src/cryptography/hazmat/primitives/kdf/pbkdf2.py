@@ -43,7 +43,7 @@ class PBKDF2HMAC(KeyDerivationFunction):
         self._salt = salt
         self._iterations = iterations
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         if self._used:
             raise AlreadyFinalized("PBKDF2 instances can only be used once.")
         self._used = True

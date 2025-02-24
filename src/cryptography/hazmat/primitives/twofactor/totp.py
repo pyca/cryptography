@@ -13,12 +13,13 @@ from cryptography.hazmat.primitives.twofactor.hotp import (
     HOTPHashTypes,
     _generate_uri,
 )
+from cryptography.utils import Buffer
 
 
 class TOTP:
     def __init__(
         self,
-        key: bytes,
+        key: Buffer,
         length: int,
         algorithm: HOTPHashTypes,
         time_step: int,

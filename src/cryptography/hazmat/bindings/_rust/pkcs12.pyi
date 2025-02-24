@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12KeyAndCertificates,
     PKCS12PrivateKeyTypes,
 )
+from cryptography.utils import Buffer
 
 class PKCS12Certificate:
     def __init__(
@@ -25,8 +26,8 @@ class PKCS12Certificate:
     def certificate(self) -> x509.Certificate: ...
 
 def load_key_and_certificates(
-    data: bytes,
-    password: bytes | None,
+    data: Buffer,
+    password: Buffer | None,
     backend: typing.Any = None,
 ) -> tuple[
     PrivateKeyTypes | None,

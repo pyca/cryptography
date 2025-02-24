@@ -5,6 +5,7 @@
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs7
+from cryptography.utils import Buffer
 
 class TestCertificate:
     not_after_tag: int
@@ -16,7 +17,7 @@ def test_parse_certificate(data: bytes) -> TestCertificate: ...
 def pkcs7_verify(
     encoding: serialization.Encoding,
     sig: bytes,
-    msg: bytes | None,
+    msg: Buffer | None,
     certs: list[x509.Certificate],
     options: list[pkcs7.PKCS7Options],
 ) -> None: ...
