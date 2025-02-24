@@ -18,7 +18,7 @@ from cryptography.hazmat.bindings._rust import (
 
 class PaddingContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def update(self, data: bytes) -> bytes:
+    def update(self, data: utils.Buffer) -> bytes:
         """
         Pads the provided bytes and returns any available data as bytes.
         """
@@ -39,7 +39,7 @@ def _byte_padding_check(block_size: int) -> None:
 
 
 def _byte_padding_update(
-    buffer_: bytes | None, data: bytes, block_size: int
+    buffer_: bytes | None, data: utils.Buffer, block_size: int
 ) -> tuple[bytes, bytes]:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
@@ -69,7 +69,7 @@ def _byte_padding_pad(
 
 
 def _byte_unpadding_update(
-    buffer_: bytes | None, data: bytes, block_size: int
+    buffer_: bytes | None, data: utils.Buffer, block_size: int
 ) -> tuple[bytes, bytes]:
     if buffer_ is None:
         raise AlreadyFinalized("Context was already finalized.")
@@ -142,7 +142,7 @@ class _ANSIX923PaddingContext(PaddingContext):
         # TODO: more copies than necessary, we should use zero-buffer (#193)
         self._buffer = b""
 
-    def update(self, data: bytes) -> bytes:
+    def update(self, data: utils.Buffer) -> bytes:
         self._buffer, result = _byte_padding_update(
             self._buffer, data, self.block_size
         )
@@ -167,7 +167,7 @@ class _ANSIX923UnpaddingContext(PaddingContext):
         # TODO: more copies than necessary, we should use zero-buffer (#193)
         self._buffer = b""
 
-    def update(self, data: bytes) -> bytes:
+    def update(self, data: utils.Buffer) -> bytes:
         self._buffer, result = _byte_unpadding_update(
             self._buffer, data, self.block_size
         )

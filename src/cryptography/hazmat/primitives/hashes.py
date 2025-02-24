@@ -7,6 +7,7 @@ from __future__ import annotations
 import abc
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.utils import Buffer
 
 __all__ = [
     "MD5",
@@ -67,7 +68,7 @@ class HashContext(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def update(self, data: bytes) -> None:
+    def update(self, data: Buffer) -> None:
         """
         Processes the provided bytes through the hash.
         """
