@@ -131,7 +131,7 @@ jobs:
             ${{ env.BUILD_REQUIREMENTS_PATH }}
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: cryptography-sdist
       - run: mkdir tmpwheelhouse
@@ -247,7 +247,7 @@ jobs:
           toolchain: stable
           # Add the arm64 target in addition to the native arch (x86_64)
           target: aarch64-apple-darwin
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: cryptography-sdist
 
@@ -316,7 +316,7 @@ jobs:
             ${{ env.UV_REQUIREMENTS_PATH }}
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           name: cryptography-sdist
 
