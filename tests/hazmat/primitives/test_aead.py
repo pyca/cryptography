@@ -735,12 +735,20 @@ class TestAESSIV:
         with pytest.raises(OverflowError):
             aessiv.decrypt(b"very very irrelevant", [large_data])
 
-    def test_no_empty_encryption(self):
+    def test_empty(self):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)
 
-        with pytest.raises(ValueError):
-            aessiv.encrypt(b"", None)
+        if rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER:
+            assert (
+                AESSIV(
+                    b"+'\xe4)\xfbl\x02g\x8eX\x9c\xccD7\xc5\xad\xfbD\xb31\xabm!\xea2\x17'\xe6\xec\x03\xd3T"
+                ).encrypt(b"", [b""])
+                == b"\xb2\xb25N7$\xdc\xda\xa8^\xcf\x02\x9bI\xa9\x0c"
+            )
+        else:
+            with pytest.raises(ValueError):
+                aessiv.encrypt(b"", None)
 
         with pytest.raises(InvalidTag):
             aessiv.decrypt(b"", None)
