@@ -30,7 +30,7 @@ def _common_args_checks(
 
 
 def _concatkdf_derive(
-    key_material: bytes,
+    key_material: utils.Buffer,
     length: int,
     auxfn: Callable[[], hashes.HashContext],
     otherinfo: bytes,
@@ -70,7 +70,7 @@ class ConcatKDFHash(KeyDerivationFunction):
     def _hash(self) -> hashes.Hash:
         return hashes.Hash(self._algorithm)
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True
@@ -112,7 +112,7 @@ class ConcatKDFHMAC(KeyDerivationFunction):
     def _hmac(self) -> hmac.HMAC:
         return hmac.HMAC(self._salt, self._algorithm)
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True

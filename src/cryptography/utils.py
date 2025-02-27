@@ -7,6 +7,7 @@ from __future__ import annotations
 import enum
 import sys
 import types
+import typing
 import warnings
 from collections.abc import Callable, Sequence
 
@@ -29,12 +30,22 @@ DeprecatedIn43 = CryptographyDeprecationWarning
 DeprecatedIn45 = CryptographyDeprecationWarning
 
 
+# If you're wondering why we don't use `Buffer`, it's because `Buffer` would
+# be more accurately named: Bufferable. It means something which has an
+# `__buffer__`. Which means you can't actually treat the result as a buffer
+# (and do things like take a `len()`).
+if sys.version_info >= (3, 9):
+    Buffer = typing.Union[bytes, bytearray, memoryview]
+else:
+    Buffer = typing.ByteString
+
+
 def _check_bytes(name: str, value: bytes) -> None:
     if not isinstance(value, bytes):
         raise TypeError(f"{name} must be bytes")
 
 
-def _check_byteslike(name: str, value: bytes) -> None:
+def _check_byteslike(name: str, value: Buffer) -> None:
     try:
         memoryview(value)
     except TypeError:
