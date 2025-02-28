@@ -1,4 +1,6 @@
 version: 2
+enable-beta-ecosystems: true
+
 updates:
   - package-ecosystem: "github-actions"
     directories:
@@ -21,7 +23,7 @@ updates:
       - dependency-type: all
     open-pull-requests-limit: 1024
 
-  - package-ecosystem: pip
+  - package-ecosystem: uv
     directories:
       - "/"
       - "/.github/requirements/"
