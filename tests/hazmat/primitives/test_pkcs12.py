@@ -32,6 +32,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
     PKCS12KeyAndCertificates,
     load_key_and_certificates,
     load_pkcs12,
+    serialize_java_truststore,
     serialize_key_and_certificates,
 )
 
@@ -735,6 +736,193 @@ class TestPKCS12Creation:
             else 1
         )
         assert p12.count(cert.fingerprint(hashes.SHA1())) == count
+
+
+@pytest.mark.skip_fips(
+    reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
+)
+class TestPKCS12TrustStoreCreation:
+    def test_generate_valid_truststore(self, backend):
+        # serialize_java_truststore adds a special attribute to each
+        # certificate's safebag. As we cannot read this back currently,
+        # comparison against a pre-verified file is necessary.
+        cert1 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert2 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_java_truststore(
+            [
+                PKCS12Certificate(cert1, b"cert1"),
+                PKCS12Certificate(cert2, None),
+            ],
+            encryption,
+        )
+
+        # The golden file was verified with:
+        # keytool -list -keystore java-truststore.p12
+        # Ensuring both entries are listed with "trustedCertEntry"
+        golden_bytes = load_vectors_from_file(
+            os.path.join("pkcs12", "java-truststore.p12"),
+            lambda data: data.read(),
+            mode="rb",
+        )
+
+        # The last 49 bytes are the MAC digest, and will vary each call, so we
+        # can ignore them.
+        mac_digest_size = 49
+        assert p12[:-mac_digest_size] == golden_bytes[:-mac_digest_size]
+
+    def test_generate_certs_friendly_names(self, backend):
+        cert1 = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        cert2 = _load_cert(backend, os.path.join("x509", "letsencryptx3.pem"))
+        encryption = serialization.NoEncryption()
+        p12 = serialize_java_truststore(
+            [
+                PKCS12Certificate(cert1, b"cert1"),
+                PKCS12Certificate(cert2, None),
+            ],
+            encryption,
+        )
+
+        p12_cert = load_pkcs12(p12, None, backend)
+        cas = p12_cert.additional_certs
+        assert cas[0].certificate == cert1
+        assert cas[0].friendly_name == b"cert1"
+        assert cas[1].certificate == cert2
+        assert cas[1].friendly_name is None
+
+    @pytest.mark.parametrize(
+        ("enc_alg", "enc_alg_der"),
+        [
+            (
+                PBES.PBESv2SHA256AndAES256CBC,
+                [
+                    b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x05\x0d",  # PBESv2
+                    b"\x06\x09\x60\x86\x48\x01\x65\x03\x04\x01\x2a",  # AES
+                ],
+            ),
+            (
+                PBES.PBESv1SHA1And3KeyTripleDESCBC,
+                [b"\x06\x0a\x2a\x86\x48\x86\xf7\x0d\x01\x0c\x01\x03"],
+            ),
+            (
+                None,
+                [],
+            ),
+        ],
+    )
+    @pytest.mark.parametrize(
+        ("mac_alg", "mac_alg_der"),
+        [
+            (hashes.SHA1(), b"\x06\x05\x2b\x0e\x03\x02\x1a"),
+            (hashes.SHA256(), b"\x06\t`\x86H\x01e\x03\x04\x02\x01"),
+            (None, None),
+        ],
+    )
+    @pytest.mark.parametrize(
+        ("iters", "iter_der"),
+        [
+            (420, b"\x02\x02\x01\xa4"),
+            (22222, b"\x02\x02\x56\xce"),
+            (None, None),
+        ],
+    )
+    def test_key_serialization_encryption(
+        self,
+        backend,
+        enc_alg,
+        enc_alg_der,
+        mac_alg,
+        mac_alg_der,
+        iters,
+        iter_der,
+    ):
+        builder = serialization.PrivateFormat.PKCS12.encryption_builder()
+        if enc_alg is not None:
+            builder = builder.key_cert_algorithm(enc_alg)
+        if mac_alg is not None:
+            builder = builder.hmac_hash(mac_alg)
+        if iters is not None:
+            builder = builder.kdf_rounds(iters)
+
+        encryption = builder.build(b"password")
+        cert = _load_cert(
+            backend, os.path.join("x509", "custom", "dsa_selfsigned_ca.pem")
+        )
+        assert isinstance(cert, x509.Certificate)
+        p12 = serialize_java_truststore(
+            [PKCS12Certificate(cert, b"name")], encryption
+        )
+        # We want to know if we've serialized something that has the parameters
+        # we expect, so we match on specific byte strings of OIDs & DER values.
+        for der in enc_alg_der:
+            assert der in p12
+        if mac_alg_der is not None:
+            assert mac_alg_der in p12
+        if iter_der is not None:
+            assert iter_der in p12
+        _, _, parsed_more_certs = load_key_and_certificates(
+            p12, b"password", backend
+        )
+        assert parsed_more_certs == [cert]
+
+    def test_invalid_utf8_friendly_name(self, backend):
+        cert, _ = _load_ca(backend)
+        with pytest.raises(ValueError):
+            serialize_java_truststore(
+                [PKCS12Certificate(cert, b"\xc9")],
+                serialization.NoEncryption(),
+            )
+
+    def test_generate_empty_certs(self):
+        with pytest.raises(ValueError) as exc:
+            serialize_java_truststore([], serialization.NoEncryption())
+        assert str(exc.value) == ("You must supply at least one cert")
+
+    def test_generate_unsupported_encryption_type(self, backend):
+        cert, _ = _load_ca(backend)
+        with pytest.raises(ValueError) as exc:
+            serialize_java_truststore(
+                [PKCS12Certificate(cert, None)],
+                DummyKeySerializationEncryption(),
+            )
+        assert str(exc.value) == "Unsupported key encryption type"
+
+    def test_generate_wrong_types(self, backend):
+        cert, key = _load_ca(backend)
+        encryption = serialization.NoEncryption()
+        with pytest.raises(TypeError) as exc:
+            serialize_java_truststore(cert, encryption)
+
+        with pytest.raises(TypeError) as exc:
+            serialize_java_truststore([cert], encryption)
+        assert "object cannot be converted to 'PKCS12Certificate'" in str(
+            exc.value
+        )
+
+        with pytest.raises(TypeError) as exc:
+            serialize_java_truststore(
+                [PKCS12Certificate(cert, None), key],
+                encryption,
+            )
+        assert "object cannot be converted to 'PKCS12Certificate'" in str(
+            exc.value
+        )
+
+        with pytest.raises(TypeError) as exc:
+            serialize_java_truststore([PKCS12Certificate(cert, None)], cert)
+        assert str(exc.value) == (
+            "Key encryption algorithm must be a "
+            "KeySerializationEncryption instance"
+        )
+        with pytest.raises(TypeError) as exc:
+            serialize_java_truststore([key], encryption)
+        assert "object cannot be converted to 'PKCS12Certificate'" in str(
+            exc.value
+        )
 
 
 @pytest.mark.skip_fips(
