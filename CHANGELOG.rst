@@ -10,7 +10,6 @@ Changelog
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
-* We now build wheels for PyPy 3.11.
 * Added support for PKCS7 decryption and encryption using AES-256 as the
   content algorithm, in addition to AES-128.
 * **BACKWARDS INCOMPATIBLE:** Made SSH private key loading more consistent with
@@ -36,6 +35,13 @@ Changelog
   :meth:`VerifiedClient.subject <cryptography.x509.verification.VerifiedClient.subjects>`
   property can now be `None` since a custom extension policy may allow certificates
   without a Subject Alternative Name extension.
+
+.. _v44-0-2:
+
+44.0.2 - 2025-03-01
+~~~~~~~~~~~~~~~~~~~
+
+* We now build wheels for PyPy 3.11.
 
 .. _v44-0-1:
 
