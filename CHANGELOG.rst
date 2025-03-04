@@ -35,6 +35,13 @@ Changelog
   :meth:`VerifiedClient.subject <cryptography.x509.verification.VerifiedClient.subjects>`
   property can now be `None` since a custom extension policy may allow certificates
   without a Subject Alternative Name extension.
+* Added support for PKCS7 decryption & encryption using AES-256 as content algorithm, 
+  in addition to AES-128. 
+* Added basic support for PKCS7 verification (including S/MIME 3.2) via
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_verify_der`,
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_verify_pem`, and
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_verify_smime`.
+
 
 .. _v44-0-2:
 
