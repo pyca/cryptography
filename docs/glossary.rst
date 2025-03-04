@@ -107,6 +107,15 @@ Glossary
         This is a term used to describe an operation where the user must
         ensure that the input is correct. Failure to do so can result in
         crashes, hangs, and other security issues.
+    
+    thread safety
+        All immutable objects in ``cryptography`` are safe to use in
+        multi-threaded environments. This means they can be shared across
+        threads without requiring additional synchronization. Mutable objects,
+        such as hash contexts, can also be shared, but concurrent modification
+        may lead to exceptions or incorrect results. When working with
+        cryptographic operations in a multi-threaded application, ensure that
+        any mutable objects are used in a thread-safe manner.
 
 .. _`hardware security module`: https://en.wikipedia.org/wiki/Hardware_security_module
 .. _`idna`: https://pypi.org/project/idna/
