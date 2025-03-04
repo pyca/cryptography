@@ -10,6 +10,7 @@ import typing
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
+from cryptography.utils import Buffer
 
 
 class DSAParameters(metaclass=abc.ABCMeta):
@@ -53,7 +54,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sign(
         self,
-        data: bytes,
+        data: Buffer,
         algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> bytes:
         """
@@ -121,8 +122,8 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def verify(
         self,
-        signature: bytes,
-        data: bytes,
+        signature: Buffer,
+        data: Buffer,
         algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
     ) -> None:
         """

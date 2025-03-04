@@ -10,18 +10,19 @@ import typing
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives._cipheralgorithm import CipherAlgorithm
 from cryptography.hazmat.primitives.ciphers import modes
+from cryptography.utils import Buffer
 
 
 class CipherContext(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def update(self, data: bytes) -> bytes:
+    def update(self, data: Buffer) -> bytes:
         """
         Processes the provided bytes through the cipher and returns the results
         as bytes.
         """
 
     @abc.abstractmethod
-    def update_into(self, data: bytes, buf: bytes) -> int:
+    def update_into(self, data: Buffer, buf: Buffer) -> int:
         """
         Processes the provided bytes and writes the resulting data into the
         provided buffer. Returns the number of bytes written.
@@ -44,7 +45,7 @@ class CipherContext(metaclass=abc.ABCMeta):
 
 class AEADCipherContext(CipherContext, metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def authenticate_additional_data(self, data: bytes) -> None:
+    def authenticate_additional_data(self, data: Buffer) -> None:
         """
         Authenticates the provided bytes.
         """
