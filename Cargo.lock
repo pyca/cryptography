@@ -85,6 +85,7 @@ version = "0.1.0"
 dependencies = [
  "asn1",
  "cfg-if",
+ "cryptography-crypto",
  "cryptography-x509",
  "openssl",
  "openssl-sys",
