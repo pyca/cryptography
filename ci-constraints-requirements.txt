@@ -2,7 +2,7 @@
 #    uv pip compile --universal --python-version 3.7 --all-extras --unsafe-package=cffi --unsafe-package=pycparser --unsafe-package=setuptools --unsafe-package=cryptography-vectors --unsafe-package=bcrypt pyproject.toml -o ci-constraints-requirements.txt
 alabaster==0.7.13 ; python_full_version < '3.9'
     # via sphinx
-alabaster==0.7.16 ; python_full_version == '3.9.*'
+alabaster==1.0.0 ; python_full_version == '3.9.*'
     # via sphinx
 alabaster==1.0.0 ; python_full_version >= '3.10'
     # via sphinx
