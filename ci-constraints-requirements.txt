@@ -264,7 +264,7 @@ sphinx-rtd-theme==3.0.2 ; python_full_version >= '3.8'
     # via cryptography (pyproject.toml)
 sphinxcontrib-applehelp==1.0.2 ; python_full_version < '3.8'
     # via sphinx
-sphinxcontrib-applehelp==1.0.4 ; python_full_version == '3.8.*'
+sphinxcontrib-applehelp==2.0.0 ; python_full_version == '3.8.*'
     # via sphinx
 sphinxcontrib-applehelp==2.0.0 ; python_full_version >= '3.9'
     # via sphinx
