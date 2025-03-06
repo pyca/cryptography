@@ -105,7 +105,7 @@ importlib-metadata==8.6.1 ; python_full_version >= '3.9' and python_full_version
     #   build
     #   pytest-randomly
     #   sphinx
-importlib-resources==6.4.5 ; python_full_version == '3.8.*'
+importlib-resources==6.5.2 ; python_full_version == '3.8.*'
     # via check-sdist
 iniconfig==2.0.0
     # via pytest
