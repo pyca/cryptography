@@ -57,7 +57,7 @@ docutils==0.19 ; python_full_version < '3.8'
     # via
     #   readme-renderer
     #   sphinx
-docutils==0.20.1 ; python_full_version == '3.8.*'
+docutils==0.21.2 ; python_full_version == '3.8.*'
     # via
     #   readme-renderer
     #   sphinx
