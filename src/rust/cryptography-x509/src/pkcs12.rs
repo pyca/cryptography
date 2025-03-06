@@ -55,7 +55,7 @@ pub enum AttributeSet<'a> {
 #[derive(asn1::Asn1DefinedByWrite)]
 pub enum BagValue<'a> {
     #[defined_by(CERT_BAG_OID)]
-    CertBag(CertBag<'a>),
+    CertBag(Box<CertBag<'a>>),
 
     #[defined_by(KEY_BAG_OID)]
     KeyBag(asn1::Tlv<'a>),
