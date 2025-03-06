@@ -45,7 +45,7 @@ colorlog==6.9.0
     # via nox
 coverage==7.2.7 ; python_full_version < '3.8'
     # via pytest-cov
-coverage==7.6.1 ; python_full_version == '3.8.*'
+coverage==7.6.12 ; python_full_version == '3.8.*'
     # via pytest-cov
 coverage==7.6.12 ; python_full_version >= '3.9'
     # via pytest-cov
