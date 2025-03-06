@@ -208,7 +208,7 @@ pytz==2025.1 ; python_full_version < '3.9'
     # via babel
 readme-renderer==37.3 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
-readme-renderer==43.0 ; python_full_version == '3.8.*'
+readme-renderer==44.0 ; python_full_version == '3.8.*'
     # via cryptography (pyproject.toml)
 readme-renderer==44.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
