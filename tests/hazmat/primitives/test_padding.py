@@ -13,6 +13,8 @@ from cryptography.hazmat.primitives import padding
 
 from .utils import SwitchIntervalContext, run_threaded
 
+IS_PYPY = sys.implementation.name == "pypy"
+
 
 class TestPKCS7:
     @pytest.mark.parametrize("size", [127, 4096, -2])
@@ -276,8 +278,8 @@ def test_multithreaded_padding(algorithm):
         b.wait()
         while index < len(data):
             new_content = padder.update(data[index : index + chunk_size])
-            if sys.version_info < (3, 10):
-                # appending to a bytestring is racey on 3.9 and older
+            if sys.version_info < (3, 10) or IS_PYPY:
+                # appending to a bytestring is racey on some Python versions
                 lock.acquire()
                 calculated_pad += new_content
                 lock.release()
@@ -325,7 +327,7 @@ def test_multithreaded_unpadding(algorithm, padding_bytes):
         b.wait()
         while index < num_repeats:
             new_content = padder.update(block)
-            if sys.version_info < (3, 10):
+            if sys.version_info < (3, 10) or IS_PYPY:
                 # appending to a bytestring is racey on 3.9 and older
                 lock.acquire()
                 calculated_unpadded_message += new_content
