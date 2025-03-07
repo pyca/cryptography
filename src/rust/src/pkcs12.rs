@@ -386,14 +386,14 @@ fn cert_to_bag<'a>(
 ) -> CryptographyResult<cryptography_x509::pkcs12::SafeBag<'a>> {
     Ok(cryptography_x509::pkcs12::SafeBag {
         _bag_id: asn1::DefinedByMarker::marker(),
-        bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::CertBag(
+        bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::CertBag(Box::new(
             cryptography_x509::pkcs12::CertBag {
                 _cert_id: asn1::DefinedByMarker::marker(),
                 cert_value: asn1::Explicit::new(cryptography_x509::pkcs12::CertType::X509(
                     asn1::OctetStringEncoded::new(cert.raw.borrow_dependent().clone()),
                 )),
             },
-        )),
+        ))),
         attributes: pkcs12_attributes(friendly_name, local_key_id)?,
     })
 }
