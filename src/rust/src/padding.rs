@@ -42,7 +42,6 @@ pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
-#[pyo3::pyfunction]
 pub(crate) fn check_ansix923_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
