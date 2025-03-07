@@ -111,6 +111,62 @@ impl PKCS7PaddingContext {
 }
 
 #[pyo3::pyclass]
+pub(crate) struct ANSIX923PaddingContext {
+    block_size: usize,
+    buffer: Option<Vec<u8>>,
+}
+
+#[pyo3::pymethods]
+impl ANSIX923PaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> ANSIX923PaddingContext {
+        ANSIX923PaddingContext {
+            block_size: block_size / 8,
+            buffer: Some(Vec::new()),
+        }
+    }
+
+    pub(crate) fn update<'p>(
+        &mut self,
+        buf: CffiBuf<'p>,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.as_mut() {
+            Some(v) => {
+                v.extend_from_slice(buf.as_bytes());
+                let finished_blocks = v.len() / (self.block_size);
+                let result_size = finished_blocks * (self.block_size);
+                let result = v.drain(..result_size);
+                Ok(pyo3::types::PyBytes::new(py, result.as_slice()))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.take().as_mut() {
+            Some(v) => {
+                let pad_size = (self.block_size).saturating_sub(v.len());
+                let mut count = 0;
+                v.extend(std::iter::from_fn(move || {
+                    count += 1;
+                    match count.cmp(&pad_size) {
+                        std::cmp::Ordering::Less => Some(0),
+                        std::cmp::Ordering::Equal => Some(pad_size as u8),
+                        std::cmp::Ordering::Greater => None,
+                    }
+                }));
+                Ok(pyo3::types::PyBytes::new(py, v))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
+#[pyo3::pyclass]
 pub(crate) struct PKCS7UnpaddingContext {
     block_size: usize,
     buffer: Option<Vec<u8>>,
@@ -155,6 +211,67 @@ impl PKCS7UnpaddingContext {
                     );
                 }
                 if !check_pkcs7_padding(&v) {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+
+                let pad_size = *v.last().unwrap();
+                let result = &v[..v.len() - pad_size as usize];
+                Ok(pyo3::types::PyBytes::new(py, result))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
+#[pyo3::pyclass]
+pub(crate) struct ANSIX923UnpaddingContext {
+    block_size: usize,
+    buffer: Option<Vec<u8>>,
+}
+
+#[pyo3::pymethods]
+impl ANSIX923UnpaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> ANSIX923UnpaddingContext {
+        ANSIX923UnpaddingContext {
+            block_size: block_size / 8,
+            buffer: Some(Vec::new()),
+        }
+    }
+
+    pub(crate) fn update<'p>(
+        &mut self,
+        buf: CffiBuf<'p>,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.as_mut() {
+            Some(v) => {
+                v.extend_from_slice(buf.as_bytes());
+                let finished_blocks =
+                    std::cmp::max((v.len() / self.block_size).saturating_sub(1), 0);
+                let result_size = finished_blocks * self.block_size;
+                let result = v.drain(..result_size);
+                Ok(pyo3::types::PyBytes::new(py, result.as_slice()))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.take() {
+            Some(v) => {
+                if v.len() != self.block_size {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+
+                if !check_ansix923_padding(&v) {
                     return Err(
                         pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
                     );
