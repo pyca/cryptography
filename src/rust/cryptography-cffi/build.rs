@@ -78,8 +78,15 @@ fn main() {
         build.include(python_include);
     }
 
-    // Enable abi3 mode if we're not using PyPy.
-    if python_impl != "PyPy" {
+    let is_free_threaded = run_python_script(
+        &python,
+        "import sysconfig; print(bool(sysconfig.get_config_var('Py_GIL_DISABLED')), end='')",
+    )
+    .unwrap()
+        == "True";
+
+    // Enable abi3 mode if we're not using PyPy or the free-threaded build
+    if !(python_impl == "PyPy" || is_free_threaded) {
         // cp37 (Python 3.7 to help our grep when we some day drop 3.7 support)
         build.define("Py_LIMITED_API", "0x030700f0");
     }
