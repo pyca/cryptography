@@ -4,7 +4,10 @@
 
 
 import binascii
+import concurrent.futures
+import contextlib
 import os
+import sys
 import sysconfig
 import threading
 import typing
@@ -225,18 +228,6 @@ def base_hash_test(backend, algorithm, digest_size):
     assert copy.finalize() == m.finalize()
 
 
-def run_threaded(num_threads, chunk, func, prepare_args):
-    threads = []
-    for threadnum in range(num_threads):
-        thread = threading.Thread(target=func, args=prepare_args(threadnum))
-        threads.append(thread)
-
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-
 def multithreaded_hash_test(backend, algorithm):
     # adapted from test_threaded_hashing in CPython's hashlib tests
     # Updating the same hash object from several threads at once
@@ -276,7 +267,7 @@ def multithreaded_hash_test(backend, algorithm):
         assert chunk_size % len(chunk) == 0
         return (chunk_size,)
 
-    run_threaded(num_threads, chunk, hash_in_chunks, prepare_args)
+    run_threaded(num_threads, hash_in_chunks, prepare_args)
 
     calculated_hash = hasher.finalize()
 
@@ -642,3 +633,27 @@ def skip_fips_traditional_openssl(backend, fmt):
         pytest.skip(
             "Traditional OpenSSL key format is not supported in FIPS mode."
         )
+
+
+class SwitchIntervalContext(contextlib.ContextDecorator):
+    """Context manager to track thread switch interval state"""
+
+    def __init__(self, interval):
+        self.interval = interval
+
+    def __enter__(self):
+        self.orig_interval = sys.getswitchinterval()
+        sys.setswitchinterval(self.interval)
+        return self
+
+    def __exit__(self, *exc):
+        sys.setswitchinterval(self.orig_interval)
+        return False
+
+
+def run_threaded(num_threads, func, prepare_args):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as e:
+        futures = [
+            e.submit(func, *prepare_args(t)) for t in range(num_threads)
+        ]
+        [f.result() for f in futures]

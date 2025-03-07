@@ -3,7 +3,6 @@
 # for complete details.
 
 
-import contextlib
 import sys
 import threading
 
@@ -12,7 +11,13 @@ import pytest
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
 
-from .utils import IS_FREETHREADED_BUILD, run_threaded
+from .utils import IS_FREETHREADED_BUILD, SwitchIntervalContext, run_threaded
+
+SHOULD_LOCK_BYTESTRING = (
+    IS_FREETHREADED_BUILD
+    or sys.version_info < (3, 10)
+    or sys.implementation.name == "pypy"
+)
 
 
 class TestPKCS7:
@@ -248,20 +253,6 @@ class TestANSIX923:
         assert final == unpadded + unpadded
 
 
-class SwitchIntervalContext(contextlib.ContextDecorator):
-    def __init__(self, interval):
-        self.interval = interval
-
-    def __enter__(self):
-        self.orig_interval = sys.getswitchinterval()
-        sys.setswitchinterval(self.interval)
-        return self
-
-    def __exit__(self, *exc):
-        sys.setswitchinterval(self.orig_interval)
-        return False
-
-
 @SwitchIntervalContext(0.0000001)
 @pytest.mark.parametrize(
     "algorithm",
@@ -292,8 +283,8 @@ def test_multithreaded_padding(algorithm):
         while index < len(data):
             try:
                 new_content = padder.update(data[index : index + chunk_size])
-                if IS_FREETHREADED_BUILD or sys.version_info < (3, 10):
-                    # appending to a bytestring is racey on 3.13t and < 3.10
+                if SHOULD_LOCK_BYTESTRING:
+                    # appending to a bytestring is racey on some Pythons
                     lock.acquire()
                     calculated_pad += new_content
                     lock.release()
@@ -314,7 +305,7 @@ def test_multithreaded_padding(algorithm):
         assert chunk_size % len(chunk) == 0
         return (chunk_size,)
 
-    run_threaded(num_threads, chunk, pad_in_chunks, prepare_args)
+    run_threaded(num_threads, pad_in_chunks, prepare_args)
 
     calculated_pad += padder.finalize()
     assert expected_pad == calculated_pad
@@ -349,8 +340,8 @@ def test_multithreaded_unpadding(algorithm, padding_bytes):
         while index < num_repeats:
             try:
                 new_content = padder.update(block)
-                if IS_FREETHREADED_BUILD or sys.version_info < (3, 10):
-                    # appending to a bytestring is racey on 3.13t and < 3.10
+                if SHOULD_LOCK_BYTESTRING:
+                    # appending to a bytestring is racey on some Pythons
                     lock.acquire()
                     calculated_unpadded_message += new_content
                     lock.release()
@@ -365,7 +356,7 @@ def test_multithreaded_unpadding(algorithm, padding_bytes):
                 continue
             index += 1
 
-    run_threaded(num_threads, chunk, unpad_in_chunks, lambda x: tuple())
+    run_threaded(num_threads, unpad_in_chunks, lambda x: tuple())
 
     calculated_unpadded_message += padder.finalize()
     assert expected_unpadded_message == calculated_unpadded_message
