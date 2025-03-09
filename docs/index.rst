@@ -45,6 +45,16 @@ See :doc:`Installation <installation>` for more information.
 .. _cryptography-layout:
 
 
+Thread Safety
+-------------
+
+All immutable objects in ``cryptography`` are safe to use in multi-threaded
+environments. This means they can be shared across threads without requiring
+additional synchronization. Mutable objects, such as hash contexts, can also be
+shared, but concurrent modification may lead to undefined behavior or
+exceptions. When working with cryptographic operations in a multi-threaded
+application, ensure that any mutable objects are used in a thread-safe manner.
+
 Layout
 ------
 
