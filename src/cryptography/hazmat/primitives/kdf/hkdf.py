@@ -32,12 +32,12 @@ class HKDF(KeyDerivationFunction):
 
         self._hkdf_expand = HKDFExpand(self._algorithm, length, info)
 
-    def _extract(self, key_material: bytes) -> bytes:
+    def _extract(self, key_material: utils.Buffer) -> bytes:
         h = hmac.HMAC(self._salt, self._algorithm)
         h.update(key_material)
         return h.finalize()
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         utils._check_byteslike("key_material", key_material)
         return self._hkdf_expand.derive(self._extract(key_material))
 
@@ -74,7 +74,7 @@ class HKDFExpand(KeyDerivationFunction):
 
         self._used = False
 
-    def _expand(self, key_material: bytes) -> bytes:
+    def _expand(self, key_material: utils.Buffer) -> bytes:
         output = [b""]
         counter = 1
 
@@ -88,7 +88,7 @@ class HKDFExpand(KeyDerivationFunction):
 
         return b"".join(output)[: self._length]
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         utils._check_byteslike("key_material", key_material)
         if self._used:
             raise AlreadyFinalized

@@ -56,7 +56,7 @@ class PKCS7Options(utils.Enum):
 class PKCS7SignatureBuilder:
     def __init__(
         self,
-        data: bytes | None = None,
+        data: utils.Buffer | None = None,
         signers: list[
             tuple[
                 x509.Certificate,
@@ -71,7 +71,7 @@ class PKCS7SignatureBuilder:
         self._signers = signers
         self._additional_certs = additional_certs
 
-    def set_data(self, data: bytes) -> PKCS7SignatureBuilder:
+    def set_data(self, data: utils.Buffer) -> PKCS7SignatureBuilder:
         _check_byteslike("data", data)
         if self._data is not None:
             raise ValueError("data may only be set once")

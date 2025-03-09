@@ -35,7 +35,7 @@ class X963KDF(KeyDerivationFunction):
         self._sharedinfo = sharedinfo
         self._used = False
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         if self._used:
             raise AlreadyFinalized
         self._used = True
