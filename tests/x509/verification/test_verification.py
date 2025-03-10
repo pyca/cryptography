@@ -494,7 +494,7 @@ class TestCustomExtensionPolicies:
             raise ValueError("test")
 
         if extension_type is x509.BasicConstraints:
-            # subjectAltName must be required for server verification
+            # basicConstraints must be required in a ca extension policy
             ca_ext_policy = ca_ext_policy.require_present(
                 extension_type,
                 Criticality.AGNOSTIC,
