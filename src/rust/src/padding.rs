@@ -20,7 +20,7 @@ fn constant_time_lt(a: u8, b: u8) -> u8 {
     duplicate_msb_to_all(a ^ ((a ^ b) | (a.wrapping_sub(b) ^ b)))
 }
 
-pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
+fn check_pkcs7_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
     let len: u8 = data.len().try_into().expect("data too long");
@@ -42,7 +42,7 @@ pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
-pub(crate) fn check_ansix923_padding(data: &[u8]) -> bool {
+fn check_ansix923_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
     let len: u8 = data.len().try_into().expect("data too long");
