@@ -56,6 +56,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.12", NOXSESSION: "tests-rust-debug"}
+          - {VERSION: "3.13t", NOXSESSION: "local"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -64,7 +65,16 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
+        if: matrix.PYTHON.VERSION != '3.13t'
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
+      - name: Setup python (free-threaded)
+        if: matrix.PYTHON.VERSION == '3.13t'
+        uses: quansight-labs/setup-python@869aeafb7eeb9dc48ba68acc0479e6fc3fd7ce5e # 5.4.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           cache: pip
@@ -135,6 +145,13 @@ jobs:
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
+      - name: override cffi version in free-threaded environment
+        if: matrix.PYTHON.VERSION == '3.13t'
+        # FIXME FIXME total hack
+        run: |
+          .nox/local/bin/python -m ensurepip
+          .nox/local/bin/python -m pip install git+https://github.com/colesbury/cffi@ft
+          echo "PYTHON_GIL=0" >> $GITHUB_ENV
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
