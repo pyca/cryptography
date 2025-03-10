@@ -237,8 +237,7 @@ impl ANSIX923UnpaddingContext {
         match self.buffer.as_mut() {
             Some(v) => {
                 v.extend_from_slice(buf.as_bytes());
-                let finished_blocks =
-                    std::cmp::max((v.len() / self.block_size).saturating_sub(1), 0);
+                let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
                 let result_size = finished_blocks * self.block_size;
                 let result = v.drain(..result_size);
                 Ok(pyo3::types::PyBytes::new(py, result.as_slice()))
