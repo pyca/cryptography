@@ -179,9 +179,9 @@ class TestANSIX923:
 
         str(mybytes())
         padder = padding.ANSIX923(128).padder()
-        padder.update(mybytes(b"abc"))
+        data = padder.update(mybytes(b"abc")) + padder.finalize()
         unpadder = padding.ANSIX923(128).unpadder()
-        unpadder.update(mybytes(padder.finalize()))
+        unpadder.update(mybytes(data))
         assert unpadder.finalize() == b"abc"
 
     @pytest.mark.parametrize(
