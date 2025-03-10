@@ -1189,6 +1189,63 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     -----END PRIVATE KEY-----
     """.strip()
 
+    verify_cert = b"""
+    -----BEGIN CERTIFICATE-----
+    MIID9zCCAt+gAwIBAgIQIxMA+XhyS9Ou0qAc0zPyVTANBgkqhkiG9w0BAQsFADAN
+    MQswCQYDVQQDDAJDQTAeFw0yNTAxMDUxMDQ4MjhaFw0yNjAxMDUxMDQ4MjhaMCUx
+    IzAhBgkqhkiG9w0BCQEWFGRlbW8xQHRyaXNvZnQuY29tLnBsMIIBIjANBgkqhkiG
+    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt0WRzh5y+QmEUjCm+iHXZLrstOSSEhiEcUre
+    3L8zkuGYVLCKBEvmaHQI7uCu/xdqEht6/wEBCiK+KLdGDVrD4v3A7TnmHzzhvqCs
+    BTL/EmnD3ZMAJVYv4uEBaFpFPSYnPswd353E6KRkFYR4RmFjG9xLTayHXOKqCF6d
+    Hd3uVR7NSs98uhcSYRV7g4NdjmaDj8kz5HeRMfr/uqbcriJ9tu/ljFBWYSwPeiNY
+    nYhaOBLpUhZckyjFDfC+UpwOBPlkK7J047urvzG21xCtVU9DMHtXMkXYe/C+WSm1
+    MRYtgcsOTxpGf+ujceltI2/+IUhWxr5ys7m+xM1jYaM4O1Pw0QIDAQABo4IBOTCC
+    ATUwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQduUy7zqv6z3uk4fJeifohSntD
+    2TAtBgNVHR8EJjAkMCKgIKAehhxodHRwOi8vY2EudHJpc29mdC5jb20ucGwvY3Js
+    MGYGCCsGAQUFBwEBBFowWDArBggrBgEFBQcwAoYfaHR0cDovL2NhLnRyaXNvZnQu
+    Y29tLnBsL2NhY2VydDApBggrBgEFBQcwAYYdaHR0cDovL2NhLnRyaXNvZnQuY29t
+    LnBsL29jc3AwHwYDVR0RBBgwFoEUZGVtbzFAdHJpc29mdC5jb20ucGwwHQYDVR0l
+    BBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMB0GA1UdDgQWBBT0/QFDFX/CCMsX356G
+    ImiWwPYxjDAOBgNVHQ8BAf8EBAMCA+gwDQYJKoZIhvcNAQELBQADggEBAL3Iisca
+    IqoFBLMox3cIhCANWO/U1eOvjDjfM/tOHn+6jci/pL/ZHgdRtqCCiaCKtJED/f/9
+    NFUKqcSZ9+vzW0RWLJxHgIvCSjLpoM06XClSlxjVnv62Hb1NC4FfDfnzyG+DZHus
+    nz/MQuXNwHntA6+JyB/HWHUie2ierQYH2mEN1XIJm5luSGwtuGaWfNz/w324ukcV
+    pMd3CbEOZqqfSYGWUHOVG90/OMSfKA/I0hia8Yij0X4Ny+b+bLnHaoozZwJ/UqBl
+    9ptbfiOOuFXJP7gt547Rp6+2C0XGJM+le0EYlUzbWE6UWgxaIRp5uc8HnUd5e4lX
+    br+Ixxcl3WHckkk=
+    -----END CERTIFICATE-----
+    """.strip()
+
+    verify_key = b"""
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEowIBAAKCAQEAt0WRzh5y+QmEUjCm+iHXZLrstOSSEhiEcUre3L8zkuGYVLCK
+    BEvmaHQI7uCu/xdqEht6/wEBCiK+KLdGDVrD4v3A7TnmHzzhvqCsBTL/EmnD3ZMA
+    JVYv4uEBaFpFPSYnPswd353E6KRkFYR4RmFjG9xLTayHXOKqCF6dHd3uVR7NSs98
+    uhcSYRV7g4NdjmaDj8kz5HeRMfr/uqbcriJ9tu/ljFBWYSwPeiNYnYhaOBLpUhZc
+    kyjFDfC+UpwOBPlkK7J047urvzG21xCtVU9DMHtXMkXYe/C+WSm1MRYtgcsOTxpG
+    f+ujceltI2/+IUhWxr5ys7m+xM1jYaM4O1Pw0QIDAQABAoIBAEiVCdiq4HfWmAwA
+    7rBTZL2k9gfyGhOGmDVSJI8iPiemprCrtg1bjeXCRqNsYoHuYPjI315MpH/CILN5
+    WgoB72BfhN+utX+bmf/oHBh3COPe9U40YLNovdBJskgEsDU2fgZ1ykL8dbZ5HJYU
+    /5lICntHNJ+Pe5CCyDpGVk00zqXwwBDV7hBhbPZxXqdRwdA49yyLIdw/IlMQph9A
+    zuJ0cyicQ0eFSFb1nCv/11hx3RyhfZvn/V3/F3BIP1gBipc3npldvCXhM4CjNYSe
+    tilKiqlYt2exD95RR7NdtL16UcRRCOblgGh23qjJOIb8N4dsr8xbeeCN3A69lILo
+    fgVs2J0CgYEA5noMFh9GFkZFhMIBFPhTlEn+VgWfwK9gWfcyy5GlVsMfp4UA+Alc
+    JSqz+0y1es2yoF0N4ckFsuZuh0GFZxFg46cE6WL1mO6NyzbND8VItQ3Mb2nsJiDC
+    xtJCiLqekfXudbmkNkmXleOIW16ZHorkgJADs0LDehGEGJh6lTxOc7MCgYEAy5FG
+    FGRHGncMyhkoyw6iZC+vmcpvoiu4HfKmTIPQDm6MGS6CxGU6BcX7IgPjdQkogY7s
+    UUP7lYnlvR2G8u4rOqrEMhjAsbudYSry24iAvcalT5lRYud2dh/8cpamfC9TrrUt
+    Zd/p8/lvkLTiF7j88QB6onFtm3seagma4hUJl2sCgYAzo8zpeABgJUaWRFGxvSIc
+    66dM5t2wcpsIDVcYPX3qPrXs9uQMrywyN6sz9zACX+xR+geOO1hHiVHihE+7lC09
+    VMLI+B9HMMwcaB7yFaYAyyKvI/CBan25xoqZ0BaPZacUQZAFid+o+d4ner6cFUq1
+    c48gryjVRO9wA1oT7fs1+QKBgBBzPOaI8/X/iNkMD2/ZTuYptFcJNNw2DDrfUPD9
+    9eI0rL2cNJUKWRX+Wbz183uRseRGWHJ4u+vpqNcPe8hF1th21EP4HBpAvwcLIXT8
+    IuszEkjMavdDHR+OlifsZKfEa07C9Vg2MAG3NnzLITopiMcw8rgN0n2uBVcsT4fV
+    i2DhAoGBAIJtHUe9e8oPrasRlZ3bTFmDT+jNg+7RB8ebG8ZDqAUI3/gnklUd0+rF
+    nPGI8GEpjwgBxB/zg4/rYz/TEP0E2pd0beWH2vKD31kQVngbz/zhzLHCNLyKDlB4
+    vFHpXRHb7ddgTLjHbg6GvY/pRRCqSxWnLgNRW4m+pyLzAx/Hpk1D
+    -----END RSA PRIVATE KEY-----
+    """.strip()
+
 .. class:: PKCS7SignatureBuilder
 
     The PKCS7 signature builder can create both basic PKCS7 signed messages as
@@ -1266,6 +1323,150 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
         :returns bytes: The signed PKCS7 message.
 
+
+.. function:: pkcs7_verify_der(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.DER, []
+        ... )
+        >>> pkcs7.pkcs7_verify_der(signed)
+
+    Deserialize and verify a DER-encoded PKCS7 signed message. PKCS7 (or S/MIME) has multiple
+    versions, but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2. If the
+    verification succeeds, does not return anything. If the verification fails, raises an exception.
+
+    :param data: The data, encoded in DER format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the signed message. Defaults to
+        None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
+
+
+.. function:: pkcs7_verify_pem(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.PEM, []
+        ... )
+        >>> pkcs7.pkcs7_verify_pem(signed)
+
+    Deserialize and verify a PEM-encoded PKCS7 signed message. PKCS7 (or S/MIME) has multiple
+    versions, but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2. If the
+    verification succeeds, does not return anything. If the verification fails, raises an exception.
+
+    :param data: The data, encoded in PEM format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the signed message. Defaults to
+        None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+
+    :raises ValueError: If the PEM data does not have the PKCS7 tag.
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
+
+
+.. function:: pkcs7_verify_smime(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.SMIME, []
+        ... )
+        >>> pkcs7.pkcs7_verify_smime(signed)
+
+    Verify a PKCS7 signed message stored in a MIME message, by reading it, extracting the content
+    (if any) and signature, deserializing the signature and verifying it against the content. PKCS7
+    (or S/MIME) has multiple versions, but this supports a subset of :rfc:`5751`, also known as
+    S/MIME Version 3.2. If the verification succeeds, does not return anything. If the verification
+    fails, raises an exception.  
+
+    :param data: The data, encoded in MIME format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the MIME message and in the
+        signature. Defaults to None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+
+    :raises ValueError: If the MIME message is not a S/MIME signed message: content type is
+        different than ``multipart/signed`` or ``application/pkcs7-mime``.
+    
+    :raises ValueError: If the MIME message is a malformed ``multipart/signed`` S/MIME message: not
+        multipart, or multipart with more than 2 parts (content & signature).
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
 
 .. class:: PKCS7EnvelopeBuilder
 
@@ -1559,6 +1760,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         reduce the size of the signature but requires that the recipient can
         obtain the signer's certificate by other means (for example from a
         previously signed message).
+
 
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
