@@ -20,9 +20,8 @@ use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlterna
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
-    EKU_SERVER_AUTH_OID,
+    EKU_SERVER_AUTH_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
-use extension::CertificateType;
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
@@ -442,8 +441,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
-        self.ca_extension_policy
-            .permits(self, CertificateType::CA, cert, extensions)?;
+        self.ca_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
@@ -452,12 +450,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub(crate) fn permits_ee<'chain>(
         &self,
         cert: &VerificationCertificate<'chain, B>,
-        extensions: &Extensions<'_>,
+        extensions: &Extensions<'chain>,
     ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert.certificate())?;
 
-        self.ee_extension_policy
-            .permits(self, CertificateType::EE, cert, extensions)?;
+        if let Some(ref subject) = self.subject {
+            let san: Option<SubjectAlternativeName<'chain>> =
+                match &extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
+                    Some(ext) => Some(ext.value()?),
+                    None => None,
+                };
+            permits_subject_alternative_name(subject, &san)?;
+        }
+
+        self.ee_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
@@ -564,6 +570,25 @@ fn permits_validity_date<'chain, B: CryptoOps>(
                 "validity dates between 1950 and 2049 must be UtcTime".to_string(),
             )));
         }
+    }
+
+    Ok(())
+}
+
+fn permits_subject_alternative_name<'chain, B: CryptoOps>(
+    subject: &Subject<'_>,
+    san: &Option<SubjectAlternativeName<'_>>,
+) -> ValidationResult<'chain, (), B> {
+    let Some(san) = san else {
+        return Err(ValidationError::new(ValidationErrorKind::Other(
+            "missing required extension: leaf server certificate has no subjectAltName".into(),
+        )));
+    };
+
+    if !subject.matches(san) {
+        return Err(ValidationError::new(ValidationErrorKind::Other(
+            "leaf certificate has no matching subjectAltName".into(),
+        )));
     }
 
     Ok(())
