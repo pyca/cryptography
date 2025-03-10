@@ -493,11 +493,19 @@ class TestCustomExtensionPolicies:
         def validator(*_):
             raise ValueError("test")
 
-        ca_ext_policy = ca_ext_policy.may_be_present(
-            extension_type,
-            Criticality.AGNOSTIC,
-            validator,
-        )
+        if extension_type is x509.BasicConstraints:
+            # subjectAltName must be required for server verification
+            ca_ext_policy = ca_ext_policy.require_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                validator,
+            )
+        else:
+            ca_ext_policy = ca_ext_policy.may_be_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                validator,
+            )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
         builder = builder.extension_policies(

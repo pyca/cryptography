@@ -51,6 +51,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     }
 
     pub fn new_default_webpki_ca() -> Self {
+        // NOTE: Only those checks that we are fine with users disabling should
+        // be part of default ExtensionPolicies, since these are user-configurable.
+        // Any constraints that are mandatory should be put directly into `Policy`.
+
         ExtensionPolicy {
             // 5280 4.2.2.1: Authority Information Access
             authority_information_access: ExtensionValidator::maybe_present(
@@ -81,7 +85,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::present(
                 Criticality::Critical,
-                Some(Arc::new(ca::basic_constraints)),
+                None, // NOTE: Mandatory validation is done in `Policy::permits_ca`
             ),
             // 5280 4.2.1.10: Name Constraints
             // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
@@ -101,6 +105,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     }
 
     pub fn new_default_webpki_ee() -> Self {
+        // NOTE: Only those checks that we are fine with users disabling should
+        // be part of default ExtensionPolicies, since these are user-configurable.
+        // Any constraints that are mandatory should be put directly into `Policy`.
+
         ExtensionPolicy {
             // 5280 4.2.2.1: Authority Information Access
             authority_information_access: ExtensionValidator::maybe_present(
@@ -126,7 +134,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::maybe_present(
                 Criticality::Agnostic,
-                Some(Arc::new(ee::basic_constraints)),
+                None, // NOTE: Mandatory validation is done in `Policy::permits_ee`
             ),
             // 5280 4.2.1.10: Name Constraints
             name_constraints: ExtensionValidator::not_present(),
@@ -389,28 +397,10 @@ impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
 }
 
 mod ee {
-    use cryptography_x509::extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage};
+    use cryptography_x509::extensions::{ExtendedKeyUsage, Extension, KeyUsage};
 
     use crate::ops::{CryptoOps, VerificationCertificate};
     use crate::policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult};
-
-    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &VerificationCertificate<'chain, B>,
-        extn: Option<&Extension<'_>>,
-    ) -> ValidationResult<'chain, (), B> {
-        if let Some(extn) = extn {
-            let basic_constraints: BasicConstraints = extn.value()?;
-
-            if basic_constraints.ca {
-                return Err(ValidationError::new(ValidationErrorKind::Other(
-                    "basicConstraints.cA must not be asserted in an EE certificate".to_string(),
-                )));
-            }
-        }
-
-        Ok(())
-    }
 
     pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
         _: &Policy<'_, B>,
@@ -487,8 +477,7 @@ mod ee {
 mod ca {
     use cryptography_x509::common::Asn1Read;
     use cryptography_x509::extensions::{
-        AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
-        NameConstraints,
+        AuthorityKeyIdentifier, ExtendedKeyUsage, Extension, KeyUsage, NameConstraints,
     };
     use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 
@@ -550,26 +539,6 @@ mod ca {
                 "keyUsage.keyCertSign must be asserted in a CA certificate".to_string(),
             )));
         }
-
-        Ok(())
-    }
-
-    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &VerificationCertificate<'chain, B>,
-        extn: &Extension<'_>,
-    ) -> ValidationResult<'chain, (), B> {
-        let basic_constraints: BasicConstraints = extn.value()?;
-
-        if !basic_constraints.ca {
-            return Err(ValidationError::new(ValidationErrorKind::Other(
-                "basicConstraints.cA must be asserted in a CA certificate".to_string(),
-            )));
-        }
-
-        // NOTE: basicConstraints.pathLength is checked as part of
-        // `Policy::permits_ca`, since we need the current chain building
-        // depth to check it.
 
         Ok(())
     }

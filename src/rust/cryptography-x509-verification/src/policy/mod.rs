@@ -262,10 +262,20 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
         };
 
+        // Even without the following checks, verification
+        // would fail, but we want to fail early and provide a more specific error message.
+
+        if !matches!(
+            retval.ca_extension_policy.basic_constraints,
+            ExtensionValidator::Present { .. }
+        ) {
+            return Err(
+                "A CA extension policy must require the basicConstraints extension to be present.",
+            );
+        }
+
         // NOTE: If subject is set (server profile), we do not accept
         // EE extension policies that allow the SAN extension to be absent.
-        // Even without this check, `self.ee_extension_policy.permits(self, CertificateType::EE, ...)`
-        // would fail, but we want to fail early and provide a more specific error message.
         if retval.subject.is_some()
             && !matches!(
                 retval.ee_extension_policy.subject_alternative_name,
@@ -421,16 +431,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // and `ChainBuilder::potential_issuers` enforces subject/issuer matching,
         // meaning that an CA with an empty subject cannot occur in a built chain.
 
-        // NOTE: This conceptually belongs in `valid_issuer`, but is easier
-        // to test here. It's also conceptually an extension policy, but
-        // requires a bit of extra external state (`current_depth`) that isn't
-        // presently convenient to push into that layer.
-        //
-        // NOTE: BasicConstraints is required via `ca_extension_policies`,
-        // so we always take this branch.
         if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
             let bc: BasicConstraints = bc.value()?;
 
+            // NOTE: This conceptually belongs in `valid_issuer`, but is easier
+            // to test here.
             if bc
                 .path_length
                 .map_or(false, |len| u64::from(current_depth) > len)
@@ -439,6 +444,17 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     "path length constraint violated".to_string(),
                 )));
             }
+
+            if !bc.ca {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "basicConstraints.cA must be asserted in a CA certificate".to_string(),
+                )));
+            }
+        } else {
+            return Err(ValidationError::new(ValidationErrorKind::ExtensionError {
+                oid: BASIC_CONSTRAINTS_OID,
+                reason: "missing required extension: CA certificate has no basicConstraints",
+            }));
         }
 
         self.ca_extension_policy.permits(self, cert, extensions)?;
@@ -453,6 +469,15 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         extensions: &Extensions<'chain>,
     ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert.certificate())?;
+
+        if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
+            let bc: BasicConstraints = bc.value()?;
+            if bc.ca {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "basicConstraints.cA must not be asserted in an EE certificate".to_string(),
+                )));
+            }
+        }
 
         if let Some(ref subject) = self.subject {
             let san: Option<SubjectAlternativeName<'chain>> =
