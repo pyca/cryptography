@@ -145,7 +145,8 @@ impl ANSIX923PaddingContext {
         match self.length_seen.take() {
             Some(v) => {
                 let pad_size = self.block_size - (v % self.block_size);
-                let mut pad = vec![0 as u8; pad_size.saturating_sub(1)];
+                // pad_size is between 1 and block_size by construction
+                let mut pad = vec![0_u8; pad_size - 1];
                 pad.push(pad_size as u8);
                 Ok(pyo3::types::PyBytes::new(py, pad.as_slice()))
             }
