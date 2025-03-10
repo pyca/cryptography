@@ -470,15 +470,6 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert.certificate())?;
 
-        if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
-            let bc: BasicConstraints = bc.value()?;
-            if bc.ca {
-                return Err(ValidationError::new(ValidationErrorKind::Other(
-                    "basicConstraints.cA must not be asserted in an EE certificate".to_string(),
-                )));
-            }
-        }
-
         if let Some(ref subject) = self.subject {
             let san: Option<SubjectAlternativeName<'chain>> =
                 match &extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {

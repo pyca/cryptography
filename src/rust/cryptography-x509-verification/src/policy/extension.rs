@@ -134,7 +134,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::maybe_present(
                 Criticality::Agnostic,
-                None, // NOTE: Mandatory validation is done in `Policy::permits_ee`
+                Some(Arc::new(ee::basic_constraints)),
             ),
             // 5280 4.2.1.10: Name Constraints
             name_constraints: ExtensionValidator::not_present(),
@@ -397,10 +397,28 @@ impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
 }
 
 mod ee {
-    use cryptography_x509::extensions::{ExtendedKeyUsage, Extension, KeyUsage};
+    use cryptography_x509::extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage};
 
     use crate::ops::{CryptoOps, VerificationCertificate};
     use crate::policy::{Policy, ValidationError, ValidationErrorKind, ValidationResult};
+
+    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &VerificationCertificate<'chain, B>,
+        extn: Option<&Extension<'_>>,
+    ) -> ValidationResult<'chain, (), B> {
+        if let Some(extn) = extn {
+            let basic_constraints: BasicConstraints = extn.value()?;
+
+            if basic_constraints.ca {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "basicConstraints.cA must not be asserted in an EE certificate".to_string(),
+                )));
+            }
+        }
+
+        Ok(())
+    }
 
     pub(crate) fn subject_alternative_name<'chain, B: CryptoOps>(
         _: &Policy<'_, B>,
