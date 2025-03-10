@@ -20,9 +20,8 @@ use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlterna
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
-    EKU_SERVER_AUTH_OID,
+    EKU_SERVER_AUTH_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
-use extension::CertificateType;
 use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
@@ -263,10 +262,20 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
         };
 
+        // Even without the following checks, verification
+        // would fail, but we want to fail early and provide a more specific error message.
+
+        if !matches!(
+            retval.ca_extension_policy.basic_constraints,
+            ExtensionValidator::Present { .. }
+        ) {
+            return Err(
+                "A CA extension policy must require the basicConstraints extension to be present.",
+            );
+        }
+
         // NOTE: If subject is set (server profile), we do not accept
         // EE extension policies that allow the SAN extension to be absent.
-        // Even without this check, `self.ee_extension_policy.permits(self, CertificateType::EE, ...)`
-        // would fail, but we want to fail early and provide a more specific error message.
         if retval.subject.is_some()
             && !matches!(
                 retval.ee_extension_policy.subject_alternative_name,
@@ -422,16 +431,11 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         // and `ChainBuilder::potential_issuers` enforces subject/issuer matching,
         // meaning that an CA with an empty subject cannot occur in a built chain.
 
-        // NOTE: This conceptually belongs in `valid_issuer`, but is easier
-        // to test here. It's also conceptually an extension policy, but
-        // requires a bit of extra external state (`current_depth`) that isn't
-        // presently convenient to push into that layer.
-        //
-        // NOTE: BasicConstraints is required via `ca_extension_policies`,
-        // so we always take this branch.
         if let Some(bc) = extensions.get_extension(&BASIC_CONSTRAINTS_OID) {
             let bc: BasicConstraints = bc.value()?;
 
+            // NOTE: This conceptually belongs in `valid_issuer`, but is easier
+            // to test here.
             if bc
                 .path_length
                 .map_or(false, |len| u64::from(current_depth) > len)
@@ -440,10 +444,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
                     "path length constraint violated".to_string(),
                 )));
             }
+
+            if !bc.ca {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "basicConstraints.cA must be asserted in a CA certificate".to_string(),
+                )));
+            }
+        } else {
+            return Err(ValidationError::new(ValidationErrorKind::ExtensionError {
+                oid: BASIC_CONSTRAINTS_OID,
+                reason: "missing required extension: CA certificate has no basicConstraints",
+            }));
         }
 
-        self.ca_extension_policy
-            .permits(self, CertificateType::CA, cert, extensions)?;
+        self.ca_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
@@ -452,12 +466,20 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
     pub(crate) fn permits_ee<'chain>(
         &self,
         cert: &VerificationCertificate<'chain, B>,
-        extensions: &Extensions<'_>,
+        extensions: &Extensions<'chain>,
     ) -> ValidationResult<'chain, (), B> {
         self.permits_basic(cert.certificate())?;
 
-        self.ee_extension_policy
-            .permits(self, CertificateType::EE, cert, extensions)?;
+        if let Some(ref subject) = self.subject {
+            let san: Option<SubjectAlternativeName<'chain>> =
+                match &extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID) {
+                    Some(ext) => Some(ext.value()?),
+                    None => None,
+                };
+            permits_subject_alternative_name(subject, &san)?;
+        }
+
+        self.ee_extension_policy.permits(self, cert, extensions)?;
 
         Ok(())
     }
@@ -564,6 +586,25 @@ fn permits_validity_date<'chain, B: CryptoOps>(
                 "validity dates between 1950 and 2049 must be UtcTime".to_string(),
             )));
         }
+    }
+
+    Ok(())
+}
+
+fn permits_subject_alternative_name<'chain, B: CryptoOps>(
+    subject: &Subject<'_>,
+    san: &Option<SubjectAlternativeName<'_>>,
+) -> ValidationResult<'chain, (), B> {
+    let Some(san) = san else {
+        return Err(ValidationError::new(ValidationErrorKind::Other(
+            "missing required extension: leaf server certificate has no subjectAltName".into(),
+        )));
+    };
+
+    if !subject.matches(san) {
+        return Err(ValidationError::new(ValidationErrorKind::Other(
+            "leaf certificate has no matching subjectAltName".into(),
+        )));
     }
 
     Ok(())

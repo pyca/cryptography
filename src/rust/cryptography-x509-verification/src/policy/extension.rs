@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use cryptography_x509::extensions::{Extension, Extensions, SubjectAlternativeName};
+use cryptography_x509::extensions::{Extension, Extensions};
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
     EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
@@ -15,13 +15,6 @@ use crate::ops::VerificationCertificate;
 use crate::{
     ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
 };
-
-use super::Subject;
-
-pub(crate) enum CertificateType {
-    EE,
-    CA,
-}
 
 #[derive(Clone)]
 pub struct ExtensionPolicy<'cb, B: CryptoOps> {
@@ -58,6 +51,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     }
 
     pub fn new_default_webpki_ca() -> Self {
+        // NOTE: Only those checks that we are fine with users disabling should
+        // be part of default ExtensionPolicies, since these are user-configurable.
+        // Any constraints that are mandatory should be put directly into `Policy`.
+
         ExtensionPolicy {
             // 5280 4.2.2.1: Authority Information Access
             authority_information_access: ExtensionValidator::maybe_present(
@@ -88,7 +85,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // 5280 4.2.1.9: Basic Constraints
             basic_constraints: ExtensionValidator::present(
                 Criticality::Critical,
-                Some(Arc::new(ca::basic_constraints)),
+                None, // NOTE: Mandatory validation is done in `Policy::permits_ca`
             ),
             // 5280 4.2.1.10: Name Constraints
             // NOTE: MUST be critical in 5280, but CABF relaxes to MAY.
@@ -108,6 +105,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     }
 
     pub fn new_default_webpki_ee() -> Self {
+        // NOTE: Only those checks that we are fine with users disabling should
+        // be part of default ExtensionPolicies, since these are user-configurable.
+        // Any constraints that are mandatory should be put directly into `Policy`.
+
         ExtensionPolicy {
             // 5280 4.2.2.1: Authority Information Access
             authority_information_access: ExtensionValidator::maybe_present(
@@ -125,8 +126,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             // CA/B 7.1.2.7.12 Subscriber Certificate Subject Alternative Name
             // This validator only handles the criticality checks. Matching
             // SANs against the subject in the profile is handled by
-            // `validate_subject_alternative_name_match` which is
-            // invoked for all EE certificates, irrespective of this field's contents.
+            // `Policy::permits_ee`.
             subject_alternative_name: ExtensionValidator::present(
                 Criticality::Agnostic,
                 Some(Arc::new(ee::subject_alternative_name)),
@@ -150,7 +150,6 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
     pub(crate) fn permits<'chain>(
         &self,
         policy: &Policy<'_, B>,
-        certificate_type: CertificateType,
         cert: &VerificationCertificate<'chain, B>,
         extensions: &Extensions<'_>,
     ) -> ValidationResult<'chain, (), B> {
@@ -189,12 +188,6 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                     subject_alternative_name_seen = true;
                     self.subject_alternative_name
                         .permits(policy, cert, Some(&ext))?;
-
-                    if let CertificateType::EE = certificate_type {
-                        // This ensures that even custom ExtensionPolicies will always
-                        // check the SAN against the policy's subject
-                        validate_subject_alternative_name_match(&policy.subject, &ext)?;
-                    }
                 }
                 BASIC_CONSTRAINTS_OID => {
                     basic_constraints_seen = true;
@@ -246,36 +239,8 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             self.extended_key_usage.permits(policy, cert, None)?;
         }
 
-        if let CertificateType::EE = certificate_type {
-            // SAN is always required if the policy contains a specific subject (server profile).
-            if policy.subject.is_some() && !subject_alternative_name_seen {
-                return Err(ValidationError::new(ValidationErrorKind::Other(
-                    "leaf server certificate has no subjectAltName".into(),
-                )));
-            }
-        }
-
         Ok(())
     }
-}
-
-/// This only verifies the SAN against `subject` if `subject` is not None.
-/// This allows us to handle both client and server profiles,
-/// **with the expectation** that `subject` is always set for server profiles.
-pub(crate) fn validate_subject_alternative_name_match<'chain, B: CryptoOps>(
-    subject: &Option<Subject<'_>>,
-    extn: &Extension<'_>,
-) -> ValidationResult<'chain, (), B> {
-    if let Some(sub) = subject {
-        let san: SubjectAlternativeName<'_> = extn.value()?;
-        if !sub.matches(&san) {
-            return Err(ValidationError::new(ValidationErrorKind::Other(
-                "leaf certificate has no matching subjectAltName".into(),
-            )));
-        }
-    }
-
-    Ok(())
 }
 
 /// Represents different criticality states for an extension.
@@ -530,8 +495,7 @@ mod ee {
 mod ca {
     use cryptography_x509::common::Asn1Read;
     use cryptography_x509::extensions::{
-        AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage,
-        NameConstraints,
+        AuthorityKeyIdentifier, ExtendedKeyUsage, Extension, KeyUsage, NameConstraints,
     };
     use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 
@@ -593,26 +557,6 @@ mod ca {
                 "keyUsage.keyCertSign must be asserted in a CA certificate".to_string(),
             )));
         }
-
-        Ok(())
-    }
-
-    pub(crate) fn basic_constraints<'chain, B: CryptoOps>(
-        _policy: &Policy<'_, B>,
-        _cert: &VerificationCertificate<'chain, B>,
-        extn: &Extension<'_>,
-    ) -> ValidationResult<'chain, (), B> {
-        let basic_constraints: BasicConstraints = extn.value()?;
-
-        if !basic_constraints.ca {
-            return Err(ValidationError::new(ValidationErrorKind::Other(
-                "basicConstraints.cA must be asserted in a CA certificate".to_string(),
-            )));
-        }
-
-        // NOTE: basicConstraints.pathLength is checked as part of
-        // `Policy::permits_ca`, since we need the current chain building
-        // depth to check it.
 
         Ok(())
     }
@@ -702,11 +646,10 @@ mod tests {
     use cryptography_x509::extensions::{BasicConstraints, Extension};
     use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
 
-    use super::{Criticality, ExtensionPolicy, ExtensionValidator};
+    use super::{Criticality, ExtensionValidator};
     use crate::certificate::tests::PublicKeyErrorOps;
-    use crate::ops::tests::{cert, v1_cert_pem};
+    use crate::ops::tests::{cert, epoch, v1_cert_pem};
     use crate::ops::{CryptoOps, VerificationCertificate};
-    use crate::policy::extension::CertificateType;
     use crate::policy::{Policy, PolicyDefinition, Subject, ValidationResult};
     use crate::types::DNSName;
 
@@ -723,10 +666,6 @@ mod tests {
         let criticality = Criticality::NonCritical;
         assert!(!criticality.permits(true));
         assert!(criticality.permits(false));
-    }
-
-    fn epoch() -> asn1::DateTime {
-        asn1::DateTime::new(1970, 1, 1, 0, 0, 0).unwrap()
     }
 
     fn create_encoded_extension<T: SimpleAsn1Writable>(
@@ -955,40 +894,5 @@ mod tests {
                 Some(&raw_ext)
             )
             .is_err());
-    }
-
-    #[test]
-    fn test_subject_alt_name_absent_in_server_profile() {
-        // This certificate doesn't have a SAN extension.
-        let cert_pem = v1_cert_pem();
-        let cert = cert(&cert_pem);
-        let ops = PublicKeyErrorOps {};
-
-        let policy_def = PolicyDefinition::server(
-            ops,
-            Subject::DNS(DNSName::new("example.com").unwrap()),
-            epoch(),
-            None,
-            None,
-            None,
-        )
-        .expect("failed to create policy definition");
-        let policy = Policy::new(&policy_def, ());
-
-        let extensions = &cert
-            .extensions()
-            .map_err(|_| "duplicate extensions")
-            .expect("failed to get extensions");
-
-        let result = ExtensionPolicy::new_permit_all().permits(
-            &policy,
-            CertificateType::EE,
-            &VerificationCertificate::new(&cert, ()),
-            &extensions,
-        );
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "leaf server certificate has no subjectAltName"
-        );
     }
 }

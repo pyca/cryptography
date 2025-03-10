@@ -493,11 +493,19 @@ class TestCustomExtensionPolicies:
         def validator(*_):
             raise ValueError("test")
 
-        ca_ext_policy = ca_ext_policy.may_be_present(
-            extension_type,
-            Criticality.AGNOSTIC,
-            validator,
-        )
+        if extension_type is x509.BasicConstraints:
+            # basicConstraints must be required in a ca extension policy
+            ca_ext_policy = ca_ext_policy.require_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                validator,
+            )
+        else:
+            ca_ext_policy = ca_ext_policy.may_be_present(
+                extension_type,
+                Criticality.AGNOSTIC,
+                validator,
+            )
 
         builder = PolicyBuilder().store(self.store).time(self.validation_time)
         builder = builder.extension_policies(
@@ -587,6 +595,39 @@ class TestCustomExtensionPolicies:
             ),
         ):
             builder.build_server_verifier(DNSName("example.com"))
+
+    def test_ca_ext_policy_must_require_basic_constraints(self):
+        ca_policies = [
+            ExtensionPolicy.webpki_defaults_ca().require_not_present(
+                x509.BasicConstraints
+            ),
+            ExtensionPolicy.webpki_defaults_ca().may_be_present(
+                x509.BasicConstraints, Criticality.AGNOSTIC, None
+            ),
+        ]
+
+        for ca_policy in ca_policies:
+            builder = (
+                PolicyBuilder().store(self.store).time(self.validation_time)
+            )
+            builder = builder.extension_policies(
+                ca_policy=ca_policy,
+                ee_policy=ExtensionPolicy.webpki_defaults_ee(),
+            )
+            pattern = (
+                "A CA extension policy must require the"
+                " basicConstraints extension to be present."
+            )
+            with pytest.raises(
+                ValueError,
+                match=pattern,
+            ):
+                builder.build_server_verifier(DNSName("example.com"))
+            with pytest.raises(
+                ValueError,
+                match=pattern,
+            ):
+                builder.build_client_verifier()
 
     def test_wrong_subject_alt_name(self):
         ee_extension_policy = (
