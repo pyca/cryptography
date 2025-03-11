@@ -115,6 +115,10 @@ zl9HYIMxATFyqSiD9jsx
         .unwrap()
     }
 
+    pub(crate) fn epoch() -> asn1::DateTime {
+        asn1::DateTime::new(1970, 1, 1, 0, 0, 0).unwrap()
+    }
+
     pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
         asn1::parse_single(cert_pem.contents()).unwrap()
     }
