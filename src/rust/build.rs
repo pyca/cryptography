@@ -34,6 +34,11 @@ fn main() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
     }
 
+    if env::var("CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY").map_or(false, |v| !v.is_empty() && v != "0")
+    {
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY");
+    }
+
     if let Ok(vars) = env::var("DEP_OPENSSL_CONF") {
         for var in vars.split(',') {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OSSLCONF=\"{var}\"");
