@@ -21,6 +21,7 @@ pub(crate) mod hmac;
 pub(crate) mod kdf;
 pub(crate) mod keys;
 pub(crate) mod poly1305;
+pub(crate) mod rand;
 pub(crate) mod rsa;
 pub(crate) mod utils;
 pub(crate) mod x25519;
