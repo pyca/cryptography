@@ -300,8 +300,7 @@ fn get_cipher_registry(
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
-                m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
-            }
+            m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
 
             if let Some(rc2_cbc) = Cipher::from_nid(openssl::nid::Nid::RC2_CBC) {
                 m.add(&rc2, &cbc, Some(128), rc2_cbc)?;
