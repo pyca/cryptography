@@ -916,6 +916,7 @@ impl AesSiv {
         let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::List);
 
+        #[cfg(not(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
         if data_bytes.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
