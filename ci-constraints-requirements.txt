@@ -10,7 +10,7 @@ argcomplete==3.1.2 ; python_full_version < '3.8'
     # via nox
 argcomplete==3.6.0 ; python_full_version >= '3.8'
     # via nox
-attrs==25.2.0 ; python_full_version >= '3.8'
+attrs==25.3.0 ; python_full_version >= '3.8'
     # via nox
 babel==2.14.0 ; python_full_version < '3.8'
     # via sphinx
