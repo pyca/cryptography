@@ -6,7 +6,9 @@
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 #![allow(unknown_lints, clippy::result_large_err)]
 
-mod ec;
+pub mod dsa;
+pub mod ec;
+pub mod pkcs8;
 pub mod rsa;
 pub mod spki;
 
@@ -17,6 +19,9 @@ pub enum KeyParsingError {
     UnsupportedEllipticCurve(asn1::ObjectIdentifier),
     Parse(asn1::ParseError),
     OpenSSL(openssl::error::ErrorStack),
+    UnsupportedEncryptionAlgorithm(asn1::ObjectIdentifier),
+    EncryptedKeyWithoutPassword,
+    IncorrectPassword,
 }
 
 impl From<asn1::ParseError> for KeyParsingError {
