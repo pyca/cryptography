@@ -135,6 +135,7 @@ fn get_cipher_registry(
         let sm4 = types::SM4.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
         let seed = types::SEED.get(py)?;
+        #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
         let arc4 = types::ARC4.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         let chacha20 = types::CHACHA20.get(py)?;
@@ -298,7 +299,9 @@ fn get_cipher_registry(
                 m.add(&idea, &cfb, Some(128), Cipher::idea_cfb64())?;
             }
 
-            m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
+            #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
+                m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
+            }
 
             if let Some(rc2_cbc) = Cipher::from_nid(openssl::nid::Nid::RC2_CBC) {
                 m.add(&rc2, &cbc, Some(128), rc2_cbc)?;
