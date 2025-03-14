@@ -553,6 +553,7 @@ pub static CAST5: LazyPyImport = LazyPyImport::new(
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
 pub static IDEA: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["IDEA"]);
+#[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
 pub static ARC4: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["ARC4"]);
 pub static RC2: LazyPyImport =
