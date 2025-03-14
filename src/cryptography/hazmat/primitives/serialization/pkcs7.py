@@ -21,6 +21,14 @@ from cryptography.hazmat.primitives.ciphers import (
     algorithms,
 )
 from cryptography.utils import _check_byteslike
+from cryptography.x509 import Certificate
+from cryptography.x509.verification import (
+    Criticality,
+    ExtensionPolicy,
+    Policy,
+    PolicyBuilder,
+    Store,
+)
 
 load_pem_pkcs7_certificates = rust_pkcs7.load_pem_pkcs7_certificates
 
@@ -184,6 +192,11 @@ class PKCS7SignatureBuilder:
             )
 
         return rust_pkcs7.sign_and_serialize(self, encoding, options)
+
+
+pkcs7_verify_der = rust_pkcs7.verify_der
+pkcs7_verify_pem = rust_pkcs7.verify_pem
+pkcs7_verify_smime = rust_pkcs7.verify_smime
 
 
 class PKCS7EnvelopeBuilder:
@@ -356,6 +369,85 @@ def _smime_signed_encode(
     )
     g.flatten(m)
     return fp.getvalue()
+
+
+def _smime_signed_decode(data: bytes) -> tuple[bytes | None, bytes]:
+    message = email.message_from_bytes(data)
+    content_type = message.get_content_type()
+    if content_type == "multipart/signed":
+        payload = message.get_payload()
+        if not isinstance(payload, list):
+            raise ValueError(
+                "Malformed multipart/signed message: must be multipart"
+            )
+        assert isinstance(payload[0], email.message.Message), (
+            "Malformed multipart/signed message: first part (content) "
+            "must be a MIME message"
+        )
+        assert isinstance(payload[1], email.message.Message), (
+            "Malformed multipart/signed message: second part (signature) "
+            "must be a MIME message"
+        )
+        return (
+            bytes(payload[0].get_payload(decode=True)),
+            bytes(payload[1].get_payload(decode=True)),
+        )
+    elif content_type == "application/pkcs7-mime":
+        return None, bytes(message.get_payload(decode=True))
+    else:
+        raise ValueError("Not an S/MIME signed message")
+
+
+def get_smime_x509_extension_policies() -> tuple[
+    ExtensionPolicy, ExtensionPolicy
+]:
+    """
+    Gets the default X.509 extension policy for S/MIME. Some specifications
+    that differ from the standard ones:
+    - Certificates used as end entities (i.e., the cert used to sign
+      a PKCS#7/SMIME message) should not have ca=true in their basic
+      constraints extension.
+    - EKU_CLIENT_AUTH_OID is not required
+    - EKU_EMAIL_PROTECTION_OID is required
+    """
+
+    # CA policy
+    def _validate_ca(
+        policy: Policy, cert: Certificate, bc: x509.BasicConstraints
+    ):
+        assert not bc.ca
+
+    ca_policy = ExtensionPolicy.permit_all().require_present(
+        x509.BasicConstraints,
+        Criticality.AGNOSTIC,
+        _validate_ca,
+    )
+
+    # EE policy
+    def _validate_eku(
+        policy: Policy, cert: Certificate, eku: x509.ExtendedKeyUsage
+    ):
+        # Checking for EKU_EMAIL_PROTECTION_OID
+        assert x509.ExtendedKeyUsageOID.EMAIL_PROTECTION in eku  # type: ignore[attr-defined]
+
+    ee_policy = ExtensionPolicy.permit_all().require_present(
+        x509.ExtendedKeyUsage,
+        Criticality.AGNOSTIC,
+        _validate_eku,
+    )
+
+    return ca_policy, ee_policy
+
+
+def _verify_pkcs7_certificates(certificates: list[x509.Certificate]) -> None:
+    builder = (
+        PolicyBuilder()
+        .store(Store(certificates))
+        .extension_policies(*get_smime_x509_extension_policies())
+    )
+
+    verifier = builder.build_client_verifier()
+    verifier.verify(certificates[0], certificates[1:])
 
 
 def _smime_enveloped_encode(data: bytes) -> bytes:
