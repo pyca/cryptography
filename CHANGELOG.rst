@@ -35,6 +35,13 @@ Changelog
   :meth:`VerifiedClient.subject <cryptography.x509.verification.VerifiedClient.subjects>`
   property can now be `None` since a custom extension policy may allow certificates
   without a Subject Alternative Name extension.
+* Changed the behavior when the OpenSSL 3 legacy provider fails to load.
+  Instead of raising an exception, a warning is now emitted. The
+  ``CRYPTOGRAPHY_OPENSSL_NO_LEGACY`` environment variable can still be used to
+  disable the legacy provider at runtime.
+* Added support for the ``CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY`` environment
+  variable during build time, which prevents the library from ever attempting
+  to load the legacy provider.
 
 .. _v44-0-2:
 
