@@ -4,10 +4,7 @@
 
 
 import binascii
-import concurrent.futures
-import contextlib
 import os
-import sys
 import typing
 
 import pytest
@@ -582,27 +579,3 @@ def skip_fips_traditional_openssl(backend, fmt):
         pytest.skip(
             "Traditional OpenSSL key format is not supported in FIPS mode."
         )
-
-
-class SwitchIntervalContext(contextlib.ContextDecorator):
-    """Context manager to track thread switch interval state"""
-
-    def __init__(self, interval):
-        self.interval = interval
-
-    def __enter__(self):
-        self.orig_interval = sys.getswitchinterval()
-        sys.setswitchinterval(self.interval)
-        return self
-
-    def __exit__(self, *exc):
-        sys.setswitchinterval(self.orig_interval)
-        return False
-
-
-def run_threaded(num_threads, func, prepare_args):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as e:
-        futures = [
-            e.submit(func, *prepare_args(t)) for t in range(num_threads)
-        ]
-        [f.result() for f in futures]

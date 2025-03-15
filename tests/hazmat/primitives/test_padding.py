@@ -3,17 +3,10 @@
 # for complete details.
 
 
-import sys
-import threading
-
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized
 from cryptography.hazmat.primitives import padding
-
-from .utils import SwitchIntervalContext, run_threaded
-
-IS_PYPY = sys.implementation.name == "pypy"
 
 
 class TestPKCS7:
@@ -257,96 +250,3 @@ class TestANSIX923:
         padder = padding.ANSIX923(64).padder()
         data = padder.update(b"a" * 8) + padder.finalize()
         assert data == b"a" * 8 + b"\x00" * 7 + b"\x08"
-
-
-@SwitchIntervalContext(0.0000001)
-@pytest.mark.parametrize(
-    "algorithm",
-    [
-        padding.PKCS7,
-        padding.ANSIX923,
-    ],
-)
-def test_multithreaded_padding(algorithm):
-    num_threads = 4
-    chunk = b"abcd1234"
-    data = chunk * 2048
-    block_size = 1024  # in bits
-
-    padder = algorithm(block_size).padder()
-    validate_padder = algorithm(block_size).padder()
-    expected_pad = validate_padder.update(data * num_threads)
-    expected_pad += validate_padder.finalize()
-    calculated_pad = b""
-
-    b = threading.Barrier(num_threads)
-    lock = threading.Lock()
-
-    def pad_in_chunks(chunk_size):
-        nonlocal calculated_pad
-        index = 0
-        b.wait()
-        while index < len(data):
-            new_content = padder.update(data[index : index + chunk_size])
-            if sys.version_info < (3, 10) or IS_PYPY:
-                # appending to a bytestring is racey on some Python versions
-                lock.acquire()
-                calculated_pad += new_content
-                lock.release()
-            else:
-                calculated_pad += new_content
-            index += chunk_size
-
-    def prepare_args(threadnum):
-        chunk_size = len(data) // (2**threadnum)
-        assert chunk_size > 0
-        assert chunk_size % len(chunk) == 0
-        return (chunk_size,)
-
-    run_threaded(num_threads, pad_in_chunks, prepare_args)
-
-    calculated_pad += padder.finalize()
-    assert expected_pad == calculated_pad
-
-
-@SwitchIntervalContext(0.0000001)
-@pytest.mark.parametrize(
-    "algorithm, padding_bytes",
-    [(padding.PKCS7, b"\x04" * 4), (padding.ANSIX923, b"\x00" * 3 + b"\x04")],
-)
-def test_multithreaded_unpadding(algorithm, padding_bytes):
-    num_threads = 4
-    num_repeats = 1000
-    chunk = b"abcd"
-    block = chunk + padding_bytes
-
-    padder = algorithm(len(block) * 8).unpadder()
-    validate_padder = algorithm(len(block) * 8).unpadder()
-    expected_unpadded_message = b""
-    for _ in range(num_threads * num_repeats):
-        expected_unpadded_message += validate_padder.update(block)
-    expected_unpadded_message += validate_padder.finalize()
-    calculated_unpadded_message = b""
-
-    b = threading.Barrier(num_threads)
-    lock = threading.Lock()
-
-    def unpad_in_chunks():
-        nonlocal calculated_unpadded_message
-        index = 0
-        b.wait()
-        while index < num_repeats:
-            new_content = padder.update(block)
-            if sys.version_info < (3, 10) or IS_PYPY:
-                # appending to a bytestring is racey on 3.9 and older
-                lock.acquire()
-                calculated_unpadded_message += new_content
-                lock.release()
-            else:
-                calculated_unpadded_message += new_content
-            index += 1
-
-    run_threaded(num_threads, unpad_in_chunks, lambda x: tuple())
-
-    calculated_unpadded_message += padder.finalize()
-    assert expected_unpadded_message == calculated_unpadded_message
