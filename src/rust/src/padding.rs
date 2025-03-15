@@ -20,7 +20,7 @@ fn constant_time_lt(a: u8, b: u8) -> u8 {
     duplicate_msb_to_all(a ^ ((a ^ b) | (a.wrapping_sub(b) ^ b)))
 }
 
-pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
+fn check_pkcs7_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
     let len: u8 = data.len().try_into().expect("data too long");
@@ -42,8 +42,7 @@ pub(crate) fn check_pkcs7_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
-#[pyo3::pyfunction]
-pub(crate) fn check_ansix923_padding(data: &[u8]) -> bool {
+fn check_ansix923_padding(data: &[u8]) -> bool {
     let mut mismatch = 0;
     let pad_size = *data.last().unwrap();
     let len: u8 = data.len().try_into().expect("data too long");
@@ -111,6 +110,52 @@ impl PKCS7PaddingContext {
 }
 
 #[pyo3::pyclass]
+pub(crate) struct ANSIX923PaddingContext {
+    block_size: usize,
+    length_seen: Option<usize>,
+}
+
+#[pyo3::pymethods]
+impl ANSIX923PaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> ANSIX923PaddingContext {
+        ANSIX923PaddingContext {
+            block_size: block_size / 8,
+            length_seen: Some(0),
+        }
+    }
+
+    pub(crate) fn update<'a>(
+        &mut self,
+        buf: CffiBuf<'a>,
+    ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+        match self.length_seen.as_mut() {
+            Some(v) => {
+                *v += buf.as_bytes().len();
+                Ok(buf.into_pyobj())
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.length_seen.take() {
+            Some(v) => {
+                let pad_size = self.block_size - (v % self.block_size);
+                // pad_size is between 1 and block_size by construction
+                let mut pad = vec![0_u8; pad_size - 1];
+                pad.push(pad_size as u8);
+                Ok(pyo3::types::PyBytes::new(py, pad.as_slice()))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
+#[pyo3::pyclass]
 pub(crate) struct PKCS7UnpaddingContext {
     block_size: usize,
     buffer: Option<Vec<u8>>,
@@ -155,6 +200,66 @@ impl PKCS7UnpaddingContext {
                     );
                 }
                 if !check_pkcs7_padding(&v) {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+
+                let pad_size = *v.last().unwrap();
+                let result = &v[..v.len() - pad_size as usize];
+                Ok(pyo3::types::PyBytes::new(py, result))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+}
+
+#[pyo3::pyclass]
+pub(crate) struct ANSIX923UnpaddingContext {
+    block_size: usize,
+    buffer: Option<Vec<u8>>,
+}
+
+#[pyo3::pymethods]
+impl ANSIX923UnpaddingContext {
+    #[new]
+    pub(crate) fn new(block_size: usize) -> ANSIX923UnpaddingContext {
+        ANSIX923UnpaddingContext {
+            block_size: block_size / 8,
+            buffer: Some(Vec::new()),
+        }
+    }
+
+    pub(crate) fn update<'p>(
+        &mut self,
+        buf: CffiBuf<'p>,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.as_mut() {
+            Some(v) => {
+                v.extend_from_slice(buf.as_bytes());
+                let finished_blocks = (v.len() / self.block_size).saturating_sub(1);
+                let result_size = finished_blocks * self.block_size;
+                let result = v.drain(..result_size);
+                Ok(pyo3::types::PyBytes::new(py, result.as_slice()))
+            }
+            None => Err(exceptions::already_finalized_error()),
+        }
+    }
+
+    pub(crate) fn finalize<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self.buffer.take() {
+            Some(v) => {
+                if v.len() != self.block_size {
+                    return Err(
+                        pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
+                    );
+                }
+
+                if !check_ansix923_padding(&v) {
                     return Err(
                         pyo3::exceptions::PyValueError::new_err("Invalid padding bytes.").into(),
                     );
