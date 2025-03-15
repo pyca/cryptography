@@ -132,6 +132,11 @@ class TestPKCS7:
         final = unpadder.update(padded) + unpadder.finalize()
         assert final == unpadded + unpadded
 
+    def test_block_size_padding(self):
+        padder = padding.PKCS7(64).padder()
+        data = padder.update(b"a" * 8) + padder.finalize()
+        assert data == b"a" * 8 + b"\x08" * 8
+
 
 class TestANSIX923:
     @pytest.mark.parametrize("size", [127, 4096, -2])
@@ -172,9 +177,9 @@ class TestANSIX923:
 
         str(mybytes())
         padder = padding.ANSIX923(128).padder()
-        padder.update(mybytes(b"abc"))
+        data = padder.update(mybytes(b"abc")) + padder.finalize()
         unpadder = padding.ANSIX923(128).unpadder()
-        unpadder.update(mybytes(padder.finalize()))
+        unpadder.update(mybytes(data))
         assert unpadder.finalize() == b"abc"
 
     @pytest.mark.parametrize(
@@ -240,3 +245,8 @@ class TestANSIX923:
         unpadder = padding.ANSIX923(128).unpadder()
         final = unpadder.update(padded) + unpadder.finalize()
         assert final == unpadded + unpadded
+
+    def test_block_size_padding(self):
+        padder = padding.ANSIX923(64).padder()
+        data = padder.update(b"a" * 8) + padder.finalize()
+        assert data == b"a" * 8 + b"\x00" * 7 + b"\x08"
