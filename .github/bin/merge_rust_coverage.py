@@ -2,43 +2,43 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import collections
+import collections.abc
 import sys
 
 import coverage
 
 
 class RustCoveragePlugin(coverage.CoveragePlugin):
-    def file_reporter(self, filename: str):
-        return RustCoverageFileReporter(filename)
+    def __init__(
+        self,
+        coverage_data: collections.abc.Mapping[
+            str, collections.abc.Mapping[int, int]
+        ],
+    ) -> None:
+        super().__init__()
+        self._data = coverage_data
+
+    def file_reporter(self, filename: str) -> coverage.FileReporter:
+        return RustCoverageFileReporter(filename, self._data[filename])
 
 
 class RustCoverageFileReporter(coverage.FileReporter):
+    def __init__(
+        self, filename: str, coverage_data: collections.abc.Mapping[int, int]
+    ) -> None:
+        super().__init__(filename)
+        self._data = coverage_data
+
     def lines(self) -> set[int]:
-        # XXX: Need a better way to handle this state!
-        return set(raw_data[self.filename])
+        return set(self._data)
 
     def arcs(self) -> set[tuple[int, int]]:
-        return {(-1, line) for line in self.lines()}
-
-
-def coverage_init(
-    reg: coverage.plugin_support.Plugins,
-    options: coverage.types.TConfigSectionOut,
-) -> None:
-    reg.add_file_tracer(RustCoveragePlugin())
+        return {(-1, line) for line in self._data}
 
 
 def main(*lcov_paths: str):
-    cov = coverage.Coverage()
-    # XXX: Nasty mucking in semi-public APIs
-    cov.config.plugins.append("coverage_rust_plugin")
-    sys.modules["coverage_rust_plugin"] = sys.modules[__name__]
-
     coverage_data = coverage.CoverageData(suffix="rust")
 
-    # XXX: global state! Bad!
-    global raw_data
     # {filename: {line_number: count}}
     raw_data = collections.defaultdict(lambda: collections.defaultdict(int))
     current_file = None
@@ -81,13 +81,13 @@ def main(*lcov_paths: str):
     }
     coverage_data.add_arcs(covered_lines)
     coverage_data.add_file_tracers(
-        {
-            file_name: "coverage_rust_plugin.RustCoveragePlugin"
-            for file_name in covered_lines
-        }
+        {file_name: "None.RustCoveragePlugin" for file_name in covered_lines}
     )
     coverage_data.write()
 
+    cov = coverage.Coverage(
+        plugins=[lambda reg: reg.add_file_tracer(RustCoveragePlugin(raw_data))]
+    )
     cov.combine()
     coverage_percent = cov.report(show_missing=True)
     if coverage_percent < 100:
