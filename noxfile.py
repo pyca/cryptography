@@ -347,11 +347,6 @@ def process_rust_coverage(
     rust_binaries: list[str],
     prof_raw_location: pathlib.Path,
 ) -> None:
-    # Hitting weird issues merging Windows and Linux Rust coverage, so just
-    # say the hell with it.
-    if sys.platform == "win32":
-        return
-
     target_libdir = session.run(
         "rustc", "--print", "target-libdir", external=True, silent=True
     )
