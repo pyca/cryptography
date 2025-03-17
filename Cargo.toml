@@ -20,8 +20,8 @@ publish = false
 rust-version = "1.65.0"
 
 [workspace.dependencies]
-asn1 = { version = "0.20.0", default-features = false }
-pyo3 = { version = "0.23.5", features = ["abi3"] }
+asn1 = { version = "0.21.0", default-features = false }
+pyo3 = { version = "0.24.0", features = ["abi3"] }
 openssl = "0.10.71"
 openssl-sys = "0.9.104"
 
