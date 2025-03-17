@@ -142,13 +142,13 @@ class TestPoly1305:
             b"52074686520626f726f676f7665732c0a416e6420746865206d6f6d"
             b"65207261746873206f757467726162652e"
         )
-        key = bytearray(key)
-        poly = Poly1305(key)
+        buffer_key = bytearray(key)
+        poly = Poly1305(buffer_key)
         poly.update(bytearray(msg))
         assert poly.finalize() == binascii.unhexlify(
             b"4541669a7eaaee61e708dc7cbcc5eb62"
         )
 
-        assert Poly1305.generate_tag(key, msg) == binascii.unhexlify(
+        assert Poly1305.generate_tag(buffer_key, msg) == binascii.unhexlify(
             b"4541669a7eaaee61e708dc7cbcc5eb62"
         )

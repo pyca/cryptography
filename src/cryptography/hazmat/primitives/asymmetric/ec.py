@@ -104,7 +104,7 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sign(
         self,
-        data: bytes,
+        data: utils.Buffer,
         signature_algorithm: EllipticCurveSignatureAlgorithm,
     ) -> bytes:
         """
@@ -173,8 +173,8 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def verify(
         self,
-        signature: bytes,
-        data: bytes,
+        signature: utils.Buffer,
+        data: utils.Buffer,
         signature_algorithm: EllipticCurveSignatureAlgorithm,
     ) -> None:
         """

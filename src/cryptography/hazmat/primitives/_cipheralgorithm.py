@@ -36,7 +36,7 @@ class CipherAlgorithm(metaclass=abc.ABCMeta):
 
 
 class BlockCipherAlgorithm(CipherAlgorithm):
-    key: bytes
+    key: utils.Buffer
 
     @property
     @abc.abstractmethod
@@ -46,7 +46,9 @@ class BlockCipherAlgorithm(CipherAlgorithm):
         """
 
 
-def _verify_key_size(algorithm: CipherAlgorithm, key: bytes) -> bytes:
+def _verify_key_size(
+    algorithm: CipherAlgorithm, key: utils.Buffer
+) -> utils.Buffer:
     # Verify that the key is instance of bytes
     utils._check_byteslike("key", key)
 

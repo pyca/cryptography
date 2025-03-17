@@ -121,7 +121,9 @@ class _KBKDFDeriver:
             return False
         return True
 
-    def derive(self, key_material: bytes, prf_output_size: int) -> bytes:
+    def derive(
+        self, key_material: utils.Buffer, prf_output_size: int
+    ) -> bytes:
         if self._used:
             raise AlreadyFinalized
 
@@ -228,7 +230,7 @@ class KBKDFHMAC(KeyDerivationFunction):
     def _prf(self, key_material: bytes) -> hmac.HMAC:
         return hmac.HMAC(key_material, self._algorithm)
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         return self._deriver.derive(key_material, self._algorithm.digest_size)
 
     def verify(self, key_material: bytes, expected_key: bytes) -> None:
@@ -281,7 +283,7 @@ class KBKDFCMAC(KeyDerivationFunction):
 
         return cmac.CMAC(self._cipher)
 
-    def derive(self, key_material: bytes) -> bytes:
+    def derive(self, key_material: utils.Buffer) -> bytes:
         self._cipher = self._algorithm(key_material)
 
         assert self._cipher is not None

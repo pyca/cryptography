@@ -9,6 +9,7 @@ import abc
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
+from cryptography.utils import Buffer
 
 
 class Ed25519PublicKey(metaclass=abc.ABCMeta):
@@ -42,7 +43,7 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify(self, signature: bytes, data: bytes) -> None:
+    def verify(self, signature: Buffer, data: Buffer) -> None:
         """
         Verify the signature.
         """
@@ -77,7 +78,7 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         return rust_openssl.ed25519.generate_key()
 
     @classmethod
-    def from_private_bytes(cls, data: bytes) -> Ed25519PrivateKey:
+    def from_private_bytes(cls, data: Buffer) -> Ed25519PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.ed25519_supported():
@@ -113,7 +114,7 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def sign(self, data: bytes) -> bytes:
+    def sign(self, data: Buffer) -> bytes:
         """
         Signs the data.
         """

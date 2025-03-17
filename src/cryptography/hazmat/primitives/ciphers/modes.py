@@ -34,7 +34,7 @@ class Mode(metaclass=abc.ABCMeta):
 class ModeWithInitializationVector(Mode, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         """
         The value of the initialization vector for this mode as bytes.
         """
@@ -43,7 +43,7 @@ class ModeWithInitializationVector(Mode, metaclass=abc.ABCMeta):
 class ModeWithTweak(Mode, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def tweak(self) -> bytes:
+    def tweak(self) -> utils.Buffer:
         """
         The value of the tweak for this mode as bytes.
         """
@@ -52,7 +52,7 @@ class ModeWithTweak(Mode, metaclass=abc.ABCMeta):
 class ModeWithNonce(Mode, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def nonce(self) -> bytes:
+    def nonce(self) -> utils.Buffer:
         """
         The value of the nonce for this mode as bytes.
         """
@@ -83,7 +83,7 @@ def _check_iv_length(
 
 
 def _check_nonce_length(
-    nonce: bytes, name: str, algorithm: CipherAlgorithm
+    nonce: utils.Buffer, name: str, algorithm: CipherAlgorithm
 ) -> None:
     if not isinstance(algorithm, BlockCipherAlgorithm):
         raise UnsupportedAlgorithm(
@@ -109,12 +109,12 @@ def _check_iv_and_key_length(
 class CBC(ModeWithInitializationVector):
     name = "CBC"
 
-    def __init__(self, initialization_vector: bytes):
+    def __init__(self, initialization_vector: utils.Buffer):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     @property
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         return self._initialization_vector
 
     validate_for_algorithm = _check_iv_and_key_length
@@ -123,7 +123,7 @@ class CBC(ModeWithInitializationVector):
 class XTS(ModeWithTweak):
     name = "XTS"
 
-    def __init__(self, tweak: bytes):
+    def __init__(self, tweak: utils.Buffer):
         utils._check_byteslike("tweak", tweak)
 
         if len(tweak) != 16:
@@ -132,7 +132,7 @@ class XTS(ModeWithTweak):
         self._tweak = tweak
 
     @property
-    def tweak(self) -> bytes:
+    def tweak(self) -> utils.Buffer:
         return self._tweak
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
@@ -158,12 +158,12 @@ class ECB(Mode):
 class OFB(ModeWithInitializationVector):
     name = "OFB"
 
-    def __init__(self, initialization_vector: bytes):
+    def __init__(self, initialization_vector: utils.Buffer):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     @property
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         return self._initialization_vector
 
     validate_for_algorithm = _check_iv_and_key_length
@@ -172,12 +172,12 @@ class OFB(ModeWithInitializationVector):
 class CFB(ModeWithInitializationVector):
     name = "CFB"
 
-    def __init__(self, initialization_vector: bytes):
+    def __init__(self, initialization_vector: utils.Buffer):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     @property
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         return self._initialization_vector
 
     validate_for_algorithm = _check_iv_and_key_length
@@ -186,12 +186,12 @@ class CFB(ModeWithInitializationVector):
 class CFB8(ModeWithInitializationVector):
     name = "CFB8"
 
-    def __init__(self, initialization_vector: bytes):
+    def __init__(self, initialization_vector: utils.Buffer):
         utils._check_byteslike("initialization_vector", initialization_vector)
         self._initialization_vector = initialization_vector
 
     @property
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         return self._initialization_vector
 
     validate_for_algorithm = _check_iv_and_key_length
@@ -200,12 +200,12 @@ class CFB8(ModeWithInitializationVector):
 class CTR(ModeWithNonce):
     name = "CTR"
 
-    def __init__(self, nonce: bytes):
+    def __init__(self, nonce: utils.Buffer):
         utils._check_byteslike("nonce", nonce)
         self._nonce = nonce
 
     @property
-    def nonce(self) -> bytes:
+    def nonce(self) -> utils.Buffer:
         return self._nonce
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:
@@ -220,7 +220,7 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
 
     def __init__(
         self,
-        initialization_vector: bytes,
+        initialization_vector: utils.Buffer,
         tag: bytes | None = None,
         min_tag_length: int = 16,
     ):
@@ -250,7 +250,7 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
         return self._tag
 
     @property
-    def initialization_vector(self) -> bytes:
+    def initialization_vector(self) -> utils.Buffer:
         return self._initialization_vector
 
     def validate_for_algorithm(self, algorithm: CipherAlgorithm) -> None:

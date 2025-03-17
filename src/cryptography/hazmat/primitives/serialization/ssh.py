@@ -169,20 +169,20 @@ def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
 
 
 def _ssh_pem_encode(
-    data: bytes,
+    data: utils.Buffer,
     prefix: bytes = _SK_START + b"\n",
     suffix: bytes = _SK_END + b"\n",
 ) -> bytes:
     return b"".join([prefix, _base64_encode(data), suffix])
 
 
-def _check_block_size(data: bytes, block_len: int) -> None:
+def _check_block_size(data: utils.Buffer, block_len: int) -> None:
     """Require data to be full blocks"""
     if not data or len(data) % block_len != 0:
         raise ValueError("Corrupt data: missing padding")
 
 
-def _check_empty(data: bytes) -> None:
+def _check_empty(data: utils.Buffer) -> None:
     """All data should have been parsed."""
     if data:
         raise ValueError("Corrupt data: unparsed data")
@@ -253,14 +253,14 @@ def _to_mpint(val: int) -> bytes:
 class _FragList:
     """Build recursive structure without data copy."""
 
-    flist: list[bytes]
+    flist: list[utils.Buffer]
 
-    def __init__(self, init: list[bytes] | None = None) -> None:
+    def __init__(self, init: list[utils.Buffer] | None = None) -> None:
         self.flist = []
         if init:
             self.flist.extend(init)
 
-    def put_raw(self, val: bytes) -> None:
+    def put_raw(self, val: utils.Buffer) -> None:
         """Add plain bytes"""
         self.flist.append(val)
 
@@ -662,7 +662,7 @@ _KEY_FORMATS = {
 }
 
 
-def _lookup_kformat(key_type: bytes):
+def _lookup_kformat(key_type: utils.Buffer):
     """Return valid format or throw error"""
     if not isinstance(key_type, bytes):
         key_type = memoryview(key_type).tobytes()
@@ -680,7 +680,7 @@ SSHPrivateKeyTypes = typing.Union[
 
 
 def load_ssh_private_key(
-    data: bytes,
+    data: utils.Buffer,
     password: bytes | None,
     backend: typing.Any = None,
     *,
@@ -716,7 +716,10 @@ def load_ssh_private_key(
     pubfields, pubdata = kformat.get_public(pubdata)
     _check_empty(pubdata)
 
-    if (ciphername, kdfname) != (_NONE, _NONE):
+    if (ciphername, kdfname) != (
+        _NONE,
+        _NONE,
+    ):  # type: ignore[comparison-overlap]
         ciphername_bytes = ciphername.tobytes()
         if ciphername_bytes not in _SSH_CIPHERS:
             raise UnsupportedAlgorithm(
@@ -1029,7 +1032,7 @@ def _get_ec_hash_alg(curve: ec.EllipticCurve) -> hashes.HashAlgorithm:
 
 
 def _load_ssh_public_identity(
-    data: bytes,
+    data: utils.Buffer,
     _legacy_dsa_allowed=False,
 ) -> SSHCertificate | SSHPublicKeyTypes:
     utils._check_byteslike("data", data)
@@ -1150,7 +1153,7 @@ def _parse_exts_opts(exts_opts: memoryview) -> dict[bytes, bytes]:
 
 
 def load_ssh_public_key(
-    data: bytes, backend: typing.Any = None
+    data: utils.Buffer, backend: typing.Any = None
 ) -> SSHPublicKeyTypes:
     cert_or_key = _load_ssh_public_identity(data, _legacy_dsa_allowed=True)
     public_key: SSHPublicKeyTypes
