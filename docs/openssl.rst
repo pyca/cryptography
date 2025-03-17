@@ -41,5 +41,11 @@ disable the legacy provider in OpenSSL 3.x. This will disable legacy
 cryptographic algorithms, including ``Blowfish``, ``CAST5``, ``SEED``,
 ``ARC4``, and ``RC2`` (which is used by some encrypted serialization formats).
 
+Additionally, the ``CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY`` environment variable
+can be set during the build process to prevent the library from ever attempting
+to load the legacy provider.
+
+If loading the legacy provider is not disabled and the legacy provider fails to
+load, a warning is emitted.
 
 .. _`OpenSSL`: https://www.openssl.org/
