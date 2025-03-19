@@ -284,6 +284,8 @@ the root of trust:
         .. warning::
             If the PolicyBuilder will be used to build a :class:`ServerVerifier`, the EE extension policy
             `must require` the :class:`~cryptography.x509.SubjectAlternativeName` extension to be present.
+            All CA extension policies `must require` the :class:`~cryptography.x509.BasicConstraints` 
+            extension to be present.
 
         :param ExtensionPolicy ca_policy: The CA extension policy to use.
         :param ExtensionPolicy ee_policy: The EE extension policy to use. 
