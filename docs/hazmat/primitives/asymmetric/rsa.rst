@@ -373,8 +373,8 @@ Padding
 
     .. warning::
 
-        Our implementation of PKCS1 v1.5 decryption is not constant time. See
-        :doc:`/limitations` for details.
+        When used with OpenSSL 3.2 or older, our implementation of PKCS1 v1.5
+        decryption is not constant time. See :doc:`/limitations` for details.
 
 
 .. function:: calculate_max_pss_salt_length(key, hash_algorithm)
