@@ -10,7 +10,8 @@ has support for implementing key rotation via :class:`MultiFernet`.
 
 .. class:: Fernet(key)
 
-    This class provides both encryption and decryption facilities.
+    This class provides both encryption and decryption facilities. This class
+    exhibits :term:`thread safety`.
 
     .. doctest::
 
