@@ -76,9 +76,14 @@ impl PyExtensionPolicy {
 
     fn with_assigned_validator(
         &self,
-        oid: asn1::ObjectIdentifier,
         validator: ExtensionValidator<'static, PyCryptoOps>,
     ) -> PyResult<PyExtensionPolicy> {
+        let oid = match &validator {
+            ExtensionValidator::NotPresent { oid } => oid,
+            ExtensionValidator::MaybePresent { oid, .. } => oid,
+            ExtensionValidator::Present { oid, .. } => oid,
+        }
+        .clone();
         if self.already_set_oids.contains(&oid) {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "ExtensionPolicy already configured for extension with OID {oid}"
@@ -148,7 +153,7 @@ impl PyExtensionPolicy {
         extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.with_assigned_validator(oid, ExtensionValidator::NotPresent)
+        self.with_assigned_validator(ExtensionValidator::NotPresent { oid })
     }
 
     #[pyo3(signature = (extension_type, criticality, validator_cb))]
@@ -160,13 +165,11 @@ impl PyExtensionPolicy {
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.with_assigned_validator(
+        self.with_assigned_validator(ExtensionValidator::MaybePresent {
             oid,
-            ExtensionValidator::MaybePresent {
-                criticality: criticality.into(),
-                validator: validator_cb.map(wrap_maybe_validator_callback),
-            },
-        )
+            criticality: criticality.into(),
+            validator: validator_cb.map(wrap_maybe_validator_callback),
+        })
     }
 
     #[pyo3(signature = (extension_type, criticality, validator_cb))]
@@ -178,13 +181,11 @@ impl PyExtensionPolicy {
         validator_cb: Option<pyo3::PyObject>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
-        self.with_assigned_validator(
+        self.with_assigned_validator(ExtensionValidator::Present {
             oid,
-            ExtensionValidator::Present {
-                criticality: criticality.into(),
-                validator: validator_cb.map(wrap_present_validator_callback),
-            },
-        )
+            criticality: criticality.into(),
+            validator: validator_cb.map(wrap_present_validator_callback),
+        })
     }
 }
 
