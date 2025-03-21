@@ -6,6 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use cryptography_x509::common::Utf8StoredBMPString;
+use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
@@ -240,6 +241,7 @@ impl EncryptionAlgorithm {
 fn pkcs12_attributes<'a>(
     friendly_name: Option<&'a [u8]>,
     local_key_id: Option<&'a [u8]>,
+    is_java_trusted_cert: bool,
 ) -> CryptographyResult<
     Option<
         asn1::SetOfWriter<
@@ -270,6 +272,14 @@ fn pkcs12_attributes<'a>(
             ),
         });
     }
+    if is_java_trusted_cert {
+        attrs.push(cryptography_x509::pkcs12::Attribute {
+            _attr_id: asn1::DefinedByMarker::marker(),
+            attr_values: cryptography_x509::pkcs12::AttributeSet::JDKTruststoreUsage(
+                asn1::SetOfWriter::new([EKU_ANY_KEY_USAGE_OID]),
+            ),
+        });
+    }
 
     if attrs.is_empty() {
         Ok(None)
@@ -282,6 +292,7 @@ fn cert_to_bag<'a>(
     cert: &'a Certificate,
     friendly_name: Option<&'a [u8]>,
     local_key_id: Option<&'a [u8]>,
+    is_java_trusted_cert: bool,
 ) -> CryptographyResult<cryptography_x509::pkcs12::SafeBag<'a>> {
     Ok(cryptography_x509::pkcs12::SafeBag {
         _bag_id: asn1::DefinedByMarker::marker(),
@@ -293,7 +304,7 @@ fn cert_to_bag<'a>(
                 )),
             },
         ))),
-        attributes: pkcs12_attributes(friendly_name, local_key_id)?,
+        attributes: pkcs12_attributes(friendly_name, local_key_id, is_java_trusted_cert)?,
     })
 }
 
@@ -388,7 +399,7 @@ enum CertificateOrPKCS12Certificate {
     PKCS12Certificate(pyo3::Py<PKCS12Certificate>),
 }
 
-fn serialize_bags<'p>(
+fn serialize_safebags<'p>(
     py: pyo3::Python<'p>,
     safebags: &[cryptography_x509::pkcs12::SafeBag<'_>],
     encryption_details: &KeySerializationEncryption<'_>,
@@ -405,6 +416,9 @@ fn serialize_bags<'p>(
     );
 
     if let Some(e) = &encryption_details.encryption_algorithm {
+        // When encryption is applied, safebags that have already been encrypted (ShroudedKeyBag)
+        // should not be encrypted again, so they are placed in their own ContentInfo.
+        // See RFC 7292 4.1
         let mut shrouded_safebags = vec![];
         let mut plain_safebags = vec![];
         for safebag in safebags {
@@ -522,6 +536,28 @@ fn serialize_bags<'p>(
 }
 
 #[pyo3::pyfunction]
+#[pyo3(signature = (certs, encryption_algorithm))]
+fn serialize_java_truststore<'p>(
+    py: pyo3::Python<'p>,
+    certs: Vec<pyo3::Py<PKCS12Certificate>>,
+    encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
+    let mut safebags = vec![];
+
+    for cert in &certs {
+        safebags.push(cert_to_bag(
+            cert.get().certificate.get(),
+            cert.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
+            None,
+            true,
+        )?);
+    }
+
+    serialize_safebags(py, &safebags, &encryption_details)
+}
+
+#[pyo3::pyfunction]
 #[pyo3(signature = (name, key, cert, cas, encryption_algorithm))]
 fn serialize_key_and_certificates<'p>(
     py: pyo3::Python<'p>,
@@ -559,6 +595,7 @@ fn serialize_key_and_certificates<'p>(
                 cert,
                 name,
                 key_id.as_ref().map(|v| v.as_bytes()),
+                false,
             )?);
         }
 
@@ -570,12 +607,13 @@ fn serialize_key_and_certificates<'p>(
             for cert in &ca_certs {
                 let bag = match cert {
                     CertificateOrPKCS12Certificate::Certificate(c) => {
-                        cert_to_bag(c.get(), None, None)?
+                        cert_to_bag(c.get(), None, None, false)?
                     }
                     CertificateOrPKCS12Certificate::PKCS12Certificate(c) => cert_to_bag(
                         c.get().certificate.get(),
                         c.get().friendly_name.as_ref().map(|v| v.as_bytes(py)),
                         None,
+                        false,
                     )?,
                 };
                 safebags.push(bag);
@@ -627,7 +665,7 @@ fn serialize_key_and_certificates<'p>(
                         },
                     ),
                 ),
-                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()), false)?,
             }
         } else {
             let pkcs8_tlv = asn1::parse_single(&pkcs8_bytes)?;
@@ -637,14 +675,14 @@ fn serialize_key_and_certificates<'p>(
                 bag_value: asn1::Explicit::new(cryptography_x509::pkcs12::BagValue::KeyBag(
                     pkcs8_tlv,
                 )),
-                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()))?,
+                attributes: pkcs12_attributes(name, key_id.as_ref().map(|v| v.as_bytes()), false)?,
             }
         };
 
         safebags.push(key_bag);
     }
 
-    serialize_bags(py, &safebags, &encryption_details)
+    serialize_safebags(py, &safebags, &encryption_details)
 }
 
 fn decode_p12(
@@ -795,6 +833,7 @@ fn load_pkcs12<'p>(
 pub(crate) mod pkcs12 {
     #[pymodule_export]
     use super::{
-        load_key_and_certificates, load_pkcs12, serialize_key_and_certificates, PKCS12Certificate,
+        load_key_and_certificates, load_pkcs12, serialize_java_truststore,
+        serialize_key_and_certificates, PKCS12Certificate,
     };
 }
