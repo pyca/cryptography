@@ -10,12 +10,7 @@ import os
 
 import pytest
 
-from cryptography.exceptions import (
-    InvalidSignature,
-    UnsupportedAlgorithm,
-    _Reasons,
-)
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.exceptions import InvalidSignature, _Reasons
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -251,10 +246,6 @@ class TestRSA:
         assert public_num.n == public_num2.n
         assert public_num.e == public_num2.e
 
-    @pytest.mark.supported(
-        only_if=lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        skip_message="Does not support RSA PSS loading",
-    )
     @pytest.mark.parametrize(
         "path",
         [
@@ -300,24 +291,6 @@ class TestRSA:
         with pytest.raises(InvalidSignature):
             key.verify(
                 b"badsig", b"whatever", padding.PKCS1v15(), hashes.SHA256()
-            )
-
-    @pytest.mark.supported(
-        only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        skip_message="Test requires a backend without RSA-PSS key support",
-    )
-    def test_load_pss_unsupported(self, backend):
-        # Key loading errors unfortunately have multiple paths so
-        # we need to allow ValueError and UnsupportedAlgorithm
-        with pytest.raises((UnsupportedAlgorithm, ValueError)):
-            load_vectors_from_file(
-                filename=os.path.join(
-                    "asymmetric", "PKCS8", "rsa_pss_2048.pem"
-                ),
-                loader=lambda p: serialization.load_pem_private_key(
-                    p.read(), password=None
-                ),
-                mode="rb",
             )
 
     @pytest.mark.parametrize(
