@@ -111,15 +111,15 @@ include = [
 
     "docs/**/*",
 
-    "src/_cffi_src/**/*.py",
-    "src/_cffi_src/**/*.c",
-    "src/_cffi_src/**/*.h",
+    { path = "src/_cffi_src/**/*.py", format = "sdist" },
+    { path = "src/_cffi_src/**/*.c", format = "sdist" },
+    { path = "src/_cffi_src/**/*.h", format = "sdist" },
 
-    "Cargo.toml",
-    "Cargo.lock",
-    "src/rust/**/Cargo.toml",
-    "src/rust/**/Cargo.lock",
-    "src/rust/**/*.rs",
+    { path = "Cargo.toml", format = "sdist" },
+    { path = "Cargo.lock", format = "sdist" },
+    { path = "src/rust/**/Cargo.toml", format = "sdist" },
+    { path = "src/rust/**/Cargo.lock", format = "sdist" },
+    { path = "src/rust/**/*.rs", format = "sdist" },
 
     "tests/**/*.py",
 ]
