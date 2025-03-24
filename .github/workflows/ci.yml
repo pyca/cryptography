@@ -47,6 +47,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL main branch, as of Apr 16, 2025.
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "23018360710de333b3343e63cbb3bd2dceb3287d"}}
+          # Latest tag of AWS-LC main branch, as of March 24, 2025.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "c80720cb125529c233cd88896586254e41284820"}}
           # Latest commit on the OpenSSL master branch, as of Apr 16, 2025.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "24bc185439a950dc4427be10ec60231a923840ad"}}
           # Builds with various Rust versions. Includes MSRV and next
@@ -64,6 +66,13 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+          repository: sfackler/rust-openssl
+          path: rust-openssl
+        if: matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
@@ -122,6 +131,17 @@ jobs:
         if: matrix.PYTHON.OPENSSL
       - run: sudo apt-get install -y bindgen
         if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl'
+      - run: cargo install --locked bindgen-cli
+        if: matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
+      - run: |
+          mkdir .cargo
+          cat > .cargo/config.toml << EOF
+          [patch.crates-io]
+          openssl = { path = "${GITHUB_WORKSPACE}/rust-openssl/openssl" }
+          openssl-sys = { path = "${GITHUB_WORKSPACE}/rust-openssl/openssl-sys" }
+          EOF
+          cargo update
+        if: matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
