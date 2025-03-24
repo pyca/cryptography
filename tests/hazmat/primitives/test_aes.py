@@ -71,9 +71,9 @@ class TestAESModeXTS:
         skip_message="duplicate key encryption error added in OpenSSL 1.1.1d",
     )
     def test_xts_no_duplicate_keys_encryption(self, backend, subtests):
-        key1 = bytes(range(32))
+        key1 = bytes(range(16)) * 2
         key2 = key1 + key1
-        mode = modes.XTS(b"\x00"*16)
+        mode = modes.XTS(b"\x00" * 16)
         for key in [key1, key2]:
             with subtests.test():
                 alg = algorithms.AES(key)
