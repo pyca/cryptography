@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import base64
 import binascii
 import enum
 import os
@@ -1150,6 +1151,46 @@ def _parse_exts_opts(exts_opts: memoryview) -> dict[bytes, bytes]:
         result[bname] = bytes(value)
         last_name = bname
     return result
+
+
+def ssh_key_fingerprint(
+    key: SSHPublicKeyTypes,
+    hash_algorithm: hashes.MD5 | hashes.SHA256,
+) -> bytes:
+    """
+    Computes the fingerprint of an SSH public key as bytes.
+
+    The fingerprint is computed over the public key's SSH encoding,
+    matching how OpenSSH's ssh-keygen computes fingerprints.
+
+    :param key: The public key to compute the fingerprint for.
+    :param hash_algorithm: The hash algorithm to use, either an instance of
+        MD5 or SHA256.
+
+    :return: The fingerprint as bytes. For MD5, hexadecimal encoded.
+             For SHA256, base64 encoded (without padding).
+    """
+    key_type = _get_ssh_key_type(key)
+    kformat = _lookup_kformat(key_type)
+
+    f_pub = _FragList()
+    f_pub.put_sshstr(key_type)
+    kformat.encode_public(key, f_pub)
+
+    ssh_binary_data = f_pub.tobytes()
+
+    # Hash the binary data
+    hash_obj = hashes.Hash(hash_algorithm)
+    hash_obj.update(ssh_binary_data)
+    digest = hash_obj.finalize()
+
+    # Format the output based on the hash algorithm
+    if isinstance(hash_algorithm, hashes.MD5):
+        return binascii.hexlify(digest)
+    elif isinstance(hash_algorithm, hashes.SHA256):
+        return base64.b64encode(digest).rstrip(b"=")
+    else:
+        raise TypeError("hash_algorithm must be either MD5 or SHA256")
 
 
 def load_ssh_public_key(

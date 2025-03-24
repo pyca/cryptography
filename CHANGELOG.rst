@@ -42,6 +42,8 @@ Changelog
 * Added support for the ``CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY`` environment
   variable during build time, which prevents the library from ever attempting
   to load the legacy provider.
+* Added :func:`~cryptography.hazmat.primitives.serialization.ssh_key_fingerprint`
+  for computing fingerprints of SSH public keys.
 
 .. _v44-0-2:
 
