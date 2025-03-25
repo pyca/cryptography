@@ -121,27 +121,10 @@ fn dh_parameters_from_numbers(
 
     let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
 
-    const INVALID_PARAMETERS: &str = "Invalid DH parameters";
-    match dh.check_key() {
-        Ok(valid) => {
-            if !valid {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(INVALID_PARAMETERS),
-                ));
-            }
-        }
-        Err(es) => {
-            for e in es.errors() {
-                if let Some(reason) = e.reason() {
-                    if reason == "INVALID_PARAMETERS" {
-                        return Err(CryptographyError::from(
-                            pyo3::exceptions::PyValueError::new_err(INVALID_PARAMETERS),
-                        ));
-                    }
-                }
-            }
-            return Err(CryptographyError::from(es));
-        }
+    if !dh.check_key()? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
+        ));
     }
     Ok(dh)
 }
@@ -216,7 +199,7 @@ impl DHPrivateKey {
         })
     }
 
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn public_key(&self) -> CryptographyResult<DHPublicKey> {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
@@ -330,7 +313,7 @@ impl DHPublicKey {
 
 #[pyo3::pymethods]
 impl DHParameters {
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
@@ -424,7 +407,7 @@ impl DHPrivateNumbers {
         DHPrivateNumbers { x, public_numbers }
     }
 
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     #[pyo3(signature = (backend=None))]
     fn private_key(
         &self,
@@ -469,7 +452,7 @@ impl DHPublicNumbers {
         }
     }
 
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,
