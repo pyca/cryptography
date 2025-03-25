@@ -130,9 +130,7 @@ jobs:
           echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
       - run: sudo apt-get install -y bindgen
-        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl'
-      - run: cargo install --locked bindgen-cli
-        if: matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
+        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
       - run: |
           mkdir .cargo
           cat > .cargo/config.toml << EOF
