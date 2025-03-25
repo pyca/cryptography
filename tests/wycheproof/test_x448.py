@@ -21,7 +21,7 @@ from .utils import wycheproof_tests
 @wycheproof_tests("x448_test.json")
 def test_x448(backend, wycheproof):
     assert wycheproof.testgroup["curve"] == "curve448"
-    assert wycheproof.testgroup["type"] = "XdhComp"
+    assert wycheproof.testgroup["type"] == "XdhComp"
 
     private_key = X448PrivateKey.from_private_bytes(
         binascii.unhexlify(wycheproof.testcase["private"])
