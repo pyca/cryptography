@@ -20,10 +20,8 @@ from .utils import wycheproof_tests
 )
 @wycheproof_tests("x25519_test.json")
 def test_x25519(backend, wycheproof):
-    assert set(wycheproof.testgroup.items()) == {
-        ("curve", "curve25519"),
-        ("type", "XdhComp"),
-    }
+    assert wycheproof.testgroup["curve"] == "curve25519"
+    assert wycheproof.testgroup["type"] = "XdhComp"
 
     private_key = X25519PrivateKey.from_private_bytes(
         binascii.unhexlify(wycheproof.testcase["private"])
