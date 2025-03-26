@@ -722,42 +722,42 @@ impl AesCcm {
         tag_length: Option<usize>,
     ) -> CryptographyResult<AesCcm> {
         cfg_if::cfg_if! {
-                if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-                    let _ = py;
-                    let _ = key;
-                    let _ = tag_length;
-                    Err(CryptographyError::from(
-                        exceptions::UnsupportedAlgorithm::new_err((
-                            "AES-CCM is not supported by this version of OpenSSL",
-                            exceptions::Reasons::UNSUPPORTED_CIPHER,
-                        )),
-                    ))
-                } else {
-                    let key_buf = key.extract::<CffiBuf<'_>>(py)?;
-                    let cipher = match key_buf.as_bytes().len() {
-                        16 => openssl::cipher::Cipher::aes_128_ccm(),
-                        24 => openssl::cipher::Cipher::aes_192_ccm(),
-                        32 => openssl::cipher::Cipher::aes_256_ccm(),
-                        _ => {
-                            return Err(CryptographyError::from(
-                                pyo3::exceptions::PyValueError::new_err(
-                                    "AESCCM key must be 128, 192, or 256 bits.",
-                                ),
-                            ))
-                        }
-                    };
-                    let tag_length = tag_length.unwrap_or(16);
-                    if ![4, 6, 8, 10, 12, 14, 16].contains(&tag_length) {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                let _ = py;
+                let _ = key;
+                let _ = tag_length;
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err((
+                        "AES-CCM is not supported by this version of OpenSSL",
+                        exceptions::Reasons::UNSUPPORTED_CIPHER,
+                    )),
+                ))
+            } else {
+                let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+                let cipher = match key_buf.as_bytes().len() {
+                    16 => openssl::cipher::Cipher::aes_128_ccm(),
+                    24 => openssl::cipher::Cipher::aes_192_ccm(),
+                    32 => openssl::cipher::Cipher::aes_256_ccm(),
+                    _ => {
                         return Err(CryptographyError::from(
-                            pyo3::exceptions::PyValueError::new_err("Invalid tag_length"),
-                        ));
+                            pyo3::exceptions::PyValueError::new_err(
+                                "AESCCM key must be 128, 192, or 256 bits.",
+                            ),
+                        ))
                     }
-
-                    Ok(AesCcm {
-                        ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
-                    tag_length
-                    })
+                };
+                let tag_length = tag_length.unwrap_or(16);
+                if ![4, 6, 8, 10, 12, 14, 16].contains(&tag_length) {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err("Invalid tag_length"),
+                    ));
                 }
+
+                Ok(AesCcm {
+                    ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
+                tag_length
+                })
+            }
         }
     }
 

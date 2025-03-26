@@ -7,7 +7,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, hmac
 
 from .utils import wycheproof_tests
