@@ -755,7 +755,7 @@ impl AesCcm {
 
                 Ok(AesCcm {
                     ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
-                tag_length
+                    tag_length
                 })
             }
         }
