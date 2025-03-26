@@ -132,7 +132,19 @@ class Backend:
         # FIPS mode still allows SHA1 for HMAC
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return True
-
+        if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
+            return isinstance(
+                algorithm,
+                (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                    hashes.SHA512_224,
+                    hashes.SHA512_256,
+                ),
+            )
         return self.hash_supported(algorithm)
 
     def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
