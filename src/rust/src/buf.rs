@@ -30,11 +30,11 @@ fn _extract_buffer_length<'p>(
     .map_err(|_| {
         let errmsg = if pyobj.is_instance_of::<pyo3::types::PyString>() {
             format!(
-                "\nCannot convert \"{}\" instance to a buffer.\nDid you mean to pass a bytestring instead?",
+                "Cannot convert \"{}\" instance to a buffer.\nDid you mean to pass a bytestring instead?",
                 pyobj.get_type()
             )
         } else {
-            format!("\nCannot convert \"{}\" instance to a buffer.", pyobj.get_type())
+            format!("Cannot convert \"{}\" instance to a buffer.", pyobj.get_type())
         };
         pyo3::exceptions::PyTypeError::new_err(errmsg)
     })?;
