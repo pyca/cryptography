@@ -1,6 +1,6 @@
 pyca/cryptography
 =================
-
+$ pip install cryptography
 .. image:: https://img.shields.io/pypi/v/cryptography.svg
     :target: https://pypi.org/project/cryptography/
     :alt: Latest Version
@@ -12,7 +12,7 @@ pyca/cryptography
 .. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=main
     :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amain
 
-
+cryptography.fernet
 ``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers. Our goal is for it to be your "cryptographic
 standard library". It supports Python 3.7+ and PyPy3 7.3.11+.
@@ -66,3 +66,12 @@ documentation.
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`security reporting`: https://cryptography.io/en/latest/security/
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
