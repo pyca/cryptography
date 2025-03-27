@@ -269,17 +269,20 @@ Creating Responses
         :param cert_status: An item from the
             :class:`~cryptography.x509.ocsp.OCSPCertStatus` enumeration.
 
-        :param this_update: A naïve :class:`datetime.datetime` object
-            representing the most recent time in UTC at which the status being
-            indicated is known by the responder to be correct.
+        :param this_update: A :class:`datetime.datetime` object representing
+            the most recent time at which the status being indicated is known
+            by the responder to be correct. If it does not have a timezone, it
+            is assumed to be in UTC.
 
-        :param next_update: A naïve :class:`datetime.datetime` object or
-            ``None``. The time in UTC at or before which newer information will
-            be available about the status of the certificate.
+        :param next_update: A :class:`datetime.datetime` object or ``None``.
+            The time at or before which newer information will be available
+            about the status of the certificate. If it does not have a
+            timezone, it is assumed to be in UTC.
 
-        :param revocation_time: A naïve :class:`datetime.datetime` object or
-            ``None`` if the ``cert`` is not revoked. The time in UTC at which
-            the certificate was revoked.
+        :param revocation_time: A :class:`datetime.datetime` object or ``None``
+            if the ``cert`` is not revoked. The time at which the certificate
+            was revoked. If it does not have a timezone, it is assumed to be in
+            UTC.
 
         :param revocation_reason: An item from the
             :class:`~cryptography.x509.ReasonFlags` enumeration or ``None`` if

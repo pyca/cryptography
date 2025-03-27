@@ -13,11 +13,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.types import (
     CertificateIssuerPrivateKeyTypes,
 )
-from cryptography.x509.base import (
-    _EARLIEST_UTC_TIME,
-    _convert_to_naive_utc_time,
-    _reject_duplicate_extension,
-)
+from cryptography.x509.base import _reject_duplicate_extension
 
 
 class OCSPResponderEncoding(utils.Enum):
@@ -105,12 +101,6 @@ class _SingleResponse:
         else:
             if not isinstance(revocation_time, datetime.datetime):
                 raise TypeError("revocation_time must be a datetime object")
-
-            revocation_time = _convert_to_naive_utc_time(revocation_time)
-            if revocation_time < _EARLIEST_UTC_TIME:
-                raise ValueError(
-                    "The revocation_time must be on or after 1950 January 1."
-                )
 
             if revocation_reason is not None and not isinstance(
                 revocation_reason, x509.ReasonFlags
