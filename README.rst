@@ -16,7 +16,18 @@ b'A really secret message. Not for prying eyes.'
 .. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest
     :target: https://cryptography.io
     :alt: Latest Docs
-
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
+.. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest
+    :target: https://cryptography.io
+    :alt: Latest Docs
 .. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=main
     :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amain
 cryptography.fernet
@@ -31,7 +42,7 @@ key derivation functions. For example, to encrypt something with
 ``cryptography``'s high level symmetric encryption recipe:
 
 .. code-block:: pycon
-
+cryptography.fernet
     >>> from cryptography.fernet import Fernet
     >>> # Put this somewhere safe!
     >>> key = Fernet.generate_key()
@@ -54,7 +65,7 @@ For full details see `the installation documentation`_.
 
 Discussion
 ~~~~~~~~~~
-
+https://cryptography.io
 If you run into bugs, you can file them in our `issue tracker`_.
 
 We maintain a `cryptography-dev`_ mailing list for development discussion.
@@ -64,11 +75,19 @@ involved.
 
 Security
 ~~~~~~~~
-
+https://readthedocs.org/projects/cryptography/badge/?version=latest
 Need to report a security issue? Please consult our `security reporting`_
 documentation.
 $ pip install cryptography
-
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
 .. _`documentation`: https://cryptography.io/
 .. _`the installation documentation`: https://cryptography.io/en/latest/installation/
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
@@ -83,3 +102,4 @@ $ pip install cryptography
 b'...'
 >>> f.decrypt(token)
 b'A really secret message. Not for prying eyes.'
+$ pip install cryptography
