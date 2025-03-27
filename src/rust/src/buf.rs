@@ -4,7 +4,9 @@
 
 use std::slice;
 
+use pyo3::exceptions::PyTypeError;
 use pyo3::types::{IntoPyDict, PyAnyMethods};
+use pyo3::PyErr;
 
 use crate::types;
 
@@ -19,6 +21,13 @@ fn _extract_buffer_length<'p>(
     mutable: bool,
 ) -> pyo3::PyResult<(pyo3::Bound<'p, pyo3::PyAny>, usize)> {
     let py = pyobj.py();
+    if pyobj.is_instance_of::<pyo3::types::PyString>() {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "\n\
+             Cannot create a buffer from a string.\n\
+             Did you mean to pass a bytestring instead?",
+        ));
+    }
     let bufobj = if mutable {
         let kwargs = [(pyo3::intern!(py, "require_writable"), true)].into_py_dict(py)?;
         types::FFI_FROM_BUFFER

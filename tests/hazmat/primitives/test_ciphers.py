@@ -250,6 +250,13 @@ class TestCipherUpdateInto:
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
 
+    def test_update_with_string(self, backend):
+        key = b"\x00" * 16
+        c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
+        encryptor = c.encryptor()
+        with pytest.raises(TypeError, match="bytestring instead?"):
+            encryptor.update("hello")  # type: ignore[arg-type]
+
 
 @pytest.mark.skipif(
     sys.platform not in {"linux", "darwin"}, reason="mmap required"
