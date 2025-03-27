@@ -250,7 +250,7 @@ class TestCipherUpdateInto:
         with pytest.raises(ValueError):
             encryptor.update_into(b"testing", buf)
 
-    def test_update_with_string(self, backend):
+    def test_update_with_invalid_type(self, backend):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
         encryptor = c.encryptor()
