@@ -23,10 +23,21 @@ fn _extract_buffer_length<'p>(
         let kwargs = [(pyo3::intern!(py, "require_writable"), true)].into_py_dict(py)?;
         types::FFI_FROM_BUFFER
             .get(py)?
-            .call((pyobj,), Some(&kwargs))?
+            .call((pyobj,), Some(&kwargs))
     } else {
-        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))?
-    };
+        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))
+    }
+    .map_err(|_| {
+        let errmsg = if pyobj.is_instance_of::<pyo3::types::PyString>() {
+            format!(
+                "Cannot convert \"{}\" instance to a buffer.\nDid you mean to pass a bytestring instead?",
+                pyobj.get_type()
+            )
+        } else {
+            format!("Cannot convert \"{}\" instance to a buffer.", pyobj.get_type())
+        };
+        pyo3::exceptions::PyTypeError::new_err(errmsg)
+    })?;
     let ptrval = types::FFI_CAST
         .get(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
