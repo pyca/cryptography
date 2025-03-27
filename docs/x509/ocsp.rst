@@ -157,7 +157,7 @@ Creating Requests
         .. versionadded:: 39.0.0
 
         Adds a request using the issuer's name hash, key hash, the certificate
-        serial number and hash algorithm. You can call this method or
+        serial number, and hash algorithm. You can call this method or
         ``add_certificate`` only once.
 
         :param issuer_name_hash: The hash of the issuer's DER encoded name using the
@@ -249,13 +249,66 @@ Creating Responses
     .. method:: add_response(cert, issuer, algorithm, cert_status, this_update, next_update, revocation_time, revocation_reason)
 
         This method adds status information about the certificate that was
-        requested to the response.
+        requested to the response. You can call this method or ``add_response_by_hash``
+        only once.
 
         :param cert: The :class:`~cryptography.x509.Certificate` whose validity
             is being checked.
 
         :param issuer: The issuer :class:`~cryptography.x509.Certificate` of
             the certificate that is being checked.
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            instance. For OCSP only
+            :class:`~cryptography.hazmat.primitives.hashes.SHA1`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA224`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA256`,
+            :class:`~cryptography.hazmat.primitives.hashes.SHA384`, and
+            :class:`~cryptography.hazmat.primitives.hashes.SHA512` are allowed.
+
+        :param cert_status: An item from the
+            :class:`~cryptography.x509.ocsp.OCSPCertStatus` enumeration.
+
+        :param this_update: A :class:`datetime.datetime` object representing
+            the most recent time at which the status being indicated is known
+            by the responder to be correct. If it does not have a timezone, it
+            is assumed to be in UTC.
+
+        :param next_update: A :class:`datetime.datetime` object or ``None``.
+            The time at or before which newer information will be available
+            about the status of the certificate. If it does not have a
+            timezone, it is assumed to be in UTC.
+
+        :param revocation_time: A :class:`datetime.datetime` object or ``None``
+            if the ``cert`` is not revoked. The time at which the certificate
+            was revoked. If it does not have a timezone, it is assumed to be in
+            UTC.
+
+        :param revocation_reason: An item from the
+            :class:`~cryptography.x509.ReasonFlags` enumeration or ``None`` if
+            the ``cert`` is not revoked.
+
+    .. method:: add_response_by_hash(issuer_name_hash, issuer_key_hash, serial_number, algorithm, cert_status, this_update, next_update, revocation_time, revocation_reason)
+
+        .. versionadded:: 45.0.0
+
+        This method adds status information about the certificate that was
+        requested to the response using the hash values directly, rather than requiring
+        the full certificates. You can call this method or ``add_response``
+        only once.
+
+        :param issuer_name_hash: The hash of the issuer's DER encoded name using the
+            same hash algorithm as the one specified in the ``algorithm`` parameter.
+        :type issuer_name_hash: bytes
+
+        :param issuer_key_hash: The hash of the issuer's public key bit string
+            DER encoding using the same hash algorithm as the one specified in
+            the ``algorithm`` parameter.
+        :type issuer_key_hash: bytes
+
+        :param serial_number: The serial number of the certificate being checked.
+        :type serial_number: int
 
         :param algorithm: A
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`

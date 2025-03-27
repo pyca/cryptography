@@ -997,6 +997,130 @@ class TestOCSPResponseBuilder:
         with pytest.raises(TypeError):
             builder.sign(object(), hashes.SHA256())  # type:ignore[arg-type]
 
+    def test_add_response_by_hash(self):
+        builder = ocsp.OCSPResponseBuilder()
+        current_time = (
+            datetime.datetime.now(datetime.timezone.utc)
+            .replace(tzinfo=None)
+            .replace(microsecond=0)
+        )
+        this_update = current_time - datetime.timedelta(days=1)
+        next_update = this_update + datetime.timedelta(days=7)
+
+        # These values would typically be derived from real certificates
+        issuer_name_hash = b"a" * 32
+        issuer_key_hash = b"b" * 32
+        serial_number = 12345
+
+        builder = builder.add_response_by_hash(
+            issuer_name_hash,
+            issuer_key_hash,
+            serial_number,
+            hashes.SHA256(),
+            ocsp.OCSPCertStatus.GOOD,
+            this_update,
+            next_update,
+            None,
+            None,
+        )
+
+        root_cert, private_key = _generate_root()
+        builder = builder.responder_id(
+            ocsp.OCSPResponderEncoding.NAME, root_cert
+        )
+        resp = builder.sign(private_key, hashes.SHA256())
+
+        # These assertions validate the expected values are in the response
+        assert resp.certificate_status == ocsp.OCSPCertStatus.GOOD
+        assert resp.issuer_key_hash == issuer_key_hash
+        assert resp.issuer_name_hash == issuer_name_hash
+        assert resp.serial_number == serial_number
+        assert isinstance(resp.hash_algorithm, hashes.SHA256)
+
+    def test_add_response_then_add_response_by_hash(self):
+        cert, issuer = _cert_and_issuer()
+        builder = ocsp.OCSPResponseBuilder()
+        time = datetime.datetime.now(datetime.timezone.utc).replace(
+            tzinfo=None
+        )
+        builder = builder.add_response(
+            cert,
+            issuer,
+            hashes.SHA1(),
+            ocsp.OCSPCertStatus.GOOD,
+            time,
+            time,
+            None,
+            None,
+        )
+        # Fails calling a second time with add_response_by_hash
+        with pytest.raises(ValueError):
+            builder.add_response_by_hash(
+                b"0" * 20,
+                b"0" * 20,
+                1,
+                hashes.SHA1(),
+                ocsp.OCSPCertStatus.GOOD,
+                time,
+                time,
+                None,
+                None,
+            )
+
+    def test_add_response_by_hash_bad_hash(self):
+        builder = ocsp.OCSPResponseBuilder()
+        time = datetime.datetime.now(datetime.timezone.utc).replace(
+            tzinfo=None
+        )
+        with pytest.raises(ValueError):
+            builder.add_response_by_hash(
+                b"0" * 20,
+                b"0" * 20,
+                1,
+                "notahash",  # type: ignore[arg-type]
+                ocsp.OCSPCertStatus.GOOD,
+                time,
+                time,
+                None,
+                None,
+            )
+        with pytest.raises(ValueError):
+            builder.add_response_by_hash(
+                b"0" * 19,
+                b"0" * 20,
+                1,
+                hashes.SHA1(),
+                ocsp.OCSPCertStatus.GOOD,
+                time,
+                time,
+                None,
+                None,
+            )
+        with pytest.raises(ValueError):
+            builder.add_response_by_hash(
+                b"0" * 20,
+                b"0" * 21,
+                1,
+                hashes.SHA1(),
+                ocsp.OCSPCertStatus.GOOD,
+                time,
+                time,
+                None,
+                None,
+            )
+        with pytest.raises(TypeError):
+            builder.add_response_by_hash(
+                b"0" * 20,
+                b"0" * 20,
+                "notanint",  # type: ignore[arg-type]
+                hashes.SHA1(),
+                ocsp.OCSPCertStatus.GOOD,
+                time,
+                time,
+                None,
+                None,
+            )
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(
             hashes.BLAKE2b(digest_size=64)

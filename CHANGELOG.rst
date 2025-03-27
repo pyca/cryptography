@@ -24,6 +24,10 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.hashes.XOFHash` to support
   repeated :meth:`~cryptography.hazmat.primitives.hashes.XOFHash.squeeze`
   operations on extendable output functions.
+* Added
+  :meth:`~cryptography.x509.ocsp.OCSPResponseBuilder.add_response_by_hash`
+  method to allow creating OCSP responses using certificate hash values rather
+  than full certificates.
 * Extended the :mod:`X.509 path validation <cryptography.x509.verification>` API to
   support user-configured extension policies via the
   :meth:`PolicyBuilder.extension_policies <cryptography.x509.verification.PolicyBuilder.extension_policies>` method.

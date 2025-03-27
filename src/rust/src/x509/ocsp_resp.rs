@@ -10,7 +10,7 @@ use cryptography_x509::ocsp_resp::{
 use cryptography_x509::{common, oid};
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
-use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};
+use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::utils::cstr_from_literal;
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
@@ -678,8 +678,6 @@ pub(crate) fn create_ocsp_response(
         .getattr(pyo3::intern!(py, "value"))?
         .extract::<u32>()?;
 
-    let py_cert: pyo3::PyRef<'_, x509::certificate::Certificate>;
-    let py_issuer: pyo3::PyRef<'_, x509::certificate::Certificate>;
     let borrowed_cert;
     let py_certs: Option<Vec<pyo3::PyRef<'_, x509::certificate::Certificate>>>;
     if response_status != SUCCESSFUL_RESPONSE {
@@ -692,12 +690,6 @@ pub(crate) fn create_ocsp_response(
     }
 
     let py_single_resp = builder.getattr(pyo3::intern!(py, "_response"))?;
-    py_cert = py_single_resp
-        .getattr(pyo3::intern!(py, "_cert"))?
-        .extract()?;
-    py_issuer = py_single_resp
-        .getattr(pyo3::intern!(py, "_issuer"))?
-        .extract()?;
     let py_cert_hash_algorithm = py_single_resp.getattr(pyo3::intern!(py, "_algorithm"))?;
     let (responder_cert, responder_encoding): (
         pyo3::Bound<'_, x509::certificate::Certificate>,
@@ -751,8 +743,36 @@ pub(crate) fn create_ocsp_response(
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
 
+    // Declare outside the if-block so the lifetimes are right.
+    let (py_cert, py_issuer, issuer_name_hash, issuer_key_hash, serial_number_bytes): (
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
+        pyo3::PyRef<'_, x509::certificate::Certificate>,
+        pyo3::pybacked::PyBackedBytes,
+        pyo3::pybacked::PyBackedBytes,
+        pyo3::pybacked::PyBackedBytes,
+    );
+    let single_resp_resp = py_single_resp.getattr(pyo3::intern!(py, "_resp"))?;
+    let cert_id = if !single_resp_resp.is_none() {
+        (py_cert, py_issuer) = single_resp_resp.extract()?;
+        ocsp::certid_new(py, &ka_bytes, &py_cert, &py_issuer, &py_cert_hash_algorithm)?
+    } else {
+        let py_serial: pyo3::Bound<'_, pyo3::types::PyInt>;
+        (issuer_name_hash, issuer_key_hash, py_serial) = py_single_resp
+            .getattr(pyo3::intern!(py, "_resp_hash"))?
+            .extract()?;
+        serial_number_bytes = py_uint_to_big_endian_bytes(py, py_serial)?;
+        let serial_number = asn1::BigInt::new(&serial_number_bytes).unwrap();
+        ocsp::certid_new_from_hash(
+            py,
+            &issuer_name_hash,
+            &issuer_key_hash,
+            serial_number,
+            py_cert_hash_algorithm,
+        )?
+    };
+
     let responses = vec![SingleResponse {
-        cert_id: ocsp::certid_new(py, &ka_bytes, &py_cert, &py_issuer, &py_cert_hash_algorithm)?,
+        cert_id,
         cert_status,
         next_update,
         this_update,
