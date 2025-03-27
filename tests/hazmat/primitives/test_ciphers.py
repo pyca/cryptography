@@ -256,6 +256,8 @@ class TestCipherUpdateInto:
         encryptor = c.encryptor()
         with pytest.raises(TypeError, match="bytestring instead?"):
             encryptor.update("hello")  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="instance to a buffer"):
+            encryptor.update(object)  # type: ignore[arg-type]
 
 
 @pytest.mark.skipif(

@@ -4,9 +4,7 @@
 
 use std::slice;
 
-use pyo3::exceptions::PyTypeError;
 use pyo3::types::{IntoPyDict, PyAnyMethods};
-use pyo3::PyErr;
 
 use crate::types;
 
@@ -21,21 +19,25 @@ fn _extract_buffer_length<'p>(
     mutable: bool,
 ) -> pyo3::PyResult<(pyo3::Bound<'p, pyo3::PyAny>, usize)> {
     let py = pyobj.py();
-    if pyobj.is_instance_of::<pyo3::types::PyString>() {
-        return Err(PyErr::new::<PyTypeError, _>(
-            "\n\
-             Cannot create a buffer from a string.\n\
-             Did you mean to pass a bytestring instead?",
-        ));
-    }
     let bufobj = if mutable {
         let kwargs = [(pyo3::intern!(py, "require_writable"), true)].into_py_dict(py)?;
         types::FFI_FROM_BUFFER
             .get(py)?
-            .call((pyobj,), Some(&kwargs))?
+            .call((pyobj,), Some(&kwargs))
     } else {
-        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))?
-    };
+        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))
+    }
+    .map_err(|_| {
+        let errmsg = if pyobj.is_instance_of::<pyo3::types::PyString>() {
+            format!(
+                "\nCannot convert \"{}\" instance to a buffer.\nDid you mean to pass a bytestring instead?",
+                pyobj.get_type()
+            )
+        } else {
+            format!("\nCannot convert \"{}\" instance to a buffer.", pyobj.get_type())
+        };
+        pyo3::exceptions::PyTypeError::new_err(errmsg)
+    })?;
     let ptrval = types::FFI_CAST
         .get(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
