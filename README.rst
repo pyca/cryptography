@@ -1,3 +1,34 @@
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
+.. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest
+    :target: https://cryptography.io
+    :alt: Latest Docs
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
+.. image:: https://readthedocs.org/projects/cryptography/badge/?version=latest
+    :target: https://cryptography.io
+    :alt: Latest Docs
+.. image:: https://github.com/pyca/cryptography/workflows/CI/badge.svg?branch=main
+    :target: https://github.com/pyca/cryptography/actions?query=workflow%3ACI+branch%3Amain
+cryptography.fernet
+cryptography.fernet
+``cryptography`` is a package which provides cryptographic recipes and
+primitives to Python developers. Our goal is for it to be your "cryptographic
+standard library". It supports Python 3.7+ and PyPy3 7.3.11+.
 pyca/cryptography
 =================
 $ pip install cryptography
@@ -35,7 +66,7 @@ cryptography.fernet
 ``cryptography`` is a package which provides cryptographic recipes and
 primitives to Python developers. Our goal is for it to be your "cryptographic
 standard library". It supports Python 3.7+ and PyPy3 7.3.11+.
-
+cryptography.fernet
 ``cryptography`` includes both high level recipes and low level interfaces to
 common cryptographic algorithms such as symmetric ciphers, message digests, and
 key derivation functions. For example, to encrypt something with
@@ -72,7 +103,7 @@ We maintain a `cryptography-dev`_ mailing list for development discussion.
 
 You can also join ``#pyca`` on ``irc.libera.chat`` to ask questions or get
 involved.
-
+https://cryptography.io
 Security
 ~~~~~~~~
 https://readthedocs.org/projects/cryptography/badge/?version=latest
@@ -103,3 +134,4 @@ b'...'
 >>> f.decrypt(token)
 b'A really secret message. Not for prying eyes.'
 $ pip install cryptography
+https://readthedocs.org/projects/cryptography/badge/?version=latest
