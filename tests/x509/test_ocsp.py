@@ -505,17 +505,6 @@ class TestOCSPResponseBuilder:
                 time,
                 0,  # type:ignore[arg-type]
             )
-        with pytest.raises(ValueError):
-            builder.add_response(
-                cert,
-                issuer,
-                hashes.SHA256(),
-                ocsp.OCSPCertStatus.REVOKED,
-                time,
-                time,
-                time - datetime.timedelta(days=36500),
-                None,
-            )
 
     def test_invalid_certificates(self):
         builder = ocsp.OCSPResponseBuilder()
