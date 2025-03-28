@@ -28,8 +28,10 @@ int ENGINE_ctrl_cmd(ENGINE *, const char *, long, void *, void (*)(void), int);
 int ENGINE_free(ENGINE *);
 const char *ENGINE_get_name(const ENGINE *);
 
-// These bindings are unused by cryptography or pyOpenSSL but are present
-// for advanced users who need them.
+/*
+These bindings are unused by cryptography or pyOpenSSL but are present
+for advanced users who need them.
+*/
 int ENGINE_ctrl_cmd_string(ENGINE *, const char *, const char *, int);
 void ENGINE_load_builtin_engines(void);
 EVP_PKEY *ENGINE_load_private_key(ENGINE *, const char *, UI_METHOD *, void *);
@@ -40,12 +42,16 @@ CUSTOMIZATIONS = """
 #ifdef OPENSSL_NO_ENGINE
 static const long Cryptography_HAS_ENGINE = 0;
 
-#if CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
 typedef void UI_METHOD;
 #endif
 
-/* Despite being OPENSSL_NO_ENGINE, BoringSSL/LibreSSL define these symbols. */
-#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_LIBRESSL
+/*
+Despite being OPENSSL_NO_ENGINE,
+BoringSSL/LibreSSL/AWS-LC define these symbols.
+*/
+#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_LIBRESSL \
+    && !CRYPTOGRAPHY_IS_AWSLC
 int (*ENGINE_free)(ENGINE *) = NULL;
 void (*ENGINE_load_builtin_engines)(void) = NULL;
 #endif

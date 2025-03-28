@@ -177,7 +177,11 @@ mod _rust {
         use crate::backend::ec::ec;
         #[pymodule_export]
         use crate::backend::ed25519::ed25519;
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         #[pymodule_export]
         use crate::backend::ed448::ed448;
         #[pymodule_export]
@@ -194,7 +198,11 @@ mod _rust {
         use crate::backend::rsa::rsa;
         #[pymodule_export]
         use crate::backend::x25519::x25519;
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         #[pymodule_export]
         use crate::backend::x448::x448;
         #[pymodule_export]
@@ -225,6 +233,7 @@ mod _rust {
 
             openssl_mod.add("CRYPTOGRAPHY_IS_LIBRESSL", cfg!(CRYPTOGRAPHY_IS_LIBRESSL))?;
             openssl_mod.add("CRYPTOGRAPHY_IS_BORINGSSL", cfg!(CRYPTOGRAPHY_IS_BORINGSSL))?;
+            openssl_mod.add("CRYPTOGRAPHY_IS_AWSLC", cfg!(CRYPTOGRAPHY_IS_AWSLC))?;
 
             cfg_if::cfg_if! {
                 if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {

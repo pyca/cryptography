@@ -4,12 +4,16 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
-#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub mod aead;
 pub mod cmac;
 pub mod fips;
 pub mod hmac;
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_LIBRESSL))]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_AWSLC
+))]
 pub mod poly1305;
 
 pub type OpenSSLResult<T> = Result<T, openssl::error::ErrorStack>;

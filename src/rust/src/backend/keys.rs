@@ -107,7 +107,11 @@ fn private_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::X448 => Ok(crate::backend::x448::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -116,7 +120,11 @@ fn private_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -127,7 +135,11 @@ fn private_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -221,7 +233,11 @@ fn public_key_from_pkey<'p>(
         openssl::pkey::Id::X25519 => Ok(crate::backend::x25519::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::X448 => Ok(crate::backend::x448::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -229,7 +245,11 @@ fn public_key_from_pkey<'p>(
         openssl::pkey::Id::ED25519 => Ok(crate::backend::ed25519::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -241,7 +261,11 @@ fn public_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
@@ -262,11 +286,11 @@ pub(crate) mod keys {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     use super::{private_key_from_pkey, public_key_from_pkey};
 
     #[test]
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_public_key_from_pkey_unknown_key() {
         pyo3::prepare_freethreaded_python();
 
@@ -281,7 +305,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_private_key_from_pkey_unknown_key() {
         pyo3::prepare_freethreaded_python();
 

@@ -47,6 +47,8 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "tests-randomorder"}
           # Latest commit on the BoringSSL main branch, as of Mar 28, 2025.
           - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "a9993612faac4866bc33ca8ff37bfd0659af1c48"}}
+          # Latest tag of AWS-LC main branch, as of March 28, 2025.
+          - {VERSION: "3.12", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.49.0"}}
           # Latest commit on the OpenSSL master branch, as of Mar 28, 2025.
           - {VERSION: "3.12", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "bf4c9b7b663e03e81fe0291e03b814bafd409d1b"}}
           # Builds with various Rust versions. Includes MSRV and next
@@ -121,7 +123,7 @@ jobs:
           echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
       - run: sudo apt-get install -y bindgen
-        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl'
+        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2

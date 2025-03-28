@@ -64,8 +64,13 @@ def cryptography_has_custom_ext() -> list[str]:
 
 def cryptography_has_tlsv13_functions() -> list[str]:
     return [
-        "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_CTX_set_ciphersuites",
+    ]
+
+
+def cryptography_has_tlsv13_hs_functions() -> list[str]:
+    return [
+        "SSL_VERIFY_POST_HANDSHAKE",
         "SSL_verify_client_post_handshake",
         "SSL_CTX_set_post_handshake_auth",
         "SSL_set_post_handshake_auth",
@@ -164,6 +169,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_PSK_TLSv1_3": cryptography_has_psk_tlsv13,
     "Cryptography_HAS_CUSTOM_EXT": cryptography_has_custom_ext,
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
+    "Cryptography_HAS_TLSv1_3_HS_FUNCTIONS": (
+        cryptography_has_tlsv13_hs_functions
+    ),
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
     "Cryptography_HAS_SRTP": cryptography_has_srtp,

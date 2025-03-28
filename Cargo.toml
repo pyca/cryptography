@@ -22,8 +22,8 @@ rust-version = "1.65.0"
 [workspace.dependencies]
 asn1 = { version = "0.20.0", default-features = false }
 pyo3 = { version = "0.23.5", features = ["abi3"] }
-openssl = "0.10.71"
-openssl-sys = "0.9.104"
+openssl = { version = "0.10.71", git = "https://github.com/sfackler/rust-openssl.git", rev = "7c7b2e6c9f95e77e56ab37af70b16de75beff387" }
+openssl-sys = { version = "0.9.104", git = "https://github.com/sfackler/rust-openssl.git", rev = "7c7b2e6c9f95e77e56ab37af70b16de75beff387" }
 
 [profile.release]
 overflow-checks = true

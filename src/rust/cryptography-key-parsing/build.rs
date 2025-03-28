@@ -12,4 +12,8 @@ fn main() {
     if env::var("DEP_OPENSSL_BORINGSSL").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
     }
+
+    if env::var("DEP_OPENSSL_AWSLC").is_ok() {
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
+    }
 }

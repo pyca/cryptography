@@ -12,6 +12,7 @@ TYPES = """
 static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
+static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_PSK_TLSv1_3;
@@ -477,7 +478,8 @@ static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 1;
 
 /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
    removed */
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
+    || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_SSL_ST = 1;
 #else
 static const long Cryptography_HAS_SSL_ST = 0;
@@ -494,7 +496,8 @@ static const long TLS_ST_BEFORE = 0;
 static const long TLS_ST_OK = 0;
 #endif
 
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
+    || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
 size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
 #else
@@ -589,9 +592,15 @@ SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
 
 #if CRYPTOGRAPHY_IS_BORINGSSL
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 0;
-
-static const long SSL_VERIFY_POST_HANDSHAKE = 0;
 int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
+#else
+static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
+static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS = 0;
+static const long SSL_VERIFY_POST_HANDSHAKE = 0;
+
 int (*SSL_verify_client_post_handshake)(SSL *) = NULL;
 void (*SSL_CTX_set_post_handshake_auth)(SSL_CTX *, int) = NULL;
 void (*SSL_set_post_handshake_auth)(SSL *, int) = NULL;
@@ -600,10 +609,10 @@ int (*SSL_write_early_data)(SSL *, const void *, size_t, size_t *) = NULL;
 int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
-static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 1;
+static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS = 1;
 #endif
 
-#if CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_SSL_COOKIE = 0;
 
 static const long SSL_OP_COOKIE_EXCHANGE = 0;
@@ -623,7 +632,8 @@ void (*SSL_CTX_set_cookie_verify_cb)(SSL_CTX *,
 #else
 static const long Cryptography_HAS_SSL_COOKIE = 1;
 #endif
-#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
+    || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_PSK_TLSv1_3 = 0;
 void (*SSL_CTX_set_psk_find_session_callback)(SSL_CTX *,
                                            int (*)(
@@ -646,7 +656,7 @@ const SSL_CIPHER *(*SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
 int (*SSL_SESSION_set1_master_key)(SSL_SESSION *, const unsigned char *,
                                    size_t) = NULL;
 int (*SSL_SESSION_set_cipher)(SSL_SESSION *, const SSL_CIPHER *) = NULL;
-#if !CRYPTOGRAPHY_IS_BORINGSSL
+#if !CRYPTOGRAPHY_IS_BORINGSSL && !CRYPTOGRAPHY_IS_AWSLC
 int (*SSL_SESSION_set_protocol_version)(SSL_SESSION *, int) = NULL;
 #endif
 SSL_SESSION *(*Cryptography_SSL_SESSION_new)(void) = NULL;

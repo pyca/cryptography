@@ -464,10 +464,13 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
+    @pytest.mark.supported(
+        only_if=(
+            lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ),
+        skip_message="AWS-LC and BoringSSL only support "
+        "hmacWithSHA1 and hmacWithSHA256 with pbkdf2",
     )
     @pytest.mark.parametrize(
         "filename",
@@ -487,10 +490,13 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 2048
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
+    @pytest.mark.supported(
+        only_if=(
+            lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ),
+        skip_message="AWS-LC and BoringSSL don't support RSA "
+        "PKCS#8 key with missing NULL parameters field",
     )
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
@@ -507,10 +513,13 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 1024
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
+    @pytest.mark.supported(
+        only_if=(
+            lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ),
+        skip_message="AWS-LC and BoringSSL require of use old encoding format "
+        "once produced by OpenSSL, but is not aligned with the RFC 2898.",
     )
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
@@ -546,10 +555,13 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
+    @pytest.mark.supported(
+        only_if=(
+            lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ),
+        skip_message="AWS-LC and BoringSSL don't support "
+        "aes-192-cbc with PBES2",
     )
     def test_load_pkcs8_aes_192_cbc(self):
         key = load_vectors_from_file(
@@ -560,10 +572,13 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 2048
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
+    @pytest.mark.supported(
+        only_if=(
+            lambda backend: not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ),
+        skip_message="AWS-LC and BoringSSL don't support scrypt for KDF "
+        "with PBES2",
     )
     @pytest.mark.supported(
         only_if=lambda backend: backend.scrypt_supported(),

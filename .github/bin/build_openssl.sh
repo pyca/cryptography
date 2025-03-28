@@ -61,4 +61,14 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   rm -rf "${OSSL_PATH}/bin"
   popd
   rm -rf boringssl/
+elif [[ "${TYPE}" == "aws-lc" ]]; then
+  git clone https://github.com/aws/aws-lc.git
+  pushd aws-lc
+  git checkout "${VERSION}"
+  cmake -B build -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  make -C build -j"$(nproc)" install
+  # delete binaries we don't need
+  rm -rf "${OSSL_PATH:?}/bin"
+  popd # aws-lc
+  rm -rf aws-lc/
 fi

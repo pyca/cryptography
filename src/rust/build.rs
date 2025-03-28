@@ -34,6 +34,10 @@ fn main() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL");
     }
 
+    if env::var("DEP_OPENSSL_AWSLC").is_ok() {
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
+    }
+
     if env::var("CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY").map_or(false, |v| !v.is_empty() && v != "0")
     {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY");

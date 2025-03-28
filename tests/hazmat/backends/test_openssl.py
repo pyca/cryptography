@@ -54,7 +54,9 @@ class TestOpenSSL:
         to be true for every OpenSSL-alike.
         """
         version = backend.openssl_version_text()
-        assert version.startswith(("OpenSSL", "LibreSSL", "BoringSSL"))
+        assert version.startswith(
+            ("OpenSSL", "LibreSSL", "BoringSSL", "AWS-LC")
+        )
 
         # Verify the correspondence between these two. And do it in a way that
         # ensures coverage.
@@ -67,6 +69,11 @@ class TestOpenSSL:
             assert rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
         if rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
             assert version.startswith("BoringSSL")
+
+        if version.startswith("AWS-LC"):
+            assert rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
+            assert version.startswith("AWS-LC")
 
     def test_openssl_version_number(self):
         assert backend.openssl_version_number() > 0
