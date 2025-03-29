@@ -196,15 +196,11 @@ impl CertificateRevocationList {
     fn signature_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
-    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let oid = self.signature_algorithm_oid(py)?;
-        match types::SIG_OIDS_TO_HASH.get(py)?.get_item(oid) {
-            Ok(v) => Ok(v),
-            Err(_) => Err(exceptions::UnsupportedAlgorithm::new_err(format!(
-                "Signature algorithm OID: {} not recognized",
-                self.owned.borrow_dependent().signature_algorithm.oid()
-            ))),
-        }
+    ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
+        sign::identify_signature_hash_algorithm(
+            py,
+            &self.owned.borrow_dependent().signature_algorithm,
+        )
     }
 
     #[getter]
