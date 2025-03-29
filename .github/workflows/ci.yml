@@ -58,6 +58,7 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.12", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.12", NOXSESSION: "tests-rust-debug"}
+          - {VERSION: "3.13t", NOXSESSION: "local"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -137,6 +138,13 @@ jobs:
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
+      - name: override cffi version in free-threaded environment
+        if: matrix.PYTHON.VERSION == '3.13t'
+        # FIXME FIXME total hack
+        run: |
+          .nox/local/bin/python -m ensurepip
+          .nox/local/bin/python -m pip install git+https://github.com/colesbury/cffi@ft
+          echo "PYTHON_GIL=0" >> $GITHUB_ENV
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
