@@ -299,6 +299,7 @@ class TestCertificateRevocationListBuilder:
         crl = builder.sign(private_key, hashes.SHA256(), rsa_padding=pss)
         assert len(crl) == 0
         assert isinstance(crl.signature_algorithm_parameters, padding.PSS)
+        assert isinstance(crl.signature_hash_algorithm, hashes.SHA256)
         assert crl.signature_algorithm_parameters._salt_length == 32
         private_key.public_key().verify(
             crl.signature,
