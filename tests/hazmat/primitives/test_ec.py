@@ -450,13 +450,7 @@ class TestECDSAVectors:
     def test_load_invalid_ec_key_from_pem(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
-        # BoringSSL rejects infinity points before it ever gets to us, so it
-        # uses a more generic error message.
-        match = (
-            r"infinity|invalid form"
-            if not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            else None
-        )
+        match = r"infinity|invalid form|Invalid key"
         with pytest.raises(ValueError, match=match):
             serialization.load_pem_public_key(
                 textwrap.dedent(
@@ -482,14 +476,7 @@ class TestECDSAVectors:
                 backend=backend,
             )
 
-    @pytest.mark.supported(
-        only_if=(
-            lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
-            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-        ),
-        skip_message="LibreSSL and OpenSSL 1.1.1 handle this differently",
-    )
-    def test_load_invalid_private_scalar_pem(self, backend):
+    def test_load_private_scalar_greater_than_order_pem(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
 
         data = load_vectors_from_file(
@@ -499,7 +486,7 @@ class TestECDSAVectors:
             lambda pemfile: pemfile.read().encode(),
         )
         with pytest.raises(ValueError):
-            serialization.load_pem_private_key(data, None)
+            serialization.load_pem_private_key(data, password=None)
 
     def test_signatures(self, backend, subtests):
         vectors = itertools.chain(
@@ -1127,7 +1114,6 @@ class TestECSerialization:
         assert isinstance(key, ec.EllipticCurvePublicKey)
         assert isinstance(key.curve, curve)
 
-    @pytest.mark.xfail
     def test_pkcs8_inconsistent_curve(self):
         # The curve can appear twice in a PKCS8 EC key, error if they're not
         # consistent
@@ -1168,7 +1154,6 @@ class TestECSerialization:
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(data, password=None)
 
-    @pytest.mark.xfail
     def test_load_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec-invalid-version.pem"),
