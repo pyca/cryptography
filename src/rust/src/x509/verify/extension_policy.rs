@@ -250,7 +250,7 @@ fn make_py_extension<'chain, 'p>(
 fn invoke_py_validator_callback<'py>(
     py: pyo3::Python<'py>,
     py_cb: &pyo3::PyObject,
-    args: impl pyo3::IntoPyObject<'py, Target = pyo3::types::PyTuple>,
+    args: impl pyo3::call::PyCallArgs<'py>,
 ) -> ValidationResult<'static, (), PyCryptoOps> {
     let result = py_cb.bind(py).call1(args).map_err(|e| {
         ValidationError::new(ValidationErrorKind::Other(format!(
