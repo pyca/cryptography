@@ -196,7 +196,7 @@ pytest-cov==4.1.0 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
 pytest-cov==5.0.0 ; python_full_version == '3.8.*'
     # via cryptography (pyproject.toml)
-pytest-cov==6.0.0 ; python_full_version >= '3.9'
+pytest-cov==6.1.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-randomly==3.12.0 ; python_full_version < '3.8'
     # via cryptography (pyproject.toml)
