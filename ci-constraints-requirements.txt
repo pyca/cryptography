@@ -323,7 +323,7 @@ typing-extensions==4.7.1 ; python_full_version < '3.8'
     #   mypy
     #   nox
     #   platformdirs
-typing-extensions==4.12.2 ; python_full_version >= '3.8'
+typing-extensions==4.13.1 ; python_full_version >= '3.8'
     # via mypy
 urllib3==2.0.7 ; python_full_version < '3.8'
     # via requests
