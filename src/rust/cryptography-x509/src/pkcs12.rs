@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::ObjectIdentifier;
+
 use crate::common::Utf8StoredBMPString;
 use crate::{pkcs7, pkcs8};
 
@@ -12,6 +14,8 @@ pub const SHROUDED_KEY_BAG_OID: asn1::ObjectIdentifier =
 pub const X509_CERTIFICATE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 22, 1);
 pub const FRIENDLY_NAME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 20);
 pub const LOCAL_KEY_ID_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 21);
+pub const JDK_TRUSTSTORE_USAGE: asn1::ObjectIdentifier =
+    asn1::oid!(2, 16, 840, 1, 113894, 746875, 1, 1);
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct Pfx<'a> {
@@ -50,6 +54,9 @@ pub enum AttributeSet<'a> {
 
     #[defined_by(LOCAL_KEY_ID_OID)]
     LocalKeyId(asn1::SetOfWriter<'a, &'a [u8], [&'a [u8]; 1]>),
+
+    #[defined_by(JDK_TRUSTSTORE_USAGE)]
+    JDKTruststoreUsage(asn1::SetOfWriter<'a, ObjectIdentifier, [ObjectIdentifier; 1]>),
 }
 
 #[derive(asn1::Asn1DefinedByWrite)]
