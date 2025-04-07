@@ -11,7 +11,7 @@ use cryptography_x509::extensions::{
     Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText,
     DistributionPoint, DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage,
     Extension, IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints,
-    NamingAuthority, PolicyConstraints, PolicyInformation, PolicyQualifierInfo, ProfessionInfo,
+    NamingAuthority, PolicyConstraints, PolicyInformation, PolicyQualifierInfo, PrivateKeyUsagePeriod, ProfessionInfo,
     Qualifier, RawExtensions, SequenceOfAccessDescriptions, SequenceOfSubtrees,
     SubjectAlternativeName, UserNotice,
 };
@@ -944,6 +944,29 @@ pub fn parse_cert_ext<'p>(
                 types::ADMISSIONS
                     .get(py)?
                     .call1((admission_authority, py_admissions))?,
+            ))
+        }
+        oid::PRIVATE_KEY_USAGE_PERIOD_OID => {
+            let pkup = ext.value::<PrivateKeyUsagePeriod>()?;
+            
+            let not_before = match &pkup.not_before {
+                Some(t) => {
+                    let dt = t.as_datetime();
+                    Some(x509::datetime_to_py(py, dt)?)
+                }
+                None => None,
+            };
+            
+            let not_after = match &pkup.not_after {
+                Some(t) => {
+                    let dt = t.as_datetime();
+                    Some(x509::datetime_to_py(py, dt)?)
+                }
+                None => None,
+            };
+        
+            Ok(Some(
+                types::PRIVATE_KEY_USAGE_PERIOD.get(py)?.call1((not_before, not_after))?
             ))
         }
         _ => Ok(None),

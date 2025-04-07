@@ -1875,6 +1875,139 @@ class TestKeyUsageExtension:
         assert ku.crl_sign is True
 
 
+class TestPrivateKeyUsagePeriodExtension:
+    def test_not_validity(self):
+        with pytest.raises(TypeError):
+            x509.PrivateKeyUsagePeriod("notvalidity")  # type:ignore[arg-type]
+
+    def test_repr(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        ext = x509.Extension(
+            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD, False, period
+        )
+        assert repr(ext) == (
+            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.16, name=privateKeyUsagePeriod)>, "
+            "critical=False, value=<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
+            "not_after=2013-01-01 00:00:00)>)>"
+        )
+
+    def test_eq(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert period == period2
+
+    def test_ne(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert period != period2
+        assert period != object()
+
+    def test_hash(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period3 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert hash(period) == hash(period2)
+        assert hash(period) != hash(period3)
+
+    def test_load_pem_certificate_with_extension(self, backend):
+        cert_path = os.path.join("x509", "custom", "both_dates.pem")
+        cert = load_vectors_from_file(
+            cert_path,
+            lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
+            mode="rb",
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+        )
+        assert ext is not None
+        assert ext.critical is False
+
+        assert ext.value.not_before is not None
+        assert ext.value.not_after is not None
+
+    def test_load_der_certificate_with_extension(self, backend):
+        cert_path = os.path.join("x509", "custom", "both_dates.der")
+        cert = load_vectors_from_file(
+            cert_path,
+            lambda derdata: x509.load_der_x509_certificate(derdata.read()),
+            mode="rb",
+        )
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+        )
+        assert ext is not None
+
+    def test_certificate_builder_with_extension(self, backend):
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
+
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.NameOID.COMMON_NAME, "cryptography.io"
+                    ),
+                ]
+            )
+        )
+        builder = builder.issuer_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.NameOID.COMMON_NAME, "cryptography.io"
+                    ),
+                ]
+            )
+        )
+        builder = builder.not_valid_before(datetime.datetime(2010, 1, 1))
+        builder = builder.not_valid_after(datetime.datetime(2020, 1, 1))
+        builder = builder.serial_number(123)
+        builder = builder.public_key(private_key.public_key())
+        builder = builder.add_extension(period, critical=True)
+
+        certificate = builder.sign(private_key, hashes.SHA256())
+
+        ext = certificate.extensions.get_extension_for_oid(
+            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+        )
+        assert ext is not None
+        assert ext.critical is True
+        assert ext.value.not_before == datetime.datetime(2012, 1, 1)
+        assert ext.value.not_after == datetime.datetime(2013, 1, 1)
+
+
 class TestDNSName:
     def test_non_a_label(self):
         with pytest.raises(ValueError):
@@ -7275,6 +7408,7 @@ def test_all_extension_oid_members_have_names_defined():
     for oid in dir(ExtensionOID):
         if oid.startswith("__"):
             continue
+        print(getattr(ExtensionOID, oid))
         assert getattr(ExtensionOID, oid) in _OID_NAMES
 
 
