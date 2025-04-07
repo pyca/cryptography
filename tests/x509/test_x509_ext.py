@@ -1964,9 +1964,9 @@ class TestPrivateKeyUsagePeriodExtension:
         )
         serialized = period.public_bytes()
         assert serialized == (
-            b"\x30\x22\x18\x0f\x32\x30\x32\x34\x30\x31\x30\x31\x30\x30\x30\x30"
-            b"\x30\x30\x5a\x18\x0f\x32\x30\x32\x34\x31\x32\x33\x31\x32\x33\x35"
-            b"\x39\x35\x39\x5a"
+            b"\x30\x22\x18\x0f\x32\x30\x31\x32\x30\x31\x30\x31\x30\x30\x30\x30"
+            b"\x30\x30\x5a\x18\x0f\x32\x30\x31\x33\x30\x31\x30\x31\x30\x30\x30"
+            b"\x30\x30\x5a"
         )
 
     def test_only_not_before(self):
@@ -2014,8 +2014,8 @@ class TestPrivateKeyUsagePeriodExtension:
             lambda derdata: x509.load_der_x509_certificate(derdata.read()),
             mode="rb",
         )
-        ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+        ext = cert.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
         )
         assert ext is not None
 
@@ -2057,8 +2057,8 @@ class TestPrivateKeyUsagePeriodExtension:
 
         certificate = builder.sign(private_key, hashes.SHA256())
 
-        ext = certificate.extensions.get_extension_for_oid(
-            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD
+        ext = certificate.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
         )
         assert ext is not None
         assert ext.critical is True
