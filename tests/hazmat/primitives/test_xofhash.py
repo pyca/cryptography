@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives import hashes
 from ...utils import load_nist_vectors
 from .utils import _load_all_params
 
+random.seed(42)
 
 @pytest.mark.supported(
     only_if=lambda backend: (
