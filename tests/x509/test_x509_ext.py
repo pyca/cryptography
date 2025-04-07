@@ -1889,8 +1889,9 @@ class TestPrivateKeyUsagePeriodExtension:
             ExtensionOID.PRIVATE_KEY_USAGE_PERIOD, False, period
         )
         assert repr(ext) == (
-            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.16, name=privateKeyUsagePeriod)>, "
-            "critical=False, value=<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
+            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.16, "
+            "name=privateKeyUsagePeriod)>, critical=False, "
+            "value=<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
             "not_after=2013-01-01 00:00:00)>)>"
         )
 

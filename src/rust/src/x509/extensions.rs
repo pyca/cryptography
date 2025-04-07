@@ -742,21 +742,21 @@ pub(crate) fn encode_private_key_usage_period(
 ) -> CryptographyResult<Vec<u8>> {
     let not_before = ext.getattr(pyo3::intern!(py, "not_before"))?;
     let not_after = ext.getattr(pyo3::intern!(py, "not_after"))?;
-    
+
     let not_before_value = if !not_before.is_none() {
         let dt = x509::py_to_datetime(py, not_before.clone())?;
         Some(asn1::GeneralizedTime::new(dt, None)?)
     } else {
         None
     };
-    
+
     let not_after_value = if !not_after.is_none() {
         let dt = x509::py_to_datetime(py, not_after.clone())?;
         Some(asn1::GeneralizedTime::new(dt, None)?)
     } else {
         None
     };
-    
+
     let pkup = extensions::PrivateKeyUsagePeriod {
         not_before: not_before_value,
         not_after: not_after_value,
