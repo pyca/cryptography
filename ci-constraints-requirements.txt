@@ -224,7 +224,7 @@ requests==2.32.3 ; python_full_version >= '3.8'
     #   sphinxcontrib-spelling
 roman-numerals-py==3.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.11.3
+ruff==0.11.4
     # via cryptography (pyproject.toml)
 six==1.17.0 ; python_full_version < '3.8'
     # via bleach
