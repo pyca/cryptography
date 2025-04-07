@@ -1934,6 +1934,63 @@ class TestPrivateKeyUsagePeriodExtension:
         assert hash(period) == hash(period2)
         assert hash(period) != hash(period3)
 
+    def test_both_none(self):
+        with pytest.raises(ValueError):
+            x509.PrivateKeyUsagePeriod(
+                not_before=None,
+                not_after=None,
+            )
+
+    def test_invalid_not_after_type(self):
+        with pytest.raises(TypeError):
+            x509.PrivateKeyUsagePeriod(
+                not_before=datetime.datetime(2012, 1, 1),
+                not_after="invalid type",
+            )
+
+    def test_not_before_after_not_after(self):
+        with pytest.raises(
+            ValueError, match="not_before must be before not_after"
+        ):
+            x509.PrivateKeyUsagePeriod(
+                not_before=datetime.datetime(2014, 1, 1),
+                not_after=datetime.datetime(2013, 1, 1),
+            )
+
+    def test_public_bytes(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1, 0, 0, 0),
+            not_after=datetime.datetime(2013, 1, 1, 0, 0, 0),
+        )
+        serialized = period.public_bytes()
+        assert serialized == (
+            b"\x30\x22\x18\x0f\x32\x30\x32\x34\x30\x31\x30\x31\x30\x30\x30\x30"
+            b"\x30\x30\x5a\x18\x0f\x32\x30\x32\x34\x31\x32\x33\x31\x32\x33\x35"
+            b"\x39\x35\x39\x5a"
+        )
+
+    def test_only_not_before(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=None,
+        )
+        assert period.not_before == datetime.datetime(2012, 1, 1)
+        assert period.not_after is None
+
+        serialized = period.public_bytes()
+        assert serialized.startswith(b"\x30")
+
+    def test_only_not_after(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=None,
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert period.not_before is None
+        assert period.not_after == datetime.datetime(2013, 1, 1)
+
+        serialized = period.public_bytes()
+        assert serialized.startswith(b"\x30")
+
     def test_load_pem_certificate_with_extension(self, backend):
         cert_path = os.path.join("x509", "custom", "both_dates.pem")
         cert = load_vectors_from_file(
