@@ -39,6 +39,10 @@ def load_pkcs12(
     password: bytes | None,
     backend: typing.Any = None,
 ) -> PKCS12KeyAndCertificates: ...
+def serialize_java_truststore(
+    certs: Iterable[PKCS12Certificate],
+    encryption_algorithm: KeySerializationEncryption,
+) -> bytes: ...
 def serialize_key_and_certificates(
     name: bytes | None,
     key: PKCS12PrivateKeyTypes | None,
