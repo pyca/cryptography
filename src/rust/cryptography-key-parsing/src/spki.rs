@@ -27,21 +27,25 @@ pub fn parse_public_key(
         AlgorithmParameters::Ed25519 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::ED25519,
-        )?),
+        )
+        .map_err(|_| KeyParsingError::InvalidKey)?),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         AlgorithmParameters::Ed448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::ED448,
-        )?),
+        )
+        .map_err(|_| KeyParsingError::InvalidKey)?),
         AlgorithmParameters::X25519 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::X25519,
-        )?),
+        )
+        .map_err(|_| KeyParsingError::InvalidKey)?),
         #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
         AlgorithmParameters::X448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
             k.subject_public_key.as_bytes(),
             openssl::pkey::Id::X448,
-        )?),
+        )
+        .map_err(|_| KeyParsingError::InvalidKey)?),
         AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_) => {
             // RSA-PSS keys are treated the same as bare RSA keys.
             crate::rsa::parse_pkcs1_public_key(k.subject_public_key.as_bytes())
