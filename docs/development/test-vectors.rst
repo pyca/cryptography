@@ -623,6 +623,14 @@ Custom X.509 Vectors
   signed by ``x509/custom/ca/rsa_ca.pem`` CA.
 * ``no_sans.pem`` - Leaf certificate issued by ``x509/custom/ca/rsa_ca.pem``
   with no SAN extension.
+* ``both_dates.pem`` - A certificate containing PrivateKeyUsagePeriod with both
+  ``notBefore`` and ``notAfter`` fields set.
+* ``both_dates.der`` - A certificate containing PrivateKeyUsagePeriod with both
+  ``notBefore`` and ``notAfter`` fields set. DER encoded.
+* ``only_notBefore.pem`` - A certificate containing PrivateKeyUsagePeriod with
+  only ``notBefore`` field set.
+* ``only_notAfter.pem`` - A certificate containing PrivateKeyUsagePeriod with
+  only ``notAfter`` field set.
 
 Custom X.509 Request Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
