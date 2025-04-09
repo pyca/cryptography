@@ -1988,7 +1988,9 @@ class TestPrivateKeyUsagePeriodExtension:
         assert serialized.startswith(b"\x30")
 
     def test_load_pem_certificate_with_extension(self, backend):
-        cert_path = os.path.join("x509", "custom", "both_dates.pem")
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_both_dates.pem"
+        )
         cert = load_vectors_from_file(
             cert_path,
             lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
@@ -2004,7 +2006,9 @@ class TestPrivateKeyUsagePeriodExtension:
         assert ext.value.not_after is not None
 
     def test_load_pem_only_not_before(self, backend):
-        cert_path = os.path.join("x509", "custom", "only_not_before.pem")
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_only_not_before.pem"
+        )
         cert = load_vectors_from_file(
             cert_path,
             lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
@@ -2019,7 +2023,9 @@ class TestPrivateKeyUsagePeriodExtension:
         assert ext.value.not_after is None
 
     def test_load_pem_only_not_after(self, backend):
-        cert_path = os.path.join("x509", "custom", "only_not_after.pem")
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_only_not_after.pem"
+        )
         cert = load_vectors_from_file(
             cert_path,
             lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
@@ -2034,7 +2040,9 @@ class TestPrivateKeyUsagePeriodExtension:
         assert ext.value.not_after is not None
 
     def test_load_der_certificate_with_extension(self, backend):
-        cert_path = os.path.join("x509", "custom", "both_dates.der")
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_both_dates.der"
+        )
         cert = load_vectors_from_file(
             cert_path,
             lambda derdata: x509.load_der_x509_certificate(derdata.read()),
