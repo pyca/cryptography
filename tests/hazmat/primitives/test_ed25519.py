@@ -6,6 +6,7 @@
 import binascii
 import copy
 import os
+import textwrap
 
 import pytest
 
@@ -268,6 +269,15 @@ class TestEd25519Signing:
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
         assert isinstance(loaded_key, Ed25519PrivateKey)
+
+    def test_invalid_public_key_pem(self):
+        with pytest.raises(ValueError):
+            serialization.load_pem_public_key(
+                textwrap.dedent("""
+            -----BEGIN PUBLIC KEY-----
+            MCswBQYDK2VwAyIA////////////////////////////////////////////
+            -----END PUBLIC KEY-----""").encode()
+            )
 
     def test_buffer_protocol(self, backend):
         private_bytes = os.urandom(32)
