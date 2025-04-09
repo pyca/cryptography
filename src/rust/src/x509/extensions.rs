@@ -745,14 +745,14 @@ pub(crate) fn encode_private_key_usage_period(
 
     let not_before_value = if !not_before.is_none() {
         let dt = x509::py_to_datetime(py, not_before.clone())?;
-        Some(asn1::GeneralizedTime::new(dt, None)?)
+        Some(asn1::X509GeneralizedTime::new(dt)?)
     } else {
         None
     };
 
     let not_after_value = if !not_after.is_none() {
         let dt = x509::py_to_datetime(py, not_after.clone())?;
-        Some(asn1::GeneralizedTime::new(dt, None)?)
+        Some(asn1::X509GeneralizedTime::new(dt)?)
     } else {
         None
     };
