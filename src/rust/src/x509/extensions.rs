@@ -751,7 +751,7 @@ pub(crate) fn encode_private_key_usage_period(
     };
 
     let not_after_value = if !not_after.is_none() {
-        let dt = x509::py_to_datetime(py, not_after.clone())?;
+        let dt = x509::py_to_datetime(py, not_after)?;
         Some(asn1::X509GeneralizedTime::new(dt)?)
     } else {
         None
