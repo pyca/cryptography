@@ -627,7 +627,7 @@ Custom X.509 Vectors
   PrivateKeyUsagePeriod with both ``notBefore`` and ``notAfter`` fields set.
 * ``private_key_usage_period_only_not_before.pem`` - A certificate containing
   PrivateKeyUsagePeriod with only ``notBefore`` field set.
-* ``private_key_usage_period_only_notAfter.pem`` - A certificate containing
+* ``private_key_usage_period_only_not_after.pem`` - A certificate containing
   PrivateKeyUsagePeriod with only ``notAfter`` field set.
 
 Custom X.509 Request Vectors
