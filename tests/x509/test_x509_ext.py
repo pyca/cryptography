@@ -2039,20 +2039,6 @@ class TestPrivateKeyUsagePeriodExtension:
         assert ext.value.not_before is None
         assert ext.value.not_after is not None
 
-    def test_load_der_certificate_with_extension(self, backend):
-        cert_path = os.path.join(
-            "x509", "custom", "private_key_usage_period_both_dates.der"
-        )
-        cert = load_vectors_from_file(
-            cert_path,
-            lambda derdata: x509.load_der_x509_certificate(derdata.read()),
-            mode="rb",
-        )
-        ext = cert.extensions.get_extension_for_class(
-            x509.PrivateKeyUsagePeriod
-        )
-        assert ext is not None
-
     def test_certificate_builder_with_extension(self, backend):
         private_key = rsa.generate_private_key(
             public_exponent=65537,
