@@ -744,7 +744,7 @@ pub(crate) fn encode_private_key_usage_period(
     let not_after = ext.getattr(pyo3::intern!(py, "not_after"))?;
 
     let not_before_value = if !not_before.is_none() {
-        let dt = x509::py_to_datetime(py, not_before.clone())?;
+        let dt = x509::py_to_datetime(py, not_before)?;
         Some(asn1::X509GeneralizedTime::new(dt)?)
     } else {
         None
