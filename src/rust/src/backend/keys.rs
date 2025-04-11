@@ -35,9 +35,9 @@ pub(crate) fn load_der_private_key_bytes<'p>(
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let pkey = cryptography_key_parsing::pkcs8::parse_private_key(data)
-        .or_else(|_| cryptography_key_parsing::dsa::parse_pkcs1_private_key(data))
         .or_else(|_| cryptography_key_parsing::ec::parse_pkcs1_private_key(data, None))
-        .or_else(|_| cryptography_key_parsing::rsa::parse_pkcs1_private_key(data));
+        .or_else(|_| cryptography_key_parsing::rsa::parse_pkcs1_private_key(data))
+        .or_else(|_| cryptography_key_parsing::dsa::parse_pkcs1_private_key(data));
 
     if let Ok(pkey) = pkey {
         if password.is_some() {
@@ -104,6 +104,8 @@ fn load_pem_private_key<'p>(
                 Some(p) => p,
             };
 
+            // There's no RFC that defines these, but these are the ones in
+            // very wide use that we support.
             let cipher = match cipher_algorithm {
                 "AES-128-CBC" => openssl::symm::Cipher::aes_128_cbc(),
                 "AES-256-CBC" => openssl::symm::Cipher::aes_256_cbc(),
