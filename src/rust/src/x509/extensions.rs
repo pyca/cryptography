@@ -728,6 +728,39 @@ pub(crate) fn encode_extension(
             };
             Ok(Some(asn1::write_single(&admission)?))
         }
+        &oid::PRIVATE_KEY_USAGE_PERIOD_OID => {
+            let der = encode_private_key_usage_period(py, ext)?;
+            Ok(Some(der))
+        }
         _ => Ok(None),
     }
+}
+
+pub(crate) fn encode_private_key_usage_period(
+    py: pyo3::Python<'_>,
+    ext: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<Vec<u8>> {
+    let not_before = ext.getattr(pyo3::intern!(py, "not_before"))?;
+    let not_after = ext.getattr(pyo3::intern!(py, "not_after"))?;
+
+    let not_before_value = if !not_before.is_none() {
+        let dt = x509::py_to_datetime(py, not_before)?;
+        Some(asn1::X509GeneralizedTime::new(dt)?)
+    } else {
+        None
+    };
+
+    let not_after_value = if !not_after.is_none() {
+        let dt = x509::py_to_datetime(py, not_after)?;
+        Some(asn1::X509GeneralizedTime::new(dt)?)
+    } else {
+        None
+    };
+
+    let pkup = extensions::PrivateKeyUsagePeriod {
+        not_before: not_before_value,
+        not_after: not_after_value,
+    };
+
+    Ok(asn1::write_single(&pkup)?)
 }

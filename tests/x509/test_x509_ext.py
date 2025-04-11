@@ -1875,6 +1875,223 @@ class TestKeyUsageExtension:
         assert ku.crl_sign is True
 
 
+class TestPrivateKeyUsagePeriodExtension:
+    def test_not_validity(self):
+        with pytest.raises(TypeError):
+            x509.PrivateKeyUsagePeriod("notValidBefore", "notValidAfter")  # type:ignore[arg-type]
+
+    def test_repr(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert repr(period) == (
+            "<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
+            "not_after=2013-01-01 00:00:00)>"
+        )
+
+    def test_eq(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert period == period2
+
+    def test_ne(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert period != period2
+        assert period != object()
+
+    def test_hash(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period2 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        period3 = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2014, 1, 1),
+        )
+        assert hash(period) == hash(period2)
+        assert hash(period) != hash(period3)
+
+    def test_both_none(self):
+        with pytest.raises(ValueError):
+            x509.PrivateKeyUsagePeriod(
+                not_before=None,
+                not_after=None,
+            )
+
+    def test_invalid_not_after_type(self):
+        with pytest.raises(TypeError):
+            x509.PrivateKeyUsagePeriod(
+                not_before=datetime.datetime(2012, 1, 1),
+                not_after="invalid type",  # type:ignore[arg-type]
+            )
+
+    def test_not_before_after_not_after(self):
+        with pytest.raises(
+            ValueError, match="not_before must be before not_after"
+        ):
+            x509.PrivateKeyUsagePeriod(
+                not_before=datetime.datetime(2014, 1, 1),
+                not_after=datetime.datetime(2013, 1, 1),
+            )
+
+    def test_public_bytes(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1, 0, 0, 0),
+            not_after=datetime.datetime(2013, 1, 1, 0, 0, 0),
+        )
+        serialized = period.public_bytes()
+
+        assert serialized == (
+            b"\x30\x22\x80\x0f\x32\x30\x31\x32\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a\x81\x0f\x32\x30\x31\x33\x30"
+            b"\x31\x30\x31\x30\x30\x30\x30\x30\x30\x5a"
+        )
+
+    def test_only_not_before(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=None,
+        )
+        assert period.not_before == datetime.datetime(2012, 1, 1)
+        assert period.not_after is None
+
+        serialized = period.public_bytes()
+
+        assert serialized == (
+            b"\x30\x11\x80\x0f\x32\x30\x31\x32\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a"
+        )
+
+    def test_only_not_after(self):
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=None,
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+        assert period.not_before is None
+        assert period.not_after == datetime.datetime(2013, 1, 1)
+
+        serialized = period.public_bytes()
+
+        assert serialized == (
+            b"\x30\x11\x81\x0f\x32\x30\x31\x33\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a"
+        )
+
+    def test_load_pem_certificate_with_extension(self, backend):
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_both_dates.pem"
+        )
+        cert = load_vectors_from_file(
+            cert_path,
+            lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
+            mode="rb",
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
+        )
+        assert ext.critical is False
+
+        assert ext.value.not_before == datetime.datetime(2024, 1, 1, 0, 0)
+        assert ext.value.not_after == datetime.datetime(
+            2024, 12, 31, 23, 59, 59
+        )
+
+    def test_load_pem_only_not_before(self, backend):
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_only_not_before.pem"
+        )
+        cert = load_vectors_from_file(
+            cert_path,
+            lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
+            mode="rb",
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
+        )
+
+        assert ext.value.not_before == datetime.datetime(2024, 1, 1, 0, 0)
+        assert ext.value.not_after is None
+
+    def test_load_pem_only_not_after(self, backend):
+        cert_path = os.path.join(
+            "x509", "custom", "private_key_usage_period_only_not_after.pem"
+        )
+        cert = load_vectors_from_file(
+            cert_path,
+            lambda pemdata: x509.load_pem_x509_certificate(pemdata.read()),
+            mode="rb",
+        )
+        ext = cert.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
+        )
+
+        assert ext.value.not_before is None
+        assert ext.value.not_after == datetime.datetime(
+            2024, 12, 31, 23, 59, 59
+        )
+
+    def test_certificate_builder_with_extension(self, backend):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+
+        period = x509.PrivateKeyUsagePeriod(
+            not_before=datetime.datetime(2012, 1, 1),
+            not_after=datetime.datetime(2013, 1, 1),
+        )
+
+        builder = x509.CertificateBuilder()
+        builder = builder.subject_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.NameOID.COMMON_NAME, "cryptography.io"
+                    ),
+                ]
+            )
+        )
+        builder = builder.issuer_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.NameOID.COMMON_NAME, "cryptography.io"
+                    ),
+                ]
+            )
+        )
+        builder = builder.not_valid_before(datetime.datetime(2010, 1, 1))
+        builder = builder.not_valid_after(datetime.datetime(2020, 1, 1))
+        builder = builder.serial_number(123)
+        builder = builder.public_key(private_key.public_key())
+        builder = builder.add_extension(period, critical=True)
+
+        certificate = builder.sign(private_key, hashes.SHA256())
+
+        ext = certificate.extensions.get_extension_for_class(
+            x509.PrivateKeyUsagePeriod
+        )
+
+        assert ext.critical is True
+        assert ext.value.not_before == datetime.datetime(2012, 1, 1)
+        assert ext.value.not_after == datetime.datetime(2013, 1, 1)
+
+
 class TestDNSName:
     def test_non_a_label(self):
         with pytest.raises(ValueError):

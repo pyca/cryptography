@@ -250,6 +250,8 @@ pub static SUBJECT_KEY_IDENTIFIER: LazyPyImport =
 pub static TLS_FEATURE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["TLSFeature"]);
 pub static SUBJECT_ALTERNATIVE_NAME: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["SubjectAlternativeName"]);
+pub static PRIVATE_KEY_USAGE_PERIOD: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["PrivateKeyUsagePeriod"]);
 pub static POLICY_INFORMATION: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["PolicyInformation"]);
 pub static USER_NOTICE: LazyPyImport = LazyPyImport::new("cryptography.x509", &["UserNotice"]);
