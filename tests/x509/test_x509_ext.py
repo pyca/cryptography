@@ -2049,10 +2049,7 @@ class TestPrivateKeyUsagePeriodExtension:
         )
 
     def test_certificate_builder_with_extension(self, backend):
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-        )
+        private_key = ec.generate_private_key(ec.SECP256R1())
 
         period = x509.PrivateKeyUsagePeriod(
             not_before=datetime.datetime(2012, 1, 1),
