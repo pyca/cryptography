@@ -408,7 +408,6 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_der_parameters(param_data, backend)
 
-    @pytest.mark.xfail()
     def test_load_pkcs8_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "invalid-version.der"),
@@ -464,11 +463,6 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
-    )
     @pytest.mark.parametrize(
         "filename",
         [
@@ -487,15 +481,11 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 2048
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        ),
+        )
+        and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RC2 CBC",
     )
     def test_load_pkcs8_40_bit_rc2(self):
@@ -507,15 +497,11 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 1024
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: backend.cipher_supported(
             RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        ),
+        )
+        and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
         skip_message="Does not support RC2 CBC",
     )
     def test_load_pkcs8_rc2_cbc(self):
@@ -546,11 +532,6 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
-    )
     def test_load_pkcs8_aes_192_cbc(self):
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "rsa-aes-192-cbc.pem"),
@@ -560,11 +541,6 @@ class TestDERSerialization:
         assert isinstance(key, rsa.RSAPrivateKey)
         assert key.key_size == 2048
 
-    @pytest.mark.xfail(
-        rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL,
-        strict=True,
-        reason="Temp fail on boring",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: backend.scrypt_supported(),
         skip_message="Scrypt required",
@@ -1252,7 +1228,6 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"\xff")
 
-    @pytest.mark.xfail()
     def test_rsa_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join(
@@ -1266,7 +1241,6 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=None)
 
-    @pytest.mark.xfail()
     def test_dsa_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join(
