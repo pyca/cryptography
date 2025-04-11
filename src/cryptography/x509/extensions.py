@@ -1271,8 +1271,8 @@ class PrivateKeyUsagePeriod(ExtensionType):
 
     def __init__(
         self,
-        not_before: datetime.datetime | None = None,
-        not_after: datetime.datetime | None = None,
+        not_before: datetime.datetime | None,
+        not_after: datetime.datetime | None,
     ) -> None:
         if (
             not isinstance(not_before, datetime.datetime)

@@ -1878,21 +1878,16 @@ class TestKeyUsageExtension:
 class TestPrivateKeyUsagePeriodExtension:
     def test_not_validity(self):
         with pytest.raises(TypeError):
-            x509.PrivateKeyUsagePeriod("notvalidity")  # type:ignore[arg-type]
+            x509.PrivateKeyUsagePeriod("notValidBefore", "notValidAfter")  # type:ignore[arg-type]
 
     def test_repr(self):
         period = x509.PrivateKeyUsagePeriod(
             not_before=datetime.datetime(2012, 1, 1),
             not_after=datetime.datetime(2013, 1, 1),
         )
-        ext = x509.Extension(
-            ExtensionOID.PRIVATE_KEY_USAGE_PERIOD, False, period
-        )
-        assert repr(ext) == (
-            "<Extension(oid=<ObjectIdentifier(oid=2.5.29.16, "
-            "name=privateKeyUsagePeriod)>, critical=False, "
-            "value=<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
-            "not_after=2013-01-01 00:00:00)>)>"
+        assert repr(period) == (
+            "<PrivateKeyUsagePeriod(not_before=2012-01-01 00:00:00, "
+            "not_after=2013-01-01 00:00:00)>"
         )
 
     def test_eq(self):
@@ -1963,7 +1958,12 @@ class TestPrivateKeyUsagePeriodExtension:
             not_after=datetime.datetime(2013, 1, 1, 0, 0, 0),
         )
         serialized = period.public_bytes()
-        assert serialized.startswith(b"\x30")
+
+        assert serialized == (
+            b"\x30\x22\x80\x0f\x32\x30\x31\x32\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a\x81\x0f\x32\x30\x31\x33\x30"
+            b"\x31\x30\x31\x30\x30\x30\x30\x30\x30\x5a"
+        )
 
     def test_only_not_before(self):
         period = x509.PrivateKeyUsagePeriod(
@@ -1974,7 +1974,11 @@ class TestPrivateKeyUsagePeriodExtension:
         assert period.not_after is None
 
         serialized = period.public_bytes()
-        assert serialized.startswith(b"\x30")
+
+        assert serialized == (
+            b"\x30\x11\x80\x0f\x32\x30\x31\x32\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a"
+        )
 
     def test_only_not_after(self):
         period = x509.PrivateKeyUsagePeriod(
@@ -1985,7 +1989,11 @@ class TestPrivateKeyUsagePeriodExtension:
         assert period.not_after == datetime.datetime(2013, 1, 1)
 
         serialized = period.public_bytes()
-        assert serialized.startswith(b"\x30")
+
+        assert serialized == (
+            b"\x30\x11\x81\x0f\x32\x30\x31\x33\x30\x31\x30\x31\x30"
+            b"\x30\x30\x30\x30\x30\x5a"
+        )
 
     def test_load_pem_certificate_with_extension(self, backend):
         cert_path = os.path.join(
@@ -1999,11 +2007,12 @@ class TestPrivateKeyUsagePeriodExtension:
         ext = cert.extensions.get_extension_for_class(
             x509.PrivateKeyUsagePeriod
         )
-        assert ext is not None
         assert ext.critical is False
 
-        assert ext.value.not_before is not None
-        assert ext.value.not_after is not None
+        assert ext.value.not_before == datetime.datetime(2024, 1, 1, 0, 0)
+        assert ext.value.not_after == datetime.datetime(
+            2024, 12, 31, 23, 59, 59
+        )
 
     def test_load_pem_only_not_before(self, backend):
         cert_path = os.path.join(
@@ -2017,9 +2026,8 @@ class TestPrivateKeyUsagePeriodExtension:
         ext = cert.extensions.get_extension_for_class(
             x509.PrivateKeyUsagePeriod
         )
-        assert ext is not None
 
-        assert ext.value.not_before is not None
+        assert ext.value.not_before == datetime.datetime(2024, 1, 1, 0, 0)
         assert ext.value.not_after is None
 
     def test_load_pem_only_not_after(self, backend):
@@ -2034,10 +2042,11 @@ class TestPrivateKeyUsagePeriodExtension:
         ext = cert.extensions.get_extension_for_class(
             x509.PrivateKeyUsagePeriod
         )
-        assert ext is not None
 
         assert ext.value.not_before is None
-        assert ext.value.not_after is not None
+        assert ext.value.not_after == datetime.datetime(
+            2024, 12, 31, 23, 59, 59
+        )
 
     def test_certificate_builder_with_extension(self, backend):
         private_key = rsa.generate_private_key(
@@ -2080,7 +2089,7 @@ class TestPrivateKeyUsagePeriodExtension:
         ext = certificate.extensions.get_extension_for_class(
             x509.PrivateKeyUsagePeriod
         )
-        assert ext is not None
+
         assert ext.critical is True
         assert ext.value.not_before == datetime.datetime(2012, 1, 1)
         assert ext.value.not_after == datetime.datetime(2013, 1, 1)
