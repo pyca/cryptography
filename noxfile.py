@@ -273,7 +273,7 @@ def rust(session: nox.Session) -> None:
 
 
 @nox.session
-def local(session):
+def local(session: nox.Session):
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "./vectors", verbose=False)
     install(
