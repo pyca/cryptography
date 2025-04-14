@@ -327,7 +327,7 @@ typing-extensions==4.13.2 ; python_full_version >= '3.8'
     # via mypy
 urllib3==2.0.7 ; python_full_version < '3.8'
     # via requests
-urllib3==2.2.3 ; python_full_version == '3.8.*'
+urllib3==2.4.0 ; python_full_version == '3.8.*'
     # via requests
 urllib3==2.4.0 ; python_full_version >= '3.9'
     # via requests
