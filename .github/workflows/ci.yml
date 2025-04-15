@@ -346,13 +346,14 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.WINDOWS.RUNNER }}
     strategy:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {ARCH: 'x86', WINDOWS: 'win32'}
-          - {ARCH: 'x64', WINDOWS: 'win64'}
+          - {ARCH: 'x86', WINDOWS: 'win32', RUNNER: 'windows-latest'}
+          - {ARCH: 'x64', WINDOWS: 'win64', RUNNER: 'windows-latest'}
+          - {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
