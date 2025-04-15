@@ -4043,6 +4043,12 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
 
+    .. attribute:: PRIVATE_KEY_USAGE_PERIOD
+
+        .. versionadded:: 45.0.0
+
+        Corresponds to the dotted string ``"2.5.29.16"``.
+
     .. attribute:: SIGNED_CERTIFICATE_TIMESTAMPS
 
         .. versionadded:: 3.0
