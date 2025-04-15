@@ -2516,7 +2516,7 @@ X.509 Extensions
     .. versionadded:: 45.0.0
 
    This extension defines the period during which the private key corresponding
-   to the certificate's public key may be used. Either `not_before` or `not_after`
+   to the certificate's public key may be used. Either ``not_before`` or ``not_after``
    must be provided.
 
    :param not_before: A :class:`datetime.datetime` object or ``None``. Specifies
@@ -2539,6 +2539,14 @@ X.509 Extensions
       Returns the encoded bytes of the extension.
 
       :return: A ``bytes`` object containing the encoded extension.
+
+    .. attribute:: oid
+        
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.PRIVATE_KEY_USAGE_PERIOD`.
+
 
 .. class:: SignedCertificateTimestamps(scts)
     :canonical: cryptography.x509.extensions.SignedCertificateTimestamps
