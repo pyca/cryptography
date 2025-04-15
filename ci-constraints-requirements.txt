@@ -224,7 +224,7 @@ requests==2.32.3 ; python_full_version >= '3.8'
     #   sphinxcontrib-spelling
 roman-numerals-py==3.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.11.4
+ruff==0.11.5
     # via cryptography (pyproject.toml)
 six==1.17.0 ; python_full_version < '3.8'
     # via bleach
@@ -323,13 +323,13 @@ typing-extensions==4.7.1 ; python_full_version < '3.8'
     #   mypy
     #   nox
     #   platformdirs
-typing-extensions==4.13.1 ; python_full_version >= '3.8'
+typing-extensions==4.13.2 ; python_full_version >= '3.8'
     # via mypy
 urllib3==2.0.7 ; python_full_version < '3.8'
     # via requests
 urllib3==2.2.3 ; python_full_version == '3.8.*'
     # via requests
-urllib3==2.3.0 ; python_full_version >= '3.9'
+urllib3==2.4.0 ; python_full_version >= '3.9'
     # via requests
 uv==0.6.14 ; python_full_version >= '3.8'
     # via nox

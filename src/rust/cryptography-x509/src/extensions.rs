@@ -301,6 +301,14 @@ pub struct Admissions<'a, Op: Asn1Operation> {
     pub contents_of_admissions: Op::SequenceOfVec<'a, Admission<'a, Op>>,
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct PrivateKeyUsagePeriod {
+    #[implicit(0)]
+    pub not_before: Option<asn1::X509GeneralizedTime>,
+    #[implicit(1)]
+    pub not_after: Option<asn1::X509GeneralizedTime>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::{BasicConstraints, Extension, Extensions, KeyUsage};

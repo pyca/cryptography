@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::types::{PyAnyMethods, PyDictMethods};
+use pyo3::types::PyAnyMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -97,26 +97,11 @@ fn py_curve_from_curve<'p>(
     py: pyo3::Python<'p>,
     curve: &openssl::ec::EcGroupRef,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    if curve.asn1_flag() == openssl::ec::Asn1Flag::EXPLICIT_CURVE {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "ECDSA keys with explicit parameters are unsupported at this time",
-            ),
-        ));
-    }
+    assert!(curve.asn1_flag() != openssl::ec::Asn1Flag::EXPLICIT_CURVE);
 
     let name = curve.curve_name().unwrap().short_name()?;
 
-    types::CURVE_TYPES
-        .get(py)?
-        .extract::<pyo3::Bound<'_, pyo3::types::PyDict>>()?
-        .get_item(name)?
-        .ok_or_else(|| {
-            CryptographyError::from(exceptions::UnsupportedAlgorithm::new_err((
-                format!("{name} is not a supported elliptic curve"),
-                exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
-            )))
-        })
+    Ok(types::CURVE_TYPES.get(py)?.get_item(name)?)
 }
 
 fn check_key_infinity(

@@ -130,6 +130,8 @@ pub enum AlgorithmParameters<'a> {
 
     #[defined_by(oid::PBKDF2_OID)]
     Pbkdf2(PBKDF2Params<'a>),
+    #[defined_by(oid::SCRYPT_OID)]
+    Scrypt(ScryptParams<'a>),
 
     #[defined_by(oid::HMAC_WITH_SHA1_OID)]
     HmacWithSha1(Option<asn1::Null>),
@@ -152,11 +154,16 @@ pub enum AlgorithmParameters<'a> {
     // AES-IV ::= OCTET STRING (SIZE(16))
     #[defined_by(oid::AES_128_CBC_OID)]
     Aes128Cbc([u8; 16]),
+    #[defined_by(oid::AES_192_CBC_OID)]
+    Aes192Cbc([u8; 16]),
     #[defined_by(oid::AES_256_CBC_OID)]
     Aes256Cbc([u8; 16]),
 
     #[defined_by(oid::DES_EDE3_CBC_OID)]
     DesEde3Cbc([u8; 8]),
+
+    #[defined_by(oid::RC2_CBC)]
+    Rc2Cbc(Rc2CbcParams),
 
     #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
     Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
@@ -491,10 +498,26 @@ pub struct PBKDF2Params<'a> {
     pub prf: Box<AlgorithmIdentifier<'a>>,
 }
 
+// RFC 7914 Section 7
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct ScryptParams<'a> {
+    pub salt: &'a [u8],
+    pub cost_parameter: u64,
+    pub block_size: u64,
+    pub parallelization_parameter: u64,
+    pub key_length: Option<u32>,
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
 pub struct PBES1Params {
     pub salt: [u8; 8],
     pub iterations: u64,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct Rc2CbcParams {
+    pub version: Option<u32>,
+    pub iv: [u8; 8],
 }
 
 /// A VisibleString ASN.1 element whose contents is not validated as meeting the
