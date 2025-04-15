@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for the :class:`~cryptography.x509.PrivateKeyUsagePeriod` X.509 extension.
+  This extension defines the period during which the private key corresponding
+  to the certificate's public key may be used.
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
 * Added support for PKCS7 decryption and encryption using AES-256 as the
