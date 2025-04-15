@@ -2510,6 +2510,44 @@ X.509 Extensions
         Returns :attr:`~cryptography.x509.oid.ExtensionOID.PRECERT_POISON`.
 
 
+.. class:: PrivateKeyUsagePeriod(not_before, not_after)
+    :canonical: cryptography.x509.extensions.PrivateKeyUsagePeriod
+
+    .. versionadded:: 45.0.0
+
+   This extension defines the period during which the private key corresponding
+   to the certificate's public key may be used. Either ``not_before`` or ``not_after``
+   must be provided.
+
+   :param not_before: A :class:`datetime.datetime` object or ``None``. Specifies
+                      the earliest time the private key can be used.
+   :param not_after: A :class:`datetime.datetime` object or ``None``. Specifies
+                     the latest time the private key can be used.
+
+   .. attribute:: not_before
+
+      A :class:`datetime.datetime` object or ``None``. Represents the earliest
+      time the private key can be used.
+
+   .. attribute:: not_after
+
+      A :class:`datetime.datetime` object or ``None``. Represents the latest
+      time the private key can be used.
+
+   .. method:: public_bytes()
+
+      Returns the encoded bytes of the extension.
+
+      :return: A ``bytes`` object containing the encoded extension.
+
+    .. attribute:: oid
+        
+        :type: :class:`ObjectIdentifier`
+
+        Returns
+        :attr:`~cryptography.x509.oid.ExtensionOID.PRIVATE_KEY_USAGE_PERIOD`.
+
+
 .. class:: SignedCertificateTimestamps(scts)
     :canonical: cryptography.x509.extensions.SignedCertificateTimestamps
 
@@ -4004,6 +4042,12 @@ instances. The following common OIDs are available as constants.
         .. versionadded:: 2.4
 
         Corresponds to the dotted string ``"1.3.6.1.4.1.11129.2.4.3"``.
+
+    .. attribute:: PRIVATE_KEY_USAGE_PERIOD
+
+        .. versionadded:: 45.0.0
+
+        Corresponds to the dotted string ``"2.5.29.16"``.
 
     .. attribute:: SIGNED_CERTIFICATE_TIMESTAMPS
 
