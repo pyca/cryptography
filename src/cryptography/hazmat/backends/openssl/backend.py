@@ -132,7 +132,19 @@ class Backend:
         # FIPS mode still allows SHA1 for HMAC
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return True
-
+        if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
+            return isinstance(
+                algorithm,
+                (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                    hashes.SHA512_224,
+                    hashes.SHA512_256,
+                ),
+            )
         return self.hash_supported(algorithm)
 
     def cipher_supported(self, cipher: CipherAlgorithm, mode: Mode) -> bool:
@@ -236,7 +248,10 @@ class Backend:
         )
 
     def dh_supported(self) -> bool:
-        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        return (
+            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        )
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
@@ -252,6 +267,7 @@ class Backend:
         return (
             not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
         )
 
     def ed25519_supported(self) -> bool:
@@ -265,6 +281,7 @@ class Backend:
         return (
             not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
         )
 
     def ecdsa_deterministic_supported(self) -> bool:
@@ -279,7 +296,10 @@ class Backend:
         return True
 
     def pkcs7_supported(self) -> bool:
-        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        return (
+            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        )
 
 
 backend = Backend()

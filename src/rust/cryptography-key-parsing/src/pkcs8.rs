@@ -84,7 +84,11 @@ pub fn parse_private_key(
                 openssl::pkey::Id::X25519,
             )?)
         }
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         AlgorithmParameters::X448 => {
             let key_bytes = asn1::parse_single(k.private_key)?;
             Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
@@ -99,7 +103,11 @@ pub fn parse_private_key(
                 openssl::pkey::Id::ED25519,
             )?)
         }
-        #[cfg(all(not(CRYPTOGRAPHY_IS_LIBRESSL), not(CRYPTOGRAPHY_IS_BORINGSSL)))]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         AlgorithmParameters::Ed448 => {
             let key_bytes = asn1::parse_single(k.private_key)?;
             Ok(openssl::pkey::PKey::private_key_from_raw_bytes(

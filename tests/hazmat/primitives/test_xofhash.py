@@ -23,6 +23,7 @@ from .utils import _load_all_params
         not rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
         or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
     ),
     skip_message="Requires backend without XOF support",
 )

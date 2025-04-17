@@ -6,15 +6,15 @@ use asn1::SimpleAsn1Readable;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::Time;
 use cryptography_x509::name::Name;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use pyo3::prelude::PyAnyMethods;
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::types;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::x509::certificate::Certificate as PyCertificate;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.test_support")]
@@ -59,7 +59,7 @@ fn test_parse_certificate(data: &[u8]) -> CryptographyResult<TestCertificate> {
     })
 }
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 #[pyo3::pyfunction]
 #[pyo3(signature = (encoding, sig, msg, certs, options))]
 fn pkcs7_verify(
@@ -106,7 +106,7 @@ fn pkcs7_verify(
 
 #[pyo3::pymodule]
 pub(crate) mod test_support {
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     #[pymodule_export]
     use super::pkcs7_verify;
     #[pymodule_export]

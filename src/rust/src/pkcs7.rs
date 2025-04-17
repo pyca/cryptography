@@ -11,10 +11,10 @@ use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use pyo3::PyTypeInfo;
 
 use crate::asn1::encode_der_data;
@@ -23,9 +23,9 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::utils::cstr_from_literal;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
 
@@ -706,7 +706,7 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     }
 }
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 fn load_pkcs7_certificates(
     py: pyo3::Python<'_>,
     pkcs7: Pkcs7,
@@ -747,7 +747,7 @@ fn load_pem_pkcs7_certificates<'p>(
     data: &[u8],
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
     cfg_if::cfg_if! {
-        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+        if #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
             let pem_block = pem::parse(data)?;
             if pem_block.tag() != "PKCS7" {
                 return Err(CryptographyError::from(
@@ -777,7 +777,7 @@ fn load_der_pkcs7_certificates<'p>(
     data: &[u8],
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
     cfg_if::cfg_if! {
-        if #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))] {
+        if #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
             let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data).map_err(|_| {
                 CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                     "Unable to parse PKCS7 data",

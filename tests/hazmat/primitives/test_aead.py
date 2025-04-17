@@ -908,6 +908,7 @@ class TestAESGCMSIV:
         if (
             not rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
         ):
             with pytest.raises(ValueError):
                 aesgcmsiv.encrypt(nonce, b"", None)
@@ -945,9 +946,12 @@ class TestAESGCMSIV:
                 tag = binascii.unhexlify(vector["tag"])
                 pt = binascii.unhexlify(vector.get("plaintext", b""))
 
-                # BoringSSL only supports AES-GCM-SIV with 128- and 256-bit
-                # keys
-                if len(key) == 24 and rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+                # AWS-LC and BoringSSL only support AES-GCM-SIV with
+                # 128- and 256-bit keys
+                if len(key) == 24 and (
+                    rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+                    or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+                ):
                     continue
 
                 aesgcmsiv = AESGCMSIV(key)
@@ -973,9 +977,12 @@ class TestAESGCMSIV:
                 aad = binascii.unhexlify(vector.get("aad", b""))
                 ct = binascii.unhexlify(vector["ciphertext"])
 
-                # BoringSSL only supports AES-GCM-SIV with 128- and 256-bit
-                # keys
-                if len(key) == 24 and rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+                # AWS-LC and BoringSSL only support AES-GCM-SIV with
+                # 128- and 256-bit keys
+                if len(key) == 24 and (
+                    rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+                    or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+                ):
                     continue
 
                 aesgcmsiv = AESGCMSIV(key)
@@ -1011,7 +1018,10 @@ class TestAESGCMSIV:
         with pytest.raises(ValueError):
             AESGCMSIV(b"0" * 31)
 
-        if rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL:
+        if (
+            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        ):
             with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
                 AESGCMSIV(b"0" * 24)
 
