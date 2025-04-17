@@ -47,8 +47,8 @@ above supported platforms:
 * ``OpenSSL 3.4-latest``
 
 We also test against the latest commit of BoringSSL as well as versions of
-LibreSSL that are receiving security support at the time of a given
-``cryptography`` release.
+aws-lc and LibreSSL that are receiving security support at the time of a 
+given ``cryptography`` release.
 
 
 Building cryptography on Windows
