@@ -57,6 +57,8 @@ Changelog
   This extension defines the period during which the private key corresponding
   to the certificate's public key may be used.
 * Added support for compiling against `aws-lc`_.
+* Added :func:`~cryptography.hazmat.primitives.serialization.ssh_key_fingerprint`
+  for computing fingerprints of SSH public keys.
 
 .. _v44-0-2:
 

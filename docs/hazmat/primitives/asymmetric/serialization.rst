@@ -426,6 +426,35 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
 
+
+.. function:: ssh_key_fingerprint(key, hash_algorithm)
+
+    .. versionadded:: 45.0.0
+
+    Computes the fingerprint of an SSH public key.
+
+    :param key: The public key to compute the fingerprint for.
+    :type key: One of :data:`SSHPublicKeyTypes`
+
+    :param hash_algorithm: The hash algorithm to use, either ``MD5()`` or
+        ``SHA256()``.
+
+    :return: The key fingerprint.
+    :rtype: bytes
+
+    .. code-block:: pycon
+
+        >>> from cryptography.hazmat.primitives.serialization import load_ssh_public_key, ssh_key_fingerprint
+        >>> key_data = b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAhVNvf1vigXfagQXKjdKN5zEF12KWVMVdDrU3sVLhgd user@example.com"
+        >>> public_key = load_ssh_public_key(key_data)
+        >>> md5_fingerprint = ssh_key_fingerprint(public_key, hashes.MD5())
+        >>> md5_fingerprint
+        b'95f6c0e3736fae6ecc98bbf4d8424a15'
+        >>> sha256_fingerprint = ssh_key_fingerprint(public_key, hashes.SHA256())
+        >>> sha256_fingerprint
+        b'Ug8qIZlmOZrNmFvoLSa6aKZ4loez+eCbsSzMvXTUw7c'
+
+
 OpenSSH Private Key
 ~~~~~~~~~~~~~~~~~~~
 
