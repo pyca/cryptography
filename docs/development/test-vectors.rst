@@ -935,6 +935,10 @@ Custom PKCS12 Test Vectors
   certs (``x509/cryptography.io.pem`` and ``x509/letsencryptx3.pem``)
   with friendly names ``☹`` and ``ï``, respectively, encrypted via
   AES 256 CBC with the password ``cryptography``.
+* ``pkcs12/java-truststore.p12`` - A PKCS12 file containing two certs
+  (``x509/custom/dsa_selfsigned_ca.pem`` and ``x509/letsencryptx3.pem``) with
+  the first having a friendly name of `cert1`. Both have Java truststore
+  attributes with ANY_EXTENDED_KEY_USAGE.
 
 Custom PKCS7 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for serialization of PKCS#12 Java truststores in
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_java_truststore`
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
 * Added support for PKCS7 decryption and encryption using AES-256 as the
