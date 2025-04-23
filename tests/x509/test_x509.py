@@ -31,6 +31,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
 )
+from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
@@ -48,7 +49,10 @@ from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
 from ..hazmat.primitives.fixtures_rsa import (
     RSA_KEY_2048_ALT,
 )
-from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.test_ec import (
+    _skip_curve_unsupported,
+    _skip_deterministic_ecdsa_unsupported,
+)
 from ..hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from ..utils import (
     load_nist_vectors,
@@ -3617,6 +3621,82 @@ class TestCertificateBuilder:
             x509.DNSName("cryptography.io"),
         ]
 
+    @pytest.mark.parametrize(
+        ("hashalg", "curve"),
+        [
+            (hashes.SHA224, ec.SECP224R1),
+            (hashes.SHA256, ec.SECP256R1),
+            (hashes.SHA384, ec.SECP384R1),
+            (hashes.SHA512, ec.SECP521R1),
+            (hashes.SHA3_224, ec.SECP224R1),
+            (hashes.SHA3_256, ec.SECP256R1),
+            (hashes.SHA3_384, ec.SECP384R1),
+            (hashes.SHA3_512, ec.SECP521R1),
+        ],
+    )
+    def test_build_cert_with_deterministic_ecdsa_signature(
+        self, hashalg, curve, backend
+    ):
+        _skip_curve_unsupported(backend, curve())
+        _skip_deterministic_ecdsa_unsupported(backend)
+        if not backend.signature_hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} signature not supported")
+
+        h = hashes.Hash(hashalg())
+        h.update(b"test_build_cert_with_deterministic_ecdsa_signature.issuer")
+        private_value = int.from_bytes(h.finalize(), "big")
+        issuer_private_key = ec.derive_private_key(private_value, curve())
+        h = hashes.Hash(hashalg())
+        h.update(b"test_build_cert_with_deterministic_ecdsa_signature.subject")
+        private_value = int.from_bytes(h.finalize(), "big")
+        subject_private_key = ec.derive_private_key(private_value, curve())
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(subject_private_key.public_key())
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
+            )
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("cryptography.io")]),
+                critical=False,
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+        cert1 = builder.sign(
+            issuer_private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+        cert2 = builder.sign(
+            issuer_private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+        cert_nondet = builder.sign(issuer_private_key, hashalg(), backend)
+
+        cert1_bytes = cert1.public_bytes(Encoding.DER)
+        assert cert1_bytes == cert2.public_bytes(Encoding.DER)
+        assert cert1_bytes != cert_nondet.public_bytes(Encoding.DER)
+
+        issuer_private_key.public_key().verify(
+            cert1.signature, cert1.tbs_certificate_bytes, ec.ECDSA(hashalg())
+        )
+
     def test_build_cert_with_bmpstring_universalstring_name(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -4515,6 +4595,83 @@ class TestCertificateBuilder:
         assert ext.value == unrecognized
 
 
+class TestCertificateRevocationListBuilder:
+    @pytest.mark.parametrize(
+        ("hashalg", "curve"),
+        [
+            (hashes.SHA224, ec.SECP224R1),
+            (hashes.SHA256, ec.SECP256R1),
+            (hashes.SHA384, ec.SECP384R1),
+            (hashes.SHA512, ec.SECP521R1),
+            (hashes.SHA3_224, ec.SECP224R1),
+            (hashes.SHA3_256, ec.SECP256R1),
+            (hashes.SHA3_384, ec.SECP384R1),
+            (hashes.SHA3_512, ec.SECP521R1),
+        ],
+    )
+    def test_build_crl_with_deterministic_ecdsa_signature(
+        self, hashalg, curve, backend
+    ):
+        _skip_curve_unsupported(backend, curve())
+        _skip_deterministic_ecdsa_unsupported(backend)
+        if not backend.signature_hash_supported(hashalg()):
+            pytest.skip(f"{hashalg} signature not supported")
+
+        h = hashes.Hash(hashalg())
+        h.update(b"test_build_crl_with_deterministic_ecdsa_signature.issuer")
+        private_value = int.from_bytes(h.finalize(), "big")
+        private_key = ec.derive_private_key(private_value, curve())
+
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io CA"
+                        )
+                    ]
+                )
+            )
+            .last_update(last_update)
+            .next_update(next_update)
+        )
+        revoked_cert = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(2)
+            .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
+            .build(backend)
+        )
+        builder = builder.add_revoked_certificate(revoked_cert)
+        crl1 = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+        crl2 = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+
+        crl_nondet = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+        )
+
+        crl1_bytes = crl1.public_bytes(Encoding.DER)
+        assert crl1_bytes == crl2.public_bytes(Encoding.DER)
+        assert crl1_bytes != crl_nondet.public_bytes(Encoding.DER)
+        private_key.public_key().verify(
+            crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashalg())
+        )
+
+
 class TestCertificateSigningRequestBuilder:
     def test_sign_invalid_hash_algorithm(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
@@ -4786,6 +4943,73 @@ class TestCertificateSigningRequestBuilder:
         assert isinstance(basic_constraints.value, x509.BasicConstraints)
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.parametrize(
+        ("hashalg", "curve"),
+        [
+            (hashes.SHA224, ec.SECP224R1),
+            (hashes.SHA256, ec.SECP256R1),
+            (hashes.SHA384, ec.SECP384R1),
+            (hashes.SHA512, ec.SECP521R1),
+            (hashes.SHA3_224, ec.SECP224R1),
+            (hashes.SHA3_256, ec.SECP256R1),
+            (hashes.SHA3_384, ec.SECP384R1),
+            (hashes.SHA3_512, ec.SECP521R1),
+        ],
+    )
+    def test_build_ca_request_with_deterministic_ec(
+        self, hashalg, curve, backend
+    ):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        _skip_deterministic_ecdsa_unsupported(backend)
+
+        h = hashes.Hash(hashalg())
+        h.update(b"test_build_ca_request_with_deterministic_ec.subject")
+        private_value = int.from_bytes(h.finalize(), "big")
+        private_key = ec.derive_private_key(private_value, curve())
+
+        builder = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
+                        ),
+                    ]
+                )
+            )
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=2), critical=True
+            )
+        )
+        csr1 = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+        csr2 = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+            ecdsa_deterministic_signing=True,
+        )
+
+        csr_nondet = builder.sign(
+            private_key,
+            hashalg(),
+            backend,
+        )
+
+        csr1_bytes = csr1.public_bytes(Encoding.DER)
+        assert csr1_bytes == csr2.public_bytes(Encoding.DER)
+        assert csr1_bytes != csr_nondet.public_bytes(Encoding.DER)
+        private_key.public_key().verify(
+            csr1.signature,
+            csr1.tbs_certrequest_bytes,
+            ec.ECDSA(hashalg()),
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),

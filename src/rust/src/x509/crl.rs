@@ -629,6 +629,7 @@ pub(crate) fn create_x509_crl(
     private_key: &pyo3::Bound<'_, pyo3::PyAny>,
     hash_algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     rsa_padding: &pyo3::Bound<'_, pyo3::PyAny>,
+    ecdsa_deterministic_signing: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<CertificateRevocationList> {
     let sigalg = x509::sign::compute_signature_algorithm(
         py,
@@ -696,6 +697,7 @@ pub(crate) fn create_x509_crl(
         private_key.clone(),
         hash_algorithm.clone(),
         rsa_padding.clone(),
+        ecdsa_deterministic_signing.clone(),
         &tbs_bytes,
     )?;
     let data = asn1::write_single(&crl::CertificateRevocationList {
