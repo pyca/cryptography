@@ -13,7 +13,8 @@ use cryptography_x509::{common, oid, pkcs7};
 use once_cell::sync::Lazy;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use openssl::pkcs7::Pkcs7;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyBool, PyBytesMethods, PyListMethods};
+use pyo3::BoundObject;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use pyo3::PyTypeInfo;
 
@@ -517,6 +518,7 @@ fn sign_and_serialize<'p>(
                         py_private_key.clone(),
                         py_hash_alg.clone(),
                         rsa_padding.clone(),
+                        PyBool::new(py, false).into_bound().into_any(),
                         &data_with_header,
                     )?,
                 )
@@ -566,6 +568,7 @@ fn sign_and_serialize<'p>(
                         py_private_key.clone(),
                         py_hash_alg.clone(),
                         rsa_padding.clone(),
+                        PyBool::new(py, false).into_bound().into_any(),
                         &signed_data,
                     )?,
                 )

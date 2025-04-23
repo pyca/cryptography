@@ -331,6 +331,7 @@ class CertificateSigningRequestBuilder:
         backend: typing.Any = None,
         *,
         rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
+        ecdsa_deterministic_signing: bool = False,
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
@@ -345,7 +346,11 @@ class CertificateSigningRequestBuilder:
                 raise TypeError("Padding is only supported for RSA keys")
 
         return rust_x509.create_x509_csr(
-            self, private_key, algorithm, rsa_padding
+            self,
+            private_key,
+            algorithm,
+            rsa_padding,
+            ecdsa_deterministic_signing,
         )
 
 
@@ -560,6 +565,7 @@ class CertificateBuilder:
         backend: typing.Any = None,
         *,
         rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
+        ecdsa_deterministic_signing: bool = False,
     ) -> Certificate:
         """
         Signs the certificate using the CA's private key.
@@ -589,7 +595,11 @@ class CertificateBuilder:
                 raise TypeError("Padding is only supported for RSA keys")
 
         return rust_x509.create_x509_certificate(
-            self, private_key, algorithm, rsa_padding
+            self,
+            private_key,
+            algorithm,
+            rsa_padding,
+            ecdsa_deterministic_signing,
         )
 
 
@@ -717,6 +727,7 @@ class CertificateRevocationListBuilder:
         backend: typing.Any = None,
         *,
         rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
+        ecdsa_deterministic_signing: bool = False,
     ) -> CertificateRevocationList:
         if self._issuer_name is None:
             raise ValueError("A CRL must have an issuer name")
@@ -734,7 +745,11 @@ class CertificateRevocationListBuilder:
                 raise TypeError("Padding is only supported for RSA keys")
 
         return rust_x509.create_x509_crl(
-            self, private_key, algorithm, rsa_padding
+            self,
+            private_key,
+            algorithm,
+            rsa_padding,
+            ecdsa_deterministic_signing,
         )
 
 
