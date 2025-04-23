@@ -946,7 +946,7 @@ file suffix.
         ...     b"friendlyname", key, cert, None, encryption
         ... )
 
-.. function:: serialize_java_truststore(certs, encryption_algorithm)
+.. function:: serialize_java_truststore(pkcs12_certs, encryption_algorithm)
 
     .. versionadded:: 45.0.0
 
@@ -982,11 +982,17 @@ file suffix.
         ...     [pkcs12.PKCS12Certificate(cert, b"friendlyname")], BestAvailableEncryption(b"password")
         ... )
 
-.. class:: PKCS12Certificate
+.. class:: PKCS12Certificate(cert, friendly_name=None)
 
     .. versionadded:: 36.0.0
 
     Represents additional data provided for a certificate in a PKCS12 file.
+
+    :param cert: The certificate to associate with the additional data.
+    :type cert: :class:`~cryptography.x509.Certificate`
+
+    :param friendly_name: An optional friendly name for the certificate.
+    :type friendly_name: bytes or None
 
     .. attribute:: certificate
 
