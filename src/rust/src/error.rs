@@ -131,7 +131,7 @@ impl fmt::Display for CryptographyError {
                     "Could not deserialize key data. The data may be in an incorrect format, it may be encrypted with an unsupported algorithm, or it may be an unsupported key type (e.g. EC curves with explicit parameters). Details: {asn1_error}",
                 )
             }
-            CryptographyError::Py(py_error) => write!(f, "{}", py_error),
+            CryptographyError::Py(py_error) => write!(f, "{py_error}"),
             CryptographyError::OpenSSL(error_stack) => {
                 write!(
                     f,

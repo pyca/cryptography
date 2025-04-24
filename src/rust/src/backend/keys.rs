@@ -6,8 +6,7 @@ use pyo3::IntoPyObject;
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
-use crate::x509;
+use crate::{exceptions, x509};
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, password, backend=None, *, unsafe_skip_rsa_key_validation=false))]
