@@ -11,10 +11,9 @@ use cryptography_x509::oid::{
     SUBJECT_KEY_IDENTIFIER_OID,
 };
 
-use crate::ops::VerificationCertificate;
-use crate::{
-    ops::CryptoOps, policy::Policy, ValidationError, ValidationErrorKind, ValidationResult,
-};
+use crate::ops::{CryptoOps, VerificationCertificate};
+use crate::policy::Policy;
+use crate::{ValidationError, ValidationErrorKind, ValidationResult};
 
 #[derive(Clone)]
 pub struct ExtensionPolicy<'cb, B: CryptoOps> {

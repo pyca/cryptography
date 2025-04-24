@@ -10,7 +10,6 @@ use std::env;
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use openssl::provider;
-
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use pyo3::PyTypeInfo;
 

@@ -495,16 +495,14 @@ impl PyAEADDecryptionContext {
         if tag.len() < min_tag_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Authentication tag must be {} bytes or longer.",
-                    min_tag_length
+                    "Authentication tag must be {min_tag_length} bytes or longer.",
                 )),
             ));
         } else if tag.len() > 16 {
             return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "Authentication tag cannot be more than {} bytes.",
-                    16
-                )),
+                pyo3::exceptions::PyValueError::new_err(
+                    "Authentication tag cannot be more than 16 bytes.",
+                ),
             ));
         }
 

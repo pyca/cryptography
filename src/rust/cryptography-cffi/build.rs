@@ -71,7 +71,7 @@ fn main() {
     // This is because we don't want a potentially random build path to end up in the binary because
     // CFFI generated code uses the __FILE__ macro in its debug messages.
     if let Some(out_dir_str) = Path::new(&out_dir).to_str() {
-        build.flag_if_supported(format!("-fmacro-prefix-map={}=.", out_dir_str).as_str());
+        build.flag_if_supported(format!("-fmacro-prefix-map={out_dir_str}=.").as_str());
     }
 
     for python_include in env::split_paths(&python_includes) {

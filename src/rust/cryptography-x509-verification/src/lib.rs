@@ -182,12 +182,10 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                 ) {
                     (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
-                        "unsatisfiable IP name constraint: malformed SAN {:?}",
-                        name,
+                        "unsatisfiable IP name constraint: malformed SAN {name:?}",
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
-                        "malformed IP name constraints: {:?}",
-                        constraint
+                        "malformed IP name constraints: {constraint:?}",
                     )))),
                 }
             }
