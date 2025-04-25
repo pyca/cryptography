@@ -11,7 +11,7 @@ pyo3.workspace = true
 openssl-sys.workspace = true
 
 [build-dependencies]
-cc = "1.2.19"
+cc = "1.2.20"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(python_implementation, values("CPython", "PyPy"))'] }
