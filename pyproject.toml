@@ -21,12 +21,11 @@ authors = [
 ]
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 readme = "README.rst"
-license = { text = "Apache-2.0 OR BSD-3-Clause" }
+license = "Apache-2.0 OR BSD-3-Clause"
+license-files = [ "LICENSE", "LICENSE.APACHE", "LICENSE.BSD" ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX",
@@ -105,9 +104,6 @@ features = ["pyo3/abi3-py37"]
 include = [
     "CHANGELOG.rst",
     "CONTRIBUTING.rst",
-    "LICENSE",
-    "LICENSE.APACHE",
-    "LICENSE.BSD",
 
     "docs/**/*",
 
