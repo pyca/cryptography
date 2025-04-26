@@ -41,10 +41,10 @@ OpenSSL releases in addition to distribution provided releases from the
 above supported platforms:
 
 * ``OpenSSL 3.0-latest``
-* ``OpenSSL 3.1-latest``
 * ``OpenSSL 3.2-latest``
 * ``OpenSSL 3.3-latest``
 * ``OpenSSL 3.4-latest``
+* ``OpenSSL 3.5-latest``
 
 We also test against the latest commit of BoringSSL, the latest ``aws-lc`` release, 
 and versions of LibreSSL that are receiving security support at the time of a 
