@@ -479,6 +479,14 @@ impl ChaCha20Poly1305 {
                 pyo3::exceptions::PyValueError::new_err("ChaCha20Poly1305 key must be 32 bytes."),
             ));
         }
+        if cryptography_openssl::fips::is_enabled() {
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    "ChaCha20Poly1305 is not supported by this version of OpenSSL",
+                    exceptions::Reasons::UNSUPPORTED_CIPHER,
+                )),
+            ));
+        }
 
         cfg_if::cfg_if! {
             if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
@@ -494,15 +502,6 @@ impl ChaCha20Poly1305 {
                 CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
                 not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
             ))] {
-                if cryptography_openssl::fips::is_enabled() {
-                    return Err(CryptographyError::from(
-                        exceptions::UnsupportedAlgorithm::new_err((
-                            "ChaCha20Poly1305 is not supported by this version of OpenSSL",
-                            exceptions::Reasons::UNSUPPORTED_CIPHER,
-                        )),
-                    ));
-                }
-
                 Ok(ChaCha20Poly1305 {
                     ctx: EvpCipherAead::new(
                         openssl::cipher::Cipher::chacha20_poly1305(),
@@ -512,15 +511,6 @@ impl ChaCha20Poly1305 {
                     )?,
                 })
             } else {
-                if cryptography_openssl::fips::is_enabled() {
-                    return Err(CryptographyError::from(
-                        exceptions::UnsupportedAlgorithm::new_err((
-                            "ChaCha20Poly1305 is not supported by this version of OpenSSL",
-                            exceptions::Reasons::UNSUPPORTED_CIPHER,
-                        )),
-                    ));
-                }
-
                 Ok(ChaCha20Poly1305{
                     ctx: LazyEvpCipherAead::new(
                         openssl::cipher::Cipher::chacha20_poly1305(),
