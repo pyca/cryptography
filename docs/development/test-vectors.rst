@@ -756,6 +756,8 @@ Custom X.509 Certificate Revocation List Vectors
 * ``crl_inner_outer_mismatch.der`` - A CRL created from
   ``valid_signature_crl.pem`` but with a mismatched inner and
   outer signature algorithm. The signature on this CRL is invalid.
+* ``crl_issuer_invalid_printable_string.der`` - A CRL where the ``issuer``
+  field contains an invalid ``PRINTABLE STRING`` value.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~

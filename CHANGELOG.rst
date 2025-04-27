@@ -59,6 +59,8 @@ Changelog
   This extension defines the period during which the private key corresponding
   to the certificate's public key may be used.
 * Added support for compiling against `aws-lc`_.
+* Parsing X.509 structures now more strictly enforces that ``Name`` structures
+  do not have malformed ASN.1.
 
 .. _v44-0-2:
 
