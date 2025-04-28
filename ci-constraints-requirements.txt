@@ -95,7 +95,7 @@ importlib-metadata==6.7.0 ; python_full_version < '3.8'
     #   sphinx
     #   sphinxcontrib-spelling
     #   virtualenv
-importlib-metadata==8.5.0 ; python_full_version == '3.8.*'
+importlib-metadata==8.7.0 ; python_full_version == '3.8.*'
     # via
     #   build
     #   pytest-randomly
