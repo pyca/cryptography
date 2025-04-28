@@ -100,7 +100,7 @@ importlib-metadata==8.5.0 ; python_full_version == '3.8.*'
     #   build
     #   pytest-randomly
     #   sphinx
-importlib-metadata==8.6.1 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
+importlib-metadata==8.7.0 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
     # via
     #   build
     #   pytest-randomly
