@@ -64,6 +64,14 @@ def _skip_curve_unsupported(backend, curve: ec.EllipticCurve):
         )
 
 
+def _skip_deterministic_ecdsa_unsupported(backend):
+    if not backend.ecdsa_deterministic_supported():
+        pytest.skip(
+            f"ECDSA deterministic signing is not supported by this"
+            f" backend {backend}"
+        )
+
+
 def _skip_exchange_algorithm_unsupported(backend, algorithm, curve):
     if not backend.elliptic_curve_exchange_algorithm_supported(
         algorithm, curve

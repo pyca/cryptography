@@ -1010,7 +1010,7 @@ X.509 Certificate Builder
         
         :return: A new :class:`CertificateBuilder` with the additional extension.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
 
         Sign the certificate using the CA's private key.
 
@@ -1044,6 +1044,16 @@ X.509 Certificate Builder
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param bool ecdsa_deterministic_signing:
+
+            .. versionadded:: 45.0.0
+
+            A Boolean flag defaulting to ``False`` that specifies whether the
+            signing procedure should be deterministic or not, as defined in
+            :rfc:`6979`. This only impacts the signing process, verification is
+            not affected (the verification process is the same for both
+            deterministic and non-deterministic signed messages).
 
         :returns: :class:`~cryptography.x509.Certificate`
 
@@ -1285,7 +1295,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
 
         Sign this CRL using the CA's private key.
 
@@ -1319,6 +1329,16 @@ X.509 Certificate Revocation List Builder
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param bool ecdsa_deterministic_signing:
+
+            .. versionadded:: 45.0.0
+
+            A Boolean flag defaulting to ``False`` that specifies whether the
+            signing procedure should be deterministic or not, as defined in
+            :rfc:`6979`. This only impacts the signing process, verification is
+            not affected (the verification process is the same for both
+            deterministic and non-deterministic signed messages).
 
         :returns: :class:`~cryptography.x509.CertificateRevocationList`
 
@@ -1498,7 +1518,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
 
         :param private_key: The private key
             that will be used to sign the request.  When the request is
@@ -1532,6 +1552,16 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param bool ecdsa_deterministic_signing:
+
+            .. versionadded:: 45.0.0
+
+            A Boolean flag defaulting to ``False`` that specifies whether the
+            signing procedure should be deterministic or not, as defined in
+            :rfc:`6979`. This only impacts the signing process, verification is
+            not affected (the verification process is the same for both
+            deterministic and non-deterministic signed messages).
 
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.
