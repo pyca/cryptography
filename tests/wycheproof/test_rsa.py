@@ -138,8 +138,10 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
 )
 def test_rsa_pss_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
-    if backend._fips_enabled and isinstance(digest, hashes.SHA1):
-        pytest.skip("Invalid params for FIPS. SHA1 is disallowed")
+    if backend._fips_enabled and isinstance(
+        digest, (hashes.SHA1, hashes.SHA224)
+    ):
+        pytest.skip("Invalid params for FIPS. SHA1 and SHA224 are disallowed")
 
     key = wycheproof.cache_value_to_group(
         "cached_key",
