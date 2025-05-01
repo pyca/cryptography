@@ -182,6 +182,10 @@ class Backend:
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
             # FIPS 186-4 only allows salt length == digest length for PSS
+            # It is technically acceptable to set an explicit salt length
+            # equal to the digest length and this will incorrectly fail, but
+            # since we don't do that in the tests and this method is
+            # private, we'll ignore that until we need to do otherwise.
             if (
                 self._fips_enabled
                 and padding._salt_length != PSS.DIGEST_LENGTH
