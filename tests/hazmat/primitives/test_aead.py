@@ -487,6 +487,13 @@ class TestAESGCM:
         with pytest.raises(ValueError):
             AESGCM.generate_key(129)
 
+    def test_bad_tag_length(self, backend):
+        with pytest.raises(TypeError):
+            AESGCM(b"X" * 32, object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESGCM(b"X" * 32, 17)
+
     def test_associated_data_none_equal_to_empty_bytestring(self, backend):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
@@ -497,6 +504,18 @@ class TestAESGCM:
         pt1 = aesgcm.decrypt(nonce, ct1, None)
         pt2 = aesgcm.decrypt(nonce, ct2, b"")
         assert pt1 == pt2
+
+    @pytest.mark.parametrize("length", [4, 15])
+    def test_short_tags(self, length, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm_ref = AESGCM(key)
+        aesgcm_cut = AESGCM(key, length)
+        nonce = os.urandom(12)
+        ct_ref = aesgcm_ref.encrypt(nonce, b"some_data", b"some_aad")
+        ct_cut = aesgcm_cut.encrypt(nonce, b"some_data", b"some_aad")
+        assert ct_cut == ct_ref[: -16 + length]
+        pt_cut = aesgcm_cut.decrypt(nonce, ct_cut, b"some_aad")
+        assert pt_cut == b"some_data"
 
     def test_buffer_protocol(self, backend):
         key = AESGCM.generate_key(128)

@@ -86,9 +86,8 @@ also support providing integrity for associated data which is not encrypted.
             when the ciphertext has been changed, but will also occur when the
             key, nonce, or associated data are wrong.
 
-.. class:: AESGCM(key)
+.. class:: AESGCM(key, tag_length=16)
 
-    .. versionadded:: 2.0
 
     The AES-GCM construction is composed of the
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
@@ -96,6 +95,12 @@ also support providing integrity for associated data which is not encrypted.
 
     :param key: A 128, 192, or 256-bit key. This **must** be kept secret.
     :type key: :term:`bytes-like`
+    :param int tag_length: The length of the authentication tag. This
+        defaults to 16 bytes and it is **strongly** recommended that you
+        do not make it shorter unless absolutely necessary. Valid tag
+        lengths are 4, 8, 12, 13, 14, 15, and 16.
+
+        .. versionadded:: 45.0.0
 
     .. doctest::
 

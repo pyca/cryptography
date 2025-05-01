@@ -600,7 +600,12 @@ struct AesGcm {
 #[pyo3::pymethods]
 impl AesGcm {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
+    #[pyo3(signature = (key, tag_length=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+        tag_length: Option<usize>,
+    ) -> CryptographyResult<AesGcm> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         let cipher = match key_buf.as_bytes().len() {
             16 => openssl::cipher::Cipher::aes_128_gcm(),
@@ -614,6 +619,12 @@ impl AesGcm {
                 ))
             }
         };
+        let tag_length = tag_length.unwrap_or(16);
+        if ![4, 8, 12, 13, 14, 15, 16].contains(&tag_length) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid tag_length"),
+            ));
+        }
 
         cfg_if::cfg_if! {
             if #[cfg(any(
@@ -624,11 +635,11 @@ impl AesGcm {
                 not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
             ))] {
                 Ok(AesGcm {
-                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), tag_length, false)?,
                 })
             } else {
                 Ok(AesGcm {
-                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false, false),
+                    ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, false),
                 })
 
             }
