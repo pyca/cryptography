@@ -146,12 +146,11 @@ def test_rsa_pss_signature(backend, wycheproof):
                 wycheproof.testgroup["mgfSha"],
             )
         )
-    salt_length = int(wycheproof.testgroup["sLen"])
     if backend._fips_enabled and (
         isinstance(digest, hashes.SHA1)
         or isinstance(mgf_digest, hashes.SHA1)
         # FIPS 186-4 only allows salt length == digest length for PSS
-        or salt_length != mgf_digest.digest_size
+        or wycheproof.testgroup["sLen"] != mgf_digest.digest_size
         # inner MGF1 hash must match outer hash
         or wycheproof.testgroup["sha"] != wycheproof.testgroup["mgfSha"]
     ):
