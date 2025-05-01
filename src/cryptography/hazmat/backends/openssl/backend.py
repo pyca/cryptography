@@ -181,6 +181,12 @@ class Backend:
         if isinstance(padding, PKCS1v15):
             return True
         elif isinstance(padding, PSS) and isinstance(padding._mgf, MGF1):
+            # FIPS 186-4 only allows salt length == digest length for PSS
+            if (
+                self._fips_enabled
+                and padding._salt_length != PSS.DIGEST_LENGTH
+            ):
+                return False
             return self.hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
             return self._oaep_hash_supported(
