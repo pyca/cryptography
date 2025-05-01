@@ -521,7 +521,7 @@ class TestRSASignature:
         private_key = rsa_key_2048
         public_key = private_key.public_key()
         pss = padding.PSS(
-            mgf=padding.MGF1(hash_alg), salt_length=padding.PSS.DIGEST_LENGTH
+            mgf=padding.MGF1(hash_alg), salt_length=padding.PSS.MAX_LENGTH
         )
         msg = b"testing signature"
         signature = private_key.sign(msg, pss, hash_alg)
