@@ -126,7 +126,10 @@ class TestOpenSSLRSA:
     def test_rsa_padding_supported_pss(self):
         assert (
             backend.rsa_padding_supported(
-                padding.PSS(mgf=padding.MGF1(hashes.SHA1()), salt_length=0)
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.DIGEST_LENGTH,
+                )
             )
             is True
         )
