@@ -60,6 +60,13 @@ Changelog
   to the certificate's public key may be used.
 * Added support for compiling against `aws-lc`_.
 
+.. _v44-0-3:
+
+44.0.3 - 2025-05-02
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 4.1.0.
+
 .. _v44-0-2:
 
 44.0.2 - 2025-03-01
