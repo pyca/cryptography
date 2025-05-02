@@ -6,16 +6,15 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use cryptography_x509::certificate::Certificate as RawCertificate;
-use cryptography_x509::common::Asn1Read;
-use cryptography_x509::common::{AlgorithmParameters, Asn1ReadableOrWritable};
+use cryptography_x509::common::{AlgorithmParameters, Asn1Read, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
     Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText,
     DistributionPoint, DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage,
-    IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints, NamingAuthority,
-    PolicyConstraints, PolicyInformation, PolicyQualifierInfo, ProfessionInfo, Qualifier,
-    RawExtensions, SequenceOfAccessDescriptions, SequenceOfSubtrees, UserNotice,
+    Extension, IssuerAlternativeName, KeyUsage, MSCertificateTemplate, NameConstraints,
+    NamingAuthority, PolicyConstraints, PolicyInformation, PolicyQualifierInfo, ProfessionInfo,
+    Qualifier, RawExtensions, SequenceOfAccessDescriptions, SequenceOfSubtrees,
+    SubjectAlternativeName, UserNotice,
 };
-use cryptography_x509::extensions::{Extension, SubjectAlternativeName};
 use cryptography_x509::{common, oid};
 use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::types::{PyAnyMethods, PyListMethods};

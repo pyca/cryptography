@@ -4,10 +4,8 @@
 
 use std::collections::HashSet;
 
-use crate::common;
 use crate::common::Asn1Operation;
-use crate::crl;
-use crate::name;
+use crate::{common, crl, name};
 
 pub struct DuplicateExtensionsError(pub asn1::ObjectIdentifier);
 

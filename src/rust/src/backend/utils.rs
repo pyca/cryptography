@@ -2,10 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
+
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, types};
-use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,

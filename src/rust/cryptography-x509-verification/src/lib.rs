@@ -16,21 +16,19 @@ use std::fmt::Display;
 use std::vec;
 
 use asn1::ObjectIdentifier;
-use cryptography_x509::extensions::{DuplicateExtensionsError, Extensions};
-use cryptography_x509::{
-    common::Asn1Read,
-    extensions::{NameConstraints, SubjectAlternativeName},
-    name::GeneralName,
-    oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID},
+use cryptography_x509::common::Asn1Read;
+use cryptography_x509::extensions::{
+    DuplicateExtensionsError, Extensions, NameConstraints, SubjectAlternativeName,
 };
+use cryptography_x509::name::GeneralName;
+use cryptography_x509::oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID};
 use types::{RFC822Constraint, RFC822Name};
 
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
 use crate::trust_store::Store;
-use crate::types::DNSName;
-use crate::types::{DNSConstraint, IPAddress, IPConstraint};
+use crate::types::{DNSConstraint, DNSName, IPAddress, IPConstraint};
 use crate::ApplyNameConstraintStatus::{Applied, Skipped};
 
 pub enum ValidationErrorKind<'chain, B: CryptoOps> {
@@ -175,12 +173,10 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                 ) {
                     (Some(pattern), Some(name)) => Ok(Applied(pattern.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
-                        "unsatisfiable IP name constraint: malformed SAN {:?}",
-                        name,
+                        "unsatisfiable IP name constraint: malformed SAN {name:?}",
                     )))),
                     (None, _) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
-                        "malformed IP name constraints: {:?}",
-                        pattern
+                        "malformed IP name constraints: {pattern:?}",
                     )))),
                 }
             }

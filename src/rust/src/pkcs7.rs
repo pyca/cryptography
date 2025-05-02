@@ -686,7 +686,7 @@ fn load_pkcs7_certificates(
         let nid_string = nid.map_or("empty".to_string(), |n| n.as_raw().to_string());
         return Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
-                format!("Only basic signed structures are currently supported. NID for this data was {}", nid_string),
+                format!("Only basic signed structures are currently supported. NID for this data was {nid_string}"),
                 exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
             )),
         ));

@@ -2,17 +2,19 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+use cryptography_x509::common::Utf8StoredBMPString;
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
+use pyo3::IntoPyObject;
+
 use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
-use cryptography_x509::common::Utf8StoredBMPString;
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-use pyo3::IntoPyObject;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 
 #[pyo3::pyclass(frozen)]
 struct PKCS12Certificate {

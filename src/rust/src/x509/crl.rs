@@ -4,15 +4,13 @@
 
 use std::sync::Arc;
 
-use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
-use cryptography_x509::{
-    common::{self, Asn1Read},
-    crl::{
-        self, CertificateRevocationList as RawCertificateRevocationList,
-        RevokedCertificate as RawRevokedCertificate,
-    },
-    name, oid,
+use cryptography_x509::common::{self, Asn1Read};
+use cryptography_x509::crl::{
+    self, CertificateRevocationList as RawCertificateRevocationList,
+    RevokedCertificate as RawRevokedCertificate,
 };
+use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
+use cryptography_x509::{name, oid};
 use pyo3::types::{PyAnyMethods, PyListMethods, PySliceMethods};
 
 use crate::asn1::{
