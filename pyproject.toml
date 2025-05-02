@@ -14,7 +14,7 @@ build-backend = "maturin"
 
 [project]
 name = "cryptography"
-version = "44.0.2"
+version = "44.0.3"
 authors = [
     {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
 ]
@@ -65,7 +65,7 @@ ssh = ["bcrypt >=3.1.5"]
 # All the following are used for our own testing.
 nox = ["nox >=2024.04.15", "nox[uv] >=2024.03.02; python_version >= '3.8'"]
 test = [
-    "cryptography_vectors==44.0.2",
+    "cryptography_vectors==44.0.3",
     "pytest >=7.4.0",
     "pytest-benchmark >=4.0",
     "pytest-cov >=2.10.1",
