@@ -208,12 +208,7 @@ def test_rsa_pss_signature(backend, wycheproof):
     "rsa_oaep_misc_test.json",
 )
 def test_rsa_oaep_encryption(backend, wycheproof):
-    if (
-        backend._fips_enabled
-        # TODO: Remove this on rebase once wycheproof PR is merged
-        # and wycheproof.has_flag("SmallIntegerCiphertext")
-        and wycheproof.testcase["tcId"] in (756, 765, 772)
-    ):
+    if backend._fips_enabled and wycheproof.has_flag("SmallIntegerCiphertext"):
         pytest.skip(
             "Small integer ciphertexts are rejected in OpenSSL 3.5 FIPS"
         )
