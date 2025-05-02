@@ -604,6 +604,16 @@ class TestCertificateRevocationList:
         with pytest.raises(TypeError):
             crl.is_signature_valid(object)  # type: ignore[arg-type]
 
+    def test_crl_issuer_invalid_printable_string(self):
+        data = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_issuer_invalid_printable_string.der"
+            ),
+            lambda v: v,
+        )
+        with pytest.raises(ValueError):
+            x509.load_der_x509_crl(data)
+
 
 class TestRevokedCertificate:
     def test_revoked_basics(self, backend):

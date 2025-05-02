@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use asn1::Asn1DefinedByWritable;
+use asn1::{Asn1DefinedByWritable, SimpleAsn1Writable};
 
 use crate::oid;
 
@@ -183,7 +183,28 @@ pub struct SubjectPublicKeyInfo<'a> {
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct AttributeTypeValue<'a> {
     pub type_id: asn1::ObjectIdentifier,
-    pub value: RawTlv<'a>,
+    pub value: AttributeValue<'a>,
+}
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
+pub enum AttributeValue<'a> {
+    UniversalString(asn1::UniversalString<'a>),
+    BmpString(asn1::BMPString<'a>),
+    PrintableString(asn1::PrintableString<'a>),
+
+    // Must be last, because enums parse things in order.
+    AnyString(RawTlv<'a>),
+}
+
+impl AttributeValue<'_> {
+    pub fn tag(&self) -> asn1::Tag {
+        match self {
+            AttributeValue::AnyString(tlv) => tlv.tag(),
+            AttributeValue::PrintableString(_) => asn1::PrintableString::TAG,
+            AttributeValue::UniversalString(_) => asn1::UniversalString::TAG,
+            AttributeValue::BmpString(_) => asn1::BMPString::TAG,
+        }
+    }
 }
 
 // Like `asn1::Tlv` but doesn't store `full_data` so it can be constructed from
@@ -532,7 +553,7 @@ impl<'a> UnvalidatedVisibleString<'a> {
 }
 
 impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedVisibleString<'a> {
-    const TAG: asn1::Tag = asn1::VisibleString::TAG;
+    const TAG: asn1::Tag = <asn1::VisibleString<'_> as asn1::SimpleAsn1Readable>::TAG;
     fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
         Ok(UnvalidatedVisibleString(
             std::str::from_utf8(data)
