@@ -503,11 +503,20 @@ class TestRSASignature:
                     hashes.SHA1(),
                 )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH,
+            )
+        ),
+        skip_message="Does not support PSS with these parameters.",
+    )
     @pytest.mark.parametrize(
         "hash_alg",
         [hashes.SHA224(), hashes.SHA256(), hashes.SHA384(), hashes.SHA512()],
     )
-    def test_pss_signing_sha2(self, rsa_key_2048, hash_alg, backend):
+    def test_pss_sha2_max_length(self, rsa_key_2048, hash_alg, backend):
         _skip_pss_hash_algorithm_unsupported(backend, hash_alg)
         private_key = rsa_key_2048
         public_key = private_key.public_key()
@@ -1040,7 +1049,7 @@ class TestRSAVerification:
                 salt_length=padding.PSS.AUTO,
             )
         ),
-        skip_message="Does not support PSS.",
+        skip_message="Does not support PSS with these parameters.",
     )
     def test_pss_verify_auto_salt_length(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
@@ -1180,7 +1189,7 @@ class TestRSAVerification:
         public_key = private_key.public_key()
         pss_padding = padding.PSS(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH,
+            salt_length=padding.PSS.DIGEST_LENGTH,
         )
         signature = private_key.sign(b"sign me", pss_padding, hashes.SHA256())
 
