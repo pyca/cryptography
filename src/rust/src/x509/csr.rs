@@ -13,7 +13,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509::{certificate, common::cstr_from_literal, sign};
+use crate::x509::common::cstr_from_literal;
+use crate::x509::{certificate, sign};
 use crate::{exceptions, types, x509};
 
 self_cell::self_cell!(

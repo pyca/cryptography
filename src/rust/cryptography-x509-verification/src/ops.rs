@@ -90,9 +90,10 @@ pub trait CryptoOps {
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use cryptography_x509::certificate::Certificate;
+
     use super::VerificationCertificate;
     use crate::certificate::tests::PublicKeyErrorOps;
-    use cryptography_x509::certificate::Certificate;
 
     pub(crate) fn v1_cert_pem() -> pem::Pem {
         pem::parse(

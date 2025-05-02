@@ -138,8 +138,23 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
 )
 def test_rsa_pss_signature(backend, wycheproof):
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
-    if backend._fips_enabled and isinstance(digest, hashes.SHA1):
-        pytest.skip("Invalid params for FIPS. SHA1 is disallowed")
+    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
+    if digest is None or mgf_digest is None:
+        pytest.skip(
+            "PSS with digest={} and MGF digest={} not supported".format(
+                wycheproof.testgroup["sha"],
+                wycheproof.testgroup["mgfSha"],
+            )
+        )
+    if backend._fips_enabled and (
+        isinstance(digest, hashes.SHA1)
+        or isinstance(mgf_digest, hashes.SHA1)
+        # FIPS 186-4 only allows salt length == digest length for PSS
+        or wycheproof.testgroup["sLen"] != mgf_digest.digest_size
+        # inner MGF1 hash must match outer hash
+        or wycheproof.testgroup["sha"] != wycheproof.testgroup["mgfSha"]
+    ):
+        pytest.skip("Invalid params for FIPS")
 
     key = wycheproof.cache_value_to_group(
         "cached_key",
@@ -148,15 +163,6 @@ def test_rsa_pss_signature(backend, wycheproof):
         ),
     )
     assert isinstance(key, rsa.RSAPublicKey)
-    mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
-
-    if digest is None or mgf_digest is None:
-        pytest.skip(
-            "PSS with digest={} and MGF digest={} not supported".format(
-                wycheproof.testgroup["sha"],
-                wycheproof.testgroup["mgfSha"],
-            )
-        )
 
     if wycheproof.valid or wycheproof.acceptable:
         key.verify(
@@ -202,6 +208,11 @@ def test_rsa_pss_signature(backend, wycheproof):
     "rsa_oaep_misc_test.json",
 )
 def test_rsa_oaep_encryption(backend, wycheproof):
+    if backend._fips_enabled and wycheproof.has_flag("SmallIntegerCiphertext"):
+        pytest.skip(
+            "Small integer ciphertexts are rejected in OpenSSL 3.5 FIPS"
+        )
+
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
     assert digest is not None

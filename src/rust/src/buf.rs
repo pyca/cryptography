@@ -2,10 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::types;
-use pyo3::types::IntoPyDict;
-use pyo3::types::PyAnyMethods;
 use std::slice;
+
+use pyo3::types::{IntoPyDict, PyAnyMethods};
+
+use crate::types;
 
 pub(crate) struct CffiBuf<'p> {
     pyobj: pyo3::Bound<'p, pyo3::PyAny>,

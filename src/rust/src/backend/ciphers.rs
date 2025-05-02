@@ -2,13 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::PyAnyMethods;
+use pyo3::IntoPyObject;
+
 use crate::backend::cipher_registry;
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
-use crate::types;
-use pyo3::types::PyAnyMethods;
-use pyo3::IntoPyObject;
+use crate::{exceptions, types};
 
 pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,
@@ -495,16 +495,14 @@ impl PyAEADDecryptionContext {
         if tag.len() < min_tag_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Authentication tag must be {} bytes or longer.",
-                    min_tag_length
+                    "Authentication tag must be {min_tag_length} bytes or longer.",
                 )),
             ));
         } else if tag.len() > 16 {
             return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "Authentication tag cannot be more than {} bytes.",
-                    16
-                )),
+                pyo3::exceptions::PyValueError::new_err(
+                    "Authentication tag cannot be more than 16 bytes.",
+                ),
             ));
         }
 

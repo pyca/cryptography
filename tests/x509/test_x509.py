@@ -852,7 +852,7 @@ class TestRSAPSSCertificate:
         assert isinstance(pss, padding.PSS)
         assert isinstance(pss._mgf, padding.MGF1)
         assert isinstance(pss._mgf._algorithm, hashes.SHA256)
-        assert pss._salt_length == 222
+        assert pss._salt_length == 32
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         pub_key.verify(
             cert.signature,
@@ -2855,6 +2855,11 @@ class TestCertificateBuilder:
         computed_len,
         backend,
     ):
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
+        )
+        if not backend.rsa_padding_supported(pss):
+            pytest.skip("PSS padding with these parameters not supported")
         builder = (
             x509.CertificateBuilder()
             .subject_name(
@@ -2867,9 +2872,6 @@ class TestCertificateBuilder:
             .serial_number(777)
             .not_valid_before(datetime.datetime(2020, 1, 1))
             .not_valid_after(datetime.datetime(2038, 1, 1))
-        )
-        pss = padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
         )
         cert = builder.sign(rsa_key_2048, hashes.SHA256(), rsa_padding=pss)
         assert isinstance(cert.signature_algorithm_parameters, padding.PSS)
@@ -5286,6 +5288,12 @@ class TestCertificateSigningRequestBuilder:
         computed_len,
         backend,
     ):
+        pss = padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding_len
+        )
+        if not backend.rsa_padding_supported(pss):
+            pytest.skip("PSS padding with these parameters not supported")
+
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
         )

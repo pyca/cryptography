@@ -2,11 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::{
-    common,
-    ocsp_req::{self, OCSPRequest as RawOCSPRequest},
-    oid,
-};
+use cryptography_x509::ocsp_req::{self, OCSPRequest as RawOCSPRequest};
+use cryptography_x509::{common, oid};
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};

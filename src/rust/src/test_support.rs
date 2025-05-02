@@ -2,6 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::SimpleAsn1Readable;
+use cryptography_x509::certificate::Certificate;
+use cryptography_x509::common::Time;
+use cryptography_x509::name::Name;
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use pyo3::prelude::PyAnyMethods;
+
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
@@ -9,12 +16,6 @@ use crate::error::CryptographyResult;
 use crate::types;
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::x509::certificate::Certificate as PyCertificate;
-use asn1::SimpleAsn1Readable;
-use cryptography_x509::certificate::Certificate;
-use cryptography_x509::common::Time;
-use cryptography_x509::name::Name;
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-use pyo3::prelude::PyAnyMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.test_support")]
 struct TestCertificate {

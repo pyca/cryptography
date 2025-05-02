@@ -400,9 +400,8 @@ impl<'a> RFC822Constraint<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint, RFC822Name};
-
     use super::RFC822Constraint;
+    use crate::types::{DNSConstraint, DNSName, DNSPattern, IPAddress, IPConstraint, RFC822Name};
 
     #[test]
     fn test_dnsname_debug_trait() {

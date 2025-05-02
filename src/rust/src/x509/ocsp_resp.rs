@@ -4,12 +4,10 @@
 
 use std::sync::Arc;
 
-use cryptography_x509::ocsp_resp::SingleResponse;
-use cryptography_x509::{
-    common,
-    ocsp_resp::{self, OCSPResponse as RawOCSPResponse, SingleResponse as RawSingleResponse},
-    oid,
+use cryptography_x509::ocsp_resp::{
+    self, OCSPResponse as RawOCSPResponse, SingleResponse, SingleResponse as RawSingleResponse,
 };
+use cryptography_x509::{common, oid};
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid};

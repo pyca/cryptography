@@ -7,8 +7,7 @@ use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
-use pyo3::types::IntoPyDict;
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::types::{IntoPyDict, PyAnyMethods, PyListMethods};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};

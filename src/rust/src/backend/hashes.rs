@@ -2,8 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::PyAnyMethods;
 use std::borrow::Cow;
+
+use pyo3::types::PyAnyMethods;
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
