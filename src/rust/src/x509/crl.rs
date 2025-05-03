@@ -4,6 +4,7 @@
 
 use std::sync::Arc;
 
+use cryptography_x509::certificate::SerialNumber;
 use cryptography_x509::common::{self, Asn1Read};
 use cryptography_x509::crl::{
     self, CertificateRevocationList as RawCertificateRevocationList,
@@ -650,7 +651,7 @@ pub(crate) fn create_x509_crl(
             py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date_utc"))?;
         let serial_bytes = ka_bytes.add(py_uint_to_big_endian_bytes(py, serial_number)?);
         revoked_certs.push(crl::RevokedCertificate {
-            user_certificate: asn1::BigUint::new(serial_bytes).unwrap(),
+            user_certificate: SerialNumber::new(serial_bytes).unwrap(),
             revocation_date: x509::certificate::time_from_py(py, &py_revocation_date)?,
             raw_crl_entry_extensions: x509::common::encode_extensions(
                 py,
