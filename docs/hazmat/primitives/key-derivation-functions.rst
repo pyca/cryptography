@@ -130,6 +130,66 @@ Argon2id
         checking whether the password a user provides matches the stored derived
         key.
 
+    .. method:: derive_phc_encoded(key_material)
+
+        .. versionadded:: 45.0.0
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :return str: A PHC-formatted string containing the parameters, salt, and derived key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          any method is
+                                                          called more than
+                                                          once.
+
+        This method generates and returns a new key from the supplied password,
+        formatting the result as a string according to the Password Hashing
+        Competition (PHC) format. The returned string includes the algorithm,
+        all parameters, the salt, and the derived key in a standardized format:
+        ``$argon2id$v=19$m=<memory_cost>,t=<iterations>,p=<lanes>$<salt>$<key>``
+
+        This format is suitable for password storage and is compatible with other
+        Argon2id implementations that support the PHC format.
+
+    .. classmethod:: verify_phc_encoded(key_material, phc_encoded)
+
+        .. versionadded:: 45.0.0
+
+        :param bytes key_material: The input key material. This is the same as
+                                   ``key_material`` in :meth:`derive_phc_encoded`.
+        :param str phc_encoded: A PHC-formatted string as returned by
+                                :meth:`derive_phc_encoded`.
+        :raises cryptography.exceptions.InvalidKey: This is raised when the
+                                                    derived key does not match
+                                                    the key in the encoded string
+                                                    or when the format of the
+                                                    encoded string is invalid.
+
+        This class method verifies whether the supplied ``key_material`` matches
+        the key contained in the PHC-formatted string. It extracts the parameters
+        from the string, recomputes the key with those parameters, and compares
+        the result to the key in the string.
+
+        This is useful for validating a password against a stored PHC-formatted
+        hash string.
+
+        .. doctest::
+
+            >>> import os
+            >>> from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
+            >>> salt = os.urandom(16)
+            >>> # Create an Argon2id instance and derive a PHC-formatted string
+            >>> kdf = Argon2id(
+            ...     salt=salt,
+            ...     length=32,
+            ...     iterations=1,
+            ...     lanes=4,
+            ...     memory_cost=64 * 1024,
+            ... )
+            >>> encoded = kdf.derive_phc_encoded(b"my great password")
+            >>> # later, verify the password
+            >>> Argon2id.verify_phc_encoded(b"my great password", encoded)
+
 
 PBKDF2
 ------

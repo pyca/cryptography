@@ -2,6 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+use base64::engine::general_purpose::STANDARD_NO_PAD;
+#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+use base64::engine::Engine;
 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use pyo3::types::PyBytesMethods;
 
@@ -312,6 +316,125 @@ impl Argon2id {
 
         if actual_bytes.len() != expected_bytes.len()
             || !openssl::memcmp::eq(actual_bytes, expected_bytes)
+        {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_phc_encoded<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
+        let derived_key = self.derive(py, key_material)?;
+        let salt_bytes = self.salt.as_bytes(py);
+
+        let salt_b64 = STANDARD_NO_PAD.encode(salt_bytes);
+        let hash_b64 = STANDARD_NO_PAD.encode(derived_key.as_bytes());
+
+        // Format the PHC string
+        let phc_string = format!(
+            "$argon2id$v=19$m={},t={},p={}${}${}",
+            self.memory_cost, self.iterations, self.lanes, salt_b64, hash_b64
+        );
+
+        Ok(pyo3::types::PyString::new(py, &phc_string))
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[staticmethod]
+    fn verify_phc_encoded(
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        phc_encoded: &str,
+    ) -> CryptographyResult<()> {
+        let parts: Vec<_> = phc_encoded.split('$').collect();
+
+        if parts.len() != 6 || !parts[0].is_empty() || parts[1] != "argon2id" {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid PHC string format.",
+            )));
+        }
+
+        if parts[2] != "v=19" {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid version in PHC string.",
+            )));
+        }
+
+        // Parse parameters
+        let param_parts: Vec<&str> = parts[3].split(',').collect();
+        if param_parts.len() != 3 {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid parameters in PHC string.",
+            )));
+        }
+
+        // Check parameters are in correct order: m, t, p
+        if !param_parts[0].starts_with("m=")
+            || !param_parts[1].starts_with("t=")
+            || !param_parts[2].starts_with("p=")
+        {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Parameters must be in order: m, t, p.",
+            )));
+        }
+
+        // Parse memory cost (m)
+        let memory_cost = param_parts[0][2..].parse::<u32>().map_err(|_| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid memory cost in PHC string.",
+            ))
+        })?;
+
+        // Parse iterations (t)
+        let iterations = param_parts[1][2..].parse::<u32>().map_err(|_| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid iterations in PHC string.",
+            ))
+        })?;
+
+        // Parse lanes/parallelism (p)
+        let lanes = param_parts[2][2..].parse::<u32>().map_err(|_| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid parallelism in PHC string.",
+            ))
+        })?;
+
+        let salt_bytes = STANDARD_NO_PAD.decode(parts[4]).map_err(|_| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid base64 salt in PHC string.",
+            ))
+        })?;
+
+        let hash_bytes = STANDARD_NO_PAD.decode(parts[5]).map_err(|_| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid base64 hash in PHC string.",
+            ))
+        })?;
+
+        let salt = pyo3::types::PyBytes::new(py, &salt_bytes);
+        let mut argon2 = Argon2id::new(
+            py,
+            salt.into(),
+            hash_bytes.len(),
+            iterations,
+            lanes,
+            memory_cost,
+            None,
+            None,
+        )?;
+
+        let derived_key = argon2.derive(py, key_material)?;
+        let derived_bytes = derived_key.as_bytes();
+
+        if derived_bytes.len() != hash_bytes.len()
+            || !openssl::memcmp::eq(derived_bytes, &hash_bytes)
         {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",

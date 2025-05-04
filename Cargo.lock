@@ -107,6 +107,7 @@ name = "cryptography-rust"
 version = "0.1.0"
 dependencies = [
  "asn1",
+ "base64",
  "cfg-if",
  "cryptography-cffi",
  "cryptography-crypto",
