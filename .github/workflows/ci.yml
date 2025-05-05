@@ -27,7 +27,6 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "flake"}
           - {VERSION: "3.13", NOXSESSION: "rust"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py37'"}
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py39'"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py311'"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.5.0"}}
           - {VERSION: "3.14-dev", NOXSESSION: "tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py313'"}
