@@ -86,7 +86,7 @@ mod pybuffer_impl {
                 };
                 pyo3::exceptions::PyTypeError::new_err(errmsg)
             })?;
-            let len = pyobj.len()?;
+            let len = bufobj.len_bytes();
             let buf = if len == 0 {
                 &[]
             } else {
