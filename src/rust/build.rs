@@ -6,6 +6,10 @@ use std::env;
 
 #[allow(clippy::unusual_byte_groupings)]
 fn main() {
+    for cfg in pyo3_build_config::get().build_script_outputs() {
+        println!("{cfg}");
+    }
+
     if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {
         let version = u64::from_str_radix(&version, 16).unwrap();
 

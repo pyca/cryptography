@@ -24,6 +24,9 @@ openssl-sys.workspace = true
 foreign-types-shared = "0.1"
 self_cell = "1"
 
+[build-dependencies]
+pyo3-build-config.workspace = true
+
 [features]
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]
@@ -33,4 +36,4 @@ name = "cryptography_rust"
 crate-type = ["cdylib"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)', 'cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_IS_AWSLC)', 'cfg(CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_IDEA", "OPENSSL_NO_CAST", "OPENSSL_NO_BF", "OPENSSL_NO_CAMELLIA", "OPENSSL_NO_SEED", "OPENSSL_NO_SM4", "OPENSSL_NO_RC4"))'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(Py_3_11)', 'cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER)', 'cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)', 'cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_IS_AWSLC)', 'cfg(CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_IDEA", "OPENSSL_NO_CAST", "OPENSSL_NO_BF", "OPENSSL_NO_CAMELLIA", "OPENSSL_NO_SEED", "OPENSSL_NO_SM4", "OPENSSL_NO_RC4"))'] }

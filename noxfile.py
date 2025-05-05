@@ -31,10 +31,24 @@ def install(
 ) -> None:
     if verbose:
         args += ("-v",)
+    # Check for any --features= argument passed to nox
+    features_flag = []
+    feature_values = [
+        arg.split("=", 1)[1].strip("'\"")
+        for arg in session.posargs
+        if arg.startswith("--features=")
+    ]
+    if feature_values:
+        features_flag = [
+            "--config-settings="
+            "build-args="
+            f"--features={','.join(feature_values)}"
+        ]
     session.install(
         "-c",
         "ci-constraints-requirements.txt",
         *args,
+        *features_flag,
         silent=False,
     )
 
