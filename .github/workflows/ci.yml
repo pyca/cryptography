@@ -44,8 +44,8 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "0f1d0df6183d6ddf0b4d7a10bf80122c7ec260e6"}}
           # Latest tag of AWS-LC main branch, as of May 02, 2025.
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.50.1"}}
-          # Latest commit on the OpenSSL master branch, as of May 02, 2025.
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3513a830cc159c913b6c9bf1cbaf1577a1f47808"}}
+          # Latest commit on the OpenSSL master branch, as of May 05, 2025.
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "af5952d533b772ef8a3d7c666ed918acfc1dd911"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.70: crates.io sparse protocol by default
