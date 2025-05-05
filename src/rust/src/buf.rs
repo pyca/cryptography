@@ -26,19 +26,19 @@ fn generate_non_convertible_buffer_error_msg(pyobj: &pyo3::Bound<'_, pyo3::PyAny
 fn _extract_buffer_length(
     pyobj: &pyo3::Bound<'_, pyo3::PyAny>,
     mutable: bool,
-) -> pyo3::PyResult<(pyo3::buffer::PyBuffer<u8>, *mut std::os::raw::c_void, usize)> {
-    let bufobj = pyo3::buffer::PyBuffer::<u8>::get(pyobj).map_err(|_| {
+) -> pyo3::PyResult<(Option<pyo3::buffer::PyBuffer<u8>>, usize, usize)> {
+    let buf = pyo3::buffer::PyBuffer::<u8>::get(pyobj).map_err(|_| {
         let errmsg = generate_non_convertible_buffer_error_msg(pyobj);
         pyo3::exceptions::PyTypeError::new_err(errmsg)
     })?;
-    if mutable && bufobj.readonly() {
+    if mutable && buf.readonly() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "Buffer is not writable.",
         ));
     };
-    let buf_ptr = bufobj.buf_ptr();
-    let len = bufobj.len_bytes();
-    Ok((bufobj, buf_ptr, len))
+    let ptr = buf.buf_ptr() as usize;
+    let len = buf.len_bytes();
+    Ok((Some(buf), ptr, len))
 }
 
 #[cfg(not(Py_3_11))]
@@ -76,23 +76,18 @@ pub(crate) struct CffiBuf<'p> {
     #[cfg(not(Py_3_11))]
     _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
     #[cfg(Py_3_11)]
-    _bufobj: pyo3::buffer::PyBuffer<u8>,
+    _bufobj: Option<pyo3::buffer::PyBuffer<u8>>,
     buf: &'p [u8],
 }
 
 impl<'a> CffiBuf<'a> {
     pub(crate) fn from_bytes(py: pyo3::Python<'a>, buf: &'a [u8]) -> Self {
-        #[cfg(Py_3_11)]
-        let bufobj = {
-            let py_bytes = pyo3::types::PyBytes::new(py, buf);
-            pyo3::buffer::PyBuffer::get(&py_bytes)
-                .expect("Cannot convert \"bytes\" instance to a buffer.")
-        };
-        #[cfg(not(Py_3_11))]
-        let bufobj = py.None().into_bound(py);
         CffiBuf {
             pyobj: py.None().into_bound(py),
-            _bufobj: bufobj,
+            #[cfg(Py_3_11)]
+            _bufobj: None,
+            #[cfg(not(Py_3_11))]
+            _bufobj: py.None().into_bound(py),
             buf,
         }
     }
@@ -135,7 +130,7 @@ pub(crate) struct CffiMutBuf<'p> {
     #[cfg(not(Py_3_11))]
     _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
     #[cfg(Py_3_11)]
-    _bufobj: pyo3::buffer::PyBuffer<u8>,
+    _bufobj: Option<pyo3::buffer::PyBuffer<u8>>,
     buf: &'p mut [u8],
 }
 
