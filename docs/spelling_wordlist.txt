@@ -106,6 +106,7 @@ RHEL
 parsers
 Parsers
 PEM
+PHC
 pickleable
 plaintext
 Poly

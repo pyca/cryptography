@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import base64
 import binascii
 import os
 
@@ -158,3 +159,112 @@ class TestArgon2id:
         Argon2id(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         ).verify(b"password", digest)
+
+    def test_derive_phc_encoded(self, backend):
+        # Test that we can generate a PHC formatted string
+        argon2id = Argon2id(
+            salt=b"0" * 8,
+            length=32,
+            iterations=2,
+            lanes=2,
+            memory_cost=64,
+        )
+        encoded = argon2id.derive_phc_encoded(b"password")
+
+        # Verify the general format is correct
+        assert encoded == (
+            "$argon2id$v=19$m=64,t=2,p=2$"
+            "MDAwMDAwMDA$"
+            "jFn1qYAgmfVKFWVeUGQcVK4d8RSiQJFTS7R7VII+fRk"
+        )
+
+    def test_verify_phc_encoded(self):
+        # First generate a PHC string
+        argon2id = Argon2id(
+            salt=b"0" * 8,
+            length=32,
+            iterations=1,
+            lanes=1,
+            memory_cost=32,
+        )
+        encoded = argon2id.derive_phc_encoded(b"password")
+
+        Argon2id.verify_phc_encoded(b"password", encoded)
+        Argon2id(
+            salt=b"0" * 8,
+            length=32,
+            iterations=1,
+            lanes=1,
+            memory_cost=32,
+        ).verify(b"password", base64.b64decode(encoded.split("$")[-1] + "="))
+
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(b"wrong_password", encoded)
+
+    def test_verify_phc_vector(self):
+        # From https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#example
+        Argon2id.verify_phc_encoded(
+            b"hunter2",
+            "$argon2id$v=19$m=65536,t=2,p=1$gZiV/M1gPc22ElAH/Jh1Hw$CWOrkoo7oJBQ/iyh7uJ0LO2aLEfrHwTWllSAxT0zRno",
+            secret=b"pepper",
+        )
+
+    def test_verify_phc_encoded_invalid_format(self):
+        # Totally invalid string
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(b"password", "not-a-valid-format")
+
+        # Invalid algorithm
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2i$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$hash"
+            )
+
+        # Invalid version
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=18$m=32,t=1,p=1$c2FsdHNhbHQ$hash"
+            )
+
+        # Missing parameters
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$m=32,t=1$c2FsdHNhbHQ$hash"
+            )
+
+        # Parameters in wrong order
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$t=1,m=32,p=1$c2FsdHNhbHQ$hash"
+            )
+
+        # Invalid memory cost
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$m=abc,t=1,p=1$!invalid!$hash"
+            )
+
+        # Invalid iterations
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$m=32,t=abc,p=1$!invalid!$hash"
+            )
+
+        # Invalid lanes
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$m=32,t=1,p=abc$!invalid!$hash"
+            )
+
+        # Invalid base64 in salt
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password", "$argon2id$v=19$m=32,t=1,p=1$!invalid!$hash"
+            )
+
+        # Invalid base64 in hash
+        with pytest.raises(InvalidKey):
+            Argon2id.verify_phc_encoded(
+                b"password",
+                "$argon2id$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$!invalid!",
+            )
