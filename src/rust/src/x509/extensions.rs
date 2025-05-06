@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use cryptography_x509::certificate::SerialNumber;
 use cryptography_x509::common::Asn1Write;
 use cryptography_x509::{crl, extensions, oid};
 use pyo3::pybacked::PyBackedStr;
@@ -59,7 +60,7 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     let authority_cert_serial_number =
         if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
             serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
-            Some(asn1::BigUint::new(&serial_bytes).unwrap())
+            Some(SerialNumber::new(&serial_bytes).unwrap())
         } else {
             None
         };

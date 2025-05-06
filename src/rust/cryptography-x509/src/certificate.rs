@@ -31,12 +31,17 @@ impl<'a> Certificate<'a> {
     }
 }
 
+// This should really be a wrapper around `BigUint` that rejects 0s, however
+// for the time being we support invalid serial numbers (mostly because the MS
+// trust store has a certificate with a negative serial number).
+pub type SerialNumber<'a> = asn1::BigInt<'a>;
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, PartialEq, Eq, Clone)]
 pub struct TbsCertificate<'a> {
     #[explicit(0)]
     #[default(0)]
     pub version: u8,
-    pub serial: asn1::BigInt<'a>,
+    pub serial: SerialNumber<'a>,
     pub signature_alg: common::AlgorithmIdentifier<'a>,
 
     pub issuer: name::Name<'a>,

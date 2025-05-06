@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::certificate::SerialNumber;
 use crate::common::Asn1Operation;
 use crate::{common, extensions, name};
 
@@ -35,7 +36,7 @@ pub struct TBSCertList<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
-    pub user_certificate: asn1::BigUint<'a>,
+    pub user_certificate: SerialNumber<'a>,
     pub revocation_date: common::Time,
     pub raw_crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
 }

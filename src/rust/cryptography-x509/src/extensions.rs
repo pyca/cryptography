@@ -4,6 +4,7 @@
 
 use std::collections::HashSet;
 
+use crate::certificate::SerialNumber;
 use crate::common::Asn1Operation;
 use crate::{common, crl, name};
 
@@ -198,7 +199,7 @@ pub struct AuthorityKeyIdentifier<'a, Op: Asn1Operation> {
     #[implicit(1)]
     pub authority_cert_issuer: Option<name::SequenceOfGeneralName<'a, Op>>,
     #[implicit(2)]
-    pub authority_cert_serial_number: Option<asn1::BigUint<'a>>,
+    pub authority_cert_serial_number: Option<SerialNumber<'a>>,
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
