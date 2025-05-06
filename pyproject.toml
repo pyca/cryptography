@@ -11,8 +11,7 @@ requires = [
     # well as our build.rs for the rust/cffi bridge.
     "setuptools!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2",
 ]
-backend-path = ["package"]
-build-backend = "pep517_backend.maturin_wrapper"
+build-backend = "maturin"
 
 [project]
 name = "cryptography"
