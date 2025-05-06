@@ -45,5 +45,5 @@ class Argon2id:
     def derive_phc_encoded(self, key_material: bytes) -> str: ...
     @classmethod
     def verify_phc_encoded(
-        cls, key_material: bytes, phc_encoded: str
+        cls, key_material: bytes, phc_encoded: str, secret: bytes | None = None
     ) -> None: ...

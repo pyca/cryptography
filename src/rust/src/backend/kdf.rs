@@ -348,10 +348,12 @@ impl Argon2id {
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     #[staticmethod]
+    #[pyo3(signature = (key_material, phc_encoded, secret=None))]
     fn verify_phc_encoded(
         py: pyo3::Python<'_>,
         key_material: CffiBuf<'_>,
         phc_encoded: &str,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
     ) -> CryptographyResult<()> {
         let parts: Vec<_> = phc_encoded.split('$').collect();
 
@@ -427,7 +429,7 @@ impl Argon2id {
             lanes,
             memory_cost,
             None,
-            None,
+            secret,
         )?;
 
         let derived_key = argon2.derive(py, key_material)?;

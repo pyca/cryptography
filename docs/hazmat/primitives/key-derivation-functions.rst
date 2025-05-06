@@ -151,7 +151,7 @@ Argon2id
         This format is suitable for password storage and is compatible with other
         Argon2id implementations that support the PHC format.
 
-    .. classmethod:: verify_phc_encoded(key_material, phc_encoded)
+    .. classmethod:: verify_phc_encoded(key_material, phc_encoded, secret=None)
 
         .. versionadded:: 45.0.0
 
@@ -159,6 +159,7 @@ Argon2id
                                    ``key_material`` in :meth:`derive_phc_encoded`.
         :param str phc_encoded: A PHC-formatted string as returned by
                                 :meth:`derive_phc_encoded`.
+        :param bytes secret: Optional secret data; used for keyed hashing.
         :raises cryptography.exceptions.InvalidKey: This is raised when the
                                                     derived key does not match
                                                     the key in the encoded string

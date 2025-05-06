@@ -178,7 +178,7 @@ class TestArgon2id:
             "jFn1qYAgmfVKFWVeUGQcVK4d8RSiQJFTS7R7VII+fRk"
         )
 
-    def test_verify_phc_encoded(self, backend):
+    def test_verify_phc_encoded(self):
         # First generate a PHC string
         argon2id = Argon2id(
             salt=b"0" * 8,
@@ -201,7 +201,15 @@ class TestArgon2id:
         with pytest.raises(InvalidKey):
             Argon2id.verify_phc_encoded(b"wrong_password", encoded)
 
-    def test_verify_phc_encoded_invalid_format(self, backend):
+    def test_verify_phc_vector(self):
+        # From https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#example
+        Argon2id.verify_phc_encoded(
+            b"hunter2",
+            "$argon2id$v=19$m=65536,t=2,p=1$gZiV/M1gPc22ElAH/Jh1Hw$CWOrkoo7oJBQ/iyh7uJ0LO2aLEfrHwTWllSAxT0zRno",
+            secret=b"pepper",
+        )
+
+    def test_verify_phc_encoded_invalid_format(self):
         # Totally invalid string
         with pytest.raises(InvalidKey):
             Argon2id.verify_phc_encoded(b"password", "not-a-valid-format")
