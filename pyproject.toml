@@ -11,7 +11,8 @@ requires = [
     # well as our build.rs for the rust/cffi bridge.
     "setuptools!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2",
 ]
-build-backend = "maturin"
+backend-path = ["package"]
+build-backend = "pep517_backend.maturin_wrapper"
 
 [project]
 name = "cryptography"
@@ -100,6 +101,7 @@ manifest-path = "src/rust/Cargo.toml"
 module-name = "cryptography.hazmat.bindings._rust"
 locked = true
 sdist-generator = "git"
+features = ["pyo3/abi3-py37"]
 include = [
     "CHANGELOG.rst",
     "CONTRIBUTING.rst",

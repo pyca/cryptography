@@ -234,22 +234,6 @@ dependencies.
     cd ..
     OPENSSL_DIR="${CWD}/openssl" pip wheel --no-cache-dir --no-binary cryptography cryptography
 
-Building a wheel with the Limited API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To build a cryptography wheel with the limited API, use the
-following command, replacing the Python version as needed:
-
-.. code-block:: console
-
-    $ pip wheel . --config-settings="build-args=--features=pyo3/abi3-py37"
-
-The limited API is a stable subset of the Python C API that ensures
-compatibility across different Python versions. For more details, see the
-official documentation on the `limited C API`_.
-
-.. _limited C API: https://docs.python.org/3/c-api/stable.html#limited-c-api
-
 Building cryptography on macOS
 ------------------------------
 

@@ -26,10 +26,9 @@ jobs:
         PYTHON:
           - {VERSION: "3.13", NOXSESSION: "flake"}
           - {VERSION: "3.13", NOXSESSION: "rust"}
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py37'"}
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py311'"}
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", MATURIN_PEP517_ARGS: "--features='pyo3/abi3-py311'"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.5.0"}}
-          - {VERSION: "3.14-dev", NOXSESSION: "tests", NOX_INSTALL_ARGS: "--features='pyo3/abi3-py313'"}
+          - {VERSION: "3.14-dev", NOXSESSION: "tests"}
           - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.0", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
@@ -133,9 +132,10 @@ jobs:
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'nox[uv]; python_version >= "3.8"' 'tomli; python_version < "3.11"'
       - name: Create nox environment
         run: |
-            nox -v --install-only -- ${{ matrix.PYTHON.NOX_INSTALL_ARGS }}
+            nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
+          MATURIN_PEP517_ARGS: ${{ matrix.PYTHON.MATURIN_PEP517_ARGS }}
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
