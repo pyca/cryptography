@@ -67,6 +67,8 @@ Changelog
 * We now publish ``py311`` wheels that utilize the faster ``pyo3::buffer::PyBuffer``
   interface, resulting in significantly improved performance for operations
   involving small buffers.
+* Added :func:`~cryptography.hazmat.primitives.serialization.ssh_key_fingerprint`
+  for computing fingerprints of SSH public keys.
 
 .. _v44-0-3:
 

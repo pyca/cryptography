@@ -33,6 +33,7 @@ from cryptography.hazmat.primitives.serialization.ssh import (
     load_ssh_private_key,
     load_ssh_public_identity,
     load_ssh_public_key,
+    ssh_key_fingerprint,
 )
 
 __all__ = [
@@ -60,4 +61,5 @@ __all__ = [
     "load_ssh_private_key",
     "load_ssh_public_identity",
     "load_ssh_public_key",
+    "ssh_key_fingerprint",
 ]
