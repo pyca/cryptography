@@ -56,9 +56,7 @@ def tests(session: nox.Session) -> None:
     if session.name == "tests-randomorder":
         extras += ",test-randomorder"
 
-    build_args = (
-        ("--profile=dev",) if session.name == "tests-rust-debug" else ()
-    )
+    build_args = ("--profile=dev",) if session.name == "tests-rust-debug" else ()
     coverage = session.name != "tests-nocoverage"
     run_tests(session, extras=extras, coverage=coverage, build_args=build_args)
 
@@ -87,9 +85,7 @@ def run_tests(
 
     install_args = []
     if build_args:
-        install_args.append(
-            f"--config-settings=build-args={' '.join(build_args)}"
-        )
+        install_args.append(f'--config-settings=build-args={" ".join(build_args)}')
     install_args.append(f".[{extras}]")
     install(session, *install_args)
 
