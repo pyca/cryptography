@@ -24,6 +24,9 @@ openssl-sys.workspace = true
 foreign-types-shared = "0.1"
 self_cell = "1"
 
+[build-dependencies]
+pyo3-build-config.workspace = true
+
 [features]
 extension-module = ["pyo3/extension-module"]
 default = ["extension-module"]

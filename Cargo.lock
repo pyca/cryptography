@@ -121,6 +121,7 @@ dependencies = [
  "openssl-sys",
  "pem",
  "pyo3",
+ "pyo3-build-config",
  "self_cell",
 ]
 
