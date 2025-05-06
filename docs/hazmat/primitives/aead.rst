@@ -90,6 +90,13 @@ also support providing integrity for associated data which is not encrypted.
 
     .. versionadded:: 2.0
 
+    .. note::
+
+        This class only supports 128-bit tags. If you need tag truncation
+        (which is generally **not recommended**) you should use the
+        :class:`~cryptography.hazmat.primitives.ciphers.modes.GCM` class
+        with :class:`~cryptography.hazmat.primitives.ciphers.Cipher`.
+
     The AES-GCM construction is composed of the
     :class:`~cryptography.hazmat.primitives.ciphers.algorithms.AES` block
     cipher utilizing Galois Counter Mode (GCM).
