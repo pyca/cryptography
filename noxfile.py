@@ -56,10 +56,22 @@ def tests(session: nox.Session) -> None:
     if session.name == "tests-randomorder":
         extras += ",test-randomorder"
 
+    build_args = ("--profile=dev",) if session.name == "tests-rust-debug" else ()
+    coverage = session.name != "tests-nocoverage"
+    run_tests(session, extras=extras, coverage=coverage, build_args=build_args)
+
+
+def run_tests(
+    session: nox.Session,
+    *,
+    extras: str = "test",
+    coverage: bool = True,
+    build_args: tuple[str, ...] = (),
+) -> None:
     prof_location = (
         pathlib.Path(".") / ".rust-cov" / str(uuid.uuid4())
     ).absolute()
-    if session.name != "tests-nocoverage":
+    if coverage:
         rustflags = os.environ.get("RUSTFLAGS", "")
         assert rustflags is not None
         session.env.update(
@@ -70,34 +82,29 @@ def tests(session: nox.Session) -> None:
         )
 
     install(session, "-e", "./vectors")
-    if session.name == "tests-rust-debug":
-        install(
-            session,
-            "--config-settings=build-args=--profile=dev",
-            f".[{extras}]",
-        )
-    else:
-        install(session, f".[{extras}]")
+
+    install_args = []
+    if build_args:
+        install_args.append(f'--config-settings=build-args={" ".join(build_args)}')
+    install_args.append(f".[{extras}]")
+    install(session, *install_args)
 
     if session.venv_backend == "uv":
         session.run("uv", "pip", "list")
     else:
         session.run("pip", "list")
 
-    if session.name != "tests-nocoverage":
-        cov_args = [
+    cov_args = (
+        [
             "--cov=cryptography",
             "--cov=tests",
             "--cov-context=test",
         ]
-    else:
-        cov_args = []
+        if coverage
+        else []
+    )
 
-    if session.posargs:
-        tests = session.posargs
-    else:
-        tests = ["tests/"]
-
+    test_paths = session.posargs or ["tests/"]
     session.run(
         "pytest",
         "-n",
@@ -105,15 +112,25 @@ def tests(session: nox.Session) -> None:
         "--dist=worksteal",
         *cov_args,
         "--durations=10",
-        *tests,
+        *test_paths,
     )
 
-    if session.name != "tests-nocoverage":
+    if coverage:
         [rust_so] = glob.glob(
             f"{session.virtualenv.location}/lib/**/cryptography/hazmat/bindings/_rust.*",
             recursive=True,
         )
         process_rust_coverage(session, [rust_so], prof_location)
+
+
+@nox.session(name="tests-abi3-py311")
+def tests_abi3_py311(session: nox.Session) -> None:
+    run_tests(
+        session,
+        extras="test",
+        coverage=True,
+        build_args=("--features=pyo3/abi3-py311",),
+    )
 
 
 @nox.session
