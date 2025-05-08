@@ -230,7 +230,7 @@ ruff==0.11.8
     # via cryptography (pyproject.toml)
 six==1.17.0 ; python_full_version < '3.8'
     # via bleach
-snowballstemmer==2.2.0
+snowballstemmer==3.0.0
     # via sphinx
 sphinx==5.3.0 ; python_full_version < '3.8'
     # via
