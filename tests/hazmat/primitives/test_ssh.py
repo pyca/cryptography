@@ -1285,7 +1285,7 @@ class TestSSHCertificate:
                 "these aren't bytes"  # type:ignore[arg-type]
             )
 
-    def test_load_ssh_public_key(self, backend):
+    def test_load_ssh_public_key(self):
         # This test will be removed when we implement load_ssh_public_key
         # in terms of load_ssh_public_identity. Needed for coverage now.
         pub_data = load_vectors_from_file(
@@ -1354,11 +1354,11 @@ class TestSSHCertificate:
         with pytest.raises(ValueError):
             load_ssh_public_identity(data)
 
-    def test_invalid_line_format(self, backend):
+    def test_invalid_line_format(self):
         with pytest.raises(ValueError):
             load_ssh_public_identity(b"whaaaaaaaaaaat")
 
-    def test_invalid_b64(self, backend):
+    def test_invalid_b64(self):
         with pytest.raises(ValueError):
             load_ssh_public_identity(b"ssh-rsa-cert-v01@openssh.com invalid")
 
@@ -1381,7 +1381,7 @@ class TestSSHCertificate:
                 b"+FxCje1GpAAAAIGf9opl4YoC5XcO92WMFEwUdE3jUQtBg3GRQlXBqFcoL"
             )
 
-    def test_loads_a_cert_empty_principals(self, backend):
+    def test_loads_a_cert_empty_principals(self):
         data = load_vectors_from_file(
             os.path.join(
                 "asymmetric",
@@ -1398,7 +1398,7 @@ class TestSSHCertificate:
         assert cert.extensions == {}
         assert cert.critical_options == {}
 
-    def test_public_bytes(self, backend):
+    def test_public_bytes(self):
         data = load_vectors_from_file(
             os.path.join(
                 "asymmetric",
