@@ -33,6 +33,7 @@ private key is able to decrypt it.
     dsa
     serialization
     utils
+    cloudhsm
 
 
 .. _`proof of identity`: https://en.wikipedia.org/wiki/Public-key_infrastructure
