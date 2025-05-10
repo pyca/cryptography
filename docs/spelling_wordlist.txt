@@ -19,6 +19,7 @@ Bullseye
 Capitan
 Carmichael
 CentOS
+cetera
 changelog
 Changelog
 ciphertext
