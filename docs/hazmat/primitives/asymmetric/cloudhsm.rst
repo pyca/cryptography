@@ -54,16 +54,18 @@ if you only need a subset of functionality.
     ...         between the way your cloud provider represents padding and algorithms
     ...         and the way cryptography represents them.
     ...         """
-    ...         # Map cryptography padding/algorithm to KMS signing algorithm
-    ...         kms_algorithm = self._map_to_kms_algorithm(padding, algorithm)
     ...
     ...         # Hash the data if necessary
     ...         if not isinstance(algorithm, utils.Prehashed):
     ...             h = hashes.Hash(algorithm)
     ...             h.update(data)
     ...             digest = h.finalize()
+    ...             hash_alg = algorithm
     ...         else:
     ...             digest = data
+    ...             hash_alg = algorithm._algorithm
+    ...         # Map cryptography padding/algorithm to KMS signing algorithm
+    ...         kms_algorithm = self._map_to_kms_algorithm(padding, hash_alg)
     ...
     ...         # Call KMS API to sign the digest
     ...         response = self._cloud_client.sign(
@@ -118,7 +120,7 @@ if you only need a subset of functionality.
     ...         raise NotImplementedError()
     ...
     ...     def __copy__(self) -> "CloudRSAPrivateKey":
-    ...         raise NotImplementedError()
+    ...         return self
     ...
     >>> cloud_private_key = CloudRSAPrivateKey("creds", "key_id")
     >>> sig = cloud_private_key.sign(b"message", PKCS1v15(), hashes.SHA256())
