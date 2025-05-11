@@ -1,6 +1,6 @@
 .. hazmat::
 
-Cloud KMS and HSM asymmetric backends
+Cloud KMS and HSM Asymmetric Keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. testsetup::
@@ -24,7 +24,7 @@ Cloud KMS and HSM asymmetric backends
             return 2048
 
 ``cryptography`` provides a set of abstract base classes for asymmetric keys
-that can be used to integrate with cloud key management services, HSMs, et cetera.
+that can be used to integrate with cloud key management services, HSMs, and other ways of managing keys that are not in-memory.
 A minimal example with a hypothetical cloud key management service for an RSA
 key is provided below, but this works for all asymmetric types. You must provide
 all methods of the base class, but many methods can be stubs with no implementation
@@ -125,7 +125,7 @@ if you only need a subset of functionality.
     >>> isinstance(sig, bytes)
     True
 
-This key can then be used with other parts of the library, such as the X.509 APIs.
+This key can then be used with other parts of ``cryptography``, such as the X.509 APIs.
 In the example below we assume that we are using our cloud private key to sign
 a leaf certificate (not self-signed).
 
