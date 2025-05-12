@@ -3642,14 +3642,7 @@ class TestCertificateBuilder:
         if not backend.signature_hash_supported(hashalg()):
             pytest.skip(f"{hashalg} signature not supported")
 
-        h = hashes.Hash(hashalg())
-        h.update(b"test_build_cert_with_deterministic_ecdsa_signature.issuer")
-        private_value = int.from_bytes(h.finalize(), "big")
-        issuer_private_key = ec.derive_private_key(private_value, curve())
-        h = hashes.Hash(hashalg())
-        h.update(b"test_build_cert_with_deterministic_ecdsa_signature.subject")
-        private_value = int.from_bytes(h.finalize(), "big")
-        subject_private_key = ec.derive_private_key(private_value, curve())
+        private_key = ec.generate_private_key(curve())
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -3663,7 +3656,7 @@ class TestCertificateBuilder:
             .subject_name(
                 x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
             )
-            .public_key(subject_private_key.public_key())
+            .public_key(private_key.public_key())
             .add_extension(
                 x509.BasicConstraints(ca=False, path_length=None),
                 True,
@@ -3676,24 +3669,24 @@ class TestCertificateBuilder:
             .not_valid_after(not_valid_after)
         )
         cert1 = builder.sign(
-            issuer_private_key,
+            private_key,
             hashalg(),
             backend,
             ecdsa_deterministic_signing=True,
         )
         cert2 = builder.sign(
-            issuer_private_key,
+            private_key,
             hashalg(),
             backend,
             ecdsa_deterministic_signing=True,
         )
-        cert_nondet = builder.sign(issuer_private_key, hashalg(), backend)
+        cert_nondet = builder.sign(private_key, hashalg(), backend)
 
         cert1_bytes = cert1.public_bytes(Encoding.DER)
         assert cert1_bytes == cert2.public_bytes(Encoding.DER)
         assert cert1_bytes != cert_nondet.public_bytes(Encoding.DER)
 
-        issuer_private_key.public_key().verify(
+        private_key.public_key().verify(
             cert1.signature, cert1.tbs_certificate_bytes, ec.ECDSA(hashalg())
         )
 
@@ -4617,10 +4610,7 @@ class TestCertificateRevocationListBuilder:
         if not backend.signature_hash_supported(hashalg()):
             pytest.skip(f"{hashalg} signature not supported")
 
-        h = hashes.Hash(hashalg())
-        h.update(b"test_build_crl_with_deterministic_ecdsa_signature.issuer")
-        private_value = int.from_bytes(h.finalize(), "big")
-        private_key = ec.derive_private_key(private_value, curve())
+        private_key = ec.generate_private_key(curve())
 
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
