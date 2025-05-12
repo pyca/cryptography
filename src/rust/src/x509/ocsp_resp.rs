@@ -834,7 +834,7 @@ pub(crate) fn create_ocsp_response(
         private_key.clone(),
         hash_algorithm.clone(),
         py.None().into_bound(py),
-        false,
+        None,
         &tbs_bytes,
     )?;
 

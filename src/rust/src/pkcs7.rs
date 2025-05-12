@@ -517,7 +517,7 @@ fn sign_and_serialize<'p>(
                         py_private_key.clone(),
                         py_hash_alg.clone(),
                         rsa_padding.clone(),
-                        false,
+                        None,
                         &data_with_header,
                     )?,
                 )
@@ -567,7 +567,7 @@ fn sign_and_serialize<'p>(
                         py_private_key.clone(),
                         py_hash_alg.clone(),
                         rsa_padding.clone(),
-                        false,
+                        None,
                         &signed_data,
                     )?,
                 )

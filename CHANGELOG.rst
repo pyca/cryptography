@@ -70,7 +70,7 @@ Changelog
 * Added :func:`~cryptography.hazmat.primitives.serialization.ssh_key_fingerprint`
   for computing fingerprints of SSH public keys.
 * Added support for deterministic ECDSA signing via the new keyword-only argument
-  ``ecdsa_deterministic_signing`` in :meth:`~cryptography.x509.CertificateBuilder.sign`,
+  ``ecdsa_deterministic`` in :meth:`~cryptography.x509.CertificateBuilder.sign`,
   :meth:`~cryptography.x509.CertificateRevocationListBuilder.sign`
   and :meth:`~cryptography.x509.CertificateSigningRequestBuilder.sign`.
 

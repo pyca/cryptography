@@ -1010,7 +1010,7 @@ X.509 Certificate Builder
 
         :return: A new :class:`CertificateBuilder` with the additional extension.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         Sign the certificate using the CA's private key.
 
@@ -1045,15 +1045,19 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
 
-        :param bool ecdsa_deterministic_signing:
+        :param ecdsa_deterministic:
 
             .. versionadded:: 45.0.0
 
-            A boolean flag defaulting to ``False`` that specifies whether the
-            signing procedure should be deterministic or not, as defined in
-            :rfc:`6979`. This only impacts the signing process, verification is
-            not affected (the verification process is the same for both
-            deterministic and non-deterministic signed messages).
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: :class:`~cryptography.x509.Certificate`
 
@@ -1295,7 +1299,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         Sign this CRL using the CA's private key.
 
@@ -1330,15 +1334,19 @@ X.509 Certificate Revocation List Builder
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
 
-        :param bool ecdsa_deterministic_signing:
+        :param ecdsa_deterministic:
 
             .. versionadded:: 45.0.0
 
-            A boolean flag defaulting to ``False`` that specifies whether the
-            signing procedure should be deterministic or not, as defined in
-            :rfc:`6979`. This only impacts the signing process, verification is
-            not affected (the verification process is the same for both
-            deterministic and non-deterministic signed messages).
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: :class:`~cryptography.x509.CertificateRevocationList`
 
@@ -1518,7 +1526,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic_signing=False)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         :param private_key: The private key
             that will be used to sign the request.  When the request is
@@ -1553,15 +1561,19 @@ X.509 CSR (Certificate Signing Request) Builder Object
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
 
-        :param bool ecdsa_deterministic_signing:
+        :param ecdsa_deterministic:
 
             .. versionadded:: 45.0.0
 
-            A boolean flag defaulting to ``False`` that specifies whether the
-            signing procedure should be deterministic or not, as defined in
-            :rfc:`6979`. This only impacts the signing process, verification is
-            not affected (the verification process is the same for both
-            deterministic and non-deterministic signed messages).
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.

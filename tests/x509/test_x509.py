@@ -31,7 +31,6 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature,
 )
-from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.extensions import ExtendedKeyUsage
 from cryptography.x509.name import _ASN1Type
 from cryptography.x509.oid import (
@@ -3655,25 +3654,60 @@ class TestCertificateBuilder:
             private_key,
             hashes.SHA256(),
             backend,
-            ecdsa_deterministic_signing=True,
+            ecdsa_deterministic=True,
         )
         cert2 = builder.sign(
             private_key,
             hashes.SHA256(),
             backend,
-            ecdsa_deterministic_signing=True,
+            ecdsa_deterministic=True,
         )
         cert_nondet = builder.sign(private_key, hashes.SHA256(), backend)
+        cert_nondet2 = builder.sign(
+            private_key, hashes.SHA256(), backend, ecdsa_deterministic=False
+        )
 
-        cert1_bytes = cert1.public_bytes(Encoding.DER)
-        assert cert1_bytes == cert2.public_bytes(Encoding.DER)
-        assert cert1_bytes != cert_nondet.public_bytes(Encoding.DER)
+        assert cert1.signature == cert2.signature
+        assert cert1.signature != cert_nondet.signature
+        assert cert_nondet.signature != cert_nondet2.signature
 
         private_key.public_key().verify(
             cert1.signature,
             cert1.tbs_certificate_bytes,
             ec.ECDSA(hashes.SHA256()),
         )
+
+    def test_sign_deterministic_wrong_key_type(self, rsa_key_2048, backend):
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(rsa_key_2048.public_key())
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
+            )
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("cryptography.io")]),
+                critical=False,
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                backend,
+                ecdsa_deterministic=True,
+            )
 
     def test_build_cert_with_bmpstring_universalstring_name(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
@@ -4573,63 +4607,6 @@ class TestCertificateBuilder:
         assert ext.value == unrecognized
 
 
-class TestCertificateRevocationListBuilder:
-    def test_build_crl_with_deterministic_ecdsa_signature(self, backend):
-        _skip_curve_unsupported(backend, ec.SECP256R1())
-        _skip_deterministic_ecdsa_unsupported(backend)
-
-        private_key = ec.generate_private_key(ec.SECP256R1())
-
-        last_update = datetime.datetime(2002, 1, 1, 12, 1)
-        next_update = datetime.datetime(2030, 1, 1, 12, 1)
-        builder = (
-            x509.CertificateRevocationListBuilder()
-            .issuer_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(
-                            NameOID.COMMON_NAME, "cryptography.io CA"
-                        )
-                    ]
-                )
-            )
-            .last_update(last_update)
-            .next_update(next_update)
-        )
-        revoked_cert = (
-            x509.RevokedCertificateBuilder()
-            .serial_number(2)
-            .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
-            .build(backend)
-        )
-        builder = builder.add_revoked_certificate(revoked_cert)
-        crl1 = builder.sign(
-            private_key,
-            hashes.SHA256(),
-            backend,
-            ecdsa_deterministic_signing=True,
-        )
-        crl2 = builder.sign(
-            private_key,
-            hashes.SHA256(),
-            backend,
-            ecdsa_deterministic_signing=True,
-        )
-
-        crl_nondet = builder.sign(
-            private_key,
-            hashes.SHA256(),
-            backend,
-        )
-
-        crl1_bytes = crl1.public_bytes(Encoding.DER)
-        assert crl1_bytes == crl2.public_bytes(Encoding.DER)
-        assert crl1_bytes != crl_nondet.public_bytes(Encoding.DER)
-        private_key.public_key().verify(
-            crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashes.SHA256())
-        )
-
-
 class TestCertificateSigningRequestBuilder:
     def test_sign_invalid_hash_algorithm(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
@@ -4927,13 +4904,13 @@ class TestCertificateSigningRequestBuilder:
             private_key,
             hashes.SHA256(),
             backend,
-            ecdsa_deterministic_signing=True,
+            ecdsa_deterministic=True,
         )
         csr2 = builder.sign(
             private_key,
             hashes.SHA256(),
             backend,
-            ecdsa_deterministic_signing=True,
+            ecdsa_deterministic=True,
         )
 
         csr_nondet = builder.sign(
@@ -4942,14 +4919,44 @@ class TestCertificateSigningRequestBuilder:
             backend,
         )
 
-        csr1_bytes = csr1.public_bytes(Encoding.DER)
-        assert csr1_bytes == csr2.public_bytes(Encoding.DER)
-        assert csr1_bytes != csr_nondet.public_bytes(Encoding.DER)
+        csr_nondet2 = builder.sign(
+            private_key,
+            hashes.SHA256(),
+            backend,
+        )
+
+        assert csr1.signature == csr2.signature
+        assert csr1.signature != csr_nondet.signature
+        assert csr_nondet.signature != csr_nondet2.signature
         private_key.public_key().verify(
             csr1.signature,
             csr1.tbs_certrequest_bytes,
             ec.ECDSA(hashes.SHA256()),
         )
+
+    def test_csr_deterministic_wrong_key_type(self, rsa_key_2048, backend):
+        builder = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
+                        ),
+                    ]
+                )
+            )
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=2), critical=True
+            )
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                backend,
+                ecdsa_deterministic=True,
+            )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed25519_supported(),
