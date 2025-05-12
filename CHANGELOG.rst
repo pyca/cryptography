@@ -3,10 +3,8 @@ Changelog
 
 .. _v45-0-0:
 
-45.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+45.0.0 - 2025-05-17
+~~~~~~~~~~~~~~~~~~~
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
