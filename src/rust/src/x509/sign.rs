@@ -285,7 +285,7 @@ pub(crate) fn sign_data<'p>(
     private_key: pyo3::Bound<'p, pyo3::PyAny>,
     hash_algorithm: pyo3::Bound<'p, pyo3::PyAny>,
     rsa_padding: pyo3::Bound<'p, pyo3::PyAny>,
-    ecdsa_deterministic_signing: pyo3::Bound<'p, pyo3::PyAny>,
+    ecdsa_deterministic_signing: bool,
     data: &[u8],
 ) -> pyo3::PyResult<PyBackedBytes> {
     let key_type = identify_key_type(py, private_key.clone())?;

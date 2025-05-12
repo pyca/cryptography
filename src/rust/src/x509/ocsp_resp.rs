@@ -8,8 +8,7 @@ use cryptography_x509::ocsp_resp::{
     self, OCSPResponse as RawOCSPResponse, SingleResponse, SingleResponse as RawSingleResponse,
 };
 use cryptography_x509::{common, oid};
-use pyo3::types::{PyAnyMethods, PyBool, PyBytesMethods, PyListMethods};
-use pyo3::BoundObject;
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -835,7 +834,7 @@ pub(crate) fn create_ocsp_response(
         private_key.clone(),
         hash_algorithm.clone(),
         py.None().into_bound(py),
-        PyBool::new(py, false).into_bound().into_any(),
+        false,
         &tbs_bytes,
     )?;
 
