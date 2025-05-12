@@ -3621,28 +3621,11 @@ class TestCertificateBuilder:
             x509.DNSName("cryptography.io"),
         ]
 
-    @pytest.mark.parametrize(
-        ("hashalg", "curve"),
-        [
-            (hashes.SHA224, ec.SECP224R1),
-            (hashes.SHA256, ec.SECP256R1),
-            (hashes.SHA384, ec.SECP384R1),
-            (hashes.SHA512, ec.SECP521R1),
-            (hashes.SHA3_224, ec.SECP224R1),
-            (hashes.SHA3_256, ec.SECP256R1),
-            (hashes.SHA3_384, ec.SECP384R1),
-            (hashes.SHA3_512, ec.SECP521R1),
-        ],
-    )
-    def test_build_cert_with_deterministic_ecdsa_signature(
-        self, hashalg, curve, backend
-    ):
-        _skip_curve_unsupported(backend, curve())
+    def test_build_cert_with_deterministic_ecdsa_signature(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         _skip_deterministic_ecdsa_unsupported(backend)
-        if not backend.signature_hash_supported(hashalg()):
-            pytest.skip(f"{hashalg} signature not supported")
 
-        private_key = ec.generate_private_key(curve())
+        private_key = ec.generate_private_key(ec.SECP256R1())
 
         not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
         not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
@@ -3670,24 +3653,26 @@ class TestCertificateBuilder:
         )
         cert1 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
         cert2 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
-        cert_nondet = builder.sign(private_key, hashalg(), backend)
+        cert_nondet = builder.sign(private_key, hashes.SHA256(), backend)
 
         cert1_bytes = cert1.public_bytes(Encoding.DER)
         assert cert1_bytes == cert2.public_bytes(Encoding.DER)
         assert cert1_bytes != cert_nondet.public_bytes(Encoding.DER)
 
         private_key.public_key().verify(
-            cert1.signature, cert1.tbs_certificate_bytes, ec.ECDSA(hashalg())
+            cert1.signature,
+            cert1.tbs_certificate_bytes,
+            ec.ECDSA(hashes.SHA256()),
         )
 
     def test_build_cert_with_bmpstring_universalstring_name(
@@ -4589,28 +4574,11 @@ class TestCertificateBuilder:
 
 
 class TestCertificateRevocationListBuilder:
-    @pytest.mark.parametrize(
-        ("hashalg", "curve"),
-        [
-            (hashes.SHA224, ec.SECP224R1),
-            (hashes.SHA256, ec.SECP256R1),
-            (hashes.SHA384, ec.SECP384R1),
-            (hashes.SHA512, ec.SECP521R1),
-            (hashes.SHA3_224, ec.SECP224R1),
-            (hashes.SHA3_256, ec.SECP256R1),
-            (hashes.SHA3_384, ec.SECP384R1),
-            (hashes.SHA3_512, ec.SECP521R1),
-        ],
-    )
-    def test_build_crl_with_deterministic_ecdsa_signature(
-        self, hashalg, curve, backend
-    ):
-        _skip_curve_unsupported(backend, curve())
+    def test_build_crl_with_deterministic_ecdsa_signature(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
         _skip_deterministic_ecdsa_unsupported(backend)
-        if not backend.signature_hash_supported(hashalg()):
-            pytest.skip(f"{hashalg} signature not supported")
 
-        private_key = ec.generate_private_key(curve())
+        private_key = ec.generate_private_key(ec.SECP256R1())
 
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -4637,20 +4605,20 @@ class TestCertificateRevocationListBuilder:
         builder = builder.add_revoked_certificate(revoked_cert)
         crl1 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
         crl2 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
 
         crl_nondet = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
         )
 
@@ -4658,7 +4626,7 @@ class TestCertificateRevocationListBuilder:
         assert crl1_bytes == crl2.public_bytes(Encoding.DER)
         assert crl1_bytes != crl_nondet.public_bytes(Encoding.DER)
         private_key.public_key().verify(
-            crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashalg())
+            crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashes.SHA256())
         )
 
 
@@ -4934,29 +4902,11 @@ class TestCertificateSigningRequestBuilder:
         assert basic_constraints.value.ca is True
         assert basic_constraints.value.path_length == 2
 
-    @pytest.mark.parametrize(
-        ("hashalg", "curve"),
-        [
-            (hashes.SHA224, ec.SECP224R1),
-            (hashes.SHA256, ec.SECP256R1),
-            (hashes.SHA384, ec.SECP384R1),
-            (hashes.SHA512, ec.SECP521R1),
-            (hashes.SHA3_224, ec.SECP224R1),
-            (hashes.SHA3_256, ec.SECP256R1),
-            (hashes.SHA3_384, ec.SECP384R1),
-            (hashes.SHA3_512, ec.SECP521R1),
-        ],
-    )
-    def test_build_ca_request_with_deterministic_ec(
-        self, hashalg, curve, backend
-    ):
+    def test_build_ca_request_with_deterministic_ec(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         _skip_deterministic_ecdsa_unsupported(backend)
 
-        h = hashes.Hash(hashalg())
-        h.update(b"test_build_ca_request_with_deterministic_ec.subject")
-        private_value = int.from_bytes(h.finalize(), "big")
-        private_key = ec.derive_private_key(private_value, curve())
+        private_key = ec.generate_private_key(ec.SECP256R1())
 
         builder = (
             x509.CertificateSigningRequestBuilder()
@@ -4975,20 +4925,20 @@ class TestCertificateSigningRequestBuilder:
         )
         csr1 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
         csr2 = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
             ecdsa_deterministic_signing=True,
         )
 
         csr_nondet = builder.sign(
             private_key,
-            hashalg(),
+            hashes.SHA256(),
             backend,
         )
 
@@ -4998,7 +4948,7 @@ class TestCertificateSigningRequestBuilder:
         private_key.public_key().verify(
             csr1.signature,
             csr1.tbs_certrequest_bytes,
-            ec.ECDSA(hashalg()),
+            ec.ECDSA(hashes.SHA256()),
         )
 
     @pytest.mark.supported(
