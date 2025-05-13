@@ -91,7 +91,7 @@ jobs:
         with:
           branch: "bump-openssl-boringssl"
           commit-message: "Bump BoringSSL, OpenSSL, AWS-LC in CI"
-          title: "Bump BoringSSL and/or OpenSSL in CI"
+          title: "Bump BoringSSL, OpenSSL, AWS-LC in CI"
           author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
           body: |
             ${{ steps.check-sha-boring.outputs.COMMIT_MSG }}
