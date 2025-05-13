@@ -25,7 +25,10 @@ from cryptography.x509.oid import (
 
 from ..hazmat.primitives.fixtures_dsa import DSA_KEY_2048
 from ..hazmat.primitives.fixtures_ec import EC_KEY_SECP256R1
-from ..hazmat.primitives.test_ec import _skip_curve_unsupported
+from ..hazmat.primitives.test_ec import (
+    _skip_curve_unsupported,
+    _skip_deterministic_ecdsa_unsupported,
+)
 from ..hazmat.primitives.test_rsa import rsa_key_512, rsa_key_2048
 from .test_x509 import DummyExtension
 
@@ -969,3 +972,69 @@ class TestCertificateRevocationListBuilder:
             .value
             == ci
         )
+
+    def test_build_crl_with_deterministic_ecdsa_signature(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        _skip_deterministic_ecdsa_unsupported(backend)
+
+        private_key = ec.generate_private_key(ec.SECP256R1())
+
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(x509.Name([]))
+            .last_update(last_update)
+            .next_update(next_update)
+        )
+        crl1 = builder.sign(
+            private_key,
+            hashes.SHA256(),
+            backend,
+            ecdsa_deterministic=True,
+        )
+        crl2 = builder.sign(
+            private_key,
+            hashes.SHA256(),
+            backend,
+            ecdsa_deterministic=True,
+        )
+
+        crl_nondet = builder.sign(
+            private_key,
+            hashes.SHA256(),
+            backend,
+        )
+
+        crl_nondet2 = builder.sign(
+            private_key,
+            hashes.SHA256(),
+            backend,
+            ecdsa_deterministic=False,
+        )
+
+        assert crl1.signature == crl2.signature
+        assert crl1.signature != crl_nondet.signature
+        assert crl_nondet.signature != crl_nondet2.signature
+        private_key.public_key().verify(
+            crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashes.SHA256())
+        )
+
+    def test_deterministic_signature_wrong_key_type(
+        self, rsa_key_2048, backend
+    ):
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(x509.Name([]))
+            .last_update(last_update)
+            .next_update(next_update)
+        )
+        with pytest.raises(TypeError):
+            builder.sign(
+                rsa_key_2048,
+                hashes.SHA256(),
+                backend,
+                ecdsa_deterministic=True,
+            )

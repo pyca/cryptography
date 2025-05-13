@@ -885,7 +885,7 @@ X.509 Certificate Builder
     :canonical: cryptography.x509.base.CertificateBuilder
 
     .. versionadded:: 1.0
-    
+
     .. note::
        All methods, except :meth:`sign`, return a **new** CertificateBuilder
        instance with the corresponding updated value. They do not modify the
@@ -936,7 +936,7 @@ X.509 Certificate Builder
 
         :param name: The :class:`~cryptography.x509.Name` that describes the
             issuer (CA).
-        
+
         :return: A new :class:`CertificateBuilder` with the updated issuer name.
 
     .. method:: subject_name(name)
@@ -945,7 +945,7 @@ X.509 Certificate Builder
 
         :param name: The :class:`~cryptography.x509.Name` that describes the
             subject.
-        
+
         :return: A new :class:`CertificateBuilder` with the updated subject name.
 
     .. method:: public_key(public_key)
@@ -954,7 +954,7 @@ X.509 Certificate Builder
 
         :param public_key: The subject's public key. This can be one of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
-        
+
         :return: A new :class:`CertificateBuilder` with the updated public key.
 
     .. method:: serial_number(serial_number)
@@ -971,7 +971,7 @@ X.509 Certificate Builder
             identify this certificate (most notably during certificate
             revocation checking). Users should consider using
             :func:`~cryptography.x509.random_serial_number` when possible.
-        
+
         :return: A new :class:`CertificateBuilder` with the updated serial number.
 
     .. method:: not_valid_before(time)
@@ -983,7 +983,7 @@ X.509 Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             activation time for the certificate.  The certificate may not be
             trusted clients if it is used before this time.
-        
+
         :return: A new :class:`CertificateBuilder` with the updated activation time.
 
     .. method:: not_valid_after(time)
@@ -995,7 +995,7 @@ X.509 Certificate Builder
         :param time: The :class:`datetime.datetime` object (in UTC) that marks the
             expiration time for the certificate.  The certificate may not be
             trusted clients if it is used after this time.
-        
+
         :return: A new :class:`CertificateBuilder` with the updated expiration time.
 
     .. method:: add_extension(extval, critical)
@@ -1007,10 +1007,10 @@ X.509 Certificate Builder
 
         :param critical: Set to ``True`` if the extension must be understood and
              handled by whoever reads the certificate.
-        
+
         :return: A new :class:`CertificateBuilder` with the additional extension.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         Sign the certificate using the CA's private key.
 
@@ -1044,6 +1044,20 @@ X.509 Certificate Builder
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param ecdsa_deterministic:
+
+            .. versionadded:: 45.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: :class:`~cryptography.x509.Certificate`
 
@@ -1285,7 +1299,7 @@ X.509 Certificate Revocation List Builder
             obtained from an existing CRL or created with
             :class:`~cryptography.x509.RevokedCertificateBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         Sign this CRL using the CA's private key.
 
@@ -1319,6 +1333,20 @@ X.509 Certificate Revocation List Builder
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param ecdsa_deterministic:
+
+            .. versionadded:: 45.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: :class:`~cryptography.x509.CertificateRevocationList`
 
@@ -1498,7 +1526,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
-    .. method:: sign(private_key, algorithm, *, rsa_padding=None)
+    .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         :param private_key: The private key
             that will be used to sign the request.  When the request is
@@ -1532,6 +1560,20 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :type rsa_padding: ``None``,
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`,
             or :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+
+        :param ecdsa_deterministic:
+
+            .. versionadded:: 45.0.0
+
+            This is a keyword-only argument. If ``private_key`` is an
+            ``EllipticCurvePrivateKey`` then this can be set to true to
+            use deterministic signing, as defined in :rfc:`6979`. This only
+            impacts the signing process, verification is not affected
+            (the verification process is the same for both
+            deterministic and non-deterministic signed messages). All other
+            key types **must** not pass a value other than ``None``.
+
+        :type ecdsa_deterministic: ``None``, ``bool``
 
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.
@@ -2541,7 +2583,7 @@ X.509 Extensions
       :return: A ``bytes`` object containing the encoded extension.
 
     .. attribute:: oid
-        
+
         :type: :class:`ObjectIdentifier`
 
         Returns
