@@ -90,7 +90,7 @@ jobs:
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           branch: "bump-openssl-boringssl"
-          commit-message: "Bump BoringSSL and/or OpenSSL in CI"
+          commit-message: "Bump BoringSSL, OpenSSL, AWS-LC in CI"
           title: "Bump BoringSSL and/or OpenSSL in CI"
           author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
           body: |
