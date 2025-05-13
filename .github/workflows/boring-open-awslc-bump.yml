@@ -85,7 +85,7 @@ jobs:
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
-        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
+        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA || steps.check-tag-aws-lc.outputs.NEW_TAG
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
