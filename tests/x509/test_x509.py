@@ -3632,12 +3632,8 @@ class TestCertificateBuilder:
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
-            .issuer_name(
-                x509.Name([])
-            )
-            .subject_name(
-                x509.Name([])
-            )
+            .issuer_name(x509.Name([]))
+            .subject_name(x509.Name([]))
             .public_key(private_key.public_key())
             .not_valid_before(not_valid_before)
             .not_valid_after(not_valid_after)
@@ -3675,12 +3671,8 @@ class TestCertificateBuilder:
         builder = (
             x509.CertificateBuilder()
             .serial_number(777)
-            .issuer_name(
-                x509.Name([])
-            )
-            .subject_name(
-                x509.Name([])
-            )
+            .issuer_name(x509.Name([]))
+            .subject_name(x509.Name([]))
             .public_key(rsa_key_2048.public_key())
             .not_valid_before(not_valid_before)
             .not_valid_after(not_valid_after)
@@ -4869,11 +4861,8 @@ class TestCertificateSigningRequestBuilder:
 
         private_key = ec.generate_private_key(ec.SECP256R1())
 
-        builder = (
-            x509.CertificateSigningRequestBuilder()
-            .subject_name(
-                x509.Name([])
-            )
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([])
         )
         csr1 = builder.sign(
             private_key,
@@ -4910,11 +4899,8 @@ class TestCertificateSigningRequestBuilder:
         )
 
     def test_csr_deterministic_wrong_key_type(self, rsa_key_2048, backend):
-        builder = (
-            x509.CertificateSigningRequestBuilder()
-            .subject_name(
-                x509.Name([])
-            )
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([])
         )
         with pytest.raises(TypeError):
             builder.sign(

@@ -983,9 +983,7 @@ class TestCertificateRevocationListBuilder:
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
             x509.CertificateRevocationListBuilder()
-            .issuer_name(
-                x509.Name([])
-            )
+            .issuer_name(x509.Name([]))
             .last_update(last_update)
             .next_update(next_update)
         )
@@ -1029,9 +1027,7 @@ class TestCertificateRevocationListBuilder:
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
             x509.CertificateRevocationListBuilder()
-            .issuer_name(
-                x509.Name([])
-            )
+            .issuer_name(x509.Name([]))
             .last_update(last_update)
             .next_update(next_update)
         )
