@@ -1,4 +1,4 @@
-name: Bump BoringSSL and/or OpenSSL
+name: Bump BoringSSL, OpenSSL, AWS-LC
 permissions:
   contents: read
 
@@ -38,6 +38,18 @@ jobs:
             echo -e "## OpenSSL\n[Commit: ${SHA}](https://github.com/openssl/openssl/commit/${SHA})\n\n[Diff](https://github.com/openssl/openssl/compare/${LAST_COMMIT}...${SHA}) between the last commit hash merged to this repository and the new commit." >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
+      - id: check-tag-aws-lc
+        run: |
+          # Get the latest tag from AWS-LC repository
+          LATEST_TAG=$(git ls-remote --tags https://github.com/aws/aws-lc.git | grep -o 'refs/tags/v[0-9\.]*$' | sort -V | tail -1 | sed 's|refs/tags/||')
+          CURRENT_TAG=$(grep aws-lc .github/workflows/ci.yml | grep VERSION | grep -o 'v[0-9\.]*')
+
+          if [ "$LATEST_TAG" != "$CURRENT_TAG" ]; then
+            echo "NEW_TAG=${LATEST_TAG}" >> $GITHUB_OUTPUT
+            echo "COMMIT_MSG<<EOF" >> $GITHUB_OUTPUT
+            echo -e "## AWS-LC\n[Tag: ${LATEST_TAG}](https://github.com/aws/aws-lc/releases/tag/${LATEST_TAG})\n\n[Diff](https://github.com/aws/aws-lc/compare/${CURRENT_TAG}...${LATEST_TAG}) between the previously used tag and the new tag." >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
       - name: Update boring
         run: |
           set -xe
@@ -58,6 +70,16 @@ jobs:
         if: steps.check-sha-openssl.outputs.COMMIT_SHA
         env:
           COMMIT_SHA: ${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}
+      - name: Update AWS-LC
+        run: |
+          set -xe
+          CURRENT_DATE=$(date "+%b %d, %Y")
+          sed -E -i "s/Latest tag of AWS-LC main branch, as of .*/Latest tag of AWS-LC main branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
+          sed -E -i "s/TYPE: \"aws-lc\", VERSION: \"v[0-9\.]*\"/TYPE: \"aws-lc\", VERSION: \"${NEW_TAG}\"/" .github/workflows/ci.yml
+          git status
+        if: steps.check-tag-aws-lc.outputs.NEW_TAG
+        env:
+          NEW_TAG: ${{ steps.check-tag-aws-lc.outputs.NEW_TAG }}
       - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         id: generate-token
         with:
@@ -74,5 +96,6 @@ jobs:
           body: |
             ${{ steps.check-sha-boring.outputs.COMMIT_MSG }}
             ${{ steps.check-sha-openssl.outputs.COMMIT_MSG }}
+            ${{ steps.check-tag-aws-lc.outputs.COMMIT_MSG }}
           token: ${{ steps.generate-token.outputs.token }}
-        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA
+        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA || steps.check-tag-aws-lc.outputs.NEW_TAG
