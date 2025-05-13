@@ -984,24 +984,11 @@ class TestCertificateRevocationListBuilder:
         builder = (
             x509.CertificateRevocationListBuilder()
             .issuer_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(
-                            NameOID.COMMON_NAME, "cryptography.io CA"
-                        )
-                    ]
-                )
+                x509.Name([])
             )
             .last_update(last_update)
             .next_update(next_update)
         )
-        revoked_cert = (
-            x509.RevokedCertificateBuilder()
-            .serial_number(2)
-            .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
-            .build(backend)
-        )
-        builder = builder.add_revoked_certificate(revoked_cert)
         crl1 = builder.sign(
             private_key,
             hashes.SHA256(),
@@ -1043,24 +1030,11 @@ class TestCertificateRevocationListBuilder:
         builder = (
             x509.CertificateRevocationListBuilder()
             .issuer_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(
-                            NameOID.COMMON_NAME, "cryptography.io CA"
-                        )
-                    ]
-                )
+                x509.Name([])
             )
             .last_update(last_update)
             .next_update(next_update)
         )
-        revoked_cert = (
-            x509.RevokedCertificateBuilder()
-            .serial_number(2)
-            .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
-            .build(backend)
-        )
-        builder = builder.add_revoked_certificate(revoked_cert)
         with pytest.raises(TypeError):
             builder.sign(
                 rsa_key_2048,

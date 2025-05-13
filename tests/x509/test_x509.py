@@ -3633,20 +3633,12 @@ class TestCertificateBuilder:
             x509.CertificateBuilder()
             .serial_number(777)
             .issuer_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+                x509.Name([])
             )
             .subject_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+                x509.Name([])
             )
             .public_key(private_key.public_key())
-            .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None),
-                True,
-            )
-            .add_extension(
-                x509.SubjectAlternativeName([x509.DNSName("cryptography.io")]),
-                critical=False,
-            )
             .not_valid_before(not_valid_before)
             .not_valid_after(not_valid_after)
         )
@@ -3684,20 +3676,12 @@ class TestCertificateBuilder:
             x509.CertificateBuilder()
             .serial_number(777)
             .issuer_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+                x509.Name([])
             )
             .subject_name(
-                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+                x509.Name([])
             )
             .public_key(rsa_key_2048.public_key())
-            .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None),
-                True,
-            )
-            .add_extension(
-                x509.SubjectAlternativeName([x509.DNSName("cryptography.io")]),
-                critical=False,
-            )
             .not_valid_before(not_valid_before)
             .not_valid_after(not_valid_after)
         )
@@ -4888,16 +4872,7 @@ class TestCertificateSigningRequestBuilder:
         builder = (
             x509.CertificateSigningRequestBuilder()
             .subject_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(
-                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
-                        ),
-                    ]
-                )
-            )
-            .add_extension(
-                x509.BasicConstraints(ca=True, path_length=2), critical=True
+                x509.Name([])
             )
         )
         csr1 = builder.sign(
@@ -4938,16 +4913,7 @@ class TestCertificateSigningRequestBuilder:
         builder = (
             x509.CertificateSigningRequestBuilder()
             .subject_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(
-                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
-                        ),
-                    ]
-                )
-            )
-            .add_extension(
-                x509.BasicConstraints(ca=True, path_length=2), critical=True
+                x509.Name([])
             )
         )
         with pytest.raises(TypeError):
