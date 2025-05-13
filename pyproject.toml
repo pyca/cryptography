@@ -100,7 +100,6 @@ manifest-path = "src/rust/Cargo.toml"
 module-name = "cryptography.hazmat.bindings._rust"
 locked = true
 sdist-generator = "git"
-features = ["pyo3/abi3-py37"]
 include = [
     "CHANGELOG.rst",
     "CONTRIBUTING.rst",

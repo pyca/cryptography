@@ -49,7 +49,6 @@ def load_pyproject_toml() -> dict:
 @nox.session(name="tests-randomorder")
 @nox.session(name="tests-nocoverage")
 @nox.session(name="tests-rust-debug")
-@nox.session(name="tests-abi3-py311")
 def tests(session: nox.Session) -> None:
     extras = "test"
     if session.name == "tests-ssh":
@@ -75,12 +74,6 @@ def tests(session: nox.Session) -> None:
         install(
             session,
             "--config-settings=build-args=--profile=dev",
-            f".[{extras}]",
-        )
-    elif session.name == "tests-abi3-py311":
-        install(
-            session,
-            "--config-settings=build-args=--features=pyo3/abi3-py311",
             f".[{extras}]",
         )
     else:
