@@ -2,7 +2,7 @@
 # These requirements must be kept sync with the requirements in
 # ./.github/requirements/build-requirements.{in,txt}
 requires = [
-    "maturin>=1,<2",
+    "maturin>=1.8.6,<2",
 
     # Must be kept in sync with `project.dependencies`
     "cffi>=1.14; platform_python_implementation != 'PyPy'",
@@ -100,7 +100,6 @@ manifest-path = "src/rust/Cargo.toml"
 module-name = "cryptography.hazmat.bindings._rust"
 locked = true
 sdist-generator = "git"
-features = ["pyo3/abi3-py37"]
 include = [
     "CHANGELOG.rst",
     "CONTRIBUTING.rst",
