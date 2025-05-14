@@ -73,6 +73,8 @@ Changelog
   ``ecdsa_deterministic`` in :meth:`~cryptography.x509.CertificateBuilder.sign`,
   :meth:`~cryptography.x509.CertificateRevocationListBuilder.sign`
   and :meth:`~cryptography.x509.CertificateSigningRequestBuilder.sign`.
+* Added support for loading elliptic curve keys that contain explicit encodings
+  of the curves ``secp256r1``, ``secp384r1``, ``secp521r1``, and ``secp256k1``.
 
 .. _v44-0-3:
 
