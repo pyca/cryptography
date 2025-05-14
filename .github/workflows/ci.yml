@@ -134,8 +134,6 @@ jobs:
             nox -v --install-only
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          # Needed until https://github.com/PyO3/pyo3/issues/5093
-          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
