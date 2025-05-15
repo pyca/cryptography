@@ -158,7 +158,7 @@ platformdirs==4.3.8 ; python_full_version >= '3.9'
     # via virtualenv
 pluggy==1.2.0 ; python_full_version < '3.8'
     # via pytest
-pluggy==1.5.0 ; python_full_version == '3.8.*'
+pluggy==1.6.0 ; python_full_version == '3.8.*'
     # via pytest
 pluggy==1.6.0 ; python_full_version >= '3.9'
     # via pytest
