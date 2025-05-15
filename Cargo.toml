@@ -21,7 +21,7 @@ rust-version = "1.65.0"
 license = "Apache-2.0 OR BSD-3-Clause"
 
 [workspace.dependencies]
-asn1 = { version = "0.21.1", default-features = false }
+asn1 = { version = "0.21.2", default-features = false }
 pyo3 = { version = "0.25", features = ["abi3"] }
 pyo3-build-config = { version = "0.25" }
 openssl = "0.10.72"
