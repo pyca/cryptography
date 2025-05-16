@@ -141,26 +141,6 @@ Custom asymmetric vectors
 * ``asymmetric/EC/explicit_parameters_wap_wsg_idm_ecid_wtls11_private_key.pem`` -
   Contains an EC private key with over the ``wap-wsg-idm-ecid-wtls11`` curve,
   encoded with explicit parameters.
-* ``asymmetric/EC/secp192r1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp192r1`` curve explicitly encoded and with the seed ommitted.
-* ``asymmetric/EC/secp192r1-pub-explicit-no-seed.pem`` - A public key with the
-  ``secp192r1`` curve explicitly encoded and with the seed ommitted. This is the
-  public key for the private key ``asymmetric/EC/secp192r1-explicit-no-seed.pem``.
-* ``asymmetric/EC/secp192r1-explicit-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp192r1`` curve explicitly encoded.
-* ``asymmetric/EC/secp192r1-pub-explicit-seed.pem`` - A public key with the
-  ``secp192r1`` curve explicitly encoded. This is the  public key for the
-  private key ``asymmetric/EC/secp192r1-explicit-seed.pem``.
-* ``asymmetric/EC/secp224r1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp224r1`` curve explicitly encoded and with the seed ommitted.
-* ``asymmetric/EC/secp224r1-pub-explicit-no-seed.pem`` - A public key with the
-  ``secp224r1`` curve explicitly encoded and with the seed ommitted. This is the
-  public key for the private key ``asymmetric/EC/secp224r1-explicit-no-seed.pem``.
-* ``asymmetric/EC/secp224r1-explicit-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp224r1`` curve explicitly encoded.
-* ``asymmetric/EC/secp224r1-pub-explicit-seed.pem`` - A public key with the
-  ``secp224r1`` curve explicitly encoded. This is the  public key for the
-  private key ``asymmetric/EC/secp224r1-explicit-seed.pem``.
 * ``asymmetric/EC/secp256k1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
   key with the ``secp256k1`` curve explicitly encoded (``secp256k1`` does not have
   a seed).
