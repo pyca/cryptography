@@ -148,9 +148,9 @@ Custom asymmetric vectors
   ``secp256k1`` curve explicitly encoded. This is the  public key for the
   private key ``asymmetric/EC/secp256k1-explicit-no-seed.pem``.
 * ``asymmetric/EC/secp256r1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp256r1`` curve explicitly encoded and with the seed ommitted.
+  key with the ``secp256r1`` curve explicitly encoded and with the seed omitted.
 * ``asymmetric/EC/secp256r1-pub-explicit-no-seed.pem`` - A public key with the
-  ``secp256r1`` curve explicitly encoded and with the seed ommitted. This is the
+  ``secp256r1`` curve explicitly encoded and with the seed omitted. This is the
   public key for the private key ``asymmetric/EC/secp256r1-explicit-no-seed.pem``.
 * ``asymmetric/EC/secp256r1-explicit-seed.pem`` - An unencrypted PKCS8 private
   key with the ``secp256r1`` curve explicitly encoded.
@@ -158,9 +158,9 @@ Custom asymmetric vectors
   ``secp256r1`` curve explicitly encoded. This is the  public key for the
   private key ``asymmetric/EC/secp256r1-explicit-seed.pem``.
 * ``asymmetric/EC/secp384r1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp384r1`` curve explicitly encoded and with the seed ommitted.
+  key with the ``secp384r1`` curve explicitly encoded and with the seed omitted.
 * ``asymmetric/EC/secp384r1-pub-explicit-no-seed.pem`` - A public key with the
-  ``secp384r1`` curve explicitly encoded and with the seed ommitted. This is the
+  ``secp384r1`` curve explicitly encoded and with the seed omitted. This is the
   public key for the private key ``asymmetric/EC/secp384r1-explicit-no-seed.pem``.
 * ``asymmetric/EC/secp384r1-explicit-seed.pem`` - An unencrypted PKCS8 private
   key with the ``secp384r1`` curve explicitly encoded.
@@ -168,9 +168,9 @@ Custom asymmetric vectors
   ``secp384r1`` curve explicitly encoded. This is the  public key for the
   private key ``asymmetric/EC/secp384r1-explicit-seed.pem``.
 * ``asymmetric/EC/secp521r1-explicit-no-seed.pem`` - An unencrypted PKCS8 private
-  key with the ``secp521r1`` curve explicitly encoded and with the seed ommitted.
+  key with the ``secp521r1`` curve explicitly encoded and with the seed omitted.
 * ``asymmetric/EC/secp521r1-pub-explicit-no-seed.pem`` - A public key with the
-  ``secp521r1`` curve explicitly encoded and with the seed ommitted. This is the
+  ``secp521r1`` curve explicitly encoded and with the seed omitted. This is the
   public key for the private key ``asymmetric/EC/secp521r1-explicit-no-seed.pem``.
 * ``asymmetric/EC/secp521r1-explicit-seed.pem`` - An unencrypted PKCS8 private
   key with the ``secp521r1`` curve explicitly encoded.
