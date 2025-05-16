@@ -51,7 +51,7 @@ jobs:
           # - 1.70: crates.io sparse protocol by default
           # - 1.77: offset_of! in std (for pyo3)
           # - 1.80: LazyLock in std
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.65.0"}
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.70.0"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
