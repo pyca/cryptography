@@ -97,8 +97,6 @@ const char *X509_verify_cert_error_string(long);
 
 const char *X509_get_default_cert_dir(void);
 const char *X509_get_default_cert_file(void);
-const char *X509_get_default_cert_dir_env(void);
-const char *X509_get_default_cert_file_env(void);
 
 int X509_get_ext_count(const X509 *);
 X509_EXTENSION *X509_get_ext(const X509 *, int);
