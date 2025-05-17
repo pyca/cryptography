@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v46-0-0:
+
+46.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
+
 .. _v45-0-0:
 
 45.0.0 - 2025-05-17
