@@ -52,6 +52,7 @@ jobs:
           # - 1.80: LazyLock in std
           # - 1.83: const context Option<T>::unwrap()
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.74.0"}
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.80.0"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
