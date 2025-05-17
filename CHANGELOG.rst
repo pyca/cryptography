@@ -1,10 +1,17 @@
 Changelog
 =========
 
+.. _v45-0-1:
+
+45.0.1 - 2025-05-17
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.0.
+
 .. _v45-0-0:
 
-45.0.0 - 2025-05-17
-~~~~~~~~~~~~~~~~~~~
+45.0.0 - 2025-05-17 (YANKED)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
