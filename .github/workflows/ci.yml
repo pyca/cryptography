@@ -40,12 +40,12 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.5.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.0.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.0"}}
-          # Latest commit on the BoringSSL main branch, as of May 16, 2025.
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "99eba5614c519092e3d797a95dade2ac2660d5d9"}}
+          # Latest commit on the BoringSSL main branch, as of May 17, 2025.
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "a934ee9e1fe4397e682f9f18b1f4f061d7400f9d"}}
           # Latest tag of AWS-LC main branch, as of May 13, 2025.
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.51.2"}}
-          # Latest commit on the OpenSSL master branch, as of May 16, 2025.
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "0d3f0876ac1addda7ce044063e08ac68b39ad8b9"}}
+          # Latest commit on the OpenSSL master branch, as of May 17, 2025.
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "10bd6fa8ca93b4cf53f005f110c827ed923c89a4"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.70: crates.io sparse protocol by default
