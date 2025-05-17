@@ -62,7 +62,7 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     // any time soon.
 
     let load_legacy = !cfg!(CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY)
-        && !env::var("CRYPTOGRAPHY_OPENSSL_NO_LEGACY").map_or(false, |v| !v.is_empty() && v != "0");
+        && !env::var("CRYPTOGRAPHY_OPENSSL_NO_LEGACY").is_ok_and(|v| !v.is_empty() && v != "0");
 
     let legacy = if load_legacy {
         let legacy_result = provider::Provider::load(None, "legacy");

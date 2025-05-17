@@ -39,8 +39,8 @@ pub fn kdf(
     // then so is P.
     //
     // 4. Set I=S||P to be the concatenation of S and P.
-    let s_len = block_size * ((salt.len() + block_size - 1) / block_size);
-    let p_len = block_size * ((pass.len() + block_size - 1) / block_size);
+    let s_len = block_size * salt.len().div_ceil(block_size);
+    let p_len = block_size * pass.len().div_ceil(block_size);
 
     let mut init_key = vec![0; s_len + p_len];
     for i in 0..s_len {
