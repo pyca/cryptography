@@ -183,7 +183,7 @@ impl Subject<'_> {
     fn subject_alt_name_matches(&self, general_name: &GeneralName<'_>) -> bool {
         match (general_name, self) {
             (GeneralName::DNSName(pattern), Self::DNS(name)) => {
-                DNSPattern::new(pattern.0).map_or(false, |p| p.matches(name))
+                DNSPattern::new(pattern.0).is_some_and(|p| p.matches(name))
             }
             (GeneralName::IPAddress(addr), Self::IP(name)) => {
                 IPAddress::from_bytes(addr) == Some(*name)
@@ -438,7 +438,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             // to test here.
             if bc
                 .path_length
-                .map_or(false, |len| u64::from(current_depth) > len)
+                .is_some_and(|len| u64::from(current_depth) > len)
             {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
                     "path length constraint violated".to_string(),

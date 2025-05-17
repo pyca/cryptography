@@ -46,8 +46,8 @@ above supported platforms:
 * ``OpenSSL 3.4-latest``
 * ``OpenSSL 3.5-latest``
 
-We also test against the latest commit of BoringSSL, the latest ``aws-lc`` release, 
-and versions of LibreSSL that are receiving security support at the time of a 
+We also test against the latest commit of BoringSSL, the latest ``aws-lc`` release,
+and versions of LibreSSL that are receiving security support at the time of a
 given ``cryptography`` release.
 
 
@@ -113,7 +113,7 @@ available<installation:Rust>`.
 
     .. warning::
 
-        The Rust available by default in Alpine < 3.17 is older than the minimum
+        The Rust available by default in Alpine < 3.19 is older than the minimum
         supported version. See the :ref:`Rust installation instructions
         <installation:Rust>` for information about installing a newer Rust.
 
@@ -127,7 +127,7 @@ available<installation:Rust>`.
 
     .. warning::
 
-        The Rust available in Debian versions prior to Bookworm are older than the
+        The Rust available in Debian versions prior to Trixie are older than the
         minimum supported version. See the :ref:`Rust installation instructions
         <installation:Rust>` for information about installing a newer Rust.
 
@@ -140,8 +140,8 @@ available<installation:Rust>`.
 
     .. warning::
 
-        For RHEL and CentOS you must be on version 8.8 or newer for the command
-        below to install a sufficiently new Rust. If your Rust is less than 1.65.0
+        For RHEL and CentOS you must be on version 8.10 or newer for the command
+        below to install a sufficiently new Rust. If your Rust is less than 1.74.0
         please see the :ref:`Rust installation instructions <installation:Rust>`
         for information about installing a newer Rust.
 
@@ -319,7 +319,7 @@ Rust
     a Rust toolchain.
 
 Building ``cryptography`` requires having a working Rust toolchain. The current
-minimum supported Rust version is 1.65.0. **This is newer than the Rust some
+minimum supported Rust version is 1.74.0. **This is newer than the Rust some
 package managers ship**, so users may need to install with the
 instructions below.
 

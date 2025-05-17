@@ -40,8 +40,7 @@ fn main() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
     }
 
-    if env::var("CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY").map_or(false, |v| !v.is_empty() && v != "0")
-    {
+    if env::var("CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY").is_ok_and(|v| !v.is_empty() && v != "0") {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY");
     }
 
