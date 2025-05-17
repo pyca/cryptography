@@ -229,7 +229,9 @@ class Criticality:
     AGNOSTIC: Criticality
     NON_CRITICAL: Criticality
 
-type MaybeExtensionValidatorCallback[T: x509.ExtensionType] = typing.Callable[
+T = typing.TypeVar("T", contravariant=True, bound=x509.ExtensionType)
+
+MaybeExtensionValidatorCallback = typing.Callable[
     [
         Policy,
         x509.Certificate,
@@ -238,12 +240,10 @@ type MaybeExtensionValidatorCallback[T: x509.ExtensionType] = typing.Callable[
     None,
 ]
 
-type PresentExtensionValidatorCallback[T: x509.ExtensionType] = (
-    typing.Callable[
-        [Policy, x509.Certificate, T],
-        None,
-    ]
-)
+PresentExtensionValidatorCallback = typing.Callable[
+    [Policy, x509.Certificate, T],
+    None,
+]
 
 class ExtensionPolicy:
     @staticmethod
@@ -255,13 +255,13 @@ class ExtensionPolicy:
     def require_not_present(
         self, extension_type: type[x509.ExtensionType]
     ) -> ExtensionPolicy: ...
-    def may_be_present[T: x509.ExtensionType](
+    def may_be_present(
         self,
         extension_type: type[T],
         criticality: Criticality,
         validator: MaybeExtensionValidatorCallback[T] | None,
     ) -> ExtensionPolicy: ...
-    def require_present[T: x509.ExtensionType](
+    def require_present(
         self,
         extension_type: type[T],
         criticality: Criticality,
