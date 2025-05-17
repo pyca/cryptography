@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
+
 .. _v45-0-1:
 
 45.0.1 - 2025-05-17
