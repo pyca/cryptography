@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v45-0-2:
+
+45.0.2 - 2025-05-17
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed using ``mypy`` with ``cryptography`` on older versoins of Python.
+
 .. _v45-0-1:
 
 45.0.1 - 2025-05-17
