@@ -129,7 +129,7 @@ jobs:
           # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
           key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'nox[uv]; python_version >= "3.8"' 'tomli; python_version < "3.11"'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
       - name: Create nox environment
         run: |
             nox -v --install-only
@@ -207,7 +207,7 @@ jobs:
       - run: |
           echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
         if: matrix.IMAGE.FIPS
-      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox' 'nox[uv]; python_version >= "3.8"' 'tomli; python_version < "3.11"'
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
       - run: '/venv/bin/nox -v --install-only'
         env:
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
@@ -230,11 +230,11 @@ jobs:
           - {OS: 'macos-13', ARCH: 'x86_64'}
           - {OS: 'macos-14', ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.7", NOXSESSION: "tests"}
+          - {VERSION: "3.8", NOXSESSION: "tests"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
         exclude:
-          # We only test latest Python on arm64. py37 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.7", NOXSESSION: "tests"}
+          # We only test latest Python on arm64. py38 won't work since there's no universal2 binary
+          - PYTHON: {VERSION: "3.8", NOXSESSION: "tests"}
             RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
@@ -257,7 +257,7 @@ jobs:
         timeout-minutes: 3
       - run: rustup component add llvm-tools-preview
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox' 'nox[uv]; python_version >= "3.8"' 'tomli; python_version < "3.11"'
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
 
       - name: Clone test vectors
         timeout-minutes: 2
@@ -298,7 +298,7 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32'}
           - {ARCH: 'x64', WINDOWS: 'win64'}
         PYTHON:
-          - {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
@@ -321,7 +321,7 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox" "nox[uv]; python_version >= '3.8'" "tomli; python_version < '3.11'"
+      - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
 
       - uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         with:
