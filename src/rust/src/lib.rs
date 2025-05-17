@@ -194,6 +194,8 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]
+        use crate::backend::rand::get_rand_bytes;
+        #[pymodule_export]
         use crate::backend::rsa::rsa;
         #[pymodule_export]
         use crate::backend::x25519::x25519;
