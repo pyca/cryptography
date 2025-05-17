@@ -48,10 +48,10 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "0d3f0876ac1addda7ce044063e08ac68b39ad8b9"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
-          # - 1.70: crates.io sparse protocol by default
           # - 1.77: offset_of! in std (for pyo3)
           # - 1.80: LazyLock in std
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.65.0"}
+          # - 1.83: const context Option<T>::unwrap()
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.74.0"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}

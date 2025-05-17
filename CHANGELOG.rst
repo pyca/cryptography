@@ -10,6 +10,7 @@ Changelog
 
 * Support for Python 3.7 is deprecated and will be removed in the next
   ``cryptography`` release.
+* Updated the minimum supported Rust version (MSRV) to 1.74.0, from 1.65.0.
 * Added support for serialization of PKCS#12 Java truststores in
   :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_java_truststore`
 * Added :meth:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id.derive_phc_encoded` and
