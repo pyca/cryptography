@@ -6,7 +6,7 @@ Changelog
 45.0.2 - 2025-05-17
 ~~~~~~~~~~~~~~~~~~~
 
-* Fixed using ``mypy`` with ``cryptography`` on older versoins of Python.
+* Fixed using ``mypy`` with ``cryptography`` on older versions of Python.
 
 .. _v45-0-1:
 
