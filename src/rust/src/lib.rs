@@ -207,33 +207,26 @@ mod _rust {
         #[pymodule_export]
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
+        #[pymodule_export]
+        const CRYPTOGRAPHY_OPENSSL_300_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_OPENSSL_309_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_OPENSSL_320_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_OPENSSL_330_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_OPENSSL_350_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER);
+
+        #[pymodule_export]
+        const CRYPTOGRAPHY_IS_LIBRESSL: bool = cfg!(CRYPTOGRAPHY_IS_LIBRESSL);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_IS_BORINGSSL: bool = cfg!(CRYPTOGRAPHY_IS_BORINGSSL);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_IS_AWSLC: bool = cfg!(CRYPTOGRAPHY_IS_AWSLC);
+
         #[pymodule_init]
         fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-            openssl_mod.add(
-                "CRYPTOGRAPHY_OPENSSL_300_OR_GREATER",
-                cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
-            )?;
-            openssl_mod.add(
-                "CRYPTOGRAPHY_OPENSSL_309_OR_GREATER",
-                cfg!(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER),
-            )?;
-            openssl_mod.add(
-                "CRYPTOGRAPHY_OPENSSL_320_OR_GREATER",
-                cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER),
-            )?;
-            openssl_mod.add(
-                "CRYPTOGRAPHY_OPENSSL_330_OR_GREATER",
-                cfg!(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER),
-            )?;
-            openssl_mod.add(
-                "CRYPTOGRAPHY_OPENSSL_350_OR_GREATER",
-                cfg!(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER),
-            )?;
-
-            openssl_mod.add("CRYPTOGRAPHY_IS_LIBRESSL", cfg!(CRYPTOGRAPHY_IS_LIBRESSL))?;
-            openssl_mod.add("CRYPTOGRAPHY_IS_BORINGSSL", cfg!(CRYPTOGRAPHY_IS_BORINGSSL))?;
-            openssl_mod.add("CRYPTOGRAPHY_IS_AWSLC", cfg!(CRYPTOGRAPHY_IS_AWSLC))?;
-
             cfg_if::cfg_if! {
                 if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
                     let providers = super::super::_initialize_providers(openssl_mod.py())?;
