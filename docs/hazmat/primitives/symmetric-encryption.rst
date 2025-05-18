@@ -208,43 +208,6 @@ Algorithms
         to produce the full key.
     :type key: :term:`bytes-like`
 
-.. class:: CAST5(key)
-
-    .. versionadded:: 0.2
-
-    .. warning::
-
-        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
-        module. If you need to continue using it then update your code to
-        use the new module path. It will be removed from this namespace in 45.0.0.
-
-    CAST5 (also known as CAST-128) is a block cipher approved for use in the
-    Canadian government by the `Communications Security Establishment`_. It is
-    a variable key length cipher and supports keys from 40-128 :term:`bits` in
-    length.
-
-    :param key: The secret key, This must be kept secret. 40 to 128
-        :term:`bits` in length in increments of 8 bits.
-    :type key: :term:`bytes-like`
-
-.. class:: SEED(key)
-
-    .. versionadded:: 0.4
-
-    .. warning::
-
-        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
-        module. If you need to continue using it then update your code to
-        use the new module path. It will be removed from this namespace in 45.0.0.
-
-    SEED is a block cipher developed by the Korea Information Security Agency
-    (KISA). It is defined in :rfc:`4269` and is used broadly throughout South
-    Korean industry, but rarely found elsewhere.
-
-    :param key: The secret key. This must be kept secret. ``128``
-        :term:`bits` in length.
-    :type key: :term:`bytes-like`
-
 .. class:: SM4(key)
 
     .. versionadded:: 35.0.0
@@ -268,22 +231,6 @@ Weak ciphers
     These ciphers are considered weak for a variety of reasons. New
     applications should avoid their use and existing applications should
     strongly consider migrating away.
-
-.. class:: Blowfish(key)
-
-    .. warning::
-
-        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
-        module. If you need to continue using it then update your code to
-        use the new module path. It will be removed from this namespace in 45.0.0.
-
-    Blowfish is a block cipher developed by Bruce Schneier. It is known to be
-    susceptible to attacks when using weak keys. The author has recommended
-    that users of Blowfish move to newer algorithms such as :class:`AES`.
-
-    :param key: The secret key. This must be kept secret. 32 to 448
-        :term:`bits` in length in increments of 8 bits.
-    :type key: :term:`bytes-like`
 
 .. class:: ARC4(key)
 
@@ -312,24 +259,6 @@ Weak ciphers
         >>> decryptor = cipher.decryptor()
         >>> decryptor.update(ct)
         b'a secret message'
-
-.. class:: IDEA(key)
-
-    .. warning::
-
-        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
-        module. If you need to continue using it then update your code to
-        use the new module path. It will be removed from this namespace in 45.0.0.
-
-    IDEA (`International Data Encryption Algorithm`_) is a block cipher created
-    in 1991. It is an optional component of the `OpenPGP`_ standard. This cipher
-    is susceptible to attacks when using weak keys. It is recommended that you
-    do not use this cipher for new applications.
-
-    :param key: The secret key. This must be kept secret. ``128``
-        :term:`bits` in length.
-    :type key: :term:`bytes-like`
-
 
 .. _symmetric-encryption-modes:
 

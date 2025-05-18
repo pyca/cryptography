@@ -12,6 +12,9 @@ Changelog
 * Removed the deprecated ``get_attribute_for_oid`` method on
   :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
   :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` instead.
+* Removed the deprecated ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish``
+  classes from the cipher module. These are still available in
+  :doc:`/hazmat/decrepit/index`.
 
 .. _v45-0-2:
 
@@ -188,10 +191,7 @@ Changelog
   now emits ASN.1 that more closely follows the recommendations in :rfc:`2315`.
 * Added new :doc:`/hazmat/decrepit/index` module which contains outdated and
   insecure cryptographic primitives.
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish`, which were
+  ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish``, which were
   deprecated in 37.0.0, have been added to this module. They will be removed
   from the ``cipher`` module in 45.0.0.
 * Moved :class:`~cryptography.hazmat.primitives.ciphers.algorithms.TripleDES`
@@ -792,11 +792,7 @@ Changelog
   ``pip`` will typically get a wheel and not need Rust installed, but check
   :doc:`/installation` for documentation on installing a newer ``rustc`` if
   required.
-* Deprecated
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`,
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`,
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`, and
-  :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Blowfish` because
+* Deprecated ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish`` because
   they are legacy algorithms with extremely low usage. These will be removed
   in a future version of ``cryptography``.
 * Added limited support for distinguished names containing a bit string.
@@ -2600,8 +2596,7 @@ Changelog
   to :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`. It will
   be removed from ``MGF1`` in two releases per our :doc:`/api-stability`
   policy.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.SEED`
-  support.
+* Added ``SEED`` support.
 * Added :class:`~cryptography.hazmat.primitives.cmac.CMAC`.
 * Added decryption support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
@@ -2620,8 +2615,7 @@ Changelog
 
 * Added :class:`~cryptography.hazmat.primitives.twofactor.hotp.HOTP`.
 * Added :class:`~cryptography.hazmat.primitives.twofactor.totp.TOTP`.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.IDEA`
-  support.
+* Added ``IDEA`` support.
 * Added signature support to
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
   and verification support to
@@ -2663,8 +2657,7 @@ Changelog
 * Added :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`.
 * Added ``multibackend``.
 * Set default random for ``openssl`` to the OS random engine.
-* Added :class:`~cryptography.hazmat.primitives.ciphers.algorithms.CAST5`
-  (CAST-128) support.
+* Added ``CAST5`` (CAST-128) support.
 
 
 .. _v0-1:
