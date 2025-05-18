@@ -616,7 +616,7 @@ class _SSHFormatSKEd25519:
         _, data = load_application(data)
         return public_key, data
 
-    def get_public(self, data: memoryview) -> typing.Never:
+    def get_public(self, data: memoryview) -> typing.NoReturn:
         # Confusingly `get_public` is an entry point used by private key
         # loading.
         raise UnsupportedAlgorithm(
@@ -642,7 +642,7 @@ class _SSHFormatSKECDSA:
         _, data = load_application(data)
         return public_key, data
 
-    def get_public(self, data: memoryview) -> typing.Never:
+    def get_public(self, data: memoryview) -> typing.NoReturn:
         # Confusingly `get_public` is an entry point used by private key
         # loading.
         raise UnsupportedAlgorithm(
@@ -716,10 +716,7 @@ def load_ssh_private_key(
     pubfields, pubdata = kformat.get_public(pubdata)
     _check_empty(pubdata)
 
-    if (ciphername, kdfname) != (
-        _NONE,
-        _NONE,
-    ):  # type: ignore[comparison-overlap]
+    if ciphername != _NONE or kdfname != _NONE:
         ciphername_bytes = ciphername.tobytes()
         if ciphername_bytes not in _SSH_CIPHERS:
             raise UnsupportedAlgorithm(
