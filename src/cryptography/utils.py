@@ -22,7 +22,6 @@ class CryptographyDeprecationWarning(UserWarning):
 # ubiquity of their use. They should not be removed until we agree on when that
 # cycle ends.
 DeprecatedIn36 = CryptographyDeprecationWarning
-DeprecatedIn37 = CryptographyDeprecationWarning
 DeprecatedIn40 = CryptographyDeprecationWarning
 DeprecatedIn41 = CryptographyDeprecationWarning
 DeprecatedIn42 = CryptographyDeprecationWarning

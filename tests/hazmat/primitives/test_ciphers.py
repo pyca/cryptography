@@ -25,22 +25,6 @@ from .test_aead import large_mmap
 def test_deprecated_ciphers_import_with_warning():
     with pytest.warns(utils.CryptographyDeprecationWarning):
         from cryptography.hazmat.primitives.ciphers.algorithms import (
-            Blowfish,  # noqa: F401
-        )
-    with pytest.warns(utils.CryptographyDeprecationWarning):
-        from cryptography.hazmat.primitives.ciphers.algorithms import (
-            CAST5,  # noqa: F401
-        )
-    with pytest.warns(utils.CryptographyDeprecationWarning):
-        from cryptography.hazmat.primitives.ciphers.algorithms import (
-            IDEA,  # noqa: F401
-        )
-    with pytest.warns(utils.CryptographyDeprecationWarning):
-        from cryptography.hazmat.primitives.ciphers.algorithms import (
-            SEED,  # noqa: F401
-        )
-    with pytest.warns(utils.CryptographyDeprecationWarning):
-        from cryptography.hazmat.primitives.ciphers.algorithms import (
             ARC4,  # noqa: F401
         )
     with pytest.warns(utils.CryptographyDeprecationWarning):

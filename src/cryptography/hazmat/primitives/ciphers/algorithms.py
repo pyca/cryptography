@@ -100,53 +100,6 @@ utils.deprecated(
     name="TripleDES",
 )
 
-utils.deprecated(
-    Blowfish,
-    __name__,
-    "Blowfish has been moved to "
-    "cryptography.hazmat.decrepit.ciphers.algorithms.Blowfish and "
-    "will be removed from "
-    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
-    utils.DeprecatedIn37,
-    name="Blowfish",
-)
-
-
-utils.deprecated(
-    CAST5,
-    __name__,
-    "CAST5 has been moved to "
-    "cryptography.hazmat.decrepit.ciphers.algorithms.CAST5 and "
-    "will be removed from "
-    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
-    utils.DeprecatedIn37,
-    name="CAST5",
-)
-
-
-utils.deprecated(
-    IDEA,
-    __name__,
-    "IDEA has been moved to "
-    "cryptography.hazmat.decrepit.ciphers.algorithms.IDEA and "
-    "will be removed from "
-    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
-    utils.DeprecatedIn37,
-    name="IDEA",
-)
-
-
-utils.deprecated(
-    SEED,
-    __name__,
-    "SEED has been moved to "
-    "cryptography.hazmat.decrepit.ciphers.algorithms.SEED and "
-    "will be removed from "
-    "cryptography.hazmat.primitives.ciphers.algorithms in 45.0.0.",
-    utils.DeprecatedIn37,
-    name="SEED",
-)
-
 
 class ChaCha20(CipherAlgorithm):
     name = "ChaCha20"
