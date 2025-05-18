@@ -133,11 +133,6 @@ the root of trust:
 
     .. versionadded:: 43.0.0
 
-    .. versionchanged:: 45.0.0
-        ``verification_time`` and ``max_chain_depth`` were deprecated and will be 
-        removed in version 46.0.0.
-        The new ``policy`` property should be used to access these values instead.
-
     A ClientVerifier verifies client certificates.
 
     It contains and describes various pieces of configurable path
@@ -179,12 +174,6 @@ the root of trust:
 .. class:: ServerVerifier
 
     .. versionadded:: 42.0.0
-
-    .. versionchanged:: 45.0.0
-        ``subject``, ``verification_time`` and ``max_chain_depth`` were deprecated and will be 
-        removed in version 46.0.0.
-        The new ``policy`` property should be used to access these values instead.
-
 
     A ServerVerifier verifies server certificates.
 
@@ -233,7 +222,7 @@ the root of trust:
     .. versionadded:: 42.0.0
 
     .. versionchanged:: 45.0.0
-        Added the ``extension_policies`` method. 
+        Added the ``extension_policies`` method.
         Removed the ``new_`` prefix from all parameter names.
 
     A PolicyBuilder provides a builder-style interface for constructing a
@@ -284,11 +273,11 @@ the root of trust:
         .. warning::
             If the PolicyBuilder will be used to build a :class:`ServerVerifier`, the EE extension policy
             `must require` the :class:`~cryptography.x509.SubjectAlternativeName` extension to be present.
-            All CA extension policies `must require` the :class:`~cryptography.x509.BasicConstraints` 
+            All CA extension policies `must require` the :class:`~cryptography.x509.BasicConstraints`
             extension to be present.
 
         :param ExtensionPolicy ca_policy: The CA extension policy to use.
-        :param ExtensionPolicy ee_policy: The EE extension policy to use. 
+        :param ExtensionPolicy ee_policy: The EE extension policy to use.
 
         :returns: A new instance of :class:`PolicyBuilder`
 
@@ -337,7 +326,7 @@ the root of trust:
 
     .. staticmethod:: permit_all()
 
-        Creates an ExtensionPolicy that does not put any constraints on a certificate's extensions. 
+        Creates an ExtensionPolicy that does not put any constraints on a certificate's extensions.
         This can serve as a base for a fully custom extension policy.
 
         :returns: An instance of :class:`ExtensionPolicy`
@@ -371,17 +360,17 @@ the root of trust:
     .. method:: may_be_present(extension_type, criticality, validator_cb)
 
         Specifies that the extension identified by `extension_type` is optional.
-        If it is present, it must conform to the given criticality constraint. 
+        If it is present, it must conform to the given criticality constraint.
         An optional validator callback may be provided.
 
-        If a validator callback is provided, the callback will be invoked 
-        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
+        If a validator callback is provided, the callback will be invoked
+        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier
         that uses the extension policy. For details on the callback signature, see :type:`MaybeExtensionValidatorCallback`.
 
         :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
             indicating which extension may be present.
         :param Criticality criticality: The criticality of the extension
-        :param validator_cb: An optional Python callback to validate the extension value. 
+        :param validator_cb: An optional Python callback to validate the extension value.
             Must accept extensions of type `extension_type`.
         :type validator_cb: :type:`MaybeExtensionValidatorCallback` or None
 
@@ -392,8 +381,8 @@ the root of trust:
         Specifies that the extension identified by `extension_type`` must be present
         and conform to the given criticality constraint. An optional validator callback may be provided.
 
-        If a validator callback is provided, the callback will be invoked 
-        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier 
+        If a validator callback is provided, the callback will be invoked
+        when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier
         that uses the extension policy. For details on the callback signature, see :type:`PresentExtensionValidatorCallback`.
 
         :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
@@ -416,7 +405,7 @@ the root of trust:
         The extension must be marked as critical.
 
     .. attribute:: AGNOSTIC
-            
+
         The extension may be marked either as critical or non-critical.
 
     .. attribute:: NON_CRITICAL
@@ -427,7 +416,7 @@ the root of trust:
 
     .. versionadded:: 45.0.0
 
-    Represents a policy for certificate verification. Passed to extension validator callbacks and 
+    Represents a policy for certificate verification. Passed to extension validator callbacks and
     accessible via :class:`ClientVerifier` and :class:`ServerVerifier`.
 
     .. attribute:: max_chain_depth
@@ -438,7 +427,7 @@ the root of trust:
 
     .. attribute:: subject
 
-        The subject used during verification. 
+        The subject used during verification.
         Will be None if the verifier is a :class:`ClientVerifier`.
 
         :type: x509.verification.Subject or None
@@ -463,7 +452,7 @@ the root of trust:
 
 .. type:: MaybeExtensionValidatorCallback
     :canonical: Callable[[Policy, Certificate, Optional[ExtensionType]], None]
-    
+
     .. versionadded:: 45.0.0
 
 
@@ -475,7 +464,7 @@ the root of trust:
     :param Policy policy: The verification policy.
     :param Certificate certificate: The certificate being verified.
     :param ExtensionType or None extension: The extension value or `None` if the extension is not present.
-    
+
     :returns: An extension validator callback must return `None`.
               If the validation fails, the validator must raise an exception.
 
