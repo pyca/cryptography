@@ -10,7 +10,7 @@ from typing import Optional, Type
 
 import pytest
 
-from cryptography import utils, x509
+from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
@@ -99,12 +99,6 @@ class TestPolicyBuilder:
         assert verifier.policy.subject == subject
         assert verifier.policy.validation_time == now
         assert verifier.policy.max_chain_depth == max_chain_depth
-        with pytest.warns(utils.DeprecatedIn45):
-            assert verifier.subject == subject
-        with pytest.warns(utils.DeprecatedIn45):
-            assert verifier.validation_time == now
-        with pytest.warns(utils.DeprecatedIn45):
-            assert verifier.max_chain_depth == max_chain_depth
 
         assert (
             verifier.policy.extended_key_usage
@@ -164,12 +158,6 @@ class TestClientVerifier:
             tzinfo=None
         )
         assert verifier.policy.max_chain_depth == max_chain_depth
-        with pytest.warns(utils.DeprecatedIn45):
-            assert verifier.validation_time == validation_time.replace(
-                tzinfo=None
-            )
-        with pytest.warns(utils.DeprecatedIn45):
-            assert verifier.max_chain_depth == max_chain_depth
 
         assert (
             verifier.policy.extended_key_usage
