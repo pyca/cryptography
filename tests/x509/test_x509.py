@@ -6850,13 +6850,6 @@ class TestRequestAttributes:
             os.path.join("x509", "requests", "challenge.pem"),
             x509.load_pem_x509_csr,
         )
-        with pytest.warns(utils.DeprecatedIn36):
-            assert (
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
-                )
-                == b"challenge me!"
-            )
 
         assert request.attributes.get_attribute_for_oid(
             x509.oid.AttributeOID.CHALLENGE_PASSWORD
@@ -6870,21 +6863,6 @@ class TestRequestAttributes:
             os.path.join("x509", "requests", "challenge-unstructured.pem"),
             x509.load_pem_x509_csr,
         )
-        with pytest.warns(utils.DeprecatedIn36):
-            assert (
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
-                )
-                == b"beauty"
-            )
-
-        with pytest.warns(utils.DeprecatedIn36):
-            assert (
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.UNSTRUCTURED_NAME
-                )
-                == b"an unstructured field"
-            )
 
         assert request.attributes.get_attribute_for_oid(
             x509.oid.AttributeOID.CHALLENGE_PASSWORD
@@ -6905,13 +6883,6 @@ class TestRequestAttributes:
             os.path.join("x509", "requests", "challenge-invalid.der"),
             x509.load_der_x509_csr,
         )
-
-        # Unsupported in the legacy path
-        with pytest.raises(ValueError):
-            with pytest.warns(utils.DeprecatedIn36):
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
-                )
 
         # supported in the new path where we just store the type and
         # return raw bytes
@@ -6937,12 +6908,6 @@ class TestRequestAttributes:
             x509.load_der_x509_csr,
         )
         with pytest.raises(ValueError, match="Only single-valued"):
-            with pytest.warns(utils.DeprecatedIn36):
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
-                )
-
-        with pytest.raises(ValueError, match="Only single-valued"):
             request.attributes
 
     def test_no_challenge_password(self, backend):
@@ -6950,13 +6915,6 @@ class TestRequestAttributes:
             os.path.join("x509", "requests", "rsa_sha256.pem"),
             x509.load_pem_x509_csr,
         )
-        with pytest.raises(x509.AttributeNotFound) as exc:
-            with pytest.warns(utils.DeprecatedIn36):
-                request.get_attribute_for_oid(
-                    x509.oid.AttributeOID.CHALLENGE_PASSWORD
-                )
-        assert exc.value.oid == x509.oid.AttributeOID.CHALLENGE_PASSWORD
-
         with pytest.raises(x509.AttributeNotFound) as exc:
             request.attributes.get_attribute_for_oid(
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD

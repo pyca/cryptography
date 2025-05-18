@@ -9,6 +9,9 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
+* Removed the deprecated ``get_attribute_for_oid`` method on
+  :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
+  :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` instead.
 
 .. _v45-0-2:
 

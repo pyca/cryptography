@@ -13,7 +13,6 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::{encode_der_data, oid_to_py_oid, py_oid_to_oid};
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::utils::cstr_from_literal;
 use crate::x509::{certificate, sign};
 use crate::{exceptions, types, x509};
 
@@ -126,51 +125,6 @@ impl CertificateSigningRequest {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
         encode_der_data(py, "CERTIFICATE REQUEST".to_string(), result, encoding)
-    }
-
-    fn get_attribute_for_oid<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        oid: pyo3::Bound<'p, pyo3::PyAny>,
-    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let warning_cls = types::DEPRECATED_IN_36.get(py)?;
-        let warning_msg = cstr_from_literal!("CertificateSigningRequest.get_attribute_for_oid has been deprecated. Please switch to request.attributes.get_attribute_for_oid.");
-        pyo3::PyErr::warn(py, &warning_cls, warning_msg, 1)?;
-
-        let rust_oid = py_oid_to_oid(oid.clone())?;
-        for attribute in self
-            .raw
-            .borrow_dependent()
-            .csr_info
-            .attributes
-            .unwrap_read()
-            .clone()
-        {
-            if rust_oid == attribute.type_id {
-                check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Only single-valued attributes are supported",
-                    )
-                })?;
-                let val = attribute.values.unwrap_read().clone().next().unwrap();
-                // We allow utf8string, printablestring, and ia5string at this time
-                if val.tag() == asn1::Utf8String::TAG
-                    || val.tag() == asn1::PrintableString::TAG
-                    || val.tag() == asn1::IA5String::TAG
-                {
-                    return Ok(pyo3::types::PyBytes::new(py, val.data()).into_any());
-                }
-                return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "OID {} has a disallowed ASN.1 type: {:?}",
-                    oid,
-                    val.tag()
-                )));
-            }
-        }
-        Err(exceptions::AttributeNotFound::new_err((
-            format!("No {oid} attribute was found"),
-            oid.unbind(),
-        )))
     }
 
     #[getter]
