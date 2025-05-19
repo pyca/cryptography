@@ -52,6 +52,9 @@ Changelog
   provided (previously no exception was raised), and raises a ``TypeError`` if
   the key is encrypted but no password is provided (previously a ``ValueError``
   was raised).
+* **BACKWARDS INCOMPATIBLE:** Added ``__copy__`` to the 
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` abstract 
+  base class.
 * We significantly refactored how private key loading (
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   and
