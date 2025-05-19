@@ -52,6 +52,24 @@ Changelog
   provided (previously no exception was raised), and raises a ``TypeError`` if
   the key is encrypted but no password is provided (previously a ``ValueError``
   was raised).
+* Added ``__copy__`` to the
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`, and
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
+  abstract base classes.
 * We significantly refactored how private key loading (
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   and
