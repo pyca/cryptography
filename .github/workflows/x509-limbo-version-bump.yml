@@ -39,7 +39,7 @@ jobs:
           COMMIT_SHA: ${{ steps.check-sha-x509-limbo.outputs.COMMIT_SHA }}
       - id: check-sha-wycheproof
         run: |
-          SHA=$(git ls-remote https://github.com/C2SP/wycheproof refs/heads/master | cut -f1)
+          SHA=$(git ls-remote https://github.com/C2SP/wycheproof refs/heads/main | cut -f1)
           LAST_COMMIT=$(grep wycheproof-ref .github/actions/fetch-vectors/action.yml | grep -oE '[a-f0-9]{40}')
           if ! grep -q "$SHA" .github/actions/fetch-vectors/action.yml; then
             echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
@@ -51,7 +51,7 @@ jobs:
         run: |
           set -xe
           CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the wycheproof master branch.*/Latest commit on the wycheproof master branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
+          sed -E -i "s/Latest commit on the wycheproof main branch.*/Latest commit on the wycheproof main branch, as of ${CURRENT_DATE}./" .github/actions/fetch-vectors/action.yml
           sed -E -i "s/ref: \"[0-9a-f]{40}\" # wycheproof-ref/ref: \"${COMMIT_SHA}\" # wycheproof-ref/" .github/actions/fetch-vectors/action.yml
           git status
         if: steps.check-sha-wycheproof.outputs.COMMIT_SHA
