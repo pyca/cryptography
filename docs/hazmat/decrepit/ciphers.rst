@@ -4,7 +4,7 @@
 Decrepit Symmetric algorithms
 =============================
 
-.. module:: cryptography.hazmat.decrepit.ciphers
+.. module:: cryptography.hazmat.decrepit.ciphers.algorithms
 
 This module contains decrepit symmetric encryption algorithms. These
 are algorithms that should not be used unless necessary for backwards
