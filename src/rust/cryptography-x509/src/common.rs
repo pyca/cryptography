@@ -166,9 +166,9 @@ pub enum AlgorithmParameters<'a> {
     Rc2Cbc(Rc2CbcParams),
 
     #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
-    Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
+    Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params<'a>),
     #[defined_by(oid::PBES1_WITH_SHA_AND_40_BIT_RC2_CBC)]
-    Pbe1WithShaAnd40BitRc2Cbc(PBES1Params),
+    Pbe1WithShaAnd40BitRc2Cbc(PBES1Params<'a>),
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
@@ -529,9 +529,16 @@ pub struct ScryptParams<'a> {
     pub key_length: Option<u32>,
 }
 
+// PBES1Params is defined as
+// PBEParameter ::= SEQUENCE {
+//    salt OCTET STRING (SIZE(8)),
+//    iterationCount INTEGER
+// }
+// in RFC 2898 and 8018 but in practice various implementations
+// use longer salts, so we need to handle variable salt length.
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
-pub struct PBES1Params {
-    pub salt: [u8; 8],
+pub struct PBES1Params<'a> {
+    pub salt: &'a [u8],
     pub iterations: u64,
 }
 

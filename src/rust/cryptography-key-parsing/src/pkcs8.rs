@@ -127,14 +127,14 @@ fn pbes1_decrypt(
     password: &[u8],
     cipher: openssl::symm::Cipher,
     hash: openssl::hash::MessageDigest,
-    params: &PBES1Params,
+    params: &PBES1Params<'_>,
 ) -> KeyParsingResult<Vec<u8>> {
     let Ok(password) = std::str::from_utf8(password) else {
         return Err(KeyParsingError::IncorrectPassword);
     };
     let key = cryptography_crypto::pkcs12::kdf(
         password,
-        &params.salt,
+        params.salt,
         cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
         params.iterations,
         cipher.key_len(),
@@ -142,7 +142,7 @@ fn pbes1_decrypt(
     )?;
     let iv = cryptography_crypto::pkcs12::kdf(
         password,
-        &params.salt,
+        params.salt,
         cryptography_crypto::pkcs12::KDF_IV_ID,
         params.iterations,
         cipher.block_size(),
