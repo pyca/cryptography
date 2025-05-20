@@ -285,6 +285,9 @@ Custom asymmetric vectors
   RSA key in an encrypted PEM with a malformed IV (not valid hex).
 * ``asymmetric/Traditional_OpenSSL_Serialization/key1-short-iv.pem`` - An
   RSA key in an encrypted PEM with an IV that's too short (less than 8 bytes).
+* ``asymmetric/PKCS8/rsa-pbewithmd5anddescbc.pem`` - A PKCS8 encoded RSA key
+  encrypted using the ``pbeWithMD5AndDES-CBC`` algorithm with the password
+  ``hunter2``.
 
 Key exchange
 ~~~~~~~~~~~~
