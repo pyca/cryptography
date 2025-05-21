@@ -476,6 +476,8 @@ class TestDERSerialization:
             data, password=b"password", unsafe_skip_rsa_key_validation=True
         )
         assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 4096
+        assert key.private_numbers().public_numbers.e == 65537
 
     @pytest.mark.parametrize(
         "filename",
