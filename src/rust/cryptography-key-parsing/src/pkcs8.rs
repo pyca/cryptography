@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters, PBES1Params};
+use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters, Pkcs12PbeParams};
 use cryptography_x509::csr::Attributes;
 use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
@@ -122,19 +122,19 @@ pub fn parse_private_key(
     }
 }
 
-fn pbes1_decrypt(
+fn pkcs12_pbe_decrypt(
     data: &[u8],
     password: &[u8],
     cipher: openssl::symm::Cipher,
     hash: openssl::hash::MessageDigest,
-    params: &PBES1Params,
+    params: &Pkcs12PbeParams<'_>,
 ) -> KeyParsingResult<Vec<u8>> {
     let Ok(password) = std::str::from_utf8(password) else {
         return Err(KeyParsingError::IncorrectPassword);
     };
     let key = cryptography_crypto::pkcs12::kdf(
         password,
-        &params.salt,
+        params.salt,
         cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
         params.iterations,
         cipher.key_len(),
@@ -142,7 +142,7 @@ fn pbes1_decrypt(
     )?;
     let iv = cryptography_crypto::pkcs12::kdf(
         password,
-        &params.salt,
+        params.salt,
         cryptography_crypto::pkcs12::KDF_IV_ID,
         params.iterations,
         cipher.block_size(),
@@ -164,7 +164,7 @@ pub fn parse_encrypted_private_key(
     };
 
     let plaintext = match epki.encryption_algorithm.params {
-        AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(params) => pbes1_decrypt(
+        AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(params) => pkcs12_pbe_decrypt(
             epki.encrypted_data,
             password,
             openssl::symm::Cipher::des_ede3_cbc(),
@@ -172,7 +172,7 @@ pub fn parse_encrypted_private_key(
             &params,
         )?,
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
-        AlgorithmParameters::Pbe1WithShaAnd40BitRc2Cbc(params) => pbes1_decrypt(
+        AlgorithmParameters::PbeWithShaAnd40BitRc2Cbc(params) => pkcs12_pbe_decrypt(
             epki.encrypted_data,
             password,
             openssl::symm::Cipher::rc2_40_cbc(),

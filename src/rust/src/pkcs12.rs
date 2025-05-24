@@ -112,14 +112,14 @@ pub(crate) fn symmetric_encrypt(
 }
 
 enum EncryptionAlgorithm {
-    PBESv1SHA1And3KeyTripleDESCBC,
+    PBESHA1And3KeyTripleDESCBC,
     PBESv2SHA256AndAES256CBC,
 }
 
 impl EncryptionAlgorithm {
     fn salt_length(&self) -> usize {
         match self {
-            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => 8,
+            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => 8,
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => 16,
         }
     }
@@ -131,11 +131,11 @@ impl EncryptionAlgorithm {
         iv: &'a [u8],
     ) -> cryptography_x509::common::AlgorithmIdentifier<'a> {
         match self {
-            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => {
+            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
                 cryptography_x509::common::AlgorithmIdentifier {
                     oid: asn1::DefinedByMarker::marker(),
-                    params: cryptography_x509::common::AlgorithmParameters::Pbes1WithShaAnd3KeyTripleDesCbc(cryptography_x509::common::PBES1Params{
-                        salt: salt[..8].try_into().unwrap(),
+                    params: cryptography_x509::common::AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(cryptography_x509::common::Pkcs12PbeParams{
+                        salt,
                         iterations: cipher_kdf_iter,
                     }),
                 }
@@ -189,7 +189,7 @@ impl EncryptionAlgorithm {
         data: &[u8],
     ) -> CryptographyResult<Vec<u8>> {
         match self {
-            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC => {
+            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
                 let key = cryptography_crypto::pkcs12::kdf(
                     password,
                     salt,
@@ -341,7 +341,7 @@ fn decode_encryption_algorithm<'a>(
         let key_cert_alg =
             encryption_algorithm.getattr(pyo3::intern!(py, "_key_cert_algorithm"))?;
         let cipher = if key_cert_alg.is(&types::PBES_PBESV1SHA1AND3KEYTRIPLEDESCBC.get(py)?) {
-            EncryptionAlgorithm::PBESv1SHA1And3KeyTripleDESCBC
+            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC
         } else if key_cert_alg.is(&types::PBES_PBESV2SHA256ANDAES256CBC.get(py)?) {
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
         } else {
