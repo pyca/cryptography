@@ -24,6 +24,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs12;
 mod pkcs7;
+mod pyopenssl;
 mod test_support;
 pub(crate) mod types;
 pub(crate) mod utils;
@@ -255,6 +256,43 @@ mod _rust {
                     }
                 }
             }
+
+            Ok(())
+        }
+    }
+
+    #[pyo3::pymodule]
+    mod pyopenssl {
+        use pyo3::prelude::PyModuleMethods;
+
+        #[pymodule_export]
+        use crate::pyopenssl::error::Error;
+        #[pymodule_export]
+        use crate::pyopenssl::ssl::Context;
+
+        #[pymodule_init]
+        fn init(pyopenssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+            use crate::pyopenssl::ssl::{
+                DTLS_CLIENT_METHOD, DTLS_METHOD, DTLS_SERVER_METHOD, SSLV23_METHOD, TLSV1_1_METHOD,
+                TLSV1_2_METHOD, TLSV1_METHOD, TLS_CLIENT_METHOD, TLS_METHOD, TLS_SERVER_METHOD,
+            };
+
+            macro_rules! add_const {
+                ($name:ident) => {
+                    pyopenssl_mod.add(stringify!($name), $name)?;
+                };
+            }
+
+            pyopenssl_mod.add("SSLv23_METHOD", SSLV23_METHOD)?;
+            pyopenssl_mod.add("TLSv1_METHOD", TLSV1_METHOD)?;
+            pyopenssl_mod.add("TLSv1_1_METHOD", TLSV1_1_METHOD)?;
+            pyopenssl_mod.add("TLSv1_2_METHOD", TLSV1_2_METHOD)?;
+            add_const!(TLS_METHOD);
+            add_const!(TLS_SERVER_METHOD);
+            add_const!(TLS_CLIENT_METHOD);
+            add_const!(DTLS_METHOD);
+            add_const!(DTLS_SERVER_METHOD);
+            add_const!(DTLS_CLIENT_METHOD);
 
             Ok(())
         }
