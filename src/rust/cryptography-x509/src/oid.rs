@@ -152,6 +152,7 @@ pub const EKU_CERTIFICATE_TRANSPARENCY_OID: asn1::ObjectIdentifier =
 
 pub const PBES2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 13);
 pub const PBKDF2_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 12);
+pub const PBE_WITH_MD5_AND_DES_CBC: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 5, 3);
 pub const SCRYPT_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 4, 1, 11591, 4, 11);
 
 pub const PBE_WITH_SHA_AND_3KEY_TRIPLEDES_CBC: asn1::ObjectIdentifier =

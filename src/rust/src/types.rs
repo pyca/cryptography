@@ -515,6 +515,8 @@ pub static TRIPLE_DES: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.decrepit.ciphers.algorithms",
     &["TripleDES"],
 );
+pub static DES: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["_DES"]);
 pub static AES: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers.algorithms",
     &["AES"],
