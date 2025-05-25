@@ -43,7 +43,9 @@ CUSTOMIZATIONS = """
 #endif
 
 #include <stdlib.h>
+#if !CRYPTOGRAPHY_IS_AWSLC
 typedef struct sockaddr BIO_ADDR;
+#endif
 
 BIO_ADDR *BIO_ADDR_new(void) {
     return malloc(sizeof(struct sockaddr_storage));
