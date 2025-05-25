@@ -6,5 +6,7 @@ maturin>=1,<2
 # Must be kept sync with build-system.requires at vectors/pyproject.toml
 flit_core >=3.2,<4
 
-# WARN: changing the requirements here DOES NOT update the dependencies used for building at the github workflow, as the build process used build-requirements.txt
-# To update build-requirements.txt according to the dependencies here, run pip-compile --allow-unsafe --generate-hashes build-requirements.in
+# WARN: changing the requirements here DOES NOT update the dependencies used
+# for building at the github workflow -- it uses build-requirements.txt
+# To update build-requirements.txt, update this file and then run
+# uv pip compile --universal --python-version 3.9 --allow-unsafe --generate-hashes build-requirements.in -o build-requirements.txt
