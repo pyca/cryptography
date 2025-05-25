@@ -165,10 +165,12 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RC2_CBC)]
     Rc2Cbc(Rc2CbcParams),
 
-    #[defined_by(oid::PBES1_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
-    Pbes1WithShaAnd3KeyTripleDesCbc(PBES1Params),
-    #[defined_by(oid::PBES1_WITH_SHA_AND_40_BIT_RC2_CBC)]
-    Pbe1WithShaAnd40BitRc2Cbc(PBES1Params),
+    #[defined_by(oid::PBE_WITH_MD5_AND_DES_CBC)]
+    PbeWithMd5AndDesCbc(PbeParams),
+    #[defined_by(oid::PBE_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
+    PbeWithShaAnd3KeyTripleDesCbc(Pkcs12PbeParams<'a>),
+    #[defined_by(oid::PBE_WITH_SHA_AND_40_BIT_RC2_CBC)]
+    PbeWithShaAnd40BitRc2Cbc(Pkcs12PbeParams<'a>),
 
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
@@ -529,9 +531,17 @@ pub struct ScryptParams<'a> {
     pub key_length: Option<u32>,
 }
 
+// RFC 8018 Appendix A.3
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
-pub struct PBES1Params {
+pub struct PbeParams {
     pub salt: [u8; 8],
+    pub iterations: u64,
+}
+
+// From RFC 7202 Appendix C
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct Pkcs12PbeParams<'a> {
+    pub salt: &'a [u8],
     pub iterations: u64,
 }
 
