@@ -40,6 +40,11 @@ class TripleDES(BlockCipherAlgorithm):
         return len(self.key) * 8
 
 
+# Not actually supported, marker for tests
+class _DES:
+    key_size = 64
+
+
 class Blowfish(BlockCipherAlgorithm):
     name = "Blowfish"
     block_size = 64

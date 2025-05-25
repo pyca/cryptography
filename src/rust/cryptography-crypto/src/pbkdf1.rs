@@ -30,9 +30,37 @@ pub fn openssl_kdf(
     Ok(key)
 }
 
+/// PBKDF1 as defined in RFC 2898 for PKCS#5 v1.5 PBE algorithms
+pub fn pbkdf1(
+    hash_alg: openssl::hash::MessageDigest,
+    password: &[u8],
+    salt: [u8; 8],
+    iterations: u64,
+    length: usize,
+) -> Result<Vec<u8>, openssl::error::ErrorStack> {
+    if length > hash_alg.size() || iterations == 0 {
+        return Err(openssl::error::ErrorStack::get());
+    }
+
+    let mut h = openssl::hash::Hasher::new(hash_alg)?;
+    h.update(password)?;
+    h.update(&salt)?;
+    let mut t = h.finish()?;
+
+    // Apply hash function for specified iterations
+    for _ in 1..iterations {
+        let mut h = openssl::hash::Hasher::new(hash_alg)?;
+        h.update(&t)?;
+        t = h.finish()?;
+    }
+
+    // Return the first `length` bytes
+    Ok(t[..length].to_vec())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::openssl_kdf;
+    use super::{openssl_kdf, pbkdf1};
 
     #[test]
     fn test_openssl_kdf() {
@@ -97,5 +125,11 @@ mod tests {
             let key = openssl_kdf(md, password, salt, expected.len()).unwrap();
             assert_eq!(key, expected);
         }
+    }
+
+    #[test]
+    fn test_pbkdf1() {
+        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 1, 20).is_err());
+        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 0, 8).is_err());
     }
 }
