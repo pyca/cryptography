@@ -8,7 +8,7 @@ Changelog
 
 * Fixed decrypting PKCS#8 files encrypted with long salts (this impacts keys
   encrypted by Bouncy Castle).
-* Fixed decrypting PKCS#8 files encrypted with DES-CBC-MD5. While widly
+* Fixed decrypting PKCS#8 files encrypted with DES-CBC-MD5. While wildly
   insecure, this remains prevalent.
 
 .. _v45-0-2:
