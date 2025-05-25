@@ -463,6 +463,20 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
+    @pytest.mark.skip_fips(reason="3DES unsupported in FIPS")
+    def test_load_pkcs8_pbes_long_salt(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-pbe-3des-long-salt.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_pem_private_key(
+            data, password=b"password", unsafe_skip_rsa_key_validation=True
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 4096
+        assert key.private_numbers().public_numbers.e == 65537
+
     @pytest.mark.parametrize(
         "filename",
         [

@@ -288,6 +288,8 @@ Custom asymmetric vectors
 * ``asymmetric/PKCS8/rsa-pbewithmd5anddescbc.pem`` - A PKCS8 encoded RSA key
   encrypted using the ``pbeWithMD5AndDES-CBC`` algorithm with the password
   ``hunter2``.
+* ``asymmetric/PKCS8/rsa-pbe-3des-long-salt.pem`` - A PKCS8 encoded RSA key
+  encrypted with a 20 byte salt with the password ``password``.
 
 Key exchange
 ~~~~~~~~~~~~
