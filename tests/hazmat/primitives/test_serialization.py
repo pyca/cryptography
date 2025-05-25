@@ -11,7 +11,7 @@ import textwrap
 import pytest
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
+from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, RC2
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     x25519,
 )
 from cryptography.hazmat.primitives.ciphers import modes
-from cryptography.hazmat.primitives.hashes import SHA1
+from cryptography.hazmat.primitives.hashes import MD5, SHA1
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
@@ -558,6 +558,20 @@ class TestDERSerialization:
             mode="rb",
         )
         assert isinstance(key, ed25519.Ed25519PrivateKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(MD5())
+        and backend.cipher_supported(_DES(), modes.CBC(b"\x00" * 8)),
+        skip_message="Does not support DES MD5",
+    )
+    def test_load_pkcs8_pbe_with_md5_and_des_cbc(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "rsa-pbewithmd5anddescbc.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"hunter2"),
+            mode="rb",
+        )
+        assert isinstance(key, rsa.RSAPrivateKey)
+        assert key.key_size == 2048
 
 
 class TestPEMSerialization:

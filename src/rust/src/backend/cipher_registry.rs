@@ -123,6 +123,7 @@ fn get_cipher_registry(
         let aes128 = types::AES128.get(py)?;
         let aes256 = types::AES256.get(py)?;
         let triple_des = types::TRIPLE_DES.get(py)?;
+        let des = types::DES.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
         let camellia = types::CAMELLIA.get(py)?;
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
@@ -305,6 +306,8 @@ fn get_cipher_registry(
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
             m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
+
+            m.add(&des, &cbc, Some(64), Cipher::des_cbc())?;
 
             if let Some(rc2_cbc) = Cipher::from_nid(openssl::nid::Nid::RC2_CBC) {
                 m.add(&rc2, &cbc, Some(128), rc2_cbc)?;

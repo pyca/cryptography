@@ -165,6 +165,8 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RC2_CBC)]
     Rc2Cbc(Rc2CbcParams),
 
+    #[defined_by(oid::PBE_WITH_MD5_AND_DES_CBC)]
+    PbeWithMd5AndDesCbc(PbeParams),
     #[defined_by(oid::PBE_WITH_SHA_AND_3KEY_TRIPLEDES_CBC)]
     PbeWithShaAnd3KeyTripleDesCbc(Pkcs12PbeParams<'a>),
     #[defined_by(oid::PBE_WITH_SHA_AND_40_BIT_RC2_CBC)]
@@ -527,6 +529,13 @@ pub struct ScryptParams<'a> {
     pub block_size: u64,
     pub parallelization_parameter: u64,
     pub key_length: Option<u32>,
+}
+
+// RFC 8018 Appendix A.3
+#[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+pub struct PbeParams {
+    pub salt: [u8; 8],
+    pub iterations: u64,
 }
 
 // From RFC 7202 Appendix C
