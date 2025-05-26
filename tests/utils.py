@@ -603,7 +603,7 @@ def load_kasvs_ecdh_vectors(vector_data):
         "P-521": "secp521r1",
     }
 
-    tags = []
+    tags: typing.List[str] = []
     sets = {}
     vectors = []
 
