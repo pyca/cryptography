@@ -309,7 +309,7 @@ class TestCustomExtensionPolicies:
                 pass
 
             ext_policy.require_present(
-                _Extension,  # type: ignore
+                _Extension,  # type: ignore[type-var]
                 Criticality.AGNOSTIC,
                 None,
             )
