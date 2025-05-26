@@ -279,19 +279,18 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
             binascii.unhexlify(wycheproof.testcase["ct"]), padding.PKCS1v15()
         )
         assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
+    elif backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION:
+        try:
+            assert key.decrypt(
+                binascii.unhexlify(wycheproof.testcase["ct"]),
+                padding.PKCS1v15(),
+            ) != binascii.unhexlify(wycheproof.testcase["ct"])
+        except ValueError:
+            # Some raise ValueError due to length mismatch.
+            pass
     else:
-        if backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION:
-            try:
-                assert key.decrypt(
-                    binascii.unhexlify(wycheproof.testcase["ct"]),
-                    padding.PKCS1v15(),
-                ) != binascii.unhexlify(wycheproof.testcase["ct"])
-            except ValueError:
-                # Some raise ValueError due to length mismatch.
-                pass
-        else:
-            with pytest.raises(ValueError):
-                key.decrypt(
-                    binascii.unhexlify(wycheproof.testcase["ct"]),
-                    padding.PKCS1v15(),
-                )
+        with pytest.raises(ValueError):
+            key.decrypt(
+                binascii.unhexlify(wycheproof.testcase["ct"]),
+                padding.PKCS1v15(),
+            )

@@ -298,5 +298,4 @@ class ServerVerifier:
 class Store:
     def __init__(self, certs: list[x509.Certificate]) -> None: ...
 
-class VerificationError(Exception):
-    pass
+class VerificationError(Exception): ...

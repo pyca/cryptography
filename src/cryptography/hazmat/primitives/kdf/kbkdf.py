@@ -117,9 +117,7 @@ class _KBKDFDeriver:
             raise TypeError("value must be of type int")
 
         value_bin = utils.int_to_bytes(1, value)
-        if not 1 <= len(value_bin) <= 4:
-            return False
-        return True
+        return 1 <= len(value_bin) <= 4
 
     def derive(
         self, key_material: utils.Buffer, prf_output_size: int

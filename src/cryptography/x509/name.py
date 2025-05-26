@@ -144,9 +144,8 @@ class NameAttribute(typing.Generic[NameAttributeValueType]):
                 )
             if not isinstance(value, bytes):
                 raise TypeError("value must be bytes for BitString")
-        else:
-            if not isinstance(value, str):
-                raise TypeError("value argument must be a str")
+        elif not isinstance(value, str):
+            raise TypeError("value argument must be a str")
 
         length_limits = _NAMEOID_LENGTH_LIMIT.get(oid)
         if length_limits is not None:

@@ -81,7 +81,7 @@ def main(*lcov_paths: str):
     }
     coverage_data.add_arcs(covered_lines)
     coverage_data.add_file_tracers(
-        {file_name: "None.RustCoveragePlugin" for file_name in covered_lines}
+        dict.fromkeys(covered_lines, "None.RustCoveragePlugin")
     )
     coverage_data.write()
 

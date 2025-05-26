@@ -260,9 +260,7 @@ class Backend:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
-        return True
+        return not self._fips_enabled
 
     def x448_supported(self) -> bool:
         if self._fips_enabled:
@@ -274,9 +272,7 @@ class Backend:
         )
 
     def ed25519_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
-        return True
+        return not self._fips_enabled
 
     def ed448_supported(self) -> bool:
         if self._fips_enabled:
@@ -294,9 +290,7 @@ class Backend:
         )
 
     def poly1305_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
-        return True
+        return not self._fips_enabled
 
     def pkcs7_supported(self) -> bool:
         return (
