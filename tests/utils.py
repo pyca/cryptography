@@ -120,7 +120,7 @@ def load_hash_vectors(vector_data):
     for line in vector_data:
         line = line.strip()
 
-        if not line or line.startswith("#") or line.startswith("["):
+        if not line or line.startswith(("#", "[")):
             continue
 
         if line.startswith("Len"):
@@ -133,7 +133,7 @@ def load_hash_vectors(vector_data):
             # string as hex 00, which is of course not actually an empty
             # string. So we parse the provided length and catch this edge case.
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
-        elif line.startswith("MD") or line.startswith("Output"):
+        elif line.startswith(("MD", "Output")):
             md = line.split(" = ")[1]
             # after MD is found the Msg+MD (+ potential key) tuple is complete
             if key is not None:
@@ -162,10 +162,8 @@ def load_pkcs1_vectors(vector_data):
     examples = []
     vectors = []
     for line in vector_data:
-        if (
-            line.startswith("# PSS Example")
-            or line.startswith("# OAEP Example")
-            or line.startswith("# PKCS#1 v1.5")
+        if line.startswith(
+            ("# PSS Example", "# OAEP Example", "# PKCS#1 v1.5")
         ):
             if example_vector:
                 for key, value in example_vector.items():
@@ -207,8 +205,8 @@ def load_pkcs1_vectors(vector_data):
                 example_vector[attr].append(line.strip())
                 continue
 
-        if line.startswith("# Example") or line.startswith(
-            "# ============================================="
+        if line.startswith(
+            ("# Example", "# =============================================")
         ):
             if key:
                 assert private_key_vector
@@ -343,7 +341,7 @@ def load_fips_dsa_key_pair_vectors(vector_data):
     for line in vector_data:
         line = line.strip()
 
-        if not line or line.startswith("#") or line.startswith("[mod"):
+        if not line or line.startswith(("#", "[mod")):
             continue
 
         if line.startswith("P"):
@@ -720,7 +718,7 @@ def load_rfc6979_vectors(vector_data):
                 reading_key = False
                 current_key_name = None
 
-        if line.startswith("PrivateKey=") or line.startswith("PublicKey="):
+        if line.startswith(("PrivateKey=", "PublicKey=")):
             reading_key = True
             current_key_name = line.split("=")[1].strip()
             keys[current_key_name] = []
