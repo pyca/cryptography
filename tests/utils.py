@@ -200,10 +200,9 @@ def load_pkcs1_vectors(vector_data):
             attr = None
         elif example_vector and line.startswith("#"):
             continue
-        else:
-            if attr is not None and example_vector is not None:
-                example_vector[attr].append(line.strip())
-                continue
+        elif attr is not None and example_vector is not None:
+            example_vector[attr].append(line.strip())
+            continue
 
         if line.startswith(
             ("# Example", "# =============================================")
@@ -269,9 +268,8 @@ def load_pkcs1_vectors(vector_data):
             attr = "iqmp"
         elif line.startswith("#"):
             attr = None
-        else:
-            if key is not None and attr is not None:
-                key[attr].append(line.strip())
+        elif key is not None and attr is not None:
+            key[attr].append(line.strip())
     return vectors
 
 
