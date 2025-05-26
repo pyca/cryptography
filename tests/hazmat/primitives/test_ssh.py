@@ -160,17 +160,17 @@ class TestOpenSSHSerialization:
                 load_ssh_public_key(new_pub, backend)
 
     @pytest.mark.parametrize(
-        ("key_file",),
+        "key_file",
         [
-            ("rsa-nopsw.key",),
-            ("rsa-psw.key",),
-            ("dsa-nopsw.key",),
-            ("dsa-psw.key",),
-            ("ecdsa-nopsw.key",),
-            ("ecdsa-psw.key",),
-            ("ed25519-nopsw.key",),
-            ("ed25519-psw.key",),
-            ("ed25519-aesgcm-psw.key",),
+            "rsa-nopsw.key",
+            "rsa-psw.key",
+            "dsa-nopsw.key",
+            "dsa-psw.key",
+            "ecdsa-nopsw.key",
+            "ecdsa-psw.key",
+            "ed25519-nopsw.key",
+            "ed25519-psw.key",
+            "ed25519-aesgcm-psw.key",
         ],
     )
     def test_load_ssh_private_key(self, key_file, backend):
