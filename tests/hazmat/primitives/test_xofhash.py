@@ -98,7 +98,7 @@ class TestXOFSHAKE128:
                 data = b""
                 stride = random.randint(1, 128)
                 while remaining > 0:
-                    stride = remaining if remaining < stride else stride
+                    stride = min(stride, remaining)
                     data += m.squeeze(stride)
                     remaining -= stride
                 assert data == binascii.unhexlify(vector["output"])
@@ -126,7 +126,7 @@ class TestXOFSHAKE256:
                 data = b""
                 stride = random.randint(1, 128)
                 while remaining > 0:
-                    stride = remaining if remaining < stride else stride
+                    stride = min(stride, remaining)
                     data += m.squeeze(stride)
                     remaining -= stride
                 assert data == binascii.unhexlify(vector["output"])
