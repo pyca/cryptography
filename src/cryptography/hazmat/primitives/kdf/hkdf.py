@@ -78,8 +78,9 @@ class HKDFExpand(KeyDerivationFunction):
         output = [b""]
         counter = 1
 
+        h_prime = hmac.HMAC(key_material, self._algorithm)
         while self._algorithm.digest_size * (len(output) - 1) < self._length:
-            h = hmac.HMAC(key_material, self._algorithm)
+            h = h_prime.copy()
             h.update(output[-1])
             h.update(self._info)
             h.update(bytes([counter]))
