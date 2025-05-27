@@ -147,7 +147,7 @@ pytest-randomly==3.15.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
 pytest-randomly==3.16.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
-pytest-xdist==3.6.1
+pytest-xdist==3.7.0
     # via cryptography (pyproject.toml)
 pytz==2025.2 ; python_full_version < '3.9'
     # via babel
