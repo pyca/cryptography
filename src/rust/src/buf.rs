@@ -2,10 +2,12 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::slice;
+
+use pyo3::types::PyAnyMethods;
+
 #[cfg(not(Py_3_11))]
 use crate::types;
-use pyo3::types::PyAnyMethods;
-use std::slice;
 
 // Common error message generation
 fn generate_non_convertible_buffer_error_msg(pyobj: &pyo3::Bound<'_, pyo3::PyAny>) -> String {
