@@ -468,8 +468,7 @@ impl Hkdf {
     ) -> CryptographyResult<Self> {
         _ = backend;
 
-        let algorithm_bound = algorithm.bind(py);
-        let digest_size = algorithm_bound
+        let digest_size = algorithm.bind(py)
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
@@ -486,8 +485,7 @@ impl Hkdf {
         let salt = if let Some(salt) = salt {
             salt
         } else {
-            let zero_salt = vec![0u8; digest_size];
-            pyo3::types::PyBytes::new(py, &zero_salt).into()
+            pyo3::types::PyBytes::new_with(py, digest_size, |_| {}).into()
         };
 
         Ok(Hkdf {
@@ -582,8 +580,7 @@ impl HkdfExpand {
     ) -> CryptographyResult<Self> {
         _ = backend;
 
-        let algorithm_bound = algorithm.bind(py);
-        let digest_size = algorithm_bound
+        let digest_size = algorithm.bind(py)
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
