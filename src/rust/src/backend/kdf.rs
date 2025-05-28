@@ -7,6 +7,8 @@ use base64::engine::general_purpose::STANDARD_NO_PAD;
 #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
 use base64::engine::Engine;
 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+use cryptography_crypto::constant_time;
+#[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use pyo3::types::PyBytesMethods;
 
 use crate::backend::hashes;
@@ -152,9 +154,7 @@ impl Scrypt {
         let actual_bytes = actual.as_bytes();
         let expected_bytes = expected_key.as_bytes();
 
-        if actual_bytes.len() != expected_bytes.len()
-            || !openssl::memcmp::eq(actual_bytes, expected_bytes)
-        {
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",
             )));
@@ -314,9 +314,7 @@ impl Argon2id {
         let actual_bytes = actual.as_bytes();
         let expected_bytes = expected_key.as_bytes();
 
-        if actual_bytes.len() != expected_bytes.len()
-            || !openssl::memcmp::eq(actual_bytes, expected_bytes)
-        {
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",
             )));
@@ -435,9 +433,7 @@ impl Argon2id {
         let derived_key = argon2.derive(py, key_material)?;
         let derived_bytes = derived_key.as_bytes();
 
-        if derived_bytes.len() != hash_bytes.len()
-            || !openssl::memcmp::eq(derived_bytes, &hash_bytes)
-        {
+        if !constant_time::bytes_eq(derived_bytes, &hash_bytes) {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",
             )));
