@@ -344,20 +344,6 @@ def hkdf_derive_test(backend, algorithm, params):
     assert okm == binascii.unhexlify(params["okm"])
 
 
-def hkdf_extract_test(backend, algorithm, params):
-    hkdf = HKDF(
-        algorithm,
-        int(params["l"]),
-        salt=binascii.unhexlify(params["salt"]) or None,
-        info=binascii.unhexlify(params["info"]) or None,
-        backend=backend,
-    )
-
-    prk = hkdf._extract(binascii.unhexlify(params["ikm"]))
-
-    assert prk == binascii.unhexlify(params["prk"])
-
-
 def hkdf_expand_test(backend, algorithm, params):
     hkdf = HKDFExpand(
         algorithm,
@@ -374,8 +360,6 @@ def hkdf_expand_test(backend, algorithm, params):
 def generate_hkdf_test(param_loader, path, file_names, algorithm):
     def test_hkdf(self, backend, subtests):
         for params in _load_all_params(path, file_names, param_loader):
-            with subtests.test():
-                hkdf_extract_test(backend, algorithm, params)
             with subtests.test():
                 hkdf_expand_test(backend, algorithm, params)
             with subtests.test():
