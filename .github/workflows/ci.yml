@@ -166,20 +166,71 @@ jobs:
           - {IMAGE: "ubuntu-noble", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-rolling", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "fedora", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
-          - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
           - {IMAGE: "centos-stream10", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream10-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
 
           - {IMAGE: "ubuntu-rolling:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
-          - {IMAGE: "alpine:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
 
           - {IMAGE: "ubuntu-rolling:armv7l", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
     timeout-minutes: 15
     env:
       RUSTUP_HOME: /root/.rustup
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          key: ${{ matrix.IMAGE.IMAGE }}
+      - name: Clone test vectors
+        timeout-minutes: 2
+        uses: ./.github/actions/fetch-vectors
+      # When run in a docker container the home directory doesn't have the same owner as the
+      # apparent user so pip refuses to create a cache dir
+      - name: create pip cache dir
+        run: mkdir -p "${HOME}/.cache/pip"
+      - run: |
+          echo "OPENSSL_FORCE_FIPS_MODE=1" >> $GITHUB_ENV
+        if: matrix.IMAGE.FIPS
+      - run: /venv/bin/python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
+      - run: '/venv/bin/nox -v --install-only'
+        env:
+          # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
+      - run: '/venv/bin/nox --no-install --  --color=yes --wycheproof-root="wycheproof" --x509-limbo-root="x509-limbo"'
+        env:
+          COLUMNS: 80
+          # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
+      - uses: ./.github/actions/upload-coverage
+
+  alpine:
+    runs-on: ${{ matrix.IMAGE.RUNNER }}
+    container:
+      image: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
+      volumes:
+        - /staticnodehost:/staticnodecontainer:rw,rshared
+        - /staticnodehost:/__e/node20:ro,rshared
+    strategy:
+      fail-fast: false
+      matrix:
+        IMAGE:
+          - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "alpine:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
+    timeout-minutes: 15
+    env:
+      RUSTUP_HOME: /root/.rustup
+    steps:
+      - name: Ridiculous-er workaround for static node20
+        run: |
+          cp -R /staticnode/* /staticnodecontainer/
       - name: Ridiculous alpine workaround for actions support on arm64
         run: |
           # This modifies /etc/os-release so the JS actions
@@ -414,7 +465,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, distros, macos, windows, linux-downstream]
+    needs: [linux, alpine, distros, macos, windows, linux-downstream]
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
