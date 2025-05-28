@@ -87,7 +87,7 @@ sdist = ["build >=1.0.0"]
 # `click` included because its needed to type check `release.py`
 pep8test = [
     "ruff >=0.3.6",
-    "mypy >=1.4",
+    "mypy >=1.14",
     "check-sdist",
     "click >=8.0.1",
 ]
@@ -138,6 +138,7 @@ markers = [
 [tool.mypy]
 show_error_codes = true
 check_untyped_defs = true
+incremental = false
 no_implicit_reexport = true
 warn_redundant_casts = true
 warn_unused_ignores = true
