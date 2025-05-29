@@ -24,7 +24,7 @@ license = "Apache-2.0 OR BSD-3-Clause"
 asn1 = { version = "0.21.3", default-features = false }
 pyo3 = { version = "0.25", features = ["abi3"] }
 pyo3-build-config = { version = "0.25" }
-openssl = "0.10.72"
+openssl = "0.10.73"
 openssl-sys = "0.9.108"
 
 [profile.release]
