@@ -305,6 +305,13 @@ You can also build cryptography statically:
 If you need to rebuild ``cryptography`` for any reason be sure to clear the
 local `wheel cache`_.
 
+Building with BoringSSL, LibreSSL, or AWS-LC
+--------------------------------------------
+
+To build against BoringSSL, LibreSSL, or AWS-LC instead of OpenSSL, you can set the
+``OPENSSL_DIR`` environment variable to point to your BoringSSL, LibreSSL, or AWS-LC
+installation directory.
+
 Rust
 ----
 
