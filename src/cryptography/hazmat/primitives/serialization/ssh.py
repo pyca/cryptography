@@ -1124,7 +1124,7 @@ def _load_ssh_public_identity(
 
 
 def load_ssh_public_identity(
-    data: bytes,
+    data: utils.Buffer,
 ) -> SSHCertificate | SSHPublicKeyTypes:
     return _load_ssh_public_identity(data)
 
