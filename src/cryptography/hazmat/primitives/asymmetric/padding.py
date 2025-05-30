@@ -91,8 +91,6 @@ class MGF(metaclass=abc.ABCMeta):
 
 
 class MGF1(MGF):
-    MAX_LENGTH = _MaxLength()
-
     def __init__(self, algorithm: hashes.HashAlgorithm):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
