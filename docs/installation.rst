@@ -234,6 +234,12 @@ dependencies.
     cd ..
     OPENSSL_DIR="${CWD}/openssl" pip wheel --no-cache-dir --no-binary cryptography cryptography
 
+.. note::
+
+    To build against BoringSSL or AWS-LC instead of OpenSSL, you can set the
+    ``OPENSSL_DIR`` environment variable to point to your BoringSSL or AWS-LC
+    installation directory.
+
 Building cryptography on macOS
 ------------------------------
 
