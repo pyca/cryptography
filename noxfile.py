@@ -202,8 +202,8 @@ def flake(session: nox.Session) -> None:
         *pyproject_data["project"]["optional-dependencies"]["nox"],
     )
 
-    session.run("ruff", "check", ".")
-    session.run("ruff", "format", "--check", ".")
+    session.run("ruff", "check")
+    session.run("ruff", "format", "--check")
     session.run(
         "mypy",
         "src/cryptography/",
@@ -286,8 +286,8 @@ def local(session: nox.Session):
         verbose=False,
     )
 
-    session.run("ruff", "format", ".")
-    session.run("ruff", "check", ".")
+    session.run("ruff", "format")
+    session.run("ruff", "check")
 
     session.run("cargo", "fmt", "--all", external=True)
     session.run("cargo", "check", "--all", "--tests", external=True)
