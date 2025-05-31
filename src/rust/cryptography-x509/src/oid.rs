@@ -173,3 +173,6 @@ pub const HMAC_WITH_SHA224_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1
 pub const HMAC_WITH_SHA256_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 9);
 pub const HMAC_WITH_SHA384_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 10);
 pub const HMAC_WITH_SHA512_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 11);
+
+pub const PRIME_FIELD_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 1, 1);
+pub const CHARACTERISTIC_TWO_FIELD_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 10045, 1, 2);
