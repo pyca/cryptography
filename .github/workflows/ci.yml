@@ -44,8 +44,8 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "797ba56186260ef66d186deb200bd324ec1516c8"}}
           # Latest tag of AWS-LC main branch, as of May 30, 2025.
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.52.1"}}
-          # Latest commit on the OpenSSL master branch, as of May 30, 2025.
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "08b2042a20e76472416c8c7c48e479d893ba904f"}}
+          # Latest commit on the OpenSSL master branch, as of May 31, 2025.
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "005f545f6451a16b44aa374e53202f39114cf8d5"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.77: offset_of! in std (for pyo3), c"str" literals (replace cstr_from_literal)
