@@ -103,13 +103,11 @@ fn encrypt_and_serialize<'p>(
     // Get the content encryption algorithm
     let content_encryption_algorithm_type = content_encryption_algorithm;
     let key_size = content_encryption_algorithm_type.getattr(pyo3::intern!(py, "key_size"))?;
-    let key = types::OS_URANDOM
-        .get(py)?
-        .call1((key_size.floor_div(8)?,))?;
+    let key = crate::backend::rand::get_rand_bytes(py, key_size.floor_div(8)?.extract()?)?;
     let content_encryption_algorithm = content_encryption_algorithm_type.call1((&key,))?;
 
     // Get the mode
-    let iv = types::OS_URANDOM.get(py)?.call1((16,))?;
+    let iv = crate::backend::rand::get_rand_bytes(py, 16)?;
     let cbc_mode = types::CBC.get(py)?.call1((&iv,))?;
 
     let encrypted_content = symmetric_encrypt(
