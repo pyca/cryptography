@@ -421,7 +421,7 @@ jobs:
           - scapy
           - sigstore
         PYTHON:
-          - '3.12'
+          - '3.13'
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
