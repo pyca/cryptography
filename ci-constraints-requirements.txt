@@ -105,7 +105,9 @@ packaging==25.0
     #   pytest
     #   sphinx
 pathspec==0.12.1
-    # via check-sdist
+    # via
+    #   check-sdist
+    #   mypy
 platformdirs==4.3.6 ; python_full_version < '3.9'
     # via virtualenv
 platformdirs==4.3.8 ; python_full_version >= '3.9'
@@ -124,11 +126,19 @@ pyenchant==3.2.2
     #   sphinxcontrib-spelling
 pygments==2.19.1
     # via
+    #   pytest
     #   readme-renderer
     #   sphinx
 pyproject-hooks==1.2.0
     # via build
-pytest==8.3.5
+pytest==8.3.5 ; python_full_version < '3.9'
+    # via
+    #   cryptography (pyproject.toml)
+    #   pytest-benchmark
+    #   pytest-cov
+    #   pytest-randomly
+    #   pytest-xdist
+pytest==8.4.0 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
@@ -237,7 +247,11 @@ tomli==2.2.1 ; python_full_version <= '3.11'
     #   nox
     #   pytest
     #   sphinx
-typing-extensions==4.13.2
+typing-extensions==4.13.2 ; python_full_version < '3.9'
+    # via
+    #   exceptiongroup
+    #   mypy
+typing-extensions==4.14.0 ; python_full_version >= '3.9'
     # via
     #   exceptiongroup
     #   mypy
