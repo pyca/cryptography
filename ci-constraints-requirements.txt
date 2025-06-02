@@ -128,7 +128,14 @@ pygments==2.19.1
     #   sphinx
 pyproject-hooks==1.2.0
     # via build
-pytest==8.3.5
+pytest==8.3.5 ; python_full_version < '3.9'
+    # via
+    #   cryptography (pyproject.toml)
+    #   pytest-benchmark
+    #   pytest-cov
+    #   pytest-randomly
+    #   pytest-xdist
+pytest==8.4.0 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
