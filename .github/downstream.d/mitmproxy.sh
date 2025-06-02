@@ -6,7 +6,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/mitmproxy/mitmproxy
         cd mitmproxy
         git rev-parse HEAD
-        uv pip install --system --group dev -e .
+        uv pip install --system --requirements <(uv export --locked) -e .
         ;;
     run)
         cd mitmproxy
