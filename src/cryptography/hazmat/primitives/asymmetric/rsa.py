@@ -184,6 +184,8 @@ def rsa_crt_iqmp(p: int, q: int) -> int:
     """
     Compute the CRT (q ** -1) % p value from RSA primes p and q.
     """
+    if p <= 1 or q <= 1:
+        raise ValueError("Values can't be <= 1")
     return _modinv(q, p)
 
 
@@ -192,6 +194,8 @@ def rsa_crt_dmp1(private_exponent: int, p: int) -> int:
     Compute the CRT private_exponent % (p - 1) value from the RSA
     private_exponent (d) and p.
     """
+    if private_exponent <= 1 or p <= 1:
+        raise ValueError("Values can't be <= 1")
     return private_exponent % (p - 1)
 
 
@@ -200,6 +204,8 @@ def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
     Compute the CRT private_exponent % (q - 1) value from the RSA
     private_exponent (d) and q.
     """
+    if private_exponent <= 1 or q <= 1:
+        raise ValueError("Values can't be <= 1")
     return private_exponent % (q - 1)
 
 
@@ -220,6 +226,8 @@ def rsa_recover_private_exponent(e: int, p: int, q: int) -> int:
     #
     # TODO: Replace with lcm(p - 1, q - 1) once the minimum
     # supported Python version is >= 3.9.
+    if e <= 1 or p <= 1 or q <= 1:
+        raise ValueError("Values can't be <= 1")
     lambda_n = (p - 1) * (q - 1) // gcd(p - 1, q - 1)
     return _modinv(e, lambda_n)
 
