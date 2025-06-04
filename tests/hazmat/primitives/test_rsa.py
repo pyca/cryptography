@@ -2388,6 +2388,28 @@ class TestRSAPrimeFactorRecovery:
             rsa.rsa_recover_prime_factors(21, -1, -1)
 
 
+class TestRSAPartial:
+    def test_rsa_partial(self):
+        # Toy RSA key values
+        p = 521
+        q = 491
+        e = 3
+        d = 16987
+        assert rsa.rsa_crt_iqmp(p, q) == 191
+        assert rsa.rsa_crt_dmp1(d, p) == 347
+        assert rsa.rsa_crt_dmq1(d, q) == 327
+        assert rsa.rsa_recover_private_exponent(e, p, q) == d
+
+        with pytest.raises(ValueError):
+            rsa.rsa_crt_iqmp(0, 0)
+        with pytest.raises(ValueError):
+            rsa.rsa_crt_dmp1(1, 1)
+        with pytest.raises(ValueError):
+            rsa.rsa_crt_dmq1(1, 1)
+        with pytest.raises(ValueError):
+            rsa.rsa_recover_private_exponent(0, 1, 0)
+
+
 class TestRSAPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
