@@ -432,13 +432,9 @@ fn serialize_safebags<'p>(
         if !plain_safebags.is_empty() {
             plain_safebag_contents =
                 asn1::write_single(&asn1::SequenceOfWriter::new(plain_safebags))?;
-            auth_safe_salt = types::OS_URANDOM
-                .get(py)?
-                .call1((e.salt_length(),))?
+            auth_safe_salt = crate::backend::rand::get_rand_bytes(py, e.salt_length())?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            auth_safe_iv = types::OS_URANDOM
-                .get(py)?
-                .call1((16,))?
+            auth_safe_iv = crate::backend::rand::get_rand_bytes(py, 16)?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             auth_safe_ciphertext = e.encrypt(
                 py,
@@ -489,10 +485,8 @@ fn serialize_safebags<'p>(
 
     let auth_safe_content = asn1::write_single(&asn1::SequenceOfWriter::new(auth_safe_contents))?;
 
-    let salt = types::OS_URANDOM
-        .get(py)?
-        .call1((8,))?
-        .extract::<pyo3::pybacked::PyBackedBytes>()?;
+    let salt =
+        crate::backend::rand::get_rand_bytes(py, 8)?.extract::<pyo3::pybacked::PyBackedBytes>()?;
     let mac_algorithm_md =
         hashes::message_digest_from_algorithm(py, &encryption_details.mac_algorithm)?;
     let mac_key = cryptography_crypto::pkcs12::kdf(
@@ -634,13 +628,9 @@ fn serialize_key_and_certificates<'p>(
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
         let key_bag = if let Some(ref e) = encryption_details.encryption_algorithm {
-            key_salt = types::OS_URANDOM
-                .get(py)?
-                .call1((e.salt_length(),))?
+            key_salt = crate::backend::rand::get_rand_bytes(py, e.salt_length())?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
-            key_iv = types::OS_URANDOM
-                .get(py)?
-                .call1((16,))?
+            key_iv = crate::backend::rand::get_rand_bytes(py, 16)?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             key_ciphertext = e.encrypt(
                 py,

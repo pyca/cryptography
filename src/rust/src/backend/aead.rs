@@ -6,7 +6,7 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{exceptions, types};
+use crate::exceptions;
 
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
@@ -525,8 +525,10 @@ impl ChaCha20Poly1305 {
     }
 
     #[staticmethod]
-    fn generate_key(py: pyo3::Python<'_>) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-        Ok(types::OS_URANDOM.get(py)?.call1((32,))?)
+    fn generate_key(
+        py: pyo3::Python<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
+        crate::backend::rand::get_rand_bytes(py, 32)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -639,14 +641,14 @@ impl AesGcm {
     fn generate_key(
         py: pyo3::Python<'_>,
         bit_length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -755,14 +757,13 @@ impl AesCcm {
     fn generate_key(
         py: pyo3::Python<'_>,
         bit_length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
-
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -891,14 +892,14 @@ impl AesSiv {
     fn generate_key(
         py: pyo3::Python<'_>,
         bit_length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
         if bit_length != 256 && bit_length != 384 && bit_length != 512 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 256, 384, or 512"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
     }
 
     #[pyo3(signature = (data, associated_data))]
@@ -989,14 +990,14 @@ impl AesOcb3 {
     fn generate_key(
         py: pyo3::Python<'_>,
         bit_length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
@@ -1116,14 +1117,14 @@ impl AesGcmSiv {
     fn generate_key(
         py: pyo3::Python<'_>,
         bit_length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
         if bit_length != 128 && bit_length != 192 && bit_length != 256 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("bit_length must be 128, 192, or 256"),
             ));
         }
 
-        Ok(types::OS_URANDOM.get(py)?.call1((bit_length / 8,))?)
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
