@@ -152,7 +152,7 @@ class TestPKCS7VerifyCertificate:
         verifier = (
             PolicyBuilder()
             .store(Store([certificate]))
-            .extension_policies(ca_policy, ee_policy)
+            .extension_policies(ca_policy=ca_policy, ee_policy=ee_policy)
             .build_client_verifier()
         )
         verifier.verify(certificate, [])
@@ -245,7 +245,7 @@ class TestPKCS7VerifyCertificate:
         verifier = (
             PolicyBuilder()
             .store(Store([certificate]))
-            .extension_policies(ca_policy, ee_policy)
+            .extension_policies(ca_policy=ca_policy, ee_policy=ee_policy)
             .build_client_verifier()
         )
 
