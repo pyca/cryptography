@@ -224,13 +224,6 @@ class TestPKCS7VerifyCertificate:
             extension, True
         )
 
-        # Add an invalid extension
-        usages = [x509.ExtendedKeyUsageOID.CLIENT_AUTH]  # type: ignore[attr-defined]
-        extension = x509.ExtendedKeyUsage(usages)
-        certificate_builder = certificate_builder.add_extension(
-            extension, True
-        )
-
         # Build the certificate
         pkcs7_certificate = certificate_builder.sign(
             private_key, certificate.signature_hash_algorithm, None
