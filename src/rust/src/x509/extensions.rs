@@ -60,7 +60,11 @@ pub(crate) fn encode_authority_key_identifier<'a>(
     let authority_cert_serial_number =
         if let Some(authority_cert_serial_number) = aki.authority_cert_serial_number {
             serial_bytes = py_uint_to_big_endian_bytes(py, authority_cert_serial_number)?;
-            Some(SerialNumber::new(&serial_bytes).unwrap())
+            Some(SerialNumber::new(&serial_bytes).ok_or_else(|| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Invalid serial number bytes",
+                ))
+            })?)
         } else {
             None
         };
