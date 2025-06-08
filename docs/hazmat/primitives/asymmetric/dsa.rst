@@ -277,7 +277,7 @@ Key interfaces
 
         :type: int
 
-        The bit length of :attr:`~DSAParameterNumbers.q`.
+        The bit length of :attr:`~DSAParameterNumbers.p`.
 
     .. method:: sign(data, algorithm)
 
@@ -347,7 +347,7 @@ Key interfaces
 
         :type: int
 
-        The bit length of :attr:`~DSAParameterNumbers.q`.
+        The bit length of :attr:`~DSAParameterNumbers.p`.
 
     .. method:: parameters()
 
