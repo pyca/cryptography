@@ -67,6 +67,8 @@ Asymmetric ciphers
 * ``asymmetric/PKCS8/rsa-rc2-cbc-effective-key-length.pem`` a PKCS8 encoded key
   encrypted with ``RC2-CBC`` with the ``effectiveKeyLength`` parameter set to
   258. This is an invalid key.
+* ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
+  encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
 
 
 Custom asymmetric vectors
