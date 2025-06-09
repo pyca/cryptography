@@ -358,7 +358,7 @@ jobs:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
         exclude:
-          - PYTHON: {VERSION: "3.7", NOXSESSION: "tests-nocoverage"}
+          - PYTHON: {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
             WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
     steps:
