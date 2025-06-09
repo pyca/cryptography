@@ -213,6 +213,14 @@ pub fn parse_encrypted_private_key(
             openssl::hash::MessageDigest::sha1(),
             &params,
         )?,
+        #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
+        AlgorithmParameters::PbeWithShaAnd128BitRc4(params) => pkcs12_pbe_decrypt(
+            epki.encrypted_data,
+            password,
+            openssl::symm::Cipher::rc4(),
+            openssl::hash::MessageDigest::sha1(),
+            &params,
+        )?,
         AlgorithmParameters::Pbes2(params) => {
             let (cipher, iv) = match params.encryption_scheme.params {
                 AlgorithmParameters::DesEde3Cbc(ref iv) => {
