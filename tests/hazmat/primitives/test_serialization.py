@@ -11,7 +11,7 @@ import textwrap
 import pytest
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, RC2
+from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, ARC4, RC2
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -551,6 +551,21 @@ class TestDERSerialization:
         )
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            ARC4(b"\x00" * 16), None
+        ),
+        skip_message="Does not support RC4",
+    )
+    def test_load_pkcs8_rc4_sha1_128bit(self):
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "enc-ec-sha1-128-rc4.pem"),
+            lambda f: load_pem_private_key(f.read(), password=b"password"),
+            mode="rb",
+        )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+        assert isinstance(key.curve, ec.SECP256R1)
 
     def test_load_pkcs8_aes_192_cbc(self):
         key = load_vectors_from_file(
