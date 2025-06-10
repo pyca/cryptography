@@ -23,7 +23,6 @@ Changelog
 
 * Fixed decrypting PKCS#8 files encrypted with SHA1-RC4. (This is not
   considered secure, and is supported only for backwards compatibility.)
-Add commentMore actions
 
 .. _v45-0-3:
 
