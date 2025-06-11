@@ -86,8 +86,8 @@ docstest = [
 sdist = ["build >=1.0.0"]
 # `click` included because its needed to type check `release.py`
 pep8test = [
-    "ruff >=0.3.6",
-    "mypy >=1.4",
+    "ruff >=0.11.11",
+    "mypy >=1.14",
     "check-sdist",
     "click >=8.0.1",
 ]
