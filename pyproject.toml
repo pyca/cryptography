@@ -138,7 +138,6 @@ markers = [
 [tool.mypy]
 show_error_codes = true
 check_untyped_defs = true
-incremental = false
 no_implicit_reexport = true
 warn_redundant_casts = true
 warn_unused_ignores = true
