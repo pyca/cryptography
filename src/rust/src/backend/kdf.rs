@@ -468,7 +468,8 @@ impl Hkdf {
     ) -> CryptographyResult<Self> {
         _ = backend;
 
-        let digest_size = algorithm.bind(py)
+        let digest_size = algorithm
+            .bind(py)
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
@@ -485,7 +486,7 @@ impl Hkdf {
         let salt = if let Some(salt) = salt {
             salt
         } else {
-            pyo3::types::PyBytes::new_with(py, digest_size, |_| {}).into()
+            pyo3::types::PyBytes::new_with(py, digest_size, |_| Ok(()))?.into()
         };
 
         Ok(Hkdf {
@@ -580,7 +581,8 @@ impl HkdfExpand {
     ) -> CryptographyResult<Self> {
         _ = backend;
 
-        let digest_size = algorithm.bind(py)
+        let digest_size = algorithm
+            .bind(py)
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
@@ -621,19 +623,26 @@ impl HkdfExpand {
         let algorithm_bound = self.algorithm.bind(py);
 
         let mut output = Vec::new();
-        let mut counter = 1u16;
-        let mut previous_output = Vec::new();
+        let mut counter = 1u8;
 
         let h_prime = Hmac::new_bytes(py, key_material.as_bytes(), algorithm_bound)?;
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
         while output.len() < self.length {
             let mut h = h_prime.copy(py)?;
-            h.update_bytes(&previous_output)?;
+
+            // Use slice from output buffer instead of separate vector
+            if counter > 1 {
+                let start = output.len() - digest_size;
+                h.update_bytes(&output[start..])?;
+            }
+
             h.update_bytes(self.info.as_bytes(py))?;
             h.update_bytes(&[counter])?;
 
             let block = h.finalize(py)?;
             let block_bytes = block.as_bytes();
-            previous_output = block_bytes.to_vec();
             output.extend_from_slice(block_bytes);
 
             counter += 1;
