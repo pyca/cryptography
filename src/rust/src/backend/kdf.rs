@@ -621,35 +621,38 @@ impl HkdfExpand {
         self.used = true;
 
         let algorithm_bound = self.algorithm.bind(py);
-
-        let mut output = Vec::new();
-        let mut counter = 1u8;
-
         let h_prime = Hmac::new_bytes(py, key_material.as_bytes(), algorithm_bound)?;
         let digest_size = algorithm_bound
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
-        while output.len() < self.length {
-            let mut h = h_prime.copy(py)?;
 
-            // Use slice from output buffer instead of separate vector
-            if counter > 1 {
-                let start = output.len() - digest_size;
-                h.update_bytes(&output[start..])?;
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            let mut pos = 0;
+            let mut counter = 1u8;
+
+            while pos < self.length {
+                let mut h = h_prime.copy(py)?;
+
+                if counter > 1 {
+                    let start = pos - digest_size;
+                    h.update_bytes(&output[start..pos])?;
+                }
+
+                h.update_bytes(self.info.as_bytes(py))?;
+                h.update_bytes(&[counter])?;
+
+                let block = h.finalize(py)?;
+                let block_bytes = block.as_bytes();
+
+                let copy_len = (self.length - pos).min(digest_size);
+                output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+                pos += copy_len;
+
+                counter += 1;
             }
 
-            h.update_bytes(self.info.as_bytes(py))?;
-            h.update_bytes(&[counter])?;
-
-            let block = h.finalize(py)?;
-            let block_bytes = block.as_bytes();
-            output.extend_from_slice(block_bytes);
-
-            counter += 1;
-        }
-
-        output.truncate(self.length);
-        Ok(pyo3::types::PyBytes::new(py, &output))
+            Ok(())
+        })?)
     }
 
     fn verify(
