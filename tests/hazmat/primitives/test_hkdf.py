@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import sys
 
 import pytest
 
@@ -221,8 +222,11 @@ class TestHKDFExpand:
             hkdf.derive("first")  # type: ignore[arg-type]
 
     def test_overflow_protection_enormous_digest_size(self, backend):
-        # Test with digest size that would cause overflow when * by 255
-        enormous_digest_size = 2**60
+        # Handle 32-bit and 64-bit systems for this particular test
+        if sys.maxsize < 2**31:
+            enormous_digest_size = 2**30
+        else:
+            enormous_digest_size = 2**60
 
         dummy_hash = DummyHashAlgorithm(enormous_digest_size)
 
