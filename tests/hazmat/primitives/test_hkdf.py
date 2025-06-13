@@ -219,7 +219,7 @@ class TestHKDFExpand:
         with pytest.raises(TypeError):
             hkdf.derive("first")  # type: ignore[arg-type]
 
-    def test_overflow_protection_enormous_digest_size(self, backend):
+    def test_overflow_protection_enormous_digest_size(self):
         enormous_digest_size = sys.maxsize >> 3
         dummy_hash = DummyHashAlgorithm(enormous_digest_size)
 
@@ -227,3 +227,13 @@ class TestHKDFExpand:
             ValueError, match="Digest size too large, would cause overflow"
         ):
             HKDFExpand(dummy_hash, 32, info=None)
+
+    def test_length_limit(self):
+        big_length = 255 * hashes.SHA256().digest_size + 1
+
+        with pytest.raises(ValueError):
+            HKDFExpand(
+                hashes.SHA256(),
+                big_length,
+                info=None,
+            )
