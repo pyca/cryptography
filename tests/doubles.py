@@ -36,7 +36,13 @@ class DummyMode(Mode):
 class DummyHashAlgorithm(hashes.HashAlgorithm):
     name = "dummy-hash"
     block_size = None
-    digest_size = 32
+
+    def __init__(self, digest_size: int = 32) -> None:
+        self._digest_size = digest_size
+
+    @property
+    def digest_size(self) -> int:
+        return self._digest_size
 
 
 class DummyKeySerializationEncryption(

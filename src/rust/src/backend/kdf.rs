@@ -473,7 +473,11 @@ impl Hkdf {
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
-        let max_length = 255 * digest_size;
+        let max_length = 255usize.checked_mul(digest_size).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Digest size too large, would cause overflow in max length calculation",
+            )
+        })?;
         if length > max_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -586,7 +590,11 @@ impl HkdfExpand {
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
-        let max_length = 255 * digest_size;
+        let max_length = 255usize.checked_mul(digest_size).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Digest size too large, would cause overflow in max length calculation",
+            )
+        })?;
         if length > max_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -627,16 +635,14 @@ impl HkdfExpand {
             .extract::<usize>()?;
 
         Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
-            let mut pos = 0;
+            let mut pos = 0usize;
             let mut counter = 1u8;
 
             while pos < self.length {
                 let mut h = h_prime.copy(py)?;
 
-                if counter > 1 {
-                    let start = pos - digest_size;
-                    h.update_bytes(&output[start..pos])?;
-                }
+                let start = pos.saturating_sub(digest_size);
+                h.update_bytes(&output[start..pos])?;
 
                 h.update_bytes(self.info.as_bytes(py))?;
                 h.update_bytes(&[counter])?;
