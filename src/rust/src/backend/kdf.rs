@@ -480,8 +480,7 @@ impl Hkdf {
         if length > max_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Cannot derive keys larger than {} octets.",
-                    max_length
+                    "Cannot derive keys larger than {max_length} octets."
                 )),
             ));
         }
@@ -594,8 +593,7 @@ impl HkdfExpand {
         if length > max_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Cannot derive keys larger than {} octets.",
-                    max_length
+                    "Cannot derive keys larger than {max_length} octets."
                 )),
             ));
         }
