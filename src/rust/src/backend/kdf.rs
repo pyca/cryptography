@@ -9,7 +9,6 @@ use base64::engine::Engine;
 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use cryptography_crypto::constant_time;
 use pyo3::prelude::PyAnyMethods;
-#[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use pyo3::types::PyBytesMethods;
 
 use crate::backend::hashes;
