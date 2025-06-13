@@ -523,10 +523,7 @@ impl Hkdf {
         }
         self.used = true;
 
-        // HKDF Extract
         let prk = self._extract(py, key_material.as_bytes())?;
-
-        // HKDF Expand
         let mut hkdf_expand = HkdfExpand::new(
             py,
             self.algorithm.clone_ref(py),
