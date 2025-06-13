@@ -19,7 +19,7 @@ from ...utils import load_nist_vectors, load_vectors_from_file
 
 class TestHKDF:
     def test_overflow_protection_enormous_digest_size(self, backend):
-        enormous_digest_size =  sys.maxsize >> 3
+        enormous_digest_size = sys.maxsize >> 3
         dummy_hash = DummyHashAlgorithm(enormous_digest_size)
 
         with pytest.raises(
@@ -220,7 +220,7 @@ class TestHKDFExpand:
             hkdf.derive("first")  # type: ignore[arg-type]
 
     def test_overflow_protection_enormous_digest_size(self, backend):
-        enormous_digest_size =  sys.maxsize >> 3
+        enormous_digest_size = sys.maxsize >> 3
         dummy_hash = DummyHashAlgorithm(enormous_digest_size)
 
         with pytest.raises(
