@@ -632,9 +632,10 @@ impl HkdfExpand {
 
         Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
             let mut pos = 0usize;
-            let mut counter = 1u8;
+            let mut counter = 0u8;
 
             while pos < self.length {
+                counter += 1;
                 let mut h = h_prime.copy(py)?;
 
                 let start = pos.saturating_sub(digest_size);
@@ -649,8 +650,6 @@ impl HkdfExpand {
                 let copy_len = (self.length - pos).min(digest_size);
                 output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
                 pos += copy_len;
-
-                counter += 1;
             }
 
             Ok(())
