@@ -797,5 +797,5 @@ impl HkdfExpand {
 #[pyo3::pymodule]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::{_hmac_supported, Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
+    use super::{Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt, _hmac_supported};
 }
