@@ -6,7 +6,6 @@
 use base64::engine::general_purpose::STANDARD_NO_PAD;
 #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
 use base64::engine::Engine;
-#[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use cryptography_crypto::constant_time;
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
