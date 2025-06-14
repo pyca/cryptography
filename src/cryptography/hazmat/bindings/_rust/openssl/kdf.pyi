@@ -7,13 +7,19 @@ import typing
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
 from cryptography.utils import Buffer
 
-def derive_pbkdf2_hmac(
-    key_material: Buffer,
-    algorithm: HashAlgorithm,
-    salt: bytes,
-    iterations: int,
-    length: int,
-) -> bytes: ...
+def _hmac_supported(algorithm: HashAlgorithm) -> bool: ...
+
+class PBKDF2HMAC:
+    def __init__(
+        self,
+        algorithm: HashAlgorithm,
+        length: int,
+        salt: bytes,
+        iterations: int,
+        backend: typing.Any = None,
+    ) -> None: ...
+    def derive(self, key_material: Buffer) -> bytes: ...
+    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
 
 class Scrypt:
     def __init__(

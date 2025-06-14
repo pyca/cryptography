@@ -15,7 +15,7 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-#[pyo3::pyfunction]
+// TODO: remove this function
 pub(crate) fn derive_pbkdf2_hmac<'p>(
     py: pyo3::Python<'p>,
     key_material: CffiBuf<'_>,
@@ -30,6 +30,130 @@ pub(crate) fn derive_pbkdf2_hmac<'p>(
         openssl::pkcs5::pbkdf2_hmac(key_material.as_bytes(), salt, iterations, md, b).unwrap();
         Ok(())
     })?)
+}
+
+#[pyo3::pyfunction]
+pub(crate) fn _hmac_supported(
+    py: pyo3::Python<'_>,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<bool> {
+    let fips_enabled = cryptography_openssl::fips::is_enabled();
+
+    // Get algorithm name
+    let name = algorithm
+        .getattr(pyo3::intern!(py, "name"))?
+        .extract::<pyo3::pybacked::PyBackedStr>()?;
+
+    // FIPS mode still allows SHA1 for HMAC
+    if fips_enabled && name == "sha1" {
+        return Ok(true);
+    }
+
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            // AWS-LC only supports specific hash algorithms
+            Ok(matches!(
+                name.as_ref(),
+                "sha1" | "sha224" | "sha256" | "sha384" | "sha512" | "sha512-224" | "sha512-256"
+            ))
+        } else {
+            Ok(hashes::message_digest_from_algorithm(py, algorithm).is_ok())
+        }
+    }
+}
+
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.pbkdf2",
+    name = "PBKDF2HMAC"
+)]
+struct Pbkdf2Hmac {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    salt: pyo3::Py<pyo3::types::PyBytes>,
+    length: usize,
+    iterations: usize,
+    used: bool,
+}
+
+#[pyo3::pymethods]
+impl Pbkdf2Hmac {
+    #[new]
+    #[pyo3(signature = (algorithm, length, salt, iterations, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        iterations: usize,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let algorithm_bound = algorithm.bind(py);
+        if !_hmac_supported(py, algorithm_bound)? {
+            let name = algorithm_bound
+                .getattr(pyo3::intern!(py, "name"))?
+                .extract::<pyo3::pybacked::PyBackedStr>()?;
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    format!("{name} is not supported for PBKDF2."),
+                    exceptions::Reasons::UNSUPPORTED_HASH,
+                )),
+            ));
+        }
+
+        Ok(Pbkdf2Hmac {
+            algorithm,
+            salt,
+            length,
+            iterations,
+            used: false,
+        })
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let md = hashes::message_digest_from_algorithm(py, algorithm_bound)?;
+
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
+            openssl::pkcs5::pbkdf2_hmac(
+                key_material.as_bytes(),
+                self.salt.as_bytes(py),
+                self.iterations,
+                md,
+                b,
+            )
+            .unwrap();
+            Ok(())
+        })?)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.scrypt")]
@@ -673,13 +797,5 @@ impl HkdfExpand {
 #[pyo3::pymodule]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::derive_pbkdf2_hmac;
-    #[pymodule_export]
-    use super::Argon2id;
-    #[pymodule_export]
-    use super::Hkdf;
-    #[pymodule_export]
-    use super::HkdfExpand;
-    #[pymodule_export]
-    use super::Scrypt;
+    use super::{_hmac_supported, Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
 }
