@@ -8,8 +8,7 @@ use base64::engine::general_purpose::STANDARD_NO_PAD;
 use base64::engine::Engine;
 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use cryptography_crypto::constant_time;
-use pyo3::prelude::PyAnyMethods;
-use pyo3::types::PyBytesMethods;
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes;
 use crate::backend::hmac::Hmac;
@@ -544,9 +543,7 @@ impl Hkdf {
         let actual_bytes = actual.as_bytes();
         let expected_bytes = expected_key.as_bytes();
 
-        if actual_bytes.len() != expected_bytes.len()
-            || !openssl::memcmp::eq(actual_bytes, expected_bytes)
-        {
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",
             )));
@@ -664,9 +661,7 @@ impl HkdfExpand {
         let actual_bytes = actual.as_bytes();
         let expected_bytes = expected_key.as_bytes();
 
-        if actual_bytes.len() != expected_bytes.len()
-            || !openssl::memcmp::eq(actual_bytes, expected_bytes)
-        {
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Keys do not match.",
             )));
