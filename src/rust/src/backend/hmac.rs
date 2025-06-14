@@ -100,7 +100,7 @@ impl Hmac {
         Ok(())
     }
 
-    fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hmac> {
+    pub(crate) fn copy(&self, py: pyo3::Python<'_>) -> CryptographyResult<Hmac> {
         Ok(Hmac {
             ctx: Some(self.get_ctx()?.copy()?),
             algorithm: self.algorithm.clone_ref(py),

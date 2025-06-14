@@ -47,3 +47,26 @@ class Argon2id:
     def verify_phc_encoded(
         cls, key_material: bytes, phc_encoded: str, secret: bytes | None = None
     ) -> None: ...
+
+class HKDF:
+    def __init__(
+        self,
+        algorithm: HashAlgorithm,
+        length: int,
+        salt: bytes | None,
+        info: bytes | None,
+        backend: typing.Any = None,
+    ): ...
+    def derive(self, key_material: Buffer) -> bytes: ...
+    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+
+class HKDFExpand:
+    def __init__(
+        self,
+        algorithm: HashAlgorithm,
+        length: int,
+        info: bytes | None,
+        backend: typing.Any = None,
+    ): ...
+    def derive(self, key_material: Buffer) -> bytes: ...
+    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...

@@ -6,12 +6,11 @@
 use base64::engine::general_purpose::STANDARD_NO_PAD;
 #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
 use base64::engine::Engine;
-#[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
 use cryptography_crypto::constant_time;
-#[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
-use pyo3::types::PyBytesMethods;
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes;
+use crate::backend::hmac::Hmac;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
@@ -443,12 +442,244 @@ impl Argon2id {
     }
 }
 
+#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.hkdf", name = "HKDF")]
+struct Hkdf {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    salt: pyo3::Py<pyo3::types::PyBytes>,
+    info: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    length: usize,
+    used: bool,
+}
+
+#[pyo3::pymethods]
+impl Hkdf {
+    #[new]
+    #[pyo3(signature = (algorithm, length, salt=None, info=None, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        info: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let digest_size = algorithm
+            .bind(py)
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let max_length = 255usize.checked_mul(digest_size).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Digest size too large, would cause overflow in max length calculation",
+            )
+        })?;
+        if length > max_length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Cannot derive keys larger than {max_length} octets."
+                )),
+            ));
+        }
+
+        let salt = if let Some(salt) = salt {
+            salt
+        } else {
+            pyo3::types::PyBytes::new_with(py, digest_size, |_| Ok(()))?.into()
+        };
+
+        Ok(Hkdf {
+            algorithm,
+            salt,
+            info,
+            length,
+            used: false,
+        })
+    }
+
+    fn _extract<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        key_material: &[u8],
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let algorithm_bound = self.algorithm.bind(py);
+        let mut hmac = Hmac::new_bytes(py, self.salt.as_bytes(py), algorithm_bound)?;
+        hmac.update_bytes(key_material)?;
+        hmac.finalize(py)
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        let prk = self._extract(py, key_material.as_bytes())?;
+        let mut hkdf_expand = HkdfExpand::new(
+            py,
+            self.algorithm.clone_ref(py),
+            self.length,
+            self.info.as_ref().map(|i| i.clone_ref(py)),
+            None,
+        )?;
+        let prk_bytes = prk.as_bytes();
+        let cffi_buf = CffiBuf::from_bytes(py, prk_bytes);
+        hkdf_expand.derive(py, cffi_buf)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.hkdf",
+    name = "HKDFExpand"
+)]
+struct HkdfExpand {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    info: pyo3::Py<pyo3::types::PyBytes>,
+    length: usize,
+    used: bool,
+}
+
+#[pyo3::pymethods]
+impl HkdfExpand {
+    #[new]
+    #[pyo3(signature = (algorithm, length, info, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        info: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let digest_size = algorithm
+            .bind(py)
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let max_length = 255usize.checked_mul(digest_size).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Digest size too large, would cause overflow in max length calculation",
+            )
+        })?;
+        if length > max_length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Cannot derive keys larger than {max_length} octets."
+                )),
+            ));
+        }
+
+        let info = if let Some(info) = info {
+            info
+        } else {
+            pyo3::types::PyBytes::new(py, b"").into()
+        };
+
+        Ok(HkdfExpand {
+            algorithm,
+            info,
+            length,
+            used: false,
+        })
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let h_prime = Hmac::new_bytes(py, key_material.as_bytes(), algorithm_bound)?;
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            let mut pos = 0usize;
+            let mut counter = 0u8;
+
+            while pos < self.length {
+                counter += 1;
+                let mut h = h_prime.copy(py)?;
+
+                let start = pos.saturating_sub(digest_size);
+                h.update_bytes(&output[start..pos])?;
+
+                h.update_bytes(self.info.as_bytes(py))?;
+                h.update_bytes(&[counter])?;
+
+                let block = h.finalize(py)?;
+                let block_bytes = block.as_bytes();
+
+                let copy_len = (self.length - pos).min(digest_size);
+                output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+                pos += copy_len;
+            }
+
+            Ok(())
+        })?)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
 #[pyo3::pymodule]
 pub(crate) mod kdf {
     #[pymodule_export]
     use super::derive_pbkdf2_hmac;
     #[pymodule_export]
     use super::Argon2id;
+    #[pymodule_export]
+    use super::Hkdf;
+    #[pymodule_export]
+    use super::HkdfExpand;
     #[pymodule_export]
     use super::Scrypt;
 }

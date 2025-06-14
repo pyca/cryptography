@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import sys
 
 import pytest
 
@@ -12,10 +13,20 @@ from cryptography.exceptions import AlreadyFinalized, InvalidKey
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 
+from ...doubles import DummyHashAlgorithm
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
 class TestHKDF:
+    def test_overflow_protection_enormous_digest_size(self, backend):
+        enormous_digest_size = sys.maxsize >> 3
+        dummy_hash = DummyHashAlgorithm(enormous_digest_size)
+
+        with pytest.raises(
+            ValueError, match="Digest size too large, would cause overflow"
+        ):
+            HKDF(dummy_hash, 32, salt=None, info=None)
+
     def test_length_limit(self, backend):
         big_length = 255 * hashes.SHA256().digest_size + 1
 
@@ -207,3 +218,22 @@ class TestHKDFExpand:
 
         with pytest.raises(TypeError):
             hkdf.derive("first")  # type: ignore[arg-type]
+
+    def test_overflow_protection_enormous_digest_size(self):
+        enormous_digest_size = sys.maxsize >> 3
+        dummy_hash = DummyHashAlgorithm(enormous_digest_size)
+
+        with pytest.raises(
+            ValueError, match="Digest size too large, would cause overflow"
+        ):
+            HKDFExpand(dummy_hash, 32, info=None)
+
+    def test_length_limit(self):
+        big_length = 255 * hashes.SHA256().digest_size + 1
+
+        with pytest.raises(ValueError):
+            HKDFExpand(
+                hashes.SHA256(),
+                big_length,
+                info=None,
+            )
