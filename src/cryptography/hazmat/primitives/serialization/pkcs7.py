@@ -62,28 +62,33 @@ class PKCS7Options(utils.Enum):
 
 def pkcs7_x509_extension_policies() -> tuple[ExtensionPolicy, ExtensionPolicy]:
     """
-    Gets the default X.509 extension policy for S/MIME. Some specifications
-    that differ from the standard ones:
-    - Certificates used as end entities (i.e., the cert used to sign
-      a PKCS#7/SMIME message) should not have ca=true in their basic
-      constraints extension.
-    - EKU_CLIENT_AUTH_OID is not required
-    - EKU_EMAIL_PROTECTION_OID is required
+    Gets the default X.509 extension policy for S/MIME, based on RFC 8550.
+    Visit https://www.rfc-editor.org/rfc/rfc8550#section-4.4 for more info.
     """
-
-    # CA policy - TODO: is default CA policy sufficient? Too much?
+    # CA policy
     ca_policy = ExtensionPolicy.webpki_defaults_ca()
 
     # EE policy
     def _validate_basic_constraints(
         policy: Policy, cert: Certificate, bc: x509.BasicConstraints | None
     ) -> None:
+        """
+        We check that Certificates used as EE (i.e., the cert used to sign
+        a PKCS#7/SMIME message) must not have ca=true in their basic
+        constraints extension. RFC 5280 doesn't impose this requirement, but we
+        firmly agree about it being best practice.
+        """
         if bc is not None and bc.ca:
             raise ValueError("Basic Constraints CA must be False.")
 
     def _validate_key_usage(
         policy: Policy, cert: Certificate, ku: x509.KeyUsage | None
     ) -> None:
+        """
+        Checks that the Key Usage extension, if present, has at least one of
+        the digital signature or content commitment (formerly non-repudiation)
+        bits set.
+        """
         if (
             ku is not None
             and not ku.digital_signature
@@ -128,6 +133,10 @@ def pkcs7_x509_extension_policies() -> tuple[ExtensionPolicy, ExtensionPolicy]:
     def _validate_extended_key_usage(
         policy: Policy, cert: Certificate, eku: x509.ExtendedKeyUsage | None
     ) -> None:
+        """
+        Checks that the Extended Key Usage extension, if present,
+        includes either emailProtection or anyExtendedKeyUsage bits.
+        """
         if (
             eku is not None
             and ExtendedKeyUsageOID.EMAIL_PROTECTION not in eku
