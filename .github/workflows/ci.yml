@@ -222,6 +222,7 @@ jobs:
         IMAGE:
           - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "alpine:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
+          - {IMAGE: "alpine:armv7l", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
     timeout-minutes: 15
     env:
       RUSTUP_HOME: /root/.rustup
@@ -236,7 +237,7 @@ jobs:
           # then use a glibc nodejs, which works fine when gcompat
           # is installed in the container (which it is)
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
-        if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
+        if: matrix.IMAGE.IMAGE == 'alpine:aarch64' || matrix.IMAGE.IMAGE == 'alpine:armv7l'
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         timeout-minutes: 3
