@@ -89,7 +89,7 @@ markupsafe==3.0.2 ; python_full_version >= '3.9'
     # via jinja2
 mypy==1.14.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-mypy==1.16.0 ; python_full_version >= '3.9'
+mypy==1.16.1 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
