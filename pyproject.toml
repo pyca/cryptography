@@ -179,6 +179,9 @@ line-length = 79
 lint.ignore = ['N818']
 lint.select = ['E', 'F', 'I', 'N', 'W', 'UP', 'RUF']
 
+[tool.ruff.per-file-target-version]
+".github/bin/merge_rust_coverage.py" = "py313"
+
 [tool.ruff.lint.isort]
 known-first-party = ["cryptography", "cryptography_vectors", "tests"]
 
