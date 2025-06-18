@@ -102,5 +102,5 @@ def linkcode_resolve(domain, info):
     if "dev" in cryptography.__version__:
         return url % ("main", fn, linespec)
     else:
-        version = ".".join(cryptography.__version__.split(".")[:2] + ["x"])
+        version = ".".join([*cryptography.__version__.split(".")[:2], "x"])
         return url % (version, fn, linespec)
