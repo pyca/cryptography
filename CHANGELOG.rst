@@ -9,6 +9,9 @@ Changelog
 .. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
+* Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
+* Added support for loading elliptic curve keys that contain explicit encodings
+  of the curves ``secp256r1``, ``secp384r1``, ``secp521r1``, and ``secp256k1``.
 * Removed the deprecated ``get_attribute_for_oid`` method on
   :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
   :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` instead.
