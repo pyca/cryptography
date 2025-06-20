@@ -40,6 +40,9 @@ impl asn1::SimpleAsn1Writable for UnvalidatedIA5String<'_> {
     fn write_data(&self, dest: &mut asn1::WriteBuf) -> asn1::WriteResult {
         dest.push_slice(self.0.as_bytes())
     }
+    fn data_length(&self) -> Option<usize> {
+        Some(self.0.len())
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash)]

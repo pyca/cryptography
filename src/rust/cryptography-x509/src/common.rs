@@ -243,7 +243,14 @@ impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
 }
 impl asn1::Asn1Writable for RawTlv<'_> {
     fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult {
-        w.write_tlv(self.tag, move |dest| dest.push_slice(self.value))
+        w.write_tlv(self.tag, Some(self.value.len()), move |dest| {
+            dest.push_slice(self.value)
+        })
+    }
+
+    fn encoded_length(&self) -> Option<usize> {
+        // TODO: we're missing an API to make this easy.
+        None
     }
 }
 
@@ -302,6 +309,13 @@ impl<T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1W
         match self {
             Asn1ReadableOrWritable::Read(v) => T::write_data(v, w),
             Asn1ReadableOrWritable::Write(v) => U::write_data(v, w),
+        }
+    }
+
+    fn data_length(&self) -> Option<usize> {
+        match self {
+            Asn1ReadableOrWritable::Read(v) => T::data_length(v),
+            Asn1ReadableOrWritable::Write(v) => U::data_length(v),
         }
     }
 }
@@ -579,6 +593,10 @@ impl asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'_> {
     fn write_data(&self, _: &mut asn1::WriteBuf) -> asn1::WriteResult {
         unimplemented!();
     }
+
+    fn data_length(&self) -> Option<usize> {
+        None
+    }
 }
 
 /// A BMPString ASN.1 element, where it is stored as a UTF-8 string in memory.
@@ -597,6 +615,10 @@ impl asn1::SimpleAsn1Writable for Utf8StoredBMPString<'_> {
             writer.push_slice(&ch.to_be_bytes())?;
         }
         Ok(())
+    }
+
+    fn data_length(&self) -> Option<usize> {
+        Some(self.0.encode_utf16().count() * 2)
     }
 }
 
@@ -637,6 +659,10 @@ impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
 impl<T: asn1::Asn1Writable> asn1::Asn1Writable for WithTlv<'_, T> {
     fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult<()> {
         self.value.write(w)
+    }
+
+    fn encoded_length(&self) -> Option<usize> {
+        self.value.encoded_length()
     }
 }
 
