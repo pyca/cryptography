@@ -127,6 +127,8 @@ typedef ... SSL_SESSION;
 
 typedef ... SSL;
 
+typedef ... OSSL_LIB_CTX;
+
 static const long TLSEXT_NAMETYPE_host_name;
 static const long TLSEXT_STATUSTYPE_ocsp;
 
@@ -336,6 +338,7 @@ const SSL_METHOD *TLS_client_method(void);
 
 /*- These aren't macros these arguments are all const X on openssl > 1.0.x -*/
 SSL_CTX *SSL_CTX_new(SSL_METHOD *);
+SSL_CTX *SSL_CTX_new_ex(OSSL_LIB_CTX *, const char *, const SSL_METHOD *);
 long SSL_CTX_get_timeout(const SSL_CTX *);
 
 const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
