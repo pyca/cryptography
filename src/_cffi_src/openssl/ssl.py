@@ -127,8 +127,6 @@ typedef ... SSL_SESSION;
 
 typedef ... SSL;
 
-typedef ... OSSL_LIB_CTX;
-
 static const long TLSEXT_NAMETYPE_host_name;
 static const long TLSEXT_STATUSTYPE_ocsp;
 

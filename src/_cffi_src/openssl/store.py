@@ -4,15 +4,15 @@
 
 from __future__ import annotations
 
-includes = """
+INCLUDES = """
 #include <openssl/store.h>
 """
 
 TYPES = """
 typedef ... OSSL_STORE_CTX;
-typedef ... UI_METHOD;
 typedef ... OSSL_STORE_post_process_info_fn;
 typedef ... OSSL_STORE_INFO;
+typedef ... OSSL_PARAM;
 """
 
 FUNCTIONS = """

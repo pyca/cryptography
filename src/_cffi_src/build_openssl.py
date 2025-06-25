@@ -37,11 +37,14 @@ ffi = build_ffi_for_binding(
         "pem",
         "rand",
         "rsa",
+        "context",
         "ssl",
         "x509",
         "x509name",
         "x509v3",
         "x509_vfy",
+        "provider",
+        "store",
     ],
 )
 

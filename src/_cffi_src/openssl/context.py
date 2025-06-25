@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-includes = """
+INCLUDES = """
 #include <openssl/crypto.h>
 """
 
