@@ -10,9 +10,10 @@ INCLUDES = """
 
 TYPES = """
 typedef ... OSSL_STORE_CTX;
-typedef ... OSSL_STORE_post_process_info_fn;
 typedef ... OSSL_STORE_INFO;
 typedef ... OSSL_PARAM;
+typedef OSSL_STORE_INFO *(*OSSL_STORE_post_process_info_fn)(OSSL_STORE_INFO *,
+                                                            void *);
 """
 
 FUNCTIONS = """
