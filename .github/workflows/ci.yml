@@ -40,12 +40,12 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.5.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.0.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.0"}}
-          # Latest commit on the BoringSSL main branch, as of Jun 25, 2025.
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "535cc391915c37912ff9b3edb0cff9b3c5c77db0"}}
+          # Latest commit on the BoringSSL main branch, as of Jun 26, 2025.
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "78b48c1f2a973ff0a4ed18b9618d533101bd4144"}}
           # Latest tag of AWS-LC main branch, as of Jun 19, 2025.
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.53.1"}}
-          # Latest commit on the OpenSSL master branch, as of Jun 22, 2025.
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "cdd01b5e0734b0324251b32a8edd97f42ba90429"}}
+          # Latest commit on the OpenSSL master branch, as of Jun 26, 2025.
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "2e1b046d9af20f9d1b981e5aa4a8b498155f5c0e"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.77: offset_of! in std (for pyo3), c"str" literals (replace cstr_from_literal)
