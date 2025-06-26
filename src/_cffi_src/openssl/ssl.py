@@ -651,6 +651,9 @@ void (*SSL_CTX_set_psk_use_session_callback)(SSL_CTX *,
                                               size_t *,
                                               SSL_SESSION **
                                           )) = NULL;
+
+SSL_CTX *(*SSL_CTX_new_ex)(OSSL_LIB_CTX *,
+           const char *, const SSL_METHOD *) = NULL;
 #if CRYPTOGRAPHY_IS_BORINGSSL
 const SSL_CIPHER *(*SSL_CIPHER_find)(SSL *, const unsigned char *) = NULL;
 #endif

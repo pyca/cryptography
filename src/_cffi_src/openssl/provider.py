@@ -21,4 +21,15 @@ int OSSL_PROVIDER_unload(OSSL_PROVIDER *);
 """
 
 CUSTOMIZATIONS = """
+
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
+    || CRYPTOGRAPHY_IS_AWSLC
+int (*OSSL_PROVIDER_set_default_search_path)(OSSL_LIB_CTX *,
+      const char *) = NULL;
+
+OSSL_PROVIDER *(*OSSL_PROVIDER_load)(OSSL_LIB_CTX *, const char *) = NULL;
+OSSL_PROVIDER *(*OSSL_PROVIDER_try_load)(OSSL_LIB_CTX *,
+                 const char *, int) = NULL;
+int (*OSSL_PROVIDER_unload)(OSSL_PROVIDER *)
+#endif
 """

@@ -43,4 +43,31 @@ X509_CRL *OSSL_STORE_INFO_get1_CRL(const OSSL_STORE_INFO *);
 """
 
 CUSTOMIZATIONS = """
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
+    || CRYPTOGRAPHY_IS_AWSLC
+OSSL_STORE_CTX * (*OSSL_STORE_open)(const char *, const UI_METHOD *,
+                   void *, OSSL_STORE_post_process_info_fn, void *) = NULL;
+OSSL_STORE_CTX * (*OSSL_STORE_open_ex)(const char *, OSSL_LIB_CTX *,
+                   const char *,
+                   const UI_METHOD *, void *,
+                   const OSSL_PARAM [],
+                   OSSL_STORE_post_process_info_fn,
+                   void *) = NULL;
+int (*OSSL_STORE_close)(OSSL_STORE_CTX *) = NULL;
+const char *(*OSSL_STORE_INFO_type_string)(int) = NULL;
+
+OSSL_STORE_INFO *(*OSSL_STORE_load)(OSSL_STORE_CTX *) = NULL;
+void (*OSSL_STORE_INFO_free)(OSSL_STORE_INFO *) = NULL;
+int (*OSSL_STORE_INFO_get_type)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get0_PARAMS)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get1_PARAMS)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get0_PUBKEY)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get1_PUBKEY)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get0_PKEY)(const OSSL_STORE_INFO *) = NULL;
+EVP_PKEY *(*OSSL_STORE_INFO_get1_PKEY)(const OSSL_STORE_INFO *) = NULL;
+X509 *(*OSSL_STORE_INFO_get0_CERT)(const OSSL_STORE_INFO *) = NULL;
+X509 *(*OSSL_STORE_INFO_get1_CERT)(const OSSL_STORE_INFO *) = NULL;
+X509_CRL *(*OSSL_STORE_INFO_get0_CRL)(const OSSL_STORE_INFO *) = NULL;
+X509_CRL *(*OSSL_STORE_INFO_get1_CRL)(const OSSL_STORE_INFO *) = NULL;
+#endif
 """
