@@ -50,10 +50,8 @@ fn _extract_buffer_length<'p>(
 ) -> pyo3::PyResult<(pyo3::Bound<'p, pyo3::PyAny>, usize, usize)> {
     let py = pyobj.py();
     let bufobj = if mutable {
-        let kwargs = pyo3::types::IntoPyDict::into_py_dict(
-            [(pyo3::intern!(py, "require_writable"), true)],
-            py,
-        )?;
+        let kwargs = [(pyo3::intern!(py, "require_writable"), true)];
+        let kwargs = pyo3::types::IntoPyDict::into_py_dict(kwargs, py)?;
         types::FFI_FROM_BUFFER
             .get(py)?
             .call((pyobj,), Some(&kwargs))
