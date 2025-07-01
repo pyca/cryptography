@@ -263,6 +263,8 @@ fn setup_signature_ctx(
                     ),
                 ));
             }
+            // AUTO and MAXIMUM are the same in OpenSSL.
+            ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
         } else {
             ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::custom(salt.extract::<i32>()?))?;
         };
