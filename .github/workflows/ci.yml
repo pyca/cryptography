@@ -140,10 +140,7 @@ jobs:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - name: override cffi version in free-threaded environment
         if: matrix.PYTHON.VERSION == '3.13t'
-        # FIXME FIXME total hack
         run: |
-          .nox/local/bin/python -m ensurepip
-          .nox/local/bin/python -m pip install git+https://github.com/ngoldbaum/cffi-ft@upstream-pr
           echo "PYTHON_GIL=0" >> $GITHUB_ENV
       - name: Tests
         run: |
