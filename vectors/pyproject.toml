@@ -1,6 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["uv_build>=0.7.19,<0.8.0"]
+build-backend = "uv_build"
 
 [project]
 name = "cryptography_vectors"
@@ -15,5 +15,6 @@ license = {text = "Apache-2.0 OR BSD-3-Clause"}
 [project.urls]
 homepage = "https://github.com/pyca/cryptography"
 
-[tool.flit.sdist]
-include = ["LICENSE", "LICENSE.APACHE", "LICENSE.BSD"]
+[tool.uv.build-backend]
+module-root = ""
+source-include = ["LICENSE", "LICENSE.APACHE", "LICENSE.BSD"]

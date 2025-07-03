@@ -4,7 +4,7 @@ cffi>=1.12; platform_python_implementation != 'PyPy'
 maturin>=1,<2
 
 # Must be kept sync with build-system.requires at vectors/pyproject.toml
-flit_core >=3.2,<4
+uv_build>=0.7.19,<0.8.0
 
 # WARN: changing the requirements here DOES NOT update the dependencies used
 # for building at the github workflow -- it uses build-requirements.txt
