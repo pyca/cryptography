@@ -56,6 +56,7 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
+          - {VERSION: "3.13t", NOXSESSION: "rust,tests"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -137,6 +138,10 @@ jobs:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           # Needed until https://github.com/PyO3/pyo3/issues/5093
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
+      - name: override cffi version in free-threaded environment
+        if: matrix.PYTHON.VERSION == '3.13t'
+        run: |
+          echo "PYTHON_GIL=0" >> $GITHUB_ENV
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
