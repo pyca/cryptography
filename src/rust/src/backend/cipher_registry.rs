@@ -258,7 +258,11 @@ fn get_cipher_registry(
             m.add(&sm4, &ofb, Some(128), Cipher::sm4_ofb())?;
             m.add(&sm4, &ecb, Some(128), Cipher::sm4_ecb())?;
 
-            #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+            #[cfg(not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            )))]
             if let Ok(c) = Cipher::fetch(None, "sm4-gcm", None) {
                 m.add(&sm4, &gcm, Some(128), c)?;
             }
@@ -270,8 +274,11 @@ fn get_cipher_registry(
         // Don't register legacy ciphers if they're unavailable. In theory
         // this shouldn't be necessary but OpenSSL 3 will return an EVP_CIPHER
         // even when the cipher is unavailable.
-        if cfg!(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))
-            || types::LEGACY_PROVIDER_LOADED.get(py)?.is_truthy()?
+        if cfg!(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )) || types::LEGACY_PROVIDER_LOADED.get(py)?.is_truthy()?
         {
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
             {

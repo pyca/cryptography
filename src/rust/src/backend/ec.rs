@@ -233,12 +233,20 @@ impl ECPrivateKey {
         // If `set_peer_ex` is available, we don't validate the key. This is
         // because we already validated it sufficiently when we created the
         // ECPublicKey object.
-        #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         deriver
             .set_peer_ex(&peer_public_key.pkey, false)
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
 
-        #[cfg(not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER))]
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))]
         deriver
             .set_peer(&peer_public_key.pkey)
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
