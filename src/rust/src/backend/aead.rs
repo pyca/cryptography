@@ -449,21 +449,12 @@ impl EvpAead {
 struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
-    #[cfg(any(
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        not(any(
-            CRYPTOGRAPHY_OPENSSL_300_OR_GREATER,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        ))
-    ))]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, CRYPTOGRAPHY_IS_LIBRESSL))]
     ctx: EvpCipherAead,
     #[cfg(not(any(
         CRYPTOGRAPHY_IS_LIBRESSL,
         CRYPTOGRAPHY_IS_BORINGSSL,
         CRYPTOGRAPHY_IS_AWSLC,
-        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
     )))]
     ctx: LazyEvpCipherAead,
@@ -499,8 +490,7 @@ impl ChaCha20Poly1305 {
                 })
             } else if #[cfg(any(
                 CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
             ))] {
                 Ok(ChaCha20Poly1305 {
                     ctx: EvpCipherAead::new(
@@ -584,8 +574,7 @@ struct AesGcm {
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
         CRYPTOGRAPHY_IS_LIBRESSL,
         CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC,
-        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+        CRYPTOGRAPHY_IS_AWSLC
     ))]
     ctx: EvpCipherAead,
 
@@ -593,8 +582,7 @@ struct AesGcm {
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
         CRYPTOGRAPHY_IS_LIBRESSL,
         CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC,
-        not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+        CRYPTOGRAPHY_IS_AWSLC
     )))]
     ctx: LazyEvpCipherAead,
 }
@@ -622,8 +610,7 @@ impl AesGcm {
                 CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
                 CRYPTOGRAPHY_IS_BORINGSSL,
                 CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_AWSLC,
-                not(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER),
+                CRYPTOGRAPHY_IS_AWSLC
             ))] {
                 Ok(AesGcm {
                     ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
@@ -861,7 +848,7 @@ impl AesSiv {
         };
 
         cfg_if::cfg_if! {
-            if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
+            if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
