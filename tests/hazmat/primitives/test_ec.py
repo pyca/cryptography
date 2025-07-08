@@ -1061,7 +1061,8 @@ class TestECSerialization:
         parsed_public = serialization.load_pem_public_key(pem, backend)
         assert parsed_public
 
-    def test_load_private_key_explicit_parameters(self):
+    def test_load_private_key_unsupported_explicit_parameters(self):
+        # This vector is P256 except the prime field value is wrong
         with pytest.raises(ValueError, match="explicit parameters"):
             load_vectors_from_file(
                 os.path.join(
@@ -1074,6 +1075,7 @@ class TestECSerialization:
             )
 
         with pytest.raises(ValueError, match="explicit parameters"):
+            # This vector encodes SECT233R1 explicitly
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric",
@@ -1085,6 +1087,54 @@ class TestECSerialization:
                 ),
                 mode="rb",
             )
+
+    @pytest.mark.parametrize(
+        ("curve", "file"),
+        [
+            # secp256k1 has no seed value
+            (ec.SECP256K1, "secp256k1-explicit-no-seed.pem"),
+            (ec.SECP256R1, "secp256r1-explicit-seed.pem"),
+            (ec.SECP256R1, "secp256r1-explicit-no-seed.pem"),
+            (ec.SECP384R1, "secp384r1-explicit-seed.pem"),
+            (ec.SECP384R1, "secp384r1-explicit-no-seed.pem"),
+            (ec.SECP521R1, "secp521r1-explicit-seed.pem"),
+            (ec.SECP521R1, "secp521r1-explicit-no-seed.pem"),
+        ],
+    )
+    def test_load_private_key_explicit_parameters(self, curve, file, backend):
+        _skip_curve_unsupported(backend, curve())
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "EC", file),
+            lambda pemfile: serialization.load_pem_private_key(
+                pemfile.read(), password=None
+            ),
+            mode="rb",
+        )
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+        assert isinstance(key.curve, curve)
+
+    @pytest.mark.parametrize(
+        ("curve", "file"),
+        [
+            # secp256k1 has no seed value
+            (ec.SECP256K1, "secp256k1-pub-explicit-no-seed.pem"),
+            (ec.SECP256R1, "secp256r1-pub-explicit-seed.pem"),
+            (ec.SECP256R1, "secp256r1-pub-explicit-no-seed.pem"),
+            (ec.SECP384R1, "secp384r1-pub-explicit-seed.pem"),
+            (ec.SECP384R1, "secp384r1-pub-explicit-no-seed.pem"),
+            (ec.SECP521R1, "secp521r1-pub-explicit-seed.pem"),
+            (ec.SECP521R1, "secp521r1-pub-explicit-no-seed.pem"),
+        ],
+    )
+    def test_load_public_key_explicit_parameters(self, curve, file, backend):
+        _skip_curve_unsupported(backend, curve())
+        key = load_vectors_from_file(
+            os.path.join("asymmetric", "EC", file),
+            lambda pemfile: serialization.load_pem_public_key(pemfile.read()),
+            mode="rb",
+        )
+        assert isinstance(key, ec.EllipticCurvePublicKey)
+        assert isinstance(key.curve, curve)
 
     def test_load_private_key_unsupported_curve(self):
         with pytest.raises((ValueError, exceptions.UnsupportedAlgorithm)):
