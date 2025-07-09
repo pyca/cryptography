@@ -58,7 +58,7 @@ impl AeadCtxRef {
         let mut out_len = out.len();
         // SAFETY: All the lengths and pointers are known valid.
         unsafe {
-            cvt(ffi::EVP_AEAD_CTX_seal(
+            let res = ffi::EVP_AEAD_CTX_seal(
                 self.as_ptr(),
                 out.as_mut_ptr(),
                 &mut out_len,
@@ -69,7 +69,8 @@ impl AeadCtxRef {
                 data.len(),
                 ad.as_ptr(),
                 ad.len(),
-            ))?;
+            );
+            cvt(res)?;
         }
         Ok(())
     }
