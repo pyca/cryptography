@@ -216,7 +216,7 @@ def flake(session: nox.Session) -> None:
 
 
 @nox.session
-@nox.session("rust-nocoverage")
+@nox.session(name="rust-nocoverage")
 def rust(session: nox.Session) -> None:
     if session.name != "rust-nocoverage":
         prof_location = (
