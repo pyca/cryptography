@@ -507,7 +507,10 @@ impl PyAEADDecryptionContext {
         } else if tag.len() > GCM_STANDARD_TAG_SIZE {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
-                    format!("Authentication tag cannot be more than {} bytes.", GCM_STANDARD_TAG_SIZE),
+                    // Defensive error handling - rarely triggered in normal usage
+                    format!(
+                        "Authentication tag cannot be more than {GCM_STANDARD_TAG_SIZE} bytes."
+                    ),
                 ),
             ));
         }
