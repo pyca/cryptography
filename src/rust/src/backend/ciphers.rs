@@ -7,6 +7,12 @@ use pyo3::IntoPyObject;
 
 use crate::backend::cipher_registry;
 use crate::buf::{CffiBuf, CffiMutBuf};
+
+// GCM authentication tag length: 16 bytes (128 bits) provides maximum security
+// as recommended by NIST SP 800-38D. Smaller sizes (down to 12 bytes) are also
+// acceptable but 16 bytes is the standard for this implementation.
+const GCM_STANDARD_TAG_SIZE: usize = 16;
+
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
@@ -358,8 +364,8 @@ impl PyAEADEncryptionContext {
         let ctx = get_mut_ctx(self.ctx.as_mut())?;
         let result = ctx.finalize(py)?;
 
-        // XXX: do not hard code 16
-        let tag = pyo3::types::PyBytes::new_with(py, 16, |t| {
+        // Allocate buffer for GCM tag
+        let tag = pyo3::types::PyBytes::new_with(py, GCM_STANDARD_TAG_SIZE, |t| {
             ctx.ctx.tag(t).map_err(CryptographyError::from)?;
             Ok(())
         })?;
@@ -491,17 +497,17 @@ impl PyAEADDecryptionContext {
             .bind(py)
             .getattr(pyo3::intern!(py, "_min_tag_length"))?
             .extract()?;
-        // XXX: Do not hard code 16
+        // Validate tag length against GCM standards
         if tag.len() < min_tag_length {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "Authentication tag must be {min_tag_length} bytes or longer.",
                 )),
             ));
-        } else if tag.len() > 16 {
+        } else if tag.len() > GCM_STANDARD_TAG_SIZE {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
-                    "Authentication tag cannot be more than 16 bytes.",
+                    format!("Authentication tag cannot be more than {} bytes.", GCM_STANDARD_TAG_SIZE),
                 ),
             ));
         }
