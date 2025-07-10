@@ -16,7 +16,7 @@ build==1.2.2.post1
     # via
     #   cryptography (pyproject.toml)
     #   check-sdist
-certifi==2025.6.15
+certifi==2025.7.9
     # via
     #   cryptography (pyproject.toml)
     #   requests
