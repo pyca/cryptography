@@ -115,7 +115,9 @@ platformdirs==4.3.8 ; python_full_version >= '3.9'
 pluggy==1.5.0 ; python_full_version < '3.9'
     # via pytest
 pluggy==1.6.0 ; python_full_version >= '3.9'
-    # via pytest
+    # via
+    #   pytest
+    #   pytest-cov
 pretend==1.0.9
     # via cryptography (pyproject.toml)
 py-cpuinfo==9.0.0
@@ -267,7 +269,7 @@ zipp==3.20.2 ; python_full_version < '3.9'
     # via
     #   importlib-metadata
     #   importlib-resources
-zipp==3.22.0 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
+zipp==3.23.0 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
     # via importlib-metadata
 
 # The following packages were excluded from the output:
