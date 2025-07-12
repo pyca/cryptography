@@ -24,15 +24,13 @@ Supported platforms
 Currently we test ``cryptography`` on Python 3.8+ and PyPy3 7.3.11+ on these
 operating systems.
 
-* x86-64 RHEL 8.x
 * x86-64 CentOS Stream 9, 10
 * x86-64 Fedora (latest)
 * x86-64 macOS 13 Ventura and ARM64 macOS 14 Sonoma
 * x86-64 Ubuntu 22.04, 24.04, rolling
 * ARM64 Ubuntu rolling
 * ARMv7l Ubuntu rolling
-* x86-64 Debian Bullseye (11.x), Bookworm (12.x), Trixie (13.x), and
-  Sid (unstable)
+* x86-64 Debian Bookworm (12.x), Trixie (13.x), and Sid (unstable)
 * x86-64 and ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2022
 
@@ -206,7 +204,7 @@ available from your system package manager.
 Then, paste the following into a shell script. You'll need to populate the
 ``OPENSSL_VERSION`` variable. To do that, visit `openssl.org`_ and find the
 latest non-FIPS release version number, then set the string appropriately. For
-example, for OpenSSL 1.1.1k, use ``OPENSSL_VERSION="1.1.1k"``.
+example, for OpenSSL 3.0.9, use ``OPENSSL_VERSION="3.0.9"``.
 
 When this shell script is complete, you'll find a collection of wheel files in
 a directory called ``wheelhouse``. These wheels can be installed by a
