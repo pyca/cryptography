@@ -176,7 +176,8 @@ jobs:
 
           - {IMAGE: "ubuntu-rolling:armv7l", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
 
-          - {IMAGE: "ubuntu-rolling:ppc64le", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-ppc64le"}
+          # Disable coverage until coverage.py has a wheel with C ext for ppc64le
+          - {IMAGE: "ubuntu-rolling:ppc64le", NOXSESSION: "tests-nocoverage", RUNNER: "ubuntu-24.04-ppc64le"}
     timeout-minutes: 15
     env:
       RUSTUP_HOME: /root/.rustup
