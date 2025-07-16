@@ -30,7 +30,7 @@ operating systems.
 * x86-64 macOS 13 Ventura
 * ARM64 macOS 14 Sonoma
 * x86-64 Ubuntu 22.04, 24.04, and rolling
-* ARM64, ARMv7l, and PPC64le Ubuntu rolling
+* ARM64, ARMv7l, and ``ppc64le`` Ubuntu rolling
 * x86-64 Debian Bullseye (11.x), Bookworm (12.x), Trixie (13.x), and
   Sid (unstable)
 * x86-64 and ARM64 Alpine (latest)
