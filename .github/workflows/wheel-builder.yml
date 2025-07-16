@@ -83,7 +83,7 @@ jobs:
           - { NAME: "manylinux_2_31_armv7l", CONTAINER: "cryptography-manylinux_2_31:armv7l", RUNNER: "ubuntu-24.04-arm" }
 
           - { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
-          - { NAME: "manylinux2014_ppc64le", CONTAINER: "cryptography-manylinux2014:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+          - { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           
         exclude:
           # There are no readily available musllinux PyPy distributions
@@ -114,11 +114,11 @@ jobs:
 
           # No PyPy on ppc64le
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_ppc64le", CONTAINER: "cryptography-manylinux2014:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+            MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_ppc64le", CONTAINER: "cryptography-manylinux2014:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+            MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
 
