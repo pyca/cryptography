@@ -9,8 +9,7 @@ case "${1}" in
         ;;
     run)
         cd scapy
-        # this tox case uses sitepackages=true to use local cryptography
-        tox -qe cryptography
+        tox --override "testenv.deps=cryptography==../" -qe cryptography
         ;;
     *)
         exit 1
