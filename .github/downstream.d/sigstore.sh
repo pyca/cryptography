@@ -7,7 +7,8 @@ case "${1}" in
         git clone --depth=1 https://github.com/sigstore/sigstore-python /tmp/sigstore-python
         cd /tmp/sigstore-python
         git rev-parse HEAD
-        uv pip install -e ".[test]"
+        uv pip install pip
+        pip install -e ".[test]"
         ;;
     run)
         cd /tmp/sigstore-python

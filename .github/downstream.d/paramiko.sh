@@ -5,8 +5,9 @@ case "${1}" in
         git clone --depth=1 https://github.com/paramiko/paramiko
         cd paramiko
         git rev-parse HEAD
+        uv pip install pip
         uv pip install -e .
-        uv pip install -r dev-requirements.txt
+        pip install -r dev-requirements.txt
         ;;
     run)
         cd paramiko
