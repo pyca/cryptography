@@ -456,6 +456,7 @@ jobs:
       # lead to runtime errors due to version incompatibilities. Rename the
       # dist-info directory to pretend to be an older version to "solve" this.
       - run: |
+          .venv/bin/python <<EOF
           import json
           import importlib.metadata
           import shutil
@@ -466,7 +467,8 @@ jobs:
               latest_version = json.load(r)["info"]["version"]
           new_path = d.locate_file(f"cryptography-{latest_version}.dist-info")
           shutil.move(d.locate_file(f"cryptography-{d.version}.dist-info"), new_path)
-        shell: .venv/bin/python
+
+          EOF
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   all-green:
