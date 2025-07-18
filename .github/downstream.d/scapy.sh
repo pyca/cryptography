@@ -9,7 +9,7 @@ case "${1}" in
         ;;
     run)
         cd scapy
-        tox --override "testenv.deps=cryptography==../" -qe cryptography
+        tox --override "testenv.deps=cryptography==../" -e cryptography
         ;;
     *)
         exit 1
