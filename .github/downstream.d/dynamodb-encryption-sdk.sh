@@ -5,8 +5,8 @@ case "${1}" in
         git clone --depth=1 https://github.com/awslabs/aws-dynamodb-encryption-python
         cd aws-dynamodb-encryption-python
         git rev-parse HEAD
-        pip install -e .
-        pip install -r test/upstream-requirements-py311.txt
+        uv pip install -e .
+        uv pip install -r test/upstream-requirements-py311.txt
         ;;
     run)
         cd aws-dynamodb-encryption-python

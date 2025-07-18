@@ -6,7 +6,7 @@ case "${1}" in
         git clone https://github.com/pyca/pyopenssl
         cd pyopenssl
         git checkout "$VERSION"
-        pip install -e ".[test]"
+        uv pip install -e ".[test]"
         ;;
     run)
         cd pyopenssl
