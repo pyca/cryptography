@@ -5,7 +5,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/secdev/scapy
         cd scapy
         git rev-parse HEAD
-        pip install tox
+        uv pip install tox
         ;;
     run)
         cd scapy
