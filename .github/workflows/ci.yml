@@ -466,7 +466,7 @@ jobs:
               latest_version = json.load(r)["info"]["version"]
           new_path = d.locate_file(f"cryptography-{latest_version}.dist-info")
           shutil.move(d.locate_file(f"cryptography-{d.version}.dist-info"), new_path)
-        shell: python
+        shell: .venv/bin/python
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   all-green:
