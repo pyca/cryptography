@@ -607,11 +607,11 @@ mod ca {
             let permitted_subtrees_empty = name_constraints
                 .permitted_subtrees
                 .as_ref()
-                .map_or(true, |pst| pst.is_empty());
+                .is_none_or(|pst| pst.is_empty());
             let excluded_subtrees_empty = name_constraints
                 .excluded_subtrees
                 .as_ref()
-                .map_or(true, |est| est.is_empty());
+                .is_none_or(|est| est.is_empty());
 
             if permitted_subtrees_empty && excluded_subtrees_empty {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
