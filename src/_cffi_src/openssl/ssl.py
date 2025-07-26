@@ -13,6 +13,7 @@ static const long Cryptography_HAS_SSL_ST;
 static const long Cryptography_HAS_TLS_ST;
 static const long Cryptography_HAS_TLSv1_3_FUNCTIONS;
 static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS;
+static const long Cryptography_HAS_SSL_VERIFY_CLIENT_POST_HANDSHAKE;
 static const long Cryptography_HAS_SIGALGS;
 static const long Cryptography_HAS_PSK;
 static const long Cryptography_HAS_PSK_TLSv1_3;
@@ -601,7 +602,6 @@ static const long Cryptography_HAS_TLSv1_3_FUNCTIONS = 1;
 static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS = 0;
 static const long SSL_VERIFY_POST_HANDSHAKE = 0;
 
-int (*SSL_verify_client_post_handshake)(SSL *) = NULL;
 void (*SSL_CTX_set_post_handshake_auth)(SSL_CTX *, int) = NULL;
 void (*SSL_set_post_handshake_auth)(SSL *, int) = NULL;
 uint32_t (*SSL_SESSION_get_max_early_data)(const SSL_SESSION *) = NULL;
@@ -610,6 +610,14 @@ int (*SSL_read_early_data)(SSL *, void *, size_t, size_t *) = NULL;
 int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
 #else
 static const long Cryptography_HAS_TLSv1_3_HS_FUNCTIONS = 1;
+#endif
+
+#if CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_SSL_VERIFY_CLIENT_POST_HANDSHAKE = 0;
+
+int (*SSL_verify_client_post_handshake)(SSL *) = NULL;
+#else
+static const long Cryptography_HAS_SSL_VERIFY_CLIENT_POST_HANDSHAKE = 1;
 #endif
 
 #if CRYPTOGRAPHY_IS_BORINGSSL || CRYPTOGRAPHY_IS_AWSLC
