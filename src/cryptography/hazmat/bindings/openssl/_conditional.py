@@ -81,6 +81,12 @@ def cryptography_has_tlsv13_hs_functions() -> list[str]:
     ]
 
 
+def cryptography_has_ssl_verify_client_post_handshake() -> list[str]:
+    return [
+        "SSL_verify_client_post_handshake",
+    ]
+
+
 def cryptography_has_engine() -> list[str]:
     return [
         "ENGINE_by_id",
@@ -171,6 +177,9 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_TLSv1_3_FUNCTIONS": cryptography_has_tlsv13_functions,
     "Cryptography_HAS_TLSv1_3_HS_FUNCTIONS": (
         cryptography_has_tlsv13_hs_functions
+    ),
+    "Cryptography_HAS_SSL_VERIFY_CLIENT_POST_HANDSHAKE": (
+        cryptography_has_ssl_verify_client_post_handshake
     ),
     "Cryptography_HAS_ENGINE": cryptography_has_engine,
     "Cryptography_HAS_VERIFIED_CHAIN": cryptography_has_verified_chain,
