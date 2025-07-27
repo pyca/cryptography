@@ -44,8 +44,8 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   curl -LO "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
-  cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
-  make -C build -j"$(nproc)" install
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  ninja -C build install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
   rm -rf "${OSSL_PATH}/bin"
   rm -rf "${OSSL_PATH}/share"
@@ -55,8 +55,8 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
-  make -C build -j"$(nproc)" install
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
   popd
@@ -65,8 +65,8 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   git clone https://github.com/aws/aws-lc.git
   pushd aws-lc
   git checkout "${VERSION}"
-  cmake -B build -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
-  make -C build -j"$(nproc)" install
+  cmake -GNinja -B build -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH:?}/bin"
   popd # aws-lc
