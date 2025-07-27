@@ -16,6 +16,7 @@ import cryptography
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import _openssl, openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
+from cryptography.utils import CryptographyDeprecationWarning
 
 
 def _openssl_assert(ok: bool) -> None:
@@ -118,5 +119,19 @@ if (
         "Operating System. Cryptography will be significantly faster if you "
         "switch to using a 64-bit Python.",
         UserWarning,
+        stacklevel=2,
+    )
+
+if (
+    not openssl.CRYPTOGRAPHY_IS_LIBRESSL
+    and not openssl.CRYPTOGRAPHY_IS_BORINGSSL
+    and not openssl.CRYPTOGRAPHY_IS_AWSLC
+    and not openssl.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+):
+    warnings.warn(
+        "You are using OpenSSL < 3.0. Support for OpenSSL < 3.0 is deprecated "
+        "and will be removed in the next release. Please upgrade to OpenSSL "
+        "3.0 or later.",
+        CryptographyDeprecationWarning,
         stacklevel=2,
     )
