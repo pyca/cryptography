@@ -189,9 +189,9 @@ Caveats
 Sometimes, a set of loosely related features are added in the same
 version, and it's impractical to create ``#ifdef`` statements for each
 one. In that case, it may make sense to either check for a particular
-version. For example, to check for OpenSSL 1.1.1 or newer::
+version. For example, to check for OpenSSL 3.2.0 or newer::
 
-    #if CRYPTOGRAPHY_OPENSSL_111_OR_GREATER
+    #if CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
 
 Sometimes, the version of a library on a particular platform will have
 features that you thought it wouldn't, based on its version.
