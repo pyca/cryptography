@@ -167,7 +167,6 @@ tests = ["tests/", "*tests\\"]
 exclude_lines = [
     "@abc.abstractmethod",
     "@typing.overload",
-    "if typing.TYPE_CHECKING",
 ]
 
 [tool.coverage.html]
