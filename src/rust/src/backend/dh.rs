@@ -541,7 +541,7 @@ impl DHParameterNumbers {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod dh {
     #[pymodule_export]
     use super::{

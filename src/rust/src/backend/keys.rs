@@ -361,7 +361,7 @@ fn public_key_from_pkey<'p>(
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod keys {
     #[pymodule_export]
     use super::{

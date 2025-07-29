@@ -160,7 +160,7 @@ impl Ed448PublicKey {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod ed448 {
     #[pymodule_export]
     use super::{

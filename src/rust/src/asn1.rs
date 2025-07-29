@@ -130,7 +130,7 @@ fn encode_dss_signature<'p>(
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 #[pyo3(name = "asn1")]
 pub(crate) mod asn1_mod {
     #[pymodule_export]

@@ -101,7 +101,7 @@ impl Cmac {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod cmac {
     #[pymodule_export]
     use super::Cmac;

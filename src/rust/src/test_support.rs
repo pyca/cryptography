@@ -104,7 +104,7 @@ fn pkcs7_verify(
     Ok(())
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod test_support {
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     #[pymodule_export]

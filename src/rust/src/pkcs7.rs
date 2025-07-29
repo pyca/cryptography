@@ -804,7 +804,7 @@ fn load_der_pkcs7_certificates<'p>(
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 #[pyo3(name = "pkcs7")]
 pub(crate) mod pkcs7_mod {
     #[pymodule_export]

@@ -148,7 +148,7 @@ impl X448PublicKey {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod x448 {
     #[pymodule_export]
     use super::{
