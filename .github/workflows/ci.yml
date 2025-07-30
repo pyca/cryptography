@@ -353,12 +353,13 @@ jobs:
         WINDOWS:
           - {ARCH: 'x86', WINDOWS: 'win32', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUNNER: 'windows-latest'}
-          - {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
-        exclude:
-          - PYTHON: {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
+        include:
+          # Not in the main matrix because we want tests-nocoverage on Python
+          # 3.13
+          - PYTHON: {VERSION: "3.13", NOXSESSION: "tests-nocoverage"}
             WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
     steps:
