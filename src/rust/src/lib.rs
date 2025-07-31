@@ -94,7 +94,7 @@ fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
     Ok(())
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 mod _rust {
     use pyo3::types::PyModuleMethods;
 
@@ -116,7 +116,7 @@ mod _rust {
     #[pymodule_export]
     use crate::test_support::test_support;
 
-    #[pyo3::pymodule]
+    #[pyo3::pymodule(gil_used = false)]
     mod x509 {
         #[pymodule_export]
         use crate::x509::certificate::{
@@ -143,7 +143,7 @@ mod _rust {
         };
     }
 
-    #[pyo3::pymodule]
+    #[pyo3::pymodule(gil_used = false)]
     mod ocsp {
         #[pymodule_export]
         use crate::x509::ocsp_req::{create_ocsp_request, load_der_ocsp_request, OCSPRequest};
@@ -153,7 +153,7 @@ mod _rust {
         };
     }
 
-    #[pyo3::pymodule]
+    #[pyo3::pymodule(gil_used = false)]
     mod openssl {
         use pyo3::prelude::PyModuleMethods;
 

@@ -508,7 +508,7 @@ impl DsaParameterNumbers {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod dsa {
     #[pymodule_export]
     use super::{

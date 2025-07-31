@@ -670,7 +670,7 @@ impl HkdfExpand {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod kdf {
     #[pymodule_export]
     use super::derive_pbkdf2_hmac;

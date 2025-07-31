@@ -819,7 +819,7 @@ fn load_pkcs12<'p>(
         .call1((private_key, cert, additional_certs))?)
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod pkcs12 {
     #[pymodule_export]
     use super::{

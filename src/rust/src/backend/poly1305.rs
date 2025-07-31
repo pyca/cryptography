@@ -202,7 +202,7 @@ impl Poly1305 {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod poly1305 {
     #[pymodule_export]
     use super::Poly1305;

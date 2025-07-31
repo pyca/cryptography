@@ -244,7 +244,7 @@ impl XOFHash {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod hashes {
     #[pymodule_export]
     use super::{hash_supported, Hash, XOFHash};

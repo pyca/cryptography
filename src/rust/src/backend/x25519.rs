@@ -149,7 +149,7 @@ impl X25519PublicKey {
     }
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod x25519 {
     #[pymodule_export]
     use super::{

@@ -44,7 +44,7 @@ pub(crate) fn already_finalized_error() -> CryptographyError {
     CryptographyError::from(AlreadyFinalized::new_err("Context was already finalized."))
 }
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(gil_used = false)]
 pub(crate) mod exceptions {
     #[pymodule_export]
     use super::Reasons;
