@@ -5,7 +5,8 @@ case "${1}" in
         git clone --depth=1 https://github.com/paramiko/paramiko
         cd paramiko
         git rev-parse HEAD
-        uv sync
+        uv --version
+        uv sync --inexact --active
         ;;
     run)
         cd paramiko
