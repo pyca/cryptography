@@ -6,8 +6,8 @@ case "${1}" in
         cd paramiko
         git rev-parse HEAD
         uv pip install pip
-        uv pip install -e .
-        pip install -r dev-requirements.txt
+        uv pip install -e . --group dev
+        pip install . --group dev
         ;;
     run)
         cd paramiko
