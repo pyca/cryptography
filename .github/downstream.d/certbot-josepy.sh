@@ -2,9 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/certbot/josepy
         cd josepy
-        git rev-parse HEAD
         curl -sSL https://install.python-poetry.org | python3 -
         "${HOME}/.local/bin/poetry" self add poetry-plugin-export
         "${HOME}/.local/bin/poetry" export -f constraints.txt --dev --without-hashes -o constraints.txt

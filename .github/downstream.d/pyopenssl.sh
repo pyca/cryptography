@@ -2,9 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/pyca/pyopenssl
         cd pyopenssl
-        git rev-parse HEAD
         uv pip install -e ".[test]"
         ;;
     run)
