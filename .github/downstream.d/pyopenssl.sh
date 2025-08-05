@@ -5,7 +5,7 @@ case "${1}" in
         git clone --depth=1 https://github.com/pyca/pyopenssl
         cd pyopenssl
         git rev-parse HEAD
-        pip install -e ".[test]"
+        uv pip install -e ".[test]"
         ;;
     run)
         cd pyopenssl

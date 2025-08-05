@@ -400,16 +400,13 @@ impl EvpAead {
             assert!(aad.is_none());
             b""
         };
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            plaintext.len() + self.tag_len,
-            |b| {
-                self.ctx
-                    .encrypt(plaintext, nonce.unwrap_or(b""), ad, b)
-                    .map_err(CryptographyError::from)?;
-                Ok(())
-            },
-        )?)
+        let out_len = plaintext.len() + self.tag_len;
+        Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
+            self.ctx
+                .encrypt(plaintext, nonce.unwrap_or(b""), ad, b)
+                .map_err(CryptographyError::from)?;
+            Ok(())
+        })?)
     }
 
     fn decrypt<'p>(

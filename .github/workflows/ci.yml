@@ -57,6 +57,9 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
+          # Not actually an MSRV, just for coverage on this
+          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "3.5.1"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.5.1"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -441,14 +444,18 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
-      - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
-      - run: pip install .
+
+      - run: python -m pip install -c ci-constraints-requirements.txt 'uv'
+      - run: uv venv
+      - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
+      - run: uv pip install .
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
       # lead to runtime errors due to version incompatibilities. Rename the
       # dist-info directory to pretend to be an older version to "solve" this.
       - run: |
+          .venv/bin/python <<EOF
           import json
           import importlib.metadata
           import shutil
@@ -459,8 +466,9 @@ jobs:
               latest_version = json.load(r)["info"]["version"]
           new_path = d.locate_file(f"cryptography-{latest_version}.dist-info")
           shutil.move(d.locate_file(f"cryptography-{d.version}.dist-info"), new_path)
-        shell: python
-      - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
+
+          EOF
+      - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
 
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert

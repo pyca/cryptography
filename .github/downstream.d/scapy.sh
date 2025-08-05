@@ -5,12 +5,11 @@ case "${1}" in
         git clone --depth=1 https://github.com/secdev/scapy
         cd scapy
         git rev-parse HEAD
-        pip install tox
+        uv pip install tox
         ;;
     run)
         cd scapy
-        # this tox case uses sitepackages=true to use local cryptography
-        tox -qe cryptography
+        TOX_OVERRIDE="testenv:cryptography.deps=file://$(realpath ..)" tox -e cryptography
         ;;
     *)
         exit 1

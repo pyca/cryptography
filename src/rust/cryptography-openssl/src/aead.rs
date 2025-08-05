@@ -37,14 +37,11 @@ impl AeadCtx {
             AeadType::Aes256GcmSiv => unsafe { ffi::EVP_aead_aes_256_gcm_siv() },
         };
 
+        let key_ptr = key.as_ptr();
+        let tag_len = ffi::EVP_AEAD_DEFAULT_TAG_LENGTH as usize;
         // SAFETY: We're passing a valid key and aead.
         unsafe {
-            let ctx = cvt_p(ffi::EVP_AEAD_CTX_new(
-                aead,
-                key.as_ptr(),
-                key.len(),
-                ffi::EVP_AEAD_DEFAULT_TAG_LENGTH as usize,
-            ))?;
+            let ctx = cvt_p(ffi::EVP_AEAD_CTX_new(aead, key_ptr, key.len(), tag_len))?;
             Ok(AeadCtx::from_ptr(ctx))
         }
     }
@@ -61,7 +58,7 @@ impl AeadCtxRef {
         let mut out_len = out.len();
         // SAFETY: All the lengths and pointers are known valid.
         unsafe {
-            cvt(ffi::EVP_AEAD_CTX_seal(
+            let res = ffi::EVP_AEAD_CTX_seal(
                 self.as_ptr(),
                 out.as_mut_ptr(),
                 &mut out_len,
@@ -72,7 +69,8 @@ impl AeadCtxRef {
                 data.len(),
                 ad.as_ptr(),
                 ad.len(),
-            ))?;
+            );
+            cvt(res)?;
         }
         Ok(())
     }
@@ -87,7 +85,7 @@ impl AeadCtxRef {
         let mut out_len = out.len();
         // SAFETY: All the lengths and pointers are known valid.
         unsafe {
-            cvt(ffi::EVP_AEAD_CTX_open(
+            let res = ffi::EVP_AEAD_CTX_open(
                 self.as_ptr(),
                 out.as_mut_ptr(),
                 &mut out_len,
@@ -98,7 +96,8 @@ impl AeadCtxRef {
                 data.len(),
                 ad.as_ptr(),
                 ad.len(),
-            ))?;
+            );
+            cvt(res)?;
         }
         Ok(())
     }
