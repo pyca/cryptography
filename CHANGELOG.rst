@@ -19,6 +19,13 @@ Changelog
   classes from the cipher module. These are still available in
   :doc:`/hazmat/decrepit/index`.
 
+.. _v45-0-6:
+
+45.0.6 - 2025-08-05
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.2.
+
 .. _v45-0-5:
 
 45.0.5 - 2025-07-02
