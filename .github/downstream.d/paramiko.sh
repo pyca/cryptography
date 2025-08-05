@@ -2,9 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/paramiko/paramiko
         cd paramiko
-        git rev-parse HEAD
         uv --version
         uv sync --inexact --active
         ;;

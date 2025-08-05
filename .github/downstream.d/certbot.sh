@@ -2,9 +2,7 @@
 
 case "${1}" in
     install)
-        git clone --depth=1 https://github.com/certbot/certbot
         cd certbot
-        git rev-parse HEAD
         uv pip install pip
         tools/pip_install.py -e ./acme[test]
         tools/pip_install.py -e ./certbot[test]
