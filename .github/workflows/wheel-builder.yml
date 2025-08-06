@@ -156,9 +156,12 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
+          # The manylinux-entrypoint script accounts for uname issues, otherwise
+          # the platform tag on armv7 wheels might be tagged as aarch64 under
+          # docker running on an arm64 CPU
           OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
               OPENSSL_STATIC=1 \
-              uv build --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o tmpwheelhouse/
+              manylinux-entrypoint uv build --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o tmpwheelhouse/
         env:
           RUSTUP_HOME: /root/.rustup
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptography*.whl -w wheelhouse/
