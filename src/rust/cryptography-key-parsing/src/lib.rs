@@ -12,6 +12,8 @@ pub mod pkcs8;
 pub mod rsa;
 pub mod spki;
 
+pub const MIN_DH_MODULUS_SIZE: u32 = 512;
+
 pub enum KeyParsingError {
     InvalidKey,
     ExplicitCurveUnsupported,
