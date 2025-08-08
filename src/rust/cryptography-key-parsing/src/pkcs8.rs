@@ -8,6 +8,8 @@ use cryptography_x509::common::{
 use cryptography_x509::csr::Attributes;
 use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+use crate::MIN_DH_MODULUS_SIZE;
 use crate::{ec, rsa, KeyParsingError, KeyParsingResult};
 
 // RFC 5208 Section 5
@@ -54,29 +56,17 @@ pub fn parse_private_key(
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::Dh(dh_params) => {
-            let private_key_bytes =
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
-            let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
             let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
-            let q = openssl::bn::BigNum::from_slice(dh_params.q.as_bytes())?;
-
-            let dh = openssl::dh::Dh::from_params(p, g, q)?;
-            let dh = dh.set_private_key(dh_private_key)?;
-            Ok(openssl::pkey::PKey::from_dh(dh)?)
+            let q = Some(openssl::bn::BigNum::from_slice(dh_params.q.as_bytes())?);
+            parse_dh_private_key(k.private_key, p, g, q)
         }
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::DhKeyAgreement(dh_params) => {
-            let private_key_bytes =
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
-            let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
             let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
-
-            let dh = openssl::dh::Dh::from_pqg(p, None, g)?;
-            let dh = dh.set_private_key(dh_private_key)?;
-            Ok(openssl::pkey::PKey::from_dh(dh)?)
+            parse_dh_private_key(k.private_key, p, g, None)
         }
 
         AlgorithmParameters::X25519 => {
@@ -122,6 +112,25 @@ pub fn parse_private_key(
             k.algorithm.oid().clone(),
         )),
     }
+}
+
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+fn parse_dh_private_key(
+    private_key_data: &[u8],
+    p: openssl::bn::BigNum,
+    g: openssl::bn::BigNum,
+    q: Option<openssl::bn::BigNum>,
+) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
+    let private_key_bytes = asn1::parse_single::<asn1::BigUint<'_>>(private_key_data)?.as_bytes();
+    let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
+
+    if p.num_bits() < MIN_DH_MODULUS_SIZE as i32 {
+        return Err(KeyParsingError::InvalidKey);
+    }
+
+    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
+    let dh = dh.set_private_key(dh_private_key)?;
+    Ok(openssl::pkey::PKey::from_dh(dh)?)
 }
 
 fn pkcs12_pbe_decrypt(

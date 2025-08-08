@@ -10,8 +10,6 @@ use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
 
-const MIN_MODULUS_SIZE: u32 = 512;
-
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
@@ -36,10 +34,11 @@ fn generate_parameters(
 ) -> CryptographyResult<DHParameters> {
     let _ = backend;
 
-    if key_size < MIN_MODULUS_SIZE {
+    if key_size < cryptography_key_parsing::MIN_DH_MODULUS_SIZE {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(format!(
-                "DH key_size must be at least {MIN_MODULUS_SIZE} bits"
+                "DH key_size must be at least {} bits",
+                cryptography_key_parsing::MIN_DH_MODULUS_SIZE
             )),
         ));
     }
@@ -501,11 +500,12 @@ impl DHParameterNumbers {
 
         if p.bind(py)
             .call_method0("bit_length")?
-            .lt(MIN_MODULUS_SIZE)?
+            .lt(cryptography_key_parsing::MIN_DH_MODULUS_SIZE)?
         {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "p (modulus) must be at least {MIN_MODULUS_SIZE}-bit"
+                    "p (modulus) must be at least {}-bit",
+                    cryptography_key_parsing::MIN_DH_MODULUS_SIZE
                 )),
             ));
         }
