@@ -21,7 +21,7 @@ else:
     import tomli as tomllib
 
 nox.options.reuse_existing_virtualenvs = True
-nox.options.default_venv_backend = "uv|virtualenv"
+nox.options.default_venv_backend = "uv"
 
 
 def install(
@@ -79,10 +79,7 @@ def tests(session: nox.Session) -> None:
     else:
         install(session, f".[{extras}]")
 
-    if session.venv_backend == "uv":
-        session.run("uv", "pip", "list")
-    else:
-        session.run("pip", "list")
+    session.run("uv", "pip", "list")
 
     if session.name != "tests-nocoverage":
         cov_args = [
@@ -314,7 +311,7 @@ def local(session: nox.Session):
         "maturin",
         "develop",
         "--release",
-        *(["--uv"] if session.venv_backend == "uv" else []),
+        "--uv",
     )
 
     if session.posargs:
