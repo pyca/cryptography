@@ -325,6 +325,14 @@ Padding
 
         The padding's mask generation function (MGF).
 
+    .. attribute:: salt_length
+
+        :type: int
+
+        .. versionadded:: 46.0.0
+
+        The length of the salt.
+
 .. class:: OAEP(mgf, algorithm, label)
 
     .. versionadded:: 0.4
@@ -346,6 +354,14 @@ Padding
     .. attribute:: algorithm
 
         :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+
+        .. versionadded:: 42.0.0
+
+        The padding's hash algorithm.
+
+    .. attribute:: label
+
+        :type: bytes | None
 
         .. versionadded:: 42.0.0
 
@@ -410,6 +426,14 @@ Mask generation functions
 
     :param algorithm: An instance of
         :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+
+    .. attribute:: algorithm
+
+        :type: :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+
+        .. versionadded:: 46.0.0
+
+        The algorithm of this instance.
 
 Numbers
 ~~~~~~~

@@ -88,7 +88,7 @@ if you only need a subset of functionality.
     ...         Maps the cryptography padding and algorithm to the corresponding KMS signing algorithm.
     ...         This is specific to your implementation.
     ...         """
-    ...         if isinstance(padding, PKCS1v15) and isinstance(algorithm, hashes.SHA256):
+    ...         if padding == PKCS1v15() and algorithm == hashes.SHA256():
     ...             return b"RSA_PKCS1_V1_5_SHA_256"
     ...         else:
     ...             raise NotImplementedError()

@@ -18,6 +18,18 @@ Changelog
 * Removed the deprecated ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish``
   classes from the cipher module. These are still available in
   :doc:`/hazmat/decrepit/index`.
+* Make instances of
+  :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` as well as
+  instances of classes in
+  :mod:`~cryptography.hazmat.primitives.asymmetric.padding`
+  comparable.
+* Added `salt_length` property to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`.
+* Added `label` property to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP`.
+* Added `algorithm` property to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.MGF1`.
+
 
 .. _v45-0-6:
 

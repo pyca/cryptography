@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import typing
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives._asymmetric import (
@@ -15,6 +16,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 class PKCS1v15(AsymmetricPadding):
     name = "EMSA-PKCS1-v1_5"
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, PKCS1v15)
 
 
 class _MaxLength:
@@ -56,9 +60,25 @@ class PSS(AsymmetricPadding):
 
         self._salt_length = salt_length
 
+    def __eq__(self, other: typing.Any) -> bool:
+        if isinstance(self._salt_length, int):
+            eq_salt_length = self._salt_length == other._salt_length
+        else:
+            eq_salt_length = self._salt_length is other._salt_length
+
+        return (
+            isinstance(other, PSS)
+            and eq_salt_length
+            and self._mgf == other._mgf
+        )
+
     @property
     def mgf(self) -> MGF:
         return self._mgf
+
+    @property
+    def salt_length(self) -> int | _MaxLength | _Auto | _DigestLength:
+        return self._salt_length
 
 
 class OAEP(AsymmetricPadding):
@@ -77,9 +97,21 @@ class OAEP(AsymmetricPadding):
         self._algorithm = algorithm
         self._label = label
 
+    def __eq__(self, other: typing.Any) -> bool:
+        return (
+            isinstance(other, OAEP)
+            and self._mgf == other._mgf
+            and self._algorithm == other._algorithm
+            and self._label == other._label
+        )
+
     @property
     def algorithm(self) -> hashes.HashAlgorithm:
         return self._algorithm
+
+    @property
+    def label(self) -> bytes | None:
+        return self._label
 
     @property
     def mgf(self) -> MGF:
@@ -89,6 +121,13 @@ class OAEP(AsymmetricPadding):
 class MGF(metaclass=abc.ABCMeta):
     _algorithm: hashes.HashAlgorithm
 
+    @abc.abstractmethod
+    def __eq__(self, other: typing.Any) -> bool:
+        """
+        Implement equality checking.
+        """
+        ...
+
 
 class MGF1(MGF):
     def __init__(self, algorithm: hashes.HashAlgorithm):
@@ -96,6 +135,13 @@ class MGF1(MGF):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         self._algorithm = algorithm
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, MGF1) and self._algorithm == other._algorithm
+
+    @property
+    def algorithm(self) -> hashes.HashAlgorithm:
+        return self._algorithm
 
 
 def calculate_max_pss_salt_length(
