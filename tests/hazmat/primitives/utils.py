@@ -35,6 +35,7 @@ from cryptography.hazmat.primitives.kdf.kbkdf import (
     Mode,
 )
 
+from ...doubles import DummyHashAlgorithm
 from ...utils import load_vectors_from_file
 
 
@@ -205,6 +206,14 @@ def generate_base_hash_test(algorithm, digest_size):
         base_hash_test(backend, algorithm, digest_size)
 
     return test_base_hash
+
+
+def generate_eq_hash_test(algorithm):
+    def test_eq(self):
+        assert algorithm == algorithm
+        assert algorithm != DummyHashAlgorithm()
+
+    return test_eq
 
 
 def base_hash_test(backend, algorithm, digest_size):
