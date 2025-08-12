@@ -1,9 +1,13 @@
 X.509
 =====
 
-X.509 is an ITU-T standard for a `public key infrastructure`_. X.509v3 is
-defined in :rfc:`5280` (which obsoletes :rfc:`2459` and :rfc:`3280`). X.509
-certificates are commonly used in protocols like `TLS`_.
+X.509 is a standard for `public key infrastructure`_. ``cryptography``
+implements X.509 in accordance with :rfc:`5280`, is principally focused on
+WebPKI use cases. X.509 certificates are commonly used in protocols like
+`TLS`_.
+
+In some cases we tolerate divergences from the these specifications, however
+these should be regarded as exceptional cases.
 
 .. toctree::
     :maxdepth: 2
