@@ -2,7 +2,7 @@ X.509
 =====
 
 X.509 is a standard for `public key infrastructure`_. ``cryptography``
-implements X.509 in accordance with :rfc:`5280`, is principally focused on
+implements X.509 in accordance with :rfc:`5280`, and is principally focused on
 WebPKI use cases. X.509 certificates are commonly used in protocols like
 `TLS`_.
 
