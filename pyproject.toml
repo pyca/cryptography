@@ -42,8 +42,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
     "Topic :: Security :: Cryptography",
 ]
 requires-python = ">=3.8,!=3.9.0,!=3.9.1"
