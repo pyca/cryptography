@@ -18,7 +18,7 @@ jobs:
   docs-linkcheck:
     runs-on: ubuntu-latest
     name: "linkcheck"
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -35,7 +35,7 @@ jobs:
           # This creates the same key as the docs job (as long as they have the same
           # python version)
           key: 3.11-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt nox
+      - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]'
       - name: Build nox environment
         run: |
             nox -v --install-only -s docs-linkcheck

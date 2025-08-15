@@ -352,8 +352,7 @@ X.509
 * ``ecdsa_root.pem`` - `DigiCert Global Root G3`_, a ``secp384r1`` ECDSA root
   certificate.
 * ``verisign-md2-root.pem`` - A legacy Verisign public root signed using the
-  MD2 algorithm. This is a PEM conversion of the `root data`_ in the NSS source
-  tree.
+  MD2 algorithm.
 * ``cryptography.io.pem`` - A leaf certificate issued by RapidSSL for the
   cryptography website.
 * ``cryptography.io.old_header.pem`` - A leaf certificate issued by RapidSSL
@@ -1238,7 +1237,6 @@ header format (substituting the correct information):
 .. _`NIST PKI Testing`: https://csrc.nist.gov/Projects/PKI-Testing
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt
-.. _`root data`: https://hg.mozilla.org/projects/nss/file/25b2922cc564/security/nss/lib/ckfw/builtins/certdata.txt#l2053
 .. _`asymmetric/public/PKCS1/dsa.pub.pem`: https://github.com/ruby/ruby/blob/4ccb387f3bc436a08fc6d72c4931994f5de95110/test/openssl/test_pkey_dsa.rb#L53
 .. _`Mozilla bug`: https://bugzilla.mozilla.org/show_bug.cgi?id=233586
 .. _`Russian CA`: https://e-trust.gosuslugi.ru/
