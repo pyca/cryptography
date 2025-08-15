@@ -60,7 +60,7 @@ jobs:
       image: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
       volumes:
         - /staticnodehost:/staticnodecontainer:rw,rshared
-        - /staticnodehost:/__e/node20:ro,rshared
+        - /staticnodehost/20:/__e/node20:ro,rshared
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +84,7 @@ jobs:
 
           - { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           - { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
-          
+
         exclude:
           # There are no readily available musllinux PyPy distributions
           - PYTHON: { VERSION: "pp310-pypy310_pp73" }
