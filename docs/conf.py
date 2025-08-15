@@ -206,7 +206,7 @@ linkcheck_ignore = [
     # CMU doesn't know how to send intermediates
     r"https://wiki.sei.cmu.edu",
     # GitHub has started heavily rate-limiting causing job failures
-    r"https://github.com"
+    r"https://github.com",
 ]
 
 autosectionlabel_prefix_document = True
