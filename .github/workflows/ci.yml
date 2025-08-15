@@ -221,7 +221,8 @@ jobs:
       image: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
       volumes:
         - /staticnodehost:/staticnodecontainer:rw,rshared
-        - /staticnodehost:/__e/node20:ro,rshared
+        - /staticnodehost/20:/__e/node20:ro,rshared
+        - /staticnodehost/24:/__e/node24:ro,rshared
     strategy:
       fail-fast: false
       matrix:
