@@ -4,6 +4,7 @@
 
 
 import itertools
+import typing
 
 import pytest
 
@@ -31,6 +32,9 @@ __all__ = ["rsa_key_2048"]
 class DummyMGF(padding.MGF):
     _salt_length = 0
     _algorithm = hashes.SHA1()
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, DummyMGF)
 
 
 class TestOpenSSL:
