@@ -257,10 +257,12 @@ typing-extensions==4.13.2 ; python_full_version < '3.9'
     # via
     #   exceptiongroup
     #   mypy
+    #   virtualenv
 typing-extensions==4.14.1 ; python_full_version >= '3.9'
     # via
     #   exceptiongroup
     #   mypy
+    #   virtualenv
 urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.5.0 ; python_full_version >= '3.9'
