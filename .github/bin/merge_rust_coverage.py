@@ -3,6 +3,7 @@
 # for complete details.
 
 import collections.abc
+import pathlib
 import sys
 
 import coverage
@@ -36,14 +37,15 @@ class RustCoverageFileReporter(coverage.FileReporter):
         return {(-1, line) for line in self._data}
 
 
-def main(*lcov_paths: str):
+def main(coverage_loc: str):
+    path = pathlib.Path(coverage_loc)
     coverage_data = coverage.CoverageData(suffix="rust")
 
     # {filename: {line_number: count}}
     raw_data = collections.defaultdict(lambda: collections.defaultdict(int))
     current_file = None
-    for p in lcov_paths:
-        with open(p) as f:
+    for p in path.glob("*.lcov"):
+        with p.open() as f:
             for line in f:
                 line = line.strip()
                 if line == "end_of_record":
@@ -86,9 +88,11 @@ def main(*lcov_paths: str):
     coverage_data.write()
 
     cov = coverage.Coverage(
-        plugins=[lambda reg: reg.add_file_tracer(RustCoveragePlugin(raw_data))]
+        plugins=[
+            lambda reg: reg.add_file_tracer(RustCoveragePlugin(raw_data))
+        ],
     )
-    cov.combine()
+    cov.combine(data_paths=[str(path)], keep=True)
     coverage_percent = cov.report(show_missing=True)
     if coverage_percent < 100:
         print("+++ Combined coverage under 100% +++")
