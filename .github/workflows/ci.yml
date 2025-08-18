@@ -558,13 +558,14 @@ jobs:
         with:
           pattern: coverage-data-*
           merge-multiple: true
+          path: coverage-data/
       - name: Combine coverage and fail if it's <100%.
         if: ${{ always() }}
         id: combinecoverage
         run: |
           set +e
           echo "## Coverage" >> $GITHUB_STEP_SUMMARY
-          python .github/bin/merge_rust_coverage.py *.lcov > COV_REPORT
+          python .github/bin/merge_rust_coverage.py coverage-data/ > COV_REPORT
           COV_EXIT_CODE=$?
           cat COV_REPORT
           if [ $COV_EXIT_CODE -ne 0 ]; then
