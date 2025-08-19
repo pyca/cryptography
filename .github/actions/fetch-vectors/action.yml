@@ -9,12 +9,12 @@ runs:
       with:
         repository: "C2SP/wycheproof"
         path: "wycheproof"
-        # Latest commit on the wycheproof main branch, as of Aug 01, 2025.
-        ref: "90e36738d5898fa2e0cdaaa1ec83e774789c42d6" # wycheproof-ref
+        # Latest commit on the wycheproof main branch, as of Aug 19, 2025.
+        ref: "c0ee7623024862b6441b60b0ca241019a519ba33" # wycheproof-ref
 
     - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       with:
         repository: "C2SP/x509-limbo"
         path: "x509-limbo"
-        # Latest commit on the x509-limbo main branch, as of Aug 12, 2025.
-        ref: "4fd656e09452e4c07489224ef6fc2ec6628c9d54" # x509-limbo-ref
+        # Latest commit on the x509-limbo main branch, as of Aug 19, 2025.
+        ref: "7c0192df9183bcd83db468e84b724b7d288870e2" # x509-limbo-ref
