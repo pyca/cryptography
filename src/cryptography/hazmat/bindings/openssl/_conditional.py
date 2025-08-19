@@ -159,6 +159,14 @@ def cryptography_has_ssl_get0_group_name() -> list[str]:
     return ["SSL_get0_group_name"]
 
 
+def cryptography_has_client_hello_cb() -> list[str]:
+    return [
+        "SSL_CTX_set_client_hello_cb",
+        "SSL_client_hello_get1_extensions_present",
+        "SSL_client_hello_get0_ext",
+    ]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -195,4 +203,5 @@ CONDITIONAL_NAMES = {
     "Cryptography_HAS_SSL_GET0_GROUP_NAME": (
         cryptography_has_ssl_get0_group_name
     ),
+    "Cryptography_HAS_CLIENT_HELLO_CB": cryptography_has_client_hello_cb,
 }
