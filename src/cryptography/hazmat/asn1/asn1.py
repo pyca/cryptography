@@ -7,7 +7,6 @@ from __future__ import annotations
 import builtins
 from typing import (
     Any,
-    ClassVar,
     TypeVar,
 )
 
@@ -20,14 +19,6 @@ U = TypeVar("U")
 
 
 encode_der = asn1_exp.encode_der
-
-
-class Asn1Decorated(te.Protocol[T]):
-    __asn1_root__: asn1_exp.AnnotatedType
-    __asn1_fields__: ClassVar[dict[str, asn1_exp.AnnotatedType]]
-
-    def to_der(self) -> bytes:
-        pass
 
 
 def _normalize_field_type(
@@ -89,13 +80,8 @@ def _register_asn1_type(cls: type[U], root_type: asn1_exp.RootType) -> None:
 
     setattr(cls, "__init__", new_init)
 
-    def to_der(self: U) -> bytes:
-        return asn1_exp.encode_der(self)
-
-    setattr(cls, "to_der", to_der)
-
 
 @te.dataclass_transform(kw_only_default=True)
-def sequence(cls: type[U]) -> Asn1Decorated[U]:
+def sequence(cls: type[U]) -> type[U]:
     _register_asn1_type(cls, asn1_exp.RootType.Sequence)
-    return cls  # type: ignore[return-value]
+    return cls
