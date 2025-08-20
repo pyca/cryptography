@@ -73,7 +73,7 @@ def tests(session: nox.Session) -> None:
     if session.name == "tests-rust-debug":
         install(
             session,
-            "--config-settings=build-args=--profile=dev",
+            "--config-settings-package=cryptography:build-args=--profile=dev",
             f".[{extras}]",
         )
     else:
