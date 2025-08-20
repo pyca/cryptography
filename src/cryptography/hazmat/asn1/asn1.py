@@ -26,7 +26,7 @@ def _normalize_field_type(
     if field_type is builtins.int:
         rust_field_type = asn1_exp.Type.PyInt()
     elif hasattr(field_type, "__asn1_root__"):
-        annotated_root = getattr(field_type, "__asn1_root__")
+        annotated_root = field_type.__asn1_root__
         if not isinstance(annotated_root, asn1_exp.AnnotatedType):
             raise TypeError(f"unsupported root type: {annotated_root}")
         return annotated_root
