@@ -123,7 +123,7 @@ mod _rust {
         use crate::asn1_exp::asn1::encode_der;
 
         #[pymodule_export]
-        use crate::asn1_exp::types::{AnnotatedType, Annotation, RootType, Type};
+        use crate::asn1_exp::types::{AnnotatedType, Annotation, Type};
     }
 
     #[pyo3::pymodule(gil_used = false)]
