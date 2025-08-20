@@ -1,20 +1,15 @@
 # This file is dual licensed under the terms of the Apache License, Version
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
-from enum import Enum
-from typing import Any, ClassVar
+import typing
 
-def encode_der(value: Any) -> bytes: ...
-
-class RootType(Enum):
-    Sequence = ...
-    Set = ...
+def encode_der(value: typing.Any) -> bytes: ...
 
 # Type is a Rust enum with tuple variants. For now, we express the type
 # annotations like this:
 class Type:
-    Sequence: ClassVar[type]
-    PyInt: ClassVar[type]
+    Sequence: typing.ClassVar[type]
+    PyInt: typing.ClassVar[type]
 
 class Annotation:
     def __new__(
@@ -29,8 +24,8 @@ class AnnotatedType:
 
 class AnnotatedTypeObject:
     annotated_type: AnnotatedType
-    value: Any
+    value: typing.Any
 
     def __new__(
-        cls, annotated_type: AnnotatedType, value: Any
+        cls, annotated_type: AnnotatedType, value: typing.Any
     ) -> AnnotatedTypeObject: ...
