@@ -23,7 +23,7 @@ def _normalize_field_type(
 ) -> asn1_exp.AnnotatedType:
     annotation = asn1_exp.Annotation()
 
-    if field_type == builtins.int:
+    if field_type is builtins.int:
         rust_field_type = asn1_exp.Type.PyInt()
     elif hasattr(field_type, "__asn1_root__"):
         annotated_root = getattr(field_type, "__asn1_root__")
