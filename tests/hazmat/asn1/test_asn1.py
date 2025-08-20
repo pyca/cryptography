@@ -7,6 +7,35 @@ import pytest
 import cryptography.hazmat.asn1 as asn1
 
 
+class TestClassAPI:
+    def test_fail_unsupported_field(self) -> None:
+        # Not a sequence
+        class Unsupported:
+            foo: int
+
+        with pytest.raises(TypeError, match="unsupported field type"):
+
+            @asn1.sequence
+            class Example:
+                foo: Unsupported
+
+    def test_fail_init_incorrect_field_name(self) -> None:
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        with pytest.raises(TypeError, match="invalid keyword argument"):
+            Example(bar=3)  # type: ignore[call-arg]
+
+    def test_fail_init_missing_field_name(self) -> None:
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        with pytest.raises(TypeError, match="missing arguments"):
+            Example()  # type: ignore[call-arg]
+
+
 class TestEncoding:
     @pytest.mark.parametrize(
         "value,expected",
@@ -50,3 +79,17 @@ class TestEncoding:
 
         encoded = asn1.encode_der(value)
         assert encoded == b"\x30\x06\x02\x01\x09\x02\x01\x06"
+
+    def test_encode_ok_nested_sequence(self) -> None:
+        @asn1.sequence
+        class Child:
+            foo: int
+
+        @asn1.sequence
+        class Parent:
+            foo: Child
+
+        value = Parent(foo=Child(foo=9))
+
+        encoded = asn1.encode_der(value)
+        assert encoded == b"\x30\x05\x30\x03\x02\x01\x09"
