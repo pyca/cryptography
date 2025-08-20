@@ -60,8 +60,6 @@ def _register_asn1_type(cls: type[U], root_type: asn1_exp.RootType) -> None:
         root = asn1_exp.AnnotatedType(
             asn1_exp.Type.Sequence(cls), asn1_exp.Annotation()
         )
-    else:
-        raise TypeError(f"unsupported root type: {root_type}")
 
     setattr(cls, "__asn1_root__", root)
 
