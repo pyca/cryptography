@@ -3,7 +3,7 @@ setuptools!=74.0.0
 cffi>=1.12; platform_python_implementation != 'PyPy' and python_version < '3.14'
 cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.14'
 maturin>=1,<2
-typing-extensions>=4.13.2,<4.14.0
+typing-extensions>=4.13.2
 
 # Must be kept sync with build-system.requires at vectors/pyproject.toml
 uv_build>=0.7.19,<0.9.0
