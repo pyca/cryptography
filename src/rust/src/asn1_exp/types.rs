@@ -7,13 +7,6 @@ use pyo3::prelude::*;
 use pyo3::types::{PyInt, PyType};
 use pyo3::PyTypeInfo;
 
-/// Markers for user-defined sequences/sets (via decorators).
-#[derive(Clone, PartialEq)]
-#[pyclass(eq, eq_int, frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
-pub enum RootType {
-    Sequence,
-}
-
 /// Internal type representation for mapping between
 /// Python and ASN.1.
 #[pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
@@ -99,5 +92,5 @@ pub fn non_root_type_to_annotated<'p>(
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod types {
     #[pymodule_export]
-    use super::{AnnotatedType, Annotation, RootType, Type};
+    use super::{AnnotatedType, Annotation, Type};
 }
