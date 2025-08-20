@@ -5,24 +5,21 @@
 from __future__ import annotations
 
 import builtins
-from typing import (
-    Any,
-    TypeVar,
-)
+import typing
 
-import typing_extensions as te
+import typing_extensions
 
 from cryptography.hazmat.bindings._rust import asn1_exp
 
-T = TypeVar("T", covariant=True)
-U = TypeVar("U")
+T = typing.TypeVar("T", covariant=True)
+U = typing.TypeVar("U")
 
 
 encode_der = asn1_exp.encode_der
 
 
 def _normalize_field_type(
-    field_type: Any, field_name: str
+    field_type: typing.Any, field_name: str
 ) -> asn1_exp.AnnotatedType:
     annotation = asn1_exp.Annotation()
 
@@ -53,7 +50,7 @@ def _annotate_fields(
 
 
 def _register_asn1_type(cls: type[U], root_type: asn1_exp.RootType) -> None:
-    raw_fields = te.get_type_hints(cls, include_extras=True)
+    raw_fields = typing_extensions.get_type_hints(cls, include_extras=True)
     setattr(cls, "__asn1_fields__", _annotate_fields(raw_fields))
 
     if root_type is asn1_exp.RootType.Sequence:
@@ -79,7 +76,7 @@ def _register_asn1_type(cls: type[U], root_type: asn1_exp.RootType) -> None:
     setattr(cls, "__init__", new_init)
 
 
-@te.dataclass_transform(kw_only_default=True)
+@typing_extensions.dataclass_transform(kw_only_default=True)
 def sequence(cls: type[U]) -> type[U]:
     _register_asn1_type(cls, asn1_exp.RootType.Sequence)
     return cls
