@@ -35,6 +35,19 @@ class TestClassAPI:
         with pytest.raises(TypeError, match="missing arguments"):
             Example()  # type: ignore[call-arg]
 
+    def test_fail_malformed_root_type(self) -> None:
+        @asn1.sequence
+        class Invalid:
+            foo: int
+
+        setattr(Invalid, "__asn1_root__", int)
+
+        with pytest.raises(TypeError, match="unsupported root type"):
+
+            @asn1.sequence
+            class Example:
+                foo: Invalid
+
 
 class TestEncoding:
     @pytest.mark.parametrize(
