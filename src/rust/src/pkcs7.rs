@@ -381,10 +381,11 @@ fn check_decrypt_parameters<'p>(
         }
     }
 
-    // Check if any option is not PKCS7Options::Text
+    // Check if any option is not PKCS7Options::Text or PKCS7Options::Binary
     let text_option = types::PKCS7_TEXT.get(py)?;
+    let binary_option = types::PKCS7_BINARY.get(py)?;
     for opt in options.iter() {
-        if !opt.eq(text_option.clone())? {
+        if !opt.eq(text_option.clone())? && !opt.eq(binary_option.clone())? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Only the following options are supported for decryption: Text",
