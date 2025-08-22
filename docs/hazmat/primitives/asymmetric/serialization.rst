@@ -1450,6 +1450,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+        The empty list handles binary data.
 
     :returns bytes: The decrypted message.
 
@@ -1505,6 +1506,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+        The empty list handles binary data.
 
     :returns bytes: The decrypted message.
 
@@ -1563,6 +1565,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options`. For
         this operation only
         :attr:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7Options.Text` is supported.
+        The empty list handles binary data.
 
     :returns bytes: The decrypted message.
 
