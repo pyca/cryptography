@@ -173,7 +173,9 @@ readme-renderer==43.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
 readme-renderer==44.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
-requests==2.32.4
+requests==2.32.4 ; python_full_version < '3.9'
+    # via sphinx
+requests==2.32.5 ; python_full_version >= '3.9'
     # via
     #   sphinx
     #   sphinxcontrib-spelling
