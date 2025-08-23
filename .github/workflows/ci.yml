@@ -565,9 +565,8 @@ jobs:
         run: |
           set +e
           echo "## Coverage" >> $GITHUB_STEP_SUMMARY
-          python .github/bin/merge_rust_coverage.py coverage-data/ > COV_REPORT
-          COV_EXIT_CODE=$?
-          cat COV_REPORT
+          python -u .github/bin/merge_rust_coverage.py coverage-data/ | tee COV_REPORT
+          COV_EXIT_CODE=${PIPESTATUS[0]}
           if [ $COV_EXIT_CODE -ne 0 ]; then
             echo "🚨 Coverage failed. Under 100" | tee -a $GITHUB_STEP_SUMMARY
           fi
