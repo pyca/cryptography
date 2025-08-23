@@ -8,13 +8,13 @@ import sys
 
 import coverage
 
+CoverageData = collections.abc.Mapping[str, collections.abc.Mapping[int, int]]
+
 
 class RustCoveragePlugin(coverage.CoveragePlugin):
     def __init__(
         self,
-        coverage_data: collections.abc.Mapping[
-            str, collections.abc.Mapping[int, int]
-        ],
+        coverage_data: CoverageData,
     ) -> None:
         super().__init__()
         self._data = coverage_data
@@ -37,10 +37,12 @@ class RustCoverageFileReporter(coverage.FileReporter):
         return {(-1, line) for line in self._data}
 
 
-def main(coverage_loc: str):
-    path = pathlib.Path(coverage_loc)
-    coverage_data = coverage.CoverageData(suffix="rust")
-
+def parse_lcovs(
+    path: pathlib.Path,
+) -> tuple[
+    CoverageData,
+    dict[str, set[tuple[int, int]]],
+]:
     # {filename: {line_number: count}}
     raw_data = collections.defaultdict(lambda: collections.defaultdict(int))
     current_file = None
@@ -81,6 +83,17 @@ def main(coverage_loc: str):
         file_name: {(-1, line) for line, c in lines.items() if c > 0}
         for file_name, lines in raw_data.items()
     }
+
+    return raw_data, covered_lines
+
+
+def main(coverage_loc: str):
+    path = pathlib.Path(coverage_loc)
+    coverage_data = coverage.CoverageData(suffix="rust")
+
+    print("Parsing LCOVs")
+    raw_data, covered_lines = parse_lcovs(path)
+
     coverage_data.add_arcs(covered_lines)
     coverage_data.add_file_tracers(
         dict.fromkeys(covered_lines, "None.RustCoveragePlugin")
@@ -92,7 +105,9 @@ def main(coverage_loc: str):
             lambda reg: reg.add_file_tracer(RustCoveragePlugin(raw_data))
         ],
     )
+    print("Combining Coverage")
     cov.combine(data_paths=[str(path)], keep=True)
+    print("Coverage Report")
     coverage_percent = cov.report(show_missing=True)
     if coverage_percent < 100:
         print("+++ Combined coverage under 100% +++")
