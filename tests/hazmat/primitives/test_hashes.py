@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import hashes
 
 from ...doubles import DummyHashAlgorithm
 from ...utils import raises_unsupported_algorithm
-from .utils import generate_base_hash_test
+from .utils import generate_base_hash_test, generate_eq_hash_test
 
 
 class TestHashContext:
@@ -52,6 +52,7 @@ class TestSHA1:
         hashes.SHA1(),
         digest_size=20,
     )
+    test_sha1_eq = generate_eq_hash_test(hashes.SHA1())
 
 
 @pytest.mark.supported(
@@ -63,6 +64,7 @@ class TestSHA224:
         hashes.SHA224(),
         digest_size=28,
     )
+    test_sha224_eq = generate_eq_hash_test(hashes.SHA224())
 
 
 @pytest.mark.supported(
@@ -74,6 +76,7 @@ class TestSHA256:
         hashes.SHA256(),
         digest_size=32,
     )
+    test_sha256_eq = generate_eq_hash_test(hashes.SHA256())
 
 
 @pytest.mark.supported(
@@ -85,6 +88,7 @@ class TestSHA384:
         hashes.SHA384(),
         digest_size=48,
     )
+    test_sha384_eq = generate_eq_hash_test(hashes.SHA384())
 
 
 @pytest.mark.supported(
@@ -96,6 +100,79 @@ class TestSHA512:
         hashes.SHA512(),
         digest_size=64,
     )
+    test_sha512_eq = generate_eq_hash_test(hashes.SHA512())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA512_224()),
+    skip_message="Does not support SHA512 224",
+)
+class TestSHA512224:
+    test_sha512_224 = generate_base_hash_test(
+        hashes.SHA512_224(),
+        digest_size=28,
+    )
+    test_sha512_224_eq = generate_eq_hash_test(hashes.SHA512_224())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA512_256()),
+    skip_message="Does not support SHA512 256",
+)
+class TestSHA512256:
+    test_sha512_256 = generate_base_hash_test(
+        hashes.SHA512_256(),
+        digest_size=32,
+    )
+    test_sha512_256_eq = generate_eq_hash_test(hashes.SHA512_256())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_224()),
+    skip_message="Does not support SHA3 224",
+)
+class TestSHA3224:
+    test_sha3_224 = generate_base_hash_test(
+        hashes.SHA3_224(),
+        digest_size=28,
+    )
+    test_sha3_224_eq = generate_eq_hash_test(hashes.SHA3_224())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_256()),
+    skip_message="Does not support SHA3 256",
+)
+class TestSHA3256:
+    test_sha3_256 = generate_base_hash_test(
+        hashes.SHA3_256(),
+        digest_size=32,
+    )
+    test_sha3_256_eq = generate_eq_hash_test(hashes.SHA3_256())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_384()),
+    skip_message="Does not support SHA3 384",
+)
+class TestSHA3384:
+    test_sha3_384 = generate_base_hash_test(
+        hashes.SHA3_384(),
+        digest_size=48,
+    )
+    test_sha3_384_eq = generate_eq_hash_test(hashes.SHA3_384())
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.hash_supported(hashes.SHA3_512()),
+    skip_message="Does not support SHA3 512",
+)
+class TestSHA3512:
+    test_sha3_512 = generate_base_hash_test(
+        hashes.SHA3_512(),
+        digest_size=64,
+    )
+    test_sha3_512_eq = generate_eq_hash_test(hashes.SHA3_512())
 
 
 @pytest.mark.supported(
@@ -107,6 +184,7 @@ class TestMD5:
         hashes.MD5(),
         digest_size=16,
     )
+    test_md5_eq = generate_eq_hash_test(hashes.MD5())
 
 
 @pytest.mark.supported(
@@ -120,6 +198,7 @@ class TestBLAKE2b:
         hashes.BLAKE2b(digest_size=64),
         digest_size=64,
     )
+    test_blake2b_eq = generate_eq_hash_test(hashes.BLAKE2b(digest_size=64))
 
     def test_invalid_digest_size(self, backend):
         with pytest.raises(ValueError):
@@ -143,6 +222,7 @@ class TestBLAKE2s:
         hashes.BLAKE2s(digest_size=32),
         digest_size=32,
     )
+    test_blake2s_eq = generate_eq_hash_test(hashes.BLAKE2s(digest_size=32))
 
     def test_invalid_digest_size(self, backend):
         with pytest.raises(ValueError):
@@ -166,6 +246,14 @@ def test_buffer_protocol_hash(backend):
 
 class TestSHAKE:
     @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
+    def test_eq(self, xof):
+        value_one = xof(digest_size=32)
+        value_two = xof(digest_size=32)  # identical
+        value_three = xof(digest_size=64)
+        assert value_one == value_two
+        assert value_one != value_three
+
+    @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_invalid_digest_type(self, xof):
         with pytest.raises(TypeError):
             xof(digest_size=object())
@@ -188,3 +276,4 @@ class TestSM3:
         hashes.SM3(),
         digest_size=32,
     )
+    test_sm3_eq = generate_eq_hash_test(hashes.SM3())

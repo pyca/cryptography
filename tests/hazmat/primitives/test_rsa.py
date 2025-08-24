@@ -7,6 +7,7 @@ import binascii
 import copy
 import itertools
 import os
+import typing
 
 import pytest
 
@@ -69,6 +70,9 @@ def rsa_key_2048() -> rsa.RSAPrivateKey:
 class DummyMGF(padding.MGF):
     _salt_length = 0
     _algorithm = hashes.SHA256()
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, DummyMGF)
 
 
 def _check_fips_key_length(backend, private_key):
@@ -1603,6 +1607,14 @@ class TestRSAPKCS1Verification:
     )
 
 
+class TestPKCS1v15:
+    def test_eq(self):
+        assert padding.PKCS1v15() == padding.PKCS1v15()
+        assert padding.PKCS1v15() != padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=32
+        )
+
+
 class TestPSS:
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
@@ -1644,8 +1656,68 @@ class TestPSS:
         assert pss.mgf == mgf
         assert pss.mgf == pss._mgf
 
+    @pytest.mark.parametrize("xof", [hashes.SHA256(), hashes.SHA512()])
+    @pytest.mark.parametrize(
+        "salt_length",
+        [
+            1,
+            32,
+            padding.PSS.MAX_LENGTH,
+            padding.PSS.AUTO,
+            padding.PSS.DIGEST_LENGTH,
+        ],
+    )
+    def test_eq(
+        self, xof: hashes.HashAlgorithm, salt_length: typing.Any
+    ) -> None:
+        assert padding.PSS(
+            salt_length=salt_length, mgf=padding.MGF1(algorithm=xof)
+        ) == padding.PSS(
+            salt_length=salt_length, mgf=padding.MGF1(algorithm=xof)
+        )
+
+    @pytest.mark.parametrize(
+        "salt_length",
+        [
+            1,
+            32,
+            padding.PSS.MAX_LENGTH,
+            padding.PSS.AUTO,
+            padding.PSS.DIGEST_LENGTH,
+        ],
+    )
+    def test_not_eq_with_different_salt_length(
+        self, salt_length: typing.Any
+    ) -> None:
+        xof = hashes.SHA256()
+        assert padding.PSS(
+            salt_length=salt_length, mgf=padding.MGF1(algorithm=xof)
+        ) != padding.PSS(salt_length=64, mgf=padding.MGF1(algorithm=xof))
+
+    def test_not_eq_with_salt_length_object_identity(self) -> None:
+        xof = hashes.SHA256()
+        assert padding.PSS(
+            salt_length=padding.PSS.AUTO, mgf=padding.MGF1(algorithm=xof)
+        ) != padding.PSS(
+            salt_length=padding.PSS.DIGEST_LENGTH,
+            mgf=padding.MGF1(algorithm=xof),
+        )
+
+    def test_not_eq_with_different_mgf(self) -> None:
+        assert padding.PSS(
+            salt_length=padding.PSS.AUTO,
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        ) != padding.PSS(
+            salt_length=padding.PSS.AUTO,
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+        )
+
 
 class TestMGF1:
+    def test_eq(self) -> None:
+        assert padding.MGF1(hashes.SHA256()) == padding.MGF1(hashes.SHA256())
+        assert padding.MGF1(hashes.SHA256()) != padding.MGF1(hashes.SHA512())
+
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
             padding.MGF1(b"not_a_hash")  # type:ignore[arg-type]
@@ -1679,6 +1751,49 @@ class TestOAEP:
         oaep = padding.OAEP(mgf=mgf, algorithm=algorithm, label=None)
         assert oaep.mgf == mgf
         assert oaep.mgf == oaep._mgf
+
+    @pytest.mark.parametrize("xof", [hashes.SHA256(), hashes.SHA512()])
+    @pytest.mark.parametrize("label", [None, b"", b"foo"])
+    def test_eq(
+        self, xof: hashes.HashAlgorithm, label: typing.Optional[bytes]
+    ) -> None:
+        mgf = padding.MGF1(algorithm=xof)
+        assert padding.OAEP(
+            mgf=mgf, algorithm=xof, label=label
+        ) == padding.OAEP(mgf=mgf, algorithm=xof, label=label)
+
+    def test_not_eq_with_different_mgf(self) -> None:
+        assert padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ) != padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        )
+
+    def test_not_eq_with_different_algorithm(self) -> None:
+        assert padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+            algorithm=hashes.SHA512(),
+            label=None,
+        ) != padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        )
+
+    def test_not_eq_with_different_label(self) -> None:
+        assert padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ) != padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA512()),
+            algorithm=hashes.SHA256(),
+            label=b"",
+        )
 
 
 class TestRSADecryption:
