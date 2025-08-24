@@ -4,6 +4,7 @@
 import typing
 
 def encode_der(value: typing.Any) -> bytes: ...
+def non_root_python_to_rust(cls: type) -> Type: ...
 
 # Type is a Rust enum with tuple variants. For now, we express the type
 # annotations like this:

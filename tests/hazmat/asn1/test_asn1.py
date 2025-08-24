@@ -13,7 +13,7 @@ class TestClassAPI:
         class Unsupported:
             foo: int
 
-        with pytest.raises(TypeError, match="unsupported field type"):
+        with pytest.raises(TypeError, match="cannot handle type"):
 
             @asn1.sequence
             class Example:

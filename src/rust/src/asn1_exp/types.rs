@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyInt, PyType};
 use pyo3::PyTypeInfo;
@@ -64,6 +64,22 @@ impl Annotation {
     }
 }
 
+/// Utility function for converting builtin Python types
+/// to their Rust `Type` equivalent.
+#[pyo3::pyfunction]
+pub fn non_root_python_to_rust<'p>(
+    py: Python<'p>,
+    class: &Bound<'p, PyType>,
+) -> PyResult<Bound<'p, Type>> {
+    if class.is(PyInt::type_object(py)) {
+        Type::PyInt().into_pyobject(py)
+    } else {
+        Err(PyTypeError::new_err(format!(
+            "cannot handle type: {class:?}"
+        )))
+    }
+}
+
 /// Utility function for converting builtin Python types.
 /// This is needed when `encode_der` and `decode_der` are called
 /// with builtin Python types (`int`, `str`, etc), and we can't
@@ -74,15 +90,7 @@ pub fn non_root_type_to_annotated<'p>(
     class: &Bound<'p, PyType>,
     annotation: Option<Annotation>,
 ) -> PyResult<AnnotatedType> {
-    let inner = if class.is(PyInt::type_object(py)) {
-        Type::PyInt().into_pyobject(py)
-    } else {
-        Err(PyValueError::new_err(format!(
-            "Cannot handle simple type: {class:?}"
-        )))
-    }?
-    .unbind();
-
+    let inner = non_root_python_to_rust(py, class)?.unbind();
     Ok(AnnotatedType {
         inner,
         annotation: annotation.unwrap_or(Annotation {}),
