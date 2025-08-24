@@ -127,6 +127,10 @@ tomli==2.2.1 ; python_full_version < '3.11' \
     --hash=sha256:ece47d672db52ac607a3d9599a9d48dcb2f2f735c6c2d1f34130085bb12b112a \
     --hash=sha256:f4039b9cbc3048b2416cc57ab3bda989a6fcf9b36cf8937f01a6e731b64f80d7
     # via maturin
+typing-extensions==4.14.1 \
+    --hash=sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36 \
+    --hash=sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76
+    # via -r build-requirements.in
 uv-build==0.8.13 \
     --hash=sha256:0289cbf78405401d2e834e138d8ed7ae0f778e8a1c14fb7b0484901fa0214af7 \
     --hash=sha256:0725dcaf6735e00456f906279f4d9b35614db00861ea2d04cef9e05272643273 \
