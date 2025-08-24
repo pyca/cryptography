@@ -2,21 +2,19 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::exceptions::PyTypeError;
-use pyo3::prelude::*;
-use pyo3::types::{PyInt, PyType};
-use pyo3::PyTypeInfo;
+use pyo3::types::PyAnyMethods;
+use pyo3::{IntoPyObject, PyTypeInfo};
 
 /// Internal type representation for mapping between
 /// Python and ASN.1.
-#[pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub enum Type {
     // Core ASN.1 types
     //
     /// SEQUENCE (`class`)
     #[pyo3(constructor = (_0))]
-    Sequence(Py<PyType>),
+    Sequence(pyo3::Py<pyo3::types::PyType>),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -27,20 +25,20 @@ pub enum Type {
 
 /// A type that we know how to encode/decode, along with any
 /// annotations that influence encoding/decoding.
-#[pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub struct AnnotatedType {
     #[pyo3(get)]
-    pub inner: Py<Type>,
+    pub inner: pyo3::Py<Type>,
     #[pyo3(get)]
     pub annotation: Annotation,
 }
 
-#[pymethods]
+#[pyo3::pymethods]
 impl AnnotatedType {
     #[new]
     #[pyo3(signature = (inner, annotation))]
-    fn new(inner: Py<Type>, annotation: Annotation) -> Self {
+    fn new(inner: pyo3::Py<Type>, annotation: Annotation) -> Self {
         Self { inner, annotation }
     }
 }
@@ -48,14 +46,14 @@ impl AnnotatedType {
 /// An Python object with its corresponding AnnotatedType.
 pub struct AnnotatedTypeObject<'a> {
     pub annotated_type: &'a AnnotatedType,
-    pub value: Bound<'a, PyAny>,
+    pub value: pyo3::Bound<'a, pyo3::PyAny>,
 }
 
-#[pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Clone, Debug)]
 pub struct Annotation {}
 
-#[pymethods]
+#[pyo3::pymethods]
 impl Annotation {
     #[new]
     #[pyo3(signature = ())]
@@ -68,13 +66,13 @@ impl Annotation {
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
 pub fn non_root_python_to_rust<'p>(
-    py: Python<'p>,
-    class: &Bound<'p, PyType>,
-) -> PyResult<Bound<'p, Type>> {
-    if class.is(PyInt::type_object(py)) {
+    py: pyo3::Python<'p>,
+    class: &pyo3::Bound<'p, pyo3::types::PyType>,
+) -> pyo3::PyResult<pyo3::Bound<'p, Type>> {
+    if class.is(pyo3::types::PyInt::type_object(py)) {
         Type::PyInt().into_pyobject(py)
     } else {
-        Err(PyTypeError::new_err(format!(
+        Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
         )))
     }
@@ -86,10 +84,10 @@ pub fn non_root_python_to_rust<'p>(
 /// handle the conversion to the Rust `AnnotatedType` like we
 /// do for classes with `@sequence`.
 pub fn non_root_type_to_annotated<'p>(
-    py: Python<'p>,
-    class: &Bound<'p, PyType>,
+    py: pyo3::Python<'p>,
+    class: &pyo3::Bound<'p, pyo3::types::PyType>,
     annotation: Option<Annotation>,
-) -> PyResult<AnnotatedType> {
+) -> pyo3::PyResult<AnnotatedType> {
     let inner = non_root_python_to_rust(py, class)?.unbind();
     Ok(AnnotatedType {
         inner,

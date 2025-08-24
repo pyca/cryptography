@@ -2,9 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::prelude::*;
-
 use asn1::Asn1Writable;
+use pyo3::types::PyAnyMethods;
 
 use crate::asn1_exp::types as asn1_types;
 
