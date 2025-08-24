@@ -1262,6 +1262,28 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     -----END PRIVATE KEY-----
     """.strip()
 
+    verify_cert = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIBhjCCASygAwIBAgICAwkwCgYIKoZIzj0EAwIwJzELMAkGA1UEBhMCVVMxGDAW
+    BgNVBAMMD2NyeXB0b2dyYXBoeSBDQTAgFw0xNzAxMDEwMTAwMDBaGA8yMTAwMDEw
+    MTAwMDAwMFowJzELMAkGA1UEBhMCVVMxGDAWBgNVBAMMD2NyeXB0b2dyYXBoeSBD
+    QTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABBj/z7v5Obj13cPuwECLBnUGq0/N
+    2CxSJE4f4BBGZ7VfFblivTvPDG++Gve0oQ+0uctuhrNQ+WxRv8GC177F+QWjRjBE
+    MCEGA1UdEQEB/wQXMBWBE2V4YW1wbGVAZXhhbXBsZS5jb20wHwYDVR0jBBgwFoAU
+    /Ou02BLyyT2Zwzxn9H03feYT7fowCgYIKoZIzj0EAwIDSAAwRQIgUwIdC0Emkd6f
+    17DeOXTlmTAhwSDJ2FTuyHESwei7wJcCIQCnr9NpBxbtJfEzxHGGyd7PxgpOLi5u
+    rk+8QfzGMmg/fw==
+    -----END CERTIFICATE-----
+    """.strip()
+
+    verify_key = b"""
+    -----BEGIN PRIVATE KEY-----
+    MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgA8Zqz5vLeR0ePZUe
+    jBfdyMmnnI4U5uAJApWTsMn/RuWhRANCAAQY/8+7+Tm49d3D7sBAiwZ1BqtPzdgs
+    UiROH+AQRme1XxW5Yr07zwxvvhr3tKEPtLnLboazUPlsUb/Bgte+xfkF
+    -----END PRIVATE KEY-----
+    """.strip()
+
 .. class:: PKCS7SignatureBuilder
 
     The PKCS7 signature builder can create both basic PKCS7 signed messages as
@@ -1339,6 +1361,150 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
         :returns bytes: The signed PKCS7 message.
 
+
+.. function:: pkcs7_verify_der(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.DER, []
+        ... )
+        >>> pkcs7.pkcs7_verify_der(signed)
+
+    Deserialize and verify a DER-encoded PKCS7 signed message. PKCS7 (or S/MIME) has multiple
+    versions, but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2. If the
+    verification succeeds, does not return anything. If the verification fails, raises an exception.
+
+    :param data: The data, encoded in DER format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the signed message. Defaults to
+        None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
+
+
+.. function:: pkcs7_verify_pem(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.PEM, []
+        ... )
+        >>> pkcs7.pkcs7_verify_pem(signed)
+
+    Deserialize and verify a PEM-encoded PKCS7 signed message. PKCS7 (or S/MIME) has multiple
+    versions, but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2. If the
+    verification succeeds, does not return anything. If the verification fails, raises an exception.
+
+    :param data: The data, encoded in PEM format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the signed message. Defaults to
+        None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+
+    :raises ValueError: If the PEM data does not have the PKCS7 tag.
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
+
+
+.. function:: pkcs7_verify_smime(data, content=None, certificate=None, options=None)
+
+    .. versionadded:: 45.0.0
+
+    .. doctest::
+
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat.primitives import hashes, serialization
+        >>> from cryptography.hazmat.primitives.serialization import pkcs7
+        >>> cert = x509.load_pem_x509_certificate(verify_cert)
+        >>> key = serialization.load_pem_private_key(verify_key, None)
+        >>> signed = pkcs7.PKCS7SignatureBuilder().set_data(
+        ...     b"data to sign"
+        ... ).add_signer(
+        ...     cert, key, hashes.SHA256()
+        ... ).sign(
+        ...     serialization.Encoding.SMIME, []
+        ... )
+        >>> pkcs7.pkcs7_verify_smime(signed)
+
+    Verify a PKCS7 signed message stored in a MIME message, by reading it, extracting the content
+    (if any) and signature, deserializing the signature and verifying it against the content. PKCS7
+    (or S/MIME) has multiple versions, but this supports a subset of :rfc:`5751`, also known as
+    S/MIME Version 3.2. If the verification succeeds, does not return anything. If the verification
+    fails, raises an exception.  
+
+    :param data: The data, encoded in MIME format.
+    :type data: bytes
+
+    :param content: if specified, the content to verify against the signed message. If the content
+        is not specified, the function will look for the content in the MIME message and in the
+        signature. Defaults to None.
+    :type content: bytes or None
+
+    :param certificate: if specified, a :class:`~cryptography.x509.Certificate` to verify against
+        the signed message. If None, the function will look for the signer certificate in the signed
+        message. Defaults to None.
+    :type certificate: :class:`~cryptography.x509.Certificate` or None
+
+    :raises ValueError: If the MIME message is not a S/MIME signed message: content type is
+        different than ``multipart/signed`` or ``application/pkcs7-mime``.
+    
+    :raises ValueError: If the MIME message is a malformed ``multipart/signed`` S/MIME message: not
+        multipart, or multipart with more than 2 parts (content & signature).
+    
+    :raises ValueError: If the recipient certificate does not match any of the signers in the
+        PKCS7 data.
+    
+    :raises ValueError: If no content is specified and no content is found in the PKCS7 data.
+
+    :raises ValueError: If the PKCS7 data is not of the signed data type.
 
 .. class:: PKCS7EnvelopeBuilder
 
@@ -1632,6 +1798,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         reduce the size of the signature but requires that the recipient can
         obtain the signer's certificate by other means (for example from a
         previously signed message).
+
 
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
