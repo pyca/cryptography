@@ -26,37 +26,28 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
         let inner = annotated_type.inner.get();
         match &inner {
-            Type::Sequence(cls) => {
-                let fields = cls
-                    .getattr(py, "__asn1_fields__")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                let fields = fields
-                    .downcast_bound::<pyo3::types::PyDict>(py)
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-
-                write_value(
-                    writer,
-                    &asn1::SequenceWriter::new(&|w| {
-                        for (name, ann_type) in fields.into_iter() {
-                            let name = name
-                                .downcast::<pyo3::types::PyString>()
-                                .map_err(|_| asn1::WriteError::AllocationError)?;
-                            let ann_type = ann_type
-                                .downcast::<AnnotatedType>()
-                                .map_err(|_| asn1::WriteError::AllocationError)?;
-                            let object = AnnotatedTypeObject {
-                                annotated_type: ann_type.get(),
-                                value: self
-                                    .value
-                                    .getattr(name)
-                                    .map_err(|_| asn1::WriteError::AllocationError)?,
-                            };
-                            w.write_element(&object)?;
-                        }
-                        Ok(())
-                    }),
-                )
-            }
+            Type::Sequence(_cls, fields) => write_value(
+                writer,
+                &asn1::SequenceWriter::new(&|w| {
+                    for (name, ann_type) in fields.bind(py).into_iter() {
+                        let name = name
+                            .downcast::<pyo3::types::PyString>()
+                            .map_err(|_| asn1::WriteError::AllocationError)?;
+                        let ann_type = ann_type
+                            .downcast::<AnnotatedType>()
+                            .map_err(|_| asn1::WriteError::AllocationError)?;
+                        let object = AnnotatedTypeObject {
+                            annotated_type: ann_type.get(),
+                            value: self
+                                .value
+                                .getattr(name)
+                                .map_err(|_| asn1::WriteError::AllocationError)?,
+                        };
+                        w.write_element(&object)?;
+                    }
+                    Ok(())
+                }),
+            ),
             Type::PyInt() => {
                 let val: i64 = value
                     .extract()

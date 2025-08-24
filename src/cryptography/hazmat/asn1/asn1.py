@@ -48,10 +48,9 @@ def _annotate_fields(
 
 def _register_asn1_sequence(cls: type[U]) -> None:
     raw_fields = typing_extensions.get_type_hints(cls, include_extras=True)
-    setattr(cls, "__asn1_fields__", _annotate_fields(raw_fields))
-
     root = asn1_exp.AnnotatedType(
-        asn1_exp.Type.Sequence(cls), asn1_exp.Annotation()
+        asn1_exp.Type.Sequence(cls, _annotate_fields(raw_fields)),
+        asn1_exp.Annotation(),
     )
 
     setattr(cls, "__asn1_root__", root)
