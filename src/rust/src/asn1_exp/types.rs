@@ -12,9 +12,11 @@ use pyo3::{IntoPyObject, PyTypeInfo};
 pub enum Type {
     // Core ASN.1 types
     //
-    /// SEQUENCE (`class`)
-    #[pyo3(constructor = (_0))]
-    Sequence(pyo3::Py<pyo3::types::PyType>),
+    /// SEQUENCE (`class`, `dict`)
+    /// The first element is the Python class that represents the sequence,
+    /// the second element is a dict of the (already converted) fields of the class.
+    #[pyo3(constructor = (_0, _1))]
+    Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
 
     // Python types that we map to canonical ASN.1 types
     //
