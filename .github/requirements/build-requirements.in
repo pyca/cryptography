@@ -7,6 +7,9 @@ maturin>=1,<2
 # Must be kept sync with build-system.requires at vectors/pyproject.toml
 uv_build>=0.7.19,<0.9.0
 
+# Must be kept in sync with project.dependencies at pyproject.toml
+typing-extensions>=4.13.2
+
 # WARN: changing the requirements here DOES NOT update the dependencies used
 # for building at the github workflow -- it uses build-requirements.txt
 # To update build-requirements.txt, update this file and then run
