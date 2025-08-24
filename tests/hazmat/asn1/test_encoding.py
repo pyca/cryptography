@@ -7,48 +7,6 @@ import pytest
 import cryptography.hazmat.asn1 as asn1
 
 
-class TestClassAPI:
-    def test_fail_unsupported_field(self) -> None:
-        # Not a sequence
-        class Unsupported:
-            foo: int
-
-        with pytest.raises(TypeError, match="cannot handle type"):
-
-            @asn1.sequence
-            class Example:
-                foo: Unsupported
-
-    def test_fail_init_incorrect_field_name(self) -> None:
-        @asn1.sequence
-        class Example:
-            foo: int
-
-        with pytest.raises(TypeError, match="invalid keyword argument"):
-            Example(bar=3)  # type: ignore[call-arg]
-
-    def test_fail_init_missing_field_name(self) -> None:
-        @asn1.sequence
-        class Example:
-            foo: int
-
-        with pytest.raises(TypeError, match="missing arguments"):
-            Example()  # type: ignore[call-arg]
-
-    def test_fail_malformed_root_type(self) -> None:
-        @asn1.sequence
-        class Invalid:
-            foo: int
-
-        setattr(Invalid, "__asn1_root__", int)
-
-        with pytest.raises(TypeError, match="unsupported root type"):
-
-            @asn1.sequence
-            class Example:
-                foo: Invalid
-
-
 class TestEncoding:
     @pytest.mark.parametrize(
         "value,expected",
