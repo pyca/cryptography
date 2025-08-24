@@ -3,8 +3,7 @@
 // for complete details.
 
 use asn1::{SimpleAsn1Writable, Writer};
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyString};
+use pyo3::types::PyAnyMethods;
 
 use crate::asn1_exp::types::{AnnotatedType, AnnotatedTypeObject, Type};
 
@@ -21,7 +20,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), asn1::WriteError> {
-        let value: Bound<'_, PyAny> = self.value.clone();
+        let value: pyo3::Bound<'_, pyo3::PyAny> = self.value.clone();
         let py = value.py();
         let annotated_type = self.annotated_type;
 
@@ -32,7 +31,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .getattr(py, "__asn1_fields__")
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let fields = fields
-                    .downcast_bound::<PyDict>(py)
+                    .downcast_bound::<pyo3::types::PyDict>(py)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
 
                 write_value(
@@ -40,7 +39,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     &asn1::SequenceWriter::new(&|w| {
                         for (name, ann_type) in fields.into_iter() {
                             let name = name
-                                .downcast::<PyString>()
+                                .downcast::<pyo3::types::PyString>()
                                 .map_err(|_| asn1::WriteError::AllocationError)?;
                             let ann_type = ann_type
                                 .downcast::<AnnotatedType>()
