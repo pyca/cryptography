@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import sys
 import typing
 
@@ -67,22 +68,6 @@ def _register_asn1_sequence(cls: type[U]) -> None:
 
     setattr(cls, "__asn1_root__", root)
 
-    # TODO: codegen for better performance
-    def new_init(self: U, /, **kwargs: object) -> None:
-        fields = dict(raw_fields)
-
-        for arg_name, arg_value in kwargs.items():
-            if fields.pop(arg_name, None):
-                setattr(self, arg_name, arg_value)
-            else:
-                raise TypeError(f"invalid keyword argument: {arg_name}")
-
-        # If fields is not empty, the user didn't supply enough arguments.
-        if fields:
-            raise TypeError(f"missing arguments: {', '.join(fields.keys())}")
-
-    setattr(cls, "__init__", new_init)
-
 
 # Due to https://github.com/python/mypy/issues/19731, we can't define an alias
 # for `dataclass_transform` that conditionally points to `typing` or
@@ -94,12 +79,14 @@ if sys.version_info < (3, 11):
 
     @typing_extensions.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
-        _register_asn1_sequence(cls)
-        return cls
+        dataclass_cls = dataclasses.dataclass(cls)
+        _register_asn1_sequence(dataclass_cls)
+        return dataclass_cls
 
 else:
 
     @typing.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
-        _register_asn1_sequence(cls)
-        return cls
+        dataclass_cls = dataclasses.dataclass(cls)
+        _register_asn1_sequence(dataclass_cls)
+        return dataclass_cls
