@@ -84,6 +84,12 @@ def _register_asn1_sequence(cls: type[U]) -> None:
     setattr(cls, "__init__", new_init)
 
 
+# Due to https://github.com/python/mypy/issues/19731, we can't define an alias
+# for `dataclass_transform` that conditionally points to `typing` or
+# `typing_extensions` depending on the Python version (like we do for
+# `get_type_hints`).
+# We work around it by making the whole decorated class conditional on the
+# Python version.
 if sys.version_info < (3, 11):
 
     @typing_extensions.dataclass_transform(kw_only_default=True)
