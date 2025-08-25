@@ -11,9 +11,12 @@ if sys.version_info < (3, 11):
     import typing_extensions
 
     # We use the `include_extras` parameter of `get_type_hints`, which was
-    #  added in Python 3.9, so this can be replaced by the `typing` version
+    # added in Python 3.9. This can be replaced by the `typing` version
     # once the min version is >= 3.9
-    get_type_hints = typing_extensions.get_type_hints
+    if sys.version_info < (3, 9):
+        get_type_hints = typing_extensions.get_type_hints
+    else:
+        get_type_hints = typing.get_type_hints
 else:
     get_type_hints = typing.get_type_hints
 
