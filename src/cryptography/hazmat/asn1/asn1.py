@@ -55,6 +55,7 @@ def _register_asn1_sequence(cls: type[U]) -> None:
 
     setattr(cls, "__asn1_root__", root)
 
+    # TODO: codegen for better performance
     def new_init(self: U, /, **kwargs: object) -> None:
         fields = dict(raw_fields)
 
