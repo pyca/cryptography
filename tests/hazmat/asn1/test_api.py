@@ -24,7 +24,9 @@ class TestClassAPI:
         class Example:
             foo: int
 
-        with pytest.raises(TypeError, match="invalid keyword argument"):
+        with pytest.raises(
+            TypeError, match="got an unexpected keyword argument 'bar'"
+        ):
             Example(bar=3)  # type: ignore[call-arg]
 
     def test_fail_init_missing_field_name(self) -> None:
@@ -32,7 +34,9 @@ class TestClassAPI:
         class Example:
             foo: int
 
-        with pytest.raises(TypeError, match="missing arguments"):
+        with pytest.raises(
+            TypeError, match="missing 1 required positional argument: 'foo'"
+        ):
             Example()  # type: ignore[call-arg]
 
     def test_fail_malformed_root_type(self) -> None:
