@@ -4,9 +4,18 @@
 
 from __future__ import annotations
 
+import sys
 import typing
 
-import typing_extensions
+if sys.version_info < (3, 11):
+    import typing_extensions
+
+    # We use the `include_extras` parameter of `get_type_hints`, which was
+    #  added in Python 3.9, so this can be replaced by the `typing` version
+    # once the min version is >= 3.9
+    get_type_hints = typing_extensions.get_type_hints
+else:
+    get_type_hints = typing.get_type_hints
 
 from cryptography.hazmat.bindings._rust import declarative_asn1
 
@@ -47,7 +56,7 @@ def _annotate_fields(
 
 
 def _register_asn1_sequence(cls: type[U]) -> None:
-    raw_fields = typing_extensions.get_type_hints(cls, include_extras=True)
+    raw_fields = get_type_hints(cls, include_extras=True)
     root = declarative_asn1.AnnotatedType(
         declarative_asn1.Type.Sequence(cls, _annotate_fields(raw_fields)),
         declarative_asn1.Annotation(),
@@ -72,7 +81,16 @@ def _register_asn1_sequence(cls: type[U]) -> None:
     setattr(cls, "__init__", new_init)
 
 
-@typing_extensions.dataclass_transform(kw_only_default=True)
-def sequence(cls: type[U]) -> type[U]:
-    _register_asn1_sequence(cls)
-    return cls
+if sys.version_info < (3, 11):
+
+    @typing_extensions.dataclass_transform(kw_only_default=True)
+    def sequence(cls: type[U]) -> type[U]:
+        _register_asn1_sequence(cls)
+        return cls
+
+else:
+
+    @typing.dataclass_transform(kw_only_default=True)
+    def sequence(cls: type[U]) -> type[U]:
+        _register_asn1_sequence(cls)
+        return cls
