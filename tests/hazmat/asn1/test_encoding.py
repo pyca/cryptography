@@ -7,7 +7,7 @@ import pytest
 import cryptography.hazmat.asn1 as asn1
 
 
-class TestEncoding:
+class TestEncodeInteger:
     @pytest.mark.parametrize(
         "value,expected",
         [
@@ -30,6 +30,8 @@ class TestEncoding:
             f"{expected.hex()}"
         )
 
+
+class TestEncodeSequence:
     def test_encode_ok_sequence_single_field(self) -> None:
         @asn1.sequence
         class Example:
