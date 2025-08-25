@@ -8,34 +8,34 @@ import typing
 
 import typing_extensions
 
-from cryptography.hazmat.bindings._rust import asn1_exp
+from cryptography.hazmat.bindings._rust import declarative_asn1
 
 T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")
 
 
-encode_der = asn1_exp.encode_der
+encode_der = declarative_asn1.encode_der
 
 
 def _normalize_field_type(
     field_type: typing.Any, field_name: str
-) -> asn1_exp.AnnotatedType:
-    annotation = asn1_exp.Annotation()
+) -> declarative_asn1.AnnotatedType:
+    annotation = declarative_asn1.Annotation()
 
     if hasattr(field_type, "__asn1_root__"):
         annotated_root = field_type.__asn1_root__
-        if not isinstance(annotated_root, asn1_exp.AnnotatedType):
+        if not isinstance(annotated_root, declarative_asn1.AnnotatedType):
             raise TypeError(f"unsupported root type: {annotated_root}")
         return annotated_root
     else:
-        rust_field_type = asn1_exp.non_root_python_to_rust(field_type)
+        rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 
-    return asn1_exp.AnnotatedType(rust_field_type, annotation)
+    return declarative_asn1.AnnotatedType(rust_field_type, annotation)
 
 
 def _annotate_fields(
     raw_fields: dict[str, type],
-) -> dict[str, asn1_exp.AnnotatedType]:
+) -> dict[str, declarative_asn1.AnnotatedType]:
     fields = {}
     for field_name, field_type in raw_fields.items():
         # Recursively normalize the field type into something that the
@@ -48,9 +48,9 @@ def _annotate_fields(
 
 def _register_asn1_sequence(cls: type[U]) -> None:
     raw_fields = typing_extensions.get_type_hints(cls, include_extras=True)
-    root = asn1_exp.AnnotatedType(
-        asn1_exp.Type.Sequence(cls, _annotate_fields(raw_fields)),
-        asn1_exp.Annotation(),
+    root = declarative_asn1.AnnotatedType(
+        declarative_asn1.Type.Sequence(cls, _annotate_fields(raw_fields)),
+        declarative_asn1.Annotation(),
     )
 
     setattr(cls, "__asn1_root__", root)
