@@ -5,7 +5,7 @@
 use asn1::Asn1Writable;
 use pyo3::types::PyAnyMethods;
 
-use crate::asn1_exp::types as asn1_types;
+use crate::declarative_asn1::types as asn1_types;
 
 #[pyo3::pyfunction]
 pub(crate) fn encode_der<'p>(

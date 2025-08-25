@@ -16,9 +16,9 @@ use pyo3::PyTypeInfo;
 #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
 use crate::error::CryptographyResult;
 mod asn1;
-mod asn1_exp;
 mod backend;
 mod buf;
+mod declarative_asn1;
 mod error;
 mod exceptions;
 pub(crate) mod oid;
@@ -118,12 +118,14 @@ mod _rust {
     use crate::test_support::test_support;
 
     #[pyo3::pymodule(gil_used = false)]
-    mod asn1_exp {
+    mod declarative_asn1 {
         #[pymodule_export]
-        use crate::asn1_exp::asn1::encode_der;
+        use crate::declarative_asn1::asn1::encode_der;
 
         #[pymodule_export]
-        use crate::asn1_exp::types::{non_root_python_to_rust, AnnotatedType, Annotation, Type};
+        use crate::declarative_asn1::types::{
+            non_root_python_to_rust, AnnotatedType, Annotation, Type,
+        };
     }
 
     #[pyo3::pymodule(gil_used = false)]

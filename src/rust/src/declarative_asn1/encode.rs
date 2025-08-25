@@ -5,7 +5,7 @@
 use asn1::{SimpleAsn1Writable, Writer};
 use pyo3::types::PyAnyMethods;
 
-use crate::asn1_exp::types::{AnnotatedType, AnnotatedTypeObject, Type};
+use crate::declarative_asn1::types::{AnnotatedType, AnnotatedTypeObject, Type};
 
 fn write_value<T: SimpleAsn1Writable>(
     writer: &mut Writer<'_>,
