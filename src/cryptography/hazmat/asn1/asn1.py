@@ -79,7 +79,21 @@ if sys.version_info < (3, 11):
 
     @typing_extensions.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
-        dataclass_cls = dataclasses.dataclass(cls)
+        # We use `dataclasses.dataclass` to add an __init__ method
+        # to the class.
+        if sys.version_info >= (3, 10):
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+                # `match_args` was added in Python 3.10 and defaults
+                # to True
+                match_args=False,
+            )(cls)
+        else:
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+            )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
 
@@ -87,6 +101,11 @@ else:
 
     @typing.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
-        dataclass_cls = dataclasses.dataclass(cls)
+        # Only add an __init__ method
+        dataclass_cls = dataclasses.dataclass(
+            repr=False,
+            eq=False,
+            match_args=False,
+        )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
