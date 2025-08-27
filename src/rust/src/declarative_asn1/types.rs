@@ -30,9 +30,7 @@ pub enum Type {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub struct AnnotatedType {
-    #[pyo3(get)]
     pub inner: pyo3::Py<Type>,
-    #[pyo3(get)]
     pub annotation: Annotation,
 }
 
@@ -58,7 +56,6 @@ pub struct Annotation {}
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
-    #[pyo3(signature = ())]
     fn new() -> Self {
         Self {}
     }
