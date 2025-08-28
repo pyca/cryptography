@@ -35,7 +35,7 @@ class TestClassAPI:
             foo: int
 
         with pytest.raises(
-            TypeError, match="missing 1 required positional argument: 'foo'"
+            TypeError, match="missing 1 required keyword-only argument: 'foo'"
         ):
             Example()  # type: ignore[call-arg]
 

@@ -80,7 +80,7 @@ if sys.version_info < (3, 11):
     @typing_extensions.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
         # We use `dataclasses.dataclass` to add an __init__ method
-        # to the class.
+        # to the class with keyword-only parameters.
         if sys.version_info >= (3, 10):
             dataclass_cls = dataclasses.dataclass(
                 repr=False,
@@ -88,6 +88,9 @@ if sys.version_info < (3, 11):
                 # `match_args` was added in Python 3.10 and defaults
                 # to True
                 match_args=False,
+                # `kw_only` was added in Python 3.10 and defaults to
+                # False
+                kw_only=True,
             )(cls)
         else:
             dataclass_cls = dataclasses.dataclass(
@@ -101,11 +104,13 @@ else:
 
     @typing.dataclass_transform(kw_only_default=True)
     def sequence(cls: type[U]) -> type[U]:
-        # Only add an __init__ method
+        # Only add an __init__ method, with keyword-only
+        # parameters.
         dataclass_cls = dataclasses.dataclass(
             repr=False,
             eq=False,
             match_args=False,
+            kw_only=True,
         )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
