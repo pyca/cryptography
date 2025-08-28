@@ -260,7 +260,7 @@ typing-extensions==4.13.2 ; python_full_version < '3.9'
     #   exceptiongroup
     #   mypy
     #   virtualenv
-typing-extensions==4.14.1 ; python_full_version >= '3.9'
+typing-extensions==4.15.0 ; python_full_version >= '3.9'
     # via
     #   exceptiongroup
     #   mypy
