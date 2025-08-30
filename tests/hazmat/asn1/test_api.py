@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import sys
+
 import pytest
 
 import cryptography.hazmat.asn1 as asn1
@@ -34,10 +36,31 @@ class TestClassAPI:
         class Example:
             foo: int
 
-        with pytest.raises(
-            TypeError, match="missing 1 required keyword-only argument: 'foo'"
-        ):
+        expected_err = (
+            "missing 1 required keyword-only argument: 'foo'"
+            if sys.version_info >= (3, 10)
+            else "missing 1 required positional argument: 'foo'"
+        )
+
+        with pytest.raises(TypeError, match=expected_err):
             Example()  # type: ignore[call-arg]
+
+    def test_fail_positional_field_initialization(self) -> None:
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        # The kw-only init is only enforced in Python >= 3.10, which is
+        # when the parameter `kw_only` for `dataclasses.datalass` was
+        # added.
+        if sys.version_info < (3, 10):
+            assert Example(5).foo == 5  # type: ignore[misc]
+        else:
+            with pytest.raises(
+                TypeError,
+                match="takes 1 positional argument but 2 were given",
+            ):
+                Example(5)  # type: ignore[misc]
 
     def test_fail_malformed_root_type(self) -> None:
         @asn1.sequence
