@@ -11,6 +11,7 @@ runs:
         path: "wycheproof"
         # Latest commit on the wycheproof main branch, as of Aug 28, 2025.
         ref: "96c3fa033271856d3dca237581cc2c98cf95e7d9" # wycheproof-ref
+        persist-credentials: false
 
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
@@ -18,3 +19,4 @@ runs:
         path: "x509-limbo"
         # Latest commit on the x509-limbo main branch, as of Aug 26, 2025.
         ref: "2e0461d620f766232ebe9a3173aedaa70c52342c" # x509-limbo-ref
+        persist-credentials: false
