@@ -85,7 +85,6 @@ def tests(session: nox.Session) -> None:
         cov_args = [
             "--cov=cryptography",
             "--cov=tests",
-            "--cov-context=test",
         ]
     else:
         cov_args = []
