@@ -49,6 +49,8 @@ requires-python = ">=3.8,!=3.9.0,!=3.9.1"
 dependencies = [
     # Must be kept in sync with `build-system.requires`
     "cffi>=1.14; platform_python_implementation != 'PyPy'",
+    # Must be kept in sync with ./.github/requirements/build-requirements.{in,txt}
+    "typing-extensions>=4.13.2; python_version < '3.11'",
 ]
 
 [project.urls]
