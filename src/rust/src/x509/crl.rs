@@ -48,8 +48,8 @@ pub(crate) fn load_der_x509_crl(
 
     Ok(CertificateRevocationList {
         owned: Arc::new(owned),
-        revoked_certs: pyo3::sync::GILOnceCell::new(),
-        cached_extensions: pyo3::sync::GILOnceCell::new(),
+        revoked_certs: pyo3::sync::PyOnceLock::new(),
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -86,8 +86,8 @@ self_cell::self_cell!(
 pub(crate) struct CertificateRevocationList {
     owned: Arc<OwnedCertificateRevocationList>,
 
-    revoked_certs: pyo3::sync::GILOnceCell<Vec<OwnedRevokedCertificate>>,
-    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl CertificateRevocationList {
@@ -98,7 +98,7 @@ impl CertificateRevocationList {
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
         RevokedCertificate {
             owned: self.revoked_certs.get(py).unwrap()[idx].clone(),
-            cached_extensions: pyo3::sync::GILOnceCell::new(),
+            cached_extensions: pyo3::sync::PyOnceLock::new(),
         }
     }
 
@@ -310,7 +310,7 @@ impl CertificateRevocationList {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         let tbs_cert_list = &self.owned.borrow_dependent().tbs_cert_list;
 
         x509::parse_and_cache_extensions(
@@ -397,7 +397,7 @@ impl CertificateRevocationList {
         match owned {
             Ok(o) => Ok(Some(RevokedCertificate {
                 owned: o,
-                cached_extensions: pyo3::sync::GILOnceCell::new(),
+                cached_extensions: pyo3::sync::PyOnceLock::new(),
             })),
             Err(()) => Ok(None),
         }
@@ -493,7 +493,7 @@ impl CRLIterator {
         .ok()?;
         Some(RevokedCertificate {
             owned: revoked,
-            cached_extensions: pyo3::sync::GILOnceCell::new(),
+            cached_extensions: pyo3::sync::PyOnceLock::new(),
         })
     }
 }
@@ -521,7 +521,7 @@ impl Clone for OwnedRevokedCertificate {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct RevokedCertificate {
     owned: OwnedRevokedCertificate,
-    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -563,7 +563,7 @@ impl RevokedCertificate {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         x509::parse_and_cache_extensions(
             py,
             &self.cached_extensions,

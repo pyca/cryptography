@@ -41,7 +41,7 @@ self_cell::self_cell!(
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
-    pub(crate) cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    pub(crate) cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -62,7 +62,10 @@ impl Certificate {
         Ok(format!("<Certificate(subject={subject_repr}, ...)>"))
     }
 
-    fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
+    fn __deepcopy__(
+        slf: pyo3::PyRef<'_, Self>,
+        _memo: pyo3::Py<pyo3::PyAny>,
+    ) -> pyo3::PyRef<'_, Self> {
         slf
     }
 
@@ -292,7 +295,7 @@ impl Certificate {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         x509::parse_and_cache_extensions(
             py,
             &self.cached_extensions,
@@ -432,7 +435,7 @@ pub(crate) fn load_der_x509_certificate(
 
     Ok(Certificate {
         raw,
-        cached_extensions: pyo3::sync::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
     })
 }
 

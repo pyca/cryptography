@@ -58,8 +58,8 @@ pub(crate) fn load_der_ocsp_response(
     };
     Ok(OCSPResponse {
         raw: Arc::new(raw),
-        cached_extensions: pyo3::sync::GILOnceCell::new(),
-        cached_single_extensions: pyo3::sync::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_single_extensions: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -75,8 +75,8 @@ self_cell::self_cell!(
 pub(crate) struct OCSPResponse {
     raw: Arc<OwnedOCSPResponse>,
 
-    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
-    cached_single_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_single_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPResponse {
@@ -277,7 +277,7 @@ impl OCSPResponse {
                 py,
                 x509::certificate::Certificate {
                     raw: raw_cert,
-                    cached_extensions: pyo3::sync::GILOnceCell::new(),
+                    cached_extensions: pyo3::sync::PyOnceLock::new(),
                 },
             )?)?;
         }
@@ -408,7 +408,7 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         self.requires_successful_response()?;
 
         let response_data = &self
@@ -444,7 +444,7 @@ impl OCSPResponse {
     }
 
     #[getter]
-    fn single_extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn single_extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         self.requires_successful_response()?;
         let single_resp = single_response(
             self.raw

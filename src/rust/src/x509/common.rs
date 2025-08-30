@@ -382,10 +382,10 @@ pub(crate) fn parse_and_cache_extensions<
     F: Fn(&Extension<'p>) -> Result<Option<pyo3::Bound<'p, pyo3::PyAny>>, CryptographyError>,
 >(
     py: pyo3::Python<'p>,
-    cached_extensions: &pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: &pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     raw_extensions: &Option<RawExtensions<'p>>,
     parse_ext: F,
-) -> pyo3::PyResult<pyo3::PyObject> {
+) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
     cached_extensions
         .get_or_try_init(py, || {
             let extensions = match Extensions::from_raw_extensions(raw_extensions.as_ref()) {

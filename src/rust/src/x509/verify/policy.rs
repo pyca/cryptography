@@ -6,7 +6,7 @@ use crate::x509::datetime_to_py;
 #[pyo3::pyclass(module = "cryptography.x509.verification", name = "Policy", frozen)]
 pub(crate) struct PyPolicy {
     pub(super) policy_definition: OwnedPolicyDefinition,
-    pub(super) subject: pyo3::PyObject,
+    pub(super) subject: pyo3::Py<pyo3::PyAny>,
 }
 
 #[pyo3::pymethods]
@@ -17,18 +17,21 @@ impl PyPolicy {
     }
 
     #[getter]
-    pub(super) fn subject(&self, py: pyo3::Python<'_>) -> pyo3::PyObject {
+    pub(super) fn subject(&self, py: pyo3::Python<'_>) -> pyo3::Py<pyo3::PyAny> {
         self.subject.clone_ref(py)
     }
 
     #[getter]
-    pub(super) fn validation_time(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    pub(super) fn validation_time(
+        &self,
+        py: pyo3::Python<'_>,
+    ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         let time = &self.policy_definition.borrow_dependent().validation_time;
         Ok(datetime_to_py(py, time)?.as_unbound().clone_ref(py))
     }
 
     #[getter]
-    fn extended_key_usage(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extended_key_usage(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         let eku_oid = &self.policy_definition.borrow_dependent().extended_key_usage;
         Ok(oid_to_py_oid(py, eku_oid)?.as_unbound().clone_ref(py))
     }

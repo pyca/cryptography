@@ -11,8 +11,8 @@ use crate::error::CryptographyResult;
 use crate::types;
 
 struct RegistryKey {
-    algorithm: pyo3::PyObject,
-    mode: pyo3::PyObject,
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    mode: pyo3::Py<pyo3::PyAny>,
     key_size: Option<u16>,
 
     algorithm_hash: isize,
@@ -22,8 +22,8 @@ struct RegistryKey {
 impl RegistryKey {
     fn new(
         py: pyo3::Python<'_>,
-        algorithm: pyo3::PyObject,
-        mode: pyo3::PyObject,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        mode: pyo3::Py<pyo3::PyAny>,
         key_size: Option<u16>,
     ) -> CryptographyResult<Self> {
         Ok(Self {
@@ -113,8 +113,8 @@ impl<'p> RegistryBuilder<'p> {
 fn get_cipher_registry(
     py: pyo3::Python<'_>,
 ) -> CryptographyResult<&HashMap<RegistryKey, RegistryCipher>> {
-    static REGISTRY: pyo3::sync::GILOnceCell<HashMap<RegistryKey, RegistryCipher>> =
-        pyo3::sync::GILOnceCell::new();
+    static REGISTRY: pyo3::sync::PyOnceLock<HashMap<RegistryKey, RegistryCipher>> =
+        pyo3::sync::PyOnceLock::new();
 
     REGISTRY.get_or_try_init(py, || {
         let mut m = RegistryBuilder::new(py);

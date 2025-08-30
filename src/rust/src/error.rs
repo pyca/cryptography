@@ -158,7 +158,7 @@ impl From<CryptographyError> for pyo3::PyErr {
                 pyo3::exceptions::PyMemoryError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
-            CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::with_gil(|py| {
+            CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::attach(|py| {
                 let errors = list_from_openssl_error(py, error_stack);
                 exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
             }),
@@ -238,8 +238,8 @@ mod tests {
 
     #[test]
     fn test_cryptographyerror_display() {
-        pyo3::prepare_freethreaded_python();
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
             let py_error = pyo3::exceptions::PyRuntimeError::new_err("abc");
             let e: CryptographyError = py_error.clone_ref(py).into();
             assert!(e.to_string() == py_error.to_string());
@@ -248,8 +248,8 @@ mod tests {
 
     #[test]
     fn test_cryptographyerror_from() {
-        pyo3::prepare_freethreaded_python();
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
             let e: CryptographyError = asn1::WriteError::AllocationError.into();
             assert!(matches!(
                 e,

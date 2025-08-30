@@ -34,13 +34,13 @@ impl CryptoOps for PyCryptoOps {
     type PolicyExtra = pyo3::Py<PyPolicy>;
 
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
-        pyo3::Python::with_gil(|py| -> Result<Self::Key, Self::Err> {
+        pyo3::Python::attach(|py| -> Result<Self::Key, Self::Err> {
             Ok(keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())?.unbind())
         })
     }
 
     fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err> {
-        pyo3::Python::with_gil(|py| -> CryptographyResult<()> {
+        pyo3::Python::attach(|py| -> CryptographyResult<()> {
             sign::verify_signature_with_signature_algorithm(
                 py,
                 key.bind(py).clone(),
@@ -52,11 +52,11 @@ impl CryptoOps for PyCryptoOps {
     }
 
     fn clone_public_key(key: &Self::Key) -> Self::Key {
-        pyo3::Python::with_gil(|py| key.clone_ref(py))
+        pyo3::Python::attach(|py| key.clone_ref(py))
     }
 
     fn clone_extra(extra: &Self::CertificateExtra) -> Self::CertificateExtra {
-        pyo3::Python::with_gil(|py| extra.clone_ref(py))
+        pyo3::Python::attach(|py| extra.clone_ref(py))
     }
 }
 
@@ -216,7 +216,7 @@ impl PolicyBuilder {
     fn build_server_verifier(
         &self,
         py: pyo3::Python<'_>,
-        subject: pyo3::PyObject,
+        subject: pyo3::Py<pyo3::PyAny>,
     ) -> CryptographyResult<PyServerVerifier> {
         let store = match self.store.as_ref() {
             Some(s) => s.clone_ref(py),
