@@ -1002,6 +1002,12 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/enveloped-no-content.der``- A DER encoded PKCS7 file with
   enveloped data, without encrypted content, with key encrypted under the
   public key of ``x509/custom/ca/rsa_ca.pem``.
+* ``pkcs7/ca.pem`` - A certificate adapted for S/MIME signature & verification.
+  Its private key is ``pkcs7/ca_key.pem``.
+* ``pkcs7/ca_ascii_san.pem`` - An invalid certificate adapted for S/MIME signature
+  & verification. It has an ASCII subject alternative name stored as `otherName`.
+* ``pkcs7/ca_non_ascii_san.pem`` - An invalid certificate adapted for S/MIME signature
+  & verification. It has an non-ASCII subject alternative name  stored as `rfc822Name`.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
