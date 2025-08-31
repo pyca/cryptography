@@ -2,7 +2,7 @@
 # These requirements must be kept sync with the requirements in
 # ./.github/requirements/build-requirements.{in,txt}
 requires = [
-    "maturin>=1.8.6,<2",
+    "maturin>=1.9.4,<2",
 
     # Must be kept in sync with `project.dependencies`
     "cffi>=1.14; platform_python_implementation != 'PyPy'",
