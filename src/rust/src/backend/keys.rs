@@ -377,9 +377,9 @@ mod tests {
     #[test]
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_public_key_from_pkey_unknown_key() {
-        pyo3::prepare_freethreaded_python();
+        pyo3::Python::initialize();
 
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::attach(|py| {
             let pkey =
                 openssl::pkey::PKey::public_key_from_raw_bytes(&[0; 32], openssl::pkey::Id::X25519)
                     .unwrap();
@@ -392,9 +392,9 @@ mod tests {
     #[test]
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_private_key_from_pkey_unknown_key() {
-        pyo3::prepare_freethreaded_python();
+        pyo3::Python::initialize();
 
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::attach(|py| {
             let pkey = openssl::pkey::PKey::hmac(&[0; 32]).unwrap();
             assert!(private_key_from_pkey(py, &pkey, false).is_err());
         });

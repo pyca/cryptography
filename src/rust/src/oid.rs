@@ -39,7 +39,10 @@ impl ObjectIdentifier {
             .call_method1(pyo3::intern!(py, "get"), (slf, "Unknown OID"))
     }
 
-    fn __deepcopy__(slf: pyo3::PyRef<'_, Self>, _memo: pyo3::PyObject) -> pyo3::PyRef<'_, Self> {
+    fn __deepcopy__(
+        slf: pyo3::PyRef<'_, Self>,
+        _memo: pyo3::Py<pyo3::PyAny>,
+    ) -> pyo3::PyRef<'_, Self> {
         slf
     }
 

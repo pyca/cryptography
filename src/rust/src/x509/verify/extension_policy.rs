@@ -156,7 +156,7 @@ impl PyExtensionPolicy {
         py: pyo3::Python<'_>,
         extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
         criticality: PyCriticality,
-        validator_cb: Option<pyo3::PyObject>,
+        validator_cb: Option<pyo3::Py<pyo3::PyAny>>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
         self.with_assigned_validator(ExtensionValidator::MaybePresent {
@@ -172,7 +172,7 @@ impl PyExtensionPolicy {
         py: pyo3::Python<'_>,
         extension_type: pyo3::Bound<'_, pyo3::types::PyType>,
         criticality: PyCriticality,
-        validator_cb: Option<pyo3::PyObject>,
+        validator_cb: Option<pyo3::Py<pyo3::PyAny>>,
     ) -> pyo3::PyResult<PyExtensionPolicy> {
         let oid = oid_from_py_extension_type(py, extension_type)?;
         self.with_assigned_validator(ExtensionValidator::Present {
@@ -184,13 +184,13 @@ impl PyExtensionPolicy {
 }
 
 fn wrap_maybe_validator_callback(
-    py_cb: pyo3::PyObject,
+    py_cb: pyo3::Py<pyo3::PyAny>,
 ) -> MaybeExtensionValidatorCallback<'static, PyCryptoOps> {
     Arc::new(
         move |policy: &Policy<'_, PyCryptoOps>,
               cert: &VerificationCertificate<'_, PyCryptoOps>,
               ext: Option<&Extension<'_>>| {
-            pyo3::Python::with_gil(|py| {
+            pyo3::Python::attach(|py| {
                 invoke_py_validator_callback(
                     py,
                     &py_cb,
@@ -206,13 +206,13 @@ fn wrap_maybe_validator_callback(
 }
 
 fn wrap_present_validator_callback(
-    py_cb: pyo3::PyObject,
+    py_cb: pyo3::Py<pyo3::PyAny>,
 ) -> PresentExtensionValidatorCallback<'static, PyCryptoOps> {
     Arc::new(
         move |policy: &Policy<'_, PyCryptoOps>,
               cert: &VerificationCertificate<'_, PyCryptoOps>,
               ext: &Extension<'_>| {
-            pyo3::Python::with_gil(|py| {
+            pyo3::Python::attach(|py| {
                 invoke_py_validator_callback(
                     py,
                     &py_cb,
@@ -243,7 +243,7 @@ fn make_py_extension<'chain, 'p>(
 
 fn invoke_py_validator_callback<'py>(
     py: pyo3::Python<'py>,
-    py_cb: &pyo3::PyObject,
+    py_cb: &pyo3::Py<pyo3::PyAny>,
     args: impl pyo3::call::PyCallArgs<'py>,
 ) -> ValidationResult<'static, (), PyCryptoOps> {
     let result = py_cb.bind(py).call1(args).map_err(|e| {
@@ -267,7 +267,7 @@ mod tests {
 
     #[test]
     fn test_make_py_extension_fail() {
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::attach(|py| {
             let invalid_extension = Extension {
                 // SubjectAlternativeName
                 extn_id: asn1::ObjectIdentifier::from_string("2.5.29.17").unwrap(),
