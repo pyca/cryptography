@@ -133,21 +133,16 @@ class TestPKCS7Loading:
             pkcs7.load_der_pkcs7_certificates(der)
 
 
-def _load_cert_key(ca_directory: str | None = None):
-    if ca_directory is not None:
-        _ca_directory = ca_directory
-    else:
-        _ca_directory = os.path.join("x509", "custom", "ca")
-
+def _load_cert_key():
     key = load_vectors_from_file(
-        os.path.join(_ca_directory, "ca_key.pem"),
+        os.path.join("pkcs7", "ca_key.pem"),
         lambda pemfile: serialization.load_pem_private_key(
             pemfile.read(), None, unsafe_skip_rsa_key_validation=True
         ),
         mode="rb",
     )
     cert = load_vectors_from_file(
-        os.path.join(_ca_directory, "ca.pem"),
+        os.path.join("pkcs7", "ca.pem"),
         loader=lambda pemfile: x509.load_pem_x509_certificate(pemfile.read()),
         mode="rb",
     )
@@ -166,7 +161,7 @@ class TestPKCS7VerifyCertificate:
         to test all cases in PKCS#7 certificate verification.
         """
         # Load the standard certificate and private key
-        certificate, private_key = _load_cert_key("pkcs7")
+        certificate, private_key = _load_cert_key()
 
         # Basic certificate builder
         certificate_builder = (
