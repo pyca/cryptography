@@ -21,6 +21,7 @@ from cryptography.hazmat.primitives.ciphers import (
     algorithms,
 )
 from cryptography.utils import _check_byteslike
+from cryptography.x509 import Certificate
 from cryptography.x509.oid import ExtendedKeyUsageOID
 from cryptography.x509.verification import (
     Criticality,
