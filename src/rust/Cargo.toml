@@ -29,10 +29,6 @@ self_cell = "1"
 [build-dependencies]
 pyo3-build-config.workspace = true
 
-[features]
-extension-module = ["pyo3/extension-module"]
-default = ["extension-module"]
-
 [lib]
 name = "cryptography_rust"
 crate-type = ["cdylib"]
