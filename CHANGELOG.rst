@@ -11,6 +11,9 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
 * Support for OpenSSL < 3.0 is deprecated and will be removed in the next
   release.
+* Support for 32-bit Windows (including publishing wheels) is deprecated,
+  and support will be removed in two releases. Users should move to a 64-bit
+  Python installation.
 * We now build ``ppc64le`` ``manylinux`` wheels and publish them to PyPI.
 * Removed the deprecated ``get_attribute_for_oid`` method on
   :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
