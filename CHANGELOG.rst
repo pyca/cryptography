@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v45-0-7:
+
+45.0.7 - 2025-09-01
+~~~~~~~~~~~~~~~~~~~
+
+* Added a function to support an upcoming ``pyOpenSSL`` release.
+
 .. _v45-0-6:
 
 45.0.6 - 2025-08-05

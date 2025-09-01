@@ -60,7 +60,7 @@ jobs:
       image: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
       volumes:
         - /staticnodehost:/staticnodecontainer:rw,rshared
-        - /staticnodehost:/__e/node20:ro,rshared
+        - /staticnodehost/20:/__e/node20:ro,rshared
     strategy:
       fail-fast: false
       matrix:
