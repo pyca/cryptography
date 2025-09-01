@@ -264,6 +264,7 @@ int SSL_CTX_add_client_CA(SSL_CTX *, X509 *);
 void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
 
 void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
+void SSL_set_info_callback(SSL *, void (*) (const SSL *, int, int));
 
 void SSL_CTX_set_msg_callback(SSL_CTX *,
                               void (*)(
