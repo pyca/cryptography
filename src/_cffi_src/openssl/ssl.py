@@ -30,6 +30,7 @@ static const long Cryptography_HAS_GET_EXTMS_SUPPORT;
 static const long Cryptography_HAS_CUSTOM_EXT;
 static const long Cryptography_HAS_SRTP;
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU;
+static const long Cryptography_HAS_SSL_GET0_GROUP_NAME;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -343,6 +344,8 @@ long SSL_CTX_get_timeout(const SSL_CTX *);
 const SSL_CIPHER *SSL_get_current_cipher(const SSL *);
 const char *SSL_get_version(const SSL *);
 int SSL_version(const SSL *);
+
+const char *SSL_get0_group_name(SSL *);
 
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
@@ -674,5 +677,12 @@ static const long Cryptography_HAS_PSK_TLSv1_3 = 1;
 SSL_SESSION *Cryptography_SSL_SESSION_new(void) {
     return SSL_SESSION_new();
 }
+#endif
+
+#if CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
+static const long Cryptography_HAS_SSL_GET0_GROUP_NAME = 1;
+#else
+static const long Cryptography_HAS_SSL_GET0_GROUP_NAME = 0;
+const char *(*SSL_get0_group_name)(SSL *) = NULL;
 #endif
 """
