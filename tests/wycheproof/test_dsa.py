@@ -24,7 +24,6 @@ _DIGESTS = {
     skip_message="Requires OpenSSL with DSA support",
 )
 @wycheproof_tests(
-    "dsa_test.json",
     "dsa_2048_224_sha224_test.json",
     "dsa_2048_224_sha256_test.json",
     "dsa_2048_256_sha256_test.json",
@@ -32,13 +31,13 @@ _DIGESTS = {
 )
 def test_dsa_signature(backend, wycheproof):
     key = serialization.load_der_public_key(
-        binascii.unhexlify(wycheproof.testgroup["keyDer"]), backend
+        binascii.unhexlify(wycheproof.testgroup["publicKeyDer"]), backend
     )
     assert isinstance(key, dsa.DSAPublicKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if wycheproof.valid or (
-        wycheproof.acceptable and not wycheproof.has_flag("NoLeadingZero")
+        wycheproof.acceptable and not wycheproof.has_flag("MissingZero")
     ):
         key.verify(
             binascii.unhexlify(wycheproof.testcase["sig"]),

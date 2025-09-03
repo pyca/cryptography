@@ -41,7 +41,6 @@ _CURVES = {
 
 
 @wycheproof_tests(
-    "ecdh_test.json",
     "ecdh_brainpoolP224r1_test.json",
     "ecdh_brainpoolP256r1_test.json",
     "ecdh_brainpoolP320r1_test.json",

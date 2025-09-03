@@ -7,7 +7,7 @@ import pytest
 from ..utils import load_wycheproof_tests
 
 
-def wycheproof_tests(*paths, subdir="testvectors"):
+def wycheproof_tests(*paths, subdir="testvectors_v1"):
     def wrapper(func):
         @pytest.mark.parametrize("path", paths)
         def run_wycheproof(backend, subtests, pytestconfig, path):
