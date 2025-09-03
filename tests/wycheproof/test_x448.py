@@ -28,8 +28,8 @@ def test_x448(backend, wycheproof):
     )
     public_key_bytes = binascii.unhexlify(wycheproof.testcase["public"])
     if len(public_key_bytes) == 57:
-        assert wycheproof.acceptable
-        assert wycheproof.has_flag("NonCanonicalPublic")
+        assert wycheproof.invalid
+        assert wycheproof.has_flag("PublicKeyTooLong")
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(public_key_bytes)
         return

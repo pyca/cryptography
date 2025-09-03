@@ -17,14 +17,14 @@ from .utils import wycheproof_tests
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
-@wycheproof_tests("eddsa_test.json")
+@wycheproof_tests("ed25519_test.json")
 def test_ed25519_signature(backend, wycheproof):
     # We want to fail if/when wycheproof adds more edwards curve tests
     # so we can add them as well.
-    assert wycheproof.testgroup["key"]["curve"] == "edwards25519"
+    assert wycheproof.testgroup["publicKey"]["curve"] == "edwards25519"
 
     key = Ed25519PublicKey.from_public_bytes(
-        binascii.unhexlify(wycheproof.testgroup["key"]["pk"])
+        binascii.unhexlify(wycheproof.testgroup["publicKey"]["pk"])
     )
 
     if wycheproof.valid or wycheproof.acceptable:
@@ -47,7 +47,7 @@ def test_ed25519_signature(backend, wycheproof):
 @wycheproof_tests("ed448_test.json")
 def test_ed448_signature(backend, wycheproof):
     key = Ed448PublicKey.from_public_bytes(
-        binascii.unhexlify(wycheproof.testgroup["key"]["pk"])
+        binascii.unhexlify(wycheproof.testgroup["publicKey"]["pk"])
     )
 
     if wycheproof.valid or wycheproof.acceptable:

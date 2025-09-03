@@ -40,7 +40,6 @@ def should_verify(backend, wycheproof):
 
 
 @wycheproof_tests(
-    "rsa_signature_test.json",
     "rsa_signature_2048_sha224_test.json",
     "rsa_signature_2048_sha256_test.json",
     "rsa_signature_2048_sha384_test.json",
@@ -58,15 +57,19 @@ def should_verify(backend, wycheproof):
     "rsa_signature_3072_sha3_256_test.json",
     "rsa_signature_3072_sha3_384_test.json",
     "rsa_signature_3072_sha3_512_test.json",
+    "rsa_signature_4096_sha256_test.json",
     "rsa_signature_4096_sha384_test.json",
     "rsa_signature_4096_sha512_test.json",
     "rsa_signature_4096_sha512_256_test.json",
+    "rsa_signature_8192_sha256_test.json",
+    "rsa_signature_8192_sha384_test.json",
+    "rsa_signature_8192_sha512_test.json",
 )
 def test_rsa_pkcs1v15_signature(backend, wycheproof):
     key = wycheproof.cache_value_to_group(
         "cached_key",
         lambda: serialization.load_der_public_key(
-            binascii.unhexlify(wycheproof.testgroup["keyDer"]),
+            binascii.unhexlify(wycheproof.testgroup["publicKeyDer"]),
         ),
     )
     assert isinstance(key, rsa.RSAPublicKey)
@@ -94,12 +97,18 @@ def test_rsa_pkcs1v15_signature(backend, wycheproof):
             )
 
 
-@wycheproof_tests("rsa_sig_gen_misc_test.json")
+@wycheproof_tests(
+    "rsa_pkcs1_1024_sig_gen_test.json",
+    "rsa_pkcs1_1536_sig_gen_test.json",
+    "rsa_pkcs1_2048_sig_gen_test.json",
+    "rsa_pkcs1_3072_sig_gen_test.json",
+    "rsa_pkcs1_4096_sig_gen_test.json",
+)
 def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda: serialization.load_pem_private_key(
-            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_der_private_key(
+            binascii.unhexlify(wycheproof.testgroup["privateKeyPkcs8"]),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
@@ -129,7 +138,7 @@ def test_rsa_pkcs1v15_signature_generation(backend, wycheproof):
     "rsa_pss_2048_sha1_mgf1_20_test.json",
     "rsa_pss_2048_sha256_mgf1_0_test.json",
     "rsa_pss_2048_sha256_mgf1_32_test.json",
-    "rsa_pss_2048_sha512_256_mgf1_28_test.json",
+    "rsa_pss_2048_sha512_224_mgf1_28_test.json",
     "rsa_pss_2048_sha512_256_mgf1_32_test.json",
     "rsa_pss_3072_sha256_mgf1_32_test.json",
     "rsa_pss_4096_sha256_mgf1_32_test.json",
@@ -159,7 +168,7 @@ def test_rsa_pss_signature(backend, wycheproof):
     key = wycheproof.cache_value_to_group(
         "cached_key",
         lambda: serialization.load_der_public_key(
-            binascii.unhexlify(wycheproof.testgroup["keyDer"]),
+            binascii.unhexlify(wycheproof.testgroup["publicKeyDer"]),
         ),
     )
     assert isinstance(key, rsa.RSAPublicKey)
@@ -230,8 +239,8 @@ def test_rsa_oaep_encryption(backend, wycheproof):
 
     key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda: serialization.load_pem_private_key(
-            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_der_private_key(
+            binascii.unhexlify(wycheproof.testgroup["privateKeyPkcs8"]),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
@@ -266,8 +275,8 @@ def test_rsa_oaep_encryption(backend, wycheproof):
 def test_rsa_pkcs1_encryption(backend, wycheproof):
     key = wycheproof.cache_value_to_group(
         "cached_key",
-        lambda: serialization.load_pem_private_key(
-            wycheproof.testgroup["privateKeyPem"].encode("ascii"),
+        lambda: serialization.load_der_private_key(
+            binascii.unhexlify(wycheproof.testgroup["privateKeyPkcs8"]),
             password=None,
             unsafe_skip_rsa_key_validation=True,
         ),
