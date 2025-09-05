@@ -144,7 +144,7 @@ pytest==8.3.5 ; python_full_version < '3.9'
     #   pytest-cov
     #   pytest-randomly
     #   pytest-xdist
-pytest==8.4.1 ; python_full_version >= '3.9'
+pytest==8.4.2 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
