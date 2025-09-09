@@ -124,14 +124,6 @@ jobs:
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
 
-          # CFFI 2.0.0b is missing manylinux2014 wheels
-          - PYTHON: { VERSION: "cp314-cp314t" }
-            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
-          - PYTHON: { VERSION: "cp314-cp314t" }
-            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
-          - PYTHON: { VERSION: "cp314-cp314t" }
-            MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: "ubuntu-24.04-arm" }
-
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
       - name: Ridiculous-er workaround for static node20
@@ -171,7 +163,7 @@ jobs:
           # docker running on an arm64 CPU
           OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
               OPENSSL_STATIC=1 \
-              manylinux-entrypoint uv build -v --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o tmpwheelhouse/
+              manylinux-entrypoint uv build --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o tmpwheelhouse/
         env:
           RUSTUP_HOME: /root/.rustup
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptography*.whl -w wheelhouse/
@@ -409,9 +401,6 @@ jobs:
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
-
-          echo $PY_LIMITED_API
-          ls cryptography*.tar.gz
 
           uv build --python='${{ steps.setup-python.outputs.python-path }}' -v --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
