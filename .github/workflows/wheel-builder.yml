@@ -291,6 +291,9 @@ jobs:
 
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r "${UV_REQUIREMENTS_PATH}"
       - name: add free-threaded python tools directory to PATH
+        # This can be deleted once the mac installer has a way to do this PATH
+        # update automatically, like it does for the GIL-enabled build.
+        # See https://github.com/python/cpython/issues/137450
         run: echo "/Library/Frameworks/PythonT.framework/Versions/3.14/bin" >> "$GITHUB_PATH"
         if: matrix.PYTHON.VERSION == '3.14t'
       - run: mkdir wheelhouse
@@ -405,6 +408,8 @@ jobs:
           uv build --python='${{ steps.setup-python.outputs.python-path }}' --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
 
+      # the --python argument and setup-python step ID can be removed when uv's
+      # solver no longer considers the free-threaded build to be experimental
       - run: uv venv --python='${{ steps.setup-python.outputs.python-path }}'
       - run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
         shell: bash
