@@ -402,7 +402,7 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          uv build --python='${{ steps.setup-python.outputs.python-path }}' -v --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
+          uv build --python='${{ steps.setup-python.outputs.python-path }}' --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
 
       - run: uv venv --python='${{ steps.setup-python.outputs.python-path }}'
