@@ -238,7 +238,7 @@ class TestCipherUpdateInto:
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
         encryptor = c.encryptor()
-        with pytest.raises(TypeError, match="bytestring instead?"):
+        with pytest.raises(TypeError, match=r"bytestring instead\?"):
             encryptor.update("hello")  # type: ignore[arg-type]
         with pytest.raises(TypeError, match="instance to a buffer"):
             encryptor.update(object)  # type: ignore[arg-type]
