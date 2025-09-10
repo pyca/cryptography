@@ -534,7 +534,7 @@ class TestCustomExtensionPolicies:
         ):
             with pytest.raises(
                 VerificationError,
-                match="Python validator must return None.",
+                match=r"Python validator must return None\.",
             ):
                 verifier.verify(self.leaf, [])
 
@@ -578,8 +578,8 @@ class TestCustomExtensionPolicies:
         with pytest.raises(
             ValueError,
             match=(
-                "An EE extension policy used for server verification"
-                " must require the subjectAltName extension to be present."
+                r"An EE extension policy used for server verification"
+                r" must require the subjectAltName extension to be present\."
             ),
         ):
             builder.build_server_verifier(DNSName("example.com"))
