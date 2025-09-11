@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v47-0-0:
+
+47.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
+  OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
+  continue to be supported.
+
 .. _v46-0-0:
 
 46.0.0 - `main`_
