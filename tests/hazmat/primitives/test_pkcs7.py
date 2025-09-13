@@ -20,7 +20,6 @@ from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
 from cryptography.x509.oid import (
     ExtendedKeyUsageOID,
-    ExtensionOID,
     ObjectIdentifier,
 )
 from cryptography.x509.verification import (
@@ -135,14 +134,14 @@ class TestPKCS7Loading:
 
 def _load_cert_key():
     key = load_vectors_from_file(
-        os.path.join("pkcs7", "ca_key.pem"),
+        os.path.join("x509", "custom", "ca", "ca_key.pem"),
         lambda pemfile: serialization.load_pem_private_key(
             pemfile.read(), None, unsafe_skip_rsa_key_validation=True
         ),
         mode="rb",
     )
     cert = load_vectors_from_file(
-        os.path.join("pkcs7", "ca.pem"),
+        os.path.join("x509", "custom", "ca", "ca.pem"),
         loader=lambda pemfile: x509.load_pem_x509_certificate(pemfile.read()),
         mode="rb",
     )
@@ -175,19 +174,25 @@ class TestPKCS7VerifyCertificate:
         )
 
         # Add AuthorityKeyIdentifier extension
-        aki = certificate.extensions.get_extension_for_oid(
-            ExtensionOID.AUTHORITY_KEY_IDENTIFIER
+        aki = x509.AuthorityKeyIdentifier(
+            b"\xfc\xeb\xb4\xd8\x12\xf2\xc9=\x99\xc3<g\xf4}7}\xe6\x13\xed\xfa",
+            None,
+            None,
         )
         certificate_builder = certificate_builder.add_extension(
-            aki.value, critical=False
+            aki,
+            critical=False,
         )
 
         # Add SubjectAlternativeName extension
-        san = certificate.extensions.get_extension_for_oid(
-            ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+        san = x509.SubjectAlternativeName(
+            [
+                x509.RFC822Name("example@example.com"),
+            ]
         )
         certificate_builder = certificate_builder.add_extension(
-            san.value, critical=True
+            san,
+            critical=True,
         )
 
         # Add BasicConstraints extension
@@ -266,7 +271,7 @@ class TestPKCS7VerifyCertificate:
             verifier.verify(certificate, [])
 
     @pytest.mark.parametrize(
-        "filename", ["ca_non_ascii_san.pem", "ca_ascii_san.pem"]
+        "filename", ["non-ascii-san.pem", "ascii-san.pem"]
     )
     def test_verify_pkcs7_certificate_wrong_san(self, filename):
         # Read a certificate with an invalid SAN
