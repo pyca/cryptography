@@ -25,7 +25,6 @@ use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::utils::cstr_from_literal;
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
 
@@ -201,6 +200,7 @@ fn decrypt_smime<'p>(
 
     decrypt_der(py, data, certificate, private_key, options)
 }
+
 #[pyo3::pyfunction]
 fn decrypt_pem<'p>(
     py: pyo3::Python<'p>,
@@ -672,6 +672,208 @@ fn compute_pkcs7_signature_algorithm<'p>(
     }
 }
 
+#[pyo3::pyfunction]
+#[pyo3(signature = (signature, content = None, certificate = None))]
+fn verify_smime<'p>(
+    py: pyo3::Python<'p>,
+    signature: &[u8],
+    content: Option<&[u8]>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+) -> CryptographyResult<()> {
+    // Parse the email
+    let py_content_and_signature = types::SMIME_SIGNED_DECODE.get(py)?.call1((signature,))?;
+
+    // Extract the signature
+    let py_signature = py_content_and_signature.get_item(1)?;
+    let signature = py_signature.extract()?;
+
+    // Extract the content: if content is specified, use it, otherwise use the content from the
+    // email. It can be None (opaque signing) or bytes (clear signing with multipart/signed email).
+    // RFC5751 specified that receiving agents MUST be able to handle both cases.
+    let py_content = py_content_and_signature.get_item(0)?;
+    let content = match content {
+        Some(data) => Some(data),
+        None => {
+            if !py_content.is_none() {
+                Some(py_content.extract()?)
+            } else {
+                None
+            }
+        }
+    };
+
+    verify_der(py, signature, content, certificate)
+}
+
+#[pyo3::pyfunction]
+#[pyo3(signature = (signature, content = None, certificate = None))]
+fn verify_pem<'p>(
+    py: pyo3::Python<'p>,
+    signature: &[u8],
+    content: Option<&[u8]>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+) -> CryptographyResult<()> {
+    let pem_str = std::str::from_utf8(signature)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid PEM data"))?;
+    let pem = pem::parse(pem_str)
+        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Failed to parse PEM data"))?;
+
+    // Raise error if the PEM tag is not PKCS7
+    if pem.tag() != "PKCS7" {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "The provided PEM data does not have the PKCS7 tag.",
+            ),
+        ));
+    }
+
+    verify_der(py, &pem.into_contents(), content, certificate)
+}
+
+#[pyo3::pyfunction]
+#[pyo3(signature = (signature, content = None, certificate = None))]
+fn verify_der<'p>(
+    py: pyo3::Python<'p>,
+    signature: &[u8],
+    content: Option<&[u8]>,
+    certificate: Option<pyo3::Bound<'p, x509::certificate::Certificate>>,
+) -> CryptographyResult<()> {
+    // Verify the data
+    let content_info = asn1::parse_single::<pkcs7::ContentInfo<'_>>(signature)?;
+    match content_info.content {
+        pkcs7::Content::SignedData(signed_data) => {
+            // Extract signed data
+            let signed_data = signed_data.into_inner();
+
+            // Extract the signer certificate: either from given value, or from signed data
+            let certificate = match certificate {
+                Some(cert) => cert,
+                None => {
+                    let certificates = signed_data.certificates;
+                    match certificates {
+                        Some(certificates) => {
+                            let mut certificates = certificates.unwrap_read().clone();
+                            match certificates.next() {
+                                Some(cert) => {
+                                    let cert_bytes =
+                                        pyo3::types::PyBytes::new(py, &asn1::write_single(&cert)?)
+                                            .unbind();
+                                    let py_cert = load_der_x509_certificate(py, cert_bytes, None)?;
+                                    pyo3::Bound::new(py, py_cert)?
+                                }
+                                None => {
+                                    return Err(CryptographyError::from(
+                                        pyo3::exceptions::PyValueError::new_err(
+                                            "The PKCS7 data has an empty certificates attributes.",
+                                        ),
+                                    ));
+                                }
+                            }
+                        }
+                        None => {
+                            return Err(CryptographyError::from(
+                                pyo3::exceptions::PyValueError::new_err(
+                                    "The PKCS7 data does not contain any certificate.",
+                                ),
+                            ));
+                        }
+                    }
+                }
+            };
+
+            // Get recipients, and find the one matching with the signer infos (if any)
+            // TODO: what to do for multiple certificates?
+            let mut signer_infos = signed_data.signer_infos.unwrap_read().clone();
+            let signer_certificate = certificate.get().raw.borrow_dependent();
+            let signer_serial_number = signer_certificate.tbs_cert.serial;
+            let signer_issuer = signer_certificate.tbs_cert.issuer.clone();
+            let found_signer_info = signer_infos.find(|info| {
+                info.issuer_and_serial_number.serial_number == signer_serial_number
+                    && info.issuer_and_serial_number.issuer == signer_issuer
+            });
+
+            // Raise error when no signer is found
+            let signer_info = match found_signer_info {
+                Some(info) => info,
+                None => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "No signer found that matches the given certificate.",
+                        ),
+                    ));
+                }
+            };
+
+            // Prepare the content: try to use the authenticated attributes, then the content stored
+            // in the signed data, then the provided content. If None of these are available, raise
+            // an error.  TODO: what should the order be?
+            let data = match signer_info.authenticated_attributes {
+                Some(attrs) => Cow::Owned(asn1::write_single(&attrs)?),
+                None => match content {
+                    Some(data) => Cow::Borrowed(data),
+                    None => match signed_data.content_info.content {
+                        pkcs7::Content::Data(Some(data)) => Cow::Borrowed(data.into_inner()),
+                        _ => {
+                            return Err(CryptographyError::from(
+                                pyo3::exceptions::PyValueError::new_err(
+                                    "No content stored in the signature or provided.",
+                                ),
+                            ));
+                        }
+                    },
+                },
+            };
+
+            // For RSA signatures (with no PSS padding), the OID is always the same no matter the
+            // digest algorithm. We need to modify the algorithm identifier to add the hash
+            // algorithm information. We are checking for RSA-256, which the S/MIME v3.2 RFC
+            // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.2)
+            let signature_algorithm = match signer_info.digest_encryption_algorithm.oid() {
+                &oid::RSA_OID => match signer_info.digest_algorithm.oid() {
+                    &oid::SHA256_OID => common::AlgorithmIdentifier {
+                        oid: asn1::DefinedByMarker::marker(),
+                        params: common::AlgorithmParameters::RsaWithSha256(Some(())),
+                    },
+                    _ => {
+                        return Err(CryptographyError::from(
+                            exceptions::UnsupportedAlgorithm::new_err((
+                                "Only SHA-256 is currently supported for content verification with RSA.",
+                                exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                            )),
+                        ))
+                    }
+                },
+                _ => signer_info.digest_encryption_algorithm,
+            };
+
+            // Verify the signature
+            x509::sign::verify_signature_with_signature_algorithm(
+                py,
+                certificate.call_method0(pyo3::intern!(py, "public_key"))?,
+                &signature_algorithm,
+                signer_info.encrypted_digest,
+                &data,
+            )?;
+
+            // Verify the certificate
+            let certificates = pyo3::types::PyList::empty(py);
+            certificates.append(certificate)?;
+            types::VERIFY_PKCS7_CERTIFICATES
+                .get(py)?
+                .call1((certificates,))?;
+        }
+        _ => {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "The PKCS7 data is not a SignedData structure.",
+                ),
+            ));
+        }
+    };
+
+    Ok(())
+}
+
 fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [u8]>) {
     let mut new_data_with_header = vec![];
     let mut new_data_without_header = vec![];
@@ -811,7 +1013,7 @@ pub(crate) mod pkcs7_mod {
     use super::{
         decrypt_der, decrypt_pem, decrypt_smime, encrypt_and_serialize,
         load_der_pkcs7_certificates, load_pem_pkcs7_certificates, serialize_certificates,
-        sign_and_serialize,
+        sign_and_serialize, verify_der, verify_pem, verify_smime,
     };
 }
 
