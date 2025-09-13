@@ -161,6 +161,10 @@ def cryptography_has_get_extms_support() -> list[str]:
     return ["SSL_get_extms_support"]
 
 
+def cryptography_has_ssl_get0_group_name() -> list[str]:
+    return ["SSL_get0_group_name"]
+
+
 # This is a mapping of
 # {condition: function-returning-names-dependent-on-that-condition} so we can
 # loop over them and delete unsupported names at runtime. It will be removed
@@ -197,4 +201,7 @@ CONDITIONAL_NAMES = {
         cryptography_has_ssl_op_ignore_unexpected_eof
     ),
     "Cryptography_HAS_GET_EXTMS_SUPPORT": cryptography_has_get_extms_support,
+    "Cryptography_HAS_SSL_GET0_GROUP_NAME": (
+        cryptography_has_ssl_get0_group_name
+    ),
 }

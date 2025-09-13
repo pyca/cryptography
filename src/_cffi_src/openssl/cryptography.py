@@ -48,6 +48,11 @@ INCLUDES = r"""
 #define CRYPTOGRAPHY_IS_AWSLC 0
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x30200000L
+#define CRYPTOGRAPHY_OPENSSL_320_OR_GREATER 1
+#else
+#define CRYPTOGRAPHY_OPENSSL_320_OR_GREATER 0
+#endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10101050
     #error "pyca/cryptography MUST be linked with Openssl 1.1.1e or later"
