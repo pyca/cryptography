@@ -53,6 +53,8 @@ dependencies = [
     # Must be kept in sync with `build-system.requires`
     "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version < '3.14'",
     "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.14'",
+    # Must be kept in sync with ./.github/requirements/build-requirements.{in,txt}
+    "typing-extensions>=4.13.2; python_version < '3.11'",
 ]
 
 [project.urls]
