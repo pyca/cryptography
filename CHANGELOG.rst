@@ -15,8 +15,8 @@ Changelog
   and support will be removed in two releases. Users should move to a 64-bit
   Python installation.
 * We now build ``ppc64le`` ``manylinux`` wheels and publish them to PyPI.
-* Added support for free threading in Python 3.14, including publishing wheels 
-  to PyPI.
+* We now build ``win_arm64`` (Windows on Arm) wheels and publish them to PyPI.
+* Added support for free-threaded Python 3.14.
 * Removed the deprecated ``get_attribute_for_oid`` method on
   :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
   :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` instead.
