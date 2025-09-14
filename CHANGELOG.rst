@@ -11,8 +11,11 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
 * Support for OpenSSL < 3.0 is deprecated and will be removed in the next
   release.
-* Support for 32-bit Windows (including publishing wheels) is deprecated,
-  and support will be removed in two releases. Users should move to a 64-bit
+* Support for ``x86_64`` macOS (including publishing wheels) is deprecated
+  and will be removed in two releases. We will switch to publishing an
+  ``arm64`` only wheel for macOS.
+* Support for 32-bit Windows (including publishing wheels) is deprecated
+  and will be removed in two releases. Users should move to a 64-bit
   Python installation.
 * We now build ``ppc64le`` ``manylinux`` wheels and publish them to PyPI.
 * We now build ``win_arm64`` (Windows on Arm) wheels and publish them to PyPI.
