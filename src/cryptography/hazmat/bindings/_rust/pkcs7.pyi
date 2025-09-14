@@ -19,11 +19,6 @@ def encrypt_and_serialize(
     encoding: serialization.Encoding,
     options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
-def sign_and_serialize(
-    builder: pkcs7.PKCS7SignatureBuilder,
-    encoding: serialization.Encoding,
-    options: Iterable[pkcs7.PKCS7Options],
-) -> bytes: ...
 def decrypt_der(
     data: bytes,
     certificate: x509.Certificate,
@@ -42,6 +37,26 @@ def decrypt_smime(
     private_key: rsa.RSAPrivateKey,
     options: Iterable[pkcs7.PKCS7Options],
 ) -> bytes: ...
+def sign_and_serialize(
+    builder: pkcs7.PKCS7SignatureBuilder,
+    encoding: serialization.Encoding,
+    options: Iterable[pkcs7.PKCS7Options],
+) -> bytes: ...
+def verify_der(
+    signature: bytes,
+    content: bytes | None = None,
+    certificate: x509.Certificate | None = None,
+) -> None: ...
+def verify_pem(
+    signature: bytes,
+    content: bytes | None = None,
+    certificate: x509.Certificate | None = None,
+) -> None: ...
+def verify_smime(
+    signature: bytes,
+    content: bytes | None = None,
+    certificate: x509.Certificate | None = None,
+) -> None: ...
 def load_pem_pkcs7_certificates(
     data: bytes,
 ) -> list[x509.Certificate]: ...
