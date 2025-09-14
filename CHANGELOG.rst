@@ -21,6 +21,8 @@ Changelog
 * Removed the deprecated ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish``
   classes from the cipher module. These are still available in
   :doc:`/hazmat/decrepit/index`.
+* In X.509, when performing a PSS signature with a SHA-3 hash, it is now
+  encoded with the official NIST SHA3 OID.
 
 .. _v45-0-7:
 

@@ -424,10 +424,10 @@ fn identify_alg_params_for_hash_type(
         HashType::Sha256 => Ok(common::AlgorithmParameters::Sha256(Some(()))),
         HashType::Sha384 => Ok(common::AlgorithmParameters::Sha384(Some(()))),
         HashType::Sha512 => Ok(common::AlgorithmParameters::Sha512(Some(()))),
-        HashType::Sha3_224 => Ok(common::AlgorithmParameters::Sha3_224(Some(()))),
-        HashType::Sha3_256 => Ok(common::AlgorithmParameters::Sha3_256(Some(()))),
-        HashType::Sha3_384 => Ok(common::AlgorithmParameters::Sha3_384(Some(()))),
-        HashType::Sha3_512 => Ok(common::AlgorithmParameters::Sha3_512(Some(()))),
+        HashType::Sha3_224 => Ok(common::AlgorithmParameters::Sha3_224Nist(Some(()))),
+        HashType::Sha3_256 => Ok(common::AlgorithmParameters::Sha3_256Nist(Some(()))),
+        HashType::Sha3_384 => Ok(common::AlgorithmParameters::Sha3_384Nist(Some(()))),
+        HashType::Sha3_512 => Ok(common::AlgorithmParameters::Sha3_512Nist(Some(()))),
         HashType::None => Err(pyo3::exceptions::PyTypeError::new_err(
             "Algorithm must be a registered hash algorithm, not None.",
         )),
@@ -646,19 +646,19 @@ mod tests {
             ),
             (
                 HashType::Sha3_224,
-                common::AlgorithmParameters::Sha3_224(Some(())),
+                common::AlgorithmParameters::Sha3_224Nist(Some(())),
             ),
             (
                 HashType::Sha3_256,
-                common::AlgorithmParameters::Sha3_256(Some(())),
+                common::AlgorithmParameters::Sha3_256Nist(Some(())),
             ),
             (
                 HashType::Sha3_384,
-                common::AlgorithmParameters::Sha3_384(Some(())),
+                common::AlgorithmParameters::Sha3_384Nist(Some(())),
             ),
             (
                 HashType::Sha3_512,
-                common::AlgorithmParameters::Sha3_512(Some(())),
+                common::AlgorithmParameters::Sha3_512Nist(Some(())),
             ),
         ] {
             assert_eq!(identify_alg_params_for_hash_type(hash).unwrap(), params);
