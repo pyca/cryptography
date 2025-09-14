@@ -29,16 +29,6 @@ jobs:
             --comment-pattern 'Latest commit on the BoringSSL main branch.*?\.' \
             --commit-url-template "{repo_url}/+/{version}" \
             --diff-url-template "{repo_url}/+/{old_version}..{new_version}"
-      - id: bump-openssl
-        run: |
-          python3 .github/bin/bump_dependency.py \
-            --name "OpenSSL" \
-            --repo-url "https://github.com/openssl/openssl" \
-            --branch "master" \
-            --file-path ".github/workflows/ci.yml" \
-            --current-version-pattern 'TYPE: "openssl", VERSION: "([a-f0-9]{40})"' \
-            --update-pattern 'TYPE: "openssl", VERSION: "{new_version}"' \
-            --comment-pattern 'Latest commit on the OpenSSL master branch.*?\.'
       - id: bump-awslc
         run: |
           python3 .github/bin/bump_dependency.py \
@@ -58,7 +48,7 @@ jobs:
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
-        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
@@ -68,7 +58,6 @@ jobs:
           author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
           body: |
             ${{ steps.bump-boringssl.outputs.COMMIT_MSG }}
-            ${{ steps.bump-openssl.outputs.COMMIT_MSG }}
             ${{ steps.bump-awslc.outputs.COMMIT_MSG }}
           token: ${{ steps.generate-token.outputs.token }}
-        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
