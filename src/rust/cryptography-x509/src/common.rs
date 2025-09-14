@@ -39,6 +39,14 @@ pub enum AlgorithmParameters<'a> {
     Sha3_384(Option<asn1::Null>),
     #[defined_by(oid::SHA3_512_OID)]
     Sha3_512(Option<asn1::Null>),
+    #[defined_by(oid::SHA3_224_NIST_OID)]
+    Sha3_224Nist(Option<asn1::Null>),
+    #[defined_by(oid::SHA3_256_NIST_OID)]
+    Sha3_256Nist(Option<asn1::Null>),
+    #[defined_by(oid::SHA3_384_NIST_OID)]
+    Sha3_384Nist(Option<asn1::Null>),
+    #[defined_by(oid::SHA3_512_NIST_OID)]
+    Sha3_512Nist(Option<asn1::Null>),
 
     #[defined_by(oid::ED25519_OID)]
     Ed25519,

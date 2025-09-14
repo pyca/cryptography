@@ -26,6 +26,10 @@ static HASH_OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::n
     h.insert(&oid::SHA3_256_OID, "SHA3_256");
     h.insert(&oid::SHA3_384_OID, "SHA3_384");
     h.insert(&oid::SHA3_512_OID, "SHA3_512");
+    h.insert(&oid::SHA3_224_NIST_OID, "SHA3_224");
+    h.insert(&oid::SHA3_256_NIST_OID, "SHA3_256");
+    h.insert(&oid::SHA3_384_NIST_OID, "SHA3_384");
+    h.insert(&oid::SHA3_512_NIST_OID, "SHA3_512");
     h
 });
 
