@@ -126,7 +126,7 @@ pretend==1.0.9
     # via cryptography (pyproject.toml)
 py-cpuinfo==9.0.0
     # via pytest-benchmark
-pyenchant==3.2.2
+pyenchant==3.3.0
     # via
     #   cryptography (pyproject.toml)
     #   sphinxcontrib-spelling
