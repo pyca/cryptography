@@ -29,7 +29,6 @@ jobs:
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.5.3"}}
           - {VERSION: "3.14-dev", NOXSESSION: "tests"}
           - {VERSION: "3.14t-dev", NOXSESSION: "rust,tests"}
-          - {VERSION: "pypy-3.10", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.3", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.3", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
