@@ -432,23 +432,23 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Aug 05, 2025.
-            REF: 0ca1c978c0d68b1a3e216474c5225281a115f3af
+            # Latest commit on the pyopenssl main branch, as of Sep 16, 2025.
+            REF: fb1ebc1c81640acedc9e8918c066d81d71167876
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
             # Latest release tag of pyopenssl, as of Aug 05, 2025.
-            REF: e9c1f671264d953072ac541616d41dca7076648c
+            REF: 25.2.0
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Aug 05, 2025.
-            REF: 710e6fad358efe58262ff49c9e32af594687a794
+            # Latest commit on the twisted trunk branch, as of Sep 16, 2025.
+            REF: 968e1d5504a2ba52ab69299356c2485510cd1817
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Aug 05, 2025.
-            REF: cbfab663e94c4ed1db5211886770e1aa403a7c67
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Sep 16, 2025.
+            REF: d316a1835869a27b76ff6dfe8db6897e85f6eebd
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: dynamodb-encryption-sdk
             REPO: awslabs/aws-dynamodb-encryption-python
@@ -457,28 +457,28 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Aug 05, 2025.
-            REF: 3d8be0c3b220b461b0ae2469d7062758e10d7e40
+            # Latest commit on the certbot main branch, as of Sep 16, 2025.
+            REF: 867b499f9b3934f88beffe53f021c6834350c2f1
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Aug 05, 2025.
-            REF: f74100c800fd280f0640d320052a9680da56be95
+            # Latest commit on the certbot-josepy main branch, as of Sep 16, 2025.
+            REF: 7fb39407c2ba2f1d725dce6dced79bd01e15d69e
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Aug 05, 2025.
-            REF: 57f477ef6eb9cd521abd29543ee679553a16969a
+            # Latest commit on the mitmproxy main branch, as of Sep 16, 2025.
+            REF: 37d1cf55cb254c9975a952d3085252cfc7acd71b
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Aug 05, 2025.
-            REF: cc8e09187407cefce61207823239c2d5749bf046
+            # Latest commit on the scapy master branch, as of Sep 16, 2025.
+            REF: aa1fe527665a407d46a4c83fa77a23114c9e3624
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Aug 05, 2025.
-            REF: 5ea398f538ea1954c9aca9cf6064d1d93ccbced1
+            # Latest commit on the sigstore-python main branch, as of Sep 16, 2025.
+            REF: 365af7bcb3668cc0aa4dd3b07b1f3234beffa1ed
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
