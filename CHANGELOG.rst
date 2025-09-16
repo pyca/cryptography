@@ -17,6 +17,7 @@ Changelog
 * Support for 32-bit Windows (including publishing wheels) is deprecated
   and will be removed in two releases. Users should move to a 64-bit
   Python installation.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.3.
 * We now build ``ppc64le`` ``manylinux`` wheels and publish them to PyPI.
 * We now build ``win_arm64`` (Windows on Arm) wheels and publish them to PyPI.
 * Added support for free-threaded Python 3.14.
