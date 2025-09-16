@@ -128,7 +128,7 @@ def main() -> int:
         "--tag", action="store_true", help="Check tags instead of commits"
     )
     parser.add_argument(
-        "--tag-pattern", default=r"v[0-9\.]*", help="Pattern for tag matching"
+        "--tag-pattern", default=r"v?[0-9\.]*", help="Pattern for tag matching"
     )
     parser.add_argument(
         "--commit-url-template",

@@ -51,7 +51,7 @@ while IFS=: read -r downstream repo ref; do
         --update-pattern "$replacement_pattern" \
         --comment-pattern "$comment_pattern" \
         --commit-message-fd 3 \
-        $tag_args 3<"$TEMP_MSG_FILE"
+        $tag_args 3>"$TEMP_MSG_FILE"
 
     # Check if this downstream had updates (commit message file has content)
     if [ -s "$TEMP_MSG_FILE" ]; then
