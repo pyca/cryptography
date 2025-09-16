@@ -3,10 +3,8 @@ Changelog
 
 .. _v46-0-0:
 
-46.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+46.0.0 - 2025-09-16
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
 * Support for OpenSSL < 3.0 is deprecated and will be removed in the next
