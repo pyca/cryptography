@@ -437,7 +437,7 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
-            # Latest release tag of pyopenssl, as of Aug 05, 2025.
+            # Latest release tag of pyopenssl-release, as of Aug 05, 2025.
             REF: 25.2.0
             PATH: pyopenssl
           - DOWNSTREAM: twisted
