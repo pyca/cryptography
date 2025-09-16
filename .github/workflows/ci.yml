@@ -445,7 +445,7 @@ jobs:
             # Latest commit on the twisted trunk branch, as of Aug 05, 2025.
             REF: 710e6fad358efe58262ff49c9e32af594687a794
             PATH: twisted
-          - DOWNSTREAM: aws-encryption-sdk
+          - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
             # Latest commit on the aws-encryption-sdk-python master branch, as of Aug 05, 2025.
             REF: cbfab663e94c4ed1db5211886770e1aa403a7c67
@@ -462,7 +462,7 @@ jobs:
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the josepy main branch, as of Aug 05, 2025.
+            # Latest commit on the certbot-josepy main branch, as of Aug 05, 2025.
             REF: f74100c800fd280f0640d320052a9680da56be95
             PATH: josepy
           - DOWNSTREAM: mitmproxy
@@ -475,7 +475,7 @@ jobs:
             # Latest commit on the scapy master branch, as of Aug 05, 2025.
             REF: cc8e09187407cefce61207823239c2d5749bf046
             PATH: scapy
-          - DOWNSTREAM: sigstore
+          - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
             # Latest commit on the sigstore-python main branch, as of Aug 05, 2025.
             REF: 5ea398f538ea1954c9aca9cf6064d1d93ccbced1

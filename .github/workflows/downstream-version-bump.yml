@@ -1,0 +1,39 @@
+name: Bump downstream dependencies
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily
+    - cron: "0 0 * * *"
+
+jobs:
+  bump:
+    if: github.repository_owner == 'pyca'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          # Needed so we can push back to the repo
+          persist-credentials: true
+      - name: Parse downstream dependencies
+        id: downstream-bump
+        run: ./.github/bin/bump_downstreams.sh
+      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        id: generate-token
+        with:
+          app_id: ${{ secrets.BORINGBOT_APP_ID }}
+          private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+        if: steps.downstream-bump.outputs.HAS_UPDATES == 'true'
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          branch: "bump-downstreams"
+          commit-message: "Bump downstream dependencies in CI"
+          title: "Bump downstream dependencies in CI"
+          author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
+          body: |
+            ${{ steps.downstream-bump.outputs.COMMIT_MSG }}
+          token: ${{ steps.generate-token.outputs.token }}
+        if: steps.downstream-bump.outputs.HAS_UPDATES == 'true'
