@@ -4,7 +4,9 @@
 
 use asn1::Asn1Writable;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyBytesMethods;
 
+use crate::declarative_asn1::decode::SimpleAsn1ReadablePyDyn;
 use crate::declarative_asn1::types as asn1_types;
 
 #[pyo3::pyfunction]
@@ -40,4 +42,29 @@ pub(crate) fn encode_der<'p>(
     };
 
     Ok(pyo3::types::PyBytes::new(py, &encoded_bytes))
+}
+
+#[pyo3::pyfunction]
+pub(crate) fn decode_der<'p>(
+    py: pyo3::Python<'p>,
+    class: &pyo3::Bound<'p, pyo3::types::PyType>,
+    value: &'p pyo3::Bound<'p, pyo3::types::PyBytes>,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let value = value.as_bytes();
+
+    asn1::parse(value, |parser| {
+        if let Ok(root) = class.getattr("__asn1_root__") {
+            let root = root.downcast::<asn1_types::AnnotatedType>().map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "target type has invalid annotations".to_string(),
+                )
+            })?;
+            root.get().decode(py, parser)
+        } else {
+            // Handle simple types directly
+            let annotated_type = asn1_types::non_root_type_to_annotated(py, class, None)?;
+            annotated_type.decode(py, parser)
+        }
+    })
+    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
 }

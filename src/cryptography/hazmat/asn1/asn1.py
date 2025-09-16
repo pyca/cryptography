@@ -27,6 +27,7 @@ T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")
 
 
+decode_der = declarative_asn1.decode_der
 encode_der = declarative_asn1.encode_der
 
 
