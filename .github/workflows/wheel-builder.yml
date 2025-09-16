@@ -311,14 +311,14 @@ jobs:
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
 
-      - run: uv venv
-      - run: uv pip install --python='${{ matrix.PYTHON.BIN_PATH }}' --require-hashes -r $BUILD_REQUIREMENTS_PATH
-      - run: uv pip install --python='${{ matrix.PYTHON.BIN_PATH }}' cryptography --no-index -f wheelhouse/
+      - run: uv venv --python='${{ matrix.PYTHON.BIN_PATH }}'
+      - run: uv pip install --require-hashes -r $BUILD_REQUIREMENTS_PATH
+      - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Show the wheel's minimum macOS SDK and architectures
         run: |
           find .venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
       - run: |
-          echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run --python='${{ matrix.PYTHON.BIN_PATH }}' -
+          echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
