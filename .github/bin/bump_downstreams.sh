@@ -38,7 +38,10 @@ while IFS=: read -r downstream repo ref; do
     ref_pattern="REF: ($ref)"
     replacement_pattern="REF: {new_version}"
 
-    # Run bump_dependency.py
+    # Create a temporary file for this downstream's commit message
+    TEMP_MSG_FILE=$(mktemp)
+
+    # Run bump_dependency.py with commit-message-fd redirected to the temp file
     python3 .github/bin/bump_dependency.py \
         --name "$downstream" \
         --repo-url "$repo_url" \
@@ -47,21 +50,22 @@ while IFS=: read -r downstream repo ref; do
         --current-version-pattern "$ref_pattern" \
         --update-pattern "$replacement_pattern" \
         --comment-pattern "$comment_pattern" \
-        $tag_args
+        --commit-message-fd 3 \
+        $tag_args 3<"$TEMP_MSG_FILE"
 
-    # Check if this downstream had updates
-    if [ -f "$GITHUB_OUTPUT" ]; then
-        if grep -q "HAS_UPDATES=true" "$GITHUB_OUTPUT"; then
-            HAS_ANY_UPDATES=true
-            # Extract commit message for this downstream
-            DOWNSTREAM_MSG=$(sed -n '/COMMIT_MSG<<EOF/,/^EOF$/p' "$GITHUB_OUTPUT" | sed '1d;$d')
-            if [ -n "$COMBINED_COMMIT_MSG" ]; then
-                COMBINED_COMMIT_MSG="$COMBINED_COMMIT_MSG"$'\n\n'"$DOWNSTREAM_MSG"
-            else
-                COMBINED_COMMIT_MSG="$DOWNSTREAM_MSG"
-            fi
+    # Check if this downstream had updates (commit message file has content)
+    if [ -s "$TEMP_MSG_FILE" ]; then
+        HAS_ANY_UPDATES=true
+        DOWNSTREAM_MSG=$(cat "$TEMP_MSG_FILE")
+        if [ -n "$COMBINED_COMMIT_MSG" ]; then
+            COMBINED_COMMIT_MSG="$COMBINED_COMMIT_MSG"$'\n\n'"$DOWNSTREAM_MSG"
+        else
+            COMBINED_COMMIT_MSG="$DOWNSTREAM_MSG"
         fi
     fi
+
+    # Clean up temp file
+    rm -f "$TEMP_MSG_FILE"
 done <<< "$DOWNSTREAMS"
 
 # Set final outputs

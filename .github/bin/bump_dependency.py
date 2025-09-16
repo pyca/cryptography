@@ -140,6 +140,11 @@ def main() -> int:
         default="{repo_url}/compare/{old_version}...{new_version}",
         help="Template for diff URLs",
     )
+    parser.add_argument(
+        "--commit-message-fd",
+        type=int,
+        help="File descriptor to write commit message to",
+    )
 
     args = parser.parse_args()
 
@@ -154,8 +159,9 @@ def main() -> int:
 
     if current_version == latest_version:
         print(f"{args.name}: No update needed (current: {current_version})")
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write("HAS_UPDATES=false\n")
+        if not args.commit_message_fd:
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write("HAS_UPDATES=false\n")
         return 0
 
     print(
@@ -181,11 +187,15 @@ def main() -> int:
         args.diff_url_template,
     )
 
-    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-        f.write("COMMIT_MSG<<EOF\n")
-        f.write(commit_msg)
-        f.write("\nEOF\n")
-        f.write("HAS_UPDATES=true\n")
+    if args.commit_message_fd:
+        with os.fdopen(args.commit_message_fd, "w") as f:
+            f.write(commit_msg)
+    else:
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write("COMMIT_MSG<<EOF\n")
+            f.write(commit_msg)
+            f.write("\nEOF\n")
+            f.write("HAS_UPDATES=true\n")
 
     return 0
 
