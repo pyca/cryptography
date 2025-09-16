@@ -1,6 +1,15 @@
 Changelog
 =========
 
+.. _v46-0-1:
+
+46.0.1 - 2025-09-16
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed an issue where users installing via ``pip`` on Python 3.14 development
+  versions would not properly install a dependency.
+* Fixed an issue building the free-threaded macOS 3.14 wheels.
+
 .. _v46-0-0:
 
 46.0.0 - 2025-09-16
