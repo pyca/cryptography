@@ -41,8 +41,6 @@ type ParseResult<T> = Result<T, DecodeError>;
 pub(crate) trait SimpleAsn1ReadablePy<'a>: Sized {
     type DerTarget: SimpleAsn1Readable<'a>;
 
-    const TAG: asn1::Tag = Self::DerTarget::TAG;
-
     fn decode(py: pyo3::Python<'a>, parser: &mut Parser<'a>) -> ParseResult<pyo3::Bound<'a, Self>>;
 
     fn get_value(parser: &mut Parser<'a>) -> ParseResult<Self::DerTarget> {
