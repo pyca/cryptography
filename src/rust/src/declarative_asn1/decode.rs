@@ -5,9 +5,9 @@
 use asn1::{Asn1Readable, Parser, SimpleAsn1Readable};
 use pyo3::types::IntoPyDict;
 use pyo3::types::PyAnyMethods;
-use pyo3::IntoPyObject;
 use std::collections::HashMap;
 
+use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{AnnotatedType, Type};
 
 pub(crate) enum DecodeError {
@@ -54,8 +54,14 @@ impl<'a> SimpleAsn1ReadablePy<'a> for pyo3::types::PyInt {
 
     fn decode(py: pyo3::Python<'a>, parser: &mut Parser<'a>) -> ParseResult<pyo3::Bound<'a, Self>> {
         let value = Self::get_value(parser)?;
-        let big = num_bigint::BigInt::from_signed_bytes_be(value.as_bytes());
-        Ok(big.into_pyobject(py)?)
+        let pyint = big_byte_slice_to_py_int(py, value.as_bytes())?
+            .downcast_into::<pyo3::types::PyInt>()
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "error converting integer value".to_string(),
+                )
+            })?;
+        Ok(pyint)
     }
 }
 
