@@ -183,7 +183,7 @@ jobs:
           - VERSION: '3.11'
             ABI_VERSION: 'py38'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.13/python-3.11.13-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
             DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
@@ -195,7 +195,7 @@ jobs:
           - VERSION: '3.11'
             ABI_VERSION: 'py311'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.13/python-3.11.13-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
             DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
