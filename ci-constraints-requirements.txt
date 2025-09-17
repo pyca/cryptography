@@ -93,7 +93,7 @@ markupsafe==3.0.2 ; python_full_version >= '3.9'
     # via jinja2
 mypy==1.14.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-mypy==1.17.1 ; python_full_version >= '3.9'
+mypy==1.18.1 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
@@ -126,7 +126,11 @@ pretend==1.0.9
     # via cryptography (pyproject.toml)
 py-cpuinfo==9.0.0
     # via pytest-benchmark
-pyenchant==3.2.2
+pyenchant==3.2.2 ; python_full_version < '3.9'
+    # via
+    #   cryptography (pyproject.toml)
+    #   sphinxcontrib-spelling
+pyenchant==3.3.0 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   sphinxcontrib-spelling
@@ -144,7 +148,7 @@ pytest==8.3.5 ; python_full_version < '3.9'
     #   pytest-cov
     #   pytest-randomly
     #   pytest-xdist
-pytest==8.4.1 ; python_full_version >= '3.9'
+pytest==8.4.2 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
@@ -157,11 +161,11 @@ pytest-benchmark==5.1.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-cov==5.0.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-pytest-cov==6.2.1 ; python_full_version >= '3.9'
+pytest-cov==7.0.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-randomly==3.15.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-pytest-randomly==3.16.0 ; python_full_version >= '3.9'
+pytest-randomly==4.0.1 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-xdist==3.6.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
@@ -181,7 +185,7 @@ requests==2.32.5 ; python_full_version >= '3.9'
     #   sphinxcontrib-spelling
 roman-numerals-py==3.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.12.11
+ruff==0.13.0
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
@@ -257,11 +261,13 @@ tomli==2.2.1 ; python_full_version <= '3.11'
     #   sphinx
 typing-extensions==4.13.2 ; python_full_version < '3.9'
     # via
+    #   cryptography (pyproject.toml)
     #   exceptiongroup
     #   mypy
     #   virtualenv
 typing-extensions==4.15.0 ; python_full_version >= '3.9'
     # via
+    #   cryptography (pyproject.toml)
     #   exceptiongroup
     #   mypy
     #   virtualenv
@@ -269,7 +275,7 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.5.0 ; python_full_version >= '3.9'
     # via requests
-uv==0.8.14
+uv==0.8.17
     # via nox
 virtualenv==20.34.0
     # via nox

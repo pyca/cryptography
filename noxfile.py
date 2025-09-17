@@ -85,7 +85,6 @@ def tests(session: nox.Session) -> None:
         cov_args = [
             "--cov=cryptography",
             "--cov=tests",
-            "--cov-context=test",
         ]
     else:
         cov_args = []
@@ -245,7 +244,6 @@ def rust(session: nox.Session) -> None:
     build_output = session.run(
         "cargo",
         "test",
-        "--no-default-features",
         "--all",
         "--no-run",
         "-q",
@@ -253,9 +251,7 @@ def rust(session: nox.Session) -> None:
         external=True,
         silent=True,
     )
-    session.run(
-        "cargo", "test", "--no-default-features", "--all", external=True
-    )
+    session.run("cargo", "test", "--all", external=True)
 
     # It's None on install-only invocations
     if build_output is not None:
@@ -328,9 +324,7 @@ def local(session: nox.Session):
         *tests,
     )
 
-    session.run(
-        "cargo", "test", "--no-default-features", "--all", external=True
-    )
+    session.run("cargo", "test", "--all", external=True)
 
 
 LCOV_SOURCEFILE_RE = re.compile(

@@ -34,7 +34,7 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: "3.13"
         timeout-minutes: 3
@@ -68,7 +68,7 @@ jobs:
         PYTHON:
           - { VERSION: "cp311-cp311", ABI_VERSION: 'py38' }
           - { VERSION: "cp311-cp311", ABI_VERSION: 'py311' }
-          - { VERSION: "pp310-pypy310_pp73" }
+          - { VERSION: "cp314-cp314t" }
           - { VERSION: "pp311-pypy311_pp73" }
         MANYLINUX:
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
@@ -88,37 +88,23 @@ jobs:
 
         exclude:
           # There are no readily available musllinux PyPy distributions
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_2_x86_64", CONTAINER: "cryptography-musllinux_1_2:x86_64", RUNNER: "ubuntu-latest"}
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: "ubuntu-24.04-arm" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_x86_64", CONTAINER: "cryptography-musllinux_1_2:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "musllinux_1_2_aarch64", CONTAINER: "cryptography-musllinux_1_2:aarch64", RUNNER: "ubuntu-24.04-arm" }
 
             # We also don't build pypy wheels for anything except the latest manylinux
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: "ubuntu-24.04-arm" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest"}
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux2014_aarch64", CONTAINER: "cryptography-manylinux2014_aarch64", RUNNER: "ubuntu-24.04-arm" }
 
           # No PyPy on armv7l either
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "manylinux_2_31_armv7l", CONTAINER: "cryptography-manylinux_2_31:armv7l", RUNNER: "ubuntu-24.04-arm" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux_2_31_armv7l", CONTAINER: "cryptography-manylinux_2_31:armv7l", RUNNER: "ubuntu-24.04-arm" }
 
           # No PyPy on ppc64le
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
-            MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
-            MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
-          - PYTHON: { VERSION: "pp310-pypy310_pp73" }
             MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
             MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
@@ -218,6 +204,16 @@ jobs:
             # This will change in the future as we change the base Python we
             # build against
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+          - VERSION: '3.14t'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0rc1-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
+            DEPLOYMENT_TARGET: '10.13'
+            # This archflags is default, but let's be explicit
+            ARCHFLAGS: '-arch x86_64 -arch arm64'
+            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
+            # This will change in the future as we change the base Python we
+            # build against
+            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: 'pypy-3.10'
             BIN_PATH: 'pypy3'
             DEPLOYMENT_TARGET: '10.13'
@@ -239,6 +235,7 @@ jobs:
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
+            .github/config/macos-pkg-choices-freethreaded.xml
           sparse-checkout-cone-mode: false
       - name: Setup python
         run: |
@@ -246,9 +243,16 @@ jobs:
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-        if: contains(matrix.PYTHON.VERSION, 'pypy') == false
+        if: contains(matrix.PYTHON.VERSION, 'pypy') == false && matrix.PYTHON.VERSION != '3.14t'
+      - name: Setup free-threaded python
+        run: |
+          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
+          sudo installer -pkg python.pkg -applyChoiceChangesXML .github/config/macos-pkg-choices-freethreaded.xml -target /
+        env:
+          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
+        if: matrix.PYTHON.VERSION == '3.14t'
       - name: Setup pypy
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
@@ -271,6 +275,12 @@ jobs:
           name: cryptography-sdist
 
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r "${UV_REQUIREMENTS_PATH}"
+      - name: add free-threaded python tools directory to PATH
+        # This can be deleted once the mac installer has a way to do this PATH
+        # update automatically, like it does for the GIL-enabled build.
+        # See https://github.com/python/cpython/issues/137450
+        run: echo "/Library/Frameworks/PythonT.framework/Versions/3.14/bin" >> "$GITHUB_PATH"
+        if: matrix.PYTHON.VERSION == '3.14t'
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -280,13 +290,13 @@ jobs:
 
           OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
               OPENSSL_STATIC=1 \
-              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o wheelhouse/
+              uv build --python='${{ matrix.PYTHON.BIN_PATH }}' --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
 
-      - run: uv venv
+      - run: uv venv --python='${{ matrix.PYTHON.BIN_PATH }}'
       - run: uv pip install --require-hashes -r $BUILD_REQUIREMENTS_PATH
       - run: uv pip install cryptography --no-index -f wheelhouse/
       - name: Show the wheel's minimum macOS SDK and architectures
@@ -315,6 +325,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.11", "ABI_VERSION": "py38"}
           - {VERSION: "3.11", "ABI_VERSION": "py311"}
+          - {VERSION: "3.14t-dev"}
           - {VERSION: "pypy-3.10"}
           - {VERSION: "pypy-3.11"}
         exclude:
@@ -346,7 +357,8 @@ jobs:
           name: cryptography-sdist
 
       - name: Setup python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        id: setup-python
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
@@ -378,10 +390,12 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
+          uv build --python='${{ steps.setup-python.outputs.python-path }}' --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
 
-      - run: uv venv
+      # the --python argument and setup-python step ID can be removed when uv's
+      # solver no longer considers the free-threaded build to be experimental
+      - run: uv venv --python='${{ steps.setup-python.outputs.python-path }}'
       - run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
         shell: bash
       - run: uv pip install cryptography --no-index -f wheelhouse/

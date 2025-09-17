@@ -166,6 +166,10 @@ class HashAlgorithmOID:
     SHA3_256 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.256")
     SHA3_384 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.384")
     SHA3_512 = ObjectIdentifier("1.3.6.1.4.1.37476.3.2.1.99.7.512")
+    SHA3_224_NIST = ObjectIdentifier("2.16.840.1.101.3.4.2.7")
+    SHA3_256_NIST = ObjectIdentifier("2.16.840.1.101.3.4.2.8")
+    SHA3_384_NIST = ObjectIdentifier("2.16.840.1.101.3.4.2.9")
+    SHA3_512_NIST = ObjectIdentifier("2.16.840.1.101.3.4.2.10")
 
 
 class PublicKeyAlgorithmOID:
@@ -290,6 +294,10 @@ _OID_NAMES = {
     HashAlgorithmOID.SHA3_256: "sha3_256",
     HashAlgorithmOID.SHA3_384: "sha3_384",
     HashAlgorithmOID.SHA3_512: "sha3_512",
+    HashAlgorithmOID.SHA3_224_NIST: "sha3_224",
+    HashAlgorithmOID.SHA3_256_NIST: "sha3_256",
+    HashAlgorithmOID.SHA3_384_NIST: "sha3_384",
+    HashAlgorithmOID.SHA3_512_NIST: "sha3_512",
     PublicKeyAlgorithmOID.DSA: "dsaEncryption",
     PublicKeyAlgorithmOID.EC_PUBLIC_KEY: "id-ecPublicKey",
     PublicKeyAlgorithmOID.RSAES_PKCS1_v1_5: "rsaEncryption",

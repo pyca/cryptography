@@ -1,32 +1,59 @@
 Changelog
 =========
 
-.. _v47-0-0:
 
 47.0.0 - `main`_
 ~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
 
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
 
+
+.. _v46-0-1:
+
+46.0.1 - 2025-09-16
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed an issue where users installing via ``pip`` on Python 3.14 development
+  versions would not properly install a dependency.
+* Fixed an issue building the free-threaded macOS 3.14 wheels.
+
 .. _v46-0-0:
 
-46.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+46.0.0 - 2025-09-16
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.7 has been removed.
 * Support for OpenSSL < 3.0 is deprecated and will be removed in the next
   release.
+* Support for ``x86_64`` macOS (including publishing wheels) is deprecated
+  and will be removed in two releases. We will switch to publishing an
+  ``arm64`` only wheel for macOS.
+* Support for 32-bit Windows (including publishing wheels) is deprecated
+  and will be removed in two releases. Users should move to a 64-bit
+  Python installation.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.3.
 * We now build ``ppc64le`` ``manylinux`` wheels and publish them to PyPI.
+* We now build ``win_arm64`` (Windows on Arm) wheels and publish them to PyPI.
+* Added support for free-threaded Python 3.14.
 * Removed the deprecated ``get_attribute_for_oid`` method on
   :class:`~cryptography.x509.CertificateSigningRequest`. Users should use
   :meth:`~cryptography.x509.Attributes.get_attribute_for_oid` instead.
 * Removed the deprecated ``CAST5``, ``SEED``, ``IDEA``, and ``Blowfish``
   classes from the cipher module. These are still available in
   :doc:`/hazmat/decrepit/index`.
+* In X.509, when performing a PSS signature with a SHA-3 hash, it is now
+  encoded with the official NIST SHA3 OID.
+
+.. _v45-0-7:
+
+45.0.7 - 2025-09-01
+~~~~~~~~~~~~~~~~~~~
+
+* Added a function to support an upcoming ``pyOpenSSL`` release.
 
 .. _v45-0-6:
 

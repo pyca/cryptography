@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import keywrap
 from .utils import wycheproof_tests
 
 
-@wycheproof_tests("kwp_test.json")
+@wycheproof_tests("aes_kwp_test.json")
 def test_keywrap_with_padding(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
@@ -35,22 +35,26 @@ def test_keywrap_with_padding(backend, wycheproof):
             )
 
 
-@wycheproof_tests("kw_test.json")
+@wycheproof_tests("aes_wrap_test.json")
 def test_keywrap(backend, wycheproof):
     wrapping_key = binascii.unhexlify(wycheproof.testcase["key"])
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
     expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
-    if wycheproof.valid or (
-        wycheproof.acceptable
-        and wycheproof.testcase["comment"] != "invalid size of wrapped key"
+    if wycheproof.invalid or (
+        wycheproof.acceptable and wycheproof.has_flag("ShortKey")
     ):
+        if not wycheproof.has_flag(
+            "InvalidWrappingSize"
+        ) and not wycheproof.has_flag("ModifiedIv"):
+            with pytest.raises(ValueError):
+                keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
+
+        with pytest.raises(keywrap.InvalidUnwrap):
+            keywrap.aes_key_unwrap(wrapping_key, expected, backend)
+    else:
         result = keywrap.aes_key_wrap(wrapping_key, key_to_wrap, backend)
         assert result == expected
 
-    if wycheproof.valid or wycheproof.acceptable:
         result = keywrap.aes_key_unwrap(wrapping_key, expected, backend)
         assert result == key_to_wrap
-    else:
-        with pytest.raises(keywrap.InvalidUnwrap):
-            keywrap.aes_key_unwrap(wrapping_key, expected, backend)

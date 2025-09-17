@@ -34,6 +34,7 @@ use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
 mod buf;
+mod declarative_asn1;
 mod error;
 mod exceptions;
 pub(crate) mod oid;
@@ -143,6 +144,17 @@ mod _rust {
     use crate::pkcs7::pkcs7_mod;
     #[pymodule_export]
     use crate::test_support::test_support;
+
+    #[pyo3::pymodule(gil_used = false)]
+    mod declarative_asn1 {
+        #[pymodule_export]
+        use crate::declarative_asn1::asn1::encode_der;
+
+        #[pymodule_export]
+        use crate::declarative_asn1::types::{
+            non_root_python_to_rust, AnnotatedType, Annotation, Type,
+        };
+    }
 
     #[pyo3::pymodule(gil_used = false)]
     mod x509 {

@@ -12,8 +12,8 @@ use crate::{exceptions, types};
 
 pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,
-    py_mode: pyo3::PyObject,
-    py_algorithm: pyo3::PyObject,
+    py_mode: pyo3::Py<pyo3::PyAny>,
+    py_algorithm: pyo3::Py<pyo3::PyAny>,
     side: openssl::symm::Mode,
 }
 

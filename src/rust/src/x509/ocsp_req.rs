@@ -43,7 +43,7 @@ pub(crate) fn load_der_ocsp_request(
 
     Ok(OCSPRequest {
         raw,
-        cached_extensions: pyo3::sync::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn load_der_ocsp_request(
 pub(crate) struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
-    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPRequest {
@@ -108,7 +108,7 @@ impl OCSPRequest {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         let tbs_request = &self.raw.borrow_dependent().tbs_request;
 
         x509::parse_and_cache_extensions(

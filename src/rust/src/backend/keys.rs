@@ -3,6 +3,7 @@
 // for complete details.
 
 use pyo3::IntoPyObject;
+use std::borrow::Cow;
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -72,8 +73,6 @@ fn load_pem_private_key<'p>(
     )?;
     let password = password.as_ref().map(|v| v.as_bytes());
     let mut password_used = false;
-    // TODO: Surely we can avoid this clone?
-    let tag = p.tag().to_string();
     let data = match p.headers().get("Proc-Type") {
         Some("4,ENCRYPTED") => {
             password_used = true;
@@ -138,9 +137,13 @@ fn load_pem_private_key<'p>(
                     "Unable to derive key from password (are you in FIPS mode?)",
                 )
             })?;
-            openssl::symm::decrypt(cipher, &key, Some(&iv), p.contents()).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Incorrect password, could not decrypt key")
-            })?
+            Cow::from(
+                openssl::symm::decrypt(cipher, &key, Some(&iv), p.contents()).map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Incorrect password, could not decrypt key",
+                    )
+                })?,
+            )
         }
         Some(_) => {
             return Err(CryptographyError::from(
@@ -149,16 +152,16 @@ fn load_pem_private_key<'p>(
                 ),
             ))
         }
-        None => p.into_contents(),
+        None => Cow::from(p.contents()),
     };
 
-    let pkey = match tag.as_str() {
+    let pkey = match p.tag() {
         "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
         "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data)?,
         "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None)?,
         "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data)?,
         _ => {
-            assert_eq!(tag, "ENCRYPTED PRIVATE KEY");
+            assert_eq!(p.tag(), "ENCRYPTED PRIVATE KEY");
             password_used = true;
             cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password)?
         }
@@ -377,9 +380,9 @@ mod tests {
     #[test]
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_public_key_from_pkey_unknown_key() {
-        pyo3::prepare_freethreaded_python();
+        pyo3::Python::initialize();
 
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::attach(|py| {
             let pkey =
                 openssl::pkey::PKey::public_key_from_raw_bytes(&[0; 32], openssl::pkey::Id::X25519)
                     .unwrap();
@@ -392,9 +395,9 @@ mod tests {
     #[test]
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn test_private_key_from_pkey_unknown_key() {
-        pyo3::prepare_freethreaded_python();
+        pyo3::Python::initialize();
 
-        pyo3::Python::with_gil(|py| {
+        pyo3::Python::attach(|py| {
             let pkey = openssl::pkey::PKey::hmac(&[0; 32]).unwrap();
             assert!(private_key_from_pkey(py, &pkey, false).is_err());
         });

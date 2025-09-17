@@ -28,7 +28,7 @@ self_cell::self_cell!(
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct CertificateSigningRequest {
     raw: OwnedCsr,
-    cached_extensions: pyo3::sync::GILOnceCell<pyo3::PyObject>,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -158,7 +158,7 @@ impl CertificateSigningRequest {
     }
 
     #[getter]
-    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::PyObject> {
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         let raw_exts = self
             .raw
             .borrow_dependent()
@@ -235,7 +235,7 @@ pub(crate) fn load_der_x509_csr(
 
     Ok(CertificateSigningRequest {
         raw,
-        cached_extensions: pyo3::sync::GILOnceCell::new(),
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
     })
 }
 

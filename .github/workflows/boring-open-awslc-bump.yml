@@ -17,75 +17,38 @@ jobs:
         with:
           # Needed so we can push back to the repo
           persist-credentials: true
-      - id: check-sha-boring
+      - id: bump-boringssl
         run: |
-          SHA=$(git ls-remote https://boringssl.googlesource.com/boringssl refs/heads/main | cut -f1)
-          LAST_COMMIT=$(grep boringssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-f0-9]{40}')
-          if ! grep -q "$SHA" .github/workflows/ci.yml; then
-            echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
-            echo "COMMIT_MSG<<EOF" >> $GITHUB_OUTPUT
-            echo -e "## BoringSSL\n[Commit: ${SHA}](https://boringssl.googlesource.com/boringssl/+/${SHA})\n\n[Diff](https://boringssl.googlesource.com/boringssl/+/${LAST_COMMIT}..${SHA}) between the last commit hash merged to this repository and the new commit." >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-
-          fi
-      - id: check-sha-openssl
+          python3 .github/bin/bump_dependency.py \
+            --name "BoringSSL" \
+            --repo-url "https://boringssl.googlesource.com/boringssl" \
+            --branch "main" \
+            --file-path ".github/workflows/ci.yml" \
+            --current-version-pattern 'TYPE: "boringssl", VERSION: "([a-f0-9]{40})"' \
+            --update-pattern 'TYPE: "boringssl", VERSION: "{new_version}"' \
+            --comment-pattern 'Latest commit on the BoringSSL main branch.*?\.' \
+            --commit-url-template "{repo_url}/+/{version}" \
+            --diff-url-template "{repo_url}/+/{old_version}..{new_version}"
+      - id: bump-awslc
         run: |
-          SHA=$(git ls-remote https://github.com/openssl/openssl refs/heads/master | cut -f1)
-          LAST_COMMIT=$(grep openssl .github/workflows/ci.yml | grep TYPE | grep -oE '[a-f0-9]{40}')
-          if ! grep -q "$SHA" .github/workflows/ci.yml; then
-            echo "COMMIT_SHA=${SHA}" >> $GITHUB_OUTPUT
-            echo "COMMIT_MSG<<EOF" >> $GITHUB_OUTPUT
-            echo -e "## OpenSSL\n[Commit: ${SHA}](https://github.com/openssl/openssl/commit/${SHA})\n\n[Diff](https://github.com/openssl/openssl/compare/${LAST_COMMIT}...${SHA}) between the last commit hash merged to this repository and the new commit." >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
-      - id: check-tag-aws-lc
-        run: |
-          # Get the latest tag from AWS-LC repository
-          LATEST_TAG=$(git ls-remote --tags https://github.com/aws/aws-lc.git | grep -o 'refs/tags/v[0-9\.]*$' | sort -V | tail -1 | sed 's|refs/tags/||')
-          CURRENT_TAG=$(grep aws-lc .github/workflows/ci.yml | grep VERSION | grep -o 'v[0-9\.]*')
-
-          if [ "$LATEST_TAG" != "$CURRENT_TAG" ]; then
-            echo "NEW_TAG=${LATEST_TAG}" >> $GITHUB_OUTPUT
-            echo "COMMIT_MSG<<EOF" >> $GITHUB_OUTPUT
-            echo -e "## AWS-LC\n[Tag: ${LATEST_TAG}](https://github.com/aws/aws-lc/releases/tag/${LATEST_TAG})\n\n[Diff](https://github.com/aws/aws-lc/compare/${CURRENT_TAG}...${LATEST_TAG}) between the previously used tag and the new tag." >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
-      - name: Update boring
-        run: |
-          set -xe
-          CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the BoringSSL main branch.*/Latest commit on the BoringSSL main branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"boringssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"boringssl\", VERSION: \"${COMMIT_SHA}\"/" .github/workflows/ci.yml
-          git status
-        if: steps.check-sha-boring.outputs.COMMIT_SHA
-        env:
-          COMMIT_SHA: ${{ steps.check-sha-boring.outputs.COMMIT_SHA }}
-      - name: Update OpenSSL
-        run: |
-          set -xe
-          CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest commit on the OpenSSL master branch.*/Latest commit on the OpenSSL master branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"openssl\", VERSION: \"[0-9a-f]{40}\"/TYPE: \"openssl\", VERSION: \"${COMMIT_SHA}\"/" .github/workflows/ci.yml
-          git status
-        if: steps.check-sha-openssl.outputs.COMMIT_SHA
-        env:
-          COMMIT_SHA: ${{ steps.check-sha-openssl.outputs.COMMIT_SHA }}
-      - name: Update AWS-LC
-        run: |
-          set -xe
-          CURRENT_DATE=$(date "+%b %d, %Y")
-          sed -E -i "s/Latest tag of AWS-LC main branch, as of .*/Latest tag of AWS-LC main branch, as of ${CURRENT_DATE}./" .github/workflows/ci.yml
-          sed -E -i "s/TYPE: \"aws-lc\", VERSION: \"v[0-9\.]*\"/TYPE: \"aws-lc\", VERSION: \"${NEW_TAG}\"/" .github/workflows/ci.yml
-          git status
-        if: steps.check-tag-aws-lc.outputs.NEW_TAG
-        env:
-          NEW_TAG: ${{ steps.check-tag-aws-lc.outputs.NEW_TAG }}
+          python3 .github/bin/bump_dependency.py \
+            --name "AWS-LC" \
+            --repo-url "https://github.com/aws/aws-lc" \
+            --branch "main" \
+            --file-path ".github/workflows/ci.yml" \
+            --current-version-pattern 'TYPE: "aws-lc", VERSION: "(v[0-9\.]*)"' \
+            --update-pattern 'TYPE: "aws-lc", VERSION: "{new_version}"' \
+            --comment-pattern 'Latest tag of AWS-LC main branch, as of .*?\.' \
+            --tag \
+            --tag-pattern 'v[0-9\.]*'
+      - name: Check for updates
+        run: git status
       - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         id: generate-token
         with:
           app_id: ${{ secrets.BORINGBOT_APP_ID }}
           private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
-        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA || steps.check-tag-aws-lc.outputs.NEW_TAG
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
@@ -94,8 +57,7 @@ jobs:
           title: "Bump BoringSSL, OpenSSL, AWS-LC in CI"
           author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
           body: |
-            ${{ steps.check-sha-boring.outputs.COMMIT_MSG }}
-            ${{ steps.check-sha-openssl.outputs.COMMIT_MSG }}
-            ${{ steps.check-tag-aws-lc.outputs.COMMIT_MSG }}
+            ${{ steps.bump-boringssl.outputs.COMMIT_MSG }}
+            ${{ steps.bump-awslc.outputs.COMMIT_MSG }}
           token: ${{ steps.generate-token.outputs.token }}
-        if: steps.check-sha-boring.outputs.COMMIT_SHA || steps.check-sha-openssl.outputs.COMMIT_SHA || steps.check-tag-aws-lc.outputs.NEW_TAG
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'

@@ -26,7 +26,6 @@ _DIGESTS = {
 
 
 @wycheproof_tests(
-    "ecdsa_test.json",
     "ecdsa_brainpoolP224r1_sha224_test.json",
     "ecdsa_brainpoolP256r1_sha256_test.json",
     "ecdsa_brainpoolP320r1_sha384_test.json",
@@ -63,14 +62,14 @@ def test_ecdsa_signature(backend, wycheproof):
         key = wycheproof.cache_value_to_group(
             "cache_key",
             lambda: serialization.load_der_public_key(
-                binascii.unhexlify(wycheproof.testgroup["keyDer"])
+                binascii.unhexlify(wycheproof.testgroup["publicKeyDer"])
             ),
         )
         assert isinstance(key, ec.EllipticCurvePublicKey)
     except UnsupportedAlgorithm:
         pytest.skip(
             "unable to load key (curve {})".format(
-                wycheproof.testgroup["key"]["curve"]
+                wycheproof.testgroup["publicKey"]["curve"]
             )
         )
     digest = _DIGESTS[wycheproof.testgroup["sha"]]

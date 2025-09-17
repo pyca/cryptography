@@ -57,7 +57,7 @@ class Binding:
     OpenSSL API wrapper.
     """
 
-    lib: typing.ClassVar = None
+    lib: typing.ClassVar[typing.Any] = None
     ffi = _openssl.ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
