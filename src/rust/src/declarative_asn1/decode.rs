@@ -3,9 +3,7 @@
 // for complete details.
 
 use asn1::{Asn1Readable, Parser, SimpleAsn1Readable};
-use pyo3::types::IntoPyDict;
 use pyo3::types::PyAnyMethods;
-use std::collections::HashMap;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{AnnotatedType, Type};
@@ -89,21 +87,18 @@ impl<'a> SimpleAsn1ReadablePyDyn<'a> for AnnotatedType {
                 let seq_parse_result = parser.read_element::<asn1::Sequence<'_>>()?;
 
                 seq_parse_result.parse(|d| {
-                    let mut kwargs: HashMap<String, pyo3::Bound<'a, pyo3::PyAny>> = HashMap::new();
+                    let kwargs = pyo3::types::PyDict::new(py);
                     let fields = fields.bind(py);
                     for (name, ann_type) in fields.into_iter() {
-                        let name = name.extract::<&str>()?;
                         let ann_type = ann_type.downcast::<AnnotatedType>().map_err(|_| {
                             pyo3::exceptions::PyValueError::new_err(
                                 "target type has invalid annotations".to_string(),
                             )
                         })?;
                         let value = ann_type.get().decode(py, d)?;
-                        kwargs.insert(name.to_string(), value);
+                        kwargs.set_item(name, value)?;
                     }
-                    let val = cls
-                        .call(py, (), Some(&kwargs.into_py_dict(py)?))?
-                        .into_bound(py);
+                    let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
                     Ok(val)
                 })
             }
