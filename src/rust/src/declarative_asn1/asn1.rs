@@ -5,7 +5,7 @@
 use asn1::Asn1Writable;
 use pyo3::types::PyAnyMethods;
 
-use crate::declarative_asn1::decode::SimpleAsn1ReadablePyDyn;
+use crate::declarative_asn1::decode::decode_annotated_type;
 use crate::declarative_asn1::types as asn1_types;
 
 #[pyo3::pyfunction]
@@ -36,7 +36,7 @@ pub(crate) fn decode_der<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     asn1::parse(value, |parser| {
         let annotated_type = asn1_types::python_class_to_annotated(py, class)?;
-        annotated_type.get().decode(py, parser)
+        decode_annotated_type(py, parser, annotated_type.get())
     })
     .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
 }
