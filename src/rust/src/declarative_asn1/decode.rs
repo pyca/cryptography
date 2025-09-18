@@ -7,34 +7,9 @@ use pyo3::types::PyAnyMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{AnnotatedType, Type};
+use crate::error::CryptographyError;
 
-pub(crate) enum DecodeError {
-    Asn1(asn1::ParseError),
-    Py(pyo3::PyErr),
-}
-
-impl From<asn1::ParseError> for DecodeError {
-    fn from(e: asn1::ParseError) -> Self {
-        DecodeError::Asn1(e)
-    }
-}
-
-impl From<pyo3::PyErr> for DecodeError {
-    fn from(e: pyo3::PyErr) -> Self {
-        DecodeError::Py(e)
-    }
-}
-
-impl std::fmt::Display for DecodeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            DecodeError::Asn1(e) => write!(f, "ASN.1 parse error: {e}"),
-            DecodeError::Py(e) => write!(f, "{e}"),
-        }
-    }
-}
-
-type ParseResult<T> = Result<T, DecodeError>;
+type ParseResult<T> = Result<T, CryptographyError>;
 
 pub(crate) trait SimpleAsn1ReadablePy<'a>: Sized {
     type DerTarget: SimpleAsn1Readable<'a>;
