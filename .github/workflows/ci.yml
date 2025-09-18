@@ -431,13 +431,13 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Sep 17, 2025.
-            REF: 41e778874171b9655df3d5aa513acf821a1a83cc
+            # Latest commit on the pyopenssl main branch, as of Sep 18, 2025.
+            REF: 23c0d6e48bf0d32ee46e4acfd5af752975f02fbf
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
-            # Latest release tag of pyopenssl-release, as of Aug 05, 2025.
-            REF: 25.2.0
+            # Latest release tag of pyopenssl-release, as of Sep 18, 2025.
+            REF: 25.3.0
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
@@ -456,13 +456,13 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Sep 16, 2025.
-            REF: 867b499f9b3934f88beffe53f021c6834350c2f1
+            # Latest commit on the certbot main branch, as of Sep 18, 2025.
+            REF: deb3d035e3bc78e0dea8964075752ac38cb4a069
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Sep 16, 2025.
-            REF: 7fb39407c2ba2f1d725dce6dced79bd01e15d69e
+            # Latest commit on the certbot-josepy main branch, as of Sep 18, 2025.
+            REF: 75bbdfb498e8d5b1e172cea50e92d3b34cf1b73b
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
