@@ -77,7 +77,7 @@ impl<'a> SimpleAsn1ReadablePyDyn<'a> for AnnotatedType {
                     Ok(val)
                 })
             }
-            Type::PyInt() => pyo3::types::PyInt::decode(py, parser).map(|x| x.into_any()),
+            Type::PyInt() => Ok(pyo3::types::PyInt::decode(py, parser)?.into_any()),
         }
     }
 }
