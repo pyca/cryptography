@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use asn1::{Asn1Readable, Parser};
+use asn1::Parser;
 use pyo3::types::PyAnyMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
@@ -15,7 +15,7 @@ fn decode_pyint<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyInt>> {
-    let value = asn1::BigInt::parse(parser)?;
+    let value = parser.read_element::<asn1::BigInt<'a>>()?;
     let pyint = big_byte_slice_to_py_int(py, value.as_bytes())?
         .downcast_into::<pyo3::types::PyInt>()
         .map_err(|_| {
