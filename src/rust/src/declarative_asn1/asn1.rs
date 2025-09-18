@@ -4,7 +4,6 @@
 
 use asn1::Asn1Writable;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::PyBytesMethods;
 
 use crate::declarative_asn1::decode::SimpleAsn1ReadablePyDyn;
 use crate::declarative_asn1::types as asn1_types;
@@ -48,10 +47,8 @@ pub(crate) fn encode_der<'p>(
 pub(crate) fn decode_der<'p>(
     py: pyo3::Python<'p>,
     class: &pyo3::Bound<'p, pyo3::types::PyType>,
-    value: &'p pyo3::Bound<'p, pyo3::types::PyBytes>,
+    value: &'p [u8],
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let value = value.as_bytes();
-
     asn1::parse(value, |parser| {
         if let Ok(root) = class.getattr("__asn1_root__") {
             let root = root.downcast::<asn1_types::AnnotatedType>().map_err(|_| {
