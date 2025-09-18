@@ -3,5 +3,6 @@
 // for complete details.
 
 pub(crate) mod asn1;
+pub(crate) mod decode;
 pub(crate) mod encode;
 pub(crate) mod types;

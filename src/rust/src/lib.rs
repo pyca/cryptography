@@ -120,7 +120,7 @@ mod _rust {
     #[pyo3::pymodule(gil_used = false)]
     mod declarative_asn1 {
         #[pymodule_export]
-        use crate::declarative_asn1::asn1::encode_der;
+        use crate::declarative_asn1::asn1::{decode_der, encode_der};
 
         #[pymodule_export]
         use crate::declarative_asn1::types::{
