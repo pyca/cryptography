@@ -17,28 +17,13 @@ pub(crate) fn encode_der<'p>(
 
     // TODO error messages are lost since asn1::WriteError does not allow
     // specifying error messages
-    let encoded_bytes = if let Ok(root) = class.getattr("__asn1_root__") {
-        let root = root.downcast::<asn1_types::AnnotatedType>().map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err(
-                "target type has invalid annotations".to_string(),
-            )
-        })?;
-        let object = asn1_types::AnnotatedTypeObject {
-            annotated_type: root.get(),
-            value: value.clone(),
-        };
-        asn1::write(|writer| object.write(writer))
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
-    } else {
-        // Handle simple types directly
-        let annotated_type = asn1_types::non_root_type_to_annotated(py, &class, None)?;
-        let object = asn1_types::AnnotatedTypeObject {
-            annotated_type: &annotated_type,
-            value: value.clone(),
-        };
-        asn1::write(|writer| object.write(writer))
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
+    let annotated_type = asn1_types::python_class_to_annotated(py, &class)?;
+    let object = asn1_types::AnnotatedTypeObject {
+        annotated_type: annotated_type.get(),
+        value: value.clone(),
     };
+    let encoded_bytes = asn1::write(|writer| object.write(writer))
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
     Ok(pyo3::types::PyBytes::new(py, &encoded_bytes))
 }
@@ -50,18 +35,8 @@ pub(crate) fn decode_der<'p>(
     value: &'p [u8],
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     asn1::parse(value, |parser| {
-        if let Ok(root) = class.getattr("__asn1_root__") {
-            let root = root.downcast::<asn1_types::AnnotatedType>().map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "target type has invalid annotations".to_string(),
-                )
-            })?;
-            root.get().decode(py, parser)
-        } else {
-            // Handle simple types directly
-            let annotated_type = asn1_types::non_root_type_to_annotated(py, class, None)?;
-            annotated_type.decode(py, parser)
-        }
+        let annotated_type = asn1_types::python_class_to_annotated(py, class)?;
+        annotated_type.get().decode(py, parser)
     })
     .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
 }

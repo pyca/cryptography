@@ -82,7 +82,7 @@ pub fn non_root_python_to_rust<'p>(
 /// with builtin Python types (`int`, `str`, etc), and we can't
 /// handle the conversion to the Rust `AnnotatedType` like we
 /// do for classes with `@sequence`.
-pub fn non_root_type_to_annotated<'p>(
+fn non_root_type_to_annotated<'p>(
     py: pyo3::Python<'p>,
     class: &pyo3::Bound<'p, pyo3::types::PyType>,
     annotation: Option<Annotation>,
@@ -92,6 +92,25 @@ pub fn non_root_type_to_annotated<'p>(
         inner,
         annotation: annotation.unwrap_or(Annotation {}),
     })
+}
+
+// Utility function for converting a Python class or a Python builtin type
+// into an AnnotatedType.
+pub(crate) fn python_class_to_annotated<'p>(
+    py: pyo3::Python<'p>,
+    class: &pyo3::Bound<'p, pyo3::types::PyType>,
+) -> pyo3::PyResult<pyo3::Bound<'p, AnnotatedType>> {
+    if let Ok(root) = class.getattr("__asn1_root__") {
+        // Handle decorated classes
+        root.downcast_into::<AnnotatedType>().map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err(
+                "target type has invalid annotations".to_string(),
+            )
+        })
+    } else {
+        // Handle builtin types
+        pyo3::Bound::new(py, non_root_type_to_annotated(py, class, None)?)
+    }
 }
 
 #[pyo3::pymodule(gil_used = false)]
