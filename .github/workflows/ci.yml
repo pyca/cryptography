@@ -441,8 +441,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Sep 16, 2025.
-            REF: 968e1d5504a2ba52ab69299356c2485510cd1817
+            # Latest commit on the twisted trunk branch, as of Sep 19, 2025.
+            REF: 7c4a626a977591d730001cd755b4ee613fec5c9b
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -456,8 +456,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Sep 18, 2025.
-            REF: deb3d035e3bc78e0dea8964075752ac38cb4a069
+            # Latest commit on the certbot main branch, as of Sep 19, 2025.
+            REF: f8838fc9493ae2f6abd2a60879faff26564a9f15
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
