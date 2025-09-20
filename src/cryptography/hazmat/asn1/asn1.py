@@ -85,7 +85,7 @@ if sys.version_info < (3, 11):
         if sys.version_info >= (3, 10):
             dataclass_cls = dataclasses.dataclass(
                 repr=False,
-                eq=True,
+                eq=False,
                 # `match_args` was added in Python 3.10 and defaults
                 # to True
                 match_args=False,
@@ -96,7 +96,7 @@ if sys.version_info < (3, 11):
         else:
             dataclass_cls = dataclasses.dataclass(
                 repr=False,
-                eq=True,
+                eq=False,
             )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
@@ -109,7 +109,7 @@ else:
         # parameters.
         dataclass_cls = dataclasses.dataclass(
             repr=False,
-            eq=True,
+            eq=False,
             match_args=False,
             kw_only=True,
         )(cls)
