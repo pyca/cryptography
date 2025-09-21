@@ -67,10 +67,10 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 write_value(writer, &val)
             }
             Type::PyStr() => {
-                let val: &str = value
+                let val: pyo3::pybacked::PyBackedStr = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(val);
+                let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
                 write_value(writer, &asn1_string)
             }
         }
