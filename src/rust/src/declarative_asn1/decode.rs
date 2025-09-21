@@ -11,6 +11,14 @@ use crate::error::CryptographyError;
 
 type ParseResult<T> = Result<T, CryptographyError>;
 
+fn decode_pybool<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyBool>> {
+    let value = parser.read_element::<bool>()?;
+    Ok(pyo3::types::PyBool::new(py, value).to_owned())
+}
+
 fn decode_pyint<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -22,6 +30,22 @@ fn decode_pyint<'a>(
             pyo3::exceptions::PyValueError::new_err("error converting integer value".to_string())
         })?;
     Ok(pyint)
+}
+
+fn decode_pybytes<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
+    let value = parser.read_element::<&[u8]>()?;
+    Ok(pyo3::types::PyBytes::new(py, value))
+}
+
+fn decode_pystr<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyString>> {
+    let value = parser.read_element::<asn1::Utf8String<'a>>()?;
+    Ok(pyo3::types::PyString::new(py, value.as_str()))
 }
 
 pub(crate) fn decode_annotated_type<'a>(
@@ -50,6 +74,9 @@ pub(crate) fn decode_annotated_type<'a>(
                 Ok(val)
             })
         }
+        Type::PyBool() => Ok(decode_pybool(py, parser)?.into_any()),
         Type::PyInt() => Ok(decode_pyint(py, parser)?.into_any()),
+        Type::PyBytes() => Ok(decode_pybytes(py, parser)?.into_any()),
+        Type::PyStr() => Ok(decode_pystr(py, parser)?.into_any()),
     }
 }

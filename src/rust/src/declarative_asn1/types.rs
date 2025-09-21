@@ -20,9 +20,18 @@ pub enum Type {
 
     // Python types that we map to canonical ASN.1 types
     //
+    /// `bool` -> `Boolean`
+    #[pyo3(constructor = ())]
+    PyBool(),
     /// `int` -> `Integer`
     #[pyo3(constructor = ())]
     PyInt(),
+    /// `bytes` -> `Octet String`
+    #[pyo3(constructor = ())]
+    PyBytes(),
+    /// `str` -> `UTF8String`
+    #[pyo3(constructor = ())]
+    PyStr(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -70,6 +79,12 @@ pub fn non_root_python_to_rust<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, Type>> {
     if class.is(pyo3::types::PyInt::type_object(py)) {
         Type::PyInt().into_pyobject(py)
+    } else if class.is(pyo3::types::PyBool::type_object(py)) {
+        Type::PyBool().into_pyobject(py)
+    } else if class.is(pyo3::types::PyString::type_object(py)) {
+        Type::PyStr().into_pyobject(py)
+    } else if class.is(pyo3::types::PyBytes::type_object(py)) {
+        Type::PyBytes().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"

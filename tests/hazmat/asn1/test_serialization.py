@@ -46,6 +46,16 @@ def assert_roundtrips(
         assert decoded == obj
 
 
+class TestBool:
+    def test_bool(self) -> None:
+        assert_roundtrips(
+            [
+                (True, b"\x01\x01\xff"),
+                (False, b"\x01\x01\x00"),
+            ],
+        )
+
+
 class TestInteger:
     def test_int(self) -> None:
         assert_roundtrips(
@@ -64,6 +74,37 @@ class TestInteger:
         )
 
 
+class TestBytes:
+    def test_bytes(self) -> None:
+        assert_roundtrips(
+            [
+                (b"", b"\x04\x00"),
+                (b"hello", b"\x04\x05hello"),
+                (b"\x01\x02\x03", b"\x04\x03\x01\x02\x03"),
+                (
+                    b"\x00\xff\x80\x7f",
+                    b"\x04\x04\x00\xff\x80\x7f",
+                ),
+            ]
+        )
+
+
+class TestString:
+    def test_string(self) -> None:
+        assert_roundtrips(
+            [
+                ("", b"\x0c\x00"),
+                ("hello", b"\x0c\x05hello"),
+                ("Test User 1", b"\x0c\x0bTest User 1"),
+                (
+                    "café",
+                    b"\x0c\x05caf\xc3\xa9",
+                ),  # UTF-8 string with non-ASCII
+                ("🚀", b"\x0c\x04\xf0\x9f\x9a\x80"),  # UTF-8 emoji
+            ]
+        )
+
+
 class TestSequence:
     def test_ok_sequence_single_field(self) -> None:
         @asn1.sequence
@@ -73,7 +114,7 @@ class TestSequence:
 
         assert_roundtrips([(Example(foo=9), b"\x30\x03\x02\x01\x09")])
 
-    def test_encode_ok_sequence_multiple_fields(self) -> None:
+    def test_ok_sequence_multiple_fields(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
@@ -84,7 +125,7 @@ class TestSequence:
             [(Example(foo=9, bar=6), b"\x30\x06\x02\x01\x09\x02\x01\x06")]
         )
 
-    def test_encode_ok_nested_sequence(self) -> None:
+    def test_ok_nested_sequence(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
         class Child:
@@ -97,4 +138,22 @@ class TestSequence:
 
         assert_roundtrips(
             [(Parent(foo=Child(foo=9)), b"\x30\x05\x30\x03\x02\x01\x09")]
+        )
+
+    def test_ok_sequence_multiple_types(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: bool
+            b: int
+            c: bytes
+            d: str
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x30\x0c\x01\x01\xff\x02\x01\x09\x04\x01c\x0c\x01d",
+                )
+            ]
         )
