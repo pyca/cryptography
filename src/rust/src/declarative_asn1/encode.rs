@@ -48,11 +48,30 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     Ok(())
                 }),
             ),
+            Type::PyBool() => {
+                let val: bool = value
+                    .extract()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                write_value(writer, &val)
+            }
             Type::PyInt() => {
                 let val: i64 = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &val)
+            }
+            Type::PyBytes() => {
+                let val: &[u8] = value
+                    .extract()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                write_value(writer, &val)
+            }
+            Type::PyStr() => {
+                let val: pyo3::pybacked::PyBackedStr = value
+                    .extract()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
+                write_value(writer, &asn1_string)
             }
         }
     }
