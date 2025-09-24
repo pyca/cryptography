@@ -3,7 +3,7 @@
 // for complete details.
 
 use asn1::{SimpleAsn1Writable, Writer};
-use pyo3::types::PyAnyMethods;
+use pyo3::types::{PyAnyMethods, PyStringMethods};
 
 use crate::declarative_asn1::types::{AnnotatedType, AnnotatedTypeObject, PrintableString, Type};
 
@@ -77,13 +77,14 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, PrintableString> = value
                     .downcast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                let inner_str: pyo3::pybacked::PyBackedStr = val
+                let inner_str = val
                     .get()
                     .inner
-                    .extract(py)
+                    .bind(py)
+                    .to_str()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let printable_string: asn1::PrintableString<'_> =
-                    asn1::PrintableString::new(&inner_str)
+                    asn1::PrintableString::new(inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &printable_string)
             }
