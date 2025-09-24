@@ -32,6 +32,9 @@ pub enum Type {
     /// `str` -> `UTF8String`
     #[pyo3(constructor = ())]
     PyStr(),
+    /// PrintableString (`str`)
+    #[pyo3(constructor = ())]
+    PrintableString(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -70,6 +73,26 @@ impl Annotation {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct PrintableString {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyString>,
+}
+
+#[pyo3::pymethods]
+impl PrintableString {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(inner: pyo3::Py<pyo3::types::PyString>) -> Self {
+        PrintableString { inner }
+    }
+
+    #[pyo3(signature = ())]
+    pub fn as_str(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyString>> {
+        Ok(self.inner.clone_ref(py))
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -85,6 +108,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::PyStr().into_pyobject(py)
     } else if class.is(pyo3::types::PyBytes::type_object(py)) {
         Type::PyBytes().into_pyobject(py)
+    } else if class.is(PrintableString::type_object(py)) {
+        Type::PrintableString().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -131,5 +156,5 @@ pub(crate) fn python_class_to_annotated<'p>(
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod types {
     #[pymodule_export]
-    use super::{AnnotatedType, Annotation, Type};
+    use super::{AnnotatedType, Annotation, PrintableString, Type};
 }

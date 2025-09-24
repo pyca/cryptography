@@ -6,7 +6,7 @@ use asn1::Parser;
 use pyo3::types::PyAnyMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
-use crate::declarative_asn1::types::{AnnotatedType, Type};
+use crate::declarative_asn1::types::{AnnotatedType, PrintableString, Type};
 use crate::error::CryptographyError;
 
 type ParseResult<T> = Result<T, CryptographyError>;
@@ -48,6 +48,15 @@ fn decode_pystr<'a>(
     Ok(pyo3::types::PyString::new(py, value.as_str()))
 }
 
+fn decode_printable_string<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, PrintableString>> {
+    let value = parser.read_element::<asn1::PrintableString<'a>>()?.as_str();
+    let inner = pyo3::types::PyString::new(py, value).unbind();
+    Ok(pyo3::Bound::new(py, PrintableString { inner })?)
+}
+
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -78,5 +87,6 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyInt() => Ok(decode_pyint(py, parser)?.into_any()),
         Type::PyBytes() => Ok(decode_pybytes(py, parser)?.into_any()),
         Type::PyStr() => Ok(decode_pystr(py, parser)?.into_any()),
+        Type::PrintableString() => Ok(decode_printable_string(py, parser)?.into_any()),
     }
 }
