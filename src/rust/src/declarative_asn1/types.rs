@@ -91,6 +91,10 @@ impl PrintableString {
     pub fn as_str(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyString>> {
         Ok(self.inner.clone_ref(py))
     }
+
+    pub fn __repr__(&self) -> String {
+        format!("PrintableString({})", self.inner)
+    }
 }
 
 /// Utility function for converting builtin Python types
