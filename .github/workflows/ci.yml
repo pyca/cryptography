@@ -431,8 +431,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Sep 21, 2025.
-            REF: 1b2d96de36341e29ebbce4a4cb548611c316844d
+            # Latest commit on the pyopenssl main branch, as of Sep 24, 2025.
+            REF: f46314fda6e6cfa5db31aece9c2c8fc7f9f908e4
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -456,8 +456,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Sep 19, 2025.
-            REF: f8838fc9493ae2f6abd2a60879faff26564a9f15
+            # Latest commit on the certbot main branch, as of Sep 24, 2025.
+            REF: dc2f3b9eb07a23e461c2d741ace22a0fcdadf113
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -476,8 +476,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Sep 20, 2025.
-            REF: 143212755aa00ec646162bc8de53dd7be9fb374e
+            # Latest commit on the sigstore-python main branch, as of Sep 24, 2025.
+            REF: 1264f2ec493ab2b8c929b1ea31fac7da48a48d31
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
