@@ -17,6 +17,10 @@ class TestTypesAPI:
             == f"PrintableString({my_string!r})"
         )
 
+    def test_invalid_printable_string(self) -> None:
+        with pytest.raises(ValueError, match="invalid PrintableString: café"):
+            asn1.PrintableString("café")
+
 
 class TestSequenceAPI:
     def test_fail_unsupported_field(self) -> None:

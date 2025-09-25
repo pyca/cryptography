@@ -6,8 +6,6 @@ import dataclasses
 import sys
 import typing
 
-import pytest
-
 import cryptography.hazmat.asn1 as asn1
 
 U = typing.TypeVar("U")
@@ -118,13 +116,6 @@ class TestPrintableString:
                 (asn1.PrintableString("Test User 1"), b"\x13\x0bTest User 1"),
             ]
         )
-
-    def test_invalid_printable_string(self) -> None:
-        with pytest.raises(ValueError, match="allocation error"):
-            asn1.encode_der(asn1.PrintableString("café"))
-
-        with pytest.raises(ValueError, match="error parsing asn1 value"):
-            asn1.decode_der(asn1.PrintableString, b"\x0c\x05caf\xc3\xa9")
 
 
 class TestSequence:

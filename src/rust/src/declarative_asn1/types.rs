@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::PrintableString as Asn1PrintableString;
 use pyo3::types::PyAnyMethods;
 use pyo3::{IntoPyObject, PyTypeInfo};
 
@@ -83,8 +84,14 @@ pub struct PrintableString {
 impl PrintableString {
     #[new]
     #[pyo3(signature = (inner,))]
-    fn new(inner: pyo3::Py<pyo3::types::PyString>) -> Self {
-        PrintableString { inner }
+    fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyString>) -> pyo3::PyResult<Self> {
+        if Asn1PrintableString::new(&inner.to_cow(py)?).is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid PrintableString: {inner}"
+            )));
+        }
+
+        Ok(PrintableString { inner })
     }
 
     #[pyo3(signature = ())]
