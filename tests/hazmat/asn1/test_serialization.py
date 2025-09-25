@@ -38,13 +38,8 @@ def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]:
 
 # Checks that the encoding-decoding roundtrip results
 # in the expected values and is consistent.
-#
-# The `decoded_eq` argument is the equality function to use
-# for the decoded values. It's useful for types that aren't
-# directly comparable, like `PrintableString`.
 def assert_roundtrips(
     test_cases: typing.List[typing.Tuple[U, bytes]],
-    decoded_eq: typing.Optional[typing.Callable[[U, U], bool]] = None,
 ) -> None:
     for obj, obj_bytes in test_cases:
         encoded = asn1.encode_der(obj)
@@ -52,10 +47,7 @@ def assert_roundtrips(
 
         decoded = asn1.decode_der(type(obj), encoded)
         assert isinstance(decoded, type(obj))
-        if decoded_eq:
-            assert decoded_eq(decoded, obj)
-        else:
-            assert decoded == obj
+        assert decoded == obj
 
 
 class TestBool:
@@ -119,16 +111,12 @@ class TestString:
 
 class TestPrintableString:
     def test_ok_printable_string(self) -> None:
-        def decoded_eq(a: asn1.PrintableString, b: asn1.PrintableString):
-            return a.as_str() == b.as_str()
-
         assert_roundtrips(
             [
                 (asn1.PrintableString(""), b"\x13\x00"),
                 (asn1.PrintableString("hello"), b"\x13\x05hello"),
                 (asn1.PrintableString("Test User 1"), b"\x13\x0bTest User 1"),
-            ],
-            decoded_eq,
+            ]
         )
 
     def test_invalid_printable_string(self) -> None:

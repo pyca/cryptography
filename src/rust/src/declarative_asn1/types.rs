@@ -92,8 +92,12 @@ impl PrintableString {
         Ok(self.inner.clone_ref(py))
     }
 
-    pub fn __repr__(&self) -> String {
-        format!("PrintableString({})", self.inner)
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("PrintableString({})", self.inner.bind(py).repr()?))
     }
 }
 

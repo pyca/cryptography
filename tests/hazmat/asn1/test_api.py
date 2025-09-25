@@ -11,9 +11,10 @@ import cryptography.hazmat.asn1 as asn1
 
 class TestTypesAPI:
     def test_repr_printable_string(self) -> None:
+        my_string = "MyString"
         assert (
-            repr(asn1.PrintableString("MyString"))
-            == "PrintableString(MyString)"
+            repr(asn1.PrintableString(my_string))
+            == f"PrintableString({my_string!r})"
         )
 
 
