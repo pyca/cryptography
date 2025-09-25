@@ -34,8 +34,10 @@ def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]:
         )(cls)
 
 
+# Checks that the encoding-decoding roundtrip results
+# in the expected values and is consistent.
 def assert_roundtrips(
-    test_cases: typing.List[typing.Tuple[typing.Any, bytes]],
+    test_cases: typing.List[typing.Tuple[U, bytes]],
 ) -> None:
     for obj, obj_bytes in test_cases:
         encoded = asn1.encode_der(obj)
@@ -101,6 +103,17 @@ class TestString:
                     b"\x0c\x05caf\xc3\xa9",
                 ),  # UTF-8 string with non-ASCII
                 ("🚀", b"\x0c\x04\xf0\x9f\x9a\x80"),  # UTF-8 emoji
+            ]
+        )
+
+
+class TestPrintableString:
+    def test_ok_printable_string(self) -> None:
+        assert_roundtrips(
+            [
+                (asn1.PrintableString(""), b"\x13\x00"),
+                (asn1.PrintableString("hello"), b"\x13\x05hello"),
+                (asn1.PrintableString("Test User 1"), b"\x13\x0bTest User 1"),
             ]
         )
 

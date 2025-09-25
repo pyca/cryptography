@@ -124,7 +124,7 @@ mod _rust {
 
         #[pymodule_export]
         use crate::declarative_asn1::types::{
-            non_root_python_to_rust, AnnotatedType, Annotation, Type,
+            non_root_python_to_rust, AnnotatedType, Annotation, PrintableString, Type,
         };
     }
 

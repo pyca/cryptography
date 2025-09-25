@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::PrintableString as Asn1PrintableString;
 use pyo3::types::PyAnyMethods;
 use pyo3::{IntoPyObject, PyTypeInfo};
 
@@ -32,6 +33,9 @@ pub enum Type {
     /// `str` -> `UTF8String`
     #[pyo3(constructor = ())]
     PyStr(),
+    /// PrintableString (`str`)
+    #[pyo3(constructor = ())]
+    PrintableString(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -70,6 +74,40 @@ impl Annotation {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct PrintableString {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyString>,
+}
+
+#[pyo3::pymethods]
+impl PrintableString {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyString>) -> pyo3::PyResult<Self> {
+        if Asn1PrintableString::new(&inner.to_cow(py)?).is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid PrintableString: {inner}"
+            )));
+        }
+
+        Ok(PrintableString { inner })
+    }
+
+    #[pyo3(signature = ())]
+    pub fn as_str(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyString>> {
+        Ok(self.inner.clone_ref(py))
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("PrintableString({})", self.inner.bind(py).repr()?))
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -85,6 +123,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::PyStr().into_pyobject(py)
     } else if class.is(pyo3::types::PyBytes::type_object(py)) {
         Type::PyBytes().into_pyobject(py)
+    } else if class.is(PrintableString::type_object(py)) {
+        Type::PrintableString().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -131,5 +171,5 @@ pub(crate) fn python_class_to_annotated<'p>(
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod types {
     #[pymodule_export]
-    use super::{AnnotatedType, Annotation, Type};
+    use super::{AnnotatedType, Annotation, PrintableString, Type};
 }

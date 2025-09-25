@@ -9,7 +9,20 @@ import pytest
 import cryptography.hazmat.asn1 as asn1
 
 
-class TestClassAPI:
+class TestTypesAPI:
+    def test_repr_printable_string(self) -> None:
+        my_string = "MyString"
+        assert (
+            repr(asn1.PrintableString(my_string))
+            == f"PrintableString({my_string!r})"
+        )
+
+    def test_invalid_printable_string(self) -> None:
+        with pytest.raises(ValueError, match="invalid PrintableString: café"):
+            asn1.PrintableString("café")
+
+
+class TestSequenceAPI:
     def test_fail_unsupported_field(self) -> None:
         # Not a sequence
         class Unsupported:

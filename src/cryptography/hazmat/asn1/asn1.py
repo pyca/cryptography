@@ -115,3 +115,6 @@ else:
         )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
+
+
+PrintableString = declarative_asn1.PrintableString
