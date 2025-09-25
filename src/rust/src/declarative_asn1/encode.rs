@@ -81,10 +81,10 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .get()
                     .inner
                     .bind(py)
-                    .to_str()
+                    .to_cow()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let printable_string: asn1::PrintableString<'_> =
-                    asn1::PrintableString::new(inner_str)
+                    asn1::PrintableString::new(&inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &printable_string)
             }
