@@ -21,6 +21,7 @@ class TestRFC4514:
             "C=US,UNKNOWN=Joe , Smith,DC=example",
             "C=US,CN,DC=example",
             "C=US,FOOBAR=example",
+            "CN=Lu\\C4\\8Di\\C4partial character",
         ]:
             with subtests.test():
                 with pytest.raises(ValueError):
