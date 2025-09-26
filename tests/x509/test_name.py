@@ -21,6 +21,7 @@ class TestRFC4514:
             "C=US,UNKNOWN=Joe , Smith,DC=example",
             "C=US,CN,DC=example",
             "C=US,FOOBAR=example",
+            "CN=Lu\\C4\\8Di\\C4partial character",
         ]:
             with subtests.test():
                 with pytest.raises(ValueError):
@@ -160,6 +161,19 @@ class TestRFC4514:
                 Name([NameAttribute(NameOID.ORGANIZATION_NAME, "abc")]),
             ),
             ("", Name([])),
+            (
+                r"CN=Lu\C4\8Di\C4\87",
+                Name([NameAttribute(NameOID.COMMON_NAME, "Lučić")]),
+            ),
+            (
+                r"CN=Lu\C4\8D\=i\C4\87\#,C=\55\53",
+                Name(
+                    [
+                        NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                        NameAttribute(NameOID.COMMON_NAME, "Luč=ić#"),
+                    ]
+                ),
+            ),
         ]:
             with subtests.test():
                 result = Name.from_rfc4514_string(value)
