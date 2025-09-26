@@ -110,19 +110,8 @@ def _unescape_dn_value(val: str) -> str:
         if len(val) == 2:
             return val[1:]
 
-        ret = ""
-        buf = bytearray()
-        while val:
-            buf.append(int(val[1:3], 16))
-            val = val[3:]
-            try:
-                ret += buf.decode()
-                buf.clear()
-            except UnicodeDecodeError:
-                continue  # Multi-byte, expect more data
-        if buf:
-            raise ValueError
-        return ret
+        # Unicode string of hex
+        return binascii.unhexlify(val.replace("\\", "")).decode()
 
     return _RFC4514NameParser._PAIR_MULTI_RE.sub(sub, val)
 
