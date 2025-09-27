@@ -508,9 +508,10 @@ pub(crate) fn datetime_to_py<'p>(
     Ok(py_datetime.into_any())
 }
 
-pub(crate) fn datetime_to_py_utc<'p>(
+pub(crate) fn datetime_to_py_utc_with_microseconds<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
+    microseconds: u32,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_datetime = pyo3::types::PyDateTime::new(
         py,
@@ -520,10 +521,17 @@ pub(crate) fn datetime_to_py_utc<'p>(
         dt.hour(),
         dt.minute(),
         dt.second(),
-        0,
+        microseconds,
         Some(&pyo3::types::PyTzInfo::utc(py)?.to_owned()),
     )?;
     Ok(py_datetime.into_any())
+}
+
+pub(crate) fn datetime_to_py_utc<'p>(
+    py: pyo3::Python<'p>,
+    dt: &asn1::DateTime,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    datetime_to_py_utc_with_microseconds(py, dt, 0)
 }
 
 pub(crate) fn py_to_datetime(

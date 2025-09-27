@@ -66,18 +66,11 @@ fn decode_utc_time<'a>(
     let value = parser.read_element::<asn1::UtcTime>()?;
     let dt = value.as_datetime();
 
-    let inner = pyo3::types::PyDateTime::new(
-        py,
-        dt.year().into(),
-        dt.month(),
-        dt.day(),
-        dt.hour(),
-        dt.minute(),
-        dt.second(),
-        0,
-        Some(&pyo3::types::PyTzInfo::utc(py)?.to_owned()),
-    )?
-    .unbind();
+    let inner = crate::x509::datetime_to_py_utc(py, dt)?
+        .downcast::<pyo3::types::PyDateTime>()?
+        .clone()
+        .unbind();
+
     Ok(pyo3::Bound::new(py, UtcTime { inner })?)
 }
 
@@ -87,19 +80,13 @@ fn decode_generalized_time<'a>(
 ) -> ParseResult<pyo3::Bound<'a, GeneralizedTime>> {
     let value = parser.read_element::<asn1::GeneralizedTime>()?;
     let dt = value.as_datetime();
+    let microseconds = value.nanoseconds().map_or(0, |nanos| nanos / 1_000);
 
-    let inner = pyo3::types::PyDateTime::new(
-        py,
-        dt.year().into(),
-        dt.month(),
-        dt.day(),
-        dt.hour(),
-        dt.minute(),
-        dt.second(),
-        value.nanoseconds().map_or(0, |nanos| nanos / 1_000),
-        Some(&pyo3::types::PyTzInfo::utc(py)?.to_owned()),
-    )?
-    .unbind();
+    let inner = crate::x509::datetime_to_py_utc_with_microseconds(py, dt, microseconds)?
+        .downcast::<pyo3::types::PyDateTime>()?
+        .clone()
+        .unbind();
+
     Ok(pyo3::Bound::new(py, GeneralizedTime { inner })?)
 }
 
