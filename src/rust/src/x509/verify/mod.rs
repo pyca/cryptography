@@ -117,7 +117,7 @@ impl PolicyBuilder {
     fn time(
         &self,
         py: pyo3::Python<'_>,
-        time: pyo3::Bound<'_, pyo3::PyAny>,
+        time: pyo3::Bound<'_, pyo3::types::PyDateTime>,
     ) -> CryptographyResult<PolicyBuilder> {
         policy_builder_set_once_check!(self, time, "validation time");
 

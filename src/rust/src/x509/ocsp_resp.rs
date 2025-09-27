@@ -717,7 +717,9 @@ pub(crate) fn create_ocsp_response(
             None
         };
         // REVOKED
-        let py_revocation_time = py_single_resp.getattr(pyo3::intern!(py, "_revocation_time"))?;
+        let py_revocation_time = py_single_resp
+            .getattr(pyo3::intern!(py, "_revocation_time"))?
+            .extract()?;
         let revocation_time =
             asn1::X509GeneralizedTime::new(py_to_datetime(py, py_revocation_time)?)?;
         ocsp_resp::CertStatus::Revoked(ocsp_resp::RevokedInfo {
@@ -729,7 +731,9 @@ pub(crate) fn create_ocsp_response(
         .getattr(pyo3::intern!(py, "_next_update"))?
         .is_none()
     {
-        let py_next_update = py_single_resp.getattr(pyo3::intern!(py, "_next_update"))?;
+        let py_next_update = py_single_resp
+            .getattr(pyo3::intern!(py, "_next_update"))?
+            .extract()?;
         Some(asn1::X509GeneralizedTime::new(py_to_datetime(
             py,
             py_next_update,
@@ -737,7 +741,9 @@ pub(crate) fn create_ocsp_response(
     } else {
         None
     };
-    let py_this_update = py_single_resp.getattr(pyo3::intern!(py, "_this_update"))?;
+    let py_this_update = py_single_resp
+        .getattr(pyo3::intern!(py, "_this_update"))?
+        .extract()?;
     let this_update = asn1::X509GeneralizedTime::new(py_to_datetime(py, py_this_update)?)?;
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();

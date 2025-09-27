@@ -648,8 +648,9 @@ pub(crate) fn create_x509_crl(
         let serial_number = py_revoked_cert
             .getattr(pyo3::intern!(py, "serial_number"))?
             .extract()?;
-        let py_revocation_date =
-            py_revoked_cert.getattr(pyo3::intern!(py, "revocation_date_utc"))?;
+        let py_revocation_date = py_revoked_cert
+            .getattr(pyo3::intern!(py, "revocation_date_utc"))?
+            .extract()?;
         let serial_bytes = ka_bytes.add(py_uint_to_big_endian_bytes(py, serial_number)?);
         revoked_certs.push(crl::RevokedCertificate {
             user_certificate: SerialNumber::new(serial_bytes).unwrap(),
@@ -667,8 +668,12 @@ pub(crate) fn create_x509_crl(
     let ka = cryptography_keepalive::KeepAlive::new();
 
     let py_issuer_name = builder.getattr(pyo3::intern!(py, "_issuer_name"))?;
-    let py_this_update = builder.getattr(pyo3::intern!(py, "_last_update"))?;
-    let py_next_update = builder.getattr(pyo3::intern!(py, "_next_update"))?;
+    let py_this_update = builder
+        .getattr(pyo3::intern!(py, "_last_update"))?
+        .extract()?;
+    let py_next_update = builder
+        .getattr(pyo3::intern!(py, "_next_update"))?
+        .extract()?;
     let tbs_cert_list = crl::TBSCertList {
         version: Some(1),
         signature: sigalg.clone(),

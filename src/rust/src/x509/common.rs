@@ -528,13 +528,12 @@ pub(crate) fn datetime_to_py_utc<'p>(
 
 pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
-    val: pyo3::Bound<'_, pyo3::PyAny>,
+    val: pyo3::Bound<'_, pyo3::types::PyDateTime>,
 ) -> pyo3::PyResult<asn1::DateTime> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
-    let py_datetime = val.downcast::<pyo3::types::PyDateTime>()?;
-    let val_utc = if py_datetime.get_tzinfo().is_none() {
-        val
+    let val_utc = if val.get_tzinfo().is_none() {
+        val.into_any()
     } else {
         let utc = pyo3::types::PyTzInfo::utc(py)?;
         val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
@@ -558,6 +557,7 @@ pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTim
         py,
         types::DATETIME_DATETIME
             .get(py)?
-            .call_method1(pyo3::intern!(py, "now"), (utc,))?,
+            .call_method1(pyo3::intern!(py, "now"), (utc,))?
+            .extract()?,
     )
 }
