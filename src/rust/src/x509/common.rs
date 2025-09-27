@@ -542,11 +542,13 @@ pub(crate) fn py_to_datetime_with_microseconds(
 ) -> pyo3::PyResult<(asn1::DateTime, Option<u32>)> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
+    let normalized: pyo3::Bound<'_, pyo3::types::PyAny>;
     let val_utc = if val.get_tzinfo().is_none() {
         val.as_any()
     } else {
         let utc = pyo3::types::PyTzInfo::utc(py)?;
-        &val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
+        normalized = val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?;
+        &normalized
     };
 
     let datetime = asn1::DateTime::new(
