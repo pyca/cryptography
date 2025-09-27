@@ -79,7 +79,14 @@ fn decode_generalized_time<'a>(
 ) -> ParseResult<pyo3::Bound<'a, GeneralizedTime>> {
     let value = parser.read_element::<asn1::GeneralizedTime>()?;
     let dt = value.as_datetime();
-    let microseconds = value.nanoseconds().map_or(0, |nanos| nanos / 1_000);
+
+    let microseconds = match value.nanoseconds() {
+        Some(x) if x % 1_000 == 0 => Ok(x / 1_000),
+        Some(_) => Err(pyo3::exceptions::PyValueError::new_err(
+            "decoded GeneralizedTime data has higher precision than supported".to_string(),
+        )),
+        None => Ok(0),
+    }?;
 
     let inner = crate::x509::datetime_to_py_utc_with_microseconds(py, dt, microseconds)?
         .downcast_into::<pyo3::types::PyDateTime>()?

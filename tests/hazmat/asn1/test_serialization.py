@@ -7,6 +7,8 @@ import datetime
 import sys
 import typing
 
+import pytest
+
 import cryptography.hazmat.asn1 as asn1
 
 U = typing.TypeVar("U")
@@ -156,6 +158,16 @@ class TestUtcTime:
 
 
 class TestGeneralizedTime:
+    def test_fail_generalized_time_precision(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match="decoded GeneralizedTime data has higher precision than "
+            "supported",
+        ):
+            asn1.decode_der(
+                asn1.GeneralizedTime, b"\x18\x1719990101000000.1234567Z"
+            )
+
     def test_generalized_time(self) -> None:
         assert_roundtrips(
             [
