@@ -67,8 +67,12 @@ fn decode_utc_time<'a>(
     let dt = value.as_datetime();
 
     let inner = crate::x509::datetime_to_py_utc(py, dt)?
-        .downcast::<pyo3::types::PyDateTime>()?
-        .clone()
+        .downcast_into::<pyo3::types::PyDateTime>()
+        .map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err(
+                "error converting to datetime object".to_string(),
+            )
+        })?
         .unbind();
 
     Ok(pyo3::Bound::new(py, UtcTime { inner })?)
@@ -83,8 +87,12 @@ fn decode_generalized_time<'a>(
     let microseconds = value.nanoseconds().map_or(0, |nanos| nanos / 1_000);
 
     let inner = crate::x509::datetime_to_py_utc_with_microseconds(py, dt, microseconds)?
-        .downcast::<pyo3::types::PyDateTime>()?
-        .clone()
+        .downcast_into::<pyo3::types::PyDateTime>()
+        .map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err(
+                "error converting to datetime object".to_string(),
+            )
+        })?
         .unbind();
 
     Ok(pyo3::Bound::new(py, GeneralizedTime { inner })?)
