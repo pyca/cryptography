@@ -6,7 +6,9 @@ use asn1::Parser;
 use pyo3::types::PyAnyMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
-use crate::declarative_asn1::types::{AnnotatedType, PrintableString, Type};
+use crate::declarative_asn1::types::{
+    AnnotatedType, GeneralizedTime, PrintableString, Type, UtcTime,
+};
 use crate::error::CryptographyError;
 
 type ParseResult<T> = Result<T, CryptographyError>;
@@ -57,6 +59,46 @@ fn decode_printable_string<'a>(
     Ok(pyo3::Bound::new(py, PrintableString { inner })?)
 }
 
+fn decode_utc_time<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, UtcTime>> {
+    let value = parser.read_element::<asn1::UtcTime>()?;
+    let dt = value.as_datetime();
+
+    let inner = crate::x509::datetime_to_py_utc(py, dt)?
+        .downcast_into::<pyo3::types::PyDateTime>()?
+        .unbind();
+
+    Ok(pyo3::Bound::new(py, UtcTime { inner })?)
+}
+
+fn decode_generalized_time<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+) -> ParseResult<pyo3::Bound<'a, GeneralizedTime>> {
+    let value = parser.read_element::<asn1::GeneralizedTime>()?;
+    let dt = value.as_datetime();
+
+    let microseconds = match value.nanoseconds() {
+        Some(x) if x % 1_000 == 0 => x / 1_000,
+        Some(_) => {
+            return Err(CryptographyError::Py(
+                pyo3::exceptions::PyValueError::new_err(
+                    "decoded GeneralizedTime data has higher precision than supported".to_string(),
+                ),
+            ))
+        }
+        None => 0,
+    };
+
+    let inner = crate::x509::datetime_to_py_utc_with_microseconds(py, dt, microseconds)?
+        .downcast_into::<pyo3::types::PyDateTime>()?
+        .unbind();
+
+    Ok(pyo3::Bound::new(py, GeneralizedTime { inner })?)
+}
+
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -88,5 +130,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyBytes() => Ok(decode_pybytes(py, parser)?.into_any()),
         Type::PyStr() => Ok(decode_pystr(py, parser)?.into_any()),
         Type::PrintableString() => Ok(decode_printable_string(py, parser)?.into_any()),
+        Type::UtcTime() => Ok(decode_utc_time(py, parser)?.into_any()),
+        Type::GeneralizedTime() => Ok(decode_generalized_time(py, parser)?.into_any()),
     }
 }

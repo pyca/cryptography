@@ -2,8 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::GeneralizedTime as Asn1GeneralizedTime;
 use asn1::PrintableString as Asn1PrintableString;
+use asn1::UtcTime as Asn1UtcTime;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyTzInfoAccess;
 use pyo3::{IntoPyObject, PyTypeInfo};
 
 /// Internal type representation for mapping between
@@ -36,6 +39,12 @@ pub enum Type {
     /// PrintableString (`str`)
     #[pyo3(constructor = ())]
     PrintableString(),
+    /// UtcTime (`datetime`)
+    #[pyo3(constructor = ())]
+    UtcTime(),
+    /// GeneralizedTime (`datetime`)
+    #[pyo3(constructor = ())]
+    GeneralizedTime(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -108,6 +117,95 @@ impl PrintableString {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct UtcTime {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyDateTime>,
+}
+
+#[pyo3::pymethods]
+impl UtcTime {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
+        if inner.bind(py).get_tzinfo().is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "invalid UtcTime: cannot initialize with naive datetime object",
+            ));
+        }
+        let (datetime, microseconds) =
+            crate::x509::py_to_datetime_with_microseconds(py, inner.clone_ref(py).into_bound(py))?;
+
+        if microseconds.is_some() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "invalid UtcTime: fractional seconds are not supported",
+            ));
+        }
+        Asn1UtcTime::new(datetime).map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err(format!("invalid UtcTime: {e}"))
+        })?;
+        Ok(UtcTime { inner })
+    }
+
+    #[pyo3(signature = ())]
+    pub fn as_datetime(
+        &self,
+        py: pyo3::Python<'_>,
+    ) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDateTime>> {
+        Ok(self.inner.clone_ref(py))
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("UtcTime({})", self.inner.bind(py).repr()?))
+    }
+}
+
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct GeneralizedTime {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyDateTime>,
+}
+
+#[pyo3::pymethods]
+impl GeneralizedTime {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
+        if inner.bind(py).get_tzinfo().is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "invalid GeneralizedTime: cannot initialize with naive datetime object",
+            ));
+        }
+        let (datetime, microseconds) =
+            crate::x509::py_to_datetime_with_microseconds(py, inner.clone_ref(py).into_bound(py))?;
+        let nanoseconds = microseconds.map(|m| m * 1000);
+        Asn1GeneralizedTime::new(datetime, nanoseconds).map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err(format!("invalid GeneralizedTime: {e}"))
+        })?;
+        Ok(GeneralizedTime { inner })
+    }
+
+    #[pyo3(signature = ())]
+    pub fn as_datetime(
+        &self,
+        py: pyo3::Python<'_>,
+    ) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDateTime>> {
+        Ok(self.inner.clone_ref(py))
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("GeneralizedTime({})", self.inner.bind(py).repr()?))
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -125,6 +223,10 @@ pub fn non_root_python_to_rust<'p>(
         Type::PyBytes().into_pyobject(py)
     } else if class.is(PrintableString::type_object(py)) {
         Type::PrintableString().into_pyobject(py)
+    } else if class.is(UtcTime::type_object(py)) {
+        Type::UtcTime().into_pyobject(py)
+    } else if class.is(GeneralizedTime::type_object(py)) {
+        Type::GeneralizedTime().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -171,5 +273,5 @@ pub(crate) fn python_class_to_annotated<'p>(
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod types {
     #[pymodule_export]
-    use super::{AnnotatedType, Annotation, PrintableString, Type};
+    use super::{AnnotatedType, Annotation, GeneralizedTime, PrintableString, Type, UtcTime};
 }

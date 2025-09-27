@@ -40,6 +40,12 @@ impl From<pyo3::DowncastError<'_, '_>> for CryptographyError {
     }
 }
 
+impl From<pyo3::DowncastIntoError<'_>> for CryptographyError {
+    fn from(e: pyo3::DowncastIntoError<'_>) -> CryptographyError {
+        CryptographyError::Py(e.into())
+    }
+}
+
 impl From<openssl::error::ErrorStack> for CryptographyError {
     fn from(e: openssl::error::ErrorStack) -> CryptographyError {
         CryptographyError::OpenSSL(e)

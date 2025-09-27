@@ -508,9 +508,10 @@ pub(crate) fn datetime_to_py<'p>(
     Ok(py_datetime.into_any())
 }
 
-pub(crate) fn datetime_to_py_utc<'p>(
+pub(crate) fn datetime_to_py_utc_with_microseconds<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
+    microseconds: u32,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let py_datetime = pyo3::types::PyDateTime::new(
         py,
@@ -520,16 +521,25 @@ pub(crate) fn datetime_to_py_utc<'p>(
         dt.hour(),
         dt.minute(),
         dt.second(),
-        0,
+        microseconds,
         Some(&pyo3::types::PyTzInfo::utc(py)?.to_owned()),
     )?;
     Ok(py_datetime.into_any())
 }
 
-pub(crate) fn py_to_datetime(
+pub(crate) fn datetime_to_py_utc<'p>(
+    py: pyo3::Python<'p>,
+    dt: &asn1::DateTime,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    datetime_to_py_utc_with_microseconds(py, dt, 0)
+}
+
+// Convert Python's datetime objects to a tuple of `asn1::DateTime` and
+// microseconds.
+pub(crate) fn py_to_datetime_with_microseconds(
     py: pyo3::Python<'_>,
     val: pyo3::Bound<'_, pyo3::types::PyDateTime>,
-) -> pyo3::PyResult<asn1::DateTime> {
+) -> pyo3::PyResult<(asn1::DateTime, Option<u32>)> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
     let val_utc = if val.get_tzinfo().is_none() {
@@ -539,7 +549,7 @@ pub(crate) fn py_to_datetime(
         val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
     };
 
-    Ok(asn1::DateTime::new(
+    let datetime = asn1::DateTime::new(
         val_utc.getattr(pyo3::intern!(py, "year"))?.extract()?,
         val_utc.getattr(pyo3::intern!(py, "month"))?.extract()?,
         val_utc.getattr(pyo3::intern!(py, "day"))?.extract()?,
@@ -547,7 +557,25 @@ pub(crate) fn py_to_datetime(
         val_utc.getattr(pyo3::intern!(py, "minute"))?.extract()?,
         val_utc.getattr(pyo3::intern!(py, "second"))?.extract()?,
     )
-    .unwrap())
+    .unwrap();
+
+    let microseconds: u32 = val_utc
+        .getattr(pyo3::intern!(py, "microsecond"))?
+        .extract()?;
+    let microseconds = if microseconds > 0 {
+        Some(microseconds)
+    } else {
+        None
+    };
+    Ok((datetime, microseconds))
+}
+
+pub(crate) fn py_to_datetime(
+    py: pyo3::Python<'_>,
+    val: pyo3::Bound<'_, pyo3::types::PyDateTime>,
+) -> pyo3::PyResult<asn1::DateTime> {
+    let (datetime, _) = py_to_datetime_with_microseconds(py, val)?;
+    Ok(datetime)
 }
 
 pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
