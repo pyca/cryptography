@@ -23,7 +23,9 @@ class TestTypesAPI:
             asn1.PrintableString("café")
 
     def test_repr_utc_time(self) -> None:
-        dt = datetime.datetime(2000, 1, 1, 10, 10, 10, tzinfo=datetime.UTC)
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+        )
         assert repr(asn1.UtcTime(dt)) == f"UtcTime({dt!r})"
 
     def test_invalid_utc_time(self) -> None:
@@ -37,13 +39,17 @@ class TestTypesAPI:
         with pytest.raises(ValueError, match="invalid UtcTime"):
             # UtcTime does not support dates before 2050
             asn1.UtcTime(
-                datetime.datetime(1940, 1, 1, 10, 10, 10, tzinfo=datetime.UTC)
+                datetime.datetime(
+                    1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+                )
             )
 
         with pytest.raises(ValueError, match="invalid UtcTime"):
             # UtcTime does not support dates after 2050
             asn1.UtcTime(
-                datetime.datetime(2090, 1, 1, 10, 10, 10, tzinfo=datetime.UTC)
+                datetime.datetime(
+                    2090, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+                )
             )
 
         with pytest.raises(
@@ -53,13 +59,20 @@ class TestTypesAPI:
             # UtcTime does not support fractional seconds
             asn1.UtcTime(
                 datetime.datetime(
-                    2020, 1, 1, 10, 10, 10, 500000, tzinfo=datetime.UTC
+                    2020,
+                    1,
+                    1,
+                    10,
+                    10,
+                    10,
+                    500000,
+                    tzinfo=datetime.timezone.utc,
                 )
             )
 
     def test_repr_generalized_time(self) -> None:
         dt = datetime.datetime(
-            2000, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.UTC
+            2000, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.timezone.utc
         )
         assert repr(asn1.GeneralizedTime(dt)) == f"GeneralizedTime({dt!r})"
 

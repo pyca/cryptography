@@ -126,7 +126,13 @@ class TestUtcTime:
                 (
                     asn1.UtcTime(
                         datetime.datetime(
-                            2019, 12, 16, 3, 2, 10, tzinfo=datetime.UTC
+                            2019,
+                            12,
+                            16,
+                            3,
+                            2,
+                            10,
+                            tzinfo=datetime.timezone.utc,
                         )
                     ),
                     b"\x17\x0d191216030210Z",
@@ -140,7 +146,7 @@ class TestUtcTime:
                             0,
                             0,
                             0,
-                            tzinfo=datetime.UTC,
+                            tzinfo=datetime.timezone.utc,
                         )
                     ),
                     b"\x17\x0d990101000000Z",
@@ -156,7 +162,13 @@ class TestGeneralizedTime:
                 (
                     asn1.GeneralizedTime(
                         datetime.datetime(
-                            2019, 12, 16, 3, 2, 10, tzinfo=datetime.UTC
+                            2019,
+                            12,
+                            16,
+                            3,
+                            2,
+                            10,
+                            tzinfo=datetime.timezone.utc,
                         )
                     ),
                     b"\x18\x0f20191216030210Z",
@@ -171,7 +183,7 @@ class TestGeneralizedTime:
                             0,
                             0,
                             microsecond=500000,  # half a second
-                            tzinfo=datetime.UTC,
+                            tzinfo=datetime.timezone.utc,
                         )
                     ),
                     b"\x18\x1119990101000000.5Z",
@@ -179,7 +191,13 @@ class TestGeneralizedTime:
                 (
                     asn1.GeneralizedTime(
                         datetime.datetime(
-                            2050, 6, 15, 14, 22, 33, tzinfo=datetime.UTC
+                            2050,
+                            6,
+                            15,
+                            14,
+                            22,
+                            33,
+                            tzinfo=datetime.timezone.utc,
                         )
                     ),
                     b"\x18\x0f20500615142233Z",
