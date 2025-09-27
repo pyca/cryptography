@@ -3,8 +3,11 @@
 # for complete details.
 
 import dataclasses
+import datetime
 import sys
 import typing
+
+import pytest
 
 import cryptography.hazmat.asn1 as asn1
 
@@ -115,6 +118,103 @@ class TestPrintableString:
                 (asn1.PrintableString("hello"), b"\x13\x05hello"),
                 (asn1.PrintableString("Test User 1"), b"\x13\x0bTest User 1"),
             ]
+        )
+
+
+class TestUtcTime:
+    def test_utc_time(self) -> None:
+        assert_roundtrips(
+            [
+                (
+                    asn1.UtcTime(
+                        datetime.datetime(
+                            2019,
+                            12,
+                            16,
+                            3,
+                            2,
+                            10,
+                            tzinfo=datetime.timezone.utc,
+                        )
+                    ),
+                    b"\x17\x0d191216030210Z",
+                ),
+                (
+                    asn1.UtcTime(
+                        datetime.datetime(
+                            1999,
+                            1,
+                            1,
+                            0,
+                            0,
+                            0,
+                            tzinfo=datetime.timezone.utc,
+                        )
+                    ),
+                    b"\x17\x0d990101000000Z",
+                ),
+            ],
+        )
+
+
+class TestGeneralizedTime:
+    def test_fail_generalized_time_precision(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match="decoded GeneralizedTime data has higher precision than "
+            "supported",
+        ):
+            asn1.decode_der(
+                asn1.GeneralizedTime, b"\x18\x1719990101000000.1234567Z"
+            )
+
+    def test_generalized_time(self) -> None:
+        assert_roundtrips(
+            [
+                (
+                    asn1.GeneralizedTime(
+                        datetime.datetime(
+                            2019,
+                            12,
+                            16,
+                            3,
+                            2,
+                            10,
+                            tzinfo=datetime.timezone.utc,
+                        )
+                    ),
+                    b"\x18\x0f20191216030210Z",
+                ),
+                (
+                    asn1.GeneralizedTime(
+                        datetime.datetime(
+                            1999,
+                            1,
+                            1,
+                            0,
+                            0,
+                            0,
+                            microsecond=500000,  # half a second
+                            tzinfo=datetime.timezone.utc,
+                        )
+                    ),
+                    b"\x18\x1119990101000000.5Z",
+                ),
+                (
+                    asn1.GeneralizedTime(
+                        datetime.datetime(
+                            2050,
+                            6,
+                            15,
+                            14,
+                            22,
+                            33,
+                            tzinfo=datetime.timezone.utc,
+                        )
+                    ),
+                    b"\x18\x0f20500615142233Z",
+                ),
+            ],
         )
 
 
