@@ -6,7 +6,8 @@ use asn1::GeneralizedTime as Asn1GeneralizedTime;
 use asn1::PrintableString as Asn1PrintableString;
 use asn1::UtcTime as Asn1UtcTime;
 use pyo3::types::PyAnyMethods;
-use pyo3::{IntoPyObject, IntoPyObjectExt, PyTypeInfo};
+use pyo3::types::PyTzInfoAccess;
+use pyo3::{IntoPyObject, PyTypeInfo};
 
 /// Internal type representation for mapping between
 /// Python and ASN.1.
@@ -116,41 +117,6 @@ impl PrintableString {
     }
 }
 
-pub(crate) struct DateTimeInfo {
-    pub(crate) datetime: asn1::DateTime,
-    pub(crate) nanoseconds: Option<u32>,
-}
-
-// Internal utility function used to extract data from a Python datetime
-// object. Used by both GeneralizedTime and UtcTime.
-pub(crate) fn get_datetime_info(
-    py: pyo3::Python<'_>,
-    py_datetime: &pyo3::Py<pyo3::types::PyDateTime>,
-) -> pyo3::PyResult<DateTimeInfo> {
-    if py_datetime
-        .getattr(py, pyo3::intern!(py, "tzinfo"))?
-        .is_none(py)
-    {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "cannot initialize with naive datetime object",
-        ));
-    }
-    let datetime =
-        crate::x509::py_to_datetime(py, py_datetime.clone_ref(py).into_bound_py_any(py)?)?;
-    let microseconds: u32 = py_datetime
-        .getattr(py, pyo3::intern!(py, "microsecond"))?
-        .extract(py)?;
-    let nanoseconds = if microseconds > 0 {
-        Some(microseconds * 1000)
-    } else {
-        None
-    };
-    Ok(DateTimeInfo {
-        datetime,
-        nanoseconds,
-    })
-}
-
 #[derive(pyo3::FromPyObject)]
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct UtcTime {
@@ -162,13 +128,20 @@ impl UtcTime {
     #[new]
     #[pyo3(signature = (inner,))]
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
-        let datetime_info = get_datetime_info(py, &inner)?;
-        if datetime_info.nanoseconds.is_some() {
+        if inner.bind(py).get_tzinfo().is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "invalid UtcTime: cannot initialize with naive datetime object",
+            ));
+        }
+        let (datetime, microseconds) =
+            crate::x509::py_to_datetime_with_microseconds(py, inner.bind(py))?;
+
+        if microseconds.is_some() {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "invalid UtcTime: fractional seconds are not supported",
             ));
         }
-        Asn1UtcTime::new(datetime_info.datetime).map_err(|e| {
+        Asn1UtcTime::new(datetime).map_err(|e| {
             pyo3::exceptions::PyValueError::new_err(format!("invalid UtcTime: {e}"))
         })?;
         Ok(UtcTime { inner })
@@ -202,10 +175,17 @@ impl GeneralizedTime {
     #[new]
     #[pyo3(signature = (inner,))]
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
-        let datetime_info = get_datetime_info(py, &inner)?;
-        Asn1GeneralizedTime::new(datetime_info.datetime, datetime_info.nanoseconds).map_err(
-            |e| pyo3::exceptions::PyValueError::new_err(format!("invalid GeneralizedTime: {e}")),
-        )?;
+        if inner.bind(py).get_tzinfo().is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "invalid GeneralizedTime: cannot initialize with naive datetime object",
+            ));
+        }
+        let (datetime, microseconds) =
+            crate::x509::py_to_datetime_with_microseconds(py, inner.bind(py))?;
+        let nanoseconds = microseconds.map(|m| m * 1000);
+        Asn1GeneralizedTime::new(datetime, nanoseconds).map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err(format!("invalid GeneralizedTime: {e}"))
+        })?;
         Ok(GeneralizedTime { inner })
     }
 
