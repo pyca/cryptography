@@ -10,7 +10,7 @@ use cryptography_x509::extensions::{
     AccessDescription, DuplicateExtensionsError, Extension, Extensions, RawExtensions,
 };
 use cryptography_x509::name::{GeneralName, Name, NameReadable, OtherName, UnvalidatedIA5String};
-use pyo3::types::{IntoPyDict, PyAnyMethods, PyListMethods};
+use pyo3::types::{IntoPyDict, PyAnyMethods, PyListMethods, PyTzInfoAccess};
 
 use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
 use crate::error::{CryptographyError, CryptographyResult};
@@ -494,31 +494,36 @@ pub(crate) fn datetime_to_py<'p>(
     py: pyo3::Python<'p>,
     dt: &asn1::DateTime,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    types::DATETIME_DATETIME.get(py)?.call1((
-        dt.year(),
-        dt.month(),
-        dt.day(),
-        dt.hour(),
-        dt.minute(),
-        dt.second(),
-    ))
-}
-
-pub(crate) fn datetime_to_py_utc<'p>(
-    py: pyo3::Python<'p>,
-    dt: &asn1::DateTime,
-) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let timezone = types::DATETIME_TIMEZONE_UTC.get(py)?;
-    types::DATETIME_DATETIME.get(py)?.call1((
-        dt.year(),
+    let py_datetime = pyo3::types::PyDateTime::new(
+        py,
+        dt.year().into(),
         dt.month(),
         dt.day(),
         dt.hour(),
         dt.minute(),
         dt.second(),
         0,
-        timezone,
-    ))
+        None,
+    )?;
+    Ok(py_datetime.into_any())
+}
+
+pub(crate) fn datetime_to_py_utc<'p>(
+    py: pyo3::Python<'p>,
+    dt: &asn1::DateTime,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let py_datetime = pyo3::types::PyDateTime::new(
+        py,
+        dt.year().into(),
+        dt.month(),
+        dt.day(),
+        dt.hour(),
+        dt.minute(),
+        dt.second(),
+        0,
+        Some(&pyo3::types::PyTzInfo::utc(py)?.to_owned()),
+    )?;
+    Ok(py_datetime.into_any())
 }
 
 pub(crate) fn py_to_datetime(
@@ -527,10 +532,11 @@ pub(crate) fn py_to_datetime(
 ) -> pyo3::PyResult<asn1::DateTime> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
-    let val_utc = if val.getattr(pyo3::intern!(py, "tzinfo"))?.is_none() {
+    let py_datetime = val.downcast::<pyo3::types::PyDateTime>()?;
+    let val_utc = if py_datetime.get_tzinfo().is_none() {
         val
     } else {
-        let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+        let utc = pyo3::types::PyTzInfo::utc(py)?;
         val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
     };
 
@@ -546,7 +552,7 @@ pub(crate) fn py_to_datetime(
 }
 
 pub(crate) fn datetime_now(py: pyo3::Python<'_>) -> pyo3::PyResult<asn1::DateTime> {
-    let utc = types::DATETIME_TIMEZONE_UTC.get(py)?;
+    let utc = pyo3::types::PyTzInfo::utc(py)?;
 
     py_to_datetime(
         py,
