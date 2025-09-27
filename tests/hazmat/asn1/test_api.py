@@ -37,7 +37,7 @@ class TestTypesAPI:
             asn1.UtcTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
 
         with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates before 2050
+            # UtcTime does not support dates before 1950
             asn1.UtcTime(
                 datetime.datetime(
                     1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
