@@ -984,7 +984,7 @@ pub fn parse_cert_ext<'p>(
 
 pub(crate) fn time_from_py(
     py: pyo3::Python<'_>,
-    val: &pyo3::Bound<'_, pyo3::PyAny>,
+    val: &pyo3::Bound<'_, pyo3::types::PyDateTime>,
 ) -> CryptographyResult<common::Time> {
     let dt = x509::py_to_datetime(py, val.clone())?;
     time_from_datetime(dt)
@@ -1029,8 +1029,12 @@ pub(crate) fn create_x509_certificate(
 
     let py_issuer_name = builder.getattr(pyo3::intern!(py, "_issuer_name"))?;
     let py_subject_name = builder.getattr(pyo3::intern!(py, "_subject_name"))?;
-    let py_not_before = builder.getattr(pyo3::intern!(py, "_not_valid_before"))?;
-    let py_not_after = builder.getattr(pyo3::intern!(py, "_not_valid_after"))?;
+    let py_not_before = builder
+        .getattr(pyo3::intern!(py, "_not_valid_before"))?
+        .extract()?;
+    let py_not_after = builder
+        .getattr(pyo3::intern!(py, "_not_valid_after"))?
+        .extract()?;
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
