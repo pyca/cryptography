@@ -538,17 +538,15 @@ pub(crate) fn datetime_to_py_utc<'p>(
 // microseconds.
 pub(crate) fn py_to_datetime_with_microseconds(
     py: pyo3::Python<'_>,
-    val: &pyo3::Bound<'_, pyo3::types::PyDateTime>,
+    val: pyo3::Bound<'_, pyo3::types::PyDateTime>,
 ) -> pyo3::PyResult<(asn1::DateTime, Option<u32>)> {
     // We treat naive datetimes as UTC times, while aware datetimes get
     // normalized to UTC before conversion.
-    let normalized: pyo3::Bound<'_, pyo3::types::PyAny>;
     let val_utc = if val.get_tzinfo().is_none() {
-        val.as_any()
+        val.into_any()
     } else {
         let utc = pyo3::types::PyTzInfo::utc(py)?;
-        normalized = val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?;
-        &normalized
+        val.call_method1(pyo3::intern!(py, "astimezone"), (utc,))?
     };
 
     let datetime = asn1::DateTime::new(
@@ -576,7 +574,7 @@ pub(crate) fn py_to_datetime(
     py: pyo3::Python<'_>,
     val: pyo3::Bound<'_, pyo3::types::PyDateTime>,
 ) -> pyo3::PyResult<asn1::DateTime> {
-    let (datetime, _) = py_to_datetime_with_microseconds(py, &val)?;
+    let (datetime, _) = py_to_datetime_with_microseconds(py, val)?;
     Ok(datetime)
 }
 
