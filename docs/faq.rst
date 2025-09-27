@@ -107,14 +107,14 @@ If you have no other libraries using OpenSSL in your process, or they do not
 appear to be at fault, it's possible that this is a bug in ``cryptography``.
 Please file an `issue`_ with instructions on how to reproduce it.
 
-Installing cryptography with OpenSSL 0.9.8, 1.0.0, 1.0.1, 1.0.2, 1.1.0 fails
-----------------------------------------------------------------------------
+Installing cryptography with OpenSSL older than 3.0.0 fails
+------------------------------------------------------------
 
 The OpenSSL project has dropped support for the 0.9.8, 1.0.0, 1.0.1, 1.0.2,
-and 1.1.0 release series. Since they are no longer receiving security patches
+1.1.0, and 1.1.1 release series. Since they are no longer receiving security patches
 from upstream, ``cryptography`` is also dropping support for them. To fix this
-issue you should upgrade to a newer version of OpenSSL (1.1.1 or later). This
-may require you to upgrade to a newer operating system.
+issue you should upgrade to OpenSSL 3.0.0 or later. This may require you to 
+upgrade to a newer operating system.
 
 Installing ``cryptography`` fails with ``error: Can not find Rust compiler``
 ----------------------------------------------------------------------------
