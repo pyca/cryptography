@@ -3,14 +3,18 @@
 # for complete details.
 
 from cryptography.hazmat.asn1.asn1 import (
+    GeneralizedTime,
     PrintableString,
+    UtcTime,
     decode_der,
     encode_der,
     sequence,
 )
 
 __all__ = [
+    "GeneralizedTime",
     "PrintableString",
+    "UtcTime",
     "decode_der",
     "encode_der",
     "sequence",

@@ -118,3 +118,5 @@ else:
 
 
 PrintableString = declarative_asn1.PrintableString
+UtcTime = declarative_asn1.UtcTime
+GeneralizedTime = declarative_asn1.GeneralizedTime

@@ -5,7 +5,10 @@
 use asn1::{SimpleAsn1Writable, Writer};
 use pyo3::types::PyAnyMethods;
 
-use crate::declarative_asn1::types::{AnnotatedType, AnnotatedTypeObject, PrintableString, Type};
+use crate::declarative_asn1::types::{
+    get_datetime_info, AnnotatedType, AnnotatedTypeObject, GeneralizedTime, PrintableString, Type,
+    UtcTime,
+};
 
 fn write_value<T: SimpleAsn1Writable>(
     writer: &mut Writer<'_>,
@@ -86,6 +89,27 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     asn1::PrintableString::new(&inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &printable_string)
+            }
+            Type::UtcTime() => {
+                let val: &pyo3::Bound<'_, UtcTime> = value
+                    .downcast()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let datetime_info = get_datetime_info(py, &val.get().inner)
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let utc_time = asn1::UtcTime::new(datetime_info.datetime)
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                write_value(writer, &utc_time)
+            }
+            Type::GeneralizedTime() => {
+                let val: &pyo3::Bound<'_, GeneralizedTime> = value
+                    .downcast()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let datetime_info = get_datetime_info(py, &val.get().inner)
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let generalized_time =
+                    asn1::GeneralizedTime::new(datetime_info.datetime, datetime_info.nanoseconds)
+                        .map_err(|_| asn1::WriteError::AllocationError)?;
+                write_value(writer, &generalized_time)
             }
         }
     }
