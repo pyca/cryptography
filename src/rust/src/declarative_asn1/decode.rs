@@ -83,9 +83,11 @@ fn decode_generalized_time<'a>(
     let microseconds = match value.nanoseconds() {
         Some(x) if x % 1_000 == 0 => x / 1_000,
         Some(_) => {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "decoded GeneralizedTime data has higher precision than supported".to_string(),
-            ))?
+            return Err(CryptographyError::Py(
+                pyo3::exceptions::PyValueError::new_err(
+                    "decoded GeneralizedTime data has higher precision than supported".to_string(),
+                ),
+            ))
         }
         None => 0,
     };
