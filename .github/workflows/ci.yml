@@ -286,7 +286,7 @@ jobs:
       matrix:
         RUNNER:
           - {OS: 'macos-13', ARCH: 'x86_64'}
-          - {OS: 'macos-14', ARCH: 'arm64'}
+          - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
@@ -294,7 +294,7 @@ jobs:
         exclude:
           # We only test latest Python on arm64. py38 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.8", NOXSESSION: "tests"}
-            RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
+            RUNNER: {OS: 'macos-15', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
