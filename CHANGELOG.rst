@@ -8,6 +8,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+.. _v46-0-2:
+
+46.0.2 - 2025-09-30
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.4.
 
 .. _v46-0-1:
 
