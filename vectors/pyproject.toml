@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "cryptography_vectors"
-version = "46.0.1"
+version = "46.0.2"
 authors = [
     {name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org"}
 ]
