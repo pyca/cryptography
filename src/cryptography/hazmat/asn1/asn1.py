@@ -27,6 +27,7 @@ T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")
 
 
+decode_der = declarative_asn1.decode_der
 encode_der = declarative_asn1.encode_der
 
 
@@ -114,3 +115,8 @@ else:
         )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
+
+
+PrintableString = declarative_asn1.PrintableString
+UtcTime = declarative_asn1.UtcTime
+GeneralizedTime = declarative_asn1.GeneralizedTime

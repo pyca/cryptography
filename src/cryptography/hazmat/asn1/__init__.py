@@ -2,9 +2,20 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from cryptography.hazmat.asn1.asn1 import encode_der, sequence
+from cryptography.hazmat.asn1.asn1 import (
+    GeneralizedTime,
+    PrintableString,
+    UtcTime,
+    decode_der,
+    encode_der,
+    sequence,
+)
 
 __all__ = [
+    "GeneralizedTime",
+    "PrintableString",
+    "UtcTime",
+    "decode_der",
     "encode_der",
     "sequence",
 ]

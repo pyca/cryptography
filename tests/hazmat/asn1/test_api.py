@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import datetime
 import sys
 
 import pytest
@@ -9,7 +10,82 @@ import pytest
 import cryptography.hazmat.asn1 as asn1
 
 
-class TestClassAPI:
+class TestTypesAPI:
+    def test_repr_printable_string(self) -> None:
+        my_string = "MyString"
+        assert (
+            repr(asn1.PrintableString(my_string))
+            == f"PrintableString({my_string!r})"
+        )
+
+    def test_invalid_printable_string(self) -> None:
+        with pytest.raises(ValueError, match="invalid PrintableString: café"):
+            asn1.PrintableString("café")
+
+    def test_repr_utc_time(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+        )
+        assert repr(asn1.UtcTime(dt)) == f"UtcTime({dt!r})"
+
+    def test_invalid_utc_time(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match="cannot initialize with naive datetime object",
+        ):
+            # We don't allow naive datetime objects
+            asn1.UtcTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
+
+        with pytest.raises(ValueError, match="invalid UtcTime"):
+            # UtcTime does not support dates before 1950
+            asn1.UtcTime(
+                datetime.datetime(
+                    1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+                )
+            )
+
+        with pytest.raises(ValueError, match="invalid UtcTime"):
+            # UtcTime does not support dates after 2050
+            asn1.UtcTime(
+                datetime.datetime(
+                    2090, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+                )
+            )
+
+        with pytest.raises(
+            ValueError,
+            match="invalid UtcTime: fractional seconds are not supported",
+        ):
+            # UtcTime does not support fractional seconds
+            asn1.UtcTime(
+                datetime.datetime(
+                    2020,
+                    1,
+                    1,
+                    10,
+                    10,
+                    10,
+                    500000,
+                    tzinfo=datetime.timezone.utc,
+                )
+            )
+
+    def test_repr_generalized_time(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.timezone.utc
+        )
+        assert repr(asn1.GeneralizedTime(dt)) == f"GeneralizedTime({dt!r})"
+
+    def test_invalid_generalized_time(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match="cannot initialize with naive datetime object",
+        ):
+            # We don't allow naive datetime objects
+            asn1.GeneralizedTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
+
+
+class TestSequenceAPI:
     def test_fail_unsupported_field(self) -> None:
         # Not a sequence
         class Unsupported:

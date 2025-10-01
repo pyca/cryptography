@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   schedule:
     # Run daily
-    - cron: "0 0 * * *"
+    - cron: "0 10 * * *"
 
 jobs:
   bump:
