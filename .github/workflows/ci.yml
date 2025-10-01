@@ -431,8 +431,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Sep 24, 2025.
-            REF: f46314fda6e6cfa5db31aece9c2c8fc7f9f908e4
+            # Latest commit on the pyopenssl main branch, as of Oct 01, 2025.
+            REF: 08ec8e68df2ab3d3a3af666ec5d3db3535e40613
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -441,8 +441,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Sep 29, 2025.
-            REF: ef6160aa2595adfba0c71da6db65b7a7252f23e9
+            # Latest commit on the twisted trunk branch, as of Oct 01, 2025.
+            REF: ffb0ab707acbe1284e2f45c7a16e325ed27a3d99
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -456,8 +456,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Sep 26, 2025.
-            REF: 513190afe0fa27f09e1b7ca783a6d9a0d07dca22
+            # Latest commit on the certbot main branch, as of Oct 01, 2025.
+            REF: 33890ab7f3e8926ebd80204d7d95b2f66f7ab792
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -476,8 +476,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Sep 27, 2025.
-            REF: d5f3a50066328266c59219a2af7504a79624713b
+            # Latest commit on the sigstore-python main branch, as of Oct 01, 2025.
+            REF: b6def062995b3e7ebe528ed68f6c069e85e9956f
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
