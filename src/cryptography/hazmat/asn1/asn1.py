@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import dataclasses
 import sys
+import types
 import typing
 
 if sys.version_info < (3, 11):
@@ -16,10 +17,13 @@ if sys.version_info < (3, 11):
     # once the min version is >= 3.9
     if sys.version_info < (3, 9):
         get_type_hints = typing_extensions.get_type_hints
+        get_type_args = typing_extensions.get_args
     else:
         get_type_hints = typing.get_type_hints
+        get_type_args = typing.get_args
 else:
     get_type_hints = typing.get_type_hints
+    get_type_args = typing.get_args
 
 from cryptography.hazmat.bindings._rust import declarative_asn1
 
@@ -29,6 +33,16 @@ U = typing.TypeVar("U")
 
 decode_der = declarative_asn1.decode_der
 encode_der = declarative_asn1.encode_der
+
+
+def _is_union(field_type: type) -> bool:
+    # NOTE: types.UnionType for `T | U`, typing.Union for `Union[T, U]`.
+    union_types = (
+        (types.UnionType, typing.Union)
+        if hasattr(types, "UnionType")
+        else (typing.Union,)
+    )
+    return typing.get_origin(field_type) in union_types
 
 
 def _normalize_field_type(
@@ -41,6 +55,19 @@ def _normalize_field_type(
         if not isinstance(annotated_root, declarative_asn1.AnnotatedType):
             raise TypeError(f"unsupported root type: {annotated_root}")
         return annotated_root
+    elif _is_union(field_type):
+        union_args = get_type_args(field_type)
+        if len(union_args) == 2 and type(None) in union_args:
+            # A Union between a type and None is an OPTIONAL
+            optional_type = (
+                union_args[0] if union_args[1] is type(None) else union_args[1]
+            )
+            annotated_type = _normalize_field_type(optional_type, field_name)
+            rust_field_type = declarative_asn1.Type.Option(annotated_type)
+        else:
+            raise TypeError(
+                "union types other than `X | None` are currently not supported"
+            )
     else:
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 

@@ -50,6 +50,18 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     Ok(())
                 }),
             ),
+            Type::Option(cls) => {
+                if !value.is_none() {
+                    let object = AnnotatedTypeObject {
+                        annotated_type: cls.get(),
+                        value,
+                    };
+                    object.write(writer)
+                } else {
+                    // Missing OPTIONAL values are omitted from DER encoding
+                    Ok(())
+                }
+            }
             Type::PyBool() => {
                 let val: bool = value
                     .extract()
