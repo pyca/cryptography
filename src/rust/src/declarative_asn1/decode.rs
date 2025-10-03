@@ -130,7 +130,7 @@ pub(crate) fn decode_annotated_type<'a>(
             match parser.peek_tag() {
                 Some(t) if t == inner_tag => {
                     let decoded_value = decode_annotated_type(py, parser, cls.get())?;
-                    Ok(decoded_value.into_any())
+                    Ok(decoded_value)
                 }
                 _ => Ok(pyo3::types::PyNone::get(py).to_owned().into_any()),
             }
