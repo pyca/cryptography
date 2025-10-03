@@ -25,6 +25,11 @@ else:
     get_type_hints = typing.get_type_hints
     get_type_args = typing.get_args
 
+if sys.version_info < (3, 10):
+    NoneType = type(None)
+else:
+    NoneType = types.NoneType  # type: ignore[valid-type]
+
 from cryptography.hazmat.bindings._rust import declarative_asn1
 
 T = typing.TypeVar("T", covariant=True)
@@ -57,7 +62,7 @@ def _normalize_field_type(
         return annotated_root
     elif _is_union(field_type):
         union_args = get_type_args(field_type)
-        if len(union_args) == 2 and type(None) in union_args:
+        if len(union_args) == 2 and NoneType in union_args:
             # A Union between a type and None is an OPTIONAL
             optional_type = (
                 union_args[0] if union_args[1] is type(None) else union_args[1]
