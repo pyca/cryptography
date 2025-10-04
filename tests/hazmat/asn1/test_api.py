@@ -8,6 +8,11 @@ import typing
 
 import pytest
 
+if sys.version_info < (3, 9):
+    from typing_extensions import Annotated
+else:
+    from typing import Annotated
+
 import cryptography.hazmat.asn1 as asn1
 
 
@@ -162,3 +167,36 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: typing.Union[int, str]
+
+    def test_fail_unsupported_annotation(self) -> None:
+        with pytest.raises(
+            TypeError, match="unsupported annotation: some annotation"
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, "some annotation"]
+
+    def test_fail_optional_with_default_field(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="optional \\(`X \\| None`\\) types should not have a "
+            "DEFAULT annotation",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[
+                    typing.Union[int, None], asn1.Default(value=9)
+                ]
+
+        with pytest.raises(
+            TypeError,
+            match="optional \\(`X \\| None`\\) types should not have a "
+            "DEFAULT annotation",
+        ):
+            IntWithDefault = Annotated[int, asn1.Default(value=9)]  # noqa: N806
+
+            @asn1.sequence
+            class Example2:
+                invalid: typing.Union[IntWithDefault, None]

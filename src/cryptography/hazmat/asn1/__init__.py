@@ -3,6 +3,7 @@
 # for complete details.
 
 from cryptography.hazmat.asn1.asn1 import (
+    Default,
     GeneralizedTime,
     PrintableString,
     UtcTime,
@@ -12,6 +13,7 @@ from cryptography.hazmat.asn1.asn1 import (
 )
 
 __all__ = [
+    "Default",
     "GeneralizedTime",
     "PrintableString",
     "UtcTime",
