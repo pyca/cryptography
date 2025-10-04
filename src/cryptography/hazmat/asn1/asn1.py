@@ -18,14 +18,17 @@ if sys.version_info < (3, 11):
     if sys.version_info < (3, 9):
         get_type_hints = typing_extensions.get_type_hints
         get_type_args = typing_extensions.get_args
+        get_type_origin = typing_extensions.get_origin
         Annotated = typing_extensions.Annotated
     else:
         get_type_hints = typing.get_type_hints
         get_type_args = typing.get_args
+        get_type_origin = typing.get_origin
         Annotated = typing.Annotated
 else:
     get_type_hints = typing.get_type_hints
     get_type_args = typing.get_args
+    get_type_origin = typing.get_origin
     Annotated = typing.Annotated
 
 if sys.version_info < (3, 10):
@@ -52,7 +55,7 @@ def _is_union(field_type: type) -> bool:
         if hasattr(types, "UnionType")
         else (typing.Union,)
     )
-    return typing.get_origin(field_type) in union_types
+    return get_type_origin(field_type) in union_types
 
 
 def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
@@ -69,7 +72,7 @@ def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
 def _normalize_field_type(
     field_type: typing.Any, field_name: str
 ) -> declarative_asn1.AnnotatedType:
-    if typing.get_origin(field_type) is Annotated:
+    if get_type_origin(field_type) is Annotated:
         annotation = _extract_annotation(field_type.__metadata__)
         field_type = get_type_args(field_type)[0]
     else:
