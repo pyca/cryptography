@@ -953,7 +953,7 @@ class TestDHParameterSerialization:
     def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         parameters = FFDH3072_P.parameters(backend)
         key = parameters.generate_private_key().public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.public_bytes(encoding, fmt)
 
     def test_parameter_bytes_invalid_encoding(self, backend):

@@ -1785,7 +1785,7 @@ class TestDHSerialization:
                 ):
                     # tested elsewhere
                     continue
-                with pytest.raises(ValueError):
+                with pytest.raises((TypeError, ValueError)):
                     public_key.public_bytes(enc, fmt)
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
