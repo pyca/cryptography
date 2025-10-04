@@ -47,16 +47,14 @@ impl Pbkdf2Hmac {
     #[pyo3(signature = (algorithm, length, salt, iterations, backend=None))]
     fn new(
         py: pyo3::Python<'_>,
-        algorithm: pyo3::Py<pyo3::PyAny>,
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         length: usize,
         salt: pyo3::Py<pyo3::types::PyBytes>,
         iterations: usize,
         backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Self> {
         _ = backend;
-
-        // Validate that the algorithm is supported
-        let md = hashes::message_digest_from_algorithm(py, algorithm.bind(py))?;
+        let md = hashes::message_digest_from_algorithm(py, algorithm)?;
 
         Ok(Pbkdf2Hmac {
             md,
