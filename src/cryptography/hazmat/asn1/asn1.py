@@ -72,6 +72,8 @@ def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
 def _normalize_field_type(
     field_type: typing.Any, field_name: str
 ) -> declarative_asn1.AnnotatedType:
+    # Strip the `Annotated[...]` off, and populate the annotation
+    # from it if it exists.
     if get_type_origin(field_type) is Annotated:
         annotation = _extract_annotation(field_type.__metadata__)
         field_type = get_type_args(field_type)[0]
