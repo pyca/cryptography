@@ -8,8 +8,10 @@ import typing
 
 import pytest
 
-# TODO: Replace with `typing.Annotated` once min Python version is >= 3.9
-from typing_extensions import Annotated
+if sys.version_info < (3, 9):
+    from typing_extensions import Annotated
+else:
+    from typing import Annotated
 
 import cryptography.hazmat.asn1 as asn1
 
