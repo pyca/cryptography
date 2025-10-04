@@ -11,6 +11,12 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
+* Support for ``x86_64`` macOS (including publishing wheels) is deprecated
+  and will be removed in the next release. We will switch to publishing an
+  ``arm64`` only wheel for macOS.
+* Support for 32-bit Windows (including publishing wheels) is deprecated
+  and will be removed in the next release. Users should move to a 64-bit
+  Python installation.
 
 .. _v46-0-2:
 

@@ -4,6 +4,7 @@
 
 use asn1::GeneralizedTime as Asn1GeneralizedTime;
 use asn1::PrintableString as Asn1PrintableString;
+use asn1::SimpleAsn1Readable;
 use asn1::UtcTime as Asn1UtcTime;
 use pyo3::types::PyAnyMethods;
 use pyo3::types::PyTzInfoAccess;
@@ -21,6 +22,9 @@ pub enum Type {
     /// the second element is a dict of the (already converted) fields of the class.
     #[pyo3(constructor = (_0, _1))]
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
+    /// OPTIONAL (`T | None`)
+    #[pyo3(constructor = (_0))]
+    Option(pyo3::Py<AnnotatedType>),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -267,6 +271,20 @@ pub(crate) fn python_class_to_annotated<'p>(
     } else {
         // Handle builtin types
         pyo3::Bound::new(py, non_root_type_to_annotated(py, class, None)?)
+    }
+}
+
+pub(crate) fn type_to_tag(t: &Type) -> asn1::Tag {
+    match t {
+        Type::Sequence(_, _) => asn1::Sequence::TAG,
+        Type::Option(t) => type_to_tag(t.get().inner.get()),
+        Type::PyBool() => bool::TAG,
+        Type::PyInt() => asn1::BigInt::TAG,
+        Type::PyBytes() => <&[u8] as SimpleAsn1Readable>::TAG,
+        Type::PyStr() => asn1::Utf8String::TAG,
+        Type::PrintableString() => asn1::PrintableString::TAG,
+        Type::UtcTime() => asn1::UtcTime::TAG,
+        Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
     }
 }
 

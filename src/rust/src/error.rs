@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use pyo3::types::PyListMethods;
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::exceptions;
 
@@ -181,6 +181,18 @@ impl CryptographyError {
             CryptographyError::Asn1Write(e) => CryptographyError::Asn1Write(e),
             CryptographyError::OpenSSL(e) => CryptographyError::OpenSSL(e),
         }
+    }
+
+    pub(crate) fn add_note(self, py: pyo3::Python<'_>, note: &str) -> Self {
+        let pyerr: pyo3::PyErr = self.into();
+        // If we fail to add a note, silently ignore it.
+        #[cfg(Py_3_11)]
+        {
+            _ = pyerr
+                .value(py)
+                .call_method1(pyo3::intern!(py, "add_note"), (note,));
+        }
+        Self::Py(pyerr)
     }
 }
 

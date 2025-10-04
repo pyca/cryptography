@@ -292,6 +292,8 @@ Custom asymmetric vectors
   ``hunter2``.
 * ``asymmetric/PKCS8/rsa-pbe-3des-long-salt.pem`` - A PKCS8 encoded RSA key
   encrypted with a 20 byte salt with the password ``password``.
+* ``asymmetric/PKCS8/wrong-pem-delimiter-rsa.pem`` - A PKCS8 encoded RSA key
+  with the wrong PEM delimiter.
 
 Key exchange
 ~~~~~~~~~~~~

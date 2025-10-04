@@ -270,3 +270,61 @@ class TestSequence:
                 )
             ]
         )
+
+    def test_ok_sequence_with_optionals(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: typing.Union[bool, None]
+            b: int
+            c: bytes
+            d: typing.Union[None, str]
+
+        assert_roundtrips(
+            [
+                # All fields are present
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x30\x0c\x01\x01\xff\x02\x01\x09\x04\x01c\x0c\x01d",
+                ),
+                # All optional fields are missing
+                (
+                    Example(a=None, b=9, c=b"c", d=None),
+                    b"\x30\x06\x02\x01\x09\x04\x01c",
+                ),
+                # Some optional fields are missing
+                (
+                    Example(a=True, b=9, c=b"c", d=None),
+                    b"\x30\x09\x01\x01\xff\x02\x01\x09\x04\x01c",
+                ),
+            ]
+        )
+
+    def test_ok_sequence_with_nested_optionals(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: typing.Union[typing.Union[bool, None], None]
+            b: int
+            c: bytes
+            d: typing.Union[None, typing.Union[None, str]]
+
+        assert_roundtrips(
+            [
+                # All fields are present
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x30\x0c\x01\x01\xff\x02\x01\x09\x04\x01c\x0c\x01d",
+                ),
+                # All optional fields are missing
+                (
+                    Example(a=None, b=9, c=b"c", d=None),
+                    b"\x30\x06\x02\x01\x09\x04\x01c",
+                ),
+                # Some optional fields are missing
+                (
+                    Example(a=True, b=9, c=b"c", d=None),
+                    b"\x30\x09\x01\x01\xff\x02\x01\x09\x04\x01c",
+                ),
+            ]
+        )

@@ -6,6 +6,7 @@
 import base64
 import itertools
 import os
+import sys
 import textwrap
 
 import pytest
@@ -1354,6 +1355,24 @@ class TestPEMSerialization:
         )
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
+
+    def test_pkcs8_key_with_wrong_pem_delimiter(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "PKCS8",
+                "wrong-pem-delimiter-rsa.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            load_pem_private_key(data, password=None)
+
+        if sys.version_info >= (3, 11):
+            assert len(exc_info.value.__notes__) == 1
+            assert "PKCS#8 format" in exc_info.value.__notes__[0]
 
 
 class TestKeySerializationEncryptionTypes:

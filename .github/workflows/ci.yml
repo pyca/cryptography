@@ -26,23 +26,23 @@ jobs:
           - {VERSION: "3.8", NOXSESSION: "flake"}
           - {VERSION: "3.13", NOXSESSION: "flake"}
           - {VERSION: "3.13", NOXSESSION: "rust"}
-          - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4"}}
+          - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
           - {VERSION: "3.14-dev", NOXSESSION: "tests"}
           - {VERSION: "3.14t-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.5.4"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.0"}}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.18"}}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.3.5"}}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.3"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0-beta1"}}
-          - {VERSION: "3.13", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4"}}
+          - {VERSION: "3.13", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.0.0"}}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.0"}}
-          # Latest commit on the BoringSSL main branch, as of Sep 30, 2025.
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "b2a2955da7ed3190f099817b8e3daabe322a1078"}}
+          # Latest commit on the BoringSSL main branch, as of Oct 04, 2025.
+          - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "88d0c0f4772f3abe74f4f1012fe580fa85bab417"}}
           # Latest tag of AWS-LC main branch, as of Sep 27, 2025.
           - {VERSION: "3.13", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.61.4"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
@@ -58,8 +58,8 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
           # Not actually an MSRV, just for coverage on this
-          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "3.5.4"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.5.4"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
+          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.0"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -282,7 +282,7 @@ jobs:
       fail-fast: false
       matrix:
         RUNNER:
-          - {OS: 'macos-13', ARCH: 'x86_64'}
+          - {OS: 'macos-15-intel', ARCH: 'x86_64'}
           - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests"}
@@ -428,8 +428,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Sep 24, 2025.
-            REF: f46314fda6e6cfa5db31aece9c2c8fc7f9f908e4
+            # Latest commit on the pyopenssl main branch, as of Oct 01, 2025.
+            REF: 08ec8e68df2ab3d3a3af666ec5d3db3535e40613
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -438,8 +438,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Sep 29, 2025.
-            REF: ef6160aa2595adfba0c71da6db65b7a7252f23e9
+            # Latest commit on the twisted trunk branch, as of Oct 01, 2025.
+            REF: ffb0ab707acbe1284e2f45c7a16e325ed27a3d99
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -453,13 +453,13 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Sep 26, 2025.
-            REF: 513190afe0fa27f09e1b7ca783a6d9a0d07dca22
+            # Latest commit on the certbot main branch, as of Oct 01, 2025.
+            REF: 33890ab7f3e8926ebd80204d7d95b2f66f7ab792
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Sep 26, 2025.
-            REF: 79050d82bbb38b7f969cf33a536bb56285e0c37a
+            # Latest commit on the certbot-josepy main branch, as of Oct 04, 2025.
+            REF: e590cb26ddd1e725c2a484bf07cc3d8c40a5cc45
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
@@ -468,13 +468,13 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Sep 23, 2025.
-            REF: 4317859ce0ada5a779c589b77d9547d384064185
+            # Latest commit on the scapy master branch, as of Oct 04, 2025.
+            REF: 6ed82a2348063cb9409994796c14828a85a22fd6
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Sep 27, 2025.
-            REF: d5f3a50066328266c59219a2af7504a79624713b
+            # Latest commit on the sigstore-python main branch, as of Oct 03, 2025.
+            REF: dec897bbda882b0d9f694da60047044c0f649468
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
