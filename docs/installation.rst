@@ -27,8 +27,7 @@ operating systems.
 * x86-64 RHEL 8.x
 * x86-64 CentOS Stream 9, 10
 * x86-64 Fedora (latest)
-* x86-64 macOS 13 Ventura
-* ARM64 macOS 14 Sonoma
+* x86-64 and ARM64 macOS 15 Sequoia
 * x86-64 Ubuntu 22.04, 24.04, and rolling
 * ARM64, ARMv7l, and ``ppc64le`` Ubuntu rolling
 * x86-64 Debian Bullseye (11.x), Bookworm (12.x), Trixie (13.x), and
