@@ -5,15 +5,31 @@
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 #![allow(unknown_lints, non_local_definitions, clippy::result_large_err)]
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 use std::env;
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 use openssl::provider;
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 use pyo3::PyTypeInfo;
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
@@ -30,7 +46,11 @@ pub(crate) mod types;
 pub(crate) mod utils;
 mod x509;
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
     legacy: Option<provider::Provider>,
@@ -54,7 +74,11 @@ fn is_fips_enabled() -> bool {
     cryptography_openssl::fips::is_enabled()
 }
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProviders> {
     // As of OpenSSL 3.0.0 we must register a legacy cipher provider
     // to get RC2 (needed for junk asymmetric private key
@@ -87,7 +111,11 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     })
 }
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 #[pyo3::pyfunction]
 fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
     providers.fips = Some(provider::Provider::load(None, "fips")?);
@@ -170,7 +198,11 @@ mod _rust {
     mod openssl {
         use pyo3::prelude::PyModuleMethods;
 
-        #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)]
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
         #[pymodule_export]
         use super::super::enable_fips;
         #[pymodule_export]
@@ -221,8 +253,6 @@ mod _rust {
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
         #[pymodule_export]
-        const CRYPTOGRAPHY_OPENSSL_300_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER);
-        #[pymodule_export]
         const CRYPTOGRAPHY_OPENSSL_309_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_309_OR_GREATER);
         #[pymodule_export]
         const CRYPTOGRAPHY_OPENSSL_320_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER);
@@ -241,7 +271,7 @@ mod _rust {
         #[pymodule_init]
         fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
             cfg_if::cfg_if! {
-                if #[cfg(CRYPTOGRAPHY_OPENSSL_300_OR_GREATER)] {
+                if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
                     let providers = super::super::_initialize_providers(openssl_mod.py())?;
                     if providers.legacy.is_some() {
                         openssl_mod.add("_legacy_provider_loaded", true)?;
@@ -250,7 +280,7 @@ mod _rust {
                     }
                     openssl_mod.add("_providers", providers)?;
                 } else {
-                    // default value for non-openssl 3+
+                    // default value for non-OpenSSL implementations
                     openssl_mod.add("_legacy_provider_loaded", false)?;
                 }
             }

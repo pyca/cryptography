@@ -481,8 +481,8 @@ static const long Cryptography_HAS_SET_CERT_CB = 1;
 static const long Cryptography_HAS_GET_EXTMS_SUPPORT = 1;
 #endif
 
-/* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
-   removed */
+/* The SSL_ST values were renamed to TLS_ST in OpenSSL and several were
+   removed, but are still available in LibreSSL, BoringSSL, and AWS-LC */
 #if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL \
     || CRYPTOGRAPHY_IS_AWSLC
 static const long Cryptography_HAS_SSL_ST = 1;

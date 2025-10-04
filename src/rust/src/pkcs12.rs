@@ -739,9 +739,7 @@ fn load_key_and_certificates<'p>(
     let additional_certs = pyo3::types::PyList::empty(py);
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC
-            ))] {
+            if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
                 let it = ossl_certs.iter();
             } else {
                 let it = ossl_certs.iter().rev();
@@ -793,9 +791,7 @@ fn load_pkcs12<'p>(
     let additional_certs = pyo3::types::PyList::empty(py);
     if let Some(ossl_certs) = p12.ca {
         cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_300_OR_GREATER, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC
-            ))] {
+            if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
                 let it = ossl_certs.iter();
             } else {
                 let it = ossl_certs.iter().rev();
