@@ -14,7 +14,6 @@ use crate::backend::{ciphers, hashes, hmac, kdf, keys};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
-use crate::utils::cstr_from_literal;
 use crate::x509::certificate::Certificate;
 use crate::{types, x509};
 
@@ -699,7 +698,7 @@ fn decode_p12(
 
     if asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_bytes()).is_err() {
         let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
-        let message = cstr_from_literal!("PKCS#12 bundle could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#12 bundle was created. In the future, this may become an exception.");
+        let message = c"PKCS#12 bundle could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#12 bundle was created. In the future, this may become an exception.";
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
     }
 

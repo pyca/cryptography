@@ -43,7 +43,6 @@ mod pkcs12;
 mod pkcs7;
 mod test_support;
 pub(crate) mod types;
-pub(crate) mod utils;
 mod x509;
 
 #[cfg(not(any(
@@ -92,7 +91,7 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     let legacy = if load_legacy {
         let legacy_result = provider::Provider::load(None, "legacy");
         if legacy_result.is_err() {
-            let message = crate::utils::cstr_from_literal!("OpenSSL 3's legacy provider failed to load. Legacy algorithms will not be available. If you need those algorithms, check your OpenSSL configuration.");
+            let message = c"OpenSSL 3's legacy provider failed to load. Legacy algorithms will not be available. If you need those algorithms, check your OpenSSL configuration.";
             let warning_cls = pyo3::exceptions::PyWarning::type_object(py).into_any();
             pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
 

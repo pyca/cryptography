@@ -19,7 +19,6 @@ use crate::asn1::{
 };
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::utils::cstr_from_literal;
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, types, x509};
 
@@ -257,7 +256,7 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.");
+        let message = c"Properties that return a naïve datetime object have been deprecated. Please switch to next_update_utc.";
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         match &self.owned.borrow_dependent().tbs_cert_list.next_update {
             Some(t) => x509::datetime_to_py(py, t.as_datetime()),
@@ -282,7 +281,7 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.");
+        let message = c"Properties that return a naïve datetime object have been deprecated. Please switch to last_update_utc.";
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         x509::datetime_to_py(
             py,
@@ -543,7 +542,7 @@ impl RevokedCertificate {
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let warning_cls = types::DEPRECATED_IN_42.get(py)?;
-        let message = cstr_from_literal!("Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.");
+        let message = c"Properties that return a naïve datetime object have been deprecated. Please switch to revocation_date_utc.";
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
         x509::datetime_to_py(
             py,
