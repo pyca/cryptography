@@ -216,13 +216,12 @@ impl EncryptionAlgorithm {
                 symmetric_encrypt(py, triple_des, cbc, data)
             }
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
-                let pass_buf = CffiBuf::from_bytes(py, password.as_bytes());
-                let sha256 = types::SHA256.get(py)?.call0()?;
+                let sha256 = openssl::hash::MessageDigest::sha256();
 
-                let key = kdf::derive_pbkdf2_hmac(
+                let key = kdf::pbkdf2_hmac_derive(
                     py,
-                    pass_buf,
-                    &sha256,
+                    password.as_bytes(),
+                    sha256,
                     salt,
                     cipher_kdf_iter.try_into().unwrap(),
                     32,

@@ -15,21 +15,94 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-#[pyo3::pyfunction]
-pub(crate) fn derive_pbkdf2_hmac<'p>(
+pub(crate) fn pbkdf2_hmac_derive<'p>(
     py: pyo3::Python<'p>,
-    key_material: CffiBuf<'_>,
-    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+    key_material: &[u8],
+    md: openssl::hash::MessageDigest,
     salt: &[u8],
     iterations: usize,
     length: usize,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let md = hashes::message_digest_from_algorithm(py, algorithm)?;
-
     Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
-        openssl::pkcs5::pbkdf2_hmac(key_material.as_bytes(), salt, iterations, md, b).unwrap();
+        openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, b).unwrap();
         Ok(())
     })?)
+}
+
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.pbkdf2",
+    name = "PBKDF2HMAC"
+)]
+struct Pbkdf2Hmac {
+    md: openssl::hash::MessageDigest,
+    salt: pyo3::Py<pyo3::types::PyBytes>,
+    iterations: usize,
+    length: usize,
+    used: bool,
+}
+
+#[pyo3::pymethods]
+impl Pbkdf2Hmac {
+    #[new]
+    #[pyo3(signature = (algorithm, length, salt, iterations, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
+        length: usize,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        iterations: usize,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+        let md = hashes::message_digest_from_algorithm(py, &algorithm)?;
+
+        Ok(Pbkdf2Hmac {
+            md,
+            salt,
+            iterations,
+            length,
+            used: false,
+        })
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        pbkdf2_hmac_derive(
+            py,
+            key_material.as_bytes(),
+            self.md,
+            self.salt.as_bytes(py),
+            self.iterations,
+            self.length,
+        )
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.scrypt")]
@@ -673,13 +746,5 @@ impl HkdfExpand {
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::derive_pbkdf2_hmac;
-    #[pymodule_export]
-    use super::Argon2id;
-    #[pymodule_export]
-    use super::Hkdf;
-    #[pymodule_export]
-    use super::HkdfExpand;
-    #[pymodule_export]
-    use super::Scrypt;
+    use super::{Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
 }
