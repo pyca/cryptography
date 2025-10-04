@@ -26,7 +26,7 @@ impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
     }
 
     pub fn public_key(&self, ops: &B) -> Result<&B::Key, B::Err> {
-        // TODO: use OnceLock::get_or_try_init once stabalized.
+        // TODO: use OnceLock::get_or_try_init once stabilized.
         if let Some(key) = self.public_key.get() {
             return Ok(key);
         }
