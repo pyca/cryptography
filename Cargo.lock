@@ -118,7 +118,6 @@ dependencies = [
  "cryptography-x509",
  "cryptography-x509-verification",
  "foreign-types-shared",
- "once_cell",
  "openssl",
  "openssl-sys",
  "pem",
@@ -141,7 +140,6 @@ dependencies = [
  "asn1",
  "cryptography-key-parsing",
  "cryptography-x509",
- "once_cell",
  "pem",
 ]
 

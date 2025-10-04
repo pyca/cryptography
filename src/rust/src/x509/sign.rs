@@ -3,9 +3,9 @@
 // for complete details.
 
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use cryptography_x509::{common, oid};
-use once_cell::sync::Lazy;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::PyAnyMethods;
 
@@ -15,7 +15,7 @@ use crate::{exceptions, types};
 
 // This is similar to a hashmap in ocsp.rs but contains more hash algorithms
 // that aren't allowable in OCSP
-static HASH_OIDS_TO_HASH: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+static HASH_OIDS_TO_HASH: LazyLock<HashMap<&asn1::ObjectIdentifier, &str>> = LazyLock::new(|| {
     let mut h = HashMap::new();
     h.insert(&oid::SHA1_OID, "SHA1");
     h.insert(&oid::SHA224_OID, "SHA224");

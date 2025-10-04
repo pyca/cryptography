@@ -6,7 +6,7 @@ mod extension;
 
 use std::collections::HashSet;
 use std::ops::{Deref, Range};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use asn1::ObjectIdentifier;
 use cryptography_key_parsing::rsa::Pkcs1RsaPublicKey;
@@ -22,7 +22,6 @@ use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
     EKU_SERVER_AUTH_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
-use once_cell::sync::Lazy;
 
 use crate::ops::CryptoOps;
 pub use crate::policy::extension::{
@@ -63,8 +62,8 @@ const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: Lazy<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
-    Lazy::new(|| {
+pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
+    LazyLock::new(|| {
         Arc::new(HashSet::from([
             SPKI_RSA.clone(),
             SPKI_SECP256R1.clone(),
@@ -94,37 +93,40 @@ const RSASSA_PKCS1V15_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 };
 
 // RSASSA‐PSS with SHA‐256, MGF‐1 with SHA‐256, and a salt length of 32 bytes
-static RSASSA_PSS_SHA256: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| AlgorithmIdentifier {
-    oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
-        hash_algorithm: PSS_SHA256_HASH_ALG,
-        mask_gen_algorithm: PSS_SHA256_MASK_GEN_ALG,
-        salt_length: 32,
-        _trailer_field: None,
-    }))),
-});
+static RSASSA_PSS_SHA256: LazyLock<AlgorithmIdentifier<'_>> =
+    LazyLock::new(|| AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
+            hash_algorithm: PSS_SHA256_HASH_ALG,
+            mask_gen_algorithm: PSS_SHA256_MASK_GEN_ALG,
+            salt_length: 32,
+            _trailer_field: None,
+        }))),
+    });
 
 // RSASSA‐PSS with SHA‐384, MGF‐1 with SHA‐384, and a salt length of 48 bytes
-static RSASSA_PSS_SHA384: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| AlgorithmIdentifier {
-    oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
-        hash_algorithm: PSS_SHA384_HASH_ALG,
-        mask_gen_algorithm: PSS_SHA384_MASK_GEN_ALG,
-        salt_length: 48,
-        _trailer_field: None,
-    }))),
-});
+static RSASSA_PSS_SHA384: LazyLock<AlgorithmIdentifier<'_>> =
+    LazyLock::new(|| AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
+            hash_algorithm: PSS_SHA384_HASH_ALG,
+            mask_gen_algorithm: PSS_SHA384_MASK_GEN_ALG,
+            salt_length: 48,
+            _trailer_field: None,
+        }))),
+    });
 
 // RSASSA‐PSS with SHA‐512, MGF‐1 with SHA‐512, and a salt length of 64 bytes
-static RSASSA_PSS_SHA512: Lazy<AlgorithmIdentifier<'_>> = Lazy::new(|| AlgorithmIdentifier {
-    oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
-        hash_algorithm: PSS_SHA512_HASH_ALG,
-        mask_gen_algorithm: PSS_SHA512_MASK_GEN_ALG,
-        salt_length: 64,
-        _trailer_field: None,
-    }))),
-});
+static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
+    LazyLock::new(|| AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
+            hash_algorithm: PSS_SHA512_HASH_ALG,
+            mask_gen_algorithm: PSS_SHA512_MASK_GEN_ALG,
+            salt_length: 64,
+            _trailer_field: None,
+        }))),
+    });
 
 // For P-256: the signature MUST use ECDSA with SHA‐256
 const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
@@ -146,8 +148,8 @@ const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: Lazy<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
-    Lazy::new(|| {
+pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
+    LazyLock::new(|| {
         Arc::new(HashSet::from([
             RSASSA_PKCS1V15_SHA256.clone(),
             RSASSA_PKCS1V15_SHA384.clone(),

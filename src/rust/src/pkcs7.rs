@@ -5,12 +5,12 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
+use std::sync::LazyLock;
 
 use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
-use once_cell::sync::Lazy;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
@@ -24,8 +24,6 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
-use crate::utils::cstr_from_literal;
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
 
@@ -34,7 +32,7 @@ const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1
 const PKCS7_SIGNING_TIME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 5);
 const PKCS7_SMIME_CAP_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 15);
 
-static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+static OIDS_TO_MIC_NAME: LazyLock<HashMap<&asn1::ObjectIdentifier, &str>> = LazyLock::new(|| {
     let mut h = HashMap::new();
     h.insert(&oid::SHA224_OID, "sha-224");
     h.insert(&oid::SHA256_OID, "sha-256");
@@ -786,7 +784,7 @@ fn load_der_pkcs7_certificates<'p>(
             let result = load_pkcs7_certificates(py, pkcs7_decoded)?;
             if asn1::parse_single::<pkcs7::ContentInfo<'_>>(data).is_err() {
                 let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
-                let message = cstr_from_literal!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates were created. In the future, this may become an exception.");
+                let message = c"PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates were created. In the future, this may become an exception.";
                 pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
             }
 

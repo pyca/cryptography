@@ -3,19 +3,19 @@
 // for complete details.
 
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use cryptography_x509::common;
 use cryptography_x509::ocsp_req::CertID;
-use once_cell::sync::Lazy;
 use pyo3::types::PyAnyMethods;
 
 use crate::backend::hashes::Hash;
 use crate::error::CryptographyResult;
 use crate::x509::certificate::Certificate;
 
-pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
+pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: LazyLock<
     HashMap<common::AlgorithmParameters<'_>, &str>,
-> = Lazy::new(|| {
+> = LazyLock::new(|| {
     let mut h = HashMap::new();
     h.insert(common::AlgorithmParameters::Sha1(None), "SHA1");
     h.insert(common::AlgorithmParameters::Sha1(Some(())), "SHA1");
@@ -30,9 +30,9 @@ pub(crate) static ALGORITHM_PARAMETERS_TO_HASH: Lazy<
     h
 });
 
-pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: Lazy<
+pub(crate) static HASH_NAME_TO_ALGORITHM_IDENTIFIERS: LazyLock<
     HashMap<&str, common::AlgorithmIdentifier<'_>>,
-> = Lazy::new(|| {
+> = LazyLock::new(|| {
     let mut h = HashMap::new();
     h.insert(
         "sha1",
