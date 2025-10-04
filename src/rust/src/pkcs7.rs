@@ -5,12 +5,12 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
+use std::sync::LazyLock;
 
 use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
-use once_cell::sync::Lazy;
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
@@ -32,7 +32,7 @@ const PKCS7_MESSAGE_DIGEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 1
 const PKCS7_SIGNING_TIME_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 5);
 const PKCS7_SMIME_CAP_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 15);
 
-static OIDS_TO_MIC_NAME: Lazy<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy::new(|| {
+static OIDS_TO_MIC_NAME: LazyLock<HashMap<&asn1::ObjectIdentifier, &str>> = LazyLock::new(|| {
     let mut h = HashMap::new();
     h.insert(&oid::SHA224_OID, "sha-224");
     h.insert(&oid::SHA256_OID, "sha-256");

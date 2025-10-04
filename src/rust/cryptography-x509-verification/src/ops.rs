@@ -2,11 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::sync::OnceLock;
+
 use cryptography_x509::certificate::Certificate;
 
 pub struct VerificationCertificate<'a, B: CryptoOps> {
     cert: &'a Certificate<'a>,
-    public_key: once_cell::sync::OnceCell<B::Key>,
+    public_key: OnceLock<B::Key>,
     extra: B::CertificateExtra,
 }
 
@@ -15,7 +17,7 @@ impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
         VerificationCertificate {
             cert,
             extra,
-            public_key: once_cell::sync::OnceCell::new(),
+            public_key: OnceLock::new(),
         }
     }
 
@@ -24,8 +26,12 @@ impl<'a, B: CryptoOps> VerificationCertificate<'a, B> {
     }
 
     pub fn public_key(&self, ops: &B) -> Result<&B::Key, B::Err> {
-        self.public_key
-            .get_or_try_init(|| ops.public_key(self.certificate()))
+        // TODO: use OnceLock::get_or_try_init once stabalized.
+        if let Some(key) = self.public_key.get() {
+            return Ok(key);
+        }
+        let key = ops.public_key(self.certificate())?;
+        Ok(self.public_key.get_or_init(|| key))
     }
 
     pub fn extra(&self) -> &B::CertificateExtra {
@@ -52,7 +58,7 @@ impl<B: CryptoOps> Clone for VerificationCertificate<'_, B> {
             cert: self.cert,
             extra: B::clone_extra(&self.extra),
             public_key: {
-                let cell = once_cell::sync::OnceCell::new();
+                let cell = OnceLock::new();
                 if let Some(k) = self.public_key.get() {
                     cell.set(B::clone_public_key(k)).ok().unwrap();
                 }
