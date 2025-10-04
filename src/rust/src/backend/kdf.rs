@@ -54,7 +54,7 @@ impl Pbkdf2Hmac {
         backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Self> {
         _ = backend;
-        let md = hashes::message_digest_from_algorithm(py, algorithm)?;
+        let md = hashes::message_digest_from_algorithm(py, &algorithm)?;
 
         Ok(Pbkdf2Hmac {
             md,
