@@ -461,8 +461,8 @@ jobs:
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Oct 02, 2025.
-            REF: 31b936ff9b6d1483e34b2f88d0f0d37deb7f9a5e
+            # Latest commit on the certbot-josepy main branch, as of Oct 04, 2025.
+            REF: e590cb26ddd1e725c2a484bf07cc3d8c40a5cc45
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
@@ -471,8 +471,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Oct 03, 2025.
-            REF: 90c5ff4e514627594644b5aac0d58c38b0c90f20
+            # Latest commit on the scapy master branch, as of Oct 04, 2025.
+            REF: 6ed82a2348063cb9409994796c14828a85a22fd6
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
