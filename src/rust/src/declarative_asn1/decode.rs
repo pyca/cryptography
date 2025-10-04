@@ -102,6 +102,17 @@ pub(crate) fn decode_annotated_type<'a>(
     ann_type: &AnnotatedType,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let inner = ann_type.inner.get();
+
+    // Handle DEFAULT annotation if field is not present (by
+    // returning the default value)
+    if let Some(default) = &ann_type.annotation.default {
+        let expected_tag = type_to_tag(inner);
+        let next_tag = parser.peek_tag();
+        if next_tag != Some(expected_tag) {
+            return Ok(default.value.clone_ref(py).into_bound(py));
+        }
+    }
+
     match &inner {
         Type::Sequence(cls, fields) => {
             let seq_parse_result = parser.read_element::<asn1::Sequence<'_>>()?;

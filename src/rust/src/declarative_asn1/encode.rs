@@ -26,6 +26,17 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
         let py = value.py();
         let annotated_type = self.annotated_type;
 
+        // Handle DEFAULT annotation if value is same as default (by
+        // not encoding the value)
+        if let Some(default) = &annotated_type.annotation.default {
+            if value
+                .eq(&default.value)
+                .map_err(|_| asn1::WriteError::AllocationError)?
+            {
+                return Ok(());
+            }
+        }
+
         let inner = annotated_type.inner.get();
         match &inner {
             Type::Sequence(_cls, fields) => write_value(

@@ -46,6 +46,7 @@ pub enum Type {
 #[derive(Debug)]
 pub struct AnnotatedType {
     pub inner: pyo3::Py<Type>,
+    #[pyo3(get)]
     pub annotation: Annotation,
 }
 
@@ -66,13 +67,42 @@ pub struct AnnotatedTypeObject<'a> {
 
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Clone, Debug)]
-pub struct Annotation {}
+pub struct Annotation {
+    #[pyo3(get)]
+    pub(crate) default: Option<Default>,
+}
 
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
-    fn new() -> Self {
-        Self {}
+    #[pyo3(signature = (default = None))]
+    fn new(default: Option<Default>) -> Self {
+        Self { default }
+    }
+}
+
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
+#[derive(Debug)]
+pub struct Default {
+    #[pyo3(set, get)]
+    pub value: pyo3::Py<pyo3::types::PyAny>,
+}
+
+#[pyo3::pymethods]
+impl Default {
+    #[new]
+    #[pyo3(signature = (value))]
+    fn new(value: pyo3::Py<pyo3::types::PyAny>) -> Self {
+        Self { value }
+    }
+}
+
+impl Clone for Default {
+    fn clone(&self) -> Self {
+        pyo3::Python::attach(|py| {
+            let value = self.value.clone_ref(py);
+            Self { value }
+        })
     }
 }
 
@@ -238,7 +268,7 @@ fn non_root_type_to_annotated<'p>(
     let inner = non_root_python_to_rust(py, class)?.unbind();
     Ok(AnnotatedType {
         inner,
-        annotation: annotation.unwrap_or(Annotation {}),
+        annotation: annotation.unwrap_or(Annotation { default: None }),
     })
 }
 

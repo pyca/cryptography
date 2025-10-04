@@ -9,6 +9,9 @@ import typing
 
 import pytest
 
+# TODO: Replace with `typing.Annotated` once min Python version is >= 3.9
+from typing_extensions import Annotated
+
 import cryptography.hazmat.asn1 as asn1
 
 U = typing.TypeVar("U")
@@ -351,5 +354,34 @@ class TestSequence:
                     Example(a=None, b=None, c=None, d=None, e=None, f=None),
                     b"\x30\x00",
                 )
+            ]
+        )
+
+    def test_ok_sequence_with_default_annotations(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[bool, asn1.Default(True)]
+            b: int
+            c: bytes
+            d: Annotated[str, asn1.Default("d")]
+
+        assert_roundtrips(
+            [
+                # No DEFAULT fields contain their default value
+                (
+                    Example(a=False, b=9, c=b"c", d="x"),
+                    b"\x30\x0c\x01\x01\x00\x02\x01\x09\x04\x01c\x0c\x01x",
+                ),
+                # All DEFAULT fields contain their default value
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x30\x06\x02\x01\x09\x04\x01c",
+                ),
+                # Some DEFAULT fields contain their default value
+                (
+                    Example(a=False, b=9, c=b"c", d="d"),
+                    b"\x30\x09\x01\x01\x00\x02\x01\x09\x04\x01c",
+                ),
             ]
         )
