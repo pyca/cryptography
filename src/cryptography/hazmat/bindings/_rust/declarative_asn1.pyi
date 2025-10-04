@@ -20,9 +20,16 @@ class Type:
     PyStr: typing.ClassVar[type]
 
 class Annotation:
+    default: Default | None
     def __new__(
         cls,
+        default: Default | None = None,
     ) -> Annotation: ...
+
+class Default:
+    value: typing.Any
+
+    def __new__(cls, value: typing.Any) -> Default: ...
 
 class AnnotatedType:
     inner: Type
