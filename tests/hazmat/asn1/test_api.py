@@ -4,6 +4,7 @@
 
 import datetime
 import sys
+import typing
 
 import pytest
 
@@ -150,3 +151,14 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 foo: Invalid
+
+    def test_fail_unsupported_union_field(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="union types other than `X \\| None` are currently not "
+            "supported",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: typing.Union[int, str]

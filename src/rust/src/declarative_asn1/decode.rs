@@ -7,7 +7,7 @@ use pyo3::types::PyAnyMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    AnnotatedType, GeneralizedTime, PrintableString, Type, UtcTime,
+    type_to_tag, AnnotatedType, GeneralizedTime, PrintableString, Type, UtcTime,
 };
 use crate::error::CryptographyError;
 
@@ -124,6 +124,16 @@ pub(crate) fn decode_annotated_type<'a>(
                 let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
                 Ok(val)
             })
+        }
+        Type::Option(cls) => {
+            let inner_tag = type_to_tag(cls.get().inner.get());
+            match parser.peek_tag() {
+                Some(t) if t == inner_tag => {
+                    let decoded_value = decode_annotated_type(py, parser, cls.get())?;
+                    Ok(decoded_value)
+                }
+                _ => Ok(pyo3::types::PyNone::get(py).to_owned().into_any()),
+            }
         }
         Type::PyBool() => Ok(decode_pybool(py, parser)?.into_any()),
         Type::PyInt() => Ok(decode_pyint(py, parser)?.into_any()),
