@@ -175,7 +175,7 @@ jobs:
 
   macos:
     needs: [sdist]
-    runs-on: macos-13
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
@@ -216,9 +216,9 @@ jobs:
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: 'pypy-3.11'
             BIN_PATH: 'pypy3'
-            DEPLOYMENT_TARGET: '10.13'
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-x86_64'
-            ARCHFLAGS: '-arch x86_64'
+            DEPLOYMENT_TARGET: '11.0'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
+            ARCHFLAGS: '-arch arm64'
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
       - name: Get build-requirements.txt from repository
@@ -263,8 +263,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           toolchain: stable
-          # Add the arm64 target in addition to the native arch (x86_64)
-          target: aarch64-apple-darwin
+          # Add the x86-64 target in addition to the native arch (arm64)
+          target: x86_64-apple-darwin
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: cryptography-sdist
