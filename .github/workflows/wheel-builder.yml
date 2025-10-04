@@ -362,6 +362,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
+        timeout-minutes: 3
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           toolchain: stable
