@@ -184,6 +184,15 @@ class TestSequenceAPI:
             class Example:
                 invalid: typing.Union[int, str]
 
+    def test_fail_unsupported_annotation(self) -> None:
+        with pytest.raises(
+            TypeError, match="unsupported annotation: some annotation"
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, "some annotation"]
+
     def test_fail_optional_with_default_field(self) -> None:
         with pytest.raises(
             TypeError,
