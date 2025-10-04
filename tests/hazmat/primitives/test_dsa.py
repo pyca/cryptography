@@ -1057,5 +1057,5 @@ class TestDSAPEMPublicKeySerialization:
     )
     def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         key = DSA_KEY_2048.private_key(backend).public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.public_bytes(encoding, fmt)

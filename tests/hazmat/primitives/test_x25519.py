@@ -111,7 +111,7 @@ class TestX25519Exchange:
                 serialization.Encoding.DER,
                 None,  # type: ignore[arg-type]
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.SMIME,
                 serialization.PublicFormat.SubjectPublicKeyInfo,

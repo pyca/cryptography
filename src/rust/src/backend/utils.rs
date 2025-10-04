@@ -288,18 +288,9 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     // SubjectPublicKeyInfo + PEM/DER
     if format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
-        if encoding.is(&types::ENCODING_PEM.get(py)?) {
-            let pem_bytes = pkey.public_key_to_pem()?;
-            return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-        } else if encoding.is(&types::ENCODING_DER.get(py)?) {
-            let der_bytes = pkey.public_key_to_der()?;
-            return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
-        }
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "SubjectPublicKeyInfo works only with PEM or DER encoding",
-            ),
-        ));
+        let der_bytes = pkey.public_key_to_der()?;
+
+        return crate::asn1::encode_der_data(py, "PUBLIC KEY".to_string(), der_bytes, encoding);
     }
 
     if let Ok(ec) = pkey.ec_key() {
@@ -325,18 +316,14 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     if let Ok(rsa) = pkey.rsa() {
         if format.is(&types::PUBLIC_FORMAT_PKCS1.get(py)?) {
-            if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let pem_bytes = rsa.public_key_to_pem_pkcs1()?;
-                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-            } else if encoding.is(&types::ENCODING_DER.get(py)?) {
-                let der_bytes = rsa.public_key_to_der_pkcs1()?;
-                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
-            }
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "PKCS1 works only with PEM or DER encoding",
-                ),
-            ));
+            let der_bytes = rsa.public_key_to_der_pkcs1()?;
+
+            return crate::asn1::encode_der_data(
+                py,
+                "RSA PUBLIC KEY".to_string(),
+                der_bytes,
+                encoding,
+            );
         }
     }
 
