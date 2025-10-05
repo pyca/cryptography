@@ -61,7 +61,7 @@ pub type KeySerializationResult<T> = Result<T, KeySerializationError>;
 
 #[cfg(test)]
 mod tests {
-    use super::KeyParsingError;
+    use super::{KeyParsingError, KeySerializationError};
 
     #[test]
     fn test_key_parsing_error_from() {
@@ -70,6 +70,24 @@ mod tests {
         assert!(matches!(
             KeyParsingError::from(e),
             KeyParsingError::OpenSSL(_)
+        ));
+    }
+
+    #[test]
+    fn test_key_serialization_error_from_asn1_write_error() {
+        let e = asn1::WriteError::AllocationError;
+        assert!(matches!(
+            KeySerializationError::from(e),
+            KeySerializationError::Write(asn1::WriteError::AllocationError)
+        ));
+    }
+
+    #[test]
+    fn test_key_serialization_error_from_openssl_error_stack() {
+        let e = openssl::error::ErrorStack::get();
+        assert!(matches!(
+            KeySerializationError::from(e),
+            KeySerializationError::OpenSSL(_)
         ));
     }
 }

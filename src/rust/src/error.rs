@@ -301,6 +301,25 @@ mod tests {
     }
 
     #[test]
+    fn test_cryptographyerror_from_key_serialization_error() {
+        let e = cryptography_key_parsing::KeySerializationError::Write(
+            asn1::WriteError::AllocationError,
+        );
+        assert!(matches!(
+            CryptographyError::from(e),
+            CryptographyError::Asn1Write(asn1::WriteError::AllocationError)
+        ));
+
+        let e = cryptography_key_parsing::KeySerializationError::OpenSSL(
+            openssl::error::ErrorStack::get(),
+        );
+        assert!(matches!(
+            CryptographyError::from(e),
+            CryptographyError::OpenSSL(_)
+        ));
+    }
+
+    #[test]
     fn test_cryptographyerror_add_location() {
         let py_err = pyo3::PyErr::new::<pyo3::exceptions::PyValueError, _>("Error!");
         CryptographyError::Py(py_err).add_location(asn1::ParseLocation::Field("meh"));
