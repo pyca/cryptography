@@ -40,6 +40,25 @@ impl From<openssl::error::ErrorStack> for KeyParsingError {
 
 pub type KeyParsingResult<T> = Result<T, KeyParsingError>;
 
+pub enum KeySerializationError {
+    Write(asn1::WriteError),
+    OpenSSL(openssl::error::ErrorStack),
+}
+
+impl From<asn1::WriteError> for KeySerializationError {
+    fn from(e: asn1::WriteError) -> KeySerializationError {
+        KeySerializationError::Write(e)
+    }
+}
+
+impl From<openssl::error::ErrorStack> for KeySerializationError {
+    fn from(e: openssl::error::ErrorStack) -> KeySerializationError {
+        KeySerializationError::OpenSSL(e)
+    }
+}
+
+pub type KeySerializationResult<T> = Result<T, KeySerializationError>;
+
 #[cfg(test)]
 mod tests {
     use super::KeyParsingError;

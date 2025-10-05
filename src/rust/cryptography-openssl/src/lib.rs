@@ -15,6 +15,7 @@ pub mod hmac;
     CRYPTOGRAPHY_IS_AWSLC
 ))]
 pub mod poly1305;
+pub mod utils;
 
 pub type OpenSSLResult<T> = Result<T, openssl::error::ErrorStack>;
 

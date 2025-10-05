@@ -4,10 +4,10 @@
 
 use crate::KeyParsingResult;
 
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Pkcs1RsaPublicKey<'a> {
     pub n: asn1::BigUint<'a>,
-    e: asn1::BigUint<'a>,
+    pub e: asn1::BigUint<'a>,
 }
 
 // RFC 8017, Section A.1.2
@@ -36,6 +36,19 @@ pub fn parse_pkcs1_public_key(
 
     let rsa = openssl::rsa::Rsa::from_public_components(n, e)?;
     Ok(openssl::pkey::PKey::from_rsa(rsa)?)
+}
+
+pub fn serialize_pkcs1_public_key(
+    rsa: &openssl::rsa::RsaRef<openssl::pkey::Public>,
+) -> crate::KeySerializationResult<Vec<u8>> {
+    let n_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.n())?;
+    let e_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.e())?;
+
+    let key = Pkcs1RsaPublicKey {
+        n: asn1::BigUint::new(&n_bytes).unwrap(),
+        e: asn1::BigUint::new(&e_bytes).unwrap(),
+    };
+    Ok(asn1::write_single(&key)?)
 }
 
 pub fn parse_pkcs1_private_key(

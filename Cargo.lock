@@ -87,6 +87,7 @@ dependencies = [
  "asn1",
  "cfg-if",
  "cryptography-crypto",
+ "cryptography-openssl",
  "cryptography-x509",
  "openssl",
  "openssl-sys",
