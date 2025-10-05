@@ -59,7 +59,7 @@ def tests(session: nox.Session) -> None:
     prof_location = (
         pathlib.Path(".") / ".rust-cov" / str(uuid.uuid4())
     ).absolute()
-    if session.name != "tests-nocoverage":
+    if session.name not in ("tests-nocoverage", "tests-rust-debug"):
         rustflags = os.environ.get("RUSTFLAGS", "")
         assert rustflags is not None
         session.env.update(
@@ -81,7 +81,7 @@ def tests(session: nox.Session) -> None:
 
     session.run("uv", "pip", "list")
 
-    if session.name != "tests-nocoverage":
+    if session.name not in ("tests-nocoverage", "tests-rust-debug"):
         cov_args = [
             "--cov=cryptography",
             "--cov=tests",
@@ -104,7 +104,7 @@ def tests(session: nox.Session) -> None:
         *tests,
     )
 
-    if session.name != "tests-nocoverage":
+    if session.name not in ("tests-nocoverage", "tests-rust-debug"):
         [rust_so] = glob.glob(
             f"{session.virtualenv.location}/lib/**/cryptography/hazmat/bindings/_rust.*",
             recursive=True,

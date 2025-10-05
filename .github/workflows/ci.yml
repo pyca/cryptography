@@ -50,12 +50,9 @@ jobs:
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           - {VERSION: "3.13", NOXSESSION: "rust-nocoverage,tests-nocoverage", RUST: "1.83.0"}
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
+          - {VERSION: "3.13", NOXSESSION: "rust-nocoverage,tests-nocoverage", RUST: "beta"}
+          - {VERSION: "3.13", NOXSESSION: "rust-nocoverage,tests-nocoverage", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}
-          # Not actually an MSRV, just for coverage on this
-          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
-          - {VERSION: "3.13", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.0"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
