@@ -328,3 +328,28 @@ class TestSequence:
                 ),
             ]
         )
+
+    def test_ok_sequence_all_types_optional(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class MyField:
+            a: int
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: typing.Union[MyField, None]
+            b: typing.Union[int, None]
+            c: typing.Union[bytes, None]
+            d: typing.Union[asn1.PrintableString, None]
+            e: typing.Union[asn1.UtcTime, None]
+            f: typing.Union[asn1.GeneralizedTime, None]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=None, b=None, c=None, d=None, e=None, f=None),
+                    b"\x30\x00",
+                )
+            ]
+        )
