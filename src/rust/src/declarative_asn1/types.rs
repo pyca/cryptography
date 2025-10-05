@@ -293,3 +293,37 @@ pub(crate) mod types {
     #[pymodule_export]
     use super::{AnnotatedType, Annotation, GeneralizedTime, PrintableString, Type, UtcTime};
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::{type_to_tag, AnnotatedType, Annotation, Type};
+
+    #[test]
+    // Needed for coverage of `type_to_tag(Type::Option(..))`, since
+    // `type_to_tag` is never called with an optional value.
+    fn test_option_type_to_tag() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let ann_type = pyo3::Py::new(
+                py,
+                AnnotatedType {
+                    inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
+                    annotation: Annotation {},
+                },
+            )
+            .unwrap();
+            let optional_type = pyo3::Py::new(
+                py,
+                AnnotatedType {
+                    inner: pyo3::Py::new(py, Type::Option(ann_type)).unwrap(),
+                    annotation: Annotation {},
+                },
+            )
+            .unwrap();
+            let expected_tag = type_to_tag(&Type::Option(optional_type));
+            assert_eq!(expected_tag, type_to_tag(&Type::PyInt()))
+        })
+    }
+}
