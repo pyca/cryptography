@@ -387,3 +387,15 @@ class TestSequence:
                 ),
             ]
         )
+
+    def test_fail_decode_default_value_present(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[bool, asn1.Default(True)]
+
+        with pytest.raises(
+            ValueError,
+            match="invalid DER: DEFAULT value was present in encoded data",
+        ):
+            asn1.decode_der(Example, b"\x30\x03\x01\x01\xff")
