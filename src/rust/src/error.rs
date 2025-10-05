@@ -103,6 +103,19 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
     }
 }
 
+impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError {
+    fn from(e: cryptography_key_parsing::KeySerializationError) -> CryptographyError {
+        match e {
+            cryptography_key_parsing::KeySerializationError::Write(e) => {
+                CryptographyError::Asn1Write(e)
+            }
+            cryptography_key_parsing::KeySerializationError::OpenSSL(e) => {
+                CryptographyError::OpenSSL(e)
+            }
+        }
+    }
+}
+
 pub(crate) fn list_from_openssl_error<'p>(
     py: pyo3::Python<'p>,
     error_stack: &openssl::error::ErrorStack,

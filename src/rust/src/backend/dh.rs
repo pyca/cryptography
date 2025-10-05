@@ -348,13 +348,13 @@ impl DHParameters {
             ));
         }
 
-        let p_bytes = utils::bn_to_big_endian_bytes(self.dh.prime_p())?;
+        let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.prime_p())?;
         let q_bytes = self
             .dh
             .prime_q()
-            .map(utils::bn_to_big_endian_bytes)
+            .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
             .transpose()?;
-        let g_bytes = utils::bn_to_big_endian_bytes(self.dh.generator())?;
+        let g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.generator())?;
         let asn1dh_params = common::DHParams {
             p: asn1::BigUint::new(&p_bytes).unwrap(),
             q: q_bytes.as_ref().map(|q| asn1::BigUint::new(q).unwrap()),

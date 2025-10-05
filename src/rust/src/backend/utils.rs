@@ -37,10 +37,6 @@ pub(crate) fn bn_to_py_int<'p>(
     )?)
 }
 
-pub(crate) fn bn_to_big_endian_bytes(b: &openssl::bn::BigNumRef) -> CryptographyResult<Vec<u8>> {
-    Ok(b.to_vec_padded(b.num_bits() / 8 + 1)?)
-}
-
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
@@ -316,7 +312,7 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     if let Ok(rsa) = pkey.rsa() {
         if format.is(&types::PUBLIC_FORMAT_PKCS1.get(py)?) {
-            let der_bytes = rsa.public_key_to_der_pkcs1()?;
+            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_public_key(&rsa)?;
 
             return crate::asn1::encode_der_data(
                 py,
