@@ -19,9 +19,19 @@ class TestTypesAPI:
             == f"PrintableString({my_string!r})"
         )
 
+    def test_printable_string_as_str(self) -> None:
+        my_string = "MyString"
+        assert asn1.PrintableString(my_string).as_str() == my_string
+
     def test_invalid_printable_string(self) -> None:
         with pytest.raises(ValueError, match="invalid PrintableString: café"):
             asn1.PrintableString("café")
+
+    def test_utc_time_as_datetime(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+        )
+        assert asn1.UtcTime(dt).as_datetime() == dt
 
     def test_repr_utc_time(self) -> None:
         dt = datetime.datetime(
@@ -70,6 +80,12 @@ class TestTypesAPI:
                     tzinfo=datetime.timezone.utc,
                 )
             )
+
+    def test_generalized_time_as_datetime(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.timezone.utc
+        )
+        assert asn1.GeneralizedTime(dt).as_datetime() == dt
 
     def test_repr_generalized_time(self) -> None:
         dt = datetime.datetime(
