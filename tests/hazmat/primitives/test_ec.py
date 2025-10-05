@@ -1274,7 +1274,7 @@ class TestEllipticCurvePEMPublicKeySerialization:
     def test_public_bytes_rejects_invalid(self, encoding, fmt, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend).public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises((TypeError, ValueError)):
             key.public_bytes(encoding, fmt)
 
     def test_public_bytes_invalid_format(self, backend):

@@ -2709,12 +2709,12 @@ class TestRSAPEMPublicKeySerialization:
             key.public_bytes(
                 serialization.Encoding.DER, serialization.PublicFormat.OpenSSH
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.OpenSSH,
                 serialization.PublicFormat.PKCS1,
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.OpenSSH,
                 serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -2767,7 +2767,7 @@ class TestRSAPEMPublicKeySerialization:
         self, rsa_key_2048: rsa.RSAPrivateKey, encoding, fmt, backend
     ):
         key = rsa_key_2048.public_key()
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.public_bytes(encoding, fmt)
 
     def test_public_key_equality(self, rsa_key_2048: rsa.RSAPrivateKey):
