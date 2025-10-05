@@ -49,7 +49,7 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "ceb45f64bde3d299c7ef529e5cd5372e4a421366"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
-          - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "1.83.0"}
+          - {VERSION: "3.13", NOXSESSION: "rust-nocoverage,tests-nocoverage", RUST: "1.83.0"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.13", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.13", NOXSESSION: "tests-rust-debug"}

@@ -212,18 +212,20 @@ def flake(session: nox.Session) -> None:
 
 
 @nox.session
+@nox.session(name="rust-nocoverage")
 def rust(session: nox.Session) -> None:
     prof_location = (
         pathlib.Path(".") / ".rust-cov" / str(uuid.uuid4())
     ).absolute()
-    rustflags = os.environ.get("RUSTFLAGS", "")
-    assert rustflags is not None
-    session.env.update(
-        {
-            "RUSTFLAGS": f"-Cinstrument-coverage  {rustflags}",
-            "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
-        }
-    )
+    if session.name != "rust-nocoverage":
+        rustflags = os.environ.get("RUSTFLAGS", "")
+        assert rustflags is not None
+        session.env.update(
+            {
+                "RUSTFLAGS": f"-Cinstrument-coverage  {rustflags}",
+                "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
+            }
+        )
 
     # TODO: Ideally there'd be a pip flag to install just our dependencies,
     # but not install us.
@@ -254,7 +256,7 @@ def rust(session: nox.Session) -> None:
     session.run("cargo", "test", "--all", external=True)
 
     # It's None on install-only invocations
-    if build_output is not None:
+    if build_output is not None and session.name != "rust-nocoverage":
         assert isinstance(build_output, str)
         rust_tests = []
         for line in build_output.splitlines():
