@@ -176,9 +176,6 @@ exclude_lines = [
     "if typing.TYPE_CHECKING",
 ]
 
-[tool.coverage.html]
-show_contexts = true
-
 [tool.ruff]
 line-length = 79
 
