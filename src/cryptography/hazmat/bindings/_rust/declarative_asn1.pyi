@@ -26,10 +26,13 @@ class Annotation:
         default: Default | None = None,
     ) -> Annotation: ...
 
-class Default:
-    value: typing.Any
+T = typing.TypeVar("T")
 
-    def __new__(cls, value: typing.Any) -> Default: ...
+# TODO: replace with `Default[T]` once the min Python version is >= 3.12
+class Default(typing.Generic[T]):
+    value: T
+
+    def __new__(cls, value: T) -> Default: ...
 
 class AnnotatedType:
     inner: Type
