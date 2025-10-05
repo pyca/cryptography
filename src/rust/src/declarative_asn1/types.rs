@@ -288,12 +288,6 @@ pub(crate) fn type_to_tag(t: &Type) -> asn1::Tag {
     }
 }
 
-#[pyo3::pymodule(gil_used = false)]
-pub(crate) mod types {
-    #[pymodule_export]
-    use super::{AnnotatedType, Annotation, GeneralizedTime, PrintableString, Type, UtcTime};
-}
-
 #[cfg(test)]
 mod tests {
 
