@@ -384,6 +384,15 @@ class TestDH:
         with pytest.raises(ValueError):
             key2.exchange(pub_key1)
 
+    def test_load_256bit_key_from_pkcs8(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dh_key_256.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            serialization.load_pem_private_key(data, None, backend)
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(
