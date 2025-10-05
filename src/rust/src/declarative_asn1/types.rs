@@ -2,7 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use asn1::GeneralizedTime as Asn1GeneralizedTime;
 use asn1::PrintableString as Asn1PrintableString;
 use asn1::SimpleAsn1Readable;
 use asn1::UtcTime as Asn1UtcTime;
@@ -184,12 +183,10 @@ impl GeneralizedTime {
                 "invalid GeneralizedTime: cannot initialize with naive datetime object",
             ));
         }
-        let (datetime, microseconds) =
-            crate::x509::py_to_datetime_with_microseconds(py, inner.clone_ref(py).into_bound(py))?;
-        let nanoseconds = microseconds.map(|m| m * 1000);
-        Asn1GeneralizedTime::new(datetime, nanoseconds).map_err(|e| {
-            pyo3::exceptions::PyValueError::new_err(format!("invalid GeneralizedTime: {e}"))
-        })?;
+        // Since `PyDateTime` normalizes microseconds to be 0 <= microseconds <= 999,999,
+        // we don't need to check if `inner` will be a valid asn1::GeneralizedTime: it will
+        // be valid because its maximum value (999,999 microseconds == 999,999,000 nanoseconds)
+        // does not exceed asn1::GeneralizedTime's max value (999,999,999 nanoseconds)
         Ok(GeneralizedTime { inner })
     }
 
@@ -263,11 +260,7 @@ pub(crate) fn python_class_to_annotated<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, AnnotatedType>> {
     if let Ok(root) = class.getattr("__asn1_root__") {
         // Handle decorated classes
-        root.downcast_into::<AnnotatedType>().map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err(
-                "target type has invalid annotations".to_string(),
-            )
-        })
+        Ok(root.downcast_into::<AnnotatedType>()?)
     } else {
         // Handle builtin types
         pyo3::Bound::new(py, non_root_type_to_annotated(py, class, None)?)
