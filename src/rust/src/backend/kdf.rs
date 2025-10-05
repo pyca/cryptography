@@ -29,10 +29,12 @@ pub(crate) fn pbkdf2_hmac_derive<'p>(
     })?)
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     module = "cryptography.hazmat.primitives.kdf.pbkdf2",
     name = "PBKDF2HMAC"
 )]
+// NO-COVERAGE-END
 struct Pbkdf2Hmac {
     md: openssl::hash::MessageDigest,
     salt: pyo3::Py<pyo3::types::PyBytes>,
@@ -625,10 +627,12 @@ impl Hkdf {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     module = "cryptography.hazmat.primitives.kdf.hkdf",
     name = "HKDFExpand"
 )]
+// NO-COVERAGE-END
 struct HkdfExpand {
     algorithm: pyo3::Py<pyo3::PyAny>,
     info: pyo3::Py<pyo3::types::PyBytes>,

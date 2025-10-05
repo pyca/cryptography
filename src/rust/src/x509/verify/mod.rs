@@ -500,11 +500,13 @@ self_cell::self_cell!(
     }
 );
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     name = "Store",
     module = "cryptography.hazmat.bindings._rust.x509"
 )]
+// NO-COVERAGE-END
 pub(crate) struct PyStore {
     raw: RawPyStore,
 }
