@@ -37,6 +37,25 @@ class RustCoverageFileReporter(coverage.FileReporter):
         return {(-1, line) for line in self._data}
 
 
+def get_excluded_lines(filename: str) -> list[int]:
+    """
+    Parse source file for NO-COVERAGE-START/END pairs and return excluded
+    lines.
+    """
+    excluded = []
+    with open(filename) as f:
+        in_excluded_block = False
+        for line_num, line in enumerate(f, start=1):
+            stripped = line.strip()
+            if stripped == "// NO-COVERAGE-START":
+                in_excluded_block = True
+            elif stripped == "// NO-COVERAGE-END":
+                in_excluded_block = False
+            elif in_excluded_block:
+                excluded.append(line_num)
+    return excluded
+
+
 def parse_lcovs(
     path: pathlib.Path,
 ) -> tuple[
@@ -78,6 +97,12 @@ def parse_lcovs(
                         pass
                     case _:
                         raise NotImplementedError(prefix)
+
+    # Filter out lines within NO-COVERAGE blocks
+    for file_name in raw_data:
+        excluded_lines = get_excluded_lines(file_name)
+        for line_num in excluded_lines:
+            raw_data[file_name].pop(line_num, None)
 
     covered_lines = {
         file_name: {(-1, line) for line, c in lines.items() if c > 0}

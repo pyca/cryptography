@@ -561,11 +561,13 @@ impl ChaCha20Poly1305 {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESGCM"
 )]
+// NO-COVERAGE-END
 struct AesGcm {
     #[cfg(any(
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
@@ -678,11 +680,13 @@ impl AesGcm {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESCCM"
 )]
+// NO-COVERAGE-END
 struct AesCcm {
     ctx: LazyEvpCipherAead,
     tag_length: usize,
@@ -818,11 +822,13 @@ impl AesCcm {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESSIV"
 )]
+// NO-COVERAGE-END
 struct AesSiv {
     ctx: EvpCipherAead,
 }
@@ -917,11 +923,13 @@ impl AesSiv {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESOCB3"
 )]
+// NO-COVERAGE-END
 struct AesOcb3 {
     ctx: EvpCipherAead,
 }
@@ -1027,11 +1035,13 @@ impl AesOcb3 {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.aead",
     name = "AESGCMSIV"
 )]
+// NO-COVERAGE-END
 struct AesGcmSiv {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
