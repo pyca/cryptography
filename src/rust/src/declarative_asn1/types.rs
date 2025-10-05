@@ -303,6 +303,8 @@ mod tests {
     // Needed for coverage of `type_to_tag(Type::Option(..))`, since
     // `type_to_tag` is never called with an optional value.
     fn test_option_type_to_tag() {
+        pyo3::Python::initialize();
+
         pyo3::Python::attach(|py| {
             let ann_type = pyo3::Py::new(
                 py,
