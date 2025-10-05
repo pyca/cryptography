@@ -284,7 +284,7 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     // SubjectPublicKeyInfo + PEM/DER
     if format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
-        let der_bytes = pkey.public_key_to_der()?;
+        let der_bytes = cryptography_key_parsing::spki::serialize_public_key(pkey)?;
 
         return crate::asn1::encode_der_data(py, "PUBLIC KEY".to_string(), der_bytes, encoding);
     }
