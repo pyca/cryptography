@@ -26,11 +26,8 @@ fn decode_pyint<'a>(
     parser: &mut Parser<'a>,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyInt>> {
     let value = parser.read_element::<asn1::BigInt<'a>>()?;
-    let pyint = big_byte_slice_to_py_int(py, value.as_bytes())?
-        .downcast_into::<pyo3::types::PyInt>()
-        .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("error converting integer value".to_string())
-        })?;
+    let pyint =
+        big_byte_slice_to_py_int(py, value.as_bytes())?.downcast_into::<pyo3::types::PyInt>()?;
     Ok(pyint)
 }
 
@@ -113,11 +110,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 let kwargs = pyo3::types::PyDict::new(py);
                 let fields = fields.bind(py);
                 for (name, ann_type) in fields.into_iter() {
-                    let ann_type = ann_type.downcast::<AnnotatedType>().map_err(|_| {
-                        pyo3::exceptions::PyValueError::new_err(
-                            "target type has invalid annotations".to_string(),
-                        )
-                    })?;
+                    let ann_type = ann_type.downcast::<AnnotatedType>()?;
                     let value = decode_annotated_type(py, d, ann_type.get())?;
                     kwargs.set_item(name, value)?;
                 }
