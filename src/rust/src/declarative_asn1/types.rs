@@ -317,7 +317,7 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
-                    annotation: Annotation {},
+                    annotation: Annotation { default: None },
                 },
             )
             .unwrap();
@@ -325,7 +325,7 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::Option(ann_type)).unwrap(),
-                    annotation: Annotation {},
+                    annotation: Annotation { default: None },
                 },
             )
             .unwrap();
