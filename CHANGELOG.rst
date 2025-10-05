@@ -12,6 +12,8 @@ Changelog
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
+* Added support for loading elliptic curve keys that contain explicit encodings
+  of the curves ``secp256r1``, ``secp384r1``, ``secp521r1``, and ``secp256k1``.
 * Support for ``x86_64`` macOS (including publishing wheels) is deprecated
   and will be removed in the next release. We will switch to publishing an
   ``arm64`` only wheel for macOS.

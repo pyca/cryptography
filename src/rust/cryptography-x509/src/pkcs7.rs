@@ -17,6 +17,7 @@ pub struct ContentInfo<'a> {
     pub content: Content<'a>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(asn1::Asn1DefinedByWrite, asn1::Asn1DefinedByRead)]
 pub enum Content<'a> {
     #[defined_by(PKCS7_ENVELOPED_DATA_OID)]

@@ -473,7 +473,59 @@ pub const PSS_SHA512_MASK_GEN_ALG: MaskGenAlgorithm<'_> = MaskGenAlgorithm {
 pub enum EcParameters<'a> {
     NamedCurve(asn1::ObjectIdentifier),
     ImplicitCurve(asn1::Null),
-    SpecifiedCurve(asn1::Sequence<'a>),
+    SpecifiedCurve(SpecifiedECDomain<'a>),
+}
+
+// From RFC 3279 Section 2.3.5 and RFC 5480 Appendix A
+// SpecifiedECDomain ::= SEQUENCE {
+//   version           ECPVer,
+//   fieldID           FieldID,
+//   curve             Curve,
+//   base              ECPoint,
+//   order             INTEGER,
+//   cofactor          INTEGER OPTIONAL
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, Eq, PartialEq, Debug)]
+pub struct SpecifiedECDomain<'a> {
+    pub version: u8,
+    pub field_id: FieldID<'a>,
+    pub curve: Curve<'a>,
+    pub base: &'a [u8], // ECPoint can be compressed or uncompressed
+    pub order: asn1::BigUint<'a>,
+    pub cofactor: Option<u8>,
+}
+
+// From RFC 3279 Section 2.3.5
+// FieldID ::= SEQUENCE {
+//   fieldType   FIELD-TYPE.&id({SupportedFieldTypes}),
+//   parameters  FIELD-TYPE.&Type({SupportedFieldTypes}{@fieldType})
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+pub struct FieldID<'a> {
+    pub field_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    #[defined_by(field_type)]
+    pub parameters: FieldParameters<'a>,
+}
+
+#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, Hash, Clone, PartialEq, Eq, Debug)]
+pub enum FieldParameters<'a> {
+    #[defined_by(oid::PRIME_FIELD_OID)]
+    PrimeField(asn1::BigUint<'a>),
+    #[defined_by(oid::CHARACTERISTIC_TWO_FIELD_OID)]
+    CharacteristicTwo(asn1::Tlv<'a>),
+}
+
+// From RFC 3279 Section 2.3.5
+// Curve ::= SEQUENCE {
+//   a         FieldElement,
+//   b         FieldElement,
+//   seed      BIT STRING OPTIONAL
+// }
+#[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+pub struct Curve<'a> {
+    pub a: &'a [u8], // FieldElement
+    pub b: &'a [u8], // FieldElement
+    pub seed: Option<asn1::BitString<'a>>,
 }
 
 // From RFC 4055 section 3.1:
