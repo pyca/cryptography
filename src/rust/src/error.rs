@@ -297,6 +297,9 @@ mod tests {
             )
             .into();
             assert!(matches!(e, CryptographyError::OpenSSL(_)));
+
+            let e = pyo3::DowncastIntoError::new(py.None().into_bound(py), "abc").into();
+            assert!(matches!(e, CryptographyError::Py(_)));
         })
     }
 
