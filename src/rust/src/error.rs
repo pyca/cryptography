@@ -4,7 +4,9 @@
 
 use std::fmt;
 
-use pyo3::types::{PyAnyMethods, PyListMethods};
+#[cfg(Py_3_11)]
+use pyo3::types::PyAnyMethods;
+use pyo3::types::PyListMethods;
 
 use crate::exceptions;
 
@@ -204,6 +206,11 @@ impl CryptographyError {
             _ = pyerr
                 .value(py)
                 .call_method1(pyo3::intern!(py, "add_note"), (note,));
+        }
+        #[cfg(not(Py_3_11))]
+        {
+            _ = py;
+            _ = note;
         }
         Self::Py(pyerr)
     }
