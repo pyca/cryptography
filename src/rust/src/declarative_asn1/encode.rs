@@ -28,9 +28,9 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
         // Handle DEFAULT annotation if value is same as default (by
         // not encoding the value)
-        if let Some(default) = &annotated_type.annotation.default {
+        if let Some(default) = &annotated_type.annotation.get().default {
             if value
-                .eq(&default.value)
+                .eq(&default.get().value)
                 .map_err(|_| asn1::WriteError::AllocationError)?
             {
                 return Ok(());

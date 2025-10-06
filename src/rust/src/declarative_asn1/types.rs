@@ -47,14 +47,14 @@ pub enum Type {
 pub struct AnnotatedType {
     pub inner: pyo3::Py<Type>,
     #[pyo3(get)]
-    pub annotation: Annotation,
+    pub annotation: pyo3::Py<Annotation>,
 }
 
 #[pyo3::pymethods]
 impl AnnotatedType {
     #[new]
     #[pyo3(signature = (inner, annotation))]
-    fn new(inner: pyo3::Py<Type>, annotation: Annotation) -> Self {
+    fn new(inner: pyo3::Py<Type>, annotation: pyo3::Py<Annotation>) -> Self {
         Self { inner, annotation }
     }
 }
@@ -65,26 +65,26 @@ pub struct AnnotatedTypeObject<'a> {
     pub value: pyo3::Bound<'a, pyo3::PyAny>,
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
-#[derive(Clone, Debug)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[derive(Debug)]
 pub struct Annotation {
     #[pyo3(get)]
-    pub(crate) default: Option<Default>,
+    pub(crate) default: Option<pyo3::Py<Default>>,
 }
 
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
     #[pyo3(signature = (default = None))]
-    fn new(default: Option<Default>) -> Self {
+    fn new(default: Option<pyo3::Py<Default>>) -> Self {
         Self { default }
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub struct Default {
-    #[pyo3(set, get)]
+    #[pyo3(get)]
     pub value: pyo3::Py<pyo3::types::PyAny>,
 }
 
@@ -94,15 +94,6 @@ impl Default {
     #[pyo3(signature = (value))]
     fn new(value: pyo3::Py<pyo3::types::PyAny>) -> Self {
         Self { value }
-    }
-}
-
-impl Clone for Default {
-    fn clone(&self) -> Self {
-        pyo3::Python::attach(|py| {
-            let value = self.value.clone_ref(py);
-            Self { value }
-        })
     }
 }
 
@@ -263,12 +254,11 @@ pub fn non_root_python_to_rust<'p>(
 fn non_root_type_to_annotated<'p>(
     py: pyo3::Python<'p>,
     class: &pyo3::Bound<'p, pyo3::types::PyType>,
-    annotation: Option<Annotation>,
 ) -> pyo3::PyResult<AnnotatedType> {
     let inner = non_root_python_to_rust(py, class)?.unbind();
     Ok(AnnotatedType {
         inner,
-        annotation: annotation.unwrap_or(Annotation { default: None }),
+        annotation: Annotation { default: None }.into_pyobject(py)?.unbind(),
     })
 }
 
@@ -283,7 +273,7 @@ pub(crate) fn python_class_to_annotated<'p>(
         Ok(root.downcast_into::<AnnotatedType>()?)
     } else {
         // Handle builtin types
-        pyo3::Bound::new(py, non_root_type_to_annotated(py, class, None)?)
+        pyo3::Bound::new(py, non_root_type_to_annotated(py, class)?)
     }
 }
 
@@ -304,6 +294,8 @@ pub(crate) fn type_to_tag(t: &Type) -> asn1::Tag {
 #[cfg(test)]
 mod tests {
 
+    use pyo3::IntoPyObject;
+
     use super::{type_to_tag, AnnotatedType, Annotation, Type};
 
     #[test]
@@ -317,7 +309,10 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
-                    annotation: Annotation { default: None },
+                    annotation: Annotation { default: None }
+                        .into_pyobject(py)
+                        .unwrap()
+                        .unbind(),
                 },
             )
             .unwrap();
@@ -325,7 +320,10 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::Option(ann_type)).unwrap(),
-                    annotation: Annotation { default: None },
+                    annotation: Annotation { default: None }
+                        .into_pyobject(py)
+                        .unwrap()
+                        .unbind(),
                 },
             )
             .unwrap();

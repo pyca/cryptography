@@ -105,11 +105,11 @@ pub(crate) fn decode_annotated_type<'a>(
 
     // Handle DEFAULT annotation if field is not present (by
     // returning the default value)
-    if let Some(default) = &ann_type.annotation.default {
+    if let Some(default) = &ann_type.annotation.get().default {
         let expected_tag = type_to_tag(inner);
         let next_tag = parser.peek_tag();
         if next_tag != Some(expected_tag) {
-            return Ok(default.value.clone_ref(py).into_bound(py));
+            return Ok(default.get().value.clone_ref(py).into_bound(py));
         }
     }
 
@@ -145,8 +145,8 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::GeneralizedTime() => decode_generalized_time(py, parser)?.into_any(),
     };
 
-    match &ann_type.annotation.default {
-        Some(default) if decoded.eq(default.value.bind(py))? => Err(CryptographyError::Py(
+    match &ann_type.annotation.get().default {
+        Some(default) if decoded.eq(default.get().value.bind(py))? => Err(CryptographyError::Py(
             pyo3::exceptions::PyValueError::new_err(
                 "invalid DER: DEFAULT value was explicitly encoded".to_string(),
             ),
