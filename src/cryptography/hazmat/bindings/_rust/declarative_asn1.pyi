@@ -25,6 +25,7 @@ class Annotation:
         cls,
         default: Default | None = None,
     ) -> Annotation: ...
+    def is_empty(self) -> bool: ...
 
 T = typing.TypeVar("T")
 

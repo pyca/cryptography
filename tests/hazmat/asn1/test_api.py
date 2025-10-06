@@ -3,6 +3,7 @@
 # for complete details.
 
 import datetime
+import re
 import sys
 import typing
 
@@ -196,8 +197,10 @@ class TestSequenceAPI:
     def test_fail_optional_with_default_field(self) -> None:
         with pytest.raises(
             TypeError,
-            match="optional \\(`X \\| None`\\) types should not have a "
-            "DEFAULT annotation",
+            match=re.escape(
+                "optional (`X | None`) types should not have a "
+                "DEFAULT annotation"
+            ),
         ):
 
             @asn1.sequence
@@ -206,16 +209,21 @@ class TestSequenceAPI:
                     typing.Union[int, None], asn1.Default(value=9)
                 ]
 
+    def test_fail_optional_with_annotations_inside(self) -> None:
         with pytest.raises(
             TypeError,
-            match="optional \\(`X \\| None`\\) types should not have a "
-            "DEFAULT annotation",
+            match=re.escape(
+                "optional (`X | None`) types cannot have `X` "
+                "annotated: annotations must apply to the union (i.e: "
+                "`Annotated[X | None, annotation]`)"
+            ),
         ):
-            IntWithDefault = Annotated[int, asn1.Default(value=9)]  # noqa: N806
 
             @asn1.sequence
             class Example2:
-                invalid: typing.Union[IntWithDefault, None]
+                invalid: typing.Union[
+                    Annotated[int, asn1.Default(value=9)], None
+                ]
 
     def test_fields_of_variant_type(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1

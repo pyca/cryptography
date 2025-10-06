@@ -79,6 +79,11 @@ impl Annotation {
     fn new(default: Option<pyo3::Py<Default>>) -> Self {
         Self { default }
     }
+
+    #[pyo3(signature = ())]
+    fn is_empty(&self) -> bool {
+        self.default.is_none()
+    }
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]

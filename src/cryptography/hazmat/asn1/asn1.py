@@ -94,14 +94,19 @@ def _normalize_field_type(
             )
             annotated_type = _normalize_field_type(optional_type, field_name)
 
-            if (
-                annotation.default is not None
-                or annotated_type.annotation.default is not None
-            ):
+            if not annotated_type.annotation.is_empty():
+                raise TypeError(
+                    "optional (`X | None`) types cannot have `X` "
+                    "annotated: annotations must apply to the union "
+                    "(i.e: `Annotated[X | None, annotation]`)"
+                )
+
+            if annotation.default is not None:
                 raise TypeError(
                     "optional (`X | None`) types should not have a DEFAULT "
                     "annotation"
                 )
+
             rust_field_type = declarative_asn1.Type.Option(annotated_type)
         else:
             raise TypeError(
