@@ -136,6 +136,7 @@ class Backend:
             return isinstance(
                 algorithm,
                 (
+                    hashes.MD5,
                     hashes.SHA1,
                     hashes.SHA224,
                     hashes.SHA256,
