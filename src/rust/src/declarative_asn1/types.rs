@@ -12,41 +12,31 @@ use pyo3::{IntoPyObject, PyTypeInfo};
 /// Internal type representation for mapping between
 /// Python and ASN.1.
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
-#[derive(Debug)]
 pub enum Type {
     // Core ASN.1 types
     //
     /// SEQUENCE (`class`, `dict`)
     /// The first element is the Python class that represents the sequence,
     /// the second element is a dict of the (already converted) fields of the class.
-    #[pyo3(constructor = (_0, _1))]
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// OPTIONAL (`T | None`)
-    #[pyo3(constructor = (_0))]
     Option(pyo3::Py<AnnotatedType>),
 
     // Python types that we map to canonical ASN.1 types
     //
     /// `bool` -> `Boolean`
-    #[pyo3(constructor = ())]
     PyBool(),
     /// `int` -> `Integer`
-    #[pyo3(constructor = ())]
     PyInt(),
     /// `bytes` -> `Octet String`
-    #[pyo3(constructor = ())]
     PyBytes(),
     /// `str` -> `UTF8String`
-    #[pyo3(constructor = ())]
     PyStr(),
     /// PrintableString (`str`)
-    #[pyo3(constructor = ())]
     PrintableString(),
     /// UtcTime (`datetime`)
-    #[pyo3(constructor = ())]
     UtcTime(),
     /// GeneralizedTime (`datetime`)
-    #[pyo3(constructor = ())]
     GeneralizedTime(),
 }
 

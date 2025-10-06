@@ -178,3 +178,18 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: typing.Union[int, str]
+
+    def test_fields_of_variant_type(self) -> None:
+        from cryptography.hazmat.bindings._rust import declarative_asn1
+
+        # Needed for coverage of the `_0`, `_1`, etc fields generated
+        # for tuple enum variants
+        seq = declarative_asn1.Type.Sequence(type(None), {})
+        assert seq._0 is type(None)
+        assert seq._1 == {}
+
+        ann_type = declarative_asn1.AnnotatedType(
+            seq, declarative_asn1.Annotation()
+        )
+        opt = declarative_asn1.Type.Option(ann_type)
+        assert opt._0 == ann_type
