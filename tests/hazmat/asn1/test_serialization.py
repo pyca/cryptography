@@ -396,6 +396,6 @@ class TestSequence:
 
         with pytest.raises(
             ValueError,
-            match="invalid DER: DEFAULT value was present in encoded data",
+            match="invalid DER: DEFAULT value was explicitly encoded",
         ):
             asn1.decode_der(Example, b"\x30\x03\x01\x01\xff")
