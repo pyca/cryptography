@@ -148,7 +148,7 @@ pub(crate) fn decode_annotated_type<'a>(
     match &ann_type.annotation.default {
         Some(default) if decoded.eq(default.value.bind(py))? => Err(CryptographyError::Py(
             pyo3::exceptions::PyValueError::new_err(
-                "invalid DER: DEFAULT value was present in encoded data".to_string(),
+                "invalid DER: DEFAULT value was explicitly encoded".to_string(),
             ),
         )),
         _ => Ok(decoded),
