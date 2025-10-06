@@ -62,7 +62,7 @@ def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
     default = None
     for raw_annotation in metadata:
         if isinstance(raw_annotation, declarative_asn1.Default):
-            default = declarative_asn1.Default(value=raw_annotation.value)
+            default = raw_annotation
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
 
