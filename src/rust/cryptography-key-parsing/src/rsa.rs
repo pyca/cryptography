@@ -2,7 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::KeyParsingResult;
+use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct Pkcs1RsaPublicKey<'a> {
@@ -39,8 +39,8 @@ pub fn parse_pkcs1_public_key(
 }
 
 pub fn serialize_pkcs1_public_key(
-    rsa: &openssl::rsa::RsaRef<openssl::pkey::Public>,
-) -> crate::KeySerializationResult<Vec<u8>> {
+    rsa: &openssl::rsa::RsaRef<impl openssl::pkey::HasPublic>,
+) -> KeySerializationResult<Vec<u8>> {
     let n_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.n())?;
     let e_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.e())?;
 
@@ -56,7 +56,7 @@ pub fn parse_pkcs1_private_key(
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
     let rsa_private_key = asn1::parse_single::<RsaPrivateKey<'_>>(data)?;
     if rsa_private_key.version != 0 || rsa_private_key.other_prime_infos.is_some() {
-        return Err(crate::KeyParsingError::InvalidKey);
+        return Err(KeyParsingError::InvalidKey);
     }
     let n = openssl::bn::BigNum::from_slice(rsa_private_key.n.as_bytes())?;
     let e = openssl::bn::BigNum::from_slice(rsa_private_key.e.as_bytes())?;
