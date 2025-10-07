@@ -30,7 +30,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
         // not encoding the value)
         if let Some(default) = &annotated_type.annotation.get().default {
             if value
-                .eq(&default.get().value)
+                .eq(default)
                 .map_err(|_| asn1::WriteError::AllocationError)?
             {
                 return Ok(());

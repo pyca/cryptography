@@ -109,7 +109,7 @@ pub(crate) fn decode_annotated_type<'a>(
         let expected_tag = type_to_tag(inner);
         let next_tag = parser.peek_tag();
         if next_tag != Some(expected_tag) {
-            return Ok(default.get().value.clone_ref(py).into_bound(py));
+            return Ok(default.clone_ref(py).into_bound(py));
         }
     }
 
@@ -146,7 +146,7 @@ pub(crate) fn decode_annotated_type<'a>(
     };
 
     match &ann_type.annotation.get().default {
-        Some(default) if decoded.eq(default.get().value.bind(py))? => Err(CryptographyError::Py(
+        Some(default) if decoded.eq(default.bind(py))? => Err(CryptographyError::Py(
             pyo3::exceptions::PyValueError::new_err(
                 "invalid DER: DEFAULT value was explicitly encoded".to_string(),
             ),

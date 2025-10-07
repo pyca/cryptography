@@ -20,20 +20,12 @@ class Type:
     PyStr: typing.ClassVar[type]
 
 class Annotation:
-    default: Default | None
+    default: typing.Any | None
     def __new__(
         cls,
-        default: Default | None = None,
+        default: typing.Any | None = None,
     ) -> Annotation: ...
     def is_empty(self) -> bool: ...
-
-T = typing.TypeVar("T")
-
-# TODO: replace with `Default[T]` once the min Python version is >= 3.12
-class Default(typing.Generic[T]):
-    value: T
-
-    def __new__(cls, value: T) -> Default: ...
 
 class AnnotatedType:
     inner: Type

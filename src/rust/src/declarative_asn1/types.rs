@@ -69,36 +69,20 @@ pub struct AnnotatedTypeObject<'a> {
 #[derive(Debug)]
 pub struct Annotation {
     #[pyo3(get)]
-    pub(crate) default: Option<pyo3::Py<Default>>,
+    pub(crate) default: Option<pyo3::Py<pyo3::types::PyAny>>,
 }
 
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
     #[pyo3(signature = (default = None))]
-    fn new(default: Option<pyo3::Py<Default>>) -> Self {
+    fn new(default: Option<pyo3::Py<pyo3::types::PyAny>>) -> Self {
         Self { default }
     }
 
     #[pyo3(signature = ())]
     fn is_empty(&self) -> bool {
         self.default.is_none()
-    }
-}
-
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
-#[derive(Debug)]
-pub struct Default {
-    #[pyo3(get)]
-    pub value: pyo3::Py<pyo3::types::PyAny>,
-}
-
-#[pyo3::pymethods]
-impl Default {
-    #[new]
-    #[pyo3(signature = (value))]
-    fn new(value: pyo3::Py<pyo3::types::PyAny>) -> Self {
-        Self { value }
     }
 }
 

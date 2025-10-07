@@ -61,8 +61,8 @@ def _is_union(field_type: type) -> bool:
 def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
     default = None
     for raw_annotation in metadata:
-        if isinstance(raw_annotation, declarative_asn1.Default):
-            default = raw_annotation
+        if isinstance(raw_annotation, Default):
+            default = raw_annotation.value
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
 
@@ -188,7 +188,12 @@ else:
         return dataclass_cls
 
 
-Default = declarative_asn1.Default
+# TODO: replace with `Default[U]` once the min Python version is >= 3.12
+@dataclasses.dataclass
+class Default(typing.Generic[U]):
+    value: U
+
+
 PrintableString = declarative_asn1.PrintableString
 UtcTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
