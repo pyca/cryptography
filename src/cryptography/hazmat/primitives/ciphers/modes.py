@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
+from cryptography.hazmat.decrepit.ciphers.modes import CFB as CFB
+from cryptography.hazmat.decrepit.ciphers.modes import CFB8 as CFB8
+from cryptography.hazmat.decrepit.ciphers.modes import OFB as OFB
 from cryptography.hazmat.primitives._cipheralgorithm import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
@@ -152,18 +155,6 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
                 "bytes."
             )
 
-
-# Import decrepit modes after base classes are defined to avoid circular
-# imports
-from cryptography.hazmat.decrepit.ciphers.modes import (  # noqa: E402
-    CFB as CFB,
-)
-from cryptography.hazmat.decrepit.ciphers.modes import (  # noqa: E402
-    CFB8 as CFB8,
-)
-from cryptography.hazmat.decrepit.ciphers.modes import (  # noqa: E402
-    OFB as OFB,
-)
 
 utils.deprecated(
     OFB,
