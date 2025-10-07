@@ -189,7 +189,7 @@ else:
 
 
 # TODO: replace with `Default[U]` once the min Python version is >= 3.12
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class Default(typing.Generic[U]):
     value: U
 
