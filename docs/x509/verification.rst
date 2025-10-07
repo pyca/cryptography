@@ -79,7 +79,7 @@ the root of trust:
     >>> # See the documentation on `time` below for more details. If
     >>> # significant time passes between creating a verifier and performing a
     >>> # verification, you may encounter issues with certificate expiration.
-    >>> verification_time = datetime.now(timezone.utc)
+    >>> verification_time = datetime.now(timezone.utc)  # doctest: +SKIP
     >>> builder = builder.time(verification_time)
     >>> verifier = builder.build_server_verifier(DNSName("cryptography.io"))
     >>> # NOTE: peer and untrusted_intermediates are Certificate and
