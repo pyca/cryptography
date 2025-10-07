@@ -8,11 +8,11 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-cfg-if = "1"
+cfg-if.workspace = true
+foreign-types.workspace = true
+foreign-types-shared.workspace = true
 openssl.workspace = true
 openssl-sys.workspace = true
-foreign-types = "0.3"
-foreign-types-shared = "0.1"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)', 'cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_IS_AWSLC)'] }
