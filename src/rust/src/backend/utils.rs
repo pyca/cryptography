@@ -114,30 +114,19 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     if format.is(&types::PRIVATE_FORMAT_PKCS8.get(py)?) {
-        if encoding.is(&types::ENCODING_PEM.get(py)?) {
-            let pem_bytes = if password.is_empty() {
-                pkey.private_key_to_pem_pkcs8()?
-            } else {
-                pkey.private_key_to_pem_pkcs8_passphrase(
-                    openssl::symm::Cipher::aes_256_cbc(),
-                    password,
-                )?
-            };
-            return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
-        } else if encoding.is(&types::ENCODING_DER.get(py)?) {
-            let der_bytes = if password.is_empty() {
-                pkey.private_key_to_pkcs8()?
-            } else {
+        let (tag, der_bytes) = if password.is_empty() {
+            ("PRIVATE KEY", pkey.private_key_to_pkcs8()?)
+        } else {
+            (
+                "ENCRYPTED PRIVATE KEY",
                 pkey.private_key_to_pkcs8_passphrase(
                     openssl::symm::Cipher::aes_256_cbc(),
                     password,
-                )?
-            };
-            return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
-        }
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Unsupported encoding for PKCS8"),
-        ));
+                )?,
+            )
+        };
+
+        return crate::asn1::encode_der_data(py, tag.to_string(), der_bytes, encoding);
     }
 
     if format.is(&types::PRIVATE_FORMAT_TRADITIONAL_OPENSSL.get(py)?) {

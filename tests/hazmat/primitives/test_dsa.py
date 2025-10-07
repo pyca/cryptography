@@ -773,7 +773,7 @@ class TestDSASerialization:
     )
     def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         key = DSA_KEY_1024.private_key(backend)
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(

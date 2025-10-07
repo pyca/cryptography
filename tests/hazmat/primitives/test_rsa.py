@@ -2472,7 +2472,7 @@ class TestRSAPrivateKeySerialization:
         self, rsa_key_2048: rsa.RSAPrivateKey, encoding, fmt, backend
     ):
         key = rsa_key_2048
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(

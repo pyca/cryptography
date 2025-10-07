@@ -532,7 +532,7 @@ class TestDHPrivateKeySerialization:
     def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         parameters = FFDH3072_P.parameters(backend)
         key = parameters.generate_private_key()
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.skip_fips(reason="non-FIPS parameters")

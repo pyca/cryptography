@@ -1814,7 +1814,7 @@ class TestDHSerialization:
                 ):
                     # tested elsewhere
                     continue
-                with pytest.raises(ValueError):
+                with pytest.raises((ValueError, TypeError)):
                     private_key.private_bytes(enc, fmt, NoEncryption())
 
 
