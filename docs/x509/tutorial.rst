@@ -116,6 +116,7 @@ Then we generate the certificate itself:
 
 .. code-block:: pycon
 
+    >>> import datetime
     >>> # Various details about who we are. For a self-signed certificate the
     >>> # subject and issuer are always the same.
     >>> subject = issuer = x509.Name([
