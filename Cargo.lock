@@ -91,6 +91,7 @@ dependencies = [
  "cryptography-x509",
  "openssl",
  "openssl-sys",
+ "pem",
 ]
 
 [[package]]

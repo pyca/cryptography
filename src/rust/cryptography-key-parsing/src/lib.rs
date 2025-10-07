@@ -8,6 +8,7 @@
 
 pub mod dsa;
 pub mod ec;
+pub mod pem;
 pub mod pkcs8;
 pub mod rsa;
 pub mod spki;
@@ -24,6 +25,13 @@ pub enum KeyParsingError {
     UnsupportedEncryptionAlgorithm(asn1::ObjectIdentifier),
     EncryptedKeyWithoutPassword,
     IncorrectPassword,
+    // PEM encryption errors
+    PemMissingDekInfo,
+    PemInvalidDekInfo,
+    PemInvalidIv,
+    PemUnableToDeriveKey,
+    PemUnsupportedCipher,
+    PemInvalidProcType,
 }
 
 impl From<asn1::ParseError> for KeyParsingError {
