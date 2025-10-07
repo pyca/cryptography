@@ -150,14 +150,12 @@ pub(crate) fn pkey_private_bytes<'p>(
         }
         if let Ok(rsa) = pkey.rsa() {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let pem_bytes = if password.is_empty() {
-                    rsa.private_key_to_pem()?
-                } else {
-                    rsa.private_key_to_pem_passphrase(
-                        openssl::symm::Cipher::aes_256_cbc(),
-                        password,
-                    )?
-                };
+                let der_bytes = rsa.private_key_to_der()?;
+                let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
+                    "RSA PRIVATE KEY",
+                    &der_bytes,
+                    password,
+                )?;
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {
@@ -173,14 +171,12 @@ pub(crate) fn pkey_private_bytes<'p>(
             }
         } else if let Ok(dsa) = pkey.dsa() {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let pem_bytes = if password.is_empty() {
-                    dsa.private_key_to_pem()?
-                } else {
-                    dsa.private_key_to_pem_passphrase(
-                        openssl::symm::Cipher::aes_256_cbc(),
-                        password,
-                    )?
-                };
+                let der_bytes = dsa.private_key_to_der()?;
+                let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
+                    "DSA PRIVATE KEY",
+                    &der_bytes,
+                    password,
+                )?;
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {
@@ -196,14 +192,12 @@ pub(crate) fn pkey_private_bytes<'p>(
             }
         } else if let Ok(ec) = pkey.ec_key() {
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let pem_bytes = if password.is_empty() {
-                    ec.private_key_to_pem()?
-                } else {
-                    ec.private_key_to_pem_passphrase(
-                        openssl::symm::Cipher::aes_256_cbc(),
-                        password,
-                    )?
-                };
+                let der_bytes = ec.private_key_to_der()?;
+                let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
+                    "EC PRIVATE KEY",
+                    &der_bytes,
+                    password,
+                )?;
                 return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
             } else if encoding.is(&types::ENCODING_DER.get(py)?) {
                 if !password.is_empty() {

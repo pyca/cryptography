@@ -9,18 +9,7 @@ pub(crate) fn get_rand_bytes(
     size: usize,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
     Ok(pyo3::types::PyBytes::new_with(py, size, |b| {
-        #[cfg(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        ))]
-        openssl::rand::rand_bytes(b).map_err(CryptographyError::from)?;
-        #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))]
-        openssl::rand::rand_priv_bytes(b).map_err(CryptographyError::from)?;
+        cryptography_openssl::rand::rand_bytes(b).map_err(CryptographyError::from)?;
         Ok(())
     })?)
 }
