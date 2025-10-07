@@ -228,12 +228,11 @@ pub fn serialize_public_key(
         let pub_key_int = asn1::BigUint::new(&pub_key_bytes).unwrap();
         let pub_key_der = asn1::write_single(&pub_key_int)?;
 
-        let params = if let Some(ref q_bytes_val) = q_bytes_opt {
-            q_bytes = q_bytes_val.clone();
+        let params = if let Some(ref q_bytes) = q_bytes_opt {
             let dhx_params = DHXParams {
                 p: asn1::BigUint::new(&p_bytes).unwrap(),
                 g: asn1::BigUint::new(&g_bytes).unwrap(),
-                q: asn1::BigUint::new(&q_bytes).unwrap(),
+                q: asn1::BigUint::new(q_bytes).unwrap(),
                 j: None,
                 validation_params: None,
             };
