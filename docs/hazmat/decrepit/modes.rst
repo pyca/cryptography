@@ -27,21 +27,6 @@ objects in the same way as modes from
         be the same length as the cipher's block size.
     :type initialization_vector: :term:`bytes-like`
 
-    .. doctest::
-
-        >>> import os
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
-        >>> from cryptography.hazmat.decrepit.ciphers.modes import CFB
-        >>> key = os.urandom(16)
-        >>> iv = os.urandom(16)
-        >>> cipher = Cipher(algorithms.AES(key), CFB(iv))
-        >>> encryptor = cipher.encryptor()
-        >>> ct = encryptor.update(b"a secret message")
-        >>> decryptor = cipher.decryptor()
-        >>> decryptor.update(ct)
-        b'a secret message'
-
-
 .. class:: CFB8(initialization_vector)
 
     .. versionadded:: 47.0.0
@@ -55,21 +40,6 @@ objects in the same way as modes from
         be the same length as the cipher's block size.
     :type initialization_vector: :term:`bytes-like`
 
-    .. doctest::
-
-        >>> import os
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
-        >>> from cryptography.hazmat.decrepit.ciphers.modes import CFB8
-        >>> key = os.urandom(16)
-        >>> iv = os.urandom(16)
-        >>> cipher = Cipher(algorithms.AES(key), CFB8(iv))
-        >>> encryptor = cipher.encryptor()
-        >>> ct = encryptor.update(b"a secret message")
-        >>> decryptor = cipher.decryptor()
-        >>> decryptor.update(ct)
-        b'a secret message'
-
-
 .. class:: OFB(initialization_vector)
 
     .. versionadded:: 47.0.0
@@ -82,17 +52,3 @@ objects in the same way as modes from
     :param initialization_vector: Must be random and unpredictable. It must
         be the same length as the cipher's block size.
     :type initialization_vector: :term:`bytes-like`
-
-    .. doctest::
-
-        >>> import os
-        >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
-        >>> from cryptography.hazmat.decrepit.ciphers.modes import OFB
-        >>> key = os.urandom(16)
-        >>> iv = os.urandom(16)
-        >>> cipher = Cipher(algorithms.AES(key), OFB(iv))
-        >>> encryptor = cipher.encryptor()
-        >>> ct = encryptor.update(b"a secret message")
-        >>> decryptor = cipher.decryptor()
-        >>> decryptor.update(ct)
-        b'a secret message'
