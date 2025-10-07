@@ -3,10 +3,16 @@
 # for complete details.
 
 import datetime
+import re
 import sys
 import typing
 
 import pytest
+
+if sys.version_info < (3, 9):
+    from typing_extensions import Annotated
+else:
+    from typing import Annotated
 
 import cryptography.hazmat.asn1 as asn1
 
@@ -178,6 +184,46 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: typing.Union[int, str]
+
+    def test_fail_unsupported_annotation(self) -> None:
+        with pytest.raises(
+            TypeError, match="unsupported annotation: some annotation"
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, "some annotation"]
+
+    def test_fail_optional_with_default_field(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional (`X | None`) types should not have a "
+                "DEFAULT annotation"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[
+                    typing.Union[int, None], asn1.Default(value=9)
+                ]
+
+    def test_fail_optional_with_annotations_inside(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional (`X | None`) types cannot have `X` "
+                "annotated: annotations must apply to the union (i.e: "
+                "`Annotated[X | None, annotation]`)"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example2:
+                invalid: typing.Union[
+                    Annotated[int, asn1.Default(value=9)], None
+                ]
 
     def test_fields_of_variant_type(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1

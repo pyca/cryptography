@@ -18,12 +18,18 @@ if sys.version_info < (3, 11):
     if sys.version_info < (3, 9):
         get_type_hints = typing_extensions.get_type_hints
         get_type_args = typing_extensions.get_args
+        get_type_origin = typing_extensions.get_origin
+        Annotated = typing_extensions.Annotated
     else:
         get_type_hints = typing.get_type_hints
         get_type_args = typing.get_args
+        get_type_origin = typing.get_origin
+        Annotated = typing.Annotated
 else:
     get_type_hints = typing.get_type_hints
     get_type_args = typing.get_args
+    get_type_origin = typing.get_origin
+    Annotated = typing.Annotated
 
 if sys.version_info < (3, 10):
     NoneType = type(None)
@@ -49,13 +55,30 @@ def _is_union(field_type: type) -> bool:
         if hasattr(types, "UnionType")
         else (typing.Union,)
     )
-    return typing.get_origin(field_type) in union_types
+    return get_type_origin(field_type) in union_types
+
+
+def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
+    default = None
+    for raw_annotation in metadata:
+        if isinstance(raw_annotation, Default):
+            default = raw_annotation.value
+        else:
+            raise TypeError(f"unsupported annotation: {raw_annotation}")
+
+    return declarative_asn1.Annotation(default=default)
 
 
 def _normalize_field_type(
     field_type: typing.Any, field_name: str
 ) -> declarative_asn1.AnnotatedType:
-    annotation = declarative_asn1.Annotation()
+    # Strip the `Annotated[...]` off, and populate the annotation
+    # from it if it exists.
+    if get_type_origin(field_type) is Annotated:
+        annotation = _extract_annotation(field_type.__metadata__)
+        field_type, _ = get_type_args(field_type)
+    else:
+        annotation = declarative_asn1.Annotation()
 
     if hasattr(field_type, "__asn1_root__"):
         annotated_root = field_type.__asn1_root__
@@ -70,6 +93,20 @@ def _normalize_field_type(
                 union_args[0] if union_args[1] is type(None) else union_args[1]
             )
             annotated_type = _normalize_field_type(optional_type, field_name)
+
+            if not annotated_type.annotation.is_empty():
+                raise TypeError(
+                    "optional (`X | None`) types cannot have `X` "
+                    "annotated: annotations must apply to the union "
+                    "(i.e: `Annotated[X | None, annotation]`)"
+                )
+
+            if annotation.default is not None:
+                raise TypeError(
+                    "optional (`X | None`) types should not have a DEFAULT "
+                    "annotation"
+                )
+
             rust_field_type = declarative_asn1.Type.Option(annotated_type)
         else:
             raise TypeError(
@@ -149,6 +186,12 @@ else:
         )(cls)
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
+
+
+# TODO: replace with `Default[U]` once the min Python version is >= 3.12
+@dataclasses.dataclass(frozen=True)
+class Default(typing.Generic[U]):
+    value: U
 
 
 PrintableString = declarative_asn1.PrintableString

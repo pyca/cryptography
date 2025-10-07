@@ -9,6 +9,11 @@ import typing
 
 import pytest
 
+if sys.version_info < (3, 9):
+    from typing_extensions import Annotated
+else:
+    from typing import Annotated
+
 import cryptography.hazmat.asn1 as asn1
 
 U = typing.TypeVar("U")
@@ -353,3 +358,44 @@ class TestSequence:
                 )
             ]
         )
+
+    def test_ok_sequence_with_default_annotations(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[bool, asn1.Default(True)]
+            b: int
+            c: bytes
+            d: Annotated[str, asn1.Default("d")]
+
+        assert_roundtrips(
+            [
+                # No DEFAULT fields contain their default value
+                (
+                    Example(a=False, b=9, c=b"c", d="x"),
+                    b"\x30\x0c\x01\x01\x00\x02\x01\x09\x04\x01c\x0c\x01x",
+                ),
+                # All DEFAULT fields contain their default value
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x30\x06\x02\x01\x09\x04\x01c",
+                ),
+                # Some DEFAULT fields contain their default value
+                (
+                    Example(a=False, b=9, c=b"c", d="d"),
+                    b"\x30\x09\x01\x01\x00\x02\x01\x09\x04\x01c",
+                ),
+            ]
+        )
+
+    def test_fail_decode_default_value_present(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[bool, asn1.Default(True)]
+
+        with pytest.raises(
+            ValueError,
+            match="invalid DER: DEFAULT value was explicitly encoded",
+        ):
+            asn1.decode_der(Example, b"\x30\x03\x01\x01\xff")

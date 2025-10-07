@@ -102,11 +102,22 @@ pub(crate) fn decode_annotated_type<'a>(
     ann_type: &AnnotatedType,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let inner = ann_type.inner.get();
-    match &inner {
+
+    // Handle DEFAULT annotation if field is not present (by
+    // returning the default value)
+    if let Some(default) = &ann_type.annotation.get().default {
+        let expected_tag = type_to_tag(inner);
+        let next_tag = parser.peek_tag();
+        if next_tag != Some(expected_tag) {
+            return Ok(default.clone_ref(py).into_bound(py));
+        }
+    }
+
+    let decoded = match &inner {
         Type::Sequence(cls, fields) => {
             let seq_parse_result = parser.read_element::<asn1::Sequence<'_>>()?;
 
-            seq_parse_result.parse(|d| {
+            seq_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
                 let kwargs = pyo3::types::PyDict::new(py);
                 let fields = fields.bind(py);
                 for (name, ann_type) in fields.into_iter() {
@@ -116,24 +127,30 @@ pub(crate) fn decode_annotated_type<'a>(
                 }
                 let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
                 Ok(val)
-            })
+            })?
         }
         Type::Option(cls) => {
             let inner_tag = type_to_tag(cls.get().inner.get());
             match parser.peek_tag() {
-                Some(t) if t == inner_tag => {
-                    let decoded_value = decode_annotated_type(py, parser, cls.get())?;
-                    Ok(decoded_value)
-                }
-                _ => Ok(pyo3::types::PyNone::get(py).to_owned().into_any()),
+                Some(t) if t == inner_tag => decode_annotated_type(py, parser, cls.get())?,
+                _ => pyo3::types::PyNone::get(py).to_owned().into_any(),
             }
         }
-        Type::PyBool() => Ok(decode_pybool(py, parser)?.into_any()),
-        Type::PyInt() => Ok(decode_pyint(py, parser)?.into_any()),
-        Type::PyBytes() => Ok(decode_pybytes(py, parser)?.into_any()),
-        Type::PyStr() => Ok(decode_pystr(py, parser)?.into_any()),
-        Type::PrintableString() => Ok(decode_printable_string(py, parser)?.into_any()),
-        Type::UtcTime() => Ok(decode_utc_time(py, parser)?.into_any()),
-        Type::GeneralizedTime() => Ok(decode_generalized_time(py, parser)?.into_any()),
+        Type::PyBool() => decode_pybool(py, parser)?.into_any(),
+        Type::PyInt() => decode_pyint(py, parser)?.into_any(),
+        Type::PyBytes() => decode_pybytes(py, parser)?.into_any(),
+        Type::PyStr() => decode_pystr(py, parser)?.into_any(),
+        Type::PrintableString() => decode_printable_string(py, parser)?.into_any(),
+        Type::UtcTime() => decode_utc_time(py, parser)?.into_any(),
+        Type::GeneralizedTime() => decode_generalized_time(py, parser)?.into_any(),
+    };
+
+    match &ann_type.annotation.get().default {
+        Some(default) if decoded.eq(default.bind(py))? => Err(CryptographyError::Py(
+            pyo3::exceptions::PyValueError::new_err(
+                "invalid DER: DEFAULT value was explicitly encoded".to_string(),
+            ),
+        )),
+        _ => Ok(decoded),
     }
 }
