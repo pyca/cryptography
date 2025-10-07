@@ -8,22 +8,22 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-base64 = "0.22"
-cfg-if = "1"
-pyo3.workspace = true
 asn1.workspace = true
+base64.workspace = true
+cfg-if.workspace = true
 cryptography-cffi = { path = "cryptography-cffi" }
 cryptography-crypto = { path = "cryptography-crypto" }
 cryptography-keepalive = { path = "cryptography-keepalive" }
 cryptography-key-parsing = { path = "cryptography-key-parsing" }
+cryptography-openssl = { path = "cryptography-openssl" }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-x509-verification = { path = "cryptography-x509-verification" }
-cryptography-openssl = { path = "cryptography-openssl" }
-pem = { version = "3", default-features = false }
+foreign-types-shared.workspace = true
 openssl.workspace = true
 openssl-sys.workspace = true
-foreign-types-shared = "0.1"
-self_cell = "1"
+pem.workspace = true
+pyo3.workspace = true
+self_cell.workspace = true
 
 [build-dependencies]
 pyo3-build-config.workspace = true

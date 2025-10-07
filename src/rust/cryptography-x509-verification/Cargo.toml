@@ -13,4 +13,4 @@ cryptography-x509 = { path = "../cryptography-x509" }
 cryptography-key-parsing = { path = "../cryptography-key-parsing" }
 
 [dev-dependencies]
-pem = { version = "3", default-features = false }
+pem.workspace = true
