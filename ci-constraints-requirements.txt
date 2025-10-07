@@ -8,7 +8,7 @@ alabaster==1.0.0 ; python_full_version >= '3.10'
     # via sphinx
 argcomplete==3.6.2
     # via nox
-attrs==25.3.0
+attrs==25.4.0
     # via nox
 babel==2.17.0
     # via sphinx
