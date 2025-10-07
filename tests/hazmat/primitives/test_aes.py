@@ -10,6 +10,7 @@ import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.decrepit.ciphers.modes import CFB, CFB8, OFB
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...doubles import DummyMode
@@ -157,7 +158,7 @@ class TestAESModeECB:
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.OFB(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), OFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES OFB",
 )
@@ -183,13 +184,13 @@ class TestAESModeOFB:
             "OFBMMT256.rsp",
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: OFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.CFB(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), CFB(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB",
 )
@@ -215,13 +216,13 @@ class TestAESModeCFB:
             "CFB128MMT256.rsp",
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: CFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.CFB8(b"\x00" * 16)
+        algorithms.AES(b"\x00" * 16), CFB8(b"\x00" * 16)
     ),
     skip_message="Does not support AES CFB8",
 )
@@ -247,7 +248,7 @@ class TestAESModeCFB8:
             "CFB8MMT256.rsp",
         ],
         lambda key, **kwargs: algorithms.AES(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.CFB8(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: CFB8(binascii.unhexlify(iv)),
     )
 
 
@@ -272,9 +273,9 @@ class TestAESModeCTR:
     [
         modes.CBC(bytearray(b"\x00" * 16)),
         modes.CTR(bytearray(b"\x00" * 16)),
-        modes.OFB(bytearray(b"\x00" * 16)),
-        modes.CFB(bytearray(b"\x00" * 16)),
-        modes.CFB8(bytearray(b"\x00" * 16)),
+        OFB(bytearray(b"\x00" * 16)),
+        CFB(bytearray(b"\x00" * 16)),
+        CFB8(bytearray(b"\x00" * 16)),
         modes.XTS(bytearray(b"\x00" * 16)),
         # Add a dummy mode for coverage of the cipher_supported check.
         DummyMode(),
@@ -299,9 +300,9 @@ def test_buffer_protocol_alternate_modes(mode, backend):
         modes.ECB(),
         modes.CBC(bytearray(b"\x00" * 16)),
         modes.CTR(bytearray(b"\x00" * 16)),
-        modes.OFB(bytearray(b"\x00" * 16)),
-        modes.CFB(bytearray(b"\x00" * 16)),
-        modes.CFB8(bytearray(b"\x00" * 16)),
+        OFB(bytearray(b"\x00" * 16)),
+        CFB(bytearray(b"\x00" * 16)),
+        CFB8(bytearray(b"\x00" * 16)),
     ],
 )
 @pytest.mark.parametrize("alg_cls", [algorithms.AES128, algorithms.AES256])

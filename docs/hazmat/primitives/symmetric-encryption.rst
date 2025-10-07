@@ -324,6 +324,12 @@ Modes
 
 .. class:: OFB(initialization_vector)
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 49.0.0.
+
     OFB (Output Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
 
@@ -338,6 +344,12 @@ Modes
 
 .. class:: CFB(initialization_vector)
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 49.0.0.
+
     CFB (Cipher Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher.
 
@@ -351,6 +363,12 @@ Modes
     :type initialization_vector: :term:`bytes-like`
 
 .. class:: CFB8(initialization_vector)
+
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 49.0.0.
 
     CFB (Cipher Feedback) is a mode of operation for block ciphers. It
     transforms a block cipher into a stream cipher. The CFB8 variant uses an

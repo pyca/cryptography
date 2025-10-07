@@ -8,6 +8,7 @@ import os
 
 import pytest
 
+from cryptography.hazmat.decrepit.ciphers.modes import CFB, OFB
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from ...utils import load_cryptrec_vectors, load_nist_vectors
@@ -52,7 +53,7 @@ class TestCamelliaModeCBC:
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia(b"\x00" * 16), modes.OFB(b"\x00" * 16)
+        algorithms.Camellia(b"\x00" * 16), OFB(b"\x00" * 16)
     ),
     skip_message="Does not support Camellia OFB",
 )
@@ -62,13 +63,13 @@ class TestCamelliaModeOFB:
         os.path.join("ciphers", "Camellia"),
         ["camellia-ofb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: OFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.Camellia(b"\x00" * 16), modes.CFB(b"\x00" * 16)
+        algorithms.Camellia(b"\x00" * 16), CFB(b"\x00" * 16)
     ),
     skip_message="Does not support Camellia CFB",
 )
@@ -78,5 +79,5 @@ class TestCamelliaModeCFB:
         os.path.join("ciphers", "Camellia"),
         ["camellia-cfb.txt"],
         lambda key, **kwargs: algorithms.Camellia(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: CFB(binascii.unhexlify(iv)),
     )

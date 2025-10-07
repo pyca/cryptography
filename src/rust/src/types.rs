@@ -582,12 +582,12 @@ pub static CBC: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CBC"]);
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 pub static CFB: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CFB"]);
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.modes", &["CFB"]);
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 pub static CFB8: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CFB8"]);
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.modes", &["CFB8"]);
 pub static OFB: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["OFB"]);
+    LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.modes", &["OFB"]);
 pub static ECB: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["ECB"]);
 pub static CTR: LazyPyImport =
