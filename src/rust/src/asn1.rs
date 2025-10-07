@@ -102,7 +102,7 @@ pub(crate) fn encode_der_data<'p>(
             py,
             &pem::encode_config(
                 &pem::Pem::new(pem_tag, data),
-                pem::EncodeConfig::new().set_line_ending(pem::LineEnding::LF),
+                cryptography_key_parsing::pem::ENCODE_CONFIG,
             )
             .into_bytes(),
         ))

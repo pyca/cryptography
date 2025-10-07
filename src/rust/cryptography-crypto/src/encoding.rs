@@ -30,9 +30,19 @@ pub fn hex_decode(v: &str) -> Option<Vec<u8>> {
     Some(b)
 }
 
+pub fn hex_encode(data: &[u8]) -> String {
+    const HEX_CHARS: &[u8; 16] = b"0123456789ABCDEF";
+    let mut result = String::with_capacity(data.len() * 2);
+    for &byte in data {
+        result.push(HEX_CHARS[(byte >> 4) as usize] as char);
+        result.push(HEX_CHARS[(byte & 0x0F) as usize] as char);
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
-    use super::hex_decode;
+    use super::{hex_decode, hex_encode};
 
     #[test]
     fn test_hex_decode() {
@@ -47,6 +57,19 @@ mod tests {
             ("ABCD", Some(vec![0xAB, 0xCD])),
         ] {
             assert_eq!(hex_decode(text), expected);
+        }
+    }
+
+    #[test]
+    fn test_hex_encode() {
+        for (input, expected) in [
+            (&[][..], ""),
+            (&[0][..], "00"),
+            (&[0xAB][..], "AB"),
+            (&[0xAB, 0xCD][..], "ABCD"),
+            (&[0x12, 0x34, 0x56][..], "123456"),
+        ] {
+            assert_eq!(hex_encode(input), expected);
         }
     }
 }
