@@ -7,7 +7,7 @@ from __future__ import annotations
 INCLUDES = r"""
 /* define our OpenSSL API compatibility level to 3.0.0. Any symbols older than
    that will raise an error during compilation. */
-#define OPENSSL_API_COMPAT 0x30000000L
+#define OPENSSL_API_COMPAT 0x10100000L
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
