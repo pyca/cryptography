@@ -3,7 +3,6 @@
 // for complete details.
 
 use pyo3::IntoPyObject;
-use std::borrow::Cow;
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -72,88 +71,7 @@ fn load_pem_private_key<'p>(
         "Valid PEM but no BEGIN/END delimiters for a private key found. Are you sure this is a private key?"
     )?;
     let password = password.as_ref().map(|v| v.as_bytes());
-    let mut password_used = false;
-    let data = match p.headers().get("Proc-Type") {
-        Some("4,ENCRYPTED") => {
-            password_used = true;
-            let Some(dek_info) = p.headers().get("DEK-Info") else {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Encrypted PEM doesn't have a DEK-Info header.",
-                    ),
-                ));
-            };
-            let Some((cipher_algorithm, iv)) = dek_info.split_once(',') else {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Encrypted PEM's DEK-Info header is not valid.",
-                    ),
-                ));
-            };
-
-            let password = match password {
-                None | Some(b"") => {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Password was not given but private key is encrypted",
-                        ),
-                    ))
-                }
-                Some(p) => p,
-            };
-
-            // There's no RFC that defines these, but these are the ones in
-            // very wide use that we support.
-            let cipher = match cipher_algorithm {
-                "AES-128-CBC" => openssl::symm::Cipher::aes_128_cbc(),
-                "AES-256-CBC" => openssl::symm::Cipher::aes_256_cbc(),
-                "DES-EDE3-CBC" => openssl::symm::Cipher::des_ede3_cbc(),
-                _ => {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyValueError::new_err(
-                            "Key encrypted with unknown cipher.",
-                        ),
-                    ))
-                }
-            };
-            let iv = cryptography_crypto::encoding::hex_decode(iv).ok_or_else(|| {
-                pyo3::exceptions::PyValueError::new_err("DEK-Info IV is not valid hex")
-            })?;
-            let key = cryptography_crypto::pbkdf1::openssl_kdf(
-                openssl::hash::MessageDigest::md5(),
-                password,
-                iv.get(..8)
-                    .ok_or_else(|| {
-                        pyo3::exceptions::PyValueError::new_err(
-                            "DEK-Info IV must be at least 8 bytes",
-                        )
-                    })?
-                    .try_into()
-                    .unwrap(),
-                cipher.key_len(),
-            )
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "Unable to derive key from password (are you in FIPS mode?)",
-                )
-            })?;
-            Cow::from(
-                openssl::symm::decrypt(cipher, &key, Some(&iv), p.contents()).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Incorrect password, could not decrypt key",
-                    )
-                })?,
-            )
-        }
-        Some(_) => {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Proc-Type PEM header is not valid, key could not be decrypted.",
-                ),
-            ))
-        }
-        None => Cow::from(p.contents()),
-    };
+    let (data, mut password_used) = cryptography_key_parsing::pem::decrypt_pem(&p, password)?;
 
     let pkey = match p.tag() {
         "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,

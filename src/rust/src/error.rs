@@ -101,6 +101,34 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
                     "Incorrect password, could not decrypt key",
                 ))
             }
+            cryptography_key_parsing::KeyParsingError::PemMissingDekInfo => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Encrypted PEM doesn't have a DEK-Info header.",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::PemInvalidDekInfo => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Encrypted PEM's DEK-Info header is not valid.",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::PemInvalidIv => CryptographyError::Py(
+                pyo3::exceptions::PyValueError::new_err("DEK-Info IV is not valid hex"),
+            ),
+            cryptography_key_parsing::KeyParsingError::PemUnableToDeriveKey => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Unable to derive key from password (are you in FIPS mode?)",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::PemUnsupportedCipher => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Key encrypted with unknown cipher.",
+                ))
+            }
+            cryptography_key_parsing::KeyParsingError::PemInvalidProcType => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "Proc-Type PEM header is not valid, key could not be decrypted.",
+                ))
+            }
         }
     }
 }
