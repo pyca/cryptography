@@ -8,6 +8,7 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
+from cryptography.hazmat.decrepit.ciphers.modes import CFB, CFB8, OFB
 from cryptography.hazmat.primitives.ciphers import (
     Cipher,
     algorithms,
@@ -157,7 +158,7 @@ class TestModeValidation:
         with pytest.raises(ValueError):
             Cipher(
                 algorithms.AES(b"\x00" * 16),
-                modes.OFB(b"abc"),
+                OFB(b"abc"),
                 backend,
             )
 
@@ -165,7 +166,7 @@ class TestModeValidation:
         with pytest.raises(ValueError):
             Cipher(
                 algorithms.AES(b"\x00" * 16),
-                modes.CFB(b"abc"),
+                CFB(b"abc"),
                 backend,
             )
 
@@ -173,7 +174,7 @@ class TestModeValidation:
         with pytest.raises(ValueError):
             Cipher(
                 algorithms.AES(b"\x00" * 16),
-                modes.CFB8(b"abc"),
+                CFB8(b"abc"),
                 backend,
             )
 
@@ -197,15 +198,15 @@ class TestModesRequireBytes:
 
     def test_cfb(self):
         with pytest.raises(TypeError):
-            modes.CFB([1] * 16)  # type:ignore[arg-type]
+            CFB([1] * 16)  # type:ignore[arg-type]
 
     def test_cfb8(self):
         with pytest.raises(TypeError):
-            modes.CFB8([1] * 16)  # type:ignore[arg-type]
+            CFB8([1] * 16)  # type:ignore[arg-type]
 
     def test_ofb(self):
         with pytest.raises(TypeError):
-            modes.OFB([1] * 16)  # type:ignore[arg-type]
+            OFB([1] * 16)  # type:ignore[arg-type]
 
     def test_ctr(self):
         with pytest.raises(TypeError):

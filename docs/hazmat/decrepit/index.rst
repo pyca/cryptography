@@ -12,3 +12,4 @@ their use is **strongly discouraged**.
     :maxdepth: 2
 
     ciphers
+    modes

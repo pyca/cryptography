@@ -21,6 +21,11 @@ Changelog
 * ``public_bytes`` and ``private_bytes`` methods on keys now raise
   ``TypeError`` (instead of ``ValueError``) if an invalid encoding is provided
   for the given ``format``.
+* Moved :class:`~cryptography.hazmat.decrepit.ciphers.modes.CFB`,
+  :class:`~cryptography.hazmat.decrepit.ciphers.modes.OFB`, and
+  :class:`~cryptography.hazmat.decrepit.ciphers.modes.CFB8` into
+  :doc:`/hazmat/decrepit/index` and deprecated them in the ``modes`` module.
+  They will be removed from the ``modes`` module in 49.0.0.
 
 .. _v46-0-2:
 

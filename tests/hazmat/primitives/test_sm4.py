@@ -8,6 +8,7 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.decrepit.ciphers.modes import CFB, OFB
 from cryptography.hazmat.primitives.ciphers import algorithms, base, modes
 
 from ...utils import load_nist_vectors, load_vectors_from_file
@@ -48,7 +49,7 @@ class TestSM4ModeCBC:
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SM4(b"\x00" * 16), modes.OFB(b"\x00" * 16)
+        algorithms.SM4(b"\x00" * 16), OFB(b"\x00" * 16)
     ),
     skip_message="Does not support SM4 OFB",
 )
@@ -58,13 +59,13 @@ class TestSM4ModeOFB:
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-ofb.txt"],
         lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.OFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: OFB(binascii.unhexlify(iv)),
     )
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
-        algorithms.SM4(b"\x00" * 16), modes.CFB(b"\x00" * 16)
+        algorithms.SM4(b"\x00" * 16), CFB(b"\x00" * 16)
     ),
     skip_message="Does not support SM4 CFB",
 )
@@ -74,7 +75,7 @@ class TestSM4ModeCFB:
         os.path.join("ciphers", "SM4"),
         ["draft-ribose-cfrg-sm4-10-cfb.txt"],
         lambda key, **kwargs: algorithms.SM4(binascii.unhexlify(key)),
-        lambda iv, **kwargs: modes.CFB(binascii.unhexlify(iv)),
+        lambda iv, **kwargs: CFB(binascii.unhexlify(iv)),
     )
 
 
