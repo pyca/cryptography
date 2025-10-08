@@ -106,38 +106,6 @@ pub fn parse_public_key(
     }
 }
 
-// these functions exist because you can't use conditional compilation easily
-// in `else if` chain.
-fn is_ed448(id: openssl::pkey::Id) -> bool {
-    cfg_if::cfg_if! {
-        if #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))] {
-            id == openssl::pkey::Id::ED448
-        } else {
-            _ = id;
-            false
-        }
-    }
-}
-
-fn is_x448(id: openssl::pkey::Id) -> bool {
-    cfg_if::cfg_if! {
-        if #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))] {
-            id == openssl::pkey::Id::X448
-        } else {
-            _ = id;
-            false
-        }
-    }
-}
-
 pub fn serialize_public_key(
     pkey: &openssl::pkey::PKeyRef<impl openssl::pkey::HasPublic>,
 ) -> KeySerializationResult<Vec<u8>> {
@@ -169,10 +137,10 @@ pub fn serialize_public_key(
     } else if pkey.id() == openssl::pkey::Id::X25519 {
         let raw_bytes = pkey.raw_public_key()?;
         (AlgorithmParameters::X25519, raw_bytes)
-    } else if is_ed448(pkey.id()) {
+    } else if crate::utils::is_ed448(pkey.id()) {
         let raw_bytes = pkey.raw_public_key()?;
         (AlgorithmParameters::Ed448, raw_bytes)
-    } else if is_x448(pkey.id()) {
+    } else if crate::utils::is_x448(pkey.id()) {
         let raw_bytes = pkey.raw_public_key()?;
         (AlgorithmParameters::X448, raw_bytes)
     } else if let Ok(dsa) = pkey.dsa() {

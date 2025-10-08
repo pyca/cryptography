@@ -115,7 +115,10 @@ pub(crate) fn pkey_private_bytes<'p>(
 
     if format.is(&types::PRIVATE_FORMAT_PKCS8.get(py)?) {
         let (tag, der_bytes) = if password.is_empty() {
-            ("PRIVATE KEY", pkey.private_key_to_pkcs8()?)
+            (
+                "PRIVATE KEY",
+                cryptography_key_parsing::pkcs8::serialize_private_key(pkey)?,
+            )
         } else {
             (
                 "ENCRYPTED PRIVATE KEY",
@@ -178,7 +181,7 @@ pub(crate) fn pkey_private_bytes<'p>(
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         } else if let Ok(ec) = pkey.ec_key() {
-            let der_bytes = cryptography_key_parsing::ec::serialize_pkcs1_private_key(&ec)?;
+            let der_bytes = cryptography_key_parsing::ec::serialize_pkcs1_private_key(&ec, true)?;
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "EC PRIVATE KEY",
