@@ -21,6 +21,9 @@ from cryptography.hazmat.decrepit.ciphers.algorithms import (
     Blowfish as Blowfish,
 )
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
+    Camellia as Camellia,
+)
+from cryptography.hazmat.decrepit.ciphers.algorithms import (
     TripleDES as TripleDES,
 )
 from cryptography.hazmat.primitives._cipheralgorithm import _verify_key_size
@@ -64,17 +67,16 @@ class AES256(BlockCipherAlgorithm):
         self.key = _verify_key_size(self, key)
 
 
-class Camellia(BlockCipherAlgorithm):
-    name = "camellia"
-    block_size = 128
-    key_sizes = frozenset([128, 192, 256])
-
-    def __init__(self, key: utils.Buffer):
-        self.key = _verify_key_size(self, key)
-
-    @property
-    def key_size(self) -> int:
-        return len(self.key) * 8
+utils.deprecated(
+    Camellia,
+    __name__,
+    "Camellia has been moved to "
+    "cryptography.hazmat.decrepit.ciphers.algorithms.Camellia and "
+    "will be removed from "
+    "cryptography.hazmat.primitives.ciphers.algorithms in 49.0.0.",
+    utils.DeprecatedIn43,
+    name="Camellia",
+)
 
 
 utils.deprecated(

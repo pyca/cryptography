@@ -119,6 +119,12 @@ Algorithms
 
 .. class:: Camellia(key)
 
+    .. warning::
+
+        This algorithm has been deprecated and moved to the :doc:`/hazmat/decrepit/index`
+        module. If you need to continue using it then update your code to
+        use the new module path. It will be removed from this namespace in 49.0.0.
+
     Camellia is a block cipher approved for use by `CRYPTREC`_ and ISO/IEC.
     It is considered to have comparable security and performance to AES but
     is not as widely studied or deployed.

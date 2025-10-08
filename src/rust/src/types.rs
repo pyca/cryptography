@@ -540,7 +540,7 @@ pub static SEED: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.decrepit.ciphers.algorithms", &["SEED"]);
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAMELLIA"))]
 pub static CAMELLIA: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.ciphers.algorithms",
+    "cryptography.hazmat.decrepit.ciphers.algorithms",
     &["Camellia"],
 );
 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]

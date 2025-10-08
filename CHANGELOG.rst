@@ -25,6 +25,9 @@ Changelog
   :class:`~cryptography.hazmat.decrepit.ciphers.modes.CFB8` into
   :doc:`/hazmat/decrepit/index` and deprecated them in the ``modes`` module.
   They will be removed from the ``modes`` module in 49.0.0.
+* Moved :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Camellia`
+  into  :doc:`/hazmat/decrepit/index` and deprecated it in the ``cipher`` module.
+  It will be removed from the ``cipher`` module in 49.0.0.
 
 .. _v46-0-2:
 
