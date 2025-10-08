@@ -13,13 +13,13 @@ use crate::MIN_DH_MODULUS_SIZE;
 use crate::{ec, rsa, KeyParsingError, KeyParsingResult};
 
 // RFC 5208 Section 5
-#[derive(asn1::Asn1Read)]
-struct PrivateKeyInfo<'a> {
-    version: u8,
-    algorithm: AlgorithmIdentifier<'a>,
-    private_key: &'a [u8],
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct PrivateKeyInfo<'a> {
+    pub version: u8,
+    pub algorithm: AlgorithmIdentifier<'a>,
+    pub private_key: &'a [u8],
     #[implicit(0)]
-    _attributes: Option<Attributes<'a>>,
+    pub attributes: Option<Attributes<'a>>,
 }
 
 pub fn parse_private_key(
@@ -330,4 +330,117 @@ pub fn parse_encrypted_private_key(
     };
 
     parse_private_key(&plaintext)
+}
+
+pub fn serialize_private_key(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> crate::KeySerializationResult<Vec<u8>> {
+    let p_bytes;
+    let q_bytes;
+    let g_bytes;
+    let q_bytes_dh;
+
+    let (params, private_key_der) = if let Ok(rsa) = pkey.rsa() {
+        let pkcs1_der = rsa::serialize_pkcs1_private_key(&rsa)?;
+        (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
+    } else if let Ok(ec) = pkey.ec_key() {
+        let curve_oid = ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
+        let pkcs1_der = ec::serialize_pkcs1_private_key(&ec, false)?;
+        (
+            AlgorithmParameters::Ec(cryptography_x509::common::EcParameters::NamedCurve(
+                curve_oid,
+            )),
+            pkcs1_der,
+        )
+    } else if pkey.id() == openssl::pkey::Id::ED25519 {
+        let raw_bytes = pkey.raw_private_key()?;
+        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+        (AlgorithmParameters::Ed25519, private_key_der)
+    } else if pkey.id() == openssl::pkey::Id::X25519 {
+        let raw_bytes = pkey.raw_private_key()?;
+        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+        (AlgorithmParameters::X25519, private_key_der)
+    } else if crate::utils::is_ed448(pkey.id()) {
+        let raw_bytes = pkey.raw_private_key()?;
+        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+        (AlgorithmParameters::Ed448, private_key_der)
+    } else if crate::utils::is_x448(pkey.id()) {
+        let raw_bytes = pkey.raw_private_key()?;
+        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+        (AlgorithmParameters::X448, private_key_der)
+    } else if let Ok(dsa) = pkey.dsa() {
+        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
+        q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
+        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
+
+        let priv_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.priv_key())?;
+        let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
+        let private_key_der = asn1::write_single(&priv_key_int)?;
+
+        let dsa_params = cryptography_x509::common::DssParams {
+            p: asn1::BigUint::new(&p_bytes).unwrap(),
+            q: asn1::BigUint::new(&q_bytes).unwrap(),
+            g: asn1::BigUint::new(&g_bytes).unwrap(),
+        };
+
+        (AlgorithmParameters::Dsa(dsa_params), private_key_der)
+    } else if let Ok(dh) = pkey.dh() {
+        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
+        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
+        q_bytes_dh = dh
+            .prime_q()
+            .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
+            .transpose()?;
+
+        let priv_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.private_key())?;
+        let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
+        let private_key_der = asn1::write_single(&priv_key_int)?;
+
+        let params = if let Some(ref q_bytes) = q_bytes_dh {
+            let dhx_params = cryptography_x509::common::DHXParams {
+                p: asn1::BigUint::new(&p_bytes).unwrap(),
+                g: asn1::BigUint::new(&g_bytes).unwrap(),
+                q: asn1::BigUint::new(q_bytes).unwrap(),
+                j: None,
+                validation_params: None,
+            };
+            AlgorithmParameters::Dh(dhx_params)
+        } else {
+            let basic_params = cryptography_x509::common::BasicDHParams {
+                p: asn1::BigUint::new(&p_bytes).unwrap(),
+                g: asn1::BigUint::new(&g_bytes).unwrap(),
+                private_value_length: None,
+            };
+            AlgorithmParameters::DhKeyAgreement(basic_params)
+        };
+
+        (params, private_key_der)
+    } else {
+        unimplemented!("Unknown key type");
+    };
+
+    let pki = PrivateKeyInfo {
+        version: 0,
+        algorithm: AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params,
+        },
+        private_key: &private_key_der,
+        attributes: None,
+    };
+    Ok(asn1::write_single(&pki)?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::serialize_private_key;
+
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+    #[test]
+    #[should_panic(expected = "Unknown key type")]
+    fn test_serialize_private_key_unknown_key_type() {
+        let pkey = openssl::pkey::PKey::hmac(&[0u8; 16]).unwrap();
+        // Expected to panic
+        _ = serialize_private_key(&pkey);
+    }
 }

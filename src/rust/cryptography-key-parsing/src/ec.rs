@@ -121,8 +121,14 @@ pub(crate) fn ec_params_to_group(
 
 pub fn serialize_pkcs1_private_key(
     ec: &openssl::ec::EcKeyRef<openssl::pkey::Private>,
+    include_curve: bool,
 ) -> KeySerializationResult<Vec<u8>> {
-    let curve_oid = group_to_curve_oid(ec.group()).expect("Unknown curve");
+    let parameters = if include_curve {
+        let curve_oid = group_to_curve_oid(ec.group()).expect("Unknown curve");
+        Some(EcParameters::NamedCurve(curve_oid))
+    } else {
+        None
+    };
 
     let private_key_bytes = ec.private_key().to_vec();
 
@@ -136,7 +142,7 @@ pub fn serialize_pkcs1_private_key(
     let key = EcPrivateKey {
         version: 1,
         private_key: &private_key_bytes,
-        parameters: Some(EcParameters::NamedCurve(curve_oid)),
+        parameters,
         public_key: Some(asn1::BitString::new(&public_key_bytes, 0).unwrap()),
     };
     Ok(asn1::write_single(&key)?)
