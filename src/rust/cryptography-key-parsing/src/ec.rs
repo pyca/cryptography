@@ -4,10 +4,10 @@
 
 use cryptography_x509::common::EcParameters;
 
-use crate::{KeyParsingError, KeyParsingResult};
+use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
 
 // From RFC 5915 Section 3
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct EcPrivateKey<'a> {
     pub(crate) version: u8,
     pub(crate) private_key: &'a [u8],
@@ -15,6 +15,37 @@ pub(crate) struct EcPrivateKey<'a> {
     pub(crate) parameters: Option<EcParameters<'a>>,
     #[explicit(1)]
     pub(crate) public_key: Option<asn1::BitString<'a>>,
+}
+
+pub(crate) fn group_to_curve_oid(
+    group: &openssl::ec::EcGroupRef,
+) -> Option<asn1::ObjectIdentifier> {
+    let nid = group.curve_name()?;
+    match nid {
+        openssl::nid::Nid::X9_62_PRIME192V1 => Some(cryptography_x509::oid::EC_SECP192R1),
+        openssl::nid::Nid::SECP224R1 => Some(cryptography_x509::oid::EC_SECP224R1),
+        openssl::nid::Nid::X9_62_PRIME256V1 => Some(cryptography_x509::oid::EC_SECP256R1),
+        openssl::nid::Nid::SECP384R1 => Some(cryptography_x509::oid::EC_SECP384R1),
+        openssl::nid::Nid::SECP521R1 => Some(cryptography_x509::oid::EC_SECP521R1),
+        openssl::nid::Nid::SECP256K1 => Some(cryptography_x509::oid::EC_SECP256K1),
+        openssl::nid::Nid::SECT233R1 => Some(cryptography_x509::oid::EC_SECT233R1),
+        openssl::nid::Nid::SECT283R1 => Some(cryptography_x509::oid::EC_SECT283R1),
+        openssl::nid::Nid::SECT409R1 => Some(cryptography_x509::oid::EC_SECT409R1),
+        openssl::nid::Nid::SECT571R1 => Some(cryptography_x509::oid::EC_SECT571R1),
+        openssl::nid::Nid::SECT163R2 => Some(cryptography_x509::oid::EC_SECT163R2),
+        openssl::nid::Nid::SECT163K1 => Some(cryptography_x509::oid::EC_SECT163K1),
+        openssl::nid::Nid::SECT233K1 => Some(cryptography_x509::oid::EC_SECT233K1),
+        openssl::nid::Nid::SECT283K1 => Some(cryptography_x509::oid::EC_SECT283K1),
+        openssl::nid::Nid::SECT409K1 => Some(cryptography_x509::oid::EC_SECT409K1),
+        openssl::nid::Nid::SECT571K1 => Some(cryptography_x509::oid::EC_SECT571K1),
+        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
+        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        openssl::nid::Nid::BRAINPOOL_P384R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP384R1),
+        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        openssl::nid::Nid::BRAINPOOL_P512R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP512R1),
+        _ => None,
+    }
 }
 
 pub(crate) fn ec_params_to_group(
@@ -61,6 +92,29 @@ pub(crate) fn ec_params_to_group(
             Err(KeyParsingError::ExplicitCurveUnsupported)
         }
     }
+}
+
+pub fn serialize_pkcs1_private_key(
+    ec: &openssl::ec::EcKeyRef<openssl::pkey::Private>,
+) -> KeySerializationResult<Vec<u8>> {
+    let curve_oid = group_to_curve_oid(ec.group()).expect("Unknown curve");
+
+    let private_key_bytes = ec.private_key().to_vec();
+
+    let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+    let public_key_bytes = ec.public_key().to_bytes(
+        ec.group(),
+        openssl::ec::PointConversionForm::UNCOMPRESSED,
+        &mut bn_ctx,
+    )?;
+
+    let key = EcPrivateKey {
+        version: 1,
+        private_key: &private_key_bytes,
+        parameters: Some(EcParameters::NamedCurve(curve_oid)),
+        public_key: Some(asn1::BitString::new(&public_key_bytes, 0).unwrap()),
+    };
+    Ok(asn1::write_single(&key)?)
 }
 
 pub fn parse_pkcs1_private_key(

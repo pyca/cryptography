@@ -11,7 +11,7 @@ pub struct Pkcs1RsaPublicKey<'a> {
 }
 
 // RFC 8017, Section A.1.2
-#[derive(asn1::Asn1Read)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub(crate) struct RsaPrivateKey<'a> {
     pub(crate) version: u8,
     pub(crate) n: asn1::BigUint<'a>,
@@ -47,6 +47,33 @@ pub fn serialize_pkcs1_public_key(
     let key = Pkcs1RsaPublicKey {
         n: asn1::BigUint::new(&n_bytes).unwrap(),
         e: asn1::BigUint::new(&e_bytes).unwrap(),
+    };
+    Ok(asn1::write_single(&key)?)
+}
+
+pub fn serialize_pkcs1_private_key(
+    rsa: &openssl::rsa::RsaRef<openssl::pkey::Private>,
+) -> KeySerializationResult<Vec<u8>> {
+    let n_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.n())?;
+    let e_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.e())?;
+    let d_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.d())?;
+    let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.p().unwrap())?;
+    let q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.q().unwrap())?;
+    let dmp1_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.dmp1().unwrap())?;
+    let dmq1_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.dmq1().unwrap())?;
+    let iqmp_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.iqmp().unwrap())?;
+
+    let key = RsaPrivateKey {
+        version: 0,
+        n: asn1::BigUint::new(&n_bytes).unwrap(),
+        e: asn1::BigUint::new(&e_bytes).unwrap(),
+        d: asn1::BigUint::new(&d_bytes).unwrap(),
+        p: asn1::BigUint::new(&p_bytes).unwrap(),
+        q: asn1::BigUint::new(&q_bytes).unwrap(),
+        dmp1: asn1::BigUint::new(&dmp1_bytes).unwrap(),
+        dmq1: asn1::BigUint::new(&dmq1_bytes).unwrap(),
+        iqmp: asn1::BigUint::new(&iqmp_bytes).unwrap(),
+        other_prime_infos: None,
     };
     Ok(asn1::write_single(&key)?)
 }
