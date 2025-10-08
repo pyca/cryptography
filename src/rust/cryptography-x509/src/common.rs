@@ -512,7 +512,7 @@ pub enum FieldParameters<'a> {
     #[defined_by(oid::PRIME_FIELD_OID)]
     PrimeField(asn1::BigUint<'a>),
     #[defined_by(oid::CHARACTERISTIC_TWO_FIELD_OID)]
-    CharacteristicTwo(asn1::Tlv<'a>),
+    CharacteristicTwo(asn1::Sequence<'a>),
 }
 
 // From RFC 3279 Section 2.3.5

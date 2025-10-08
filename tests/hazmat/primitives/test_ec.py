@@ -1091,8 +1091,6 @@ class TestECSerialization:
     @pytest.mark.parametrize(
         ("curve", "file"),
         [
-            # secp256k1 has no seed value
-            (ec.SECP256K1, "secp256k1-explicit-no-seed.pem"),
             (ec.SECP256R1, "secp256r1-explicit-seed.pem"),
             (ec.SECP256R1, "secp256r1-explicit-no-seed.pem"),
             (ec.SECP384R1, "secp384r1-explicit-seed.pem"),
@@ -1116,8 +1114,6 @@ class TestECSerialization:
     @pytest.mark.parametrize(
         ("curve", "file"),
         [
-            # secp256k1 has no seed value
-            (ec.SECP256K1, "secp256k1-pub-explicit-no-seed.pem"),
             (ec.SECP256R1, "secp256r1-pub-explicit-seed.pem"),
             (ec.SECP256R1, "secp256r1-pub-explicit-no-seed.pem"),
             (ec.SECP384R1, "secp384r1-pub-explicit-seed.pem"),

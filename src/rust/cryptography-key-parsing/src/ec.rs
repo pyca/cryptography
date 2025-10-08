@@ -61,7 +61,7 @@ pub(crate) fn ec_params_to_group(
         EcParameters::SpecifiedCurve(params) => {
             // We do not support arbitrary explicit curves. Instead we map values
             // to named curves. This currently supports only P256, P384,
-            // P521, and SECP256K1. No binary curves are supported. Everything must
+            // and P521. No binary curves are supported. Everything must
             // match, except the seed may be omitted on NIST curves since OpenSSL
             // has supported a -no_seed option for over 20 years and I don't want to
             // figure out whether anyone uses that or not. No one should be using
@@ -78,10 +78,6 @@ pub(crate) fn ec_params_to_group(
                 &ec_constants::P521_DOMAIN | &ec_constants::P521_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::SECP521R1,
                     cryptography_x509::oid::EC_SECP521R1,
-                ),
-                &ec_constants::SECP256K1_DOMAIN => (
-                    openssl::nid::Nid::SECP256K1,
-                    cryptography_x509::oid::EC_SECP256K1,
                 ),
                 _ => return Err(KeyParsingError::ExplicitCurveUnsupported),
             };
