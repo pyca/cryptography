@@ -248,7 +248,7 @@ class TestX25519Exchange:
                 serialization.BestAvailableEncryption(b"a" * 1024),
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.SMIME,
                 serialization.PrivateFormat.PKCS8,

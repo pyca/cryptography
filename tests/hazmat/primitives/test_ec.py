@@ -849,7 +849,7 @@ class TestECSerialization:
     def test_private_bytes_rejects_invalid(self, encoding, fmt, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key = ec.generate_private_key(ec.SECP256R1(), backend)
-        with pytest.raises(ValueError):
+        with pytest.raises((TypeError, ValueError)):
             key.private_bytes(encoding, fmt, serialization.NoEncryption())
 
     @pytest.mark.parametrize(
