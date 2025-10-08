@@ -1212,6 +1212,31 @@ class TestECSerialization:
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(data, password=None)
 
+    def test_private_bytes_high_private_key_bit_set(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "EC", "high-bit-set.pem"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+
+        key = serialization.load_pem_private_key(data, password=None)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+        # The high bit is set in the private key. Ensure that it's not
+        # serialized with an additional leading 0, as you would if serializing
+        # an ASN.1 integer.
+        expected_private_key = (
+            0xA07AB72DF25722849DF17FCE9AF1D2AC02EFA32C3251D8E075C29EA868D9E2A2
+        )
+        assert key.private_numbers().private_value == expected_private_key
+        assert (
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
+            )
+            == data
+        )
+
 
 class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(

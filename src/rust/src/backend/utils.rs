@@ -138,8 +138,8 @@ pub(crate) fn pkey_private_bytes<'p>(
             ));
         }
         if let Ok(rsa) = pkey.rsa() {
+            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_private_key(&rsa)?;
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let der_bytes = rsa.private_key_to_der()?;
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "RSA PRIVATE KEY",
                     &der_bytes,
@@ -155,12 +155,11 @@ pub(crate) fn pkey_private_bytes<'p>(
                     ));
                 }
 
-                let der_bytes = rsa.private_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         } else if let Ok(dsa) = pkey.dsa() {
+            let der_bytes = cryptography_key_parsing::dsa::serialize_pkcs1_private_key(&dsa)?;
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let der_bytes = dsa.private_key_to_der()?;
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "DSA PRIVATE KEY",
                     &der_bytes,
@@ -176,12 +175,11 @@ pub(crate) fn pkey_private_bytes<'p>(
                     ));
                 }
 
-                let der_bytes = dsa.private_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         } else if let Ok(ec) = pkey.ec_key() {
+            let der_bytes = cryptography_key_parsing::ec::serialize_pkcs1_private_key(&ec)?;
             if encoding.is(&types::ENCODING_PEM.get(py)?) {
-                let der_bytes = ec.private_key_to_der()?;
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "EC PRIVATE KEY",
                     &der_bytes,
@@ -197,7 +195,6 @@ pub(crate) fn pkey_private_bytes<'p>(
                     ));
                 }
 
-                let der_bytes = ec.private_key_to_der()?;
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
         }
