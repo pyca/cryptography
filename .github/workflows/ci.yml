@@ -27,8 +27,8 @@ jobs:
           - {VERSION: "3.13", NOXSESSION: "flake"}
           - {VERSION: "3.13", NOXSESSION: "rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
-          - {VERSION: "3.14-dev", NOXSESSION: "tests"}
-          - {VERSION: "3.14t-dev", NOXSESSION: "rust,tests"}
+          - {VERSION: "3.14", NOXSESSION: "tests"}
+          - {VERSION: "3.14t", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
           - {VERSION: "3.13", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
@@ -283,7 +283,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
-          - {VERSION: "3.14t-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.14t", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py38 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.8", NOXSESSION: "tests"}
@@ -352,7 +352,7 @@ jobs:
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
-          - {VERSION: "3.14t-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.14t", NOXSESSION: "tests"}
         include:
           # Not in the main matrix because we want tests-nocoverage on Python
           # 3.13
