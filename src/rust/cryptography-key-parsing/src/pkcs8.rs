@@ -457,6 +457,71 @@ pub fn serialize_private_key(
     Ok(asn1::write_single(&pki)?)
 }
 
+const KDF_ITERATION_COUNT: usize = 2048;
+
+pub fn serialize_encrypted_private_key(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+    password: &[u8],
+) -> crate::KeySerializationResult<Vec<u8>> {
+    let plaintext_der = serialize_private_key(pkey)?;
+
+    let mut salt = [0u8; 16];
+    let mut iv = [0u8; 16];
+    cryptography_openssl::rand::rand_bytes(&mut salt)?;
+    cryptography_openssl::rand::rand_bytes(&mut iv)?;
+
+    let cipher = openssl::symm::Cipher::aes_256_cbc();
+    let mut key = [0u8; 32];
+    openssl::pkcs5::pbkdf2_hmac(
+        password,
+        &salt,
+        KDF_ITERATION_COUNT,
+        openssl::hash::MessageDigest::sha256(),
+        &mut key,
+    )?;
+
+    let encrypted_data = openssl::symm::encrypt(cipher, &key, Some(&iv), &plaintext_der)?;
+
+    let kdf_algorithm = cryptography_x509::common::AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: cryptography_x509::common::AlgorithmParameters::Pbkdf2(
+            cryptography_x509::common::PBKDF2Params {
+                salt: &salt,
+                iteration_count: KDF_ITERATION_COUNT as u64,
+                key_length: None,
+                prf: Box::new(cryptography_x509::common::AlgorithmIdentifier {
+                    oid: asn1::DefinedByMarker::marker(),
+                    params: cryptography_x509::common::AlgorithmParameters::HmacWithSha256(
+                        Some(()),
+                    ),
+                }),
+            },
+        ),
+    };
+
+    let encryption_algorithm = cryptography_x509::common::AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: cryptography_x509::common::AlgorithmParameters::Aes256Cbc(iv),
+    };
+
+    let encryption_alg = cryptography_x509::common::AlgorithmIdentifier {
+        oid: asn1::DefinedByMarker::marker(),
+        params: cryptography_x509::common::AlgorithmParameters::Pbes2(
+            cryptography_x509::common::PBES2Params {
+                key_derivation_func: Box::new(kdf_algorithm),
+                encryption_scheme: Box::new(encryption_algorithm),
+            },
+        ),
+    };
+
+    let epki = cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
+        encryption_algorithm: encryption_alg,
+        encrypted_data: &encrypted_data,
+    };
+
+    Ok(asn1::write_single(&epki)?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::serialize_private_key;

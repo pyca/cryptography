@@ -122,10 +122,7 @@ pub(crate) fn pkey_private_bytes<'p>(
         } else {
             (
                 "ENCRYPTED PRIVATE KEY",
-                pkey.private_key_to_pkcs8_passphrase(
-                    openssl::symm::Cipher::aes_256_cbc(),
-                    password,
-                )?,
+                cryptography_key_parsing::pkcs8::serialize_encrypted_private_key(pkey, password)?,
             )
         };
 
