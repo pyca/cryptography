@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
         timeout-minutes: 3
       - run: python -m pip install -r $UV_REQUIREMENTS_PATH
 
@@ -183,20 +183,20 @@ jobs:
           - VERSION: '3.11'
             ABI_VERSION: 'py38'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
             DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
             ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
+            # See https://github.com/pypa/cibuildwheel/blob/8602e864d4d22919d7d8eefb2346f2f89ea23252/cibuildwheel/platforms/macos.py#L317
             # This will change in the future as we change the base Python we
             # build against
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
-          - VERSION: '3.11'
+          - VERSION: '3.14'
             ABI_VERSION: 'py311'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.11/bin/python3'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
             DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
             ARCHFLAGS: '-arch x86_64 -arch arm64'
@@ -205,7 +205,7 @@ jobs:
             # build against
             _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
           - VERSION: '3.14t'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0rc2-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
             DEPLOYMENT_TARGET: '10.13'
             # This archflags is default, but let's be explicit
@@ -318,9 +318,9 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
           - {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
         PYTHON:
-          - {VERSION: "3.11", "ABI_VERSION": "py38"}
-          - {VERSION: "3.11", "ABI_VERSION": "py311"}
-          - {VERSION: "3.14t-dev"}
+          - {VERSION: "3.14", "ABI_VERSION": "py38"}
+          - {VERSION: "3.14", "ABI_VERSION": "py311"}
+          - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
