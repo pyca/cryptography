@@ -340,83 +340,109 @@ pub fn serialize_private_key(
     let g_bytes;
     let q_bytes_dh;
 
-    let (params, private_key_der) = if let Ok(rsa) = pkey.rsa() {
-        let pkcs1_der = rsa::serialize_pkcs1_private_key(&rsa)?;
-        (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
-    } else if let Ok(ec) = pkey.ec_key() {
-        let curve_oid = ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
-        let pkcs1_der = ec::serialize_pkcs1_private_key(&ec, false)?;
-        (
-            AlgorithmParameters::Ec(cryptography_x509::common::EcParameters::NamedCurve(
-                curve_oid,
-            )),
-            pkcs1_der,
-        )
-    } else if pkey.id() == openssl::pkey::Id::ED25519 {
-        let raw_bytes = pkey.raw_private_key()?;
-        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-        (AlgorithmParameters::Ed25519, private_key_der)
-    } else if pkey.id() == openssl::pkey::Id::X25519 {
-        let raw_bytes = pkey.raw_private_key()?;
-        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-        (AlgorithmParameters::X25519, private_key_der)
-    } else if crate::utils::is_ed448(pkey.id()) {
-        let raw_bytes = pkey.raw_private_key()?;
-        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-        (AlgorithmParameters::Ed448, private_key_der)
-    } else if crate::utils::is_x448(pkey.id()) {
-        let raw_bytes = pkey.raw_private_key()?;
-        let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-        (AlgorithmParameters::X448, private_key_der)
-    } else if let Ok(dsa) = pkey.dsa() {
-        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
-        q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
-        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
+    let (params, private_key_der) = match pkey.id() {
+        openssl::pkey::Id::RSA => {
+            let rsa = pkey.rsa()?;
+            let pkcs1_der = rsa::serialize_pkcs1_private_key(&rsa)?;
+            (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
+        }
+        openssl::pkey::Id::EC => {
+            let ec = pkey.ec_key()?;
+            let curve_oid = ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
+            let pkcs1_der = ec::serialize_pkcs1_private_key(&ec, false)?;
+            (
+                AlgorithmParameters::Ec(cryptography_x509::common::EcParameters::NamedCurve(
+                    curve_oid,
+                )),
+                pkcs1_der,
+            )
+        }
+        openssl::pkey::Id::ED25519 => {
+            let raw_bytes = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+            (AlgorithmParameters::Ed25519, private_key_der)
+        }
+        openssl::pkey::Id::X25519 => {
+            let raw_bytes = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+            (AlgorithmParameters::X25519, private_key_der)
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        openssl::pkey::Id::ED448 => {
+            let raw_bytes = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+            (AlgorithmParameters::Ed448, private_key_der)
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        openssl::pkey::Id::X448 => {
+            let raw_bytes = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
+            (AlgorithmParameters::X448, private_key_der)
+        }
+        openssl::pkey::Id::DSA => {
+            let dsa = pkey.dsa()?;
+            p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
+            q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
+            g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
 
-        let priv_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.priv_key())?;
-        let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
-        let private_key_der = asn1::write_single(&priv_key_int)?;
+            let priv_key_bytes =
+                cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.priv_key())?;
+            let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
+            let private_key_der = asn1::write_single(&priv_key_int)?;
 
-        let dsa_params = cryptography_x509::common::DssParams {
-            p: asn1::BigUint::new(&p_bytes).unwrap(),
-            q: asn1::BigUint::new(&q_bytes).unwrap(),
-            g: asn1::BigUint::new(&g_bytes).unwrap(),
-        };
-
-        (AlgorithmParameters::Dsa(dsa_params), private_key_der)
-    } else if let Ok(dh) = pkey.dh() {
-        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
-        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
-        q_bytes_dh = dh
-            .prime_q()
-            .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
-            .transpose()?;
-
-        let priv_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.private_key())?;
-        let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
-        let private_key_der = asn1::write_single(&priv_key_int)?;
-
-        let params = if let Some(ref q_bytes) = q_bytes_dh {
-            let dhx_params = cryptography_x509::common::DHXParams {
+            let dsa_params = cryptography_x509::common::DssParams {
                 p: asn1::BigUint::new(&p_bytes).unwrap(),
+                q: asn1::BigUint::new(&q_bytes).unwrap(),
                 g: asn1::BigUint::new(&g_bytes).unwrap(),
-                q: asn1::BigUint::new(q_bytes).unwrap(),
-                j: None,
-                validation_params: None,
             };
-            AlgorithmParameters::Dh(dhx_params)
-        } else {
-            let basic_params = cryptography_x509::common::BasicDHParams {
-                p: asn1::BigUint::new(&p_bytes).unwrap(),
-                g: asn1::BigUint::new(&g_bytes).unwrap(),
-                private_value_length: None,
-            };
-            AlgorithmParameters::DhKeyAgreement(basic_params)
-        };
 
-        (params, private_key_der)
-    } else {
-        unimplemented!("Unknown key type");
+            (AlgorithmParameters::Dsa(dsa_params), private_key_der)
+        }
+        id if crate::utils::is_dh(id) => {
+            let dh = pkey.dh()?;
+            p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
+            g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
+            q_bytes_dh = dh
+                .prime_q()
+                .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
+                .transpose()?;
+
+            let priv_key_bytes =
+                cryptography_openssl::utils::bn_to_big_endian_bytes(dh.private_key())?;
+            let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
+            let private_key_der = asn1::write_single(&priv_key_int)?;
+
+            let params = if let Some(ref q_bytes) = q_bytes_dh {
+                let dhx_params = cryptography_x509::common::DHXParams {
+                    p: asn1::BigUint::new(&p_bytes).unwrap(),
+                    g: asn1::BigUint::new(&g_bytes).unwrap(),
+                    q: asn1::BigUint::new(q_bytes).unwrap(),
+                    j: None,
+                    validation_params: None,
+                };
+                AlgorithmParameters::Dh(dhx_params)
+            } else {
+                let basic_params = cryptography_x509::common::BasicDHParams {
+                    p: asn1::BigUint::new(&p_bytes).unwrap(),
+                    g: asn1::BigUint::new(&g_bytes).unwrap(),
+                    private_value_length: None,
+                };
+                AlgorithmParameters::DhKeyAgreement(basic_params)
+            };
+
+            (params, private_key_der)
+        }
+        _ => {
+            unimplemented!("Unknown key type");
+        }
     };
 
     let pki = PrivateKeyInfo {

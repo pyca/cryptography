@@ -114,84 +114,109 @@ pub fn serialize_public_key(
     let g_bytes;
     let q_bytes_opt: Option<Vec<u8>>;
 
-    let (params, public_key_bytes) = if let Ok(rsa) = pkey.rsa() {
-        let pkcs1_der = crate::rsa::serialize_pkcs1_public_key(&rsa)?;
-        (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
-    } else if let Ok(ec) = pkey.ec_key() {
-        let curve_oid = crate::ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
+    let (params, public_key_bytes) = match pkey.id() {
+        openssl::pkey::Id::RSA => {
+            let rsa = pkey.rsa()?;
+            let pkcs1_der = crate::rsa::serialize_pkcs1_public_key(&rsa)?;
+            (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
+        }
+        openssl::pkey::Id::EC => {
+            let ec = pkey.ec_key()?;
+            let curve_oid = crate::ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
 
-        let mut bn_ctx = openssl::bn::BigNumContext::new()?;
-        let point_bytes = ec.public_key().to_bytes(
-            ec.group(),
-            openssl::ec::PointConversionForm::UNCOMPRESSED,
-            &mut bn_ctx,
-        )?;
+            let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+            let point_bytes = ec.public_key().to_bytes(
+                ec.group(),
+                openssl::ec::PointConversionForm::UNCOMPRESSED,
+                &mut bn_ctx,
+            )?;
 
-        (
-            AlgorithmParameters::Ec(EcParameters::NamedCurve(curve_oid)),
-            point_bytes,
-        )
-    } else if pkey.id() == openssl::pkey::Id::ED25519 {
-        let raw_bytes = pkey.raw_public_key()?;
-        (AlgorithmParameters::Ed25519, raw_bytes)
-    } else if pkey.id() == openssl::pkey::Id::X25519 {
-        let raw_bytes = pkey.raw_public_key()?;
-        (AlgorithmParameters::X25519, raw_bytes)
-    } else if crate::utils::is_ed448(pkey.id()) {
-        let raw_bytes = pkey.raw_public_key()?;
-        (AlgorithmParameters::Ed448, raw_bytes)
-    } else if crate::utils::is_x448(pkey.id()) {
-        let raw_bytes = pkey.raw_public_key()?;
-        (AlgorithmParameters::X448, raw_bytes)
-    } else if let Ok(dsa) = pkey.dsa() {
-        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
-        q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
-        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
-        let pub_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.pub_key())?;
+            (
+                AlgorithmParameters::Ec(EcParameters::NamedCurve(curve_oid)),
+                point_bytes,
+            )
+        }
+        openssl::pkey::Id::ED25519 => {
+            let raw_bytes = pkey.raw_public_key()?;
+            (AlgorithmParameters::Ed25519, raw_bytes)
+        }
+        openssl::pkey::Id::X25519 => {
+            let raw_bytes = pkey.raw_public_key()?;
+            (AlgorithmParameters::X25519, raw_bytes)
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        openssl::pkey::Id::ED448 => {
+            let raw_bytes = pkey.raw_public_key()?;
+            (AlgorithmParameters::Ed448, raw_bytes)
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        openssl::pkey::Id::X448 => {
+            let raw_bytes = pkey.raw_public_key()?;
+            (AlgorithmParameters::X448, raw_bytes)
+        }
+        openssl::pkey::Id::DSA => {
+            let dsa = pkey.dsa()?;
+            p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
+            q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
+            g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
+            let pub_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.pub_key())?;
 
-        let pub_key_int = asn1::BigUint::new(&pub_key_bytes).unwrap();
-        let pub_key_der = asn1::write_single(&pub_key_int)?;
+            let pub_key_int = asn1::BigUint::new(&pub_key_bytes).unwrap();
+            let pub_key_der = asn1::write_single(&pub_key_int)?;
 
-        let dsa_params = DssParams {
-            p: asn1::BigUint::new(&p_bytes).unwrap(),
-            q: asn1::BigUint::new(&q_bytes).unwrap(),
-            g: asn1::BigUint::new(&g_bytes).unwrap(),
-        };
-
-        (AlgorithmParameters::Dsa(dsa_params), pub_key_der)
-    } else if let Ok(dh) = pkey.dh() {
-        p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
-        g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
-        q_bytes_opt = dh
-            .prime_q()
-            .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
-            .transpose()?;
-        let pub_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.public_key())?;
-
-        let pub_key_int = asn1::BigUint::new(&pub_key_bytes).unwrap();
-        let pub_key_der = asn1::write_single(&pub_key_int)?;
-
-        let params = if let Some(ref q_bytes) = q_bytes_opt {
-            let dhx_params = DHXParams {
+            let dsa_params = DssParams {
                 p: asn1::BigUint::new(&p_bytes).unwrap(),
+                q: asn1::BigUint::new(&q_bytes).unwrap(),
                 g: asn1::BigUint::new(&g_bytes).unwrap(),
-                q: asn1::BigUint::new(q_bytes).unwrap(),
-                j: None,
-                validation_params: None,
             };
-            AlgorithmParameters::Dh(dhx_params)
-        } else {
-            let basic_params = BasicDHParams {
-                p: asn1::BigUint::new(&p_bytes).unwrap(),
-                g: asn1::BigUint::new(&g_bytes).unwrap(),
-                private_value_length: None,
-            };
-            AlgorithmParameters::DhKeyAgreement(basic_params)
-        };
 
-        (params, pub_key_der)
-    } else {
-        unimplemented!("Unknown key type");
+            (AlgorithmParameters::Dsa(dsa_params), pub_key_der)
+        }
+        id if crate::utils::is_dh(id) => {
+            let dh = pkey.dh()?;
+            p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
+            g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
+            q_bytes_opt = dh
+                .prime_q()
+                .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
+                .transpose()?;
+            let pub_key_bytes =
+                cryptography_openssl::utils::bn_to_big_endian_bytes(dh.public_key())?;
+
+            let pub_key_int = asn1::BigUint::new(&pub_key_bytes).unwrap();
+            let pub_key_der = asn1::write_single(&pub_key_int)?;
+
+            let params = if let Some(ref q_bytes) = q_bytes_opt {
+                let dhx_params = DHXParams {
+                    p: asn1::BigUint::new(&p_bytes).unwrap(),
+                    g: asn1::BigUint::new(&g_bytes).unwrap(),
+                    q: asn1::BigUint::new(q_bytes).unwrap(),
+                    j: None,
+                    validation_params: None,
+                };
+                AlgorithmParameters::Dh(dhx_params)
+            } else {
+                let basic_params = BasicDHParams {
+                    p: asn1::BigUint::new(&p_bytes).unwrap(),
+                    g: asn1::BigUint::new(&g_bytes).unwrap(),
+                    private_value_length: None,
+                };
+                AlgorithmParameters::DhKeyAgreement(basic_params)
+            };
+
+            (params, pub_key_der)
+        }
+        _ => {
+            unimplemented!("Unknown key type");
+        }
     };
 
     let spki = SubjectPublicKeyInfo {
