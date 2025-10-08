@@ -136,6 +136,11 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
 impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError {
     fn from(e: cryptography_key_parsing::KeySerializationError) -> CryptographyError {
         match e {
+            cryptography_key_parsing::KeySerializationError::PasswordMustBeUtf8 => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "password must be valid UTF-8",
+                ))
+            }
             cryptography_key_parsing::KeySerializationError::Write(e) => {
                 CryptographyError::Asn1Write(e)
             }

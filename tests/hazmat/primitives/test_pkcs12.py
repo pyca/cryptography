@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
+    PrivateFormat,
     PublicFormat,
     load_pem_private_key,
 )
@@ -736,6 +737,19 @@ class TestPKCS12Creation:
             else 1
         )
         assert p12.count(cert.fingerprint(hashes.SHA1())) == count
+
+    def test_invalid_utf8_password_pbes1(self, backend):
+        cert, key = _load_ca(backend)
+        encryption_algorithm = (
+            PrivateFormat.PKCS12.encryption_builder()
+            .key_cert_algorithm(PBES.PBESv1SHA1And3KeyTripleDESCBC)
+            .build(b"\xff")
+        )
+
+        with pytest.raises(ValueError):
+            serialize_key_and_certificates(
+                None, key, cert, None, encryption_algorithm
+            )
 
 
 @pytest.mark.skip_fips(
