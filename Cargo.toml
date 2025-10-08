@@ -21,7 +21,7 @@ rust-version = "1.83.0"
 license = "Apache-2.0 OR BSD-3-Clause"
 
 [workspace.dependencies]
-asn1 = { version = "0.22.0", default-features = false }
+asn1 = { version = "0.23.0", default-features = false }
 base64 = "0.22"
 cc = "1.2.40"
 cfg-if = "1"
