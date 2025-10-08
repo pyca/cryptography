@@ -72,7 +72,7 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
             }
             cryptography_key_parsing::KeyParsingError::ExplicitCurveUnsupported => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
-                    "ECDSA keys with explicit parameters are unsupported at this time",
+                    "ECDSA keys with explicit parameters are only supported when they map to secp256r1, secp384r1, or secp521r1. No custom curves are supported.",
                 ))
             }
             cryptography_key_parsing::KeyParsingError::UnsupportedKeyType(oid) => {

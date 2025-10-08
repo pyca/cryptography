@@ -5899,11 +5899,11 @@ class TestECDSACertificate:
             os.path.join("x509", "custom", "ec_no_named_curve.pem"),
             x509.load_pem_x509_certificate,
         )
-        # This test can trigger three different value errors depending
-        # on OpenSSL/BoringSSL and versions. Match on the text to ensure
-        # we are getting the right error.
-        with pytest.raises(ValueError, match="explicit parameters"):
-            cert.public_key()
+        # We map explicit parameters to known curves and this cert
+        # contains explicit params for P256, so it should load.
+        pk = cert.public_key()
+        assert isinstance(pk, ec.EllipticCurvePublicKey)
+        assert isinstance(pk.curve, ec.SECP256R1)
 
     def test_verify_directly_issued_by_ec(self):
         issuer_private_key = ec.generate_private_key(ec.SECP256R1())

@@ -3,6 +3,7 @@
 // for complete details.
 
 use cryptography_x509::common::EcParameters;
+use cryptography_x509::ec_constants;
 
 use crate::{KeyParsingError, KeyParsingResult};
 
@@ -57,9 +58,33 @@ pub(crate) fn ec_params_to_group(
             Ok(openssl::ec::EcGroup::from_curve_name(curve_nid)
                 .map_err(|_| KeyParsingError::UnsupportedEllipticCurve(curve_oid.clone()))?)
         }
-        EcParameters::ImplicitCurve(_) | EcParameters::SpecifiedCurve(_) => {
-            Err(KeyParsingError::ExplicitCurveUnsupported)
+        EcParameters::SpecifiedCurve(params) => {
+            // We do not support arbitrary explicit curves. Instead we map values
+            // to named curves. This currently supports only P256, P384,
+            // and P521. No binary curves are supported. Everything must
+            // match, except the seed may be omitted on NIST curves since OpenSSL
+            // has supported a -no_seed option for over 20 years and I don't want to
+            // figure out whether anyone uses that or not. No one should be using
+            // explicit curve encoding anyway. Curves were meant to be named!
+            let (curve_nid, oid) = match params {
+                &ec_constants::P256_DOMAIN | &ec_constants::P256_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::X9_62_PRIME256V1,
+                    cryptography_x509::oid::EC_SECP256R1,
+                ),
+                &ec_constants::P384_DOMAIN | &ec_constants::P384_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::SECP384R1,
+                    cryptography_x509::oid::EC_SECP384R1,
+                ),
+                &ec_constants::P521_DOMAIN | &ec_constants::P521_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::SECP521R1,
+                    cryptography_x509::oid::EC_SECP521R1,
+                ),
+                _ => return Err(KeyParsingError::ExplicitCurveUnsupported),
+            };
+            Ok(openssl::ec::EcGroup::from_curve_name(curve_nid)
+                .map_err(|_| KeyParsingError::UnsupportedEllipticCurve(oid))?)
         }
+        EcParameters::ImplicitCurve(_) => Err(KeyParsingError::ExplicitCurveUnsupported),
     }
 }
 
