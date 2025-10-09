@@ -13,7 +13,12 @@ import pytest
 
 from cryptography import exceptions, x509
 from cryptography.exceptions import _Reasons
-from cryptography.hazmat.bindings._rust import test_support
+from cryptography.hazmat.bindings._rust import (
+    openssl as rust_openssl,
+)
+from cryptography.hazmat.bindings._rust import (
+    test_support,
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.ciphers import algorithms
@@ -77,8 +82,16 @@ class TestPKCS7Loading:
         ],
     )
     def test_load_pkcs7_der(self, filepath, backend):
+        loading_fails = False
         if filepath.endswith("p7b"):
-            ctx: typing.Any = pytest.warns(UserWarning)
+            if (
+                rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+                or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            ):
+                ctx: typing.Any = pytest.raises(ValueError)
+                loading_fails = True
+            else:
+                ctx = pytest.warns(UserWarning)
         else:
             ctx = contextlib.nullcontext()
 
@@ -90,6 +103,10 @@ class TestPKCS7Loading:
                 ),
                 mode="rb",
             )
+
+        if loading_fails:
+            return
+
         assert len(certs) == 2
         assert certs[0].subject.get_attributes_for_oid(
             x509.oid.NameOID.COMMON_NAME
@@ -118,7 +135,13 @@ class TestPKCS7Loading:
 
     def test_load_pkcs7_empty_certificates(self):
         der = b"\x30\x0b\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x07\x02"
+        with pytest.raises(ValueError):
+            pkcs7.load_der_pkcs7_certificates(der)
 
+        der = (
+            b"0#\x06\t*\x86H\x86\xf7\r\x01\x07\x02\xa0\x160\x14\x02\x01\x011"
+            b"\x000\x0b\x06\t*\x86H\x86\xf7\r\x01\x07\x011\x00"
+        )
         with pytest.raises(ValueError):
             pkcs7.load_der_pkcs7_certificates(der)
 
@@ -140,8 +163,11 @@ def _load_cert_key():
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported(),
-    skip_message="Requires OpenSSL with PKCS7 support",
+    only_if=lambda backend: not (
+        rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+    ),
+    skip_message="Requires OpenSSL with PKCS7 verification test support",
 )
 class TestPKCS7SignatureBuilder:
     def test_invalid_data(self, backend):
@@ -1481,19 +1507,6 @@ class TestPKCS7SerializeCerts:
                 certs,
                 "not an encoding",  # type: ignore[arg-type]
             )
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: not backend.pkcs7_supported(),
-    skip_message="Requires OpenSSL without PKCS7 support (BoringSSL)",
-)
-class TestPKCS7Unsupported:
-    def test_pkcs7_functions_unsupported(self):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            pkcs7.load_der_pkcs7_certificates(b"nonsense")
-
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
-            pkcs7.load_pem_pkcs7_certificates(b"nonsense")
 
 
 @pytest.mark.supported(
