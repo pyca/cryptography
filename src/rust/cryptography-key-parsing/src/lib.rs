@@ -8,6 +8,7 @@
 
 pub mod dsa;
 pub mod ec;
+pub mod pbe;
 pub mod pem;
 pub mod pkcs8;
 pub mod rsa;
@@ -50,6 +51,7 @@ impl From<openssl::error::ErrorStack> for KeyParsingError {
 pub type KeyParsingResult<T> = Result<T, KeyParsingError>;
 
 pub enum KeySerializationError {
+    PasswordMustBeUtf8,
     Write(asn1::WriteError),
     OpenSSL(openssl::error::ErrorStack),
 }

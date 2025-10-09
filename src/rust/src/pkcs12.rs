@@ -5,12 +5,13 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use cryptography_key_parsing::pbe;
 use cryptography_x509::common::Utf8StoredBMPString;
 use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
-use crate::backend::{ciphers, hashes, hmac, kdf, keys};
+use crate::backend::{ciphers, hashes, hmac, keys};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7PaddingContext;
@@ -110,132 +111,6 @@ pub(crate) fn symmetric_encrypt(
     Ok(ciphertext)
 }
 
-enum EncryptionAlgorithm {
-    PBESHA1And3KeyTripleDESCBC,
-    PBESv2SHA256AndAES256CBC,
-}
-
-impl EncryptionAlgorithm {
-    fn salt_length(&self) -> usize {
-        match self {
-            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => 8,
-            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => 16,
-        }
-    }
-
-    fn algorithm_identifier<'a>(
-        &self,
-        cipher_kdf_iter: u64,
-        salt: &'a [u8],
-        iv: &'a [u8],
-    ) -> cryptography_x509::common::AlgorithmIdentifier<'a> {
-        match self {
-            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
-                cryptography_x509::common::AlgorithmIdentifier {
-                    oid: asn1::DefinedByMarker::marker(),
-                    params: cryptography_x509::common::AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(cryptography_x509::common::Pkcs12PbeParams{
-                        salt,
-                        iterations: cipher_kdf_iter,
-                    }),
-                }
-            }
-            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
-                let kdf_algorithm_identifier = cryptography_x509::common::AlgorithmIdentifier {
-                    oid: asn1::DefinedByMarker::marker(),
-                    params: cryptography_x509::common::AlgorithmParameters::Pbkdf2(
-                        cryptography_x509::common::PBKDF2Params {
-                            salt,
-                            iteration_count: cipher_kdf_iter,
-                            key_length: None,
-                            prf: Box::new(cryptography_x509::common::AlgorithmIdentifier {
-                                oid: asn1::DefinedByMarker::marker(),
-                                params:
-                                    cryptography_x509::common::AlgorithmParameters::HmacWithSha256(
-                                        Some(()),
-                                    ),
-                            }),
-                        },
-                    ),
-                };
-                let encryption_algorithm_identifier =
-                    cryptography_x509::common::AlgorithmIdentifier {
-                        oid: asn1::DefinedByMarker::marker(),
-                        params: cryptography_x509::common::AlgorithmParameters::Aes256Cbc(
-                            iv[..16].try_into().unwrap(),
-                        ),
-                    };
-
-                cryptography_x509::common::AlgorithmIdentifier {
-                    oid: asn1::DefinedByMarker::marker(),
-                    params: cryptography_x509::common::AlgorithmParameters::Pbes2(
-                        cryptography_x509::common::PBES2Params {
-                            key_derivation_func: Box::new(kdf_algorithm_identifier),
-                            encryption_scheme: Box::new(encryption_algorithm_identifier),
-                        },
-                    ),
-                }
-            }
-        }
-    }
-
-    fn encrypt(
-        &self,
-        py: pyo3::Python<'_>,
-        password: &str,
-        cipher_kdf_iter: u64,
-        salt: &[u8],
-        iv: &[u8],
-        data: &[u8],
-    ) -> CryptographyResult<Vec<u8>> {
-        match self {
-            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
-                let key = cryptography_crypto::pkcs12::kdf(
-                    password,
-                    salt,
-                    cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
-                    cipher_kdf_iter,
-                    24,
-                    openssl::hash::MessageDigest::sha1(),
-                )?;
-                let iv = cryptography_crypto::pkcs12::kdf(
-                    password,
-                    salt,
-                    cryptography_crypto::pkcs12::KDF_IV_ID,
-                    cipher_kdf_iter,
-                    8,
-                    openssl::hash::MessageDigest::sha1(),
-                )?;
-
-                let triple_des = types::TRIPLE_DES
-                    .get(py)?
-                    .call1((pyo3::types::PyBytes::new(py, &key),))?;
-                let cbc = types::CBC
-                    .get(py)?
-                    .call1((pyo3::types::PyBytes::new(py, &iv),))?;
-
-                symmetric_encrypt(py, triple_des, cbc, data)
-            }
-            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
-                let sha256 = openssl::hash::MessageDigest::sha256();
-
-                let key = kdf::pbkdf2_hmac_derive(
-                    py,
-                    password.as_bytes(),
-                    sha256,
-                    salt,
-                    cipher_kdf_iter.try_into().unwrap(),
-                    32,
-                )?;
-
-                let aes256 = types::AES256.get(py)?.call1((key,))?;
-                let cbc = types::CBC.get(py)?.call1((iv,))?;
-
-                symmetric_encrypt(py, aes256, cbc, data)
-            }
-        }
-    }
-}
-
 fn pkcs12_attributes<'a>(
     friendly_name: Option<&'a [u8]>,
     local_key_id: Option<&'a [u8]>,
@@ -311,7 +186,7 @@ struct KeySerializationEncryption<'a> {
     mac_algorithm: pyo3::Bound<'a, pyo3::PyAny>,
     mac_kdf_iter: u64,
     cipher_kdf_iter: u64,
-    encryption_algorithm: Option<EncryptionAlgorithm>,
+    encryption_algorithm: Option<pbe::EncryptionAlgorithm>,
 }
 
 #[allow(clippy::type_complexity)]
@@ -339,12 +214,12 @@ fn decode_encryption_algorithm<'a>(
         let key_cert_alg =
             encryption_algorithm.getattr(pyo3::intern!(py, "_key_cert_algorithm"))?;
         let cipher = if key_cert_alg.is(&types::PBES_PBESV1SHA1AND3KEYTRIPLEDESCBC.get(py)?) {
-            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC
+            pbe::EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC
         } else if key_cert_alg.is(&types::PBES_PBESV2SHA256ANDAES256CBC.get(py)?) {
-            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
+            pbe::EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
         } else {
             assert!(key_cert_alg.is_none());
-            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
+            pbe::EncryptionAlgorithm::PBESv2SHA256AndAES256CBC
         };
 
         let hmac_alg = if let Some(v) = encryption_algorithm
@@ -382,7 +257,7 @@ fn decode_encryption_algorithm<'a>(
             mac_algorithm: default_hmac_alg,
             mac_kdf_iter: default_hmac_kdf_iter,
             cipher_kdf_iter: default_cipher_kdf_iter,
-            encryption_algorithm: Some(EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
+            encryption_algorithm: Some(pbe::EncryptionAlgorithm::PBESv2SHA256AndAES256CBC),
         })
     } else {
         Err(CryptographyError::from(
@@ -435,8 +310,7 @@ fn serialize_safebags<'p>(
             auth_safe_iv = crate::backend::rand::get_rand_bytes(py, 16)?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             auth_safe_ciphertext = e.encrypt(
-                py,
-                password,
+                password.as_bytes(),
                 encryption_details.cipher_kdf_iter,
                 &auth_safe_salt,
                 &auth_safe_iv,
@@ -560,8 +434,7 @@ fn serialize_key_and_certificates<'p>(
     encryption_algorithm: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let encryption_details = decode_encryption_algorithm(py, encryption_algorithm)?;
-    let password = std::str::from_utf8(&encryption_details.password)
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
+    let password = &encryption_details.password;
 
     let mut safebags = vec![];
     let (key_salt, key_iv, key_ciphertext, pkcs8_bytes);
@@ -631,7 +504,6 @@ fn serialize_key_and_certificates<'p>(
             key_iv = crate::backend::rand::get_rand_bytes(py, 16)?
                 .extract::<pyo3::pybacked::PyBackedBytes>()?;
             key_ciphertext = e.encrypt(
-                py,
                 password,
                 encryption_details.cipher_kdf_iter,
                 &key_salt,
