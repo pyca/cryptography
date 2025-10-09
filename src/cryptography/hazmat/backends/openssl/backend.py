@@ -294,10 +294,7 @@ class Backend:
         return not self._fips_enabled
 
     def pkcs7_supported(self) -> bool:
-        return (
-            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-        )
+        return True
 
 
 backend = Backend()
