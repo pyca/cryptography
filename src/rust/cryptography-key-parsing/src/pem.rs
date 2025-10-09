@@ -108,7 +108,7 @@ pub fn encrypt_pem(
     let mut pem = pem::Pem::new(tag, encrypted);
     pem.headers_mut().add("Proc-Type", "4,ENCRYPTED").unwrap();
     pem.headers_mut()
-        .add("DEK-Info", &format!("AES-256-CBC,{}", iv_hex))
+        .add("DEK-Info", &format!("AES-256-CBC,{iv_hex}"))
         .unwrap();
 
     Ok(pem::encode_config(&pem, ENCODE_CONFIG).into_bytes())
