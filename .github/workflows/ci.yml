@@ -40,8 +40,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.0"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.0.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.1"}}
-          # Latest commit on the BoringSSL main branch, as of Oct 09, 2025.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "ed44d6f8deb450d8178908027ff46a0252b2d405"}}
+          # Latest commit on the BoringSSL main branch, as of Oct 10, 2025.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "bc0c8402edc5f3f4ac5c83036083946bb7f5560b"}}
           # Latest tag of AWS-LC main branch, as of Sep 27, 2025.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.61.4"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
