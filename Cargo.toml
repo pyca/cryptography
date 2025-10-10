@@ -23,7 +23,7 @@ license = "Apache-2.0 OR BSD-3-Clause"
 [workspace.dependencies]
 asn1 = { version = "0.23.0", default-features = false }
 base64 = "0.22"
-cc = "1.2.40"
+cc = "1.2.41"
 cfg-if = "1"
 foreign-types = "0.3"
 foreign-types-shared = "0.1"
