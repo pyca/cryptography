@@ -31,6 +31,10 @@ Changelog
 * Moved :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Camellia`
   into  :doc:`/hazmat/decrepit/index` and deprecated it in the ``cipher`` module.
   It will be removed from the ``cipher`` module in 49.0.0.
+* Added ``derive_into`` methods to
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` and
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
+  deriving keys directly into pre-allocated buffers.
 
 .. _v46-0-2:
 
