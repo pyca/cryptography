@@ -67,7 +67,9 @@ execnet==2.1.1
     # via pytest-xdist
 filelock==3.16.1 ; python_full_version < '3.9'
     # via virtualenv
-filelock==3.19.1 ; python_full_version >= '3.9'
+filelock==3.19.1 ; python_full_version == '3.9.*'
+    # via virtualenv
+filelock==3.20.0 ; python_full_version >= '3.10'
     # via virtualenv
 idna==3.10
     # via requests
@@ -116,7 +118,9 @@ pathspec==0.12.1
     #   mypy
 platformdirs==4.3.6 ; python_full_version < '3.9'
     # via virtualenv
-platformdirs==4.4.0 ; python_full_version >= '3.9'
+platformdirs==4.4.0 ; python_full_version == '3.9.*'
+    # via virtualenv
+platformdirs==4.5.0 ; python_full_version >= '3.10'
     # via virtualenv
 pluggy==1.5.0 ; python_full_version < '3.9'
     # via pytest
@@ -251,7 +255,7 @@ sphinxcontrib-spelling==8.0.0 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml)
 sphinxcontrib-spelling==8.0.1 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml)
-tomli==2.2.1 ; python_full_version <= '3.11'
+tomli==2.3.0 ; python_full_version <= '3.11'
     # via
     #   build
     #   check-sdist
