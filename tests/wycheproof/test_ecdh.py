@@ -3,6 +3,7 @@
 # for complete details.
 
 import binascii
+import typing
 
 import pytest
 
@@ -13,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from ..hazmat.primitives.test_ec import _skip_exchange_algorithm_unsupported
 from .utils import wycheproof_tests
 
-_CURVES = {
+_CURVES: typing.Dict[str, typing.Union[ec.EllipticCurve, None]] = {
     "secp224r1": ec.SECP224R1(),
     "secp256r1": ec.SECP256R1(),
     "secp384r1": ec.SECP384R1(),

@@ -1490,7 +1490,6 @@ class TestRSACertificate:
                 os.path.join("x509", "custom", "invalid_version.pem"),
                 x509.load_pem_x509_certificate,
             )
-
         assert exc.value.parsed_version == 7
 
     def test_invalid_visiblestring_in_explicit_text(self, backend):
@@ -6091,9 +6090,9 @@ class TestNameAttribute:
 
     def test_init_none_value(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(  # type:ignore[type-var]
+            x509.NameAttribute(
                 NameOID.ORGANIZATION_NAME,
-                None,
+                None,  # type:ignore[type-var]
             )
 
     def test_init_bad_length(self):

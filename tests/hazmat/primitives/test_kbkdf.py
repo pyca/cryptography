@@ -298,8 +298,8 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend,
-                0,  # break_location
-            )  # type: ignore[misc]
+                0,  # type: ignore[misc]
+            )
 
     def test_invalid_break_location(self, backend):
         with pytest.raises(
@@ -769,8 +769,8 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend,
-                0,  # break_location
-            )  # type: ignore[misc]
+                0,  # type: ignore[misc]
+            )
 
     def test_invalid_break_location(self, backend):
         with pytest.raises(

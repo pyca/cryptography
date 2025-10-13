@@ -87,6 +87,8 @@ def load_nist_vectors(vector_data):
 
 def load_cryptrec_vectors(vector_data):
     cryptrec_list = []
+    key = None
+    pt = None
 
     for line in vector_data:
         line = line.strip()
@@ -116,6 +118,7 @@ def load_hash_vectors(vector_data):
     key = None
     msg = None
     md = None
+    length = None
 
     for line in vector_data:
         line = line.strip()
@@ -132,6 +135,7 @@ def load_hash_vectors(vector_data):
             # In the NIST vectors they have chosen to represent an empty
             # string as hex 00, which is of course not actually an empty
             # string. So we parse the provided length and catch this edge case.
+            assert length is not None
             msg = line.split(" = ")[1].encode("ascii") if length > 0 else b""
         elif line.startswith(("MD", "Output")):
             md = line.split(" = ")[1]
@@ -278,6 +282,8 @@ def load_rsa_nist_vectors(vector_data):
     p = None
     salt_length = None
     data = []
+    n = None
+    e = None
 
     for line in vector_data:
         line = line.strip()
@@ -454,6 +460,7 @@ def load_fips_ecdsa_key_pair_vectors(vector_data):
     """
     vectors = []
     key_data = None
+    curve_name = None
     for line in vector_data:
         line = line.strip()
 
@@ -491,6 +498,8 @@ def load_fips_ecdsa_signing_vectors(vector_data):
     Loads data out of the FIPS ECDSA SigGen vector files.
     """
     vectors = []
+    curve_name: typing.Union[str, None] = None
+    digest_name: typing.Union[str, None] = None
 
     data: typing.Optional[typing.Dict[str, object]] = None
     for line in vector_data:
@@ -759,6 +768,9 @@ def load_x963_vectors(vector_data):
     # Sets Metadata
     hashname = None
     vector = {}
+    shared_secret_len: typing.Union[int, None] = None
+    shared_info_len: typing.Union[int, None] = None
+    key_data_len: typing.Union[int, None] = None
     for line in vector_data:
         line = line.strip()
 
@@ -783,16 +795,19 @@ def load_x963_vectors(vector_data):
         elif line.startswith("Z"):
             vector["Z"] = line.split("=")[1].strip()
             assert vector["Z"] is not None
+            assert shared_secret_len is not None
             assert ((shared_secret_len + 7) // 8) * 2 == len(vector["Z"])
         elif line.startswith("SharedInfo"):
             if shared_info_len != 0:
                 vector["sharedinfo"] = line.split("=")[1].strip()
                 assert vector["sharedinfo"] is not None
                 silen = len(vector["sharedinfo"])
+                assert shared_info_len is not None
                 assert ((shared_info_len + 7) // 8) * 2 == silen
         elif line.startswith("key_data"):
             vector["key_data"] = line.split("=")[1].strip()
             assert vector["key_data"] is not None
+            assert key_data_len is not None
             assert ((key_data_len + 7) // 8) * 2 == len(vector["key_data"])
             vectors.append(vector)
             vector = {}
@@ -829,9 +844,11 @@ def load_nist_kbkdf_vectors(vector_data):
             vectors.append(test_data)
         elif line.startswith(("L", "DataBeforeCtrLen", "DataAfterCtrLen")):
             name, value = (c.strip() for c in line.split("="))
+            assert isinstance(test_data, dict)
             test_data[name.lower()] = int(value)
         else:
             name, value = (c.strip() for c in line.split("="))
+            assert isinstance(test_data, dict)
             test_data[name.lower()] = value.encode("ascii")
 
     return vectors
@@ -858,7 +875,7 @@ def load_ed25519_vectors(vector_data):
 
 def load_nist_ccm_vectors(vector_data):
     test_data = {}
-    section_data = None
+    section_data: typing.Dict[str, typing.Any] = {}
     global_data = {}
     new_section = False
     data = []
