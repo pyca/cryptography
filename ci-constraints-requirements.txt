@@ -71,7 +71,7 @@ filelock==3.19.1 ; python_full_version == '3.9.*'
     # via virtualenv
 filelock==3.20.0 ; python_full_version >= '3.10'
     # via virtualenv
-idna==3.10
+idna==3.11
     # via requests
 imagesize==1.4.1
     # via sphinx
