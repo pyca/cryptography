@@ -1237,6 +1237,17 @@ class TestECSerialization:
             == data
         )
 
+    def test_private_bytes_small_key(self):
+        key = ec.derive_private_key(private_value=1, curve=ec.SECP256R1())
+        der = key.private_bytes(
+            serialization.Encoding.DER,
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.NoEncryption(),
+        )
+        # Ensure that serialized keys are always padded to the group order
+        # length.
+        assert (b"\x00" * 31 + b"\x01") in der
+
 
 class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(

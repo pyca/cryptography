@@ -130,7 +130,9 @@ pub fn serialize_pkcs1_private_key(
         None
     };
 
-    let private_key_bytes = ec.private_key().to_vec();
+    let private_key_bytes = ec
+        .private_key()
+        .to_vec_padded(ec.group().order_bits().div_ceil(8).try_into().unwrap())?;
 
     let mut bn_ctx = openssl::bn::BigNumContext::new()?;
     let public_key_bytes = ec.public_key().to_bytes(
