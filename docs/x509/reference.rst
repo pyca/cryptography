@@ -1950,6 +1950,15 @@ X.509 Extensions
 
     .. method:: get_extension_for_oid(oid)
 
+        .. note::
+
+            For type-checking purposes, this method returns ``Extension[ExtensionType]``,
+            which is a generic type. To access methods specific to a particular extension
+            class, you'll need to add a type assertion or a cast. When you know the
+            specific extension type you need, prefer :meth:`get_extension_for_class`
+            which returns a properly typed ``Extension[ExtensionTypeVar]`` and allows
+            direct access to extension-specific methods.
+
         :param oid: An :class:`ObjectIdentifier` instance.
 
         :returns: An instance of :class:`Extension`.
