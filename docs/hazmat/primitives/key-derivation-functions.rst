@@ -636,8 +636,8 @@ HKDF
 
         .. note::
             Extract is a component of the complete HKDF algorithm.
-            Unless required, users should ignore this method and just
-            call :meth:`derive`.
+            Unless needed for implementing an existing protocol, users
+            should ignore this method and use call :meth:`derive`.
 
         :param algorithm: An instance of
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.

@@ -91,7 +91,7 @@ impl Hmac {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let data = self.get_mut_ctx()?.finish()?;
+        let data = self.finalize_bytes()?;
         self.ctx = None;
         Ok(pyo3::types::PyBytes::new(py, &data))
     }
