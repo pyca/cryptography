@@ -526,12 +526,12 @@ struct Hkdf {
     used: bool,
 }
 
-fn hkdf_extract<'p>(
-    py: pyo3::Python<'p>,
+fn hkdf_extract(
+    py: pyo3::Python<'_>,
     algorithm: &pyo3::Py<pyo3::PyAny>,
     salt: Option<&pyo3::Py<pyo3::types::PyBytes>>,
     key_material: &CffiBuf<'_>,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
     let algorithm_bound = algorithm.bind(py);
     let digest_size = algorithm_bound
         .getattr(pyo3::intern!(py, "digest_size"))?
@@ -546,7 +546,7 @@ fn hkdf_extract<'p>(
 
     let mut hmac = Hmac::new_bytes(py, salt_bytes, algorithm_bound)?;
     hmac.update_bytes(key_material.as_bytes())?;
-    hmac.finalize(py)
+    hmac.finalize_bytes()
 }
 
 #[pyo3::pymethods]
@@ -597,7 +597,8 @@ impl Hkdf {
         salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        hkdf_extract(py, &algorithm, salt.as_ref(), &key_material)
+        let prk = hkdf_extract(py, &algorithm, salt.as_ref(), &key_material)?;
+        Ok(pyo3::types::PyBytes::new(py, &prk))
     }
 
     fn _extract<'p>(
@@ -605,7 +606,8 @@ impl Hkdf {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)
+        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)?;
+        Ok(pyo3::types::PyBytes::new(py, &prk))
     }
 
     fn derive<'p>(
@@ -626,8 +628,7 @@ impl Hkdf {
             self.info.as_ref().map(|i| i.clone_ref(py)),
             None,
         )?;
-        let prk_bytes = prk.as_bytes();
-        let cffi_buf = CffiBuf::from_bytes(py, prk_bytes);
+        let cffi_buf = CffiBuf::from_bytes(py, &prk);
         hkdf_expand.derive(py, cffi_buf)
     }
 

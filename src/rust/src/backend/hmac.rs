@@ -45,6 +45,14 @@ impl Hmac {
         Ok(())
     }
 
+    pub(crate) fn finalize_bytes(
+        &mut self,
+    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+        let data = self.get_mut_ctx()?.finish()?;
+        self.ctx = None;
+        Ok(data)
+    }
+
     fn get_ctx(&self) -> CryptographyResult<&cryptography_openssl::hmac::Hmac> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
