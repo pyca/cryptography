@@ -339,8 +339,14 @@ def hkdf_derive_test(backend, algorithm, params):
         backend=backend,
     )
 
-    okm = hkdf.derive(binascii.unhexlify(params["ikm"]))
+    prk = HKDF.extract(
+        algorithm,
+        binascii.unhexlify(params["salt"]) or None,
+        binascii.unhexlify(params["ikm"]),
+    )
+    assert prk == binascii.unhexlify(params["prk"])
 
+    okm = hkdf.derive(binascii.unhexlify(params["ikm"]))
     assert okm == binascii.unhexlify(params["okm"])
 
 

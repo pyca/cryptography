@@ -630,6 +630,33 @@ HKDF
     :raises TypeError: This exception is raised if ``salt`` or ``info`` is not
                        ``bytes``.
 
+    .. staticmethod:: extract(algorithm, salt, key_material)
+
+        .. versionadded:: 47.0.0
+
+        .. note::
+            Extract is a component of the complete HKDF algorithm.
+            Unless required, users should ignore this method and just
+            call :meth:`derive`.
+
+        :param algorithm: An instance of
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`.
+        :param bytes salt: A salt. Randomizes the KDF's output. Optional, but
+            highly recommended. Ideally as many bits of entropy as the security
+            level of the hash: often that means cryptographically random and as
+            long as the hash output. Worse (shorter, less entropy) salt values can
+            still meaningfully contribute to security. May be reused. Does not have
+            to be secret, but may cause stronger security guarantees if secret; see
+            :rfc:`5869` and the `HKDF paper`_ for more details. If ``None`` is
+            explicitly passed a default salt of ``algorithm.digest_size // 8`` null
+            bytes will be used. See `understanding HKDF`_ for additional detail about
+            the salt and info parameters.
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :return bytes: The extracted value.
+        :raises TypeError: This exception is raised if ``key_material``, ``salt``, or
+            ``algorithm`` are the wrong type.
+
     .. method:: derive(key_material)
 
         :param key_material: The input key material.

@@ -31,6 +31,9 @@ Changelog
 * Moved :class:`~cryptography.hazmat.primitives.ciphers.algorithms.Camellia`
   into  :doc:`/hazmat/decrepit/index` and deprecated it in the ``cipher`` module.
   It will be removed from the ``cipher`` module in 49.0.0.
+* Added :meth:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF.extract`
+  to :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`. The previous
+  private implementation will be removed in 49.0.0.
 
 .. _v46-0-2:
 

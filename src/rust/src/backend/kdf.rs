@@ -520,10 +520,33 @@ impl Argon2id {
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.hkdf", name = "HKDF")]
 struct Hkdf {
     algorithm: pyo3::Py<pyo3::PyAny>,
-    salt: pyo3::Py<pyo3::types::PyBytes>,
+    salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
     info: Option<pyo3::Py<pyo3::types::PyBytes>>,
     length: usize,
     used: bool,
+}
+
+fn hkdf_extract<'p>(
+    py: pyo3::Python<'p>,
+    algorithm: &pyo3::Py<pyo3::PyAny>,
+    salt: Option<&pyo3::Py<pyo3::types::PyBytes>>,
+    key_material: &CffiBuf<'_>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let algorithm_bound = algorithm.bind(py);
+    let digest_size = algorithm_bound
+        .getattr(pyo3::intern!(py, "digest_size"))?
+        .extract::<usize>()?;
+    let salt_bound = salt.map(|s| s.bind(py));
+    let default_salt = vec![0; digest_size];
+    let salt_bytes: &[u8] = if let Some(bound) = salt_bound {
+        bound.as_bytes()
+    } else {
+        &default_salt
+    };
+
+    let mut hmac = Hmac::new_bytes(py, salt_bytes, algorithm_bound)?;
+    hmac.update_bytes(key_material.as_bytes())?;
+    hmac.finalize(py)
 }
 
 #[pyo3::pymethods]
@@ -558,12 +581,6 @@ impl Hkdf {
             ));
         }
 
-        let salt = if let Some(salt) = salt {
-            salt
-        } else {
-            pyo3::types::PyBytes::new_with(py, digest_size, |_| Ok(()))?.into()
-        };
-
         Ok(Hkdf {
             algorithm,
             salt,
@@ -573,15 +590,22 @@ impl Hkdf {
         })
     }
 
+    #[staticmethod]
+    fn extract<'p>(
+        py: pyo3::Python<'p>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        hkdf_extract(py, &algorithm, salt.as_ref(), &key_material)
+    }
+
     fn _extract<'p>(
         &self,
         py: pyo3::Python<'p>,
-        key_material: &[u8],
+        key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let algorithm_bound = self.algorithm.bind(py);
-        let mut hmac = Hmac::new_bytes(py, self.salt.as_bytes(py), algorithm_bound)?;
-        hmac.update_bytes(key_material)?;
-        hmac.finalize(py)
+        hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)
     }
 
     fn derive<'p>(
@@ -594,7 +618,7 @@ impl Hkdf {
         }
         self.used = true;
 
-        let prk = self._extract(py, key_material.as_bytes())?;
+        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)?;
         let mut hkdf_expand = HkdfExpand::new(
             py,
             self.algorithm.clone_ref(py),

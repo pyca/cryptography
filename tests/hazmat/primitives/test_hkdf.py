@@ -127,6 +127,13 @@ class TestHKDF:
 
         assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
 
+    def test_private_extract_exists(self):
+        # This was DeprecatedIn47 but we can't raise a warning
+        # because the scapy tests are fragile butterflies
+        hkdf = HKDF(hashes.SHA256(), 32, salt=b"0", info=None)
+        prk = hkdf._extract(b"0")  # type:ignore[attr-defined]
+        assert len(prk) == 32
+
     def test_buffer_protocol(self, backend):
         vector = load_vectors_from_file(
             os.path.join("KDF", "hkdf-generated.txt"), load_nist_vectors
