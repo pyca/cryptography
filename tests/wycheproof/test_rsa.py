@@ -3,6 +3,7 @@
 # for complete details.
 
 import binascii
+import typing
 
 import pytest
 
@@ -12,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from .utils import wycheproof_tests
 
-_DIGESTS = {
+_DIGESTS: typing.Dict[str, typing.Union[hashes.HashAlgorithm, None]] = {
     "SHA-1": hashes.SHA1(),
     "SHA-224": hashes.SHA224(),
     "SHA-256": hashes.SHA256(),

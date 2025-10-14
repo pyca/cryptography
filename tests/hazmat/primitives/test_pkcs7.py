@@ -7,7 +7,7 @@ import contextlib
 import email.parser
 import os
 import typing
-from email.message import EmailMessage
+from email.message import EmailMessage, Message
 
 import pytest
 
@@ -314,7 +314,7 @@ class TestPKCS7SignatureBuilder:
         message = email.parser.BytesParser().parsebytes(sig)
         payload = message.get_payload()
         assert isinstance(payload, list)
-        assert isinstance(payload[0], email.message.Message)
+        assert isinstance(payload[0], Message)
         signed_data = payload[0].get_payload()
         assert isinstance(signed_data, str)
         test_support.pkcs7_verify(
@@ -539,7 +539,7 @@ class TestPKCS7SignatureBuilder:
         message = email.parser.BytesParser().parsebytes(sig_pem)
         payload = message.get_payload()
         assert isinstance(payload, list)
-        assert isinstance(payload[0], email.message.Message)
+        assert isinstance(payload[0], Message)
         signed_data = payload[0].as_bytes(
             policy=message.policy.clone(linesep="\r\n")
         )

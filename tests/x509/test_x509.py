@@ -6091,9 +6091,9 @@ class TestNameAttribute:
 
     def test_init_none_value(self):
         with pytest.raises(TypeError):
-            x509.NameAttribute(  # type:ignore[type-var]
+            x509.NameAttribute(
                 NameOID.ORGANIZATION_NAME,
-                None,
+                None,  # type:ignore[type-var]
             )
 
     def test_init_bad_length(self):
