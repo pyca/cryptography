@@ -280,7 +280,7 @@ jobs:
           - {OS: 'macos-15-intel', ARCH: 'x86_64'}
           - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.8", NOXSESSION: "tests"}
+          - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
         exclude:
