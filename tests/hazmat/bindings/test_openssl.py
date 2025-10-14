@@ -79,7 +79,6 @@ class TestOpenSSL:
         with pytest.raises(InternalError) as exc_info:
             _openssl_assert(False)
 
-        assert isinstance(exc_info.value, InternalError)
         error = exc_info.value.err_code[0]
         assert error.lib == b.lib.ERR_LIB_EVP
         assert error.reason == b.lib.EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH

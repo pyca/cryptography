@@ -1490,6 +1490,7 @@ class TestRSACertificate:
                 os.path.join("x509", "custom", "invalid_version.pem"),
                 x509.load_pem_x509_certificate,
             )
+
         assert exc.value.parsed_version == 7
 
     def test_invalid_visiblestring_in_explicit_text(self, backend):
