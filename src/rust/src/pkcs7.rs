@@ -4,6 +4,8 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+use std::ffi::CString;
 use std::mem;
 use std::ops::Deref;
 use std::sync::LazyLock;
@@ -836,10 +838,11 @@ fn load_der_pkcs7_certificates(
                 ))
             })?;
             let result = load_pkcs7_certificates(py, pkcs7_decoded)?;
-            if load_pkcs7_certificates_rust(py, data).is_err() {
+            if let Err(e) =  load_pkcs7_certificates_rust(py, data) {
+                let err = pyo3::PyErr::from(e);
                 let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
-                let message = c"PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates were created. In the future, this may become an exception.";
-                pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
+                let message = CString::new(format!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates were created. In the future, this may become an exception. Error details: {err}")).unwrap();
+                pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
             }
 
             Ok(result)
