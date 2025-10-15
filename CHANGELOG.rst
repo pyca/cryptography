@@ -39,6 +39,13 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
   deriving keys directly into pre-allocated buffers.
 
+.. _v46-0-3:
+
+46.0.3 - 2025-10-15
+~~~~~~~~~~~~~~~~~~~
+
+* Fixed compilation when using LibreSSL 4.2.0.
+
 .. _v46-0-2:
 
 46.0.2 - 2025-09-30
