@@ -51,7 +51,9 @@ from .fixtures_rsa import (
 )
 from .utils import (
     _check_rsa_private_numbers,
+    compute_rsa_hash_digest,
     generate_rsa_verification_test,
+    generate_rsa_verification_without_digest_test,
     skip_fips_traditional_openssl,
 )
 
@@ -439,6 +441,49 @@ class TestRSASignature:
                     binascii.unhexlify(example["message"]),
                     padding.PKCS1v15(),
                     hashes.SHA1(),
+                )
+                assert binascii.hexlify(signature) == example["signature"]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
+    def test_pkcs1v15_signing_without_digest(self, backend, subtests):
+        vectors = _flatten_pkcs1_examples(
+            load_vectors_from_file(
+                os.path.join("asymmetric", "RSA", "pkcs1v15sign-vectors.txt"),
+                load_pkcs1_vectors,
+            )
+        )
+        for private, public, example in vectors:
+            with subtests.test():
+                private_key = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                signature = private_key.sign(
+                    binascii.unhexlify(
+                        compute_rsa_hash_digest(
+                            backend, hashes.SHA1(), example["message"]
+                        )
+                    ),
+                    padding.PKCS1v15(),
+                    None,
                 )
                 assert binascii.hexlify(signature) == example["signature"]
 
@@ -1510,6 +1555,26 @@ class TestRSAPKCS1Verification:
         skip_message="Does not support SHA1 and PKCS1v1.5.",
     )(
         generate_rsa_verification_test(
+            load_rsa_nist_vectors,
+            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+            [
+                "SigGen15_186-2.rsp",
+                "SigGen15_186-3.rsp",
+                "SigVer15_186-3.rsp",
+            ],
+            hashes.SHA1(),
+            lambda params, hash_alg: padding.PKCS1v15(),
+        )
+    )
+
+    test_rsa_pkcs1v15_verify_sha1_without_digest = pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.signature_hash_supported(hashes.SHA1())
+            and backend.rsa_padding_supported(padding.PKCS1v15())
+        ),
+        skip_message="Does not support SHA1 and PKCS1v1.5.",
+    )(
+        generate_rsa_verification_without_digest_test(
             load_rsa_nist_vectors,
             os.path.join("asymmetric", "RSA", "FIPS_186-2"),
             [
