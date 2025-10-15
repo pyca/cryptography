@@ -94,7 +94,7 @@ impl Hmac {
         Ok(pyo3::types::PyBytes::new(py, &data))
     }
 
-    fn verify(&mut self, _py: pyo3::Python<'_>, signature: &[u8]) -> CryptographyResult<()> {
+    fn verify(&mut self, signature: &[u8]) -> CryptographyResult<()> {
         let actual = self.finalize_bytes()?;
         if !constant_time::bytes_eq(&actual, signature) {
             return Err(CryptographyError::from(
