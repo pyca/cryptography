@@ -47,6 +47,13 @@ def _load_all_params(path, file_names, param_loader):
     return all_params
 
 
+def compute_rsa_hash_digest(backend, hash_alg, msg):
+    oid = _hash_alg_oids[hash_alg.name]
+    h = hashes.Hash(hash_alg, backend=backend)
+    h.update(binascii.unhexlify(msg))
+    return binascii.hexlify(oid) + binascii.hexlify(h.finalize())
+
+
 def generate_encrypt_test(
     param_loader, path, file_names, cipher_factory, mode_factory
 ):
@@ -497,6 +504,24 @@ def generate_rsa_verification_test(
         for params in all_params:
             with subtests.test():
                 rsa_verification_test(backend, params, hash_alg, pad_factory)
+
+    return test_rsa_verification
+
+
+def generate_rsa_verification_without_digest_test(
+    param_loader, path, file_names, hash_alg, pad_factory
+):
+    def test_rsa_verification(self, backend, subtests):
+        all_params = _load_all_params(path, file_names, param_loader)
+        all_params = [
+            i for i in all_params if i["algorithm"] == hash_alg.name.upper()
+        ]
+        for params in all_params:
+            with subtests.test():
+                params["msg"] = compute_rsa_hash_digest(
+                    backend, hash_alg, params["msg"]
+                )
+                rsa_verification_test(backend, params, None, pad_factory)
 
     return test_rsa_verification
 
