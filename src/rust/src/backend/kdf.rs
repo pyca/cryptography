@@ -11,7 +11,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes;
 use crate::backend::hmac::Hmac;
-use crate::buf::CffiBuf;
+use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
@@ -549,6 +549,40 @@ fn hkdf_extract(
     hmac.finalize_bytes()
 }
 
+impl Hkdf {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let buf = CffiBuf::from_bytes(py, key_material);
+        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &buf)?;
+        let mut hkdf_expand = HkdfExpand::new(
+            py,
+            self.algorithm.clone_ref(py),
+            self.length,
+            self.info.as_ref().map(|i| i.clone_ref(py)),
+            None,
+        )?;
+        hkdf_expand.derive_into_buffer(py, &prk, output)
+    }
+}
+
 #[pyo3::pymethods]
 impl Hkdf {
     #[new]
@@ -610,26 +644,24 @@ impl Hkdf {
         Ok(pyo3::types::PyBytes::new(py, &prk))
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)?;
-        let mut hkdf_expand = HkdfExpand::new(
-            py,
-            self.algorithm.clone_ref(py),
-            self.length,
-            self.info.as_ref().map(|i| i.clone_ref(py)),
-            None,
-        )?;
-        let cffi_buf = CffiBuf::from_bytes(py, &prk);
-        hkdf_expand.derive(py, cffi_buf)
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
     }
 
     fn verify(
@@ -663,6 +695,58 @@ struct HkdfExpand {
     info: pyo3::Py<pyo3::types::PyBytes>,
     length: usize,
     used: bool,
+}
+
+impl HkdfExpand {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let h_prime = Hmac::new_bytes(py, key_material, algorithm_bound)?;
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let mut pos = 0usize;
+        let mut counter = 0u8;
+
+        while pos < self.length {
+            counter += 1;
+            let mut h = h_prime.copy(py)?;
+
+            let start = pos.saturating_sub(digest_size);
+            h.update_bytes(&output[start..pos])?;
+
+            h.update_bytes(self.info.as_bytes(py))?;
+            h.update_bytes(&[counter])?;
+
+            let block = h.finalize(py)?;
+            let block_bytes = block.as_bytes();
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+            pos += copy_len;
+        }
+
+        Ok(self.length)
+    }
 }
 
 #[pyo3::pymethods]
@@ -710,44 +794,22 @@ impl HkdfExpand {
         })
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        let algorithm_bound = self.algorithm.bind(py);
-        let h_prime = Hmac::new_bytes(py, key_material.as_bytes(), algorithm_bound)?;
-        let digest_size = algorithm_bound
-            .getattr(pyo3::intern!(py, "digest_size"))?
-            .extract::<usize>()?;
-
         Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
-            let mut pos = 0usize;
-            let mut counter = 0u8;
-
-            while pos < self.length {
-                counter += 1;
-                let mut h = h_prime.copy(py)?;
-
-                let start = pos.saturating_sub(digest_size);
-                h.update_bytes(&output[start..pos])?;
-
-                h.update_bytes(self.info.as_bytes(py))?;
-                h.update_bytes(&[counter])?;
-
-                let block = h.finalize(py)?;
-                let block_bytes = block.as_bytes();
-
-                let copy_len = (self.length - pos).min(digest_size);
-                output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
-                pos += copy_len;
-            }
-
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
             Ok(())
         })?)
     }

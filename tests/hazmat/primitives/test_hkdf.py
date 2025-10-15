@@ -149,6 +149,29 @@ class TestHKDF:
 
         assert hkdf.derive(ikm) == binascii.unhexlify(vector["okm"])
 
+    def test_derive_into(self):
+        hkdf = HKDF(hashes.SHA256(), 16, salt=None, info=None)
+        buf = bytearray(16)
+        n = hkdf.derive_into(b"\x01" * 16, buf)
+        assert n == 16
+        assert buf == b"gJ\xfb{\xb1Oi\xc5sMC\xb7\xe4@\xf7u"
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(15, 16), (17, 16), (22, 23), (24, 23)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen):
+        hkdf = HKDF(hashes.SHA256(), outlen, salt=None, info=None)
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            hkdf.derive_into(b"\x01" * 16, buf)
+
+    def test_derive_into_already_finalized(self):
+        hkdf = HKDF(hashes.SHA256(), 16, salt=None, info=None)
+        buf = bytearray(16)
+        hkdf.derive_into(b"\x01" * 16, buf)
+        with pytest.raises(AlreadyFinalized):
+            hkdf.derive_into(b"\x02" * 16, buf)
+
 
 class TestHKDFExpand:
     def test_derive(self, backend):
@@ -244,3 +267,39 @@ class TestHKDFExpand:
                 big_length,
                 info=None,
             )
+
+    def test_derive_into(self):
+        prk = binascii.unhexlify(
+            b"077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5"
+        )
+
+        okm = binascii.unhexlify(
+            b"3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c"
+            b"5bf34007208d5b887185865"
+        )
+
+        info = binascii.unhexlify(b"f0f1f2f3f4f5f6f7f8f9")
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info)
+
+        buf = bytearray(42)
+        n = hkdf.derive_into(prk, buf)
+        assert n == 42
+        assert buf == okm
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(15, 16), (17, 16), (22, 23), (24, 23)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen):
+        hkdf = HKDFExpand(hashes.SHA256(), outlen, info=None)
+
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            hkdf.derive_into(b"\x00" * 16, buf)
+
+    def test_derive_into_already_finalized(self):
+        hkdf = HKDFExpand(hashes.SHA256(), 42, info=None)
+
+        buf = bytearray(42)
+        hkdf.derive_into(b"0" * 16, buf)
+        with pytest.raises(AlreadyFinalized):
+            hkdf.derive_into(b"0" * 16, buf)

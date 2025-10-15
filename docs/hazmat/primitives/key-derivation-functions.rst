@@ -665,13 +665,37 @@ HKDF
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
 
         Derives a new key from the input key material by performing both the
         extract and expand operations.
+
+    .. method:: derive_into(key_material, buffer)
+
+        .. versionadded:: 47.0.0
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :param buffer: A writable buffer to write the derived key into.
+        :return int: The number of bytes written to the buffer.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+        :raises ValueError: This exception is raised if the buffer is too small
+                           for the derived key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        Derives a new key from the input key material by performing both the
+        extract and expand operations, writing the result into the provided
+        buffer.
 
     .. method:: verify(key_material, expected_key)
 
@@ -684,8 +708,9 @@ HKDF
                                                     derived key does not match
                                                     the expected key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
 
@@ -748,13 +773,35 @@ HKDF
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
 
         Derives a new key from the input key material by only performing the
         expand operation.
+
+    .. method:: derive_into(key_material, buffer)
+
+        .. versionadded:: 47.0.0
+
+        :param bytes key_material: The input key material.
+        :param buffer: A writable buffer to write the derived key into.
+        :return int: The number of bytes written to the buffer.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+        :raises ValueError: This exception is raised if the buffer is too small
+                           for the derived key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        Derives a new key from the input key material by only performing the
+        expand operation, writing the result into the provided buffer.
 
     .. method:: verify(key_material, expected_key)
 
@@ -767,8 +814,9 @@ HKDF
                                                     derived key does not match
                                                     the expected key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
         :raises TypeError: This is raised if the provided ``key_material`` is

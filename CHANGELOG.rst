@@ -34,6 +34,10 @@ Changelog
 * Added :meth:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF.extract`
   to :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`. The previous
   private implementation will be removed in 49.0.0.
+* Added ``derive_into`` methods to
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` and
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
+  deriving keys directly into pre-allocated buffers.
 
 .. _v46-0-2:
 
