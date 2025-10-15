@@ -123,7 +123,7 @@ jobs:
           echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
           echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
         if: matrix.PYTHON.OPENSSL
-      - run: sudo apt-get install -y bindgen
+      - run: cargo install bindgen-cli
         if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
       - name: Cache rust and pip
         uses: ./.github/actions/cache
@@ -132,7 +132,7 @@ jobs:
           # We have both the Python version from the matrix and from the
           # setup-python step because the latter doesn't distinguish
           # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
-          key: ${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}
+          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}-0"
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
       - name: Create nox environment
