@@ -433,8 +433,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Oct 14, 2025.
-            REF: fcb4ac506bd1aac72117cf168679cf9a4a11e9e4
+            # Latest commit on the twisted trunk branch, as of Oct 15, 2025.
+            REF: ab98ca911279fbc16ca5ccb2aeebc5a442db72d2
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -453,8 +453,8 @@ jobs:
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Oct 04, 2025.
-            REF: e590cb26ddd1e725c2a484bf07cc3d8c40a5cc45
+            # Latest commit on the certbot-josepy main branch, as of Oct 15, 2025.
+            REF: 294d462643de938ffb80ca648d63fc068240318d
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
