@@ -2,7 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::IntoPyObject;
+use pyo3::{IntoPyObject, PyTypeInfo};
+use std::ffi::CStr;
 
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
@@ -27,14 +28,22 @@ fn load_der_private_key<'p>(
     )
 }
 
+fn py_warn(py: pyo3::Python<'_>) -> impl Fn(&CStr) + '_ {
+    move |msg| {
+        let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
+        // If warn fails, we ignore it.
+        _ = pyo3::PyErr::warn(py, &warning_cls, msg, 1);
+    }
+}
+
 pub(crate) fn load_der_private_key_bytes<'p>(
     py: pyo3::Python<'p>,
     data: &[u8],
     password: Option<&[u8]>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let pkey = cryptography_key_parsing::pkcs8::parse_private_key(data)
-        .or_else(|_| cryptography_key_parsing::ec::parse_pkcs1_private_key(data, None))
+    let pkey = cryptography_key_parsing::pkcs8::parse_private_key(data, py_warn(py))
+        .or_else(|_| cryptography_key_parsing::ec::parse_pkcs1_private_key(data, None, py_warn(py)))
         .or_else(|_| cryptography_key_parsing::rsa::parse_pkcs1_private_key(data))
         .or_else(|_| cryptography_key_parsing::dsa::parse_pkcs1_private_key(data));
 
@@ -49,7 +58,8 @@ pub(crate) fn load_der_private_key_bytes<'p>(
         return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
     }
 
-    let pkey = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
+    let pkey =
+        cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password, py_warn(py))?;
 
     private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
 }
@@ -74,11 +84,11 @@ fn load_pem_private_key<'p>(
     let (data, mut password_used) = cryptography_key_parsing::pem::decrypt_pem(&p, password)?;
 
     let pkey = match p.tag() {
-        "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
+        "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data, py_warn(py))?,
         "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
-        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
+        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None, py_warn(py)).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
         "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
@@ -87,7 +97,7 @@ fn load_pem_private_key<'p>(
         _ => {
             assert_eq!(p.tag(), "ENCRYPTED PRIVATE KEY");
             password_used = true;
-            cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password)?
+            cryptography_key_parsing::pkcs8::parse_encrypted_private_key(&data, password, py_warn(py))?
         }
     };
     if password.is_some() && !password_used {

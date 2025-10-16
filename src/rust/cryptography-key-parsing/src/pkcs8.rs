@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::ffi::CStr;
+
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, PbeParams, Pkcs12PbeParams,
 };
@@ -24,6 +26,7 @@ pub struct PrivateKeyInfo<'a> {
 
 pub fn parse_private_key(
     data: &[u8],
+    warn: impl Fn(&CStr),
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
     let k = asn1::parse_single::<PrivateKeyInfo<'_>>(data)?;
     if k.version != 0 {
@@ -34,7 +37,7 @@ pub fn parse_private_key(
             rsa::parse_pkcs1_private_key(k.private_key)
         }
         AlgorithmParameters::Ec(ec_params) => {
-            ec::parse_pkcs1_private_key(k.private_key, Some(ec_params))
+            ec::parse_pkcs1_private_key(k.private_key, Some(ec_params), warn)
         }
 
         AlgorithmParameters::Dsa(dsa_params) => {
@@ -192,6 +195,7 @@ fn pkcs5_pbe_decrypt(
 pub fn parse_encrypted_private_key(
     data: &[u8],
     password: Option<&[u8]>,
+    warn: impl Fn(&CStr),
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
     let epki = asn1::parse_single::<EncryptedPrivateKeyInfo<'_>>(data)?;
     let password = match password {
@@ -329,7 +333,7 @@ pub fn parse_encrypted_private_key(
         }
     };
 
-    parse_private_key(&plaintext)
+    parse_private_key(&plaintext, warn)
 }
 
 pub fn serialize_private_key(

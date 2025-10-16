@@ -1248,6 +1248,16 @@ class TestECSerialization:
         # length.
         assert (b"\x00" * 31 + b"\x01") in der
 
+    def test_load_private_key_short_key_warngs(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "EC", "truncated-private-key.der"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+
+        with pytest.warns(UserWarning, match="private key value is too short"):
+            serialization.load_der_private_key(data, password=None)
+
 
 class TestEllipticCurvePEMPublicKeySerialization:
     @pytest.mark.parametrize(
