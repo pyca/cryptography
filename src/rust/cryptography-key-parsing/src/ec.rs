@@ -171,6 +171,10 @@ pub fn parse_pkcs1_private_key(
         (None, None) => return Err(crate::KeyParsingError::InvalidKey),
     };
 
+    if ec_private_key.private_key.len() != group.order_bits().div_ceil(8).try_into().unwrap() {
+        return Err(crate::KeyParsingError::TruncatedEcPrivateKey);
+    }
+
     let private_number = openssl::bn::BigNum::from_slice(ec_private_key.private_key)?;
     let mut bn_ctx = openssl::bn::BigNumContext::new()?;
     let public_point = if let Some(point_bytes) = ec_private_key.public_key {
