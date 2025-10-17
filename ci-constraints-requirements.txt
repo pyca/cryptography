@@ -6,6 +6,10 @@ alabaster==0.7.16 ; python_full_version == '3.9.*'
     # via sphinx
 alabaster==1.0.0 ; python_full_version >= '3.10'
     # via sphinx
+anyio==4.5.2 ; python_full_version < '3.9'
+    # via httpx
+anyio==4.11.0 ; python_full_version >= '3.9'
+    # via httpx
 argcomplete==3.6.2
     # via nox
 attrs==25.3.0 ; python_full_version < '3.9'
@@ -25,6 +29,8 @@ build==1.3.0 ; python_full_version >= '3.9'
 certifi==2025.10.5
     # via
     #   cryptography (pyproject.toml)
+    #   httpcore
+    #   httpx
     #   requests
 charset-normalizer==3.4.4
     # via requests
@@ -45,7 +51,9 @@ colorlog==6.9.0
     # via nox
 coverage==7.6.1 ; python_full_version < '3.9'
     # via pytest-cov
-coverage==7.10.7 ; python_full_version >= '3.9'
+coverage==7.10.7 ; python_full_version == '3.9.*'
+    # via pytest-cov
+coverage==7.11.0 ; python_full_version >= '3.10'
     # via pytest-cov
 dependency-groups==1.3.1
     # via nox
@@ -62,7 +70,9 @@ docutils==0.21.2 ; python_full_version >= '3.9'
     #   sphinx
     #   sphinx-rtd-theme
 exceptiongroup==1.3.0 ; python_full_version < '3.11'
-    # via pytest
+    # via
+    #   anyio
+    #   pytest
 execnet==2.1.1
     # via pytest-xdist
 filelock==3.16.1 ; python_full_version < '3.9'
@@ -71,8 +81,17 @@ filelock==3.19.1 ; python_full_version == '3.9.*'
     # via virtualenv
 filelock==3.20.0 ; python_full_version >= '3.10'
     # via virtualenv
+h11==0.16.0
+    # via httpcore
+httpcore==1.0.9
+    # via httpx
+httpx==0.28.1
+    # via pbs-installer
 idna==3.11
-    # via requests
+    # via
+    #   anyio
+    #   httpx
+    #   requests
 imagesize==1.4.1
     # via sphinx
 importlib-metadata==8.5.0 ; python_full_version < '3.9'
@@ -116,6 +135,8 @@ pathspec==0.12.1
     # via
     #   check-sdist
     #   mypy
+pbs-installer==2025.10.14
+    # via nox
 platformdirs==4.3.6 ; python_full_version < '3.9'
     # via virtualenv
 platformdirs==4.4.0 ; python_full_version == '3.9.*'
@@ -193,6 +214,8 @@ roman-numerals-py==3.1.0 ; python_full_version >= '3.11'
     # via sphinx
 ruff==0.14.0
     # via cryptography (pyproject.toml)
+sniffio==1.3.1
+    # via anyio
 snowballstemmer==3.0.1
     # via sphinx
 sphinx==7.1.2 ; python_full_version < '3.9'
@@ -268,12 +291,14 @@ tomli==2.3.0 ; python_full_version <= '3.11'
 typing-extensions==4.13.2 ; python_full_version < '3.9'
     # via
     #   cryptography (pyproject.toml)
+    #   anyio
     #   exceptiongroup
     #   mypy
     #   virtualenv
 typing-extensions==4.15.0 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
+    #   anyio
     #   exceptiongroup
     #   mypy
     #   virtualenv
@@ -291,6 +316,10 @@ zipp==3.20.2 ; python_full_version < '3.9'
     #   importlib-resources
 zipp==3.23.0 ; python_full_version >= '3.9' and python_full_version < '3.10.2'
     # via importlib-metadata
+zstandard==0.23.0 ; python_full_version < '3.9'
+    # via pbs-installer
+zstandard==0.25.0 ; python_full_version >= '3.9'
+    # via pbs-installer
 
 # The following packages were excluded from the output:
 # cffi
