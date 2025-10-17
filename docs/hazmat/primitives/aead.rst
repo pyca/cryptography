@@ -390,6 +390,44 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or an ``associated_data`` element
             is larger than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. note::
+
+            SIV performs nonce-based authenticated encryption when a component of
+            the associated data is a nonce. The final associated data in the
+            list is used for the nonce.
+
+            Random nonces should have at least 128-bits of entropy. If a nonce is
+            reused with SIV authenticity is retained and confidentiality is only
+            compromised to the extent that an attacker can determine that the
+            same plaintext (and same associated data) was protected with the same
+            nonce and key.
+
+            If you do not supply a nonce encryption is deterministic and the same
+            (plaintext, key) pair will always produce the same ciphertext.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param list associated_data: An optional ``list`` of ``bytes-like objects``. This
+            is additional data that should be authenticated with the key, but
+            is not encrypted. Can be ``None``.  In SIV mode the final element
+            of this list is treated as a ``nonce``.
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            **prepended** will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or an ``associated_data`` element
+            is larger than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
