@@ -136,21 +136,28 @@ impl EvpCipherAead {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_encryption_ctx)?;
-        Self::encrypt_with_context(
+
+        Ok(pyo3::types::PyBytes::new_with(
             py,
-            ctx,
-            plaintext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            false,
-        )
+            plaintext.len() + self.tag_len,
+            |b| {
+                Self::encrypt_with_context(
+                    ctx,
+                    plaintext,
+                    aad,
+                    nonce,
+                    self.tag_len,
+                    self.tag_first,
+                    false,
+                    b,
+                )?;
+                Ok(())
+            },
+        )?)
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn encrypt_with_context<'p>(
-        py: pyo3::Python<'p>,
+    fn encrypt_with_context(
         mut ctx: openssl::cipher_ctx::CipherCtx,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
@@ -158,7 +165,8 @@ impl EvpCipherAead {
         tag_len: usize,
         tag_first: bool,
         is_ccm: bool,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         check_length(plaintext)?;
 
         if !is_ccm {
@@ -173,25 +181,19 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            plaintext.len() + tag_len,
-            |b| {
-                let ciphertext;
-                let tag;
-                if tag_first {
-                    (tag, ciphertext) = b.split_at_mut(tag_len);
-                } else {
-                    (ciphertext, tag) = b.split_at_mut(plaintext.len());
-                }
+        let ciphertext;
+        let tag;
+        if tag_first {
+            (tag, ciphertext) = buf.split_at_mut(tag_len);
+        } else {
+            (ciphertext, tag) = buf.split_at_mut(plaintext.len());
+        }
 
-                Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
+        Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
 
-                ctx.tag(tag).map_err(CryptographyError::from)?;
+        ctx.tag(tag).map_err(CryptographyError::from)?;
 
-                Ok(())
-            },
-        )?)
+        Ok(())
     }
 
     fn decrypt<'p>(
@@ -314,16 +316,23 @@ impl LazyEvpCipherAead {
             encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
         }
 
-        EvpCipherAead::encrypt_with_context(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
-            encryption_ctx,
-            plaintext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            self.is_ccm,
-        )
+            plaintext.len() + self.tag_len,
+            |b| {
+                EvpCipherAead::encrypt_with_context(
+                    encryption_ctx,
+                    plaintext,
+                    aad,
+                    nonce,
+                    self.tag_len,
+                    self.tag_first,
+                    self.is_ccm,
+                    b,
+                )?;
+                Ok(())
+            },
+        )?)
     }
 
     fn decrypt<'p>(
