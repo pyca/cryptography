@@ -469,8 +469,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Oct 17, 2025.
-            REF: 2baf3a96de7c7a4d50acfd1a525a3c3609022c25
+            # Latest commit on the sigstore-python main branch, as of Oct 18, 2025.
+            REF: 3a1ec4e5051831523c1807bb4ef1a126a716eab5
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
