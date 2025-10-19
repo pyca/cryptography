@@ -152,7 +152,7 @@ impl CertificateRevocationList {
 
         if idx.is_instance_of::<pyo3::types::PySlice>() {
             let indices = idx
-                .downcast::<pyo3::types::PySlice>()?
+                .cast::<pyo3::types::PySlice>()?
                 .indices(self.len().try_into().unwrap())?;
             let result = pyo3::types::PyList::empty(py);
             for i in (indices.start..indices.stop).step_by(indices.step.try_into().unwrap()) {

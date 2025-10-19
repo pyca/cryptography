@@ -399,14 +399,14 @@ fn encode_tls_features(
 fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     let mut length = 0;
     for sct in ext.try_iter()? {
-        let sct = sct?.downcast::<sct::Sct>()?.clone();
+        let sct = sct?.cast::<sct::Sct>()?.clone();
         length += sct.get().sct_data.len() + 2;
     }
 
     let mut result = vec![];
     result.extend_from_slice(&(length as u16).to_be_bytes());
     for sct in ext.try_iter()? {
-        let sct = sct?.downcast::<sct::Sct>()?.clone();
+        let sct = sct?.cast::<sct::Sct>()?.clone();
         result.extend_from_slice(&(sct.get().sct_data.len() as u16).to_be_bytes());
         result.extend_from_slice(&sct.get().sct_data);
     }
@@ -620,7 +620,7 @@ pub(crate) fn encode_extension(
         &oid::INHIBIT_ANY_POLICY_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "skip_certs"))?
-                .downcast::<pyo3::types::PyInt>()?
+                .cast::<pyo3::types::PyInt>()?
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(
@@ -677,7 +677,7 @@ pub(crate) fn encode_extension(
         &oid::CRL_NUMBER_OID | &oid::DELTA_CRL_INDICATOR_OID => {
             let intval = ext
                 .getattr(pyo3::intern!(py, "crl_number"))?
-                .downcast::<pyo3::types::PyInt>()?
+                .cast::<pyo3::types::PyInt>()?
                 .clone();
             let bytes = py_uint_to_big_endian_bytes(ext.py(), intval)?;
             Ok(Some(asn1::write_single(

@@ -27,7 +27,7 @@ fn decode_pyint<'a>(
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyInt>> {
     let value = parser.read_element::<asn1::BigInt<'a>>()?;
     let pyint =
-        big_byte_slice_to_py_int(py, value.as_bytes())?.downcast_into::<pyo3::types::PyInt>()?;
+        big_byte_slice_to_py_int(py, value.as_bytes())?.cast_into::<pyo3::types::PyInt>()?;
     Ok(pyint)
 }
 
@@ -64,7 +64,7 @@ fn decode_utc_time<'a>(
     let dt = value.as_datetime();
 
     let inner = crate::x509::datetime_to_py_utc(py, dt)?
-        .downcast_into::<pyo3::types::PyDateTime>()?
+        .cast_into::<pyo3::types::PyDateTime>()?
         .unbind();
 
     Ok(pyo3::Bound::new(py, UtcTime { inner })?)
@@ -90,7 +90,7 @@ fn decode_generalized_time<'a>(
     };
 
     let inner = crate::x509::datetime_to_py_utc_with_microseconds(py, dt, microseconds)?
-        .downcast_into::<pyo3::types::PyDateTime>()?
+        .cast_into::<pyo3::types::PyDateTime>()?
         .unbind();
 
     Ok(pyo3::Bound::new(py, GeneralizedTime { inner })?)
@@ -121,7 +121,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 let kwargs = pyo3::types::PyDict::new(py);
                 let fields = fields.bind(py);
                 for (name, ann_type) in fields.into_iter() {
-                    let ann_type = ann_type.downcast::<AnnotatedType>()?;
+                    let ann_type = ann_type.cast::<AnnotatedType>()?;
                     let value = decode_annotated_type(py, d, ann_type.get())?;
                     kwargs.set_item(name, value)?;
                 }
