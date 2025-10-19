@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::ffi::CStr;
+
 use cryptography_x509::common::EcParameters;
 use cryptography_x509::ec_constants;
 
@@ -153,6 +155,7 @@ pub fn serialize_pkcs1_private_key(
 pub fn parse_pkcs1_private_key(
     data: &[u8],
     ec_params: Option<EcParameters<'_>>,
+    warn: impl Fn(&CStr),
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
     let ec_private_key = asn1::parse_single::<EcPrivateKey<'_>>(data)?;
     if ec_private_key.version != 1 {
@@ -170,6 +173,10 @@ pub fn parse_pkcs1_private_key(
         (None, Some(inner_params)) => ec_params_to_group(&inner_params)?,
         (None, None) => return Err(crate::KeyParsingError::InvalidKey),
     };
+
+    if ec_private_key.private_key.len() != group.order_bits().div_ceil(8).try_into().unwrap() {
+        warn(c"EC private key is not encoded properly: private key value is too short. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your private key was created. In the future this may raise an error.");
+    }
 
     let private_number = openssl::bn::BigNum::from_slice(ec_private_key.private_key)?;
     let mut bn_ctx = openssl::bn::BigNumContext::new()?;
