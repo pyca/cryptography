@@ -33,12 +33,22 @@ pub(crate) fn load_der_private_key_bytes<'p>(
     password: Option<&[u8]>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let pkey = cryptography_key_parsing::pkcs8::parse_private_key(data)
-        .or_else(|_| cryptography_key_parsing::ec::parse_pkcs1_private_key(data, None))
-        .or_else(|_| cryptography_key_parsing::rsa::parse_pkcs1_private_key(data))
-        .or_else(|_| cryptography_key_parsing::dsa::parse_pkcs1_private_key(data));
+    let parsers: [fn(&[u8]) -> cryptography_key_parsing::KeyParsingResult<_>; 4] = [
+        cryptography_key_parsing::pkcs8::parse_private_key,
+        |d| cryptography_key_parsing::ec::parse_pkcs1_private_key(d, None),
+        cryptography_key_parsing::rsa::parse_pkcs1_private_key,
+        cryptography_key_parsing::dsa::parse_pkcs1_private_key,
+    ];
 
-    if let Ok(pkey) = pkey {
+    let pkey = parsers.iter().find_map(|parser| match parser(data) {
+        Ok(key) => Some(Ok(key)),
+        // Try next parser
+        Err(cryptography_key_parsing::KeyParsingError::Parse(_)) => None,
+        // Return non-parse errors immediately
+        Err(e) => Some(Err(e)),
+    });
+
+    if let Some(Ok(pkey)) = pkey {
         if password.is_some() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
@@ -47,6 +57,8 @@ pub(crate) fn load_der_private_key_bytes<'p>(
             ));
         }
         return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
+    } else if let Some(Err(e)) = pkey {
+        return Err(e.into());
     }
 
     let pkey = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
