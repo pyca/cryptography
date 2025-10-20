@@ -419,8 +419,8 @@ jobs:
         include:
           - DOWNSTREAM: paramiko
             REPO: paramiko/paramiko
-            # Latest commit on the paramiko main branch, as of Oct 19, 2025.
-            REF: f5202c6dc36fce93bb2cb932f8dadb83994e75ba
+            # Latest commit on the paramiko main branch, as of Oct 20, 2025.
+            REF: 8697158113a3eab25ed1d1d541ebe2cad10169a7
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
