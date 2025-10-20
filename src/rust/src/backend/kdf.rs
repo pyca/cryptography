@@ -238,6 +238,7 @@ impl Scrypt {
     }
 }
 
+#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
 enum Argon2Variant {
     Argon2d,
     Argon2i,

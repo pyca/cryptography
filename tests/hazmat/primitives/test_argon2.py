@@ -6,6 +6,7 @@
 import base64
 import binascii
 import os
+from typing import List, Tuple
 
 import pytest
 
@@ -23,7 +24,7 @@ from tests.utils import (
 
 variants = (Argon2d, Argon2i, Argon2id)
 
-vectors: list[tuple[type, dict]] = []
+vectors: List[Tuple[type, dict]] = []
 for clazz in variants:
     vectors.extend(
         (clazz, x)
