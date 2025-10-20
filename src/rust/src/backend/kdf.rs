@@ -238,8 +238,13 @@ impl Scrypt {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
-struct Argon2id {
+enum Argon2Variant {
+    Argon2d,
+    Argon2i,
+    Argon2id,
+}
+
+struct BaseArgon2 {
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     salt: pyo3::Py<pyo3::types::PyBytes>,
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -258,10 +263,7 @@ struct Argon2id {
     used: bool,
 }
 
-#[pyo3::pymethods]
-impl Argon2id {
-    #[new]
-    #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+impl BaseArgon2 {
     #[allow(clippy::too_many_arguments)]
     fn new(
         py: pyo3::Python<'_>,
@@ -286,14 +288,14 @@ impl Argon2id {
 
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err(
-                        "This version of OpenSSL does not support argon2id"
+                        "This version of OpenSSL does not support argon2"
                     ),
                 ))
             } else {
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err(
-                            "This version of OpenSSL does not support argon2id"
+                            "This version of OpenSSL does not support argon2"
                         ),
                     ));
                 }
@@ -335,8 +337,7 @@ impl Argon2id {
                     ));
                 }
 
-
-                Ok(Argon2id{
+                Ok(Self{
                     salt,
                     length,
                     iterations,
@@ -354,14 +355,22 @@ impl Argon2id {
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
+        variant: &Argon2Variant,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if self.used {
             return Err(exceptions::already_finalized_error());
         }
         self.used = true;
+
+        let derive_fn = match &variant {
+            Argon2Variant::Argon2d => openssl::kdf::argon2d,
+            Argon2Variant::Argon2i => openssl::kdf::argon2i,
+            Argon2Variant::Argon2id => openssl::kdf::argon2id,
+        };
+
         Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
-            openssl::kdf::argon2id(
+            (derive_fn)(
                 None,
                 key_material.as_bytes(),
                 self.salt.as_bytes(py),
@@ -381,10 +390,11 @@ impl Argon2id {
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
+        variant: &Argon2Variant,
         key_material: CffiBuf<'_>,
         expected_key: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        let actual = self.derive(py, key_material)?;
+        let actual = self.derive(py, variant, key_material)?;
         let actual_bytes = actual.as_bytes();
         let expected_bytes = expected_key.as_bytes();
 
@@ -401,35 +411,47 @@ impl Argon2id {
     fn derive_phc_encoded<'p>(
         &mut self,
         py: pyo3::Python<'p>,
+        variant: &Argon2Variant,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
-        let derived_key = self.derive(py, key_material)?;
+        let derived_key = self.derive(py, variant, key_material)?;
         let salt_bytes = self.salt.as_bytes(py);
 
         let salt_b64 = STANDARD_NO_PAD.encode(salt_bytes);
         let hash_b64 = STANDARD_NO_PAD.encode(derived_key.as_bytes());
 
+        let variant_id: &str = match variant {
+            Argon2Variant::Argon2d => "argon2d",
+            Argon2Variant::Argon2i => "argon2i",
+            Argon2Variant::Argon2id => "argon2id",
+        };
+
         // Format the PHC string
         let phc_string = format!(
-            "$argon2id$v=19$m={},t={},p={}${}${}",
-            self.memory_cost, self.iterations, self.lanes, salt_b64, hash_b64
+            "${}$v=19$m={},t={},p={}${}${}",
+            variant_id, self.memory_cost, self.iterations, self.lanes, salt_b64, hash_b64
         );
 
         Ok(pyo3::types::PyString::new(py, &phc_string))
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
-    #[staticmethod]
-    #[pyo3(signature = (key_material, phc_encoded, secret=None))]
     fn verify_phc_encoded(
         py: pyo3::Python<'_>,
+        variant: &Argon2Variant,
         key_material: CffiBuf<'_>,
         phc_encoded: &str,
         secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
     ) -> CryptographyResult<()> {
         let parts: Vec<_> = phc_encoded.split('$').collect();
 
-        if parts.len() != 6 || !parts[0].is_empty() || parts[1] != "argon2id" {
+        let variant_id: &str = match variant {
+            Argon2Variant::Argon2d => "argon2d",
+            Argon2Variant::Argon2i => "argon2i",
+            Argon2Variant::Argon2id => "argon2id",
+        };
+
+        if parts.len() != 6 || !parts[0].is_empty() || parts[1] != variant_id {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Invalid PHC string format.",
             )));
@@ -493,7 +515,7 @@ impl Argon2id {
         })?;
 
         let salt = pyo3::types::PyBytes::new(py, &salt_bytes);
-        let mut argon2 = Argon2id::new(
+        let mut argon2 = BaseArgon2::new(
             py,
             salt.into(),
             hash_bytes.len(),
@@ -504,7 +526,7 @@ impl Argon2id {
             secret,
         )?;
 
-        let derived_key = argon2.derive(py, key_material)?;
+        let derived_key = argon2.derive(py, variant, key_material)?;
         let derived_bytes = derived_key.as_bytes();
 
         if !constant_time::bytes_eq(derived_bytes, &hash_bytes) {
@@ -514,6 +536,265 @@ impl Argon2id {
         }
 
         Ok(())
+    }
+}
+
+#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+struct Argon2d {
+    #[allow(unused)]
+    base: BaseArgon2,
+}
+
+#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+struct Argon2i {
+    #[allow(unused)]
+    base: BaseArgon2,
+}
+
+#[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+struct Argon2id {
+    #[allow(unused)]
+    base: BaseArgon2,
+}
+
+#[pyo3::pymethods]
+impl Argon2d {
+    #[new]
+    #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        py: pyo3::Python<'_>,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        length: usize,
+        iterations: u32,
+        lanes: u32,
+        memory_cost: u32,
+        ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<Self> {
+        Ok({
+            Self {
+                base: BaseArgon2::new(
+                    py,
+                    salt,
+                    length,
+                    iterations,
+                    lanes,
+                    memory_cost,
+                    ad,
+                    secret,
+                )?,
+            }
+        })
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.base.derive(py, &Argon2Variant::Argon2d, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        self.base
+            .verify(py, &Argon2Variant::Argon2d, key_material, expected_key)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_phc_encoded<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
+        self.base
+            .derive_phc_encoded(py, &Argon2Variant::Argon2d, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[staticmethod]
+    #[pyo3(signature = (key_material, phc_encoded, secret=None))]
+    fn verify_phc_encoded(
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        phc_encoded: &str,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<()> {
+        BaseArgon2::verify_phc_encoded(
+            py,
+            &Argon2Variant::Argon2d,
+            key_material,
+            phc_encoded,
+            secret,
+        )
+    }
+}
+
+#[pyo3::pymethods]
+impl Argon2i {
+    #[new]
+    #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+    #[allow(clippy::too_many_arguments)]
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn new(
+        py: pyo3::Python<'_>,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        length: usize,
+        iterations: u32,
+        lanes: u32,
+        memory_cost: u32,
+        ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<Self> {
+        Ok({
+            Self {
+                base: BaseArgon2::new(
+                    py,
+                    salt,
+                    length,
+                    iterations,
+                    lanes,
+                    memory_cost,
+                    ad,
+                    secret,
+                )?,
+            }
+        })
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.base.derive(py, &Argon2Variant::Argon2i, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        self.base
+            .verify(py, &Argon2Variant::Argon2i, key_material, expected_key)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_phc_encoded<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
+        self.base
+            .derive_phc_encoded(py, &Argon2Variant::Argon2i, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[staticmethod]
+    #[pyo3(signature = (key_material, phc_encoded, secret=None))]
+    fn verify_phc_encoded(
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        phc_encoded: &str,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<()> {
+        BaseArgon2::verify_phc_encoded(
+            py,
+            &Argon2Variant::Argon2i,
+            key_material,
+            phc_encoded,
+            secret,
+        )
+    }
+}
+
+#[pyo3::pymethods]
+impl Argon2id {
+    #[new]
+    #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        py: pyo3::Python<'_>,
+        salt: pyo3::Py<pyo3::types::PyBytes>,
+        length: usize,
+        iterations: u32,
+        lanes: u32,
+        memory_cost: u32,
+        ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<Self> {
+        Ok({
+            Self {
+                base: BaseArgon2::new(
+                    py,
+                    salt,
+                    length,
+                    iterations,
+                    lanes,
+                    memory_cost,
+                    ad,
+                    secret,
+                )?,
+            }
+        })
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.base.derive(py, &Argon2Variant::Argon2id, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        self.base
+            .verify(py, &Argon2Variant::Argon2id, key_material, expected_key)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_phc_encoded<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
+        self.base
+            .derive_phc_encoded(py, &Argon2Variant::Argon2id, key_material)
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[staticmethod]
+    #[pyo3(signature = (key_material, phc_encoded, secret=None))]
+    fn verify_phc_encoded(
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        phc_encoded: &str,
+        secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    ) -> CryptographyResult<()> {
+        BaseArgon2::verify_phc_encoded(
+            py,
+            &Argon2Variant::Argon2id,
+            key_material,
+            phc_encoded,
+            secret,
+        )
     }
 }
 
@@ -837,5 +1118,5 @@ impl HkdfExpand {
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::{Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
+    use super::{Argon2d, Argon2i, Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
 }
