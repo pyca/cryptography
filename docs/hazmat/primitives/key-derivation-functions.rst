@@ -52,7 +52,7 @@ Each of the classes constructors and parameters are the same; only details of Ar
 
     .. versionadded:: 46.0.4
 
-    This variant of the Argon2 family resists side-channel attacks, but is vulernable to tim time-memory-trade-off attacks
+    This variant of the Argon2 family resists side-channel attacks, but is vulnerable to time-memory-trade-off attacks
 
 
 .. class:: Argon2id(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
