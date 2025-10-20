@@ -1,0 +1,44 @@
+# Test vectors from RFC 9106,
+# https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
+# Adapted for the pyca/cryptography NIST loaders
+
+COUNT = 0
+length = 32
+lanes = 4
+iter = 3
+memcost = 32
+secret = 0303030303030303
+pass = 0101010101010101010101010101010101010101010101010101010101010101
+salt = 02020202020202020202020202020202
+ad = 040404040404040404040404
+output = 512B391B6F1162975371D30919734294F868E3BE3984F3C1A13A4DB9FABE4ACB
+
+# echo -n "password" | argon2 pycasalt -d -t 1 -k 131072 -p 2 -l 64
+COUNT = 1
+length = 64
+lanes = 2
+iter = 1
+memcost = 131072
+salt = 7079636173616c74
+pass = 70617373776f7264
+output = 8868f5fe0f9c138ef691cd74243cbc7eec42ad4e5a69416cbb744c0d6b751971e22107143986dbb747899451a5f99d4a8eeb102d5852847f473c22e55a040fe7
+
+# echo -n "password" | argon2 pycasalt -d -t 4 -k 50 -p 4 -l 8
+COUNT = 2
+length = 8
+lanes = 4
+iter = 4
+memcost = 50
+salt = 7079636173616c74
+pass = 70617373776f7264
+output = 29fec2f9cecd8716
+
+# echo -n "password" | argon2 pycasalt -d -t 1 -k 8 -p 1 -l 4
+COUNT = 3
+length = 4
+lanes = 1
+iter = 1
+memcost = 8
+salt = 7079636173616c74
+pass = 70617373776f7264
+output = a60137a5
