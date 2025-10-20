@@ -30,17 +30,36 @@ Different KDFs are suitable for different tasks such as:
 Variable cost algorithms
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Argon2id
---------
+Argon2 Family
+-------------
 
 .. currentmodule:: cryptography.hazmat.primitives.kdf.argon2
+
+The Argon2 family of key derivation functions are designed for password storage and is described in :rfc:`9106`.
+It consists of three variants that differ only how they access an internal memory buffer, which leads to different
+trade-offs in resistance to hardware attacks.
+
+Each of the classes constructors and parameters are the same; only details of Argon2id are defined before, for brevity.
+
+.. class:: Argon2d(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
+
+    .. versionadded:: 46.0.4
+
+    This variant of the Argon2 family maximizes resistance to time-memory-trade-off attacks, but introduces possible side-channels
+
+
+.. class:: Argon2i(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
+
+    .. versionadded:: 46.0.4
+
+    This variant of the Argon2 family resists side-channel attacks, but is vulernable to tim time-memory-trade-off attacks
+
 
 .. class:: Argon2id(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
 
     .. versionadded:: 44.0.0
 
-    Argon2id is a KDF designed for password storage. It is designed to be
-    resistant to hardware attacks and is described in :rfc:`9106`.
+    Argon2id is a blend of the previous two variants.  Argon2id should be used by most users, as recommended in :rfc:`9106`.
 
     This class conforms to the
     :class:`~cryptography.hazmat.primitives.kdf.KeyDerivationFunction`
