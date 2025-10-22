@@ -259,7 +259,7 @@ pub(crate) fn python_class_to_annotated<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, AnnotatedType>> {
     if let Ok(root) = class.getattr("__asn1_root__") {
         // Handle decorated classes
-        Ok(root.downcast_into::<AnnotatedType>()?)
+        Ok(root.cast_into::<AnnotatedType>()?)
     } else {
         // Handle builtin types
         pyo3::Bound::new(py, non_root_type_to_annotated(py, class)?)

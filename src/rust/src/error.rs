@@ -36,14 +36,14 @@ impl From<pyo3::PyErr> for CryptographyError {
     }
 }
 
-impl From<pyo3::DowncastError<'_, '_>> for CryptographyError {
-    fn from(e: pyo3::DowncastError<'_, '_>) -> CryptographyError {
+impl From<pyo3::CastError<'_, '_>> for CryptographyError {
+    fn from(e: pyo3::CastError<'_, '_>) -> CryptographyError {
         CryptographyError::Py(e.into())
     }
 }
 
-impl From<pyo3::DowncastIntoError<'_>> for CryptographyError {
-    fn from(e: pyo3::DowncastIntoError<'_>) -> CryptographyError {
+impl From<pyo3::CastIntoError<'_>> for CryptographyError {
+    fn from(e: pyo3::CastIntoError<'_>) -> CryptographyError {
         CryptographyError::Py(e.into())
     }
 }
@@ -305,6 +305,8 @@ pub(crate) fn capture_error_stack(
 
 #[cfg(test)]
 mod tests {
+    use pyo3::PyTypeInfo;
+
     use super::CryptographyError;
 
     #[test]
@@ -329,7 +331,11 @@ mod tests {
             let py_e: pyo3::PyErr = e.into();
             assert!(py_e.is_instance_of::<pyo3::exceptions::PyMemoryError>(py));
 
-            let e: CryptographyError = pyo3::DowncastError::new(py.None().bind(py), "abc").into();
+            let e: CryptographyError = pyo3::CastError::new(
+                py.None().bind(py).as_borrowed(),
+                pyo3::types::PyString::type_object(py).into_any(),
+            )
+            .into();
             assert!(matches!(e, CryptographyError::Py(_)));
 
             let e = cryptography_key_parsing::KeyParsingError::OpenSSL(
@@ -338,7 +344,11 @@ mod tests {
             .into();
             assert!(matches!(e, CryptographyError::OpenSSL(_)));
 
-            let e = pyo3::DowncastIntoError::new(py.None().into_bound(py), "abc").into();
+            let e = pyo3::CastIntoError::new(
+                py.None().into_bound(py),
+                pyo3::types::PyString::type_object(py).into_any(),
+            )
+            .into();
             assert!(matches!(e, CryptographyError::Py(_)));
         })
     }

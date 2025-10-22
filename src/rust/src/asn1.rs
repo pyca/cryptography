@@ -14,7 +14,7 @@ pub(crate) fn py_oid_to_oid(
     py_oid: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> pyo3::PyResult<asn1::ObjectIdentifier> {
     Ok(py_oid
-        .downcast::<crate::oid::ObjectIdentifier>()?
+        .cast::<crate::oid::ObjectIdentifier>()?
         .get()
         .oid
         .clone())
@@ -85,8 +85,8 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
         .extract::<usize>()?
         / 8
         + 1;
-    v.call_method1(pyo3::intern!(py, "to_bytes"), (n, "big"))?
-        .extract()
+    Ok(v.call_method1(pyo3::intern!(py, "to_bytes"), (n, "big"))?
+        .extract()?)
 }
 
 pub(crate) fn encode_der_data<'p>(

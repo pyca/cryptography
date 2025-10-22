@@ -184,7 +184,9 @@ impl DHPrivateKey {
 
         let parameter_numbers = DHParameterNumbers {
             p: py_p.extract()?,
-            q: py_q.map(|q| q.extract()).transpose()?,
+            q: py_q
+                .map(|q| q.extract().map_err(CryptographyError::from))
+                .transpose()?,
             g: py_g.extract()?,
         };
         let public_numbers = DHPublicNumbers {
@@ -291,7 +293,9 @@ impl DHPublicKey {
 
         let parameter_numbers = DHParameterNumbers {
             p: py_p.extract()?,
-            q: py_q.map(|q| q.extract()).transpose()?,
+            q: py_q
+                .map(|q| q.extract().map_err(CryptographyError::from))
+                .transpose()?,
             g: py_g.extract()?,
         };
 
@@ -331,7 +335,9 @@ impl DHParameters {
 
         Ok(DHParameterNumbers {
             p: py_p.extract()?,
-            q: py_q.map(|q| q.extract()).transpose()?,
+            q: py_q
+                .map(|q| q.extract().map_err(CryptographyError::from))
+                .transpose()?,
             g: py_g.extract()?,
         })
     }
