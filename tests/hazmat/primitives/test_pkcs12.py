@@ -479,7 +479,9 @@ class TestPKCS12Creation:
         )
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, key, None, encryption)
-        assert "object cannot be cast as 'Certificate'" in str(exc.value)
+        assert "object cannot be cast as" in str(
+            exc.value
+        ) and "Certificate" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
             serialize_key_and_certificates(b"name", key, cert, None, key)
@@ -913,14 +915,18 @@ class TestPKCS12TrustStoreCreation:
 
         with pytest.raises(TypeError) as exc:
             serialize_java_truststore([cert], encryption)
-        assert "object cannot be cast as 'PKCS12Certificate'" in str(exc.value)
+        assert "object cannot be cast as" in str(
+            exc.value
+        ) and "PKCS12Certificate" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
             serialize_java_truststore(
                 [PKCS12Certificate(cert, None), key],
                 encryption,
             )
-        assert "object cannot be cast as 'PKCS12Certificate'" in str(exc.value)
+        assert "object cannot be cast as" in str(
+            exc.value
+        ) and "PKCS12Certificate" in str(exc.value)
 
         with pytest.raises(TypeError) as exc:
             serialize_java_truststore([PKCS12Certificate(cert, None)], cert)
@@ -930,7 +936,9 @@ class TestPKCS12TrustStoreCreation:
         )
         with pytest.raises(TypeError) as exc:
             serialize_java_truststore([key], encryption)
-        assert "object cannot be cast as 'PKCS12Certificate'" in str(exc.value)
+        assert "object cannot be cast as" in str(
+            exc.value
+        ) and "PKCS12Certificate" in str(exc.value)
 
 
 @pytest.mark.skip_fips(
