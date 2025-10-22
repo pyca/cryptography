@@ -542,20 +542,17 @@ impl BaseArgon2 {
 
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
 struct Argon2d {
-    #[allow(unused)]
-    base: BaseArgon2,
+    _base: BaseArgon2,
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
 struct Argon2i {
-    #[allow(unused)]
-    base: BaseArgon2,
+    _base: BaseArgon2,
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
 struct Argon2id {
-    #[allow(unused)]
-    base: BaseArgon2,
+    _base: BaseArgon2,
 }
 
 #[pyo3::pymethods]
@@ -575,7 +572,7 @@ impl Argon2d {
     ) -> CryptographyResult<Self> {
         Ok({
             Self {
-                base: BaseArgon2::new(
+                _base: BaseArgon2::new(
                     py,
                     salt,
                     length,
@@ -595,7 +592,7 @@ impl Argon2d {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.base.derive(py, &Argon2Variant::Argon2d, key_material)
+        self._base.derive(py, &Argon2Variant::Argon2d, key_material)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -605,7 +602,7 @@ impl Argon2d {
         key_material: CffiBuf<'_>,
         expected_key: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        self.base
+        self._base
             .verify(py, &Argon2Variant::Argon2d, key_material, expected_key)
     }
 
@@ -615,7 +612,7 @@ impl Argon2d {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
-        self.base
+        self._base
             .derive_phc_encoded(py, &Argon2Variant::Argon2d, key_material)
     }
 
@@ -656,7 +653,7 @@ impl Argon2i {
     ) -> CryptographyResult<Self> {
         Ok({
             Self {
-                base: BaseArgon2::new(
+                _base: BaseArgon2::new(
                     py,
                     salt,
                     length,
@@ -676,7 +673,7 @@ impl Argon2i {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.base.derive(py, &Argon2Variant::Argon2i, key_material)
+        self._base.derive(py, &Argon2Variant::Argon2i, key_material)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -686,7 +683,7 @@ impl Argon2i {
         key_material: CffiBuf<'_>,
         expected_key: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        self.base
+        self._base
             .verify(py, &Argon2Variant::Argon2i, key_material, expected_key)
     }
 
@@ -696,7 +693,7 @@ impl Argon2i {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
-        self.base
+        self._base
             .derive_phc_encoded(py, &Argon2Variant::Argon2i, key_material)
     }
 
@@ -736,7 +733,7 @@ impl Argon2id {
     ) -> CryptographyResult<Self> {
         Ok({
             Self {
-                base: BaseArgon2::new(
+                _base: BaseArgon2::new(
                     py,
                     salt,
                     length,
@@ -756,7 +753,8 @@ impl Argon2id {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.base.derive(py, &Argon2Variant::Argon2id, key_material)
+        self._base
+            .derive(py, &Argon2Variant::Argon2id, key_material)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -766,7 +764,7 @@ impl Argon2id {
         key_material: CffiBuf<'_>,
         expected_key: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        self.base
+        self._base
             .verify(py, &Argon2Variant::Argon2id, key_material, expected_key)
     }
 
@@ -776,7 +774,7 @@ impl Argon2id {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyString>> {
-        self.base
+        self._base
             .derive_phc_encoded(py, &Argon2Variant::Argon2id, key_material)
     }
 
