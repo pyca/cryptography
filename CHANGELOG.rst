@@ -11,6 +11,7 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 4.0.
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.
