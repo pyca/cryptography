@@ -446,7 +446,7 @@ fn build_subject_owner(
         let value = subject
             .getattr(pyo3::intern!(py, "_packed"))?
             .call0()?
-            .downcast::<pyo3::types::PyBytes>()?
+            .cast::<pyo3::types::PyBytes>()?
             .clone();
         Ok(SubjectOwner::IPAddress(value.unbind()))
     } else {

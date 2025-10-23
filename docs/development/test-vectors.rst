@@ -1117,7 +1117,7 @@ Key derivation functions
 * X9.63 KDF from `NIST CAVP`_.
 * SP 800-108 Counter Mode KDF (HMAC-SHA1, HMAC-SHA224, HMAC-SHA256,
   HMAC-SHA384, HMAC-SHA512) from `NIST CAVP`_.
-* argon2id from :rfc:`9106`, OpenSSL's `evpkdf_argon2.txt`_, and the
+* argon2 variants (argon2d, argon2i, and argon2id) from :rfc:`9106`, OpenSSL's `evpkdf_argon2.txt`_, and the
   argon2 command line application.
 
 Key wrapping

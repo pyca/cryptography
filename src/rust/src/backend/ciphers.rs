@@ -592,18 +592,18 @@ fn cipher_supported(
 
 #[pyo3::pyfunction]
 fn _advance(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
-    if let Ok(c) = ctx.downcast::<PyAEADEncryptionContext>() {
+    if let Ok(c) = ctx.cast::<PyAEADEncryptionContext>() {
         c.borrow_mut().bytes_remaining -= n;
-    } else if let Ok(c) = ctx.downcast::<PyAEADDecryptionContext>() {
+    } else if let Ok(c) = ctx.cast::<PyAEADDecryptionContext>() {
         c.borrow_mut().bytes_remaining -= n;
     }
 }
 
 #[pyo3::pyfunction]
 fn _advance_aad(ctx: pyo3::Bound<'_, pyo3::PyAny>, n: u64) {
-    if let Ok(c) = ctx.downcast::<PyAEADEncryptionContext>() {
+    if let Ok(c) = ctx.cast::<PyAEADEncryptionContext>() {
         c.borrow_mut().aad_bytes_remaining -= n;
-    } else if let Ok(c) = ctx.downcast::<PyAEADDecryptionContext>() {
+    } else if let Ok(c) = ctx.cast::<PyAEADDecryptionContext>() {
         c.borrow_mut().aad_bytes_remaining -= n;
     }
 }

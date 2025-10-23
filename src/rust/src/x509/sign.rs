@@ -315,7 +315,7 @@ pub(crate) fn sign_data<'p>(
             private_key.call_method1(pyo3::intern!(py, "sign"), (data, hash_algorithm))?
         }
     };
-    signature.extract()
+    Ok(signature.extract()?)
 }
 
 pub(crate) fn verify_signature_with_signature_algorithm<'p>(

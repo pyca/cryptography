@@ -6,7 +6,7 @@ alabaster==0.7.16 ; python_full_version == '3.9.*'
     # via sphinx
 alabaster==1.0.0 ; python_full_version >= '3.10'
     # via sphinx
-argcomplete==3.6.2
+argcomplete==3.6.3
     # via nox
 attrs==25.3.0 ; python_full_version < '3.9'
     # via nox
@@ -291,7 +291,7 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.5.0 ; python_full_version >= '3.9'
     # via requests
-uv==0.9.4
+uv==0.9.5
     # via nox
 virtualenv==20.35.3
     # via nox

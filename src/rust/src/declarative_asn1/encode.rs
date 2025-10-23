@@ -44,10 +44,10 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 &asn1::SequenceWriter::new(&|w| {
                     for (name, ann_type) in fields.bind(py).into_iter() {
                         let name = name
-                            .downcast::<pyo3::types::PyString>()
+                            .cast::<pyo3::types::PyString>()
                             .map_err(|_| asn1::WriteError::AllocationError)?;
                         let ann_type = ann_type
-                            .downcast::<AnnotatedType>()
+                            .cast::<AnnotatedType>()
                             .map_err(|_| asn1::WriteError::AllocationError)?;
                         let object = AnnotatedTypeObject {
                             annotated_type: ann_type.get(),
@@ -100,7 +100,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
             Type::PrintableString() => {
                 let val: &pyo3::Bound<'_, PrintableString> = value
-                    .downcast()
+                    .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let inner_str = val
                     .get()
@@ -114,7 +114,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
             Type::UtcTime() => {
                 let val: &pyo3::Bound<'_, UtcTime> = value
-                    .downcast()
+                    .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let py_datetime = val.get().inner.clone_ref(py).into_bound(py);
                 let datetime = crate::x509::py_to_datetime(py, py_datetime)
@@ -125,7 +125,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
             Type::GeneralizedTime() => {
                 let val: &pyo3::Bound<'_, GeneralizedTime> = value
-                    .downcast()
+                    .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let py_datetime = val.get().inner.clone_ref(py).into_bound(py);
                 let (datetime, microseconds) =
