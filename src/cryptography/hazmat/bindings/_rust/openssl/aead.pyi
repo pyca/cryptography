@@ -66,6 +66,12 @@ class AESSIV:
         data: Buffer,
         associated_data: Sequence[Buffer] | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        data: Buffer,
+        associated_data: Sequence[Buffer] | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         data: Buffer,

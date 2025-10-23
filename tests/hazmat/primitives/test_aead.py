@@ -750,6 +750,10 @@ class TestAESSIV:
             with pytest.raises(ValueError):
                 aessiv.encrypt(b"", None)
 
+            with pytest.raises(ValueError):
+                buf = bytearray(16)
+                aessiv.encrypt_into(b"", None, buf)
+
         with pytest.raises(InvalidTag):
             aessiv.decrypt(b"", None)
 
@@ -862,6 +866,28 @@ class TestAESSIV:
         assert ct2 == ct
         computed_pt2 = aessiv.decrypt(ct2, ad)
         assert computed_pt2 == pt
+
+    def test_encrypt_into(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = b"encrypt me"
+        ad = [b"additional"]
+        buf = bytearray(len(pt) + 16)
+        n = aessiv.encrypt_into(pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = aessiv.encrypt(pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aessiv.encrypt_into(pt, None, buf)
 
 
 @pytest.mark.skipif(

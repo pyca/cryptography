@@ -156,6 +156,28 @@ impl EvpCipherAead {
         )?)
     }
 
+    fn encrypt_into(
+        &self,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_encryption_ctx)?;
+
+        Self::encrypt_with_context(
+            ctx,
+            plaintext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+            false,
+            buf,
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn encrypt_with_context(
         mut ctx: openssl::cipher_ctx::CipherCtx,
@@ -917,7 +939,50 @@ impl AesSiv {
                 pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
             ));
         };
-        self.ctx.encrypt(py, data_bytes, aad, None)
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() + self.ctx.tag_len,
+            |b| {
+                self.ctx.encrypt_into(data_bytes, aad, None, b)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (data, associated_data, buf))]
+    fn encrypt_into(
+        &self,
+        data: CffiBuf<'_>,
+        associated_data: Option<pyo3::Bound<'_, pyo3::types::PyList>>,
+        mut buf: crate::buf::CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::List);
+
+        #[cfg(not(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
+        if data_bytes.is_empty() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
+            ));
+        };
+
+        // Check this early so we know we can add tag_len without overflow
+        // check_length requires that the length be 2 ** 31 - 1 or smaller.
+        check_length(data_bytes)?;
+        let expected_len = data_bytes.len() + self.ctx.tag_len;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
+        self.ctx
+            .encrypt_into(data_bytes, aad, None, buf.as_mut_bytes())?;
+
+        Ok(expected_len)
     }
 
     #[pyo3(signature = (data, associated_data))]

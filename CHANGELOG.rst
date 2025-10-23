@@ -39,6 +39,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` and
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
   deriving keys directly into pre-allocated buffers.
+* Added :meth:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV.encrypt_into`
+  to :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV` to allow
+  encrypting directly into a pre-allocated buffer.
 
 .. _v46-0-3:
 
