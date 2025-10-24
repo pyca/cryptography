@@ -30,6 +30,7 @@ static const long Cryptography_HAS_CUSTOM_EXT;
 static const long Cryptography_HAS_SRTP;
 static const long Cryptography_HAS_DTLS_GET_DATA_MTU;
 static const long Cryptography_HAS_SSL_GET0_GROUP_NAME;
+static const long Cryptography_HAS_CLIENT_HELLO_CB;
 
 static const long SSL_FILETYPE_PEM;
 static const long SSL_FILETYPE_ASN1;
@@ -390,6 +391,18 @@ long SSL_set_mtu(SSL *, long);
 int DTLSv1_listen(SSL *, BIO_ADDR *);
 size_t DTLS_get_data_mtu(SSL *);
 
+/* Client hello callback support */
+void SSL_CTX_set_client_hello_cb(
+    SSL_CTX *,
+    int (*)(SSL *, int *, void *),
+    void *);
+int SSL_client_hello_get1_extensions_present(
+    SSL *, int **,
+    size_t *);
+int SSL_client_hello_get0_ext(
+    SSL *, unsigned int,
+    const unsigned char **,
+    size_t *);
 
 /* Custom extensions. */
 typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
@@ -676,5 +689,22 @@ static const long Cryptography_HAS_SSL_GET0_GROUP_NAME = 1;
 #else
 static const long Cryptography_HAS_SSL_GET0_GROUP_NAME = 0;
 const char *(*SSL_get0_group_name)(SSL *) = NULL;
+#endif
+
+#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_IS_BORINGSSL
+static const long Cryptography_HAS_CLIENT_HELLO_CB = 0;
+void (*SSL_CTX_set_client_hello_cb)(
+    SSL_CTX *,
+    int (*)(SSL *, int *, void *),
+    void *) = NULL;
+int (*SSL_client_hello_get1_extensions_present)(
+    SSL *, int **,
+    size_t *) = NULL;
+int (*SSL_client_hello_get0_ext)(
+    SSL *s, unsigned int,
+    const unsigned char **,
+    size_t *) = NULL;
+#else
+static const long Cryptography_HAS_CLIENT_HELLO_CB = 1;
 #endif
 """
