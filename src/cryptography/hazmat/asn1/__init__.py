@@ -4,7 +4,9 @@
 
 from cryptography.hazmat.asn1.asn1 import (
     Default,
+    Explicit,
     GeneralizedTime,
+    Implicit,
     PrintableString,
     UtcTime,
     decode_der,
@@ -14,7 +16,9 @@ from cryptography.hazmat.asn1.asn1 import (
 
 __all__ = [
     "Default",
+    "Explicit",
     "GeneralizedTime",
+    "Implicit",
     "PrintableString",
     "UtcTime",
     "decode_der",

@@ -60,13 +60,18 @@ def _is_union(field_type: type) -> bool:
 
 def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
     default = None
+    encoding = None
     for raw_annotation in metadata:
         if isinstance(raw_annotation, Default):
             default = raw_annotation.value
+        elif isinstance(raw_annotation, Explicit):
+            encoding = declarative_asn1.Encoding.Explicit(raw_annotation.tag)
+        elif isinstance(raw_annotation, Implicit):
+            encoding = declarative_asn1.Encoding.Implicit(raw_annotation.tag)
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
 
-    return declarative_asn1.Annotation(default=default)
+    return declarative_asn1.Annotation(default=default, encoding=encoding)
 
 
 def _normalize_field_type(
@@ -192,6 +197,16 @@ else:
 @dataclasses.dataclass(frozen=True)
 class Default(typing.Generic[U]):
     value: U
+
+
+@dataclasses.dataclass(frozen=True)
+class Explicit:
+    tag: int
+
+
+@dataclasses.dataclass(frozen=True)
+class Implicit:
+    tag: int
 
 
 PrintableString = declarative_asn1.PrintableString
