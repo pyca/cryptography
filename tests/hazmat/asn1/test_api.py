@@ -239,3 +239,13 @@ class TestSequenceAPI:
         )
         opt = declarative_asn1.Type.Option(ann_type)
         assert opt._0 == ann_type
+
+    def test_fields_of_variant_encoding(self) -> None:
+        from cryptography.hazmat.bindings._rust import declarative_asn1
+
+        # Needed for coverage of the `_0`, `_1`, etc fields generated
+        # for tuple enum variants
+        implicit = declarative_asn1.Encoding.Implicit(0)
+        explicit = declarative_asn1.Encoding.Explicit(0)
+        assert implicit._0 == 0
+        assert explicit._0 == 0

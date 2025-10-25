@@ -4,6 +4,7 @@
 
 import dataclasses
 import datetime
+import re
 import sys
 import typing
 
@@ -399,3 +400,75 @@ class TestSequence:
             match="invalid DER: DEFAULT value was explicitly encoded",
         ):
             asn1.decode_der(Example, b"\x30\x03\x01\x01\xff")
+
+    def test_ok_optional_fields_with_implicit_encoding(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[typing.Union[int, None], asn1.Implicit(0)]
+            b: Annotated[typing.Union[int, None], asn1.Implicit(1)]
+
+        assert_roundtrips(
+            [
+                (Example(a=9, b=9), b"\x30\x06\x80\x01\x09\x81\x01\x09"),
+                (Example(a=9, b=None), b"\x30\x03\x80\x01\x09"),
+                (Example(a=None, b=9), b"\x30\x03\x81\x01\x09"),
+                (Example(a=None, b=None), b"\x30\x00"),
+            ]
+        )
+
+    def test_ok_optional_fields_with_explicit_encoding(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[typing.Union[int, None], asn1.Explicit(0)]
+            b: Annotated[typing.Union[int, None], asn1.Explicit(1)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=9, b=9),
+                    b"\x30\x0a\xa0\x03\x02\x01\x09\xa1\x03\x02\x01\x09",
+                ),
+                (
+                    Example(a=9, b=None),
+                    b"\x30\x05\xa0\x03\x02\x01\x09",
+                ),
+                (
+                    Example(a=None, b=9),
+                    b"\x30\x05\xa1\x03\x02\x01\x09",
+                ),
+                (
+                    Example(a=None, b=None),
+                    b"\x30\x00",
+                ),
+            ]
+        )
+
+    def test_fail_unexpected_fields_with_implicit_encoding(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[int, asn1.Implicit(0)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "error parsing asn1 value: ParseError { kind: UnexpectedTag"
+            ),
+        ):
+            asn1.decode_der(Example, b"\x30\x03\x82\x01\x09")
+
+    def test_fail_unexpected_fields_with_explicit_encoding(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[int, asn1.Explicit(0)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "error parsing asn1 value: ParseError { kind: UnexpectedTag"
+            ),
+        ):
+            asn1.decode_der(Example, b"\x30\x05\xa2\x03\x02\x01\x09")
