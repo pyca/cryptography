@@ -12,6 +12,16 @@ Changelog
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
 * **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 4.1.
+* **BACKWARDS INCOMPATIBLE:** Loading keys with unsupported algorithms or
+  keys with unsupported explicit curve encodings now raises
+  :class:`~cryptography.exceptions.UnsupportedAlgorithm` instead of
+  ``ValueError``. This change affects
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
+  and :meth:`~cryptography.x509.Certificate.public_key` when called on
+  certificates with unsupported public key algorithms.
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.
