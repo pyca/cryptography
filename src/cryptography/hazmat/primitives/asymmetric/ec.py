@@ -229,7 +229,7 @@ class SECT409R1(EllipticCurve):
 
 class SECT283R1(EllipticCurve):
     name = "sect283r1"
-    key_size = 283
+    key_size = 282
     group_order = 0x3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEF90399660FC938A90165B042A7CEFADB307  # noqa: E501
 
 
@@ -247,25 +247,25 @@ class SECT163R2(EllipticCurve):
 
 class SECT571K1(EllipticCurve):
     name = "sect571k1"
-    key_size = 571
+    key_size = 570
     group_order = 0x20000000000000000000000000000000000000000000000000000000000000000000000131850E1F19A63E4B391A8DB917F4138B630D84BE5D639381E91DEB45CFE778F637C1001  # noqa: E501
 
 
 class SECT409K1(EllipticCurve):
     name = "sect409k1"
-    key_size = 409
+    key_size = 407
     group_order = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE5F83B2D4EA20400EC4557D5ED3E3E7CA5B4B5C83B8E01E5FCF  # noqa: E501
 
 
 class SECT283K1(EllipticCurve):
     name = "sect283k1"
-    key_size = 283
+    key_size = 281
     group_order = 0x1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE9AE2ED07577265DFF7F94451E061E163C61  # noqa: E501
 
 
 class SECT233K1(EllipticCurve):
     name = "sect233k1"
-    key_size = 233
+    key_size = 232
     group_order = 0x8000000000000000000000000000069D5BB915BCD46EFB1AD5F173ABDF
 
 
