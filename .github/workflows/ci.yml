@@ -423,8 +423,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Oct 08, 2025.
-            REF: a69d45fc6e77ba5fe55b0326f3d56969b53182b2
+            # Latest commit on the pyopenssl main branch, as of Oct 28, 2025.
+            REF: b7e1c2d6751c689e3fac0bf6490b2cabd3c2e44f
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -433,8 +433,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Oct 15, 2025.
-            REF: ab98ca911279fbc16ca5ccb2aeebc5a442db72d2
+            # Latest commit on the twisted trunk branch, as of Oct 28, 2025.
+            REF: 0bcfe05608a62351d63e54caa9f8407c609e55fb
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -458,8 +458,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Oct 16, 2025.
-            REF: 2208605ef6d9b2c8a2b682e1b8223fa591464e2e
+            # Latest commit on the mitmproxy main branch, as of Oct 28, 2025.
+            REF: cf952bc1fc58d04c2f430421fee9de6df2904019
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
@@ -468,8 +468,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Oct 26, 2025.
-            REF: a62ef97ae3e45e2589fdb372f65c89cf55fdcd6b
+            # Latest commit on the sigstore-python main branch, as of Oct 28, 2025.
+            REF: 9ae36b502b22d0b9da7c1eec17e51e3cd04d25a7
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
