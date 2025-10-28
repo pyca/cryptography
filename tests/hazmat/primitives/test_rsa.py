@@ -8,6 +8,7 @@ import copy
 import itertools
 import os
 
+from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
 import pytest
 
 from cryptography.exceptions import InvalidSignature, _Reasons
@@ -15,6 +16,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateKey,
     RSAPrivateNumbers,
     RSAPublicNumbers,
 )
@@ -2795,3 +2797,23 @@ class TestRSAPEMPublicKeySerialization:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    def test_public_key_deepcopy(self, rsa_key_2048: rsa.RSAPrivateKey):
+        key1 = rsa_key_2048.public_key()
+        key2 = copy.deepcopy(key1)
+
+        assert key1.public_numbers() == key2.public_numbers()
+
+        key1 = generate_private_key(public_exponent=65537, key_size=2048).public_key()
+
+        assert key1.public_numbers() != key2.public_numbers()
+
+    def test_private_key_deepcopy(self, rsa_key_2048: rsa.RSAPrivateKey):
+        key1 = rsa_key_2048
+        key2 = copy.deepcopy(key1)
+
+        assert key1.private_numbers() == key2.private_numbers()
+
+        key1 = generate_private_key(public_exponent=65537, key_size=2048)
+
+        assert key1.private_numbers() != key2.private_numbers()
