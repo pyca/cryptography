@@ -79,9 +79,21 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks equality.
+        """
+
+    @abc.abstractmethod
     def __copy__(self) -> DSAPrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> DSAPrivateKey:
+        """
+        Returns a deep copy.
         """
 
 
@@ -140,6 +152,12 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> DSAPublicKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> DSAPublicKey:
+        """
+        Returns a deep copy.
         """
 
 

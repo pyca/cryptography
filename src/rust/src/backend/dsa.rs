@@ -153,8 +153,21 @@ impl DsaPrivateKey {
         )
     }
 
+    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
+        self.pkey.public_eq(&other.pkey)
+    }
+
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
+    }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+    ) -> CryptographyResult<Self> {
+        Ok(Self {
+            pkey: slf.pkey.clone(),
+        })
     }
 }
 
@@ -228,6 +241,15 @@ impl DsaPublicKey {
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
+    }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+    ) -> CryptographyResult<Self> {
+        Ok(Self {
+            pkey: slf.pkey.clone(),
+        })
     }
 }
 

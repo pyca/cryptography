@@ -769,6 +769,23 @@ class TestECEquality:
 
         assert key1 == key2
 
+    def test_public_key_deepcopy(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        key1 = serialization.load_pem_private_key(key_bytes, None).public_key()
+        if not isinstance(key1, ec.EllipticCurvePublicKey):
+            raise ValueError("Expected an EllipticCurvePublicKey")
+        key2 = copy.deepcopy(key1)
+
+        assert id(key1) != id(key2)
+        assert (
+            key1.curve == key2.curve
+            and key1.public_numbers() == key2.public_numbers()
+        )
+
     def test_private_key_copy(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
@@ -779,6 +796,24 @@ class TestECEquality:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    def test_private_key_deepcopy(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        key1 = serialization.load_pem_private_key(key_bytes, None)
+        if not isinstance(key1, ec.EllipticCurvePrivateKey):
+            raise ValueError("Expected an EllipticCurvePrivateKey")
+
+        key2 = copy.deepcopy(key1)
+
+        assert id(key1) != id(key2)
+        assert (
+            key1.curve == key2.curve
+            and key1.private_numbers() == key2.private_numbers()
+        )
 
 
 class TestECSerialization:

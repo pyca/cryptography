@@ -2802,6 +2802,7 @@ class TestRSAPEMPublicKeySerialization:
         key2 = copy.deepcopy(key1)
 
         assert key1.public_numbers() == key2.public_numbers()
+        assert id(key1) != id(key2)
 
         key1 = generate_private_key(
             public_exponent=65537, key_size=2048

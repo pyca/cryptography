@@ -373,6 +373,20 @@ impl ECPrivateKey {
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
     }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        py: pyo3::Python<'p>,
+        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+    ) -> CryptographyResult<Self> {
+        let ec = slf.pkey.ec_key()?;
+        let curve = py_curve_from_curve(py, ec.group())?;
+        let new_key = Self {
+            pkey: slf.pkey.clone(),
+            curve: curve.clone().into(),
+        };
+        Ok(new_key)
+    }
 }
 
 #[pyo3::pymethods]
@@ -457,6 +471,20 @@ impl ECPublicKey {
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
+    }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        py: pyo3::Python<'p>,
+        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+    ) -> CryptographyResult<Self> {
+        let ec = slf.pkey.ec_key()?;
+        let curve = py_curve_from_curve(py, ec.group())?;
+        let new_key = Self {
+            pkey: slf.pkey.clone(),
+            curve: curve.clone().into(),
+        };
+        Ok(new_key)
     }
 }
 
