@@ -482,6 +482,27 @@ class TestDH:
 
         assert key1 == key2
 
+    def test_public_key_deepcopy(self):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        key_bytes_2 = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub_rfc5114_2.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        key1 = serialization.load_pem_public_key(key_bytes)
+        key2 = copy.deepcopy(key1)
+
+        assert key1 == key2
+
+        key1 = serialization.load_pem_public_key(key_bytes_2)
+        assert key1 != key2
+
     @pytest.mark.skip_fips(reason="non-FIPS parameters")
     def test_private_key_copy(self, backend):
         key_bytes = load_vectors_from_file(
@@ -493,6 +514,30 @@ class TestDH:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
+    def test_private_key_deepcopy(self, backend):
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        key_bytes_2 = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+
+        key1 = serialization.load_pem_private_key(key_bytes, None, backend)
+        if not isinstance(key1, dh.DHPrivateKey):
+            raise ValueError("Expected a DHPrivateKey")
+        key2 = copy.deepcopy(key1)
+
+        assert key1.parameters() != key2.parameters()
+
+        key1 = serialization.load_pem_private_key(key_bytes_2, None, backend)
+        assert key1 != key2
 
 
 @pytest.mark.supported(
