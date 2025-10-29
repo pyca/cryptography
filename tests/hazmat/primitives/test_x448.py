@@ -309,7 +309,10 @@ def test_public_key_copy(backend):
 
     assert key1 == key2
 
-
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x448_supported(),
+    skip_message="Requires OpenSSL with X448 support",
+)
 def test_public_key_deepcopy(backend):
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
