@@ -121,7 +121,7 @@ impl Ed25519PrivateKey {
     }
 
     fn __deepcopy__<'p>(
-        slf: pyo3::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'p, Self>,
         _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
     ) -> CryptographyResult<Self> {
         let new_key = Self {
@@ -173,7 +173,7 @@ impl Ed25519PublicKey {
     }
 
     fn __deepcopy__<'p>(
-        slf: pyo3::PyRef<'_, Self>,
+        slf: pyo3::PyRef<'p, Self>,
         _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
     ) -> CryptographyResult<Self> {
         let new_key = Self {
