@@ -121,11 +121,8 @@ impl Ed448PrivateKey {
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
         _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
-    ) -> CryptographyResult<Self> {
-        let new_key = Self {
-            pkey: slf.pkey.clone(),
-        };
-        Ok(new_key)
+    ) -> pyo3::PyRef<'p, Self> {
+        slf
     }
 }
 
@@ -172,11 +169,8 @@ impl Ed448PublicKey {
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
         _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
-    ) -> CryptographyResult<Self> {
-        let new_key = Self {
-            pkey: slf.pkey.clone(),
-        };
-        Ok(new_key)
+    ) -> pyo3::PyRef<'p, Self> {
+        slf
     }
 }
 

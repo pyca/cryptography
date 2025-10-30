@@ -780,7 +780,6 @@ class TestECEquality:
             raise ValueError("Expected an EllipticCurvePublicKey")
         key2 = copy.deepcopy(key1)
 
-        assert id(key1) != id(key2)
         assert (
             key1.curve == key2.curve
             and key1.public_numbers() == key2.public_numbers()
@@ -809,7 +808,6 @@ class TestECEquality:
 
         key2 = copy.deepcopy(key1)
 
-        assert id(key1) != id(key2)
         assert (
             key1.curve == key2.curve
             and key1.private_numbers() == key2.private_numbers()

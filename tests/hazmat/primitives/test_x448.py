@@ -325,7 +325,6 @@ def test_public_key_deepcopy(backend):
         raise ValueError("Expected X448PublicKey")
     key2 = copy.deepcopy(key1)
 
-    assert id(key1) != id(key2)
     assert key1.public_bytes_raw() == key2.public_bytes_raw()
 
 
@@ -360,5 +359,4 @@ def test_private_key_deepcopy(backend):
         raise ValueError("Expected X448PrivateKey")
     key2 = copy.deepcopy(key1)
 
-    assert id(key1) != id(key2)
     assert key1.private_bytes_raw() == key2.private_bytes_raw()

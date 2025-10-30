@@ -419,7 +419,6 @@ class TestDSA:
             raise ValueError("Expected a DSA public key")
         key2 = copy.deepcopy(key1)
         assert key1.public_numbers() == key2.public_numbers()
-        assert id(key1) != id(key2)
 
         key1 = dsa.generate_private_key(2048).public_key()
         assert key1.public_numbers() != key2.public_numbers()
@@ -444,7 +443,6 @@ class TestDSA:
             raise ValueError("Expected a DSA private key")
         key2 = copy.deepcopy(key1)
         assert key1.private_numbers() == key2.private_numbers()
-        assert id(key1) != id(key2)
         key1 = dsa.generate_private_key(2048)
         assert key1.private_numbers() != key2.private_numbers()
 
