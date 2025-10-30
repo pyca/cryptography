@@ -12,7 +12,6 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import x448
 from cryptography.hazmat.primitives.asymmetric.x448 import (
     X448PrivateKey,
     X448PublicKey,
