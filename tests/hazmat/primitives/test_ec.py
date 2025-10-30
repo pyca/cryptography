@@ -776,14 +776,9 @@ class TestECEquality:
             lambda pemfile: pemfile.read().encode(),
         )
         key1 = serialization.load_pem_private_key(key_bytes, None).public_key()
-        if not isinstance(key1, ec.EllipticCurvePublicKey):
-            raise ValueError("Expected an EllipticCurvePublicKey")
         key2 = copy.deepcopy(key1)
 
-        assert (
-            key1.curve == key2.curve
-            and key1.public_numbers() == key2.public_numbers()
-        )
+        assert key1 == key2
 
     def test_private_key_copy(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -803,15 +798,9 @@ class TestECEquality:
             lambda pemfile: pemfile.read().encode(),
         )
         key1 = serialization.load_pem_private_key(key_bytes, None)
-        if not isinstance(key1, ec.EllipticCurvePrivateKey):
-            raise ValueError("Expected an EllipticCurvePrivateKey")
-
         key2 = copy.deepcopy(key1)
 
-        assert (
-            key1.curve == key2.curve
-            and key1.private_numbers() == key2.private_numbers()
-        )
+        assert key1 == key2
 
 
 class TestECSerialization:
