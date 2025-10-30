@@ -321,11 +321,9 @@ def test_public_key_deepcopy(backend):
         mode="rb",
     )
     key1 = serialization.load_der_private_key(key_bytes, None).public_key()
-    if not isinstance(key1, x448.X448PublicKey):
-        raise ValueError("Expected X448PublicKey")
     key2 = copy.deepcopy(key1)
 
-    assert key1.public_bytes_raw() == key2.public_bytes_raw()
+    assert key1 == key2
 
 
 @pytest.mark.supported(
@@ -355,8 +353,6 @@ def test_private_key_deepcopy(backend):
         mode="rb",
     )
     key1 = serialization.load_der_private_key(key_bytes, None)
-    if not isinstance(key1, x448.X448PrivateKey):
-        raise ValueError("Expected X448PrivateKey")
     key2 = copy.deepcopy(key1)
 
-    assert key1.private_bytes_raw() == key2.private_bytes_raw()
+    assert key1 == key2

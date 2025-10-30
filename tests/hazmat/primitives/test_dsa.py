@@ -415,13 +415,11 @@ class TestDSA:
             lambda pemfile: pemfile.read().encode(),
         )
         key1 = serialization.load_pem_private_key(key_bytes, None).public_key()
-        if not isinstance(key1, dsa.DSAPublicKey):
-            raise ValueError("Expected a DSA public key")
         key2 = copy.deepcopy(key1)
-        assert key1.public_numbers() == key2.public_numbers()
+        assert key1 == key2
 
         key1 = dsa.generate_private_key(2048).public_key()
-        assert key1.public_numbers() != key2.public_numbers()
+        assert key1 != key2
 
     def test_private_key_copy(self):
         key_bytes = load_vectors_from_file(
@@ -439,12 +437,10 @@ class TestDSA:
             lambda pemfile: pemfile.read().encode(),
         )
         key1 = serialization.load_pem_private_key(key_bytes, None)
-        if not isinstance(key1, dsa.DSAPrivateKey):
-            raise ValueError("Expected a DSA private key")
         key2 = copy.deepcopy(key1)
-        assert key1.private_numbers() == key2.private_numbers()
+        assert key1 == key2
         key1 = dsa.generate_private_key(2048)
-        assert key1.private_numbers() != key2.private_numbers()
+        assert key1 != key2
 
 
 @pytest.mark.supported(

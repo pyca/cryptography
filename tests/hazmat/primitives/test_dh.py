@@ -530,11 +530,9 @@ class TestDH:
         )
 
         key1 = serialization.load_pem_private_key(key_bytes, None, backend)
-        if not isinstance(key1, dh.DHPrivateKey):
-            raise ValueError("Expected a DHPrivateKey")
         key2 = copy.deepcopy(key1)
 
-        assert key1.parameters() != key2.parameters()
+        assert key1 == key2
 
         key1 = serialization.load_pem_private_key(key_bytes_2, None, backend)
         assert key1 != key2
