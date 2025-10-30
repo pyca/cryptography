@@ -309,6 +309,7 @@ def test_public_key_copy(backend):
 
     assert key1 == key2
 
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",

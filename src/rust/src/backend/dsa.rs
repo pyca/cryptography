@@ -153,10 +153,6 @@ impl DsaPrivateKey {
         )
     }
 
-    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
-    }
-
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
     }

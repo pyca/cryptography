@@ -79,12 +79,6 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __eq__(self, other: object) -> bool:
-        """
-        Checks equality.
-        """
-
-    @abc.abstractmethod
     def __copy__(self) -> DSAPrivateKey:
         """
         Returns a copy.
