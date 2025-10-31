@@ -134,6 +134,12 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self) -> EllipticCurvePrivateKey:
+        """
+        Returns a deep copy.
+        """
+
 
 EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
 EllipticCurvePrivateKey.register(rust_openssl.ec.ECPrivateKey)
@@ -205,6 +211,12 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> EllipticCurvePublicKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> EllipticCurvePublicKey:
+        """
+        Returns a deep copy.
         """
 
 

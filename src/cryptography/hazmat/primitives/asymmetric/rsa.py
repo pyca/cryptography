@@ -69,6 +69,12 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self) -> RSAPrivateKey:
+        """
+        Returns a deep copy.
+        """
+
 
 RSAPrivateKeyWithSerialization = RSAPrivateKey
 RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
@@ -137,6 +143,12 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> RSAPublicKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> RSAPublicKey:
+        """
+        Returns a deep copy.
         """
 
 

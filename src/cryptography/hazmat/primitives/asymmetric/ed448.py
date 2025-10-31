@@ -60,6 +60,12 @@ class Ed448PublicKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self) -> Ed448PublicKey:
+        """
+        Returns a deep copy.
+        """
+
 
 if hasattr(rust_openssl, "ed448"):
     Ed448PublicKey.register(rust_openssl.ed448.Ed448PublicKey)
@@ -124,6 +130,12 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> Ed448PrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> Ed448PrivateKey:
+        """
+        Returns a deep copy.
         """
 
 

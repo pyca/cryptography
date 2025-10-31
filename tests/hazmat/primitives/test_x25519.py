@@ -12,6 +12,7 @@ import pytest
 
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives.asymmetric.x25519 import (
     X25519PrivateKey,
     X25519PublicKey,
@@ -383,6 +384,25 @@ def test_public_key_copy(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
+def test_public_key_deepcopy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = (
+        x25519.X25519PublicKey,
+        serialization.load_der_private_key(key_bytes, None).public_key(),
+    )
+    key2 = copy.deepcopy(key1)
+
+    assert key1 == key2
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x25519_supported(),
+    skip_message="Requires OpenSSL with X25519 support",
+)
 def test_private_key_copy(backend):
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
@@ -391,5 +411,21 @@ def test_private_key_copy(backend):
     )
     key1 = serialization.load_der_private_key(key_bytes, None)
     key2 = copy.copy(key1)
+
+    assert key1 == key2
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.x25519_supported(),
+    skip_message="Requires OpenSSL with X25519 support",
+)
+def test_private_key_deepcopy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None)
+    key2 = copy.deepcopy(key1)
 
     assert key1 == key2
