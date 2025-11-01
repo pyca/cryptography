@@ -471,6 +471,9 @@ class TestAESGCM:
         with pytest.raises(ValueError):
             aesgcm.encrypt(b"\x00" * length, b"hi", None)
         with pytest.raises(ValueError):
+            buf = bytearray(length)
+            aesgcm.encrypt_into(b"\x00" * length, b"hi", None, buf)
+        with pytest.raises(ValueError):
             aesgcm.decrypt(b"\x00" * length, b"hi", None)
 
     def test_bad_key(self, backend):
@@ -524,6 +527,30 @@ class TestAESGCM:
         m_ct3 = memoryview(ct3)
         computed_pt3 = aesgcm3.decrypt(m_nonce, m_ct3, m_ad)
         assert computed_pt3 == pt
+
+    def test_encrypt_into(self, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        buf = bytearray(len(pt) + 16)
+        n = aesgcm.encrypt_into(nonce, pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = aesgcm.encrypt(nonce, pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesgcm.encrypt_into(nonce, pt, None, buf)
 
 
 @pytest.mark.skipif(
