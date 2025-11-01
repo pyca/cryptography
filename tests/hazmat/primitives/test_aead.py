@@ -112,6 +112,10 @@ class TestChaCha20Poly1305:
             chacha.encrypt(b"00", b"hello", b"")
 
         with pytest.raises(ValueError):
+            buf = bytearray(16)
+            chacha.encrypt_into(b"00", b"hello", b"", buf)
+
+        with pytest.raises(ValueError):
             chacha.decrypt(b"00", b"hello", b"")
 
     def test_decrypt_data_too_short(self, backend):
@@ -193,6 +197,30 @@ class TestChaCha20Poly1305:
         assert ct2 == ct
         computed_pt2 = chacha2.decrypt(bytearray(nonce), ct2, ad)
         assert computed_pt2 == pt
+
+    def test_encrypt_into(self, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        buf = bytearray(len(pt) + 16)
+        n = chacha.encrypt_into(nonce, pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = chacha.encrypt(nonce, pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            chacha.encrypt_into(nonce, pt, None, buf)
 
 
 @pytest.mark.skipif(

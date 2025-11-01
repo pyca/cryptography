@@ -40,6 +40,13 @@ class ChaCha20Poly1305:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         nonce: Buffer,
