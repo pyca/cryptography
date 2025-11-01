@@ -922,6 +922,15 @@ class TestAESSIV:
         with pytest.raises(ValueError):
             AESSIV.generate_key(128)
 
+    def test_data_too_short(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        with pytest.raises(InvalidTag):
+            aessiv.decrypt(b"tooshort", None)
+        with pytest.raises(InvalidTag):
+            buf = bytearray(16)
+            aessiv.decrypt_into(b"tooshort", None, buf)
+
     def test_associated_data_none_equal_to_empty_list(self, backend):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)
@@ -967,6 +976,41 @@ class TestAESSIV:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             aessiv.encrypt_into(pt, None, buf)
+
+    def test_decrypt_into(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = b"decrypt me"
+        ad = [b"additional"]
+        ct = aessiv.encrypt(pt, ad)
+        buf = bytearray(len(pt))
+        n = aessiv.decrypt_into(ct, ad, buf)
+        assert n == len(pt)
+        assert buf == pt
+
+    @pytest.mark.parametrize(
+        ("ctlen", "buflen"), [(26, 9), (26, 11), (31, 14), (36, 21)]
+    )
+    def test_decrypt_into_buffer_incorrect_size(self, ctlen, buflen, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        ct = b"x" * ctlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aessiv.decrypt_into(ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = b"some data"
+        ad = [b"additional"]
+        ct = aessiv.encrypt(pt, ad)
+        # Corrupt the ciphertext
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            aessiv.decrypt_into(bytes(corrupted_ct), ad, buf)
 
 
 @pytest.mark.skipif(
