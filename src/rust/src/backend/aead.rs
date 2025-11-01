@@ -411,20 +411,6 @@ impl EvpAead {
         })
     }
 
-    fn encrypt<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        plaintext: &[u8],
-        aad: Option<Aad<'_>>,
-        nonce: Option<&[u8]>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let out_len = plaintext.len() + self.tag_len;
-        Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
-            self.encrypt_into(py, plaintext, aad, nonce, b)?;
-            Ok(())
-        })?)
-    }
-
     fn encrypt_into(
         &self,
         _py: pyo3::Python<'_>,
