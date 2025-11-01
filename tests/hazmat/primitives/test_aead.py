@@ -471,6 +471,9 @@ class TestAESGCM:
         with pytest.raises(ValueError):
             aesgcm.encrypt(b"\x00" * length, b"hi", None)
         with pytest.raises(ValueError):
+            buf = bytearray(length)
+            aesgcm.encrypt_into(b"\x00" * length, b"hi", None, buf)
+        with pytest.raises(ValueError):
             aesgcm.decrypt(b"\x00" * length, b"hi", None)
 
     def test_bad_key(self, backend):
