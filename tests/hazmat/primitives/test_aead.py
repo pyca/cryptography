@@ -745,6 +745,13 @@ class TestAESOCB3:
             aesocb3.encrypt(b"\x00" * 16, b"hi", None)
 
         with pytest.raises(ValueError):
+            buf = bytearray(18)
+            aesocb3.encrypt_into(b"\x00" * 11, b"hi", None, buf)
+        with pytest.raises(ValueError):
+            buf = bytearray(18)
+            aesocb3.encrypt_into(b"\x00" * 16, b"hi", None, buf)
+
+        with pytest.raises(ValueError):
             aesocb3.decrypt(b"\x00" * 11, b"hi", None)
         with pytest.raises(ValueError):
             aesocb3.decrypt(b"\x00" * 16, b"hi", None)
@@ -788,6 +795,30 @@ class TestAESOCB3:
         assert ct2 == ct
         computed_pt2 = aesocb3_.decrypt(bytearray(nonce), ct2, ad)
         assert computed_pt2 == pt
+
+    def test_encrypt_into(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        buf = bytearray(len(pt) + 16)
+        n = aesocb3.encrypt_into(nonce, pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = aesocb3.encrypt(nonce, pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesocb3.encrypt_into(nonce, pt, None, buf)
 
 
 @pytest.mark.skipif(
