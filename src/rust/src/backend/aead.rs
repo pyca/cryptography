@@ -328,33 +328,44 @@ impl LazyEvpCipherAead {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
 
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            plaintext.len() + self.tag_len,
+            |b| {
+                self.encrypt_into(key_buf.as_bytes(), plaintext, aad, nonce, b)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    fn encrypt_into(
+        &self,
+        key: &[u8],
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if self.is_ccm {
             encryption_ctx.encrypt_init(Some(self.cipher), None, None)?;
             encryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
             encryption_ctx.set_tag_length(self.tag_len)?;
-            encryption_ctx.encrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
+            encryption_ctx.encrypt_init(None, Some(key), nonce)?;
         } else {
-            encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
+            encryption_ctx.encrypt_init(Some(self.cipher), Some(key), None)?;
         }
 
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            plaintext.len() + self.tag_len,
-            |b| {
-                EvpCipherAead::encrypt_with_context(
-                    encryption_ctx,
-                    plaintext,
-                    aad,
-                    nonce,
-                    self.tag_len,
-                    self.tag_first,
-                    self.is_ccm,
-                    b,
-                )?;
-                Ok(())
-            },
-        )?)
+        EvpCipherAead::encrypt_with_context(
+            encryption_ctx,
+            plaintext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+            self.is_ccm,
+            buf,
+        )
     }
 
     fn decrypt<'p>(
@@ -685,8 +696,67 @@ impl AesGcm {
             ));
         }
 
-        self.ctx
-            .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+        let data_bytes = data.as_bytes();
+        check_length(data_bytes)?;
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() + self.ctx.tag_len,
+            |b| {
+                self.ctx
+                    .encrypt_into(data_bytes, aad, Some(nonce_bytes), b)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn encrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: crate::buf::CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
+            ));
+        }
+
+        // Check this early so we know we can add tag_len without overflow
+        // check_length requires that the length be 2 ** 31 - 1 or smaller.
+        check_length(data_bytes)?;
+        let expected_len = data_bytes.len() + 16;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
+        cfg_if::cfg_if! {
+            if #[cfg(any(
+                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            ))] {
+                let _ = py;
+                self.ctx.encrypt_into(data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+            } else {
+                let key = key.extract::<CffiBuf<'_>>(py)?.as_bytes();
+                self.ctx.encrypt_into(key, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+            }
+        }
+
+        Ok(expected_len)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]

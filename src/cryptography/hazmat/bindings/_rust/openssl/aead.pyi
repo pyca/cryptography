@@ -22,6 +22,13 @@ class AESGCM:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class ChaCha20Poly1305:
     def __init__(self, key: Buffer) -> None: ...
