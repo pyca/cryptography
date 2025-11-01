@@ -37,6 +37,14 @@ from cryptography.hazmat.primitives.kdf.kbkdf import (
 
 from ...utils import load_vectors_from_file
 
+_hash_alg_oids = {
+    "sha1": binascii.unhexlify(b"3021300906052b0e03021a05000414"),
+    "sha224": binascii.unhexlify(b"302d300d06096086480165030402040500041c"),
+    "sha256": binascii.unhexlify(b"3031300d060960864801650304020105000420"),
+    "sha384": binascii.unhexlify(b"3041300d060960864801650304020205000430"),
+    "sha512": binascii.unhexlify(b"3051300d060960864801650304020305000440"),
+}
+
 
 def _load_all_params(path, file_names, param_loader):
     all_params = []
@@ -45,6 +53,13 @@ def _load_all_params(path, file_names, param_loader):
             load_vectors_from_file(os.path.join(path, file_name), param_loader)
         )
     return all_params
+
+
+def compute_rsa_hash_digest(backend, hash_alg, msg):
+    oid = _hash_alg_oids[hash_alg.name]
+    h = hashes.Hash(hash_alg, backend=backend)
+    h.update(binascii.unhexlify(msg))
+    return binascii.hexlify(oid) + binascii.hexlify(h.finalize())
 
 
 def generate_encrypt_test(
@@ -493,6 +508,24 @@ def generate_rsa_verification_test(
         for params in all_params:
             with subtests.test():
                 rsa_verification_test(backend, params, hash_alg, pad_factory)
+
+    return test_rsa_verification
+
+
+def generate_rsa_verification_without_digest_test(
+    param_loader, path, file_names, hash_alg, pad_factory
+):
+    def test_rsa_verification(self, backend, subtests):
+        all_params = _load_all_params(path, file_names, param_loader)
+        all_params = [
+            i for i in all_params if i["algorithm"] == hash_alg.name.upper()
+        ]
+        for params in all_params:
+            with subtests.test():
+                params["msg"] = compute_rsa_hash_digest(
+                    backend, hash_alg, params["msg"]
+                )
+                rsa_verification_test(backend, params, None, pad_factory)
 
     return test_rsa_verification
 
