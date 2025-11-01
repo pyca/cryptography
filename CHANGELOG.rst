@@ -40,6 +40,7 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
   deriving keys directly into pre-allocated buffers.
 * Added ``encrypt_into`` methods to
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`,
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`, and
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to

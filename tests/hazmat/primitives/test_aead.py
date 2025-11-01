@@ -402,6 +402,30 @@ class TestAESCCM:
         decrypted_data = aesccm.decrypt(nonce, ciphertext, aad)
         assert decrypted_data == plaintext
 
+    def test_encrypt_into(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        buf = bytearray(len(pt) + 16)
+        n = aesccm.encrypt_into(nonce, pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = aesccm.encrypt(nonce, pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesccm.encrypt_into(nonce, pt, None, buf)
+
 
 def _load_gcm_vectors():
     vectors = _load_all_params(
