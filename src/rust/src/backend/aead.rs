@@ -4,7 +4,7 @@
 
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
-use crate::buf::CffiBuf;
+use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
@@ -582,23 +582,14 @@ impl ChaCha20Poly1305 {
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let nonce_bytes = nonce.as_bytes();
-        let aad = associated_data.map(Aad::Single);
-
-        if nonce_bytes.len() != 12 {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
-            ));
-        }
-
         let data_bytes = data.as_bytes();
         check_length(data_bytes)?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + self.ctx.tag_len,
             |b| {
-                self.ctx
-                    .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), b)?;
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.encrypt_into(py, nonce, data, associated_data, buf)?;
                 Ok(())
             },
         )?)
@@ -747,23 +738,14 @@ impl AesGcm {
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let nonce_bytes = nonce.as_bytes();
-        let aad = associated_data.map(Aad::Single);
-
-        if nonce_bytes.len() < 8 || nonce_bytes.len() > 128 {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Nonce must be between 8 and 128 bytes"),
-            ));
-        }
-
         let data_bytes = data.as_bytes();
         check_length(data_bytes)?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + self.ctx.tag_len,
             |b| {
-                self.ctx
-                    .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), b)?;
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.encrypt_into(py, nonce, data, associated_data, buf)?;
                 Ok(())
             },
         )?)
@@ -1047,20 +1029,12 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'p, pyo3::types::PyList>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let data_bytes = data.as_bytes();
-        let aad = associated_data.map(Aad::List);
-
-        #[cfg(not(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
-        if data_bytes.is_empty() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("data must not be zero length"),
-            ));
-        };
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            data_bytes.len() + self.ctx.tag_len,
+            data.as_bytes().len() + self.ctx.tag_len,
             |b| {
-                self.ctx.encrypt_into(py, data_bytes, aad, None, b)?;
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.encrypt_into(py, data, associated_data, buf)?;
                 Ok(())
             },
         )?)
