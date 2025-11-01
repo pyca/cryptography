@@ -66,6 +66,36 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but does not need to be encrypted. Can
+            be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            appended will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you

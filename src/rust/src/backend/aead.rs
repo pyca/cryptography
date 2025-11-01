@@ -435,6 +435,21 @@ impl EvpAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let out_len = plaintext.len() + self.tag_len;
+        Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
+            self.encrypt_into(py, plaintext, aad, nonce, b)?;
+            Ok(())
+        })?)
+    }
+
+    fn encrypt_into(
+        &self,
+        _py: pyo3::Python<'_>,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         check_length(plaintext)?;
 
         let ad = if let Some(Aad::Single(ad)) = &aad {
@@ -444,13 +459,10 @@ impl EvpAead {
             assert!(aad.is_none());
             b""
         };
-        let out_len = plaintext.len() + self.tag_len;
-        Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
-            self.ctx
-                .encrypt(plaintext, nonce.unwrap_or(b""), ad, b)
-                .map_err(CryptographyError::from)?;
-            Ok(())
-        })?)
+        self.ctx
+            .encrypt(plaintext, nonce.unwrap_or(b""), ad, buf)
+            .map_err(CryptographyError::from)?;
+        Ok(())
     }
 
     fn decrypt<'p>(
@@ -579,8 +591,54 @@ impl ChaCha20Poly1305 {
             ));
         }
 
+        let data_bytes = data.as_bytes();
+        check_length(data_bytes)?;
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() + self.ctx.tag_len,
+            |b| {
+                self.ctx
+                    .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), b)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn encrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: crate::buf::CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        if nonce_bytes.len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
+
+        // Check this early so we know we can add tag_len without overflow
+        // check_length requires that the length be 2 ** 31 - 1 or smaller.
+        check_length(data_bytes)?;
+        let expected_len = data_bytes.len() + 16;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
         self.ctx
-            .encrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+            .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+        Ok(expected_len)
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
