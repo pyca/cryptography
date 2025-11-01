@@ -41,8 +41,9 @@ Changelog
   deriving keys directly into pre-allocated buffers.
 * Added ``encrypt_into`` methods to
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,
-  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`,
-  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
   allow encrypting directly into a pre-allocated buffer.
 
