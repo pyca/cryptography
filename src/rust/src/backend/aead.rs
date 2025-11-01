@@ -158,6 +158,9 @@ impl EvpCipherAead {
 
     fn encrypt_into(
         &self,
+        // We have this arg so we have consistent arguments with encrypt_into in
+        // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
+        _py: pyo3::Python<'_>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
@@ -326,13 +329,11 @@ impl LazyEvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
-
         Ok(pyo3::types::PyBytes::new_with(
             py,
             plaintext.len() + self.tag_len,
             |b| {
-                self.encrypt_into(key_buf.as_bytes(), plaintext, aad, nonce, b)?;
+                self.encrypt_into(py, plaintext, aad, nonce, b)?;
                 Ok(())
             },
         )?)
@@ -340,20 +341,21 @@ impl LazyEvpCipherAead {
 
     fn encrypt_into(
         &self,
-        key: &[u8],
+        py: pyo3::Python<'_>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
+        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
         let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if self.is_ccm {
             encryption_ctx.encrypt_init(Some(self.cipher), None, None)?;
             encryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
             encryption_ctx.set_tag_length(self.tag_len)?;
-            encryption_ctx.encrypt_init(None, Some(key), nonce)?;
+            encryption_ctx.encrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
         } else {
-            encryption_ctx.encrypt_init(Some(self.cipher), Some(key), None)?;
+            encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
         }
 
         EvpCipherAead::encrypt_with_context(
@@ -703,7 +705,7 @@ impl AesGcm {
             data_bytes.len() + self.ctx.tag_len,
             |b| {
                 self.ctx
-                    .encrypt_into(data_bytes, aad, Some(nonce_bytes), b)?;
+                    .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), b)?;
                 Ok(())
             },
         )?)
@@ -741,21 +743,8 @@ impl AesGcm {
             ));
         }
 
-        cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            ))] {
-                let _ = py;
-                self.ctx.encrypt_into(data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
-            } else {
-                let key = key.extract::<CffiBuf<'_>>(py)?.as_bytes();
-                self.ctx.encrypt_into(key, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
-            }
-        }
-
+        self.ctx
+            .encrypt_into(py, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
         Ok(expected_len)
     }
 
@@ -1013,7 +1002,7 @@ impl AesSiv {
             py,
             data_bytes.len() + self.ctx.tag_len,
             |b| {
-                self.ctx.encrypt_into(data_bytes, aad, None, b)?;
+                self.ctx.encrypt_into(py, data_bytes, aad, None, b)?;
                 Ok(())
             },
         )?)
@@ -1022,6 +1011,7 @@ impl AesSiv {
     #[pyo3(signature = (data, associated_data, buf))]
     fn encrypt_into(
         &self,
+        py: pyo3::Python<'_>,
         data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'_, pyo3::types::PyList>>,
         mut buf: crate::buf::CffiMutBuf<'_>,
@@ -1050,7 +1040,7 @@ impl AesSiv {
         }
 
         self.ctx
-            .encrypt_into(data_bytes, aad, None, buf.as_mut_bytes())?;
+            .encrypt_into(py, data_bytes, aad, None, buf.as_mut_bytes())?;
 
         Ok(expected_len)
     }
