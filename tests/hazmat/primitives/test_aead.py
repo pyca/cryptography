@@ -1003,6 +1003,10 @@ class TestAESGCMSIV:
             aesgcmsiv.encrypt(nonce, pt, None)
 
         with pytest.raises(ValueError):
+            buf = bytearray(len(pt) + 16)
+            aesgcmsiv.encrypt_into(nonce, pt, None, buf)
+
+        with pytest.raises(ValueError):
             aesgcmsiv.decrypt(nonce, pt, None)
 
     def test_empty(self):
@@ -1162,3 +1166,27 @@ class TestAESGCMSIV:
         assert ct2 == ct
         computed_pt2 = aesgcmsiv.decrypt(nonce, ct2, ad)
         assert computed_pt2 == pt
+
+    def test_encrypt_into(self, backend):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        nonce = os.urandom(12)
+        pt = b"encrypt me"
+        ad = b"additional"
+        buf = bytearray(len(pt) + 16)
+        n = aesgcmsiv.encrypt_into(nonce, pt, ad, buf)
+        assert n == len(pt) + 16
+        ct = aesgcmsiv.encrypt(nonce, pt, ad)
+        assert buf == ct
+
+    @pytest.mark.parametrize(
+        ("ptlen", "buflen"), [(10, 25), (10, 27), (15, 30), (20, 37)]
+    )
+    def test_encrypt_into_buffer_incorrect_size(self, ptlen, buflen, backend):
+        key = AESGCMSIV.generate_key(256)
+        aesgcmsiv = AESGCMSIV(key)
+        nonce = os.urandom(12)
+        pt = b"x" * ptlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesgcmsiv.encrypt_into(nonce, pt, None, buf)
