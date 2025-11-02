@@ -14,6 +14,10 @@ from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
 
 class TestX963KDF:
+    @pytest.mark.skipif(
+        sys.maxsize <= 2**31,
+        reason="Skip on 32-bit systems",
+    )
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
 
@@ -109,23 +113,3 @@ class TestX963KDF:
             )
 
             xkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
-
-    def test_digest_size_overflow(self):
-        # Create a mock algorithm with a digest_size that would overflow
-        # when multiplied by u32::MAX (2^32 - 1)
-        # Using sys.maxsize // 2 works on both 32-bit and 64-bit:
-        # - 32-bit: ~2^30 * 2^32 = 2^62 > 2^32-1 (overflow)
-        # - 64-bit: ~2^62 * 2^32 = 2^94 > 2^64-1 (overflow)
-        class MockHashAlgorithm(hashes.HashAlgorithm):
-            digest_size = sys.maxsize // 2
-            name = "MockHashAlgorithm"
-            block_size = 2**16
-
-        with pytest.raises(
-            ValueError,
-            match=(
-                "Digest size too large, would cause overflow in max "
-                "length calculation"
-            ),
-        ):
-            X963KDF(MockHashAlgorithm(), 16, None)

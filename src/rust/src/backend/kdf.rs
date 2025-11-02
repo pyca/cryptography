@@ -865,11 +865,7 @@ impl X963Kdf {
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
-        let max_len = digest_size.checked_mul(u32::MAX as usize).ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(
-                "Digest size too large, would cause overflow in max length calculation",
-            )
-        })?;
+        let max_len = digest_size.saturating_mul(u32::MAX as usize);
 
         if length > max_len {
             return Err(CryptographyError::from(
