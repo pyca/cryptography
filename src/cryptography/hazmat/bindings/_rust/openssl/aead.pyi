@@ -180,3 +180,10 @@ class AESGCMSIV:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
