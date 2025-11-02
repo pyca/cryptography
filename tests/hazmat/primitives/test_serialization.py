@@ -11,6 +11,7 @@ import textwrap
 
 import pytest
 
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, ARC4, RC2
 from cryptography.hazmat.primitives.asymmetric import (
@@ -424,7 +425,7 @@ class TestDERSerialization:
             lambda f: f.read(),
             mode="rb",
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedAlgorithm):
             load_der_private_key(data, password=None)
 
     @pytest.mark.skip_fips(reason="3DES is not FIPS")
@@ -1249,7 +1250,7 @@ class TestPEMSerialization:
         ("key_file", "password"), [("bad-oid-dsa-key.pem", None)]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedAlgorithm):
             load_vectors_from_file(
                 os.path.join("asymmetric", "PKCS8", key_file),
                 lambda pemfile: load_pem_private_key(

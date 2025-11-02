@@ -1063,7 +1063,9 @@ class TestECSerialization:
 
     def test_load_private_key_unsupported_explicit_parameters(self):
         # This vector is P256 except the prime field value is wrong
-        with pytest.raises(ValueError, match="explicit parameters"):
+        with pytest.raises(
+            exceptions.UnsupportedAlgorithm, match="explicit parameters"
+        ):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "EC", "explicit_parameters_private_key.pem"
@@ -1074,7 +1076,9 @@ class TestECSerialization:
                 mode="rb",
             )
 
-        with pytest.raises(ValueError, match="explicit parameters"):
+        with pytest.raises(
+            exceptions.UnsupportedAlgorithm, match="explicit parameters"
+        ):
             # This vector encodes SECT233R1 explicitly
             load_vectors_from_file(
                 os.path.join(

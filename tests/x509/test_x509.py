@@ -6001,7 +6001,7 @@ class TestOtherCertificate:
             x509.load_pem_x509_certificate,
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(UnsupportedAlgorithm):
             cert.public_key()
 
     def test_bad_time_in_validity(self, backend):
