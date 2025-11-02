@@ -149,6 +149,13 @@ class AESOCB3:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESGCMSIV:
     def __init__(self, key: Buffer) -> None: ...
