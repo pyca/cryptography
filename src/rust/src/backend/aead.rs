@@ -676,6 +676,11 @@ impl ChaCha20Poly1305 {
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if nonce.as_bytes().len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
         if data.as_bytes().len() < self.ctx.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }

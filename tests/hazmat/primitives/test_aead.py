@@ -116,11 +116,11 @@ class TestChaCha20Poly1305:
             chacha.encrypt_into(b"00", b"hello", b"", buf)
 
         with pytest.raises(ValueError):
-            chacha.decrypt(b"00", b"0" * 16, b"")
+            chacha.decrypt(b"00", b"hello", b"")
 
         with pytest.raises(ValueError):
-            buf = bytearray(16)
-            chacha.decrypt_into(b"00", b"0" * 16, b"", buf)
+            buf = bytearray(1)
+            chacha.decrypt_into(b"00", b"hello", b"", buf)
 
     def test_decrypt_data_too_short(self, backend):
         key = ChaCha20Poly1305.generate_key()
