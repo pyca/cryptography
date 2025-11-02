@@ -91,6 +91,13 @@ class AESCCM:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESSIV:
     def __init__(self, key: Buffer) -> None: ...
