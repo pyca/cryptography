@@ -192,6 +192,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
