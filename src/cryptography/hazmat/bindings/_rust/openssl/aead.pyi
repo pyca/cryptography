@@ -98,6 +98,12 @@ class AESSIV:
         data: Buffer,
         associated_data: Sequence[Buffer] | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        data: Buffer,
+        associated_data: Sequence[Buffer] | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESOCB3:
     def __init__(self, key: Buffer) -> None: ...

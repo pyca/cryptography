@@ -199,10 +199,46 @@ impl EvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        // Temporary while we remove this function
+        if ciphertext.len() < self.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         ctx.copy(&self.base_decryption_ctx)?;
-        Self::decrypt_with_context(
+        Ok(pyo3::types::PyBytes::new_with(
             py,
+            ciphertext.len() - self.tag_len,
+            |b| {
+                EvpCipherAead::decrypt_with_context(
+                    ctx,
+                    ciphertext,
+                    aad,
+                    nonce,
+                    self.tag_len,
+                    self.tag_first,
+                    false,
+                    b,
+                )?;
+                Ok(())
+            },
+        )?)
+    }
+
+    fn decrypt_into(
+        &self,
+        // We have this arg so we have consistent arguments with decrypt_into in
+        // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
+        _py: pyo3::Python<'_>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_decryption_ctx)?;
+
+        Self::decrypt_with_context(
             ctx,
             ciphertext,
             aad,
@@ -210,12 +246,12 @@ impl EvpCipherAead {
             self.tag_len,
             self.tag_first,
             false,
+            buf,
         )
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn decrypt_with_context<'p>(
-        py: pyo3::Python<'p>,
+    fn decrypt_with_context(
         mut ctx: openssl::cipher_ctx::CipherCtx,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
@@ -223,11 +259,8 @@ impl EvpCipherAead {
         tag_len: usize,
         tag_first: bool,
         is_ccm: bool,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if ciphertext.len() < tag_len {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
-
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         let tag;
         let ciphertext_data;
         if tag_first {
@@ -253,16 +286,10 @@ impl EvpCipherAead {
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            ciphertext_data.len(),
-            |b| {
-                Self::process_data(&mut ctx, ciphertext_data, b, is_ccm)
-                    .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+        Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
+            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
-                Ok(())
-            },
-        )?)
+        Ok(())
     }
 }
 
@@ -350,16 +377,27 @@ impl LazyEvpCipherAead {
             decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
         }
 
-        EvpCipherAead::decrypt_with_context(
+        if ciphertext.len() < self.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        Ok(pyo3::types::PyBytes::new_with(
             py,
-            decryption_ctx,
-            ciphertext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            self.is_ccm,
-        )
+            ciphertext.len() - self.tag_len,
+            |b| {
+                EvpCipherAead::decrypt_with_context(
+                    decryption_ctx,
+                    ciphertext,
+                    aad,
+                    nonce,
+                    self.tag_len,
+                    self.tag_first,
+                    self.is_ccm,
+                    b,
+                )?;
+                Ok(())
+            },
+        )?)
     }
 }
 
@@ -1060,8 +1098,50 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'_, pyo3::types::PyList>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if data.as_bytes().len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data.as_bytes().len() - self.ctx.tag_len,
+            |b| {
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.decrypt_into(py, data, associated_data, buf)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (data, associated_data, buf))]
+    fn decrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<pyo3::Bound<'_, pyo3::types::PyList>>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::List);
-        self.ctx.decrypt(py, data.as_bytes(), aad, None)
+
+        // We need to do this check early to prevent underflow when computing expected_len
+        if data_bytes.len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let expected_len = data_bytes.len() - self.ctx.tag_len;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
+        self.ctx
+            .decrypt_into(py, data_bytes, aad, None, buf.as_mut_bytes())?;
+
+        Ok(expected_len)
     }
 }
 
