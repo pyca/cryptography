@@ -321,6 +321,14 @@ class TestAESCCM:
         with pytest.raises(ValueError):
             aesccm.encrypt(nonce[:6], pt, None)
 
+        with pytest.raises(ValueError):
+            buf = bytearray(16)
+            aesccm.decrypt_into(nonce, b"x" * 20, None, buf)
+
+        with pytest.raises(ValueError):
+            buf = bytearray(16)
+            aesccm.decrypt_into(nonce[:6], b"x" * 20, None, buf)
+
     def test_vectors(self, subtests, backend):
         vectors = _load_all_params(
             os.path.join("ciphers", "AES", "CCM"),
@@ -423,6 +431,10 @@ class TestAESCCM:
         with pytest.raises(InvalidTag):
             aesccm.decrypt(b"0" * 12, b"0", None)
 
+        with pytest.raises(InvalidTag):
+            buf = bytearray(16)
+            aesccm.decrypt_into(b"0" * 12, b"0", None, buf)
+
     def test_buffer_protocol(self, backend):
         key = AESCCM.generate_key(128)
         aesccm = AESCCM(key)
@@ -471,6 +483,53 @@ class TestAESCCM:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             aesccm.encrypt_into(nonce, pt, None, buf)
+
+    def test_decrypt_into(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        pt = b"decrypt me"
+        ad = b"additional"
+        ct = aesccm.encrypt(nonce, pt, ad)
+        buf = bytearray(len(pt))
+        n = aesccm.decrypt_into(nonce, ct, ad, buf)
+        assert n == len(pt)
+        assert buf == pt
+
+    @pytest.mark.parametrize(
+        ("ctlen", "buflen"), [(26, 9), (26, 11), (31, 14), (36, 21)]
+    )
+    def test_decrypt_into_buffer_incorrect_size(self, ctlen, buflen, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        ct = b"x" * ctlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesccm.decrypt_into(nonce, ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        nonce = os.urandom(12)
+        pt = b"some data"
+        ad = b"additional"
+        ct = aesccm.encrypt(nonce, pt, ad)
+        # Corrupt the ciphertext
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            aesccm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+
+    def test_decrypt_into_nonce_too_long(self, backend):
+        key = AESCCM.generate_key(128)
+        aesccm = AESCCM(key)
+        pt = b"encrypt me" * 6600
+        nonce = os.urandom(13)
+        buf = bytearray(len(pt))
+        with pytest.raises(ValueError, match="Data too long for nonce"):
+            aesccm.decrypt_into(nonce, pt, None, buf)
 
 
 def _load_gcm_vectors():
