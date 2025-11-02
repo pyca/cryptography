@@ -513,6 +513,10 @@ class TestAESGCM:
         with pytest.raises(InvalidTag):
             aesgcm.decrypt(b"0" * 12, b"0", None)
 
+        with pytest.raises(InvalidTag):
+            buf = bytearray(16)
+            aesgcm.decrypt_into(b"0" * 12, b"0", None, buf)
+
     def test_vectors(self, backend, subtests):
         vectors = _load_gcm_vectors()
         for vector in vectors:
@@ -573,6 +577,9 @@ class TestAESGCM:
             aesgcm.encrypt_into(b"\x00" * length, b"hi", None, buf)
         with pytest.raises(ValueError):
             aesgcm.decrypt(b"\x00" * length, b"hi", None)
+        with pytest.raises(ValueError):
+            buf = bytearray(16)
+            aesgcm.decrypt_into(b"\x00" * length, b"hi", None, buf)
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
@@ -649,6 +656,44 @@ class TestAESGCM:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             aesgcm.encrypt_into(nonce, pt, None, buf)
+
+    def test_decrypt_into(self, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        pt = b"decrypt me"
+        ad = b"additional"
+        ct = aesgcm.encrypt(nonce, pt, ad)
+        buf = bytearray(len(pt))
+        n = aesgcm.decrypt_into(nonce, ct, ad, buf)
+        assert n == len(pt)
+        assert buf == pt
+
+    @pytest.mark.parametrize(
+        ("ctlen", "buflen"), [(26, 9), (26, 11), (31, 14), (36, 21)]
+    )
+    def test_decrypt_into_buffer_incorrect_size(self, ctlen, buflen, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        ct = b"x" * ctlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesgcm.decrypt_into(nonce, ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        pt = b"some data"
+        ad = b"additional"
+        ct = aesgcm.encrypt(nonce, pt, ad)
+        # Corrupt the ciphertext
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
 
 
 @pytest.mark.skipif(

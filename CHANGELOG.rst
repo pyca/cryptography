@@ -48,7 +48,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
   allow encrypting directly into a pre-allocated buffer.
 * Added ``decrypt_into`` methods to
-  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV` and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
   allow decrypting directly into a pre-allocated buffer.
 
