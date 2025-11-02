@@ -906,6 +906,13 @@ class TestAESOCB3:
         with pytest.raises(ValueError):
             aesocb3.decrypt(b"\x00" * 16, b"hi", None)
 
+        with pytest.raises(ValueError):
+            buf = bytearray(16)
+            aesocb3.decrypt_into(b"\x00" * 11, b"x" * 20, None, buf)
+        with pytest.raises(ValueError):
+            buf = bytearray(16)
+            aesocb3.decrypt_into(b"\x00" * 16, b"x" * 20, None, buf)
+
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
             AESOCB3(object())  # type:ignore[arg-type]
@@ -969,6 +976,52 @@ class TestAESOCB3:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             aesocb3.encrypt_into(nonce, pt, None, buf)
+
+    def test_decrypt_into(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        pt = b"decrypt me"
+        ad = b"additional"
+        ct = aesocb3.encrypt(nonce, pt, ad)
+        buf = bytearray(len(pt))
+        n = aesocb3.decrypt_into(nonce, ct, ad, buf)
+        assert n == len(pt)
+        assert buf == pt
+
+    @pytest.mark.parametrize(
+        ("ctlen", "buflen"), [(26, 9), (26, 11), (31, 14), (36, 21)]
+    )
+    def test_decrypt_into_buffer_incorrect_size(self, ctlen, buflen, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        ct = b"x" * ctlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesocb3.decrypt_into(nonce, ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        pt = b"some data"
+        ad = b"additional"
+        ct = aesocb3.encrypt(nonce, pt, ad)
+        # Corrupt the ciphertext
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            aesocb3.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+
+    def test_decrypt_into_data_too_short(self, backend):
+        key = AESOCB3.generate_key(128)
+        aesocb3 = AESOCB3(key)
+        nonce = os.urandom(12)
+        buf = bytearray(16)
+        with pytest.raises(InvalidTag):
+            aesocb3.decrypt_into(nonce, b"short", None, buf)
 
 
 @pytest.mark.skipif(

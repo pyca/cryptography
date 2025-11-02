@@ -192,6 +192,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -1432,6 +1433,40 @@ impl AesOcb3 {
         associated_data: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+
+        if nonce_bytes.len() < 12 || nonce_bytes.len() > 15 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be between 12 and 15 bytes"),
+            ));
+        }
+
+        if data_bytes.len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() - self.ctx.tag_len,
+            |b| {
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.decrypt_into(py, nonce, data, associated_data, buf)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn decrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
         if nonce_bytes.len() < 12 || nonce_bytes.len() > 15 {
@@ -1440,8 +1475,24 @@ impl AesOcb3 {
             ));
         }
 
+        if data_bytes.len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let expected_len = data_bytes.len() - self.ctx.tag_len;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
         self.ctx
-            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+            .decrypt_into(py, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+
+        Ok(expected_len)
     }
 }
 
