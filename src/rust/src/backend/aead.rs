@@ -358,47 +358,19 @@ impl LazyEvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
-
-        let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if ciphertext.len() < self.tag_len {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
-        if self.is_ccm {
-            decryption_ctx.decrypt_init(Some(self.cipher), None, None)?;
-            decryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
-            let (_, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
-            decryption_ctx.set_tag(tag)?;
-            decryption_ctx.decrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
-        } else {
-            decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
-        }
-
         Ok(pyo3::types::PyBytes::new_with(
             py,
             ciphertext.len() - self.tag_len,
             |b| {
-                EvpCipherAead::decrypt_with_context(
-                    decryption_ctx,
-                    ciphertext,
-                    aad,
-                    nonce,
-                    self.tag_len,
-                    self.tag_first,
-                    self.is_ccm,
-                    b,
-                )?;
+                self.decrypt_into(py, ciphertext, aad, nonce, b)?;
                 Ok(())
             },
         )?)
     }
 
-    #[cfg(not(any(
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC,
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-    )))]
     fn decrypt_into(
         &self,
         py: pyo3::Python<'_>,
@@ -410,9 +382,6 @@ impl LazyEvpCipherAead {
         let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
 
         let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        if ciphertext.len() < self.tag_len {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
         if self.is_ccm {
             decryption_ctx.decrypt_init(Some(self.cipher), None, None)?;
             decryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
