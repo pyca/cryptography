@@ -53,6 +53,13 @@ class ChaCha20Poly1305:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESCCM:
     def __init__(self, key: Buffer, tag_length: int = 16) -> None: ...

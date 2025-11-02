@@ -358,46 +358,50 @@ impl LazyEvpCipherAead {
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if ciphertext.len() < self.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            ciphertext.len() - self.tag_len,
+            |b| {
+                self.decrypt_into(py, ciphertext, aad, nonce, b)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    fn decrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
 
         let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
         if self.is_ccm {
             decryption_ctx.decrypt_init(Some(self.cipher), None, None)?;
             decryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
-
-            if ciphertext.len() < self.tag_len {
-                return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-            }
-
             let (_, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
             decryption_ctx.set_tag(tag)?;
-
             decryption_ctx.decrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
         } else {
             decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
         }
 
-        if ciphertext.len() < self.tag_len {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
-
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            ciphertext.len() - self.tag_len,
-            |b| {
-                EvpCipherAead::decrypt_with_context(
-                    decryption_ctx,
-                    ciphertext,
-                    aad,
-                    nonce,
-                    self.tag_len,
-                    self.tag_first,
-                    self.is_ccm,
-                    b,
-                )?;
-                Ok(())
-            },
-        )?)
+        EvpCipherAead::decrypt_with_context(
+            decryption_ctx,
+            ciphertext,
+            aad,
+            nonce,
+            self.tag_len,
+            self.tag_first,
+            self.is_ccm,
+            buf,
+        )
     }
 }
 
@@ -473,6 +477,29 @@ impl EvpAead {
                 Ok(())
             },
         )?)
+    }
+
+    fn decrypt_into(
+        &self,
+        _py: pyo3::Python<'_>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let ad = if let Some(Aad::Single(ad)) = &aad {
+            check_length(ad.as_bytes())?;
+            ad.as_bytes()
+        } else {
+            assert!(aad.is_none());
+            b""
+        };
+
+        self.ctx
+            .decrypt(ciphertext, nonce.unwrap_or(b""), ad, buf)
+            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+
+        Ok(())
     }
 }
 
@@ -618,7 +645,36 @@ impl ChaCha20Poly1305 {
         data: CffiBuf<'_>,
         associated_data: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if nonce.as_bytes().len() != 12 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
+            ));
+        }
+        if data.as_bytes().len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data.as_bytes().len() - self.ctx.tag_len,
+            |b| {
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.decrypt_into(py, nonce, data, associated_data, buf)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn decrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
         let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
         let aad = associated_data.map(Aad::Single);
 
         if nonce_bytes.len() != 12 {
@@ -627,8 +683,24 @@ impl ChaCha20Poly1305 {
             ));
         }
 
+        if data.as_bytes().len() < self.ctx.tag_len {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let expected_len = data_bytes.len() - self.ctx.tag_len;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
         self.ctx
-            .decrypt(py, data.as_bytes(), aad, Some(nonce_bytes))
+            .decrypt_into(py, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+
+        Ok(expected_len)
     }
 }
 

@@ -118,11 +118,19 @@ class TestChaCha20Poly1305:
         with pytest.raises(ValueError):
             chacha.decrypt(b"00", b"hello", b"")
 
+        with pytest.raises(ValueError):
+            buf = bytearray(1)
+            chacha.decrypt_into(b"00", b"hello", b"", buf)
+
     def test_decrypt_data_too_short(self, backend):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         with pytest.raises(InvalidTag):
             chacha.decrypt(b"0" * 12, b"0", None)
+
+        with pytest.raises(InvalidTag):
+            buf = bytearray(16)
+            chacha.decrypt_into(b"0" * 12, b"0", None, buf)
 
     def test_associated_data_none_equal_to_empty_bytestring(self, backend):
         key = ChaCha20Poly1305.generate_key()
@@ -221,6 +229,44 @@ class TestChaCha20Poly1305:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             chacha.encrypt_into(nonce, pt, None, buf)
+
+    def test_decrypt_into(self, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        pt = b"decrypt me"
+        ad = b"additional"
+        ct = chacha.encrypt(nonce, pt, ad)
+        buf = bytearray(len(pt))
+        n = chacha.decrypt_into(nonce, ct, ad, buf)
+        assert n == len(pt)
+        assert buf == pt
+
+    @pytest.mark.parametrize(
+        ("ctlen", "buflen"), [(26, 9), (26, 11), (31, 14), (36, 21)]
+    )
+    def test_decrypt_into_buffer_incorrect_size(self, ctlen, buflen, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        ct = b"x" * ctlen
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            chacha.decrypt_into(nonce, ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        pt = b"some data"
+        ad = b"additional"
+        ct = chacha.encrypt(nonce, pt, ad)
+        # Corrupt the ciphertext
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            chacha.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
 
 
 @pytest.mark.skipif(
