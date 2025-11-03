@@ -373,6 +373,13 @@ impl ECPrivateKey {
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
     }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> pyo3::PyRef<'p, Self> {
+        slf
+    }
 }
 
 #[pyo3::pymethods]
@@ -456,6 +463,13 @@ impl ECPublicKey {
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
+        slf
+    }
+
+    fn __deepcopy__<'p>(
+        slf: pyo3::PyRef<'p, Self>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> pyo3::PyRef<'p, Self> {
         slf
     }
 }

@@ -11,6 +11,17 @@ Changelog
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
+* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL < 4.1.
+* **BACKWARDS INCOMPATIBLE:** Loading keys with unsupported algorithms or
+  keys with unsupported explicit curve encodings now raises
+  :class:`~cryptography.exceptions.UnsupportedAlgorithm` instead of
+  ``ValueError``. This change affects
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
+  and :meth:`~cryptography.x509.Certificate.public_key` when called on
+  certificates with unsupported public key algorithms.
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.
@@ -35,9 +46,31 @@ Changelog
   to :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`. The previous
   private implementation will be removed in 49.0.0.
 * Added ``derive_into`` methods to
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` and
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`,
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`,
+  :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash`,
+  :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHMAC`,
+  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`,
+  :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`,
+  :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`, and
+  :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF` to allow
   deriving keys directly into pre-allocated buffers.
+* Added ``encrypt_into`` methods to
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
+  allow encrypting directly into a pre-allocated buffer.
+* Added ``decrypt_into`` methods to
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
+  allow decrypting directly into a pre-allocated buffer.
 
 .. _v46-0-3:
 

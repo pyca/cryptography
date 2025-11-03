@@ -4,6 +4,7 @@
 
 
 import binascii
+import sys
 
 import pytest
 
@@ -18,8 +19,9 @@ from cryptography.hazmat.primitives.kdf.concatkdf import (
 class TestConcatKDFHash:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
 
-        with pytest.raises(ValueError):
+        with pytest.raises(error):
             ConcatKDFHash(hashes.SHA256(), big_length, None, backend)
 
     def test_already_finalized(self, backend):
@@ -123,12 +125,46 @@ class TestConcatKDFHash:
 
             ckdf.verify(b"foo", "bar")  # type: ignore[arg-type]
 
+    def test_derive_into(self, backend):
+        prk = binascii.unhexlify(
+            b"52169af5c485dcc2321eb8d26d5efa21fb9b93c98e38412ee2484cf14f0d0d23"
+        )
+        oinfo = binascii.unhexlify(
+            b"a1b2c3d4e53728157e634612c12d6d5223e204aeea4341565369647bd184bcd2"
+            b"46f72971f292badaa2fe4124612cba"
+        )
+        ckdf = ConcatKDFHash(hashes.SHA256(), 16, oinfo, backend)
+        buf = bytearray(16)
+        n = ckdf.derive_into(prk, buf)
+        assert n == 16
+        # Verify the output matches what derive would produce
+        ckdf2 = ConcatKDFHash(hashes.SHA256(), 16, oinfo, backend)
+        expected = ckdf2.derive(prk)
+        assert buf == expected
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(15, 16), (17, 16), (8, 16), (32, 16)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        ckdf = ConcatKDFHash(hashes.SHA256(), outlen, None, backend)
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            ckdf.derive_into(b"key", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        ckdf = ConcatKDFHash(hashes.SHA256(), 16, None, backend)
+        buf = bytearray(16)
+        ckdf.derive_into(b"key", buf)
+        with pytest.raises(AlreadyFinalized):
+            ckdf.derive_into(b"key", buf)
+
 
 class TestConcatKDFHMAC:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
 
-        with pytest.raises(ValueError):
+        with pytest.raises(error):
             ConcatKDFHMAC(hashes.SHA256(), big_length, None, None, backend)
 
     def test_already_finalized(self, backend):
@@ -288,3 +324,38 @@ class TestConcatKDFHMAC:
                 otherinfo=None,
                 backend=backend,
             )
+
+    def test_derive_into(self, backend):
+        prk = binascii.unhexlify(
+            b"013951627c1dea63ea2d7702dd24e963eef5faac6b4af7e4"
+            b"b831cde499dff1ce45f6179f741c728aa733583b02409208"
+            b"8f0af7fce1d045edbc5790931e8d5ca79c73"
+        )
+        oinfo = binascii.unhexlify(
+            b"a1b2c3d4e55e600be5f367e0e8a465f4bf2704db00c9325c"
+            b"9fbd216d12b49160b2ae5157650f43415653696421e68e"
+        )
+        ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, oinfo, backend)
+        buf = bytearray(32)
+        n = ckdf.derive_into(prk, buf)
+        assert n == 32
+        # Verify the output matches what derive would produce
+        ckdf2 = ConcatKDFHMAC(hashes.SHA512(), 32, None, oinfo, backend)
+        expected = ckdf2.derive(prk)
+        assert buf == expected
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(31, 32), (33, 32), (16, 32), (64, 32)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        ckdf = ConcatKDFHMAC(hashes.SHA512(), outlen, None, None, backend)
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            ckdf.derive_into(b"key", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, None, backend)
+        buf = bytearray(32)
+        ckdf.derive_into(b"key", buf)
+        with pytest.raises(AlreadyFinalized):
+            ckdf.derive_into(b"key", buf)

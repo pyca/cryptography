@@ -66,6 +66,36 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but does not need to be encrypted. Can
+            be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            appended will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -81,6 +111,34 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
+    .. method:: decrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param nonce: A 12 byte value. **NEVER REUSE A NONCE** with a
+            key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - 16`` bytes. The plaintext will be written to this
+            buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - 16``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -150,6 +208,37 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: NIST `recommends a 96-bit IV length`_ for best
+            performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
+            **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            appended will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -166,6 +255,35 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
+    .. method:: decrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param nonce: NIST `recommends a 96-bit IV length`_ for best
+            performance but it can be up to 2\ :sup:`64` - 1 :term:`bits`.
+            **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - 16`` bytes. The plaintext will be written to this
+            buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - 16``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -225,6 +343,30 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`32` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: A 12-byte value.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            appended will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`32` - 1 bytes.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -239,6 +381,33 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
+    .. method:: decrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param nonce: A 12-byte value.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - 16`` bytes. The plaintext will be written to this
+            buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - 16``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -301,6 +470,35 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: A 12-15 byte value. **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            appended will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -315,6 +513,33 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
+    .. method:: decrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param nonce: A 12-15 byte value. **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - 16`` bytes. The plaintext will be written to this
+            buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - 16``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -390,6 +615,44 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or an ``associated_data`` element
             is larger than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. note::
+
+            SIV performs nonce-based authenticated encryption when a component of
+            the associated data is a nonce. The final associated data in the
+            list is used for the nonce.
+
+            Random nonces should have at least 128-bits of entropy. If a nonce is
+            reused with SIV authenticity is retained and confidentiality is only
+            compromised to the extent that an attacker can determine that the
+            same plaintext (and same associated data) was protected with the same
+            nonce and key.
+
+            If you do not supply a nonce encryption is deterministic and the same
+            (plaintext, key) pair will always produce the same ciphertext.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param list associated_data: An optional ``list`` of ``bytes-like objects``. This
+            is additional data that should be authenticated with the key, but
+            is not encrypted. Can be ``None``.  In SIV mode the final element
+            of this list is treated as a ``nonce``.
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) + 16`` bytes. The ciphertext with the 16 byte tag
+            **prepended** will be written to this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) + 16``).
+        :raises ValueError: If the buffer is not the correct size.
+        :raises OverflowError: If ``data`` or an ``associated_data`` element
+            is larger than 2\ :sup:`31` - 1 bytes.
+
     .. method:: decrypt(data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -402,6 +665,31 @@ also support providing integrity for associated data which is not encrypted.
             is not encrypted. Can be ``None`` if none was used during
             encryption.
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key or associated data are wrong.
+
+    .. method:: decrypt_into(data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param bytes data: The data to decrypt (with tag **prepended**).
+        :param list associated_data: An optional ``list`` of ``bytes-like objects``. This
+            is additional data that should be authenticated with the key, but
+            is not encrypted. Can be ``None`` if none was used during
+            encryption.
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - 16`` bytes. The plaintext will be written to this
+            buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - 16``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -479,6 +767,39 @@ also support providing integrity for associated data which is not encrypted.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
+    .. method:: encrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        .. warning::
+
+            Reuse of a ``nonce`` with a given ``key`` compromises the security
+            of any message with that ``nonce`` and ``key`` pair.
+
+        Encrypts and authenticates the ``data`` provided as well as
+        authenticating the ``associated_data``.  The output is written into
+        the ``buf`` parameter.
+
+        :param nonce: A value of between 7 and 13 bytes. The maximum
+            length is determined by the length of the ciphertext you are
+            encrypting and must satisfy the condition:
+            ``len(data) < 2 ** (8 * (15 - len(nonce)))``
+            **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to encrypt.
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data that should be
+            authenticated with the key, but is not encrypted. Can be ``None``.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` buffer into which the
+            ciphertext and tag will be written.  This must be exactly
+            ``len(data) + tag_length`` bytes long.
+        :returns int: The number of bytes written to the buffer (this is
+            always ``len(data) + tag_length``).
+        :raises OverflowError: If ``data`` or ``associated_data`` is larger
+            than 2\ :sup:`31` - 1 bytes.
+        :raises ValueError: If ``buf`` is not the correct length.
+
     .. method:: decrypt(nonce, data, associated_data)
 
         Decrypts the ``data`` and authenticates the ``associated_data``. If you
@@ -495,6 +816,35 @@ also support providing integrity for associated data which is not encrypted.
             ``None`` if none was passed during encryption.
         :type associated_data: :term:`bytes-like`
         :returns bytes: The original plaintext.
+        :raises cryptography.exceptions.InvalidTag: If the authentication tag
+            doesn't validate this exception will be raised. This will occur
+            when the ciphertext has been changed, but will also occur when the
+            key, nonce, or associated data are wrong.
+
+    .. method:: decrypt_into(nonce, data, associated_data, buf)
+
+        .. versionadded:: 47.0.0
+
+        Decrypts the ``data`` and authenticates the ``associated_data``. If you
+        called encrypt with ``associated_data`` you must pass the same
+        ``associated_data`` in decrypt or the integrity check will fail. The
+        output is written into the ``buf`` parameter.
+
+        :param nonce: A value of between 7 and 13 bytes. This
+            is the same value used when you originally called encrypt.
+            **NEVER REUSE A NONCE** with a key.
+        :type nonce: :term:`bytes-like`
+        :param data: The data to decrypt (with tag appended).
+        :type data: :term:`bytes-like`
+        :param associated_data: Additional data to authenticate. Can be
+            ``None`` if none was passed during encryption.
+        :type associated_data: :term:`bytes-like`
+        :param buf: A writable :term:`bytes-like` object that must be exactly
+            ``len(data) - tag_length`` bytes. The plaintext will be written to
+            this buffer.
+        :returns int: The number of bytes written to the buffer (always
+            ``len(data) - tag_length``).
+        :raises ValueError: If the buffer is not the correct size.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the

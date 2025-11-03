@@ -769,6 +769,17 @@ class TestECEquality:
 
         assert key1 == key2
 
+    def test_public_key_deepcopy(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        key1 = serialization.load_pem_private_key(key_bytes, None).public_key()
+        key2 = copy.deepcopy(key1)
+
+        assert key1 == key2
+
     def test_private_key_copy(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
         key_bytes = load_vectors_from_file(
@@ -777,6 +788,17 @@ class TestECEquality:
         )
         key1 = serialization.load_pem_private_key(key_bytes, None)
         key2 = copy.copy(key1)
+
+        assert key1 == key2
+
+    def test_private_key_deepcopy(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        key_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
+            lambda pemfile: pemfile.read().encode(),
+        )
+        key1 = serialization.load_pem_private_key(key_bytes, None)
+        key2 = copy.deepcopy(key1)
 
         assert key1 == key2
 
@@ -1063,7 +1085,9 @@ class TestECSerialization:
 
     def test_load_private_key_unsupported_explicit_parameters(self):
         # This vector is P256 except the prime field value is wrong
-        with pytest.raises(ValueError, match="explicit parameters"):
+        with pytest.raises(
+            exceptions.UnsupportedAlgorithm, match="explicit parameters"
+        ):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "EC", "explicit_parameters_private_key.pem"
@@ -1074,7 +1098,9 @@ class TestECSerialization:
                 mode="rb",
             )
 
-        with pytest.raises(ValueError, match="explicit parameters"):
+        with pytest.raises(
+            exceptions.UnsupportedAlgorithm, match="explicit parameters"
+        ):
             # This vector encodes SECT233R1 explicitly
             load_vectors_from_file(
                 os.path.join(

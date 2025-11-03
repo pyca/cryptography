@@ -60,6 +60,12 @@ class Ed25519PublicKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> Ed25519PublicKey:
+        """
+        Returns a deep copy.
+        """
+
 
 Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
 
@@ -123,6 +129,12 @@ class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> Ed25519PrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> Ed25519PrivateKey:
+        """
+        Returns a deep copy.
         """
 
 

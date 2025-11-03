@@ -21,7 +21,6 @@ static const long Cryptography_HAS_VERIFIED_CHAIN;
 static const long Cryptography_HAS_KEYLOG;
 static const long Cryptography_HAS_SSL_COOKIE;
 
-static const long Cryptography_HAS_OP_NO_RENEGOTIATION;
 static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF;
 static const long Cryptography_HAS_ALPN;
 static const long Cryptography_HAS_NEXTPROTONEG;
@@ -454,13 +453,6 @@ static const long Cryptography_HAS_KEYLOG = 1;
 
 static const long Cryptography_HAS_NEXTPROTONEG = 0;
 static const long Cryptography_HAS_ALPN = 1;
-
-#ifdef SSL_OP_NO_RENEGOTIATION
-static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 1;
-#else
-static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 0;
-static const long SSL_OP_NO_RENEGOTIATION = 0;
-#endif
 
 #ifdef SSL_OP_IGNORE_UNEXPECTED_EOF
 static const long Cryptography_HAS_SSL_OP_IGNORE_UNEXPECTED_EOF = 1;

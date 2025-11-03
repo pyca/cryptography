@@ -54,6 +54,12 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> X25519PublicKey:
+        """
+        Returns a deep copy.
+        """
+
 
 X25519PublicKey.register(rust_openssl.x25519.X25519PublicKey)
 
@@ -116,6 +122,12 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> X25519PrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> X25519PrivateKey:
+        """
+        Returns a deep copy.
         """
 
 

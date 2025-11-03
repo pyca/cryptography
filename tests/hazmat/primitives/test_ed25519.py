@@ -333,6 +333,22 @@ def test_public_key_copy(backend):
     only_if=lambda backend: backend.ed25519_supported(),
     skip_message="Requires OpenSSL with Ed25519 support",
 )
+def test_public_key_deepcopy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None).public_key()
+    key2 = copy.deepcopy(key1)
+
+    assert key1 == key2
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support",
+)
 def test_private_key_copy(backend):
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
@@ -341,5 +357,21 @@ def test_private_key_copy(backend):
     )
     key1 = serialization.load_der_private_key(key_bytes, None)
     key2 = copy.copy(key1)
+
+    assert key1 == key2
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.ed25519_supported(),
+    skip_message="Requires OpenSSL with Ed25519 support",
+)
+def test_private_key_deepcopy(backend):
+    key_bytes = load_vectors_from_file(
+        os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    key1 = serialization.load_der_private_key(key_bytes, None)
+    key2 = copy.deepcopy(key1)
 
     assert key1 == key2

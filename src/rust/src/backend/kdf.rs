@@ -15,20 +15,6 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-pub(crate) fn pbkdf2_hmac_derive<'p>(
-    py: pyo3::Python<'p>,
-    key_material: &[u8],
-    md: openssl::hash::MessageDigest,
-    salt: &[u8],
-    iterations: usize,
-    length: usize,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
-        openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, b).unwrap();
-        Ok(())
-    })?)
-}
-
 // NO-COVERAGE-START
 #[pyo3::pyclass(
     module = "cryptography.hazmat.primitives.kdf.pbkdf2",
@@ -41,6 +27,40 @@ struct Pbkdf2Hmac {
     iterations: usize,
     length: usize,
     used: bool,
+}
+
+impl Pbkdf2Hmac {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        openssl::pkcs5::pbkdf2_hmac(
+            key_material,
+            self.salt.as_bytes(py),
+            self.iterations,
+            self.md,
+            output,
+        )
+        .unwrap();
+
+        Ok(self.length)
+    }
 }
 
 #[pyo3::pymethods]
@@ -67,24 +87,24 @@ impl Pbkdf2Hmac {
         })
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        pbkdf2_hmac_derive(
-            py,
-            key_material.as_bytes(),
-            self.md,
-            self.salt.as_bytes(py),
-            self.iterations,
-            self.length,
-        )
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
     }
 
     fn verify(
@@ -122,6 +142,50 @@ struct Scrypt {
 
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
     used: bool,
+}
+
+impl Scrypt {
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        openssl::pkcs5::scrypt(
+            key_material,
+            self.salt.as_bytes(py),
+            self.n,
+            self.r,
+            self.p,
+            (usize::MAX / 2).try_into().unwrap(),
+            output,
+        )
+        .map_err(|_| {
+            // memory required formula explained here:
+            // https://blog.filippo.io/the-scrypt-parameters/
+            let min_memory = 128 * self.n * self.r / (1024 * 1024);
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
+            )))
+        })?;
+
+        Ok(self.length)
+    }
 }
 
 #[pyo3::pymethods]
@@ -195,25 +259,24 @@ impl Scrypt {
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
-            openssl::pkcs5::scrypt(key_material.as_bytes(), self.salt.as_bytes(py), self.n, self.r, self.p, (usize::MAX / 2).try_into().unwrap(), b).map_err(|_| {
-                // memory required formula explained here:
-                // https://blog.filippo.io/the-scrypt-parameters/
-                let min_memory = 128 * self.n * self.r / (1024 * 1024);
-                pyo3::exceptions::PyMemoryError::new_err(format!(
-                    "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
-                ))
-            })
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
         })?)
     }
 
@@ -266,6 +329,50 @@ struct BaseArgon2 {
 }
 
 impl BaseArgon2 {
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        variant: &Argon2Variant,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let derive_fn = match &variant {
+            Argon2Variant::Argon2d => openssl::kdf::argon2d,
+            Argon2Variant::Argon2i => openssl::kdf::argon2i,
+            Argon2Variant::Argon2id => openssl::kdf::argon2id,
+        };
+
+        (derive_fn)(
+            None,
+            key_material,
+            self.salt.as_bytes(py),
+            self.ad.as_ref().map(|ad| ad.as_bytes(py)),
+            self.secret.as_ref().map(|secret| secret.as_bytes(py)),
+            self.iterations,
+            self.lanes,
+            self.memory_cost,
+            output,
+        )
+        .map_err(CryptographyError::from)?;
+
+        Ok(self.length)
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn new(
         py: pyo3::Python<'_>,
@@ -360,30 +467,8 @@ impl BaseArgon2 {
         variant: &Argon2Variant,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        let derive_fn = match &variant {
-            Argon2Variant::Argon2d => openssl::kdf::argon2d,
-            Argon2Variant::Argon2i => openssl::kdf::argon2i,
-            Argon2Variant::Argon2id => openssl::kdf::argon2id,
-        };
-
-        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
-            (derive_fn)(
-                None,
-                key_material.as_bytes(),
-                self.salt.as_bytes(py),
-                self.ad.as_ref().map(|ad| ad.as_bytes(py)),
-                self.secret.as_ref().map(|secret| secret.as_bytes(py)),
-                self.iterations,
-                self.lanes,
-                self.memory_cost,
-                b,
-            )
-            .map_err(CryptographyError::from)?;
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, variant, key_material.as_bytes(), output)?;
             Ok(())
         })?)
     }
@@ -602,6 +687,21 @@ impl Argon2d {
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self._base.derive_into_buffer(
+            py,
+            &Argon2Variant::Argon2d,
+            key_material.as_bytes(),
+            buf.as_mut_bytes(),
+        )
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -683,6 +783,21 @@ impl Argon2i {
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self._base.derive_into_buffer(
+            py,
+            &Argon2Variant::Argon2i,
+            key_material.as_bytes(),
+            buf.as_mut_bytes(),
+        )
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -760,6 +875,21 @@ impl Argon2id {
                 )?,
             }
         })
+    }
+
+    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self._base.derive_into_buffer(
+            py,
+            &Argon2Variant::Argon2id,
+            key_material.as_bytes(),
+            buf.as_mut_bytes(),
+        )
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -1129,8 +1259,446 @@ impl HkdfExpand {
     }
 }
 
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.x963kdf",
+    name = "X963KDF"
+)]
+// NO-COVERAGE-END
+struct X963Kdf {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    length: usize,
+    sharedinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    used: bool,
+}
+
+impl X963Kdf {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let mut pos = 0usize;
+        let mut counter = 1u32;
+
+        while pos < self.length {
+            let mut hash_obj = hashes::Hash::new(py, algorithm_bound, None)?;
+            hash_obj.update_bytes(key_material)?;
+            hash_obj.update_bytes(&counter.to_be_bytes())?;
+            if let Some(ref sharedinfo) = self.sharedinfo {
+                hash_obj.update_bytes(sharedinfo.as_bytes(py))?;
+            }
+            let block = hash_obj.finalize(py)?;
+            let block_bytes = block.as_bytes();
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+            pos += copy_len;
+            counter += 1;
+        }
+
+        Ok(self.length)
+    }
+}
+
+#[pyo3::pymethods]
+impl X963Kdf {
+    #[new]
+    #[pyo3(signature = (algorithm, length, sharedinfo, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        sharedinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let digest_size = algorithm
+            .bind(py)
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let max_len = digest_size.saturating_mul(u32::MAX as usize);
+
+        if length > max_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Cannot derive keys larger than {max_len} bits."
+                )),
+            ));
+        }
+
+        Ok(X963Kdf {
+            algorithm,
+            length,
+            sharedinfo,
+            used: false,
+        })
+    }
+
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.concatkdf",
+    name = "ConcatKDFHash"
+)]
+// NO-COVERAGE-END
+struct ConcatKdfHash {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    length: usize,
+    otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    used: bool,
+}
+
+impl ConcatKdfHash {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let mut pos = 0usize;
+        let mut counter = 1u32;
+
+        while pos < self.length {
+            let mut hash_obj = hashes::Hash::new(py, algorithm_bound, None)?;
+            hash_obj.update_bytes(&counter.to_be_bytes())?;
+            hash_obj.update_bytes(key_material)?;
+            if let Some(ref otherinfo) = self.otherinfo {
+                hash_obj.update_bytes(otherinfo.as_bytes(py))?;
+            }
+            let block = hash_obj.finalize(py)?;
+            let block_bytes = block.as_bytes();
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+            pos += copy_len;
+            counter += 1;
+        }
+
+        Ok(self.length)
+    }
+}
+
+#[pyo3::pymethods]
+impl ConcatKdfHash {
+    #[new]
+    #[pyo3(signature = (algorithm, length, otherinfo, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let algorithm_bound = algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let max_len = digest_size.saturating_mul(u32::MAX as usize);
+        if length > max_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Cannot derive keys larger than {max_len} bits."
+                )),
+            ));
+        }
+
+        Ok(ConcatKdfHash {
+            algorithm,
+            length,
+            otherinfo,
+            used: false,
+        })
+    }
+
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.concatkdf",
+    name = "ConcatKDFHMAC"
+)]
+// NO-COVERAGE-END
+struct ConcatKdfHmac {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    length: usize,
+    salt: pyo3::Py<pyo3::types::PyBytes>,
+    otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    used: bool,
+}
+
+impl ConcatKdfHmac {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let mut pos = 0usize;
+        let mut counter = 1u32;
+
+        while pos < self.length {
+            let mut hmac = Hmac::new_bytes(py, self.salt.as_bytes(py), algorithm_bound)?;
+            hmac.update_bytes(&counter.to_be_bytes())?;
+            hmac.update_bytes(key_material)?;
+            if let Some(ref otherinfo) = self.otherinfo {
+                hmac.update_bytes(otherinfo.as_bytes(py))?;
+            }
+            let result = hmac.finalize_bytes()?;
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&result[..copy_len]);
+            pos += copy_len;
+            counter += 1;
+        }
+
+        Ok(self.length)
+    }
+}
+
+#[pyo3::pymethods]
+impl ConcatKdfHmac {
+    #[new]
+    #[pyo3(signature = (algorithm, length, salt, otherinfo, backend=None))]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        let algorithm_bound = algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let max_len = digest_size.saturating_mul(u32::MAX as usize);
+        if length > max_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Cannot derive keys larger than {max_len} bits."
+                )),
+            ));
+        }
+
+        let block_size = algorithm_bound.getattr(pyo3::intern!(py, "block_size"))?;
+        if block_size.is_none() {
+            let name = algorithm_bound
+                .getattr(pyo3::intern!(py, "name"))?
+                .extract::<String>()?;
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(format!(
+                    "{name} is unsupported for ConcatKDF"
+                )),
+            ));
+        }
+
+        let block_size_val = block_size.extract::<usize>()?;
+
+        // Default salt to zeros of block_size length
+        let salt_bytes = if let Some(s) = salt {
+            s
+        } else {
+            pyo3::types::PyBytes::new_with(py, block_size_val, |_| Ok(()))?.into()
+        };
+
+        Ok(ConcatKdfHmac {
+            algorithm,
+            length,
+            salt: salt_bytes,
+            otherinfo,
+            used: false,
+        })
+    }
+
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod kdf {
     #[pymodule_export]
-    use super::{Argon2d, Argon2i, Argon2id, Hkdf, HkdfExpand, Pbkdf2Hmac, Scrypt};
+    use super::{
+        Argon2d, Argon2i, Argon2id, ConcatKdfHash, ConcatKdfHmac, Hkdf, HkdfExpand, Pbkdf2Hmac,
+        Scrypt, X963Kdf,
+    };
 }

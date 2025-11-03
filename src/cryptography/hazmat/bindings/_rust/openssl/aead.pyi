@@ -22,6 +22,20 @@ class AESGCM:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class ChaCha20Poly1305:
     def __init__(self, key: Buffer) -> None: ...
@@ -33,12 +47,26 @@ class ChaCha20Poly1305:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         nonce: Buffer,
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESCCM:
     def __init__(self, key: Buffer, tag_length: int = 16) -> None: ...
@@ -50,12 +78,26 @@ class AESCCM:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         nonce: Buffer,
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESSIV:
     def __init__(self, key: Buffer) -> None: ...
@@ -66,11 +108,23 @@ class AESSIV:
         data: Buffer,
         associated_data: Sequence[Buffer] | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        data: Buffer,
+        associated_data: Sequence[Buffer] | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         data: Buffer,
         associated_data: Sequence[Buffer] | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        data: Buffer,
+        associated_data: Sequence[Buffer] | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESOCB3:
     def __init__(self, key: Buffer) -> None: ...
@@ -82,12 +136,26 @@ class AESOCB3:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         nonce: Buffer,
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
 
 class AESGCMSIV:
     def __init__(self, key: Buffer) -> None: ...
@@ -99,9 +167,23 @@ class AESGCMSIV:
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
     def decrypt(
         self,
         nonce: Buffer,
         data: Buffer,
         associated_data: Buffer | None,
     ) -> bytes: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...

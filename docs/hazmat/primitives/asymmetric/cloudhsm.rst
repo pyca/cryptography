@@ -122,6 +122,9 @@ if you only need a subset of functionality.
     ...     def __copy__(self) -> "CloudRSAPrivateKey":
     ...         return self
     ...
+    ...     def __deepcopy__(self, memo: dict) -> "CloudRSAPrivateKey":
+    ...         return self
+    ...
     >>> cloud_private_key = CloudRSAPrivateKey("creds", "key_id")
     >>> sig = cloud_private_key.sign(b"message", PKCS1v15(), hashes.SHA256())
     >>> isinstance(sig, bytes)

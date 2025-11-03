@@ -233,3 +233,29 @@ class TestScrypt:
     def test_invalid_p(self, backend):
         with pytest.raises(ValueError):
             Scrypt(b"NaCl", 64, 2, 8, 0, backend)
+
+    def test_derive_into(self, backend):
+        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+        buf = bytearray(64)
+        n = scrypt.derive_into(b"password", buf)
+        assert n == 64
+        # Verify the output matches what derive would produce
+        scrypt2 = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+        expected = scrypt2.derive(b"password")
+        assert buf == expected
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(63, 64), (65, 64), (32, 64), (128, 64)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        scrypt = Scrypt(b"NaCl", outlen, 1024, 8, 16, backend)
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            scrypt.derive_into(b"password", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+        buf = bytearray(64)
+        scrypt.derive_into(b"password", buf)
+        with pytest.raises(AlreadyFinalized):
+            scrypt.derive_into(b"password", buf)

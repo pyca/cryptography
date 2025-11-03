@@ -84,6 +84,12 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> DSAPrivateKey:
+        """
+        Returns a deep copy.
+        """
+
 
 DSAPrivateKeyWithSerialization = DSAPrivateKey
 DSAPrivateKey.register(rust_openssl.dsa.DSAPrivateKey)
@@ -140,6 +146,12 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> DSAPublicKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self, memo: dict) -> DSAPublicKey:
+        """
+        Returns a deep copy.
         """
 
 
