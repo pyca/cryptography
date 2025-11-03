@@ -144,6 +144,50 @@ struct Scrypt {
     used: bool,
 }
 
+impl Scrypt {
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        openssl::pkcs5::scrypt(
+            key_material,
+            self.salt.as_bytes(py),
+            self.n,
+            self.r,
+            self.p,
+            (usize::MAX / 2).try_into().unwrap(),
+            output,
+        )
+        .map_err(|_| {
+            // memory required formula explained here:
+            // https://blog.filippo.io/the-scrypt-parameters/
+            let min_memory = 128 * self.n * self.r / (1024 * 1024);
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
+            )))
+        })?;
+
+        Ok(self.length)
+    }
+}
+
 #[pyo3::pymethods]
 impl Scrypt {
     #[new]
@@ -215,25 +259,24 @@ impl Scrypt {
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        Ok(pyo3::types::PyBytes::new_with(py, self.length, |b| {
-            openssl::pkcs5::scrypt(key_material.as_bytes(), self.salt.as_bytes(py), self.n, self.r, self.p, (usize::MAX / 2).try_into().unwrap(), b).map_err(|_| {
-                // memory required formula explained here:
-                // https://blog.filippo.io/the-scrypt-parameters/
-                let min_memory = 128 * self.n * self.r / (1024 * 1024);
-                pyo3::exceptions::PyMemoryError::new_err(format!(
-                    "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
-                ))
-            })
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
         })?)
     }
 
