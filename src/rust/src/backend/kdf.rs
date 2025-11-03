@@ -1091,9 +1091,7 @@ impl ConcatKdfHmac {
             ));
         }
 
-        // Check for block_size (required for HMAC)
         let block_size = algorithm_bound.getattr(pyo3::intern!(py, "block_size"))?;
-
         if block_size.is_none() {
             let name = algorithm_bound
                 .getattr(pyo3::intern!(py, "name"))?
@@ -1111,7 +1109,7 @@ impl ConcatKdfHmac {
         let salt_bytes = if let Some(s) = salt {
             s
         } else {
-            pyo3::types::PyBytes::new(py, &vec![0u8; block_size_val]).into()
+            pyo3::types::PyBytes::new_with(py, block_size_val, |_| Ok(()))?.into()
         };
 
         Ok(ConcatKdfHmac {
