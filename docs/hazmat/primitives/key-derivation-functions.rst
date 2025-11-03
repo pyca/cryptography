@@ -282,8 +282,9 @@ PBKDF2
         :type key_material: :term:`bytes-like`
         :return bytes: the derived key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
 
@@ -291,6 +292,31 @@ PBKDF2
                            ``bytes``.
 
         This generates and returns a new key from the supplied password.
+
+    .. method:: derive_into(key_material, buffer)
+
+        .. versionadded:: 47.0.0
+
+        :param key_material: The input key material. For PBKDF2 this
+            should be a password.
+        :type key_material: :term:`bytes-like`
+        :param buffer: A writable buffer to write the derived key into. The
+                       buffer must be equal to the length supplied in the
+                       constructor.
+        :return int: The number of bytes written to the buffer.
+        :raises TypeError: This exception is raised if ``key_material`` is not
+                           ``bytes``.
+        :raises ValueError: This exception is raised if the buffer is too small
+                           for the derived key.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        This generates a new key from the supplied password and writes it
+        directly into the provided buffer.
 
     .. method:: verify(key_material, expected_key)
 
@@ -303,8 +329,9 @@ PBKDF2
                                                     derived key does not match
                                                     the expected key.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
-                                                          :meth:`verify` is
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`,
+                                                          or :meth:`verify` is
                                                           called more than
                                                           once.
 

@@ -15,20 +15,6 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-pub(crate) fn pbkdf2_hmac_derive<'p>(
-    py: pyo3::Python<'p>,
-    key_material: &[u8],
-    md: openssl::hash::MessageDigest,
-    salt: &[u8],
-    iterations: usize,
-    length: usize,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
-        openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, b).unwrap();
-        Ok(())
-    })?)
-}
-
 // NO-COVERAGE-START
 #[pyo3::pyclass(
     module = "cryptography.hazmat.primitives.kdf.pbkdf2",
@@ -41,6 +27,40 @@ struct Pbkdf2Hmac {
     iterations: usize,
     length: usize,
     used: bool,
+}
+
+impl Pbkdf2Hmac {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        openssl::pkcs5::pbkdf2_hmac(
+            key_material,
+            self.salt.as_bytes(py),
+            self.iterations,
+            self.md,
+            output,
+        )
+        .unwrap();
+
+        Ok(self.length)
+    }
 }
 
 #[pyo3::pymethods]
@@ -67,24 +87,24 @@ impl Pbkdf2Hmac {
         })
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        pbkdf2_hmac_derive(
-            py,
-            key_material.as_bytes(),
-            self.md,
-            self.salt.as_bytes(py),
-            self.iterations,
-            self.length,
-        )
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
     }
 
     fn verify(
