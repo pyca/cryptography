@@ -48,6 +48,7 @@ Changelog
 * Added ``derive_into`` methods to
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`,
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`,
+  :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash`,
   :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`,
   :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`,
   :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`, and
