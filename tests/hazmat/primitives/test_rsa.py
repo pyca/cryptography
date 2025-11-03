@@ -2795,3 +2795,27 @@ class TestRSAPEMPublicKeySerialization:
         key2 = copy.copy(key1)
 
         assert key1 == key2
+
+    def test_public_key_deepcopy(
+        self, rsa_key_2048: rsa.RSAPrivateKey, rsa_key_512: rsa.RSAPrivateKey
+    ):
+        key1 = rsa_key_2048.public_key()
+        key2 = copy.deepcopy(key1)
+
+        assert key1.public_numbers() == key2.public_numbers()
+
+        key1 = rsa_key_512.public_key()
+
+        assert key1.public_numbers() != key2.public_numbers()
+
+    def test_private_key_deepcopy(
+        self, rsa_key_2048: rsa.RSAPrivateKey, rsa_key_512: rsa.RSAPrivateKey
+    ):
+        key1 = rsa_key_2048
+        key2 = copy.deepcopy(key1)
+
+        assert key1.private_numbers() == key2.private_numbers()
+
+        key1 = rsa_key_512
+
+        assert key1.private_numbers() != key2.private_numbers()

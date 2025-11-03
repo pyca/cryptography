@@ -87,6 +87,12 @@ class DHPublicKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self) -> DHPublicKey:
+        """
+        Returns a deep copy.
+        """
+
 
 DHPublicKeyWithSerialization = DHPublicKey
 DHPublicKey.register(rust_openssl.dh.DHPublicKey)
@@ -140,6 +146,12 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> DHPrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> DHPrivateKey:
+        """
+        Returns a deep copy.
         """
 
 

@@ -54,6 +54,12 @@ class X448PublicKey(metaclass=abc.ABCMeta):
         Returns a copy.
         """
 
+    @abc.abstractmethod
+    def __deepcopy__(self) -> X448PublicKey:
+        """
+        Returns a deep copy.
+        """
+
 
 if hasattr(rust_openssl, "x448"):
     X448PublicKey.register(rust_openssl.x448.X448PublicKey)
@@ -118,6 +124,12 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
     def __copy__(self) -> X448PrivateKey:
         """
         Returns a copy.
+        """
+
+    @abc.abstractmethod
+    def __deepcopy__(self) -> X448PrivateKey:
+        """
+        Returns a deep copy.
         """
 
 
