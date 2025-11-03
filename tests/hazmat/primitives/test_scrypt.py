@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import platform
 
 import pytest
 
@@ -28,6 +29,13 @@ def _skip_if_memory_limited(memory_limit, params):
     blen = int(params["p"]) * 128 * int(params["r"])
     vlen = 32 * int(params["r"]) * (int(params["n"]) + 2) * 4
     memory_required = blen + vlen
+    # This hack will be removed when we drop intel macOS support
+    if (
+        int(params["n"]) == 1048576
+        and platform.system() == "Darwin"
+        and platform.machine() == "x86_64"
+    ):
+        pytest.skip("Test too slow for GH's x86_64 mac runners")
     if memory_limit < memory_required:
         pytest.skip(
             "Test exceeds Scrypt memory limit. "
