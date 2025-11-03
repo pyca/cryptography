@@ -70,7 +70,7 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> RSAPrivateKey:
+    def __deepcopy__(self, memodict: dict) -> RSAPrivateKey:
         """
         Returns a deep copy.
         """
@@ -146,7 +146,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> RSAPublicKey:
+    def __deepcopy__(self, memodict: dict) -> RSAPublicKey:
         """
         Returns a deep copy.
         """

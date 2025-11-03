@@ -85,7 +85,7 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> DSAPrivateKey:
+    def __deepcopy__(self, memodict: dict) -> DSAPrivateKey:
         """
         Returns a deep copy.
         """
@@ -149,7 +149,7 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> DSAPublicKey:
+    def __deepcopy__(self, memodict: dict) -> DSAPublicKey:
         """
         Returns a deep copy.
         """

@@ -135,7 +135,7 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> EllipticCurvePrivateKey:
+    def __deepcopy__(self, memodict: dict) -> EllipticCurvePrivateKey:
         """
         Returns a deep copy.
         """
@@ -214,7 +214,7 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> EllipticCurvePublicKey:
+    def __deepcopy__(self, memodict: dict) -> EllipticCurvePublicKey:
         """
         Returns a deep copy.
         """
