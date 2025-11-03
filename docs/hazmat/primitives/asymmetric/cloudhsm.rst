@@ -122,7 +122,7 @@ if you only need a subset of functionality.
     ...     def __copy__(self) -> "CloudRSAPrivateKey":
     ...         return self
     ...
-    ...     def __deepcopy__(self, memodict: dict) -> "CloudRSAPrivateKey":
+    ...     def __deepcopy__(self, memo: dict) -> "CloudRSAPrivateKey":
     ...         return self
     ...
     >>> cloud_private_key = CloudRSAPrivateKey("creds", "key_id")

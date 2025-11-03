@@ -88,7 +88,7 @@ class DHPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memodict: dict) -> DHPublicKey:
+    def __deepcopy__(self, memo: dict) -> DHPublicKey:
         """
         Returns a deep copy.
         """
@@ -149,7 +149,7 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memodict: dict) -> DHPrivateKey:
+    def __deepcopy__(self, memo: dict) -> DHPrivateKey:
         """
         Returns a deep copy.
         """

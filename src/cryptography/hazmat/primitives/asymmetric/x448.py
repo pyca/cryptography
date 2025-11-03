@@ -55,7 +55,7 @@ class X448PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memodict: dict) -> X448PublicKey:
+    def __deepcopy__(self, memo: dict) -> X448PublicKey:
         """
         Returns a deep copy.
         """
@@ -127,7 +127,7 @@ class X448PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memodict: dict) -> X448PrivateKey:
+    def __deepcopy__(self, memo: dict) -> X448PrivateKey:
         """
         Returns a deep copy.
         """
