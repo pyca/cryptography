@@ -944,6 +944,55 @@ struct X963Kdf {
     used: bool,
 }
 
+impl X963Kdf {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let mut pos = 0usize;
+        let mut counter = 1u32;
+
+        while pos < self.length {
+            let mut hash_obj = hashes::Hash::new(py, algorithm_bound, None)?;
+            hash_obj.update_bytes(key_material)?;
+            hash_obj.update_bytes(&counter.to_be_bytes())?;
+            if let Some(ref sharedinfo) = self.sharedinfo {
+                hash_obj.update_bytes(sharedinfo.as_bytes(py))?;
+            }
+            let block = hash_obj.finalize(py)?;
+            let block_bytes = block.as_bytes();
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
+            pos += copy_len;
+            counter += 1;
+        }
+
+        Ok(self.length)
+    }
+}
+
 #[pyo3::pymethods]
 impl X963Kdf {
     #[new]
@@ -980,41 +1029,22 @@ impl X963Kdf {
         })
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if self.used {
-            return Err(exceptions::already_finalized_error());
-        }
-        self.used = true;
-
-        let algorithm_bound = self.algorithm.bind(py);
-        let digest_size = algorithm_bound
-            .getattr(pyo3::intern!(py, "digest_size"))?
-            .extract::<usize>()?;
-
         Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
-            let mut pos = 0usize;
-            let mut counter = 1u32;
-
-            while pos < self.length {
-                let mut hash_obj = hashes::Hash::new(py, algorithm_bound, None)?;
-                hash_obj.update_bytes(key_material.as_bytes())?;
-                hash_obj.update_bytes(&counter.to_be_bytes())?;
-                if let Some(ref sharedinfo) = self.sharedinfo {
-                    hash_obj.update_bytes(sharedinfo.as_bytes(py))?;
-                }
-                let block = hash_obj.finalize(py)?;
-                let block_bytes = block.as_bytes();
-
-                let copy_len = (self.length - pos).min(digest_size);
-                output[pos..pos + copy_len].copy_from_slice(&block_bytes[..copy_len]);
-                pos += copy_len;
-                counter += 1;
-            }
-
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
             Ok(())
         })?)
     }
