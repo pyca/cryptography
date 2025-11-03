@@ -43,14 +43,14 @@ Each of the classes constructors and parameters are the same; only details of Ar
 
 .. class:: Argon2d(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
 
-    .. versionadded:: 46.0.4
+    .. versionadded:: 47.0.0
 
     This variant of the Argon2 family maximizes resistance to time-memory-trade-off attacks, but introduces possible side-channels
 
 
 .. class:: Argon2i(*, salt, length, iterations, lanes, memory_cost, ad=None, secret=None)
 
-    .. versionadded:: 46.0.4
+    .. versionadded:: 47.0.0
 
     This variant of the Argon2 family resists side-channel attacks, but is vulnerable to time-memory-trade-off attacks
 
