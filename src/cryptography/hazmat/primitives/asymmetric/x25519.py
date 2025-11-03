@@ -55,7 +55,7 @@ class X25519PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> X25519PublicKey:
+    def __deepcopy__(self, memo: dict) -> X25519PublicKey:
         """
         Returns a deep copy.
         """
@@ -125,7 +125,7 @@ class X25519PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self) -> X25519PrivateKey:
+    def __deepcopy__(self, memo: dict) -> X25519PrivateKey:
         """
         Returns a deep copy.
         """
