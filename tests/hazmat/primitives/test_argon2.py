@@ -51,7 +51,6 @@ def test_unsupported_backend(backend):
     skip_message="Argon2id not supported by this version of OpenSSL",
 )
 class TestArgon2:
-
     @pytest.fixture(scope="class", params=variants)
     def clazz(self, request) -> type:
         return request.param
