@@ -244,6 +244,14 @@ class TestArgon2:
                 b"password", "$krypton7$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$hash"
             )
 
+        # Incorrect variant specified, offer a more helpful error message
+        wrong_variant = "argon2id" if clazz is not Argon2id else "argon2d"
+        with pytest.raises(InvalidKey, match="did you mean to use"):
+            clazz.verify_phc_encoded(
+                b"password",
+                f"${wrong_variant}$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$!invalid!",
+            )
+
         # Invalid version
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(

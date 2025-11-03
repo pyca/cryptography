@@ -239,6 +239,7 @@ impl Scrypt {
 }
 
 #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+#[derive(Debug, PartialEq)]
 enum Argon2Variant {
     Argon2d,
     Argon2i,
@@ -446,15 +447,29 @@ impl BaseArgon2 {
     ) -> CryptographyResult<()> {
         let parts: Vec<_> = phc_encoded.split('$').collect();
 
-        let variant_id: &str = match variant {
-            Argon2Variant::Argon2d => "argon2d",
-            Argon2Variant::Argon2i => "argon2i",
-            Argon2Variant::Argon2id => "argon2id",
-        };
-
-        if parts.len() != 6 || !parts[0].is_empty() || parts[1] != variant_id {
+        if parts.len() != 6 || !parts[0].is_empty() {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Invalid PHC string format.",
+            )));
+        }
+
+        let requested_variant: Option<&Argon2Variant> = match parts[1] {
+            "argon2d" => Some(&Argon2Variant::Argon2d),
+            "argon2i" => Some(&Argon2Variant::Argon2i),
+            "argon2id" => Some(&Argon2Variant::Argon2id),
+            _ => None,
+        };
+
+        if requested_variant.is_none() {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Invalid PHC string format.",
+            )));
+        } else if requested_variant.unwrap() != variant {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                format!(
+                    "Incorrect variant in PHC string, did you mean to use {:?}?",
+                    requested_variant.unwrap()
+                ),
             )));
         }
 
