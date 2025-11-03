@@ -4,6 +4,7 @@
 
 
 import binascii
+import sys
 
 import pytest
 
@@ -18,8 +19,9 @@ from cryptography.hazmat.primitives.kdf.concatkdf import (
 class TestConcatKDFHash:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
 
-        with pytest.raises(ValueError):
+        with pytest.raises(error):
             ConcatKDFHash(hashes.SHA256(), big_length, None, backend)
 
     def test_already_finalized(self, backend):
@@ -127,8 +129,9 @@ class TestConcatKDFHash:
 class TestConcatKDFHMAC:
     def test_length_limit(self, backend):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
 
-        with pytest.raises(ValueError):
+        with pytest.raises(error):
             ConcatKDFHMAC(hashes.SHA256(), big_length, None, None, backend)
 
     def test_already_finalized(self, backend):
