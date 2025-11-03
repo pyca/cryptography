@@ -951,7 +951,7 @@ impl X963Kdf {
 struct ConcatKdfHash {
     algorithm: pyo3::Py<pyo3::PyAny>,
     length: usize,
-    otherinfo: pyo3::Py<pyo3::types::PyBytes>,
+    otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
     used: bool,
 }
 
@@ -982,13 +982,10 @@ impl ConcatKdfHash {
             ));
         }
 
-        let otherinfo_bytes =
-            otherinfo.unwrap_or_else(|| pyo3::types::PyBytes::new(py, b"").into());
-
         Ok(ConcatKdfHash {
             algorithm,
             length,
-            otherinfo: otherinfo_bytes,
+            otherinfo,
             used: false,
         })
     }
@@ -1016,7 +1013,9 @@ impl ConcatKdfHash {
                 let mut hash_obj = hashes::Hash::new(py, algorithm_bound, None)?;
                 hash_obj.update_bytes(&counter.to_be_bytes())?;
                 hash_obj.update_bytes(key_material.as_bytes())?;
-                hash_obj.update_bytes(self.otherinfo.as_bytes(py))?;
+                if let Some(ref otherinfo) = self.otherinfo {
+                    hash_obj.update_bytes(otherinfo.as_bytes(py))?;
+                }
                 let block = hash_obj.finalize(py)?;
                 let block_bytes = block.as_bytes();
 
@@ -1060,7 +1059,7 @@ struct ConcatKdfHmac {
     algorithm: pyo3::Py<pyo3::PyAny>,
     length: usize,
     salt: pyo3::Py<pyo3::types::PyBytes>,
-    otherinfo: pyo3::Py<pyo3::types::PyBytes>,
+    otherinfo: Option<pyo3::Py<pyo3::types::PyBytes>>,
     used: bool,
 }
 
@@ -1115,14 +1114,11 @@ impl ConcatKdfHmac {
             pyo3::types::PyBytes::new(py, &vec![0u8; block_size_val]).into()
         };
 
-        let otherinfo_bytes =
-            otherinfo.unwrap_or_else(|| pyo3::types::PyBytes::new(py, b"").into());
-
         Ok(ConcatKdfHmac {
             algorithm,
             length,
             salt: salt_bytes,
-            otherinfo: otherinfo_bytes,
+            otherinfo,
             used: false,
         })
     }
@@ -1150,7 +1146,9 @@ impl ConcatKdfHmac {
                 let mut hmac = Hmac::new_bytes(py, self.salt.as_bytes(py), algorithm_bound)?;
                 hmac.update_bytes(&counter.to_be_bytes())?;
                 hmac.update_bytes(key_material.as_bytes())?;
-                hmac.update_bytes(self.otherinfo.as_bytes(py))?;
+                if let Some(ref otherinfo) = self.otherinfo {
+                    hmac.update_bytes(otherinfo.as_bytes(py))?;
+                }
                 let result = hmac.finalize_bytes()?;
 
                 let copy_len = (self.length - pos).min(digest_size);
