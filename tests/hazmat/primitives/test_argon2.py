@@ -51,9 +51,6 @@ def test_unsupported_backend(backend):
     skip_message="Argon2id not supported by this version of OpenSSL",
 )
 class TestArgon2:
-    VECTORS = load_vectors_from_file(
-        os.path.join("KDF", "argon2id.txt"), load_nist_vectors
-    )
 
     @pytest.fixture(scope="class", params=variants)
     def clazz(self, request) -> type:
@@ -184,25 +181,27 @@ class TestArgon2:
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         ).verify(b"password", digest)
 
-    def test_derive_into(self, backend):
-        argon2id = Argon2id(
+    def test_derive_into(self, clazz, backend):
+        argon2 = clazz(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         )
         buf = bytearray(32)
-        n = argon2id.derive_into(b"password", buf)
+        n = argon2.derive_into(b"password", buf)
         assert n == 32
         # Verify the output matches what derive would produce
-        argon2id2 = Argon2id(
+        argon2_2 = clazz(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         )
-        expected = argon2id2.derive(b"password")
+        expected = argon2_2.derive(b"password")
         assert buf == expected
 
     @pytest.mark.parametrize(
         ("buflen", "outlen"), [(31, 32), (33, 32), (16, 32), (64, 32)]
     )
-    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
-        argon2id = Argon2id(
+    def test_derive_into_buffer_incorrect_size(
+        self, clazz, buflen, outlen, backend
+    ):
+        argon2 = clazz(
             salt=b"salt" * 2,
             length=outlen,
             iterations=1,
@@ -211,16 +210,16 @@ class TestArgon2:
         )
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
-            argon2id.derive_into(b"password", buf)
+            argon2.derive_into(b"password", buf)
 
-    def test_derive_into_already_finalized(self, backend):
-        argon2id = Argon2id(
+    def test_derive_into_already_finalized(self, clazz, backend):
+        argon2 = clazz(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         )
         buf = bytearray(32)
-        argon2id.derive_into(b"password", buf)
+        argon2.derive_into(b"password", buf)
         with pytest.raises(AlreadyFinalized):
-            argon2id.derive_into(b"password2", buf)
+            argon2.derive_into(b"password2", buf)
 
     def test_derive_phc_encoded(self, backend):
         # Test that we can generate a PHC formatted string
@@ -290,51 +289,53 @@ class TestArgon2:
                 f"${wrong_variant}$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$!invalid!",
             )
 
+        variant = clazz.__name__.lower()
+
         # Invalid version
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=18$m=32,t=1,p=1$c2FsdHNhbHQ$hash"
+                b"password", f"${variant}$v=18$m=32,t=1,p=1$c2FsdHNhbHQ$hash"
             )
 
         # Missing parameters
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$m=32,t=1$c2FsdHNhbHQ$hash"
+                b"password", f"${variant}$v=19$m=32,t=1$c2FsdHNhbHQ$hash"
             )
 
         # Parameters in wrong order
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$t=1,m=32,p=1$c2FsdHNhbHQ$hash"
+                b"password", f"${variant}$v=19$t=1,m=32,p=1$c2FsdHNhbHQ$hash"
             )
 
         # Invalid memory cost
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$m=abc,t=1,p=1$!invalid!$hash"
+                b"password", f"${variant}$v=19$m=abc,t=1,p=1$!invalid!$hash"
             )
 
         # Invalid iterations
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$m=32,t=abc,p=1$!invalid!$hash"
+                b"password", f"${variant}$v=19$m=32,t=abc,p=1$!invalid!$hash"
             )
 
         # Invalid lanes
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$m=32,t=1,p=abc$!invalid!$hash"
+                b"password", f"${variant}$v=19$m=32,t=1,p=abc$!invalid!$hash"
             )
 
         # Invalid base64 in salt
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
-                b"password", "$argon2id$v=19$m=32,t=1,p=1$!invalid!$hash"
+                b"password", f"${variant}$v=19$m=32,t=1,p=1$!invalid!$hash"
             )
 
         # Invalid base64 in hash
         with pytest.raises(InvalidKey):
             clazz.verify_phc_encoded(
                 b"password",
-                "$argon2id$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$!invalid!",
+                f"${variant}$v=19$m=32,t=1,p=1$c2FsdHNhbHQ$!invalid!",
             )
