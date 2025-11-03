@@ -46,8 +46,9 @@ Changelog
   to :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`. The previous
   private implementation will be removed in 49.0.0.
 * Added ``derive_into`` methods to
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF` and
-  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand` to allow
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`,
+  :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`, and
+  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id` to allow
   deriving keys directly into pre-allocated buffers.
 * Added ``encrypt_into`` methods to
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,

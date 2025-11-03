@@ -160,6 +160,44 @@ class TestArgon2id:
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
         ).verify(b"password", digest)
 
+    def test_derive_into(self, backend):
+        argon2id = Argon2id(
+            salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
+        )
+        buf = bytearray(32)
+        n = argon2id.derive_into(b"password", buf)
+        assert n == 32
+        # Verify the output matches what derive would produce
+        argon2id2 = Argon2id(
+            salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
+        )
+        expected = argon2id2.derive(b"password")
+        assert buf == expected
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(31, 32), (33, 32), (16, 32), (64, 32)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        argon2id = Argon2id(
+            salt=b"salt" * 2,
+            length=outlen,
+            iterations=1,
+            lanes=1,
+            memory_cost=32,
+        )
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            argon2id.derive_into(b"password", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        argon2id = Argon2id(
+            salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32
+        )
+        buf = bytearray(32)
+        argon2id.derive_into(b"password", buf)
+        with pytest.raises(AlreadyFinalized):
+            argon2id.derive_into(b"password2", buf)
+
     def test_derive_phc_encoded(self, backend):
         # Test that we can generate a PHC formatted string
         argon2id = Argon2id(
