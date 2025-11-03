@@ -5,7 +5,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::types::{PyAnyMethods, PyDict};
+use pyo3::types::PyAnyMethods;
 
 use crate::backend::{hashes, utils};
 use crate::buf::CffiBuf;
@@ -425,7 +425,7 @@ impl RsaPrivateKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }
@@ -545,7 +545,7 @@ impl RsaPublicKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }

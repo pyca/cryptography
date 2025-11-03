@@ -159,7 +159,7 @@ impl DsaPrivateKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }
@@ -239,7 +239,7 @@ impl DsaPublicKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }

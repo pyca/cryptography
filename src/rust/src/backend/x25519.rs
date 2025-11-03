@@ -122,7 +122,7 @@ impl X25519PrivateKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }
@@ -157,7 +157,7 @@ impl X25519PublicKey {
 
     fn __deepcopy__<'p>(
         slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::types::PyDict>,
+        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
     }
