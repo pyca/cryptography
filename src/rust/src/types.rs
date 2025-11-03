@@ -602,6 +602,13 @@ pub static LEGACY_PROVIDER_LOADED: LazyPyImport = LazyPyImport::new(
     &["openssl", "_legacy_provider_loaded"],
 );
 
+pub static KBKDF_MODE: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.kdf.kbkdf", &["Mode"]);
+pub static KBKDF_COUNTER_LOCATION: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.kdf.kbkdf",
+    &["CounterLocation"],
+);
+
 #[cfg(test)]
 mod tests {
     use super::LazyPyImport;

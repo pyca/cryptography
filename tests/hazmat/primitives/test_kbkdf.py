@@ -4,6 +4,7 @@
 
 
 import re
+import sys
 
 import pytest
 
@@ -113,21 +114,20 @@ class TestKBKDFHMAC:
             kdf.verify(b"material", key)
 
     def test_key_length(self, backend):
-        kdf = KBKDFHMAC(
-            hashes.SHA1(),
-            Mode.CounterMode,
-            85899345920,
-            4,
-            4,
-            CounterLocation.BeforeFixed,
-            b"label",
-            b"context",
-            None,
-            backend=backend,
-        )
-
-        with pytest.raises(ValueError):
-            kdf.derive(b"material")
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
+        with pytest.raises(error):
+            KBKDFHMAC(
+                hashes.SHA1(),
+                Mode.CounterMode,
+                85899345920,
+                4,
+                4,
+                CounterLocation.BeforeFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+            )
 
     def test_rlen(self, backend):
         with pytest.raises(ValueError):
@@ -302,27 +302,7 @@ class TestKBKDFHMAC:
             )
 
     def test_invalid_break_location(self, backend):
-        with pytest.raises(
-            TypeError, match=re.escape("break_location must be an integer")
-        ):
-            KBKDFHMAC(
-                hashes.SHA256(),
-                Mode.CounterMode,
-                32,
-                4,
-                4,
-                CounterLocation.MiddleFixed,
-                b"label",
-                b"context",
-                None,
-                backend=backend,
-                break_location="0",  # type: ignore[arg-type]
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=re.escape("break_location must be a positive integer"),
-        ):
+        with pytest.raises(OverflowError):
             KBKDFHMAC(
                 hashes.SHA256(),
                 Mode.CounterMode,
@@ -402,7 +382,7 @@ class TestKBKDFHMAC:
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(
-                object(),  # type: ignore[arg-type]
+                DummyHashAlgorithm(),
                 Mode.CounterMode,
                 32,
                 4,
