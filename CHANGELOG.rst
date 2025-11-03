@@ -49,8 +49,9 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`,
   :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDFExpand`,
   :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`,
-  :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`, and
-  :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt` to allow
+  :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`,
+  :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`, and
+  :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF` to allow
   deriving keys directly into pre-allocated buffers.
 * Added ``encrypt_into`` methods to
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESCCM`,

@@ -110,3 +110,32 @@ class TestX963KDF:
             )
 
             xkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
+
+    def test_derive_into(self, backend):
+        key = binascii.unhexlify(
+            b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
+        )
+        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        buf = bytearray(16)
+        n = xkdf.derive_into(key, buf)
+        assert n == 16
+        # Verify the output matches what derive would produce
+        xkdf2 = X963KDF(hashes.SHA256(), 16, None, backend)
+        expected = xkdf2.derive(key)
+        assert buf == expected
+
+    @pytest.mark.parametrize(
+        ("buflen", "outlen"), [(15, 16), (17, 16), (8, 16), (32, 16)]
+    )
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        xkdf = X963KDF(hashes.SHA256(), outlen, None, backend)
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            xkdf.derive_into(b"key", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        buf = bytearray(16)
+        xkdf.derive_into(b"key", buf)
+        with pytest.raises(AlreadyFinalized):
+            xkdf.derive_into(b"key", buf)
