@@ -955,7 +955,7 @@ class TestRSAVerification:
                 # Test recovery of all data (full DigestInfo) with hash alg. as
                 # None
                 rec_sig_data = public_key.recover_data_from_signature(
-                    signature, padding.PKCS1v15(), None
+                    signature, padding.PKCS1v15(), asym_utils.NoDigestInfo()
                 )
                 assert len(rec_sig_data) > len(msg_digest)
                 assert msg_digest == rec_sig_data[-len(msg_digest) :]
