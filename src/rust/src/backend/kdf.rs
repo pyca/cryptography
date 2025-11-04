@@ -1705,7 +1705,7 @@ impl ConcatKdfHmac {
 struct KbkdfHmac {
     algorithm: pyo3::Py<pyo3::PyAny>,
     length: usize,
-    params: KbkdfValidatedParams,
+    params: KbkdfParams,
     used: bool,
 }
 
@@ -1717,7 +1717,7 @@ fn int_to_bytes(value: usize, length: usize) -> Vec<u8> {
     bytes
 }
 
-struct KbkdfValidatedParams {
+struct KbkdfParams {
     rlen: usize,
     llen: Option<usize>,
     location: pyo3::Py<pyo3::PyAny>,
@@ -1738,7 +1738,7 @@ fn validate_kbkdf_parameters(
     context: Option<pyo3::Py<pyo3::types::PyBytes>>,
     fixed: Option<pyo3::Py<pyo3::types::PyBytes>>,
     break_location: Option<usize>,
-) -> CryptographyResult<KbkdfValidatedParams> {
+) -> CryptographyResult<KbkdfParams> {
     let mode_bound = mode.bind(py);
     let mode_type = crate::types::KBKDF_MODE.get(py)?;
     if !mode_bound.is_instance(&mode_type)? {
@@ -1792,15 +1792,13 @@ fn validate_kbkdf_parameters(
         ));
     }
 
-    if let Some(l) = llen {
-        if l == 0 {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("llen must be non-zero"),
-            ));
-        }
+    if llen == Some(0) {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("llen must be non-zero"),
+        ));
     }
 
-    Ok(KbkdfValidatedParams {
+    Ok(KbkdfParams {
         rlen,
         llen,
         location,
