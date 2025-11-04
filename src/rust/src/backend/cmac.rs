@@ -10,22 +10,11 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
-/// Pure Rust CMAC context that can be used independently of Python.
-/// This struct provides CMAC functionality using OpenSSL and can be called
-/// directly from Rust code without Python dependencies.
 pub struct CmacContext {
     ctx: Option<cryptography_openssl::cmac::Cmac>,
 }
 
 impl CmacContext {
-    /// Creates a new CMAC context with the given key and cipher.
-    ///
-    /// # Arguments
-    /// * `key` - The key bytes to use for CMAC
-    /// * `cipher` - The cipher to use (must be a block cipher)
-    ///
-    /// # Returns
-    /// A new `CmacContext` instance or an error if initialization fails
     pub fn new(
         key: &[u8],
         cipher: &openssl::cipher::CipherRef,
@@ -34,38 +23,17 @@ impl CmacContext {
         Ok(CmacContext { ctx: Some(ctx) })
     }
 
-    /// Updates the CMAC context with additional data.
-    ///
-    /// # Arguments
-    /// * `data` - The data to add to the CMAC computation
-    ///
-    /// # Returns
-    /// `Ok(())` on success, or an error if the context has been finalized
     pub fn update(&mut self, data: &[u8]) -> CryptographyResult<()> {
         self.get_mut_ctx()?.update(data)?;
         Ok(())
     }
 
-    /// Finalizes the CMAC computation and returns the tag.
-    /// After calling this method, the context cannot be used again.
-    ///
-    /// # Returns
-    /// The CMAC tag as a `Vec<u8>`, or an error if already finalized
     pub fn finalize(&mut self) -> CryptographyResult<Vec<u8>> {
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
         Ok(data.as_slice().to_vec())
     }
 
-    /// Verifies that the provided signature matches the computed CMAC.
-    /// This method finalizes the context.
-    ///
-    /// # Arguments
-    /// * `signature` - The expected CMAC signature to verify against
-    ///
-    /// # Returns
-    /// `Ok(())` if the signature matches, or an error if it doesn't match
-    /// or if the context was already finalized
     pub fn verify(&mut self, signature: &[u8]) -> CryptographyResult<()> {
         let actual = self.finalize()?;
         if !constant_time::bytes_eq(&actual, signature) {
@@ -76,10 +44,6 @@ impl CmacContext {
         Ok(())
     }
 
-    /// Creates a copy of this CMAC context.
-    ///
-    /// # Returns
-    /// A new `CmacContext` with the same state, or an error if already finalized
     pub fn copy(&self) -> CryptographyResult<Self> {
         Ok(CmacContext {
             ctx: Some(self.get_ctx()?.copy()?),
