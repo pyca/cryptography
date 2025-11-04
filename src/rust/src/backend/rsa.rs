@@ -504,6 +504,11 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let algorithm = if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
+            &pyo3::types::PyNone::get(py).to_owned().into_any()
+        } else {
+            algorithm
+        };
         if algorithm.is_instance(&types::PREHASHED.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(

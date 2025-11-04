@@ -129,7 +129,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm | None,
+        algorithm: hashes.HashAlgorithm | asym_utils.NoDigestInfo | None,
     ) -> bytes:
         """
         Recovers the original data from the signature.
