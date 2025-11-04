@@ -545,15 +545,17 @@ impl BaseArgon2 {
             _ => None,
         };
 
-        if requested_variant.is_none() {
-            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+        let requested_variant = requested_variant.ok_or_else(|| {
+            CryptographyError::from(exceptions::InvalidKey::new_err(
                 "Invalid PHC string format.",
-            )));
-        } else if requested_variant.unwrap() != variant {
+            ))
+        })?;
+
+        if requested_variant != variant {
             return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
                 format!(
                     "Incorrect variant in PHC string, did you mean to use {:?}?",
-                    requested_variant.unwrap()
+                    requested_variant
                 ),
             )));
         }
