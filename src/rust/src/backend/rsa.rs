@@ -291,10 +291,10 @@ impl RsaPrivateKey {
         algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyAny>> {
         let (data, algorithm) = {
-            if algorithm.is_none() {
+            if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
                 (
                     utils::BytesOrPyBytes::Bytes(data.as_bytes()),
-                    algorithm.clone(),
+                    pyo3::types::PyNone::get(py).to_owned().into_any(),
                 )
             } else {
                 utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?
@@ -450,10 +450,10 @@ impl RsaPublicKey {
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
         let (data, algorithm) = {
-            if algorithm.is_none() {
+            if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
                 (
                     utils::BytesOrPyBytes::Bytes(data.as_bytes()),
-                    algorithm.clone(),
+                    pyo3::types::PyNone::get(py).to_owned().into_any(),
                 )
             } else {
                 utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?

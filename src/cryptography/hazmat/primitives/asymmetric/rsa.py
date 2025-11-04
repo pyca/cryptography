@@ -40,7 +40,9 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         self,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: None | asym_utils.Prehashed | hashes.HashAlgorithm,
+        algorithm: asym_utils.Prehashed
+        | hashes.HashAlgorithm
+        | asym_utils.NoDigestInfo,
     ) -> bytes:
         """
         Signs the data.
