@@ -483,7 +483,7 @@ class TestRSASignature:
                         )
                     ),
                     padding.PKCS1v15(),
-                    None,
+                    asym_utils.NoDigestInfo(),
                 )
                 assert binascii.hexlify(signature) == example["signature"]
 

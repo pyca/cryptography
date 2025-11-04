@@ -21,6 +21,7 @@ from cryptography.hazmat.decrepit.ciphers import (
 )
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
     Cipher,
@@ -521,7 +522,9 @@ def generate_rsa_verification_without_digest_test(
                 params["msg"] = compute_rsa_hash_digest(
                     backend, hash_alg, params["msg"]
                 )
-                rsa_verification_test(backend, params, None, pad_factory)
+                rsa_verification_test(
+                    backend, params, asym_utils.NoDigestInfo(), pad_factory
+                )
 
     return test_rsa_verification
 
