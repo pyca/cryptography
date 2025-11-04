@@ -113,6 +113,74 @@ class TestKBKDFHMAC:
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"material", key)
 
+    def test_derive_into(self, backend):
+        kdf = KBKDFHMAC(
+            hashes.SHA256(),
+            Mode.CounterMode,
+            32,
+            4,
+            4,
+            CounterLocation.BeforeFixed,
+            b"label",
+            b"context",
+            None,
+            backend=backend,
+        )
+        buf = bytearray(32)
+        n = kdf.derive_into(b"material", buf)
+        assert n == 32
+        # Verify the output matches what derive would produce
+        kdf2 = KBKDFHMAC(
+            hashes.SHA256(),
+            Mode.CounterMode,
+            32,
+            4,
+            4,
+            CounterLocation.BeforeFixed,
+            b"label",
+            b"context",
+            None,
+            backend=backend,
+        )
+        expected = kdf2.derive(b"material")
+        assert buf == expected
+
+    @pytest.mark.parametrize(("buflen", "outlen"), [(31, 32), (33, 32)])
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+        kdf = KBKDFHMAC(
+            hashes.SHA256(),
+            Mode.CounterMode,
+            outlen,
+            4,
+            4,
+            CounterLocation.BeforeFixed,
+            b"label",
+            b"context",
+            None,
+            backend=backend,
+        )
+        buf = bytearray(buflen)
+        with pytest.raises(ValueError, match="buffer must be"):
+            kdf.derive_into(b"material", buf)
+
+    def test_derive_into_already_finalized(self, backend):
+        kdf = KBKDFHMAC(
+            hashes.SHA256(),
+            Mode.CounterMode,
+            32,
+            4,
+            4,
+            CounterLocation.BeforeFixed,
+            b"label",
+            b"context",
+            None,
+            backend=backend,
+        )
+        buf = bytearray(32)
+        kdf.derive_into(b"material", buf)
+        with pytest.raises(AlreadyFinalized):
+            kdf.derive_into(b"material2", buf)
+
     def test_key_length(self, backend):
         error = OverflowError if sys.maxsize <= 2**31 else ValueError
         with pytest.raises(error):

@@ -1971,6 +1971,15 @@ impl KbkdfHmac {
         })?)
     }
 
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
