@@ -764,7 +764,7 @@ X.509 CRL (Certificate Revocation List) Object
         .. doctest::
 
             >>> crl.issuer
-            <Name(C=US,CN=cryptography.io)>
+            <Name(CN=cryptography.io,C=US)>
 
     .. attribute:: next_update
 
