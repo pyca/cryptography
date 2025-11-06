@@ -366,8 +366,7 @@ class Name:
         return sum(len(rdn) for rdn in self._attributes)
 
     def __repr__(self) -> str:
-        rdns = ",".join(attr.rfc4514_string() for attr in self._attributes)
-        return f"<Name({rdns})>"
+        return f"<Name({self.rfc4514_string()})>"
 
 
 class _RFC4514NameParser:

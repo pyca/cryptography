@@ -1694,15 +1694,15 @@ class TestRSACertificate:
         serialized = cert.public_bytes(encoding)
         assert serialized == cert_bytes
 
-    def test_certificate_repr(self, backend):
+    def test_certificate_repr(self):
         cert = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
             x509.load_pem_x509_certificate,
         )
         assert repr(cert) == (
-            "<Certificate(subject=<Name(OU=GT48742965,OU=See www.rapidssl.com"
-            "/resources/cps (c)14,OU=Domain Control Validated - RapidSSL(R),"
-            "CN=www.cryptography.io)>, ...)>"
+            "<Certificate(subject=<Name(CN=www.cryptography.io,OU=Domain "
+            "Control Validated - RapidSSL(R),OU=See "
+            "www.rapidssl.com/resources/cps (c)14,OU=GT48742965)>, ...)>"
         )
 
     def test_parse_tls_feature_extension(self, backend):
@@ -5790,7 +5790,7 @@ class TestECDSACertificate:
             assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
             assert isinstance(cert.public_key(), ec.EllipticCurvePublicKey)
 
-    def test_load_bitstring_dn(self, backend):
+    def test_load_bitstring_dn(self):
         cert = _load_cert(
             os.path.join("x509", "scottishpower-bitstring-dn.pem"),
             x509.load_pem_x509_certificate,
@@ -5809,7 +5809,7 @@ class TestECDSACertificate:
             ]
         )
         assert repr(cert.subject) == (
-            "<Name(CN=ScottishPower,OU=02,2.5.4.45=#0070b3d51f305f0001)>"
+            "<Name(2.5.4.45=#0070b3d51f305f0001,OU=02,CN=ScottishPower)>"
         )
 
     def test_load_name_attribute_long_form_asn1_tag(self, backend):
@@ -6409,12 +6409,12 @@ class TestName:
             (
                 "cryptography.io",
                 "PyCA",
-                "<Name(CN=cryptography.io,O=PyCA)>",
+                "<Name(O=PyCA,CN=cryptography.io)>",
             ),
             (
                 "Certificación",
                 "Certificación",
-                "<Name(CN=Certificación,O=Certificación)>",
+                "<Name(O=Certificación,CN=Certificación)>",
             ),
         ],
     )
