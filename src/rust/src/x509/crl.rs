@@ -695,6 +695,46 @@ pub fn parse_crl_entry_ext<'p>(
 }
 
 #[pyo3::pyfunction]
+pub(crate) fn create_revoked_certificate(
+    py: pyo3::Python<'_>,
+    builder: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<RevokedCertificate> {
+    let serial_number = builder
+        .getattr(pyo3::intern!(py, "_serial_number"))?
+        .extract()?;
+    let py_revocation_date = builder
+        .getattr(pyo3::intern!(py, "_revocation_date"))?
+        .extract()?;
+
+    let ka_vec = cryptography_keepalive::KeepAlive::new();
+    let ka_bytes = cryptography_keepalive::KeepAlive::new();
+    let serial_bytes = py_uint_to_big_endian_bytes(py, serial_number)?;
+
+    let revoked_cert = crl::RevokedCertificate {
+        user_certificate: SerialNumber::new(&serial_bytes).unwrap(),
+        revocation_date: x509::certificate::time_from_py(py, &py_revocation_date)?,
+        raw_crl_entry_extensions: x509::common::encode_extensions(
+            py,
+            &ka_vec,
+            &ka_bytes,
+            &builder.getattr(pyo3::intern!(py, "_extensions"))?,
+            extensions::encode_extension,
+        )?,
+    };
+
+    let data = asn1::write_single(&revoked_cert)?;
+    let owned =
+        OwnedRevokedCertificate::try_new(pyo3::types::PyBytes::new(py, &data).unbind(), |data| {
+            asn1::parse_single(data.as_bytes(py))
+        })?;
+
+    Ok(RevokedCertificate {
+        owned,
+        cached_extensions: pyo3::sync::PyOnceLock::new(),
+    })
+}
+
+#[pyo3::pyfunction]
 pub(crate) fn create_x509_crl(
     py: pyo3::Python<'_>,
     builder: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -709,32 +749,21 @@ pub(crate) fn create_x509_crl(
         hash_algorithm.to_owned(),
         rsa_padding.to_owned(),
     )?;
-    let mut revoked_certs = vec![];
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
+    let mut revoked_certs = vec![];
     for py_revoked_cert in builder
         .getattr(pyo3::intern!(py, "_revoked_certificates"))?
         .try_iter()?
     {
         let py_revoked_cert = py_revoked_cert?;
-        let serial_number = py_revoked_cert
-            .getattr(pyo3::intern!(py, "serial_number"))?
-            .extract()?;
-        let py_revocation_date = py_revoked_cert
-            .getattr(pyo3::intern!(py, "revocation_date_utc"))?
-            .extract()?;
-        let serial_bytes = ka_bytes.add(py_uint_to_big_endian_bytes(py, serial_number)?);
-        revoked_certs.push(crl::RevokedCertificate {
-            user_certificate: SerialNumber::new(serial_bytes).unwrap(),
-            revocation_date: x509::certificate::time_from_py(py, &py_revocation_date)?,
-            raw_crl_entry_extensions: x509::common::encode_extensions(
-                py,
-                &ka_vec,
-                &ka_bytes,
-                &py_revoked_cert.getattr(pyo3::intern!(py, "extensions"))?,
-                extensions::encode_extension,
-            )?,
-        });
+        let revoked_cert_ref: pyo3::PyRef<'_, RevokedCertificate> = py_revoked_cert
+            .extract()
+            .map_err(|e| CryptographyError::from(pyo3::PyErr::from(e)))?;
+        // Serialize and re-parse to get a certificate with lifetimes tied to ka_vec
+        let serialized = asn1::write_single(revoked_cert_ref.owned.borrow_dependent())?;
+        let cert_bytes = ka_vec.add(serialized);
+        revoked_certs.push(asn1::parse_single(cert_bytes)?);
     }
 
     let ka = cryptography_keepalive::KeepAlive::new();
