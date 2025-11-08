@@ -54,6 +54,9 @@ def create_x509_csr(
     rsa_padding: PKCS1v15 | PSS | None,
     ecdsa_deterministic: bool | None,
 ) -> x509.CertificateSigningRequest: ...
+def create_revoked_certificate(
+    builder: x509.RevokedCertificateBuilder,
+) -> x509.RevokedCertificate: ...
 def create_x509_crl(
     builder: x509.CertificateRevocationListBuilder,
     private_key: PrivateKeyTypes,
