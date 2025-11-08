@@ -131,6 +131,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
+            .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
       - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
@@ -162,11 +163,11 @@ jobs:
             exit 0
           fi
 
-      - run: uv venv --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python
-      - run: uv pip install --require-hashes -r $BUILD_REQUIREMENTS_PATH
-      - run: uv pip install cryptography --no-index -f wheelhouse/
-      - run: |
-          echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
+      - name: Smoketest
+        uses: ./.github/actions/wheel-smoketest
+        with:
+          python-path: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python
+          build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
 
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
@@ -231,6 +232,7 @@ jobs:
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
             .github/config/macos-pkg-choices-freethreaded.xml
+            .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
         run: |
@@ -291,14 +293,10 @@ jobs:
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
 
-      - run: uv venv
-      - run: uv pip install --require-hashes -r $BUILD_REQUIREMENTS_PATH
-      - run: uv pip install cryptography --no-index -f wheelhouse/
-      - name: Show the wheel's minimum macOS SDK and architectures
-        run: |
-          find .venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
-      - run: |
-          echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
+      - name: Smoketest
+        uses: ./.github/actions/wheel-smoketest
+        with:
+          build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
@@ -340,6 +338,7 @@ jobs:
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
+            .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
       - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
@@ -383,13 +382,10 @@ jobs:
           uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
         shell: bash
 
-      - run: uv venv
-      - run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
-        shell: bash
-      - run: uv pip install cryptography --no-index -f wheelhouse/
-      - name: Print the OpenSSL we built and linked against
-        run: |
-            echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
+      - name: Smoketest
+        uses: ./.github/actions/wheel-smoketest
+        with:
+          build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
 
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
