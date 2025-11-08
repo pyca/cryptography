@@ -9,12 +9,12 @@ use base64::engine::Engine;
 use cryptography_crypto::constant_time;
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
+use crate::asn1::py_uint_to_be_bytes_with_length;
 use crate::backend::hashes;
 use crate::backend::hmac::Hmac;
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use crate::types;
 
 // NO-COVERAGE-START
 #[pyo3::pyclass(
@@ -1870,10 +1870,10 @@ impl KbkdfHmac {
         for i in 1..=rounds {
             let mut hmac = Hmac::new_bytes(py, key_material, algorithm_bound)?;
 
-            let py_counter = types::INT_TO_BYTES.get(py)?.call1((i, self.params.rlen))?;
-            let counter = py_counter.extract::<&[u8]>()?;
+            let py_i = pyo3::types::PyInt::new(py, i);
+            let counter = py_uint_to_be_bytes_with_length(py, py_i, self.params.rlen)?;
             hmac.update_bytes(data_before_ctr)?;
-            hmac.update_bytes(counter)?;
+            hmac.update_bytes(counter.as_ref())?;
             hmac.update_bytes(data_after_ctr)?;
 
             let result = hmac.finalize_bytes()?;
@@ -1892,10 +1892,10 @@ impl KbkdfHmac {
         }
 
         // llen will exist if fixed data is not provided
-        let py_l_val = types::INT_TO_BYTES
-            .get(py)?
-            .call1((self.length * 8, self.params.llen.unwrap()))?;
-        let l_val = py_l_val.extract::<&[u8]>()?;
+        let py_bitlength = pyo3::types::PyInt::new(py, self.length)
+            .mul(8)?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyInt>>()?;
+        let l_val = py_uint_to_be_bytes_with_length(py, py_bitlength, self.params.llen.unwrap())?;
 
         let mut result = Vec::new();
         let label: &[u8] = self.params.label.as_ref().map_or(b"", |l| l.as_bytes(py));
@@ -1903,7 +1903,7 @@ impl KbkdfHmac {
         result.push(0x00);
         let context: &[u8] = self.params.context.as_ref().map_or(b"", |l| l.as_bytes(py));
         result.extend_from_slice(context);
-        result.extend_from_slice(l_val);
+        result.extend_from_slice(l_val.as_ref());
 
         Ok(result)
     }
