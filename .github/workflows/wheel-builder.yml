@@ -168,6 +168,7 @@ jobs:
         with:
           python-path: /opt/python/${{ matrix.PYTHON.VERSION }}/bin/python
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
+          test-pip: ${{ startsWith(matrix.PYTHON.VERSION, 'cp') }}
 
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
