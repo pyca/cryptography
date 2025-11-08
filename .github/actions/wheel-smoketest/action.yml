@@ -1,0 +1,47 @@
+name: Wheel Smoketest
+description: Tests a built cryptography wheel by installing it and verifying basic functionality
+
+inputs:
+  python-path:
+    description: 'Optional path to a specific Python interpreter to use for creating the venv'
+    required: false
+    default: ''
+  build-requirements-path:
+    description: 'Path to the build requirements file'
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Create virtual environment
+      run: |
+        if [ -n "${{ inputs.python-path }}" ]; then
+          uv venv --python="${{ inputs.python-path }}"
+        else
+          uv venv
+        fi
+      shell: bash
+
+    - name: Install build requirements
+      run: uv pip install --require-hashes -r "${{ inputs.build-requirements-path }}"
+      shell: bash
+
+    - name: Install cryptography wheel
+      run: uv pip install cryptography --no-index -f wheelhouse/
+      shell: bash
+
+    - name: Show the wheel's minimum macOS SDK and architectures
+      if: runner.os == 'macOS'
+      run: |
+        find .venv/lib/*/site-packages/cryptography/hazmat/bindings -name '*.so' -exec vtool -show {} \;
+      shell: bash
+
+    - name: Verify cryptography installation and OpenSSL version
+      run: |
+        uv run - <<'EOF'
+        from cryptography.hazmat.backends.openssl.backend import backend
+        print(f"Loaded: {backend.openssl_version_text()}")
+        print(f"Linked Against: {backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii')}")
+        EOF
+      shell: bash
