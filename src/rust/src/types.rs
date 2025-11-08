@@ -47,6 +47,8 @@ pub static DEPRECATED_IN_42: LazyPyImport =
 pub static DEPRECATED_IN_43: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn43"]);
 
+pub static INT_TO_BYTES: LazyPyImport = LazyPyImport::new("cryptography.utils", &["int_to_bytes"]);
+
 pub static ENCODING: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["Encoding"],

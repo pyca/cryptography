@@ -14,6 +14,7 @@ use crate::backend::hmac::Hmac;
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use crate::types;
 
 // NO-COVERAGE-START
 #[pyo3::pyclass(
@@ -1709,14 +1710,6 @@ struct KbkdfHmac {
     used: bool,
 }
 
-fn int_to_bytes(value: usize, length: usize) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(length);
-    for i in (0..length).rev() {
-        bytes.push(((value >> (i * 8)) & 0xff) as u8);
-    }
-    bytes
-}
-
 #[allow(clippy::enum_variant_names)]
 #[derive(PartialEq)]
 enum CounterLocation {
@@ -1877,9 +1870,10 @@ impl KbkdfHmac {
         for i in 1..=rounds {
             let mut hmac = Hmac::new_bytes(py, key_material, algorithm_bound)?;
 
-            let counter = int_to_bytes(i, self.params.rlen);
+            let py_counter = types::INT_TO_BYTES.get(py)?.call1((i, self.params.rlen))?;
+            let counter = py_counter.extract::<&[u8]>()?;
             hmac.update_bytes(data_before_ctr)?;
-            hmac.update_bytes(&counter)?;
+            hmac.update_bytes(counter)?;
             hmac.update_bytes(data_after_ctr)?;
 
             let result = hmac.finalize_bytes()?;
@@ -1898,7 +1892,10 @@ impl KbkdfHmac {
         }
 
         // llen will exist if fixed data is not provided
-        let l_val = int_to_bytes(self.length * 8, self.params.llen.unwrap());
+        let py_l_val = types::INT_TO_BYTES
+            .get(py)?
+            .call1((self.length * 8, self.params.llen.unwrap()))?;
+        let l_val = py_l_val.extract::<&[u8]>()?;
 
         let mut result = Vec::new();
         let label: &[u8] = self.params.label.as_ref().map_or(b"", |l| l.as_bytes(py));
@@ -1906,7 +1903,7 @@ impl KbkdfHmac {
         result.push(0x00);
         let context: &[u8] = self.params.context.as_ref().map_or(b"", |l| l.as_bytes(py));
         result.extend_from_slice(context);
-        result.extend_from_slice(&l_val);
+        result.extend_from_slice(l_val);
 
         Ok(result)
     }
