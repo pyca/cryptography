@@ -2,8 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use std::sync::Arc;
-
 use cryptography_x509::certificate::SerialNumber;
 use cryptography_x509::common::{self, Asn1Read};
 use cryptography_x509::crl::{
@@ -46,7 +44,7 @@ pub(crate) fn load_der_x509_crl(
     }
 
     Ok(CertificateRevocationList {
-        owned: Arc::new(owned),
+        owned,
         revoked_certs: pyo3::sync::PyOnceLock::new(),
         cached_extensions: pyo3::sync::PyOnceLock::new(),
     })
@@ -83,7 +81,7 @@ self_cell::self_cell!(
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct CertificateRevocationList {
-    owned: Arc<OwnedCertificateRevocationList>,
+    owned: OwnedCertificateRevocationList,
 
     revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
@@ -96,7 +94,7 @@ impl CertificateRevocationList {
 
     fn revoked_cert(&self, py: pyo3::Python<'_>, idx: usize) -> RevokedCertificate {
         RevokedCertificate {
-            owned: self.revoked_certs.get(py).unwrap()[idx].clone(),
+            owned: self.revoked_certs.get(py).unwrap()[idx].clone_with_py(py),
             cached_extensions: pyo3::sync::PyOnceLock::new(),
         }
     }
@@ -121,18 +119,15 @@ impl CertificateRevocationList {
         self.len()
     }
 
-    fn __iter__(&self) -> CRLIterator {
+    fn __iter__(slf: pyo3::PyRef<'_, Self>) -> CRLIterator {
+        let py = slf.py();
         CRLIterator {
-            contents: OwnedCRLIteratorData::try_new(Arc::clone(&self.owned), |v| {
-                Ok::<_, ()>(
-                    v.borrow_dependent()
-                        .tbs_cert_list
-                        .revoked_certificates
-                        .as_ref()
-                        .map(|v| v.unwrap_read().clone()),
-                )
-            })
-            .unwrap(),
+            contents: map_crl_to_iterator_data(&slf.owned, py, |crl| {
+                crl.tbs_cert_list
+                    .revoked_certificates
+                    .as_ref()
+                    .map(|v| v.unwrap_read().clone())
+            }),
         }
     }
 
@@ -143,9 +138,24 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         self.revoked_certs.get_or_init(py, || {
             let mut revoked_certs = vec![];
-            let mut it = self.__iter__();
-            while let Some(c) = it.__next__() {
-                revoked_certs.push(c.owned);
+            let mut it_data = map_crl_to_iterator_data(&self.owned, py, |crl| {
+                crl.tbs_cert_list
+                    .revoked_certificates
+                    .as_ref()
+                    .map(|v| v.unwrap_read().clone())
+            });
+            loop {
+                let revoked = try_map_arc_data_mut_crl_iterator(py, &mut it_data, |v| match v {
+                    Some(v) => match v.next() {
+                        Some(revoked) => Ok(revoked),
+                        None => Err(()),
+                    },
+                    None => Err(()),
+                });
+                match revoked {
+                    Ok(owned) => revoked_certs.push(owned),
+                    Err(()) => break,
+                }
             }
             revoked_certs
         });
@@ -379,27 +389,22 @@ impl CertificateRevocationList {
         serial: pyo3::Bound<'_, pyo3::types::PyInt>,
     ) -> pyo3::PyResult<Option<RevokedCertificate>> {
         let serial_bytes = py_uint_to_big_endian_bytes(py, serial)?;
-        let owned = OwnedRevokedCertificate::try_new(Arc::clone(&self.owned), |v| {
-            let certs = match &v.borrow_dependent().tbs_cert_list.revoked_certificates {
-                Some(certs) => certs.unwrap_read().clone(),
-                None => return Err(()),
-            };
+
+        // Use try_map_crl_to_revoked_cert to soundly extract the certificate
+        let owned = try_map_crl_to_revoked_cert(&self.owned, py, |crl| {
+            let certs = crl.tbs_cert_list.revoked_certificates.as_ref()?;
 
             // TODO: linear scan. Make a hash or bisect!
-            for cert in certs {
-                if serial_bytes == cert.user_certificate.as_bytes() {
-                    return Ok(cert);
-                }
-            }
-            Err(())
+            certs
+                .unwrap_read()
+                .clone()
+                .find(|cert| serial_bytes == cert.user_certificate.as_bytes())
         });
-        match owned {
-            Ok(o) => Ok(Some(RevokedCertificate {
-                owned: o,
-                cached_extensions: pyo3::sync::PyOnceLock::new(),
-            })),
-            Err(()) => Ok(None),
-        }
+
+        Ok(owned.map(|o| RevokedCertificate {
+            owned: o,
+            cached_extensions: pyo3::sync::PyOnceLock::new(),
+        }))
     }
 
     fn is_signature_valid<'p>(
@@ -431,7 +436,7 @@ impl CertificateRevocationList {
 type RawCRLIterator<'a> = Option<asn1::SequenceOf<'a, crl::RevokedCertificate<'a>>>;
 self_cell::self_cell!(
     struct OwnedCRLIteratorData {
-        owner: Arc<OwnedCertificateRevocationList>,
+        owner: pyo3::Py<pyo3::types::PyBytes>,
 
         #[covariant]
         dependent: RawCRLIterator,
@@ -445,20 +450,94 @@ struct CRLIterator {
 
 // Open-coded implementation of the API discussed in
 // https://github.com/joshua-maros/ouroboros/issues/38
+fn map_crl_to_iterator_data<F>(
+    source: &OwnedCertificateRevocationList,
+    py: pyo3::Python<'_>,
+    f: F,
+) -> OwnedCRLIteratorData
+where
+    F: for<'a> FnOnce(
+        &'a RawCertificateRevocationList<'a>,
+    ) -> Option<asn1::SequenceOf<'a, crl::RevokedCertificate<'a>>>,
+{
+    OwnedCRLIteratorData::new(source.borrow_owner().clone_ref(py), |_| {
+        // SAFETY: This is safe because cloning the PyBytes Py<> ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces.
+        f(unsafe {
+            std::mem::transmute::<
+                &RawCertificateRevocationList<'_>,
+                &RawCertificateRevocationList<'_>,
+            >(source.borrow_dependent())
+        })
+    })
+}
+
+// Open-coded implementation of the API discussed in
+// https://github.com/joshua-maros/ouroboros/issues/38
+fn try_map_crl_to_revoked_cert<F>(
+    source: &OwnedCertificateRevocationList,
+    py: pyo3::Python<'_>,
+    f: F,
+) -> Option<OwnedRevokedCertificate>
+where
+    F: for<'a> FnOnce(&'a RawCertificateRevocationList<'a>) -> Option<RawRevokedCertificate<'a>>,
+{
+    OwnedRevokedCertificate::try_new(source.borrow_owner().clone_ref(py), |_| {
+        // SAFETY: This is safe because cloning the PyBytes Py<> ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces.
+        match f(unsafe {
+            std::mem::transmute::<
+                &RawCertificateRevocationList<'_>,
+                &RawCertificateRevocationList<'_>,
+            >(source.borrow_dependent())
+        }) {
+            Some(cert) => Ok(cert),
+            None => Err(()),
+        }
+    })
+    .ok()
+}
+
+// Open-coded implementation of the API discussed in
+// https://github.com/joshua-maros/ouroboros/issues/38
+fn map_revoked_cert<F>(
+    source: &OwnedRevokedCertificate,
+    py: pyo3::Python<'_>,
+    f: F,
+) -> OwnedRevokedCertificate
+where
+    F: for<'a> FnOnce(&'a crl::RevokedCertificate<'a>) -> crl::RevokedCertificate<'a>,
+{
+    OwnedRevokedCertificate::new(source.borrow_owner().clone_ref(py), |_| {
+        // SAFETY: This is safe because cloning the PyBytes Py<> ensures the data is
+        // alive, but Rust doesn't understand the lifetime relationship it
+        // produces.
+        f(unsafe {
+            std::mem::transmute::<&crl::RevokedCertificate<'_>, &crl::RevokedCertificate<'_>>(
+                source.borrow_dependent(),
+            )
+        })
+    })
+}
+
+// Open-coded implementation of the API discussed in
+// https://github.com/joshua-maros/ouroboros/issues/38
 fn try_map_arc_data_mut_crl_iterator<E>(
+    py: pyo3::Python<'_>,
     it: &mut OwnedCRLIteratorData,
     f: impl for<'this> FnOnce(
-        &'this OwnedCertificateRevocationList,
         &mut Option<asn1::SequenceOf<'this, crl::RevokedCertificate<'this>>>,
     ) -> Result<crl::RevokedCertificate<'this>, E>,
 ) -> Result<OwnedRevokedCertificate, E> {
-    OwnedRevokedCertificate::try_new(Arc::clone(it.borrow_owner()), |inner_it| {
+    OwnedRevokedCertificate::try_new(it.borrow_owner().clone_ref(py), |_pybytes| {
         it.with_dependent_mut(|_, value| {
-            // SAFETY: This is safe because `Arc::clone` ensures the data is
+            // SAFETY: This is safe because cloning the PyBytes Py<> ensures the data is
             // alive, but Rust doesn't understand the lifetime relationship it
             // produces. Open-coded implementation of the API discussed in
             // https://github.com/joshua-maros/ouroboros/issues/38
-            f(inner_it, unsafe {
+            f(unsafe {
                 std::mem::transmute::<
                     &mut Option<asn1::SequenceOf<'_, crl::RevokedCertificate<'_>>>,
                     &mut Option<asn1::SequenceOf<'_, crl::RevokedCertificate<'_>>>,
@@ -481,8 +560,8 @@ impl CRLIterator {
         slf
     }
 
-    fn __next__(&mut self) -> Option<RevokedCertificate> {
-        let revoked = try_map_arc_data_mut_crl_iterator(&mut self.contents, |_data, v| match v {
+    fn __next__(&mut self, py: pyo3::Python<'_>) -> Option<RevokedCertificate> {
+        let revoked = try_map_arc_data_mut_crl_iterator(py, &mut self.contents, |v| match v {
             Some(v) => match v.next() {
                 Some(revoked) => Ok(revoked),
                 None => Err(()),
@@ -499,21 +578,15 @@ impl CRLIterator {
 
 self_cell::self_cell!(
     struct OwnedRevokedCertificate {
-        owner: Arc<OwnedCertificateRevocationList>,
+        owner: pyo3::Py<pyo3::types::PyBytes>,
         #[covariant]
         dependent: RawRevokedCertificate,
     }
 );
 
-impl Clone for OwnedRevokedCertificate {
-    fn clone(&self) -> OwnedRevokedCertificate {
-        // SAFETY: This is safe because `Arc::clone` ensures the data is
-        // alive, but Rust doesn't understand the lifetime relationship it
-        // produces. Open-coded implementation of the API discussed in
-        // https://github.com/joshua-maros/ouroboros/issues/38
-        OwnedRevokedCertificate::new(Arc::clone(self.borrow_owner()), |_| unsafe {
-            std::mem::transmute(self.borrow_dependent().clone())
-        })
+impl OwnedRevokedCertificate {
+    fn clone_with_py(&self, py: pyo3::Python<'_>) -> OwnedRevokedCertificate {
+        map_revoked_cert(self, py, |cert| cert.clone())
     }
 }
 
