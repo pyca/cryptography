@@ -751,20 +751,14 @@ pub(crate) fn create_x509_crl(
     )?;
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
-    let mut revoked_certs = vec![];
-    for py_revoked_cert in builder
+
+    let py_revoked_certs: Vec<pyo3::Bound<'_, RevokedCertificate>> = builder
         .getattr(pyo3::intern!(py, "_revoked_certificates"))?
-        .try_iter()?
-    {
-        let py_revoked_cert = py_revoked_cert?;
-        let revoked_cert_ref: pyo3::PyRef<'_, RevokedCertificate> = py_revoked_cert
-            .extract()
-            .map_err(|e| CryptographyError::from(pyo3::PyErr::from(e)))?;
-        // Serialize and re-parse to get a certificate with lifetimes tied to ka_vec
-        let serialized = asn1::write_single(revoked_cert_ref.owned.borrow_dependent())?;
-        let cert_bytes = ka_vec.add(serialized);
-        revoked_certs.push(asn1::parse_single(cert_bytes)?);
-    }
+        .extract()?;
+    let revoked_certs: Vec<RawRevokedCertificate<'_>> = py_revoked_certs
+        .iter()
+        .map(|c| c.get().owned.borrow_dependent().clone())
+        .collect();
 
     let ka = cryptography_keepalive::KeepAlive::new();
 
