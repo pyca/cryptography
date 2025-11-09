@@ -1715,7 +1715,7 @@ struct KbkdfHmac {
 enum CounterLocation {
     BeforeFixed,
     AfterFixed,
-    MiddleFixed,
+    MiddleFixed(usize),
 }
 
 struct KbkdfParams {
@@ -1725,7 +1725,6 @@ struct KbkdfParams {
     label: Option<pyo3::Py<pyo3::types::PyBytes>>,
     context: Option<pyo3::Py<pyo3::types::PyBytes>>,
     fixed: Option<pyo3::Py<pyo3::types::PyBytes>>,
-    break_location: Option<usize>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1765,16 +1764,15 @@ fn validate_kbkdf_parameters(
         CounterLocation::AfterFixed
     } else {
         // There are only 3 options so this is MiddleFixed
-        CounterLocation::MiddleFixed
+        if break_location.is_none() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Please specify a break_location"),
+            ));
+        }
+        CounterLocation::MiddleFixed(break_location.unwrap())
     };
 
-    if rust_location == CounterLocation::MiddleFixed && break_location.is_none() {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Please specify a break_location"),
-        ));
-    }
-
-    if break_location.is_some() && rust_location != CounterLocation::MiddleFixed {
+    if break_location.is_some() && !matches!(rust_location, CounterLocation::MiddleFixed(_)) {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "break_location is ignored when location is not CounterLocation.MiddleFixed",
@@ -1815,7 +1813,6 @@ fn validate_kbkdf_parameters(
         label,
         context,
         fixed,
-        break_location,
     })
 }
 
@@ -1847,21 +1844,20 @@ impl KbkdfHmac {
 
         let fixed = self.generate_fixed_input(py)?;
 
-        let (data_before_ctr, data_after_ctr) = match &self.params.location {
+        let (data_before_ctr, data_after_ctr) = match self.params.location {
             CounterLocation::BeforeFixed => (&b""[..], &fixed[..]),
             CounterLocation::AfterFixed => (&fixed[..], &b""[..]),
-            CounterLocation::MiddleFixed => {
+            CounterLocation::MiddleFixed(break_location) => {
                 // We validate break_location is Some when counter_location is MiddleFixed
                 // in the validate function
-                let break_loc = self.params.break_location.unwrap();
-                if break_loc > fixed.len() {
+                if break_location > fixed.len() {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
                             "break_location offset > len(fixed)",
                         ),
                     ));
                 }
-                (&fixed[..break_loc], &fixed[break_loc..])
+                (&fixed[..break_location], &fixed[break_location..])
             }
         };
 
@@ -1892,9 +1888,14 @@ impl KbkdfHmac {
         }
 
         // llen will exist if fixed data is not provided
-        let py_bitlength = pyo3::types::PyInt::new(py, self.length)
-            .mul(8)?
-            .extract::<pyo3::Bound<'_, pyo3::types::PyInt>>()?;
+        let py_bitlength = pyo3::types::PyInt::new(
+            py,
+            self.length
+                .checked_mul(8)
+                .ok_or(pyo3::exceptions::PyOverflowError::new_err(
+                    "Length too large, would cause overflow in bit length calculation",
+                ))?,
+        );
         let l_val = py_uint_to_be_bytes_with_length(py, py_bitlength, self.params.llen.unwrap())?;
 
         let mut result = Vec::new();

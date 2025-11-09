@@ -71,7 +71,6 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyInt>,
 ) -> pyo3::PyResult<PyBackedBytes> {
-    reject_negative_integer(&v)?;
     // Round the length up so that we prefix an extra \x00. This ensures that
     // integers that'd have the high bit set in their first octet are not
     // encoded as negative in DER.
@@ -83,22 +82,16 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py_uint_to_be_bytes_with_length(py, v, length)
 }
 
-fn reject_negative_integer(v: &pyo3::Bound<'_, pyo3::types::PyInt>) -> pyo3::PyResult<()> {
-    if v.lt(0)? {
-        Err(pyo3::exceptions::PyValueError::new_err(
-            "Negative integers are not supported",
-        ))
-    } else {
-        Ok(())
-    }
-}
-
 pub(crate) fn py_uint_to_be_bytes_with_length<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyInt>,
     length: usize,
 ) -> pyo3::PyResult<PyBackedBytes> {
-    reject_negative_integer(&v)?;
+    if v.lt(0)? {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "Negative integers are not supported",
+        ));
+    }
     Ok(
         v.call_method1(pyo3::intern!(py, "to_bytes"), (length, "big"))?
             .extract()?,
