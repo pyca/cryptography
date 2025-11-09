@@ -1764,12 +1764,14 @@ fn validate_kbkdf_parameters(
         CounterLocation::AfterFixed
     } else {
         // There are only 3 options so this is MiddleFixed
-        if break_location.is_none() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Please specify a break_location"),
-            ));
+        match break_location {
+            Some(break_location) => CounterLocation::MiddleFixed(break_location),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err("Please specify a break_location"),
+                ))
+            }
         }
-        CounterLocation::MiddleFixed(break_location.unwrap())
     };
 
     if break_location.is_some() && !matches!(rust_location, CounterLocation::MiddleFixed(_)) {
@@ -1848,8 +1850,6 @@ impl KbkdfHmac {
             CounterLocation::BeforeFixed => (&b""[..], &fixed[..]),
             CounterLocation::AfterFixed => (&fixed[..], &b""[..]),
             CounterLocation::MiddleFixed(break_location) => {
-                // We validate break_location is Some when counter_location is MiddleFixed
-                // in the validate function
                 if break_location > fixed.len() {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
