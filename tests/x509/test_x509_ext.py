@@ -5747,6 +5747,37 @@ class TestIssuingDistributionPointExtension:
         assert hash(idp1) == hash(idp2)
         assert hash(idp1) != hash(idp3)
 
+    def test_hash_with_full_name(self):
+        idp1 = x509.IssuingDistributionPoint(
+            full_name=[x509.DNSName("example.com")],
+            relative_name=None,
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            only_some_reasons=None,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+        )
+        idp2 = x509.IssuingDistributionPoint(
+            full_name=[x509.DNSName("example.com")],
+            relative_name=None,
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            only_some_reasons=None,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+        )
+        idp3 = x509.IssuingDistributionPoint(
+            full_name=[x509.DNSName("other.com")],
+            relative_name=None,
+            only_contains_user_certs=False,
+            only_contains_ca_certs=False,
+            only_some_reasons=None,
+            indirect_crl=False,
+            only_contains_attribute_certs=False,
+        )
+        assert hash(idp1) == hash(idp2)
+        assert hash(idp1) != hash(idp3)
+
     @pytest.mark.parametrize(
         "idp",
         [

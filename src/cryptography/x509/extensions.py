@@ -2111,9 +2111,14 @@ class IssuingDistributionPoint(ExtensionType):
         )
 
     def __hash__(self) -> int:
+        if self.full_name is not None:
+            full_name: tuple[GeneralName, ...] | None = tuple(self.full_name)
+        else:
+            full_name = None
+
         return hash(
             (
-                self.full_name,
+                full_name,
                 self.relative_name,
                 self.only_contains_user_certs,
                 self.only_contains_ca_certs,
