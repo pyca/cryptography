@@ -32,6 +32,8 @@ Asymmetric ciphers
 * DH and ECDH and ECDH+KDF(17.4) test vectors from `NIST CAVP`_.
 * Ed25519 test vectors from the `Ed25519 website`_.
 * ``asymmetric/PEM_Serialization/rsa-bad-1025-q-is-2.pem`` from `badkeys`_.
+* ML-KEM test vectors from `internalProjection.json`_, part of the
+  `NIST ACVP repository`_.
 * OpenSSL PEM DSA serialization vectors from the `GnuTLS example keys`_.
 * PKCS #8 PEM serialization vectors from
 
@@ -69,8 +71,6 @@ Asymmetric ciphers
   258. This is an invalid key.
 * ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
   encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
-* ML-KEM test vectors from `internalProjection.json`_, part of the
-  `NIST ACVP repository`_.
 
 Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
