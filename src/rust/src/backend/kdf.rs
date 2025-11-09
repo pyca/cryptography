@@ -1982,6 +1982,7 @@ impl KbkdfHmac {
             return Err(exceptions::already_finalized_error());
         }
         self.used = true;
+        let hmac_base = Hmac::new_bytes(py, key_material.as_bytes(), self.algorithm.bind(py))?;
         kbkdf_derive_into_buffer(
             py,
             self.length,
@@ -1989,8 +1990,7 @@ impl KbkdfHmac {
             &self.params,
             buf.as_mut_bytes(),
             |data| {
-                let mut hmac =
-                    Hmac::new_bytes(py, key_material.as_bytes(), self.algorithm.bind(py))?;
+                let mut hmac = hmac_base.copy(py)?;
                 hmac.update_bytes(data)?;
                 hmac.finalize_bytes()
             },
@@ -2118,6 +2118,8 @@ impl KbkdfCmac {
             return Err(exceptions::already_finalized_error());
         }
         self.used = true;
+        let alg = self.algorithm.bind(py).call1((key_material.as_bytes(),))?;
+        let cmac_base = cmac::Cmac::new_with_algorithm(py, &alg)?;
         kbkdf_derive_into_buffer(
             py,
             self.length,
@@ -2125,8 +2127,7 @@ impl KbkdfCmac {
             &self.params,
             buf.as_mut_bytes(),
             |data| {
-                let alg = self.algorithm.bind(py).call1((key_material.as_bytes(),))?;
-                let mut cmac = cmac::Cmac::new_with_algorithm(py, &alg)?;
+                let mut cmac = cmac_base.copy()?;
                 cmac.update_bytes(data)?;
                 cmac.finalize_bytes()
             },
