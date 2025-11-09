@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import abc
 
+from cryptography.utils import Buffer
+
 
 class KeyDerivationFunction(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -13,6 +15,13 @@ class KeyDerivationFunction(metaclass=abc.ABCMeta):
         """
         Deterministically generates and returns a new key based on the existing
         key material.
+        """
+
+    @abc.abstractmethod
+    def derive_into(self, key_material: bytes, buffer: Buffer) -> None:
+        """
+        Deterministically generates a new key based on the existing key
+        material and stores it in the provided buffer.
         """
 
     @abc.abstractmethod
