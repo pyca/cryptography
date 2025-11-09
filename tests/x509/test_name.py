@@ -217,3 +217,12 @@ class TestRFC4514:
             Name.from_rfc4514_string(name_string).rfc4514_string()
             == name_string
         )
+
+    def test_single_space_escaping(self):
+        # Test that a single space is escaped correctly (not double-escaped)
+        name = Name([NameAttribute(NameOID.ORGANIZATION_NAME, " ")])
+        s = name.rfc4514_string()
+        # Should be "O=\ " not "O=\\ "
+        assert s == r"O=\ "
+        # Verify round-trip parsing works
+        assert Name.from_rfc4514_string(s) == name
