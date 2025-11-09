@@ -88,7 +88,7 @@ def _escape_dn_value(val: str | bytes) -> str:
     val = val.replace(">", "\\>")
     val = val.replace("\0", "\\00")
 
-    if val[0] in ("#", " "):
+    if val[0] == "#" or (val[0] == " " and len(val) > 1):
         val = "\\" + val
     if val[-1] == " ":
         val = val[:-1] + "\\ "
