@@ -56,6 +56,7 @@ Changelog
   :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`,
   :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`,
   :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFHMAC`,
+  :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`,
   :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`, and
   :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF` to allow
   deriving keys directly into pre-allocated buffers.

@@ -118,7 +118,7 @@ impl Cmac {
         Ok(())
     }
 
-    fn copy(&self) -> CryptographyResult<Cmac> {
+    pub(crate) fn copy(&self) -> CryptographyResult<Cmac> {
         Ok(Cmac {
             ctx: Some(self.get_ctx()?.copy()?),
         })

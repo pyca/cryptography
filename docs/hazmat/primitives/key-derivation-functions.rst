@@ -1256,12 +1256,42 @@ KBKDF
                             :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
                             constructor.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
-                                                          :meth:`derive` or
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`, or
                                                           :meth:`verify` is
                                                           called more than
                                                           once.
 
         Derives a new key from the input key material.
+
+    .. method:: derive_into(key_material, buffer)
+
+        .. versionadded:: 47.0.0
+
+        :param key_material: The input key material.
+        :type key_material: :term:`bytes-like`
+        :param buffer: A writable buffer to write the derived key into. The
+                       buffer must be equal to the length supplied in the
+                       constructor.
+        :return int: the number of bytes written to the buffer.
+        :raises ValueError: This exception is raised if the buffer length does
+                           not match the specified ``length``, or if
+                           ``key_material`` is not a valid key for ``algorithm``
+                           passed to
+                           :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
+                           constructor.
+        :raises TypeError: This exception is raised if ``key_material`` or
+                           ``buffer`` is not ``bytes``.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`, or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
+
+        Derives a new key from the input key material and writes it into
+        the provided buffer. This is useful when you want to avoid allocating
+        new memory for the derived key.
 
     .. method:: verify(key_material, expected_key)
 
@@ -1273,7 +1303,12 @@ KBKDF
         :raises cryptography.exceptions.InvalidKey: This is raised when the
                                                     derived key does not match
                                                     the expected key.
-        :raises: Exceptions raised by :meth:`derive`.
+        :raises cryptography.exceptions.AlreadyFinalized: This is raised when
+                                                          :meth:`derive`,
+                                                          :meth:`derive_into`, or
+                                                          :meth:`verify` is
+                                                          called more than
+                                                          once.
 
         This checks whether deriving a new key from the supplied
         ``key_material`` generates the same key as the ``expected_key``, and

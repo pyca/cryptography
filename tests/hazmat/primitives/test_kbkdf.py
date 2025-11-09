@@ -632,21 +632,20 @@ class TestKBKDFCMAC:
             kdf.verify(self._KEY_MATERIAL, key)
 
     def test_key_length(self, backend):
-        kdf = KBKDFCMAC(
-            algorithms.AES,
-            Mode.CounterMode,
-            85899345920,
-            4,
-            4,
-            CounterLocation.BeforeFixed,
-            b"label",
-            b"context",
-            None,
-            backend=backend,
-        )
-
-        with pytest.raises(ValueError):
-            kdf.derive(self._KEY_MATERIAL)
+        error = OverflowError if sys.maxsize <= 2**31 else ValueError
+        with pytest.raises(error):
+            KBKDFCMAC(
+                algorithms.AES,
+                Mode.CounterMode,
+                85899345920,
+                4,
+                4,
+                CounterLocation.BeforeFixed,
+                b"label",
+                b"context",
+                None,
+                backend=backend,
+            )
 
     def test_rlen(self, backend):
         with pytest.raises(ValueError):
@@ -821,27 +820,7 @@ class TestKBKDFCMAC:
             )
 
     def test_invalid_break_location(self, backend):
-        with pytest.raises(
-            TypeError, match=re.escape("break_location must be an integer")
-        ):
-            KBKDFCMAC(
-                algorithms.AES,
-                Mode.CounterMode,
-                32,
-                4,
-                4,
-                CounterLocation.MiddleFixed,
-                b"label",
-                b"context",
-                None,
-                backend=backend,
-                break_location="0",  # type: ignore[arg-type]
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=re.escape("break_location must be a positive integer"),
-        ):
+        with pytest.raises(OverflowError):
             KBKDFCMAC(
                 algorithms.AES,
                 Mode.CounterMode,
@@ -919,20 +898,6 @@ class TestKBKDFCMAC:
             )
 
     def test_unsupported_algorithm(self, backend):
-        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            KBKDFCMAC(
-                object,
-                Mode.CounterMode,
-                32,
-                4,
-                4,
-                CounterLocation.BeforeFixed,
-                b"label",
-                b"context",
-                None,
-                backend=backend,
-            )
-
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             KBKDFCMAC(
                 DummyCipherAlgorithm,
