@@ -9,6 +9,7 @@ use base64::engine::Engine;
 use cryptography_crypto::constant_time;
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
+use crate::asn1::py_uint_to_be_bytes_with_length;
 use crate::backend::hashes;
 use crate::backend::hmac::Hmac;
 use crate::buf::{CffiBuf, CffiMutBuf};
@@ -1696,11 +1697,318 @@ impl ConcatKdfHmac {
     }
 }
 
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    module = "cryptography.hazmat.primitives.kdf.kbkdf",
+    name = "KBKDFHMAC"
+)]
+// NO-COVERAGE-END
+struct KbkdfHmac {
+    algorithm: pyo3::Py<pyo3::PyAny>,
+    length: usize,
+    params: KbkdfParams,
+    used: bool,
+}
+
+#[allow(clippy::enum_variant_names)]
+#[derive(PartialEq)]
+enum CounterLocation {
+    BeforeFixed,
+    AfterFixed,
+    MiddleFixed(usize),
+}
+
+struct KbkdfParams {
+    rlen: usize,
+    llen: Option<usize>,
+    location: CounterLocation,
+    label: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    context: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    fixed: Option<pyo3::Py<pyo3::types::PyBytes>>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn validate_kbkdf_parameters(
+    py: pyo3::Python<'_>,
+    mode: pyo3::Py<pyo3::PyAny>,
+    rlen: usize,
+    llen: Option<usize>,
+    location: pyo3::Py<pyo3::PyAny>,
+    label: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    context: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    fixed: Option<pyo3::Py<pyo3::types::PyBytes>>,
+    break_location: Option<usize>,
+) -> CryptographyResult<KbkdfParams> {
+    let mode_bound = mode.bind(py);
+    let mode_type = crate::types::KBKDF_MODE.get(py)?;
+    if !mode_bound.is_instance(&mode_type)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err("mode must be of type Mode"),
+        ));
+    }
+
+    let location_bound = location.bind(py);
+    let counter_location = crate::types::KBKDF_COUNTER_LOCATION.get(py)?;
+    if !location_bound.is_instance(&counter_location)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err("location must be of type CounterLocation"),
+        ));
+    }
+
+    let counter_location_before_fixed =
+        counter_location.getattr(pyo3::intern!(py, "BeforeFixed"))?;
+    let counter_location_after_fixed = counter_location.getattr(pyo3::intern!(py, "AfterFixed"))?;
+    let rust_location = if location_bound.eq(&counter_location_before_fixed)? {
+        CounterLocation::BeforeFixed
+    } else if location_bound.eq(&counter_location_after_fixed)? {
+        CounterLocation::AfterFixed
+    } else {
+        // There are only 3 options so this is MiddleFixed
+        match break_location {
+            Some(break_location) => CounterLocation::MiddleFixed(break_location),
+            None => {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err("Please specify a break_location"),
+                ))
+            }
+        }
+    };
+
+    if break_location.is_some() && !matches!(rust_location, CounterLocation::MiddleFixed(_)) {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "break_location is ignored when location is not CounterLocation.MiddleFixed",
+            ),
+        ));
+    }
+
+    if (label.is_some() || context.is_some()) && fixed.is_some() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "When supplying fixed data, label and context are ignored.",
+            ),
+        ));
+    }
+
+    if !(1..=4).contains(&rlen) {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("rlen must be between 1 and 4"),
+        ));
+    }
+
+    if fixed.is_none() && llen.is_none() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Please specify an llen"),
+        ));
+    }
+
+    if llen == Some(0) {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("llen must be non-zero"),
+        ));
+    }
+
+    Ok(KbkdfParams {
+        rlen,
+        llen,
+        location: rust_location,
+        label,
+        context,
+        fixed,
+    })
+}
+
+impl KbkdfHmac {
+    fn derive_into_buffer(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        if self.used {
+            return Err(exceptions::already_finalized_error());
+        }
+        self.used = true;
+
+        if output.len() != self.length {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    self.length
+                )),
+            ));
+        }
+
+        let algorithm_bound = self.algorithm.bind(py);
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+
+        let fixed = self.generate_fixed_input(py)?;
+
+        let (data_before_ctr, data_after_ctr) = match self.params.location {
+            CounterLocation::BeforeFixed => (&b""[..], &fixed[..]),
+            CounterLocation::AfterFixed => (&fixed[..], &b""[..]),
+            CounterLocation::MiddleFixed(break_location) => {
+                if break_location > fixed.len() {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "break_location offset > len(fixed)",
+                        ),
+                    ));
+                }
+                (&fixed[..break_location], &fixed[break_location..])
+            }
+        };
+
+        let mut pos = 0usize;
+        let rounds = self.length.div_ceil(digest_size);
+        for i in 1..=rounds {
+            let mut hmac = Hmac::new_bytes(py, key_material, algorithm_bound)?;
+
+            let py_i = pyo3::types::PyInt::new(py, i);
+            let counter = py_uint_to_be_bytes_with_length(py, py_i, self.params.rlen)?;
+            hmac.update_bytes(data_before_ctr)?;
+            hmac.update_bytes(counter.as_ref())?;
+            hmac.update_bytes(data_after_ctr)?;
+
+            let result = hmac.finalize_bytes()?;
+
+            let copy_len = (self.length - pos).min(digest_size);
+            output[pos..pos + copy_len].copy_from_slice(&result[..copy_len]);
+            pos += copy_len;
+        }
+
+        Ok(self.length)
+    }
+
+    fn generate_fixed_input(&self, py: pyo3::Python<'_>) -> CryptographyResult<Vec<u8>> {
+        if let Some(ref fixed_data) = self.params.fixed {
+            return Ok(fixed_data.as_bytes(py).to_vec());
+        }
+
+        // llen will exist if fixed data is not provided
+        let py_bitlength = pyo3::types::PyInt::new(
+            py,
+            self.length
+                .checked_mul(8)
+                .ok_or(pyo3::exceptions::PyOverflowError::new_err(
+                    "Length too large, would cause overflow in bit length calculation",
+                ))?,
+        );
+        let l_val = py_uint_to_be_bytes_with_length(py, py_bitlength, self.params.llen.unwrap())?;
+
+        let mut result = Vec::new();
+        let label: &[u8] = self.params.label.as_ref().map_or(b"", |l| l.as_bytes(py));
+        result.extend_from_slice(label);
+        result.push(0x00);
+        let context: &[u8] = self.params.context.as_ref().map_or(b"", |l| l.as_bytes(py));
+        result.extend_from_slice(context);
+        result.extend_from_slice(l_val.as_ref());
+
+        Ok(result)
+    }
+}
+
+#[pyo3::pymethods]
+impl KbkdfHmac {
+    #[new]
+    #[pyo3(signature = (algorithm, mode, length, rlen, llen, location, label, context, fixed, backend=None, *, break_location=None))]
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        py: pyo3::Python<'_>,
+        algorithm: pyo3::Py<pyo3::PyAny>,
+        mode: pyo3::Py<pyo3::PyAny>,
+        length: usize,
+        rlen: usize,
+        llen: Option<usize>,
+        location: pyo3::Py<pyo3::PyAny>,
+        label: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        context: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        fixed: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
+        break_location: Option<usize>,
+    ) -> CryptographyResult<Self> {
+        _ = backend;
+
+        // Validate common KBKDF parameters
+        let params = validate_kbkdf_parameters(
+            py,
+            mode,
+            rlen,
+            llen,
+            location,
+            label,
+            context,
+            fixed,
+            break_location,
+        )?;
+
+        let algorithm_bound = algorithm.bind(py);
+        let _md = hashes::message_digest_from_algorithm(py, algorithm_bound)?;
+        let digest_size = algorithm_bound
+            .getattr(pyo3::intern!(py, "digest_size"))?
+            .extract::<usize>()?;
+        let rounds = length.div_ceil(digest_size);
+        if rounds as u64 > (1u64 << (params.rlen * 8)) - 1 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("There are too many iterations."),
+            ));
+        }
+
+        Ok(KbkdfHmac {
+            algorithm,
+            length,
+            params,
+            used: false,
+        })
+    }
+
+    fn derive<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        key_material: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        Ok(pyo3::types::PyBytes::new_with(py, self.length, |output| {
+            self.derive_into_buffer(py, key_material.as_bytes(), output)?;
+            Ok(())
+        })?)
+    }
+
+    fn derive_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+    }
+
+    fn verify(
+        &mut self,
+        py: pyo3::Python<'_>,
+        key_material: CffiBuf<'_>,
+        expected_key: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let actual = self.derive(py, key_material)?;
+        let actual_bytes = actual.as_bytes();
+        let expected_bytes = expected_key.as_bytes();
+
+        if !constant_time::bytes_eq(actual_bytes, expected_bytes) {
+            return Err(CryptographyError::from(exceptions::InvalidKey::new_err(
+                "Keys do not match.",
+            )));
+        }
+
+        Ok(())
+    }
+}
+
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod kdf {
     #[pymodule_export]
     use super::{
-        Argon2d, Argon2i, Argon2id, ConcatKdfHash, ConcatKdfHmac, Hkdf, HkdfExpand, Pbkdf2Hmac,
-        Scrypt, X963Kdf,
+        Argon2d, Argon2i, Argon2id, ConcatKdfHash, ConcatKdfHmac, Hkdf, HkdfExpand, KbkdfHmac,
+        Pbkdf2Hmac, Scrypt, X963Kdf,
     };
 }

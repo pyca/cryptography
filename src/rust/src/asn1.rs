@@ -71,22 +71,31 @@ pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyInt>,
 ) -> pyo3::PyResult<PyBackedBytes> {
+    // Round the length up so that we prefix an extra \x00. This ensures that
+    // integers that'd have the high bit set in their first octet are not
+    // encoded as negative in DER.
+    let length = v
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?
+        / 8
+        + 1;
+    py_uint_to_be_bytes_with_length(py, v, length)
+}
+
+pub(crate) fn py_uint_to_be_bytes_with_length<'p>(
+    py: pyo3::Python<'p>,
+    v: pyo3::Bound<'p, pyo3::types::PyInt>,
+    length: usize,
+) -> pyo3::PyResult<PyBackedBytes> {
     if v.lt(0)? {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "Negative integers are not supported",
         ));
     }
-
-    // Round the length up so that we prefix an extra \x00. This ensures that
-    // integers that'd have the high bit set in their first octet are not
-    // encoded as negative in DER.
-    let n = v
-        .call_method0(pyo3::intern!(py, "bit_length"))?
-        .extract::<usize>()?
-        / 8
-        + 1;
-    Ok(v.call_method1(pyo3::intern!(py, "to_bytes"), (n, "big"))?
-        .extract()?)
+    Ok(
+        v.call_method1(pyo3::intern!(py, "to_bytes"), (length, "big"))?
+            .extract()?,
+    )
 }
 
 pub(crate) fn encode_der_data<'p>(

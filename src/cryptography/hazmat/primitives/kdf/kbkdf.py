@@ -14,13 +14,8 @@ from cryptography.exceptions import (
     UnsupportedAlgorithm,
     _Reasons,
 )
-from cryptography.hazmat.primitives import (
-    ciphers,
-    cmac,
-    constant_time,
-    hashes,
-    hmac,
-)
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.primitives import ciphers, cmac, constant_time
 from cryptography.hazmat.primitives.kdf import KeyDerivationFunction
 
 
@@ -178,62 +173,8 @@ class _KBKDFDeriver:
         return b"".join([self._label, b"\x00", self._context, l_val])
 
 
-class KBKDFHMAC(KeyDerivationFunction):
-    def __init__(
-        self,
-        algorithm: hashes.HashAlgorithm,
-        mode: Mode,
-        length: int,
-        rlen: int,
-        llen: int | None,
-        location: CounterLocation,
-        label: bytes | None,
-        context: bytes | None,
-        fixed: bytes | None,
-        backend: typing.Any = None,
-        *,
-        break_location: int | None = None,
-    ):
-        if not isinstance(algorithm, hashes.HashAlgorithm):
-            raise UnsupportedAlgorithm(
-                "Algorithm supplied is not a supported hash algorithm.",
-                _Reasons.UNSUPPORTED_HASH,
-            )
-
-        from cryptography.hazmat.backends.openssl.backend import (
-            backend as ossl,
-        )
-
-        if not ossl.hmac_supported(algorithm):
-            raise UnsupportedAlgorithm(
-                "Algorithm supplied is not a supported hmac algorithm.",
-                _Reasons.UNSUPPORTED_HASH,
-            )
-
-        self._algorithm = algorithm
-
-        self._deriver = _KBKDFDeriver(
-            self._prf,
-            mode,
-            length,
-            rlen,
-            llen,
-            location,
-            break_location,
-            label,
-            context,
-            fixed,
-        )
-
-    def _prf(self, key_material: bytes) -> hmac.HMAC:
-        return hmac.HMAC(key_material, self._algorithm)
-
-    def derive(self, key_material: utils.Buffer) -> bytes:
-        return self._deriver.derive(key_material, self._algorithm.digest_size)
-
-    def verify(self, key_material: bytes, expected_key: bytes) -> None:
-        if not constant_time.bytes_eq(self.derive(key_material), expected_key):
-            raise InvalidKey
+KBKDFHMAC = rust_openssl.kdf.KBKDFHMAC
+KeyDerivationFunction.register(KBKDFHMAC)
 
 
 class KBKDFCMAC(KeyDerivationFunction):
