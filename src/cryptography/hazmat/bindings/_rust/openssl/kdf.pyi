@@ -183,3 +183,23 @@ class KBKDFHMAC:
     def derive(self, key_material: Buffer) -> bytes: ...
     def derive_into(self, key_material: Buffer, buffer: Buffer) -> int: ...
     def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+
+class KBKDFCMAC:
+    def __init__(
+        self,
+        algorithm: typing.Any,
+        mode: Mode,
+        length: int,
+        rlen: int,
+        llen: int | None,
+        location: CounterLocation,
+        label: bytes | None,
+        context: bytes | None,
+        fixed: bytes | None,
+        backend: typing.Any = None,
+        *,
+        break_location: int | None = None,
+    ) -> None: ...
+    def derive(self, key_material: Buffer) -> bytes: ...
+    def derive_into(self, key_material: Buffer, buffer: Buffer) -> int: ...
+    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
