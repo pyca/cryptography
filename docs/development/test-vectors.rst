@@ -69,7 +69,8 @@ Asymmetric ciphers
   258. This is an invalid key.
 * ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
   encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
-
+* ML-KEM test vectors from `internalProjection.json`_, part of the
+  `NIST ACVP repository`_.
 
 Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1265,3 +1266,5 @@ header format (substituting the correct information):
 .. _`badkeys`: https://github.com/vcsjones/badkeys/tree/50f1cc5f8d13bf3a2046d689f6452decb15d9c3c
 .. _`evpkdf_argon2.txt`: https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/01690a7ff36c4d18c48b301cdf375c954105a1d9/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
+.. _`internalProjection.json`: https://github.com/usnistgov/ACVP-Server/blob/d98cad66639bf9d0822129c4bcae7a169fcf9ca6/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json
+.. _`NIST ACVP repository`: https://github.com/usnistgov/ACVP-Server
