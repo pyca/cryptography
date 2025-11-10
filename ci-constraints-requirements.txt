@@ -180,7 +180,7 @@ pytest==9.0.0 ; python_full_version >= '3.10'
     #   pytest-xdist
 pytest-benchmark==4.0.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-pytest-benchmark==5.2.2 ; python_full_version >= '3.9'
+pytest-benchmark==5.2.3 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-cov==5.0.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
