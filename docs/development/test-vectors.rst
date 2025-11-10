@@ -1265,5 +1265,5 @@ header format (substituting the correct information):
 .. _`OpenSSL's OCB vectors`: https://github.com/openssl/openssl/commit/2f19ab18a29cf9c82cdd68bc8c7e5be5061b19be
 .. _`badkeys`: https://github.com/vcsjones/badkeys/tree/50f1cc5f8d13bf3a2046d689f6452decb15d9c3c
 .. _`evpkdf_argon2.txt`: https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
-.. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/01690a7ff36c4d18c48b301cdf375c954105a1d9/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
+.. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/1dbe8a6e1c56d010c271a80eafb2c7fd1b92fbda/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
 .. _`BoringSSL ML-KEM test vectors`: https://boringssl.googlesource.com/boringssl/+/945f4a5d8fd6abf0c7471242151c727e02e889a2/crypto/mlkem/
