@@ -86,21 +86,21 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy' \
     --hash=sha256:fc7de24befaeae77ba923797c7c87834c73648a05a4bde34b3b7e5588973a453 \
     --hash=sha256:fe562eb1a64e67dd297ccc4f5addea2501664954f2692b69a76449ec7913ecbf
     # via -r build-requirements.in
-maturin==1.10.0 \
-    --hash=sha256:1e156dc474403ae3f147e80913232aa1a827ce10027d6fd9b291b548d253afcc \
-    --hash=sha256:233b97c007e376fdbb521ca55fb0810578b70eae54fecd33bb6194adc84d1be9 \
-    --hash=sha256:31f9c28d981b3bf394dd034e50052eb746131f3b07007b7b0a06791ebe0053f0 \
-    --hash=sha256:41b27d9ae1b74628c175d27d2f02b469c2363e532dd983ca02ad0bcb640cfaf2 \
-    --hash=sha256:59d87c2372b728cf0b6302bff88e48a13d8a313745ba6b9a35f954232dd8feb8 \
-    --hash=sha256:613d6511c1ef9ade326454806dac3cf8c4fda2c9219974e750667c85c3fb4a1d \
-    --hash=sha256:6f68166b669514b33129ed0290a3fbca278416abfbb2b6bacba7399c9c28c5df \
-    --hash=sha256:97db41182d19d6d215ebc8e16cea556e4ca6277b1fdace28897673b0f2a6d2f5 \
-    --hash=sha256:9c395c8e8b870ce864c001dc6d6392b08d77db8032cee276fc47eea2885e2b78 \
-    --hash=sha256:bd79ba67220eeae04ff1ab9994e8e8b10df36d2c9213fbac4e22e096354241d9 \
-    --hash=sha256:bf042dd64fd6b7acc97b448fff58ef1e097855ebd16d434574770056090f89dd \
-    --hash=sha256:c2ba2cef6140ee0d1c2414c500e483d97cb048df151ef86b5f4e4a3abc80504c \
-    --hash=sha256:d4b6bee36ac85b1bb6ee9828475513a5e51402632d268c105f7f00f8d9a37253 \
-    --hash=sha256:ebbe272f924567fc37516a2573d99d4ef4017ce1c74ba6bce692b8c9737445e2
+maturin==1.10.1 \
+    --hash=sha256:52c55dc8ee2b9a7a34358af40c24113c179bdbd1be19c14d96f773850f41c216 \
+    --hash=sha256:5c2557b9c6b615d651f15c04c7baf9cfea9babeecea4cb136f054fc5dd1dab6b \
+    --hash=sha256:69543e8bad4221c3c7ae7d7f31f275757bff8a66936368e013fa0256f8d6b512 \
+    --hash=sha256:6a68223dcaa1873fc5825983fecfabbfef7671c08d6f8a280dfa351feee48ebe \
+    --hash=sha256:6c6de5da3bcc31b7f16b8f6715afa25507ac7e21c463872903963396aa991dc4 \
+    --hash=sha256:9475a6ac15339fc0be5d3f1cdc6e1a50711ea75bd41f49ba50b52b1a46191dde \
+    --hash=sha256:9e62c009c09529e13967e7efe3c78a9be67b6c0b5730485e925e2fce60719462 \
+    --hash=sha256:b285602df88a6ed8aa4d9e5ac893ecf32530515723af5acfd5b32feeb2a8a774 \
+    --hash=sha256:b37b20f273ec0f95db36eff2b9cdf15c2228dfedae8caf88b745e52944795f47 \
+    --hash=sha256:bb84e1a556490470572fbfba4aab3cb281d6d9ea766a346c96aa9cfd47ba1fc6 \
+    --hash=sha256:cc0540148dd896aba2af232ebaf3f9adc1637d54d5dcd501ba3daea8f9e3c84b \
+    --hash=sha256:dfc0e509ce0f1f77fe1316a503a35991ef27f2ea6ffa3527d12fc0d238700c94 \
+    --hash=sha256:e69bdbade26e0b0a642384595bb392a728e0d23c3ec59a6f09b8f9bc6376e7d1 \
+    --hash=sha256:fdbe5b43e1aefa8925ab19f727ddb3732c2c53fd6ac6b1c1de63983c37527101
     # via -r build-requirements.in
 pycparser==2.23 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy' \
     --hash=sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2 \
