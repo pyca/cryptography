@@ -458,8 +458,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Nov 12, 2025.
-            REF: 7093e50826ebc24b551a26d4e0882ee504817679
+            # Latest commit on the mitmproxy main branch, as of Nov 14, 2025.
+            REF: 26074879818ed547d3ca44b02880fb78ee62bbb3
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
@@ -468,8 +468,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Nov 11, 2025.
-            REF: 55f1d18faae05c6359fd0431ef90626b8105e661
+            # Latest commit on the sigstore-python main branch, as of Nov 14, 2025.
+            REF: ddeaedaf13a4a58e6180a4bdf78b091fe76373a4
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
