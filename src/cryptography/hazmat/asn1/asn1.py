@@ -58,15 +58,32 @@ def _is_union(field_type: type) -> bool:
     return get_type_origin(field_type) in union_types
 
 
-def _extract_annotation(metadata: tuple) -> declarative_asn1.Annotation:
+def _extract_annotation(
+    metadata: tuple, field_name: str
+) -> declarative_asn1.Annotation:
     default = None
     encoding = None
     for raw_annotation in metadata:
         if isinstance(raw_annotation, Default):
+            if default is not None:
+                raise TypeError(
+                    f"multiple DEFAULT annotations found in field "
+                    f"'{field_name}'"
+                )
             default = raw_annotation.value
         elif isinstance(raw_annotation, Explicit):
+            if encoding is not None:
+                raise TypeError(
+                    f"multiple IMPLICIT/EXPLICIT annotations found in field "
+                    f"'{field_name}'"
+                )
             encoding = declarative_asn1.Encoding.Explicit(raw_annotation.tag)
         elif isinstance(raw_annotation, Implicit):
+            if encoding is not None:
+                raise TypeError(
+                    f"multiple IMPLICIT/EXPLICIT annotations found in field "
+                    f"'{field_name}'"
+                )
             encoding = declarative_asn1.Encoding.Implicit(raw_annotation.tag)
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
@@ -80,7 +97,7 @@ def _normalize_field_type(
     # Strip the `Annotated[...]` off, and populate the annotation
     # from it if it exists.
     if get_type_origin(field_type) is Annotated:
-        annotation = _extract_annotation(field_type.__metadata__)
+        annotation = _extract_annotation(field_type.__metadata__, field_name)
         field_type, _ = get_type_args(field_type)
     else:
         annotation = declarative_asn1.Annotation()

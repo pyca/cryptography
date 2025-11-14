@@ -194,6 +194,40 @@ class TestSequenceAPI:
             class Example:
                 invalid: Annotated[int, "some annotation"]
 
+    def test_fail_multiple_default_annotations(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="multiple DEFAULT annotations found in field 'invalid'",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[
+                    int, asn1.Default(value=8), asn1.Default(value=9)
+                ]
+
+    def test_fail_multiple_implicit_annotations(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="multiple IMPLICIT/EXPLICIT annotations found in field "
+            "'invalid'",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, asn1.Implicit(0), asn1.Implicit(1)]
+
+    def test_fail_multiple_explicit_annotations(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="multiple IMPLICIT/EXPLICIT annotations found in field "
+            "'invalid'",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, asn1.Explicit(0), asn1.Explicit(1)]
+
     def test_fail_optional_with_default_field(self) -> None:
         with pytest.raises(
             TypeError,
