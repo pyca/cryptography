@@ -71,20 +71,13 @@ def _extract_annotation(
                     f"'{field_name}'"
                 )
             default = raw_annotation.value
-        elif isinstance(raw_annotation, Explicit):
+        elif isinstance(raw_annotation, declarative_asn1.Encoding):
             if encoding is not None:
                 raise TypeError(
                     f"multiple IMPLICIT/EXPLICIT annotations found in field "
                     f"'{field_name}'"
                 )
-            encoding = declarative_asn1.Encoding.Explicit(raw_annotation.tag)
-        elif isinstance(raw_annotation, Implicit):
-            if encoding is not None:
-                raise TypeError(
-                    f"multiple IMPLICIT/EXPLICIT annotations found in field "
-                    f"'{field_name}'"
-                )
-            encoding = declarative_asn1.Encoding.Implicit(raw_annotation.tag)
+            encoding = raw_annotation
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
 
@@ -216,15 +209,8 @@ class Default(typing.Generic[U]):
     value: U
 
 
-@dataclasses.dataclass(frozen=True)
-class Explicit:
-    tag: int
-
-
-@dataclasses.dataclass(frozen=True)
-class Implicit:
-    tag: int
-
+Explicit = declarative_asn1.Encoding.Explicit
+Implicit = declarative_asn1.Encoding.Implicit
 
 PrintableString = declarative_asn1.PrintableString
 UtcTime = declarative_asn1.UtcTime
