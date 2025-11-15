@@ -27,6 +27,7 @@ pub enum KeyParsingError {
     UnsupportedEncryptionAlgorithm(asn1::ObjectIdentifier),
     EncryptedKeyWithoutPassword,
     IncorrectPassword,
+    TruncatedEcPrivateKey,
     // PEM encryption errors
     PemMissingDekInfo,
     PemInvalidDekInfo,

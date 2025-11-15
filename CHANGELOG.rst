@@ -22,6 +22,11 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
   and :meth:`~cryptography.x509.Certificate.public_key` when called on
   certificates with unsupported public key algorithms.
+* **BACKWARDS INCOMPATIBLE:** When parsing elliptic curve private keys, we now
+  reject keys that incorrectly encode a private key of the wrong length because
+  such keys are impossible to process in a constant-time manner. We do not
+  believe keys with this problem are in wide use, however we may revert this
+  change based on the feedback we receive.
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.

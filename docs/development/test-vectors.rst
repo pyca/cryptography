@@ -295,8 +295,10 @@ Custom asymmetric vectors
   encrypted with a 20 byte salt with the password ``password``.
 * ``asymmetric/PKCS8/wrong-pem-delimiter-rsa.pem`` - A PKCS8 encoded RSA key
   with the wrong PEM delimiter.
-* ``asymmetric/EC/high-bit-set.pem`` - A PKCS#1 encoded EC key the private key
-  value has its high bit set.
+* ``asymmetric/EC/high-bit-set.pem`` - A PKCS#1 encoded EC key where the
+  private key value has its high bit set.
+* ``asymmetric/EC/truncated-private-key.der`` - A PKCS#1 encoded EC key where
+  the private key value is not encoded to the order's length.
 
 Key exchange
 ~~~~~~~~~~~~
