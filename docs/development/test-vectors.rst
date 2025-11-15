@@ -386,7 +386,7 @@ X.509
 * ``department-of-state-root.pem`` - The intermediary CA for the Department of
   State, issued by the United States Federal Government's Common Policy CA.
   Notably has a ``critical`` policy constraints extensions.
-* ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GOST
+* ``e-trust.ru.der`` - A certificate from a `Russian CA`_ signed using the GHOST
   cipher and containing numerous unusual encodings such as NUMERICSTRING in
   the subject DN.
 * ``alternate-rsa-sha1-oid.der`` - A certificate that uses an alternate
