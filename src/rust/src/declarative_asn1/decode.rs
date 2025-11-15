@@ -155,8 +155,9 @@ pub(crate) fn decode_annotated_type<'a>(
             let inner_tag = type_to_tag(cls.get().inner.get(), encoding);
             match parser.peek_tag() {
                 Some(t) if t == inner_tag => {
-                    // Since for optional types the annotations are enforced to be associated with the Option
-                    // (instead of the inner type), when decoding the inner type we add the annotations of the Option
+                    // For optional types, annotations will always be associated to the `Optional` type
+                    // i.e: `Annotated[Optional[T], annotation]`, as opposed to the inner `T` type.
+                    // Therefore, when decoding the inner type `T` we must pass the annotation of the `Optional`
                     let inner_ann_type = AnnotatedType {
                         inner: cls.get().inner.clone_ref(py),
                         annotation: ann_type.annotation.clone_ref(py),
