@@ -68,6 +68,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
   allow encrypting directly into a pre-allocated buffer.
+* Builtin hash classes and instances of classes in
+  :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be compared with `==`
 
 .. _v46-0-3:
 
