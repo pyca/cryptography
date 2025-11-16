@@ -103,6 +103,11 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
                     "Incorrect password, could not decrypt key",
                 ))
             }
+            cryptography_key_parsing::KeyParsingError::TruncatedEcPrivateKey => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "EC private key is not encoded properly: private key value is too short. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your private key was created.",
+                ))
+            }
             cryptography_key_parsing::KeyParsingError::PemMissingDekInfo => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
                     "Encrypted PEM doesn't have a DEK-Info header.",
