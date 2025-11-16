@@ -13,4 +13,4 @@ typing-extensions>=4.13.2; python_version < '3.11'
 # WARN: changing the requirements here DOES NOT update the dependencies used
 # for building at the github workflow -- it uses build-requirements.txt
 # To update build-requirements.txt, update this file and then run
-# uv pip compile --universal --python-version 3.9 --allow-unsafe --generate-hashes build-requirements.in -o build-requirements.txt
+# uv pip compile --universal --python-version 3.9 --allow-unsafe --generate-hashes --refresh build-requirements.in -o build-requirements.txt
