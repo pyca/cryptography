@@ -70,20 +70,31 @@ pub struct AnnotatedTypeObject<'a> {
 pub struct Annotation {
     #[pyo3(get)]
     pub(crate) default: Option<pyo3::Py<pyo3::types::PyAny>>,
+    #[pyo3(get)]
+    pub(crate) encoding: Option<pyo3::Py<Encoding>>,
 }
 
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
-    #[pyo3(signature = (default = None))]
-    fn new(default: Option<pyo3::Py<pyo3::types::PyAny>>) -> Self {
-        Self { default }
+    #[pyo3(signature = (default = None, encoding = None))]
+    fn new(
+        default: Option<pyo3::Py<pyo3::types::PyAny>>,
+        encoding: Option<pyo3::Py<Encoding>>,
+    ) -> Self {
+        Self { default, encoding }
     }
 
     #[pyo3(signature = ())]
     fn is_empty(&self) -> bool {
-        self.default.is_none()
+        self.default.is_none() && self.encoding.is_none()
     }
+}
+
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub enum Encoding {
+    Implicit(u32),
+    Explicit(u32),
 }
 
 #[derive(pyo3::FromPyObject)]
@@ -247,7 +258,12 @@ fn non_root_type_to_annotated<'p>(
     let inner = non_root_python_to_rust(py, class)?.unbind();
     Ok(AnnotatedType {
         inner,
-        annotation: Annotation { default: None }.into_pyobject(py)?.unbind(),
+        annotation: Annotation {
+            default: None,
+            encoding: None,
+        }
+        .into_pyobject(py)?
+        .unbind(),
     })
 }
 
@@ -266,10 +282,10 @@ pub(crate) fn python_class_to_annotated<'p>(
     }
 }
 
-pub(crate) fn type_to_tag(t: &Type) -> asn1::Tag {
-    match t {
+pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> asn1::Tag {
+    let inner_tag = match t {
         Type::Sequence(_, _) => asn1::Sequence::TAG,
-        Type::Option(t) => type_to_tag(t.get().inner.get()),
+        Type::Option(t) => type_to_tag(t.get().inner.get(), encoding),
         Type::PyBool() => bool::TAG,
         Type::PyInt() => asn1::BigInt::TAG,
         Type::PyBytes() => <&[u8] as SimpleAsn1Readable>::TAG,
@@ -277,6 +293,14 @@ pub(crate) fn type_to_tag(t: &Type) -> asn1::Tag {
         Type::PrintableString() => asn1::PrintableString::TAG,
         Type::UtcTime() => asn1::UtcTime::TAG,
         Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
+    };
+
+    match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(n) => asn1::implicit_tag(*n, inner_tag),
+            Encoding::Explicit(n) => asn1::explicit_tag(*n),
+        },
+        None => inner_tag,
     }
 }
 
@@ -298,10 +322,13 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
-                    annotation: Annotation { default: None }
-                        .into_pyobject(py)
-                        .unwrap()
-                        .unbind(),
+                    annotation: Annotation {
+                        default: None,
+                        encoding: None,
+                    }
+                    .into_pyobject(py)
+                    .unwrap()
+                    .unbind(),
                 },
             )
             .unwrap();
@@ -309,15 +336,18 @@ mod tests {
                 py,
                 AnnotatedType {
                     inner: pyo3::Py::new(py, Type::Option(ann_type)).unwrap(),
-                    annotation: Annotation { default: None }
-                        .into_pyobject(py)
-                        .unwrap()
-                        .unbind(),
+                    annotation: Annotation {
+                        default: None,
+                        encoding: None,
+                    }
+                    .into_pyobject(py)
+                    .unwrap()
+                    .unbind(),
                 },
             )
             .unwrap();
-            let expected_tag = type_to_tag(&Type::Option(optional_type));
-            assert_eq!(expected_tag, type_to_tag(&Type::PyInt()))
+            let expected_tag = type_to_tag(&Type::Option(optional_type), &None);
+            assert_eq!(expected_tag, type_to_tag(&Type::PyInt(), &None))
         })
     }
 }

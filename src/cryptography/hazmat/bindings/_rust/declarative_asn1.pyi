@@ -21,11 +21,19 @@ class Type:
 
 class Annotation:
     default: typing.Any | None
+    encoding: Encoding | None
     def __new__(
         cls,
         default: typing.Any | None = None,
+        encoding: Encoding | None = None,
     ) -> Annotation: ...
     def is_empty(self) -> bool: ...
+
+# Encoding is a Rust enum with tuple variants. For now, we express the type
+# annotations like this:
+class Encoding:
+    Implicit: typing.ClassVar[type]
+    Explicit: typing.ClassVar[type]
 
 class AnnotatedType:
     inner: Type
