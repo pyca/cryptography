@@ -784,9 +784,10 @@ Key interfaces
         ``algorithm`` parameters must match the ones used when the signature
         was created for the recovery to succeed.
 
-        The ``algorithm`` parameter can also be set to ``None`` to recover all
+        The ``algorithm`` parameter can also be set to ``NoDigestInfo`` to recover all
         the data present in the signature, without regard to its format or the
-        hash algorithm used for its creation.
+        hash algorithm used for its creation. (Note that setting ``algorithm`` to ``None`
+        is deprecated and have the same semantic as setting ``NoDigestInfo``.)
 
         For
         :class:`~cryptography.hazmat.primitives.asymmetric.padding.PKCS1v15`
