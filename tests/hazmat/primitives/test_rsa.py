@@ -1582,7 +1582,7 @@ class TestRSAPKCS1Verification:
                 "SigGen15_186-3.rsp",
                 "SigVer15_186-3.rsp",
             ],
-            hashes.SHA1(),
+            hashes.SHA256(),
             lambda params, hash_alg: padding.PKCS1v15(),
         )
     )
