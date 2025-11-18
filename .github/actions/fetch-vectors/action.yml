@@ -5,7 +5,7 @@ runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       with:
         repository: "C2SP/wycheproof"
         path: "wycheproof"
@@ -13,7 +13,7 @@ runs:
         ref: "d043da76bf95b3dbe83bed6ba5fe93f5203ad6fb" # wycheproof-ref
         persist-credentials: false
 
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       with:
         repository: "C2SP/x509-limbo"
         path: "x509-limbo"
