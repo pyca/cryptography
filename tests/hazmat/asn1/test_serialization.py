@@ -277,6 +277,42 @@ class TestSequence:
             ]
         )
 
+    def test_ok_sequenceof_simple_type(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: typing.List[int]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=[1, 2, 3, 4]),
+                    b"\x30\x0e\x30\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+                )
+            ]
+        )
+
+    def test_ok_sequenceof_user_defined_type(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class MyType:
+            a: int
+            b: bool
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: typing.List[MyType]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=[MyType(a=1, b=True), MyType(a=2, b=False)]),
+                    b"\x30\x12\x30\x10\x30\x06\x02\x01\x01\x01\x01\xff\x30\x06\x02\x01\x02\x01\x01\x00",
+                )
+            ]
+        )
+
     def test_ok_sequence_with_optionals(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
@@ -350,11 +386,14 @@ class TestSequence:
             d: typing.Union[asn1.PrintableString, None]
             e: typing.Union[asn1.UtcTime, None]
             f: typing.Union[asn1.GeneralizedTime, None]
+            g: typing.Union[typing.List[int], None]
 
         assert_roundtrips(
             [
                 (
-                    Example(a=None, b=None, c=None, d=None, e=None, f=None),
+                    Example(
+                        a=None, b=None, c=None, d=None, e=None, f=None, g=None
+                    ),
                     b"\x30\x00",
                 )
             ]

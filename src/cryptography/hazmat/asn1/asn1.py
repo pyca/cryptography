@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import builtins
 import dataclasses
 import sys
 import types
@@ -127,6 +128,11 @@ def _normalize_field_type(
             raise TypeError(
                 "union types other than `X | None` are currently not supported"
             )
+    elif get_type_origin(field_type) is builtins.list:
+        inner_type = _normalize_field_type(
+            get_type_args(field_type)[0], field_name
+        )
+        rust_field_type = declarative_asn1.Type.SequenceOf(inner_type)
     else:
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 

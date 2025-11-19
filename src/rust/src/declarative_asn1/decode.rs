@@ -4,6 +4,7 @@
 
 use asn1::Parser;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyListMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
@@ -149,6 +150,19 @@ pub(crate) fn decode_annotated_type<'a>(
                 }
                 let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
                 Ok(val)
+            })?
+        }
+        Type::SequenceOf(cls) => {
+            let seqof_parse_result = read_value::<asn1::Sequence<'_>>(parser, encoding)?;
+
+            seqof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+                let inner_ann_type = cls.get();
+                let list = pyo3::types::PyList::empty(py);
+                while !d.is_empty() {
+                    let val = decode_annotated_type(py, d, inner_ann_type)?;
+                    list.append(val)?;
+                }
+                Ok(list.into_any())
             })?
         }
         Type::Option(cls) => {
