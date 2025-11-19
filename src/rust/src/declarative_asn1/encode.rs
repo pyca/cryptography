@@ -6,14 +6,21 @@ use asn1::{SimpleAsn1Writable, Writer};
 use pyo3::types::PyAnyMethods;
 
 use crate::declarative_asn1::types::{
-    AnnotatedType, AnnotatedTypeObject, GeneralizedTime, PrintableString, Type, UtcTime,
+    AnnotatedType, AnnotatedTypeObject, Encoding, GeneralizedTime, PrintableString, Type, UtcTime,
 };
 
 fn write_value<T: SimpleAsn1Writable>(
     writer: &mut Writer<'_>,
     value: &T,
+    encoding: &Option<pyo3::Py<Encoding>>,
 ) -> Result<(), asn1::WriteError> {
-    writer.write_element(value)
+    match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(tag) => writer.write_implicit_element(value, *tag),
+            Encoding::Explicit(tag) => writer.write_explicit_element(value, *tag),
+        },
+        None => writer.write_element(value),
+    }
 }
 
 impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
@@ -37,6 +44,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
         }
 
+        let encoding = &annotated_type.annotation.get().encoding;
         let inner = annotated_type.inner.get();
         match &inner {
             Type::Sequence(_cls, fields) => write_value(
@@ -60,14 +68,20 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     }
                     Ok(())
                 }),
+                encoding,
             ),
             Type::Option(cls) => {
                 if !value.is_none() {
-                    let object = AnnotatedTypeObject {
-                        annotated_type: cls.get(),
+                    let inner_object = AnnotatedTypeObject {
+                        annotated_type: &AnnotatedType {
+                            inner: cls.get().inner.clone_ref(py),
+                            // Since for optional types the annotations are enforced to be associated with the Option
+                            // (instead of the inner type), when encoding the inner type we add the annotations of the Option
+                            annotation: annotated_type.annotation.clone_ref(py),
+                        },
                         value,
                     };
-                    object.write(writer)
+                    inner_object.write(writer)
                 } else {
                     // Missing OPTIONAL values are omitted from DER encoding
                     Ok(())
@@ -77,26 +91,26 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: bool = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val)
+                write_value(writer, &val, encoding)
             }
             Type::PyInt() => {
                 let val: i64 = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val)
+                write_value(writer, &val, encoding)
             }
             Type::PyBytes() => {
                 let val: &[u8] = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val)
+                write_value(writer, &val, encoding)
             }
             Type::PyStr() => {
                 let val: pyo3::pybacked::PyBackedStr = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
-                write_value(writer, &asn1_string)
+                write_value(writer, &asn1_string, encoding)
             }
             Type::PrintableString() => {
                 let val: &pyo3::Bound<'_, PrintableString> = value
@@ -110,7 +124,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let printable_string: asn1::PrintableString<'_> =
                     asn1::PrintableString::new(&inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
-                write_value(writer, &printable_string)
+                write_value(writer, &printable_string, encoding)
             }
             Type::UtcTime() => {
                 let val: &pyo3::Bound<'_, UtcTime> = value
@@ -121,7 +135,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let utc_time =
                     asn1::UtcTime::new(datetime).map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &utc_time)
+                write_value(writer, &utc_time, encoding)
             }
             Type::GeneralizedTime() => {
                 let val: &pyo3::Bound<'_, GeneralizedTime> = value
@@ -134,7 +148,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let nanoseconds = microseconds.map(|m| m * 1000);
                 let generalized_time = asn1::GeneralizedTime::new(datetime, nanoseconds)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &generalized_time)
+                write_value(writer, &generalized_time, encoding)
             }
         }
     }
