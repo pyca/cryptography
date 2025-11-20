@@ -166,7 +166,7 @@ pub(crate) fn decode_annotated_type<'a>(
                     let list_len = list.len();
                     let min = size.get().min;
                     let max = size.get().max.unwrap_or(usize::MAX);
-                    if list_len < min || list_len > max {
+                    if !(min..=max).contains(&list_len) {
                         return Err(CryptographyError::Py(
                             pyo3::exceptions::PyValueError::new_err(format!(
                                 "SEQUENCE OF has size {0}, expected size in [{1}, {2}]",

@@ -85,7 +85,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 if let Some(size) = &annotated_type.annotation.get().size {
                     let min = size.get().min;
                     let max = size.get().max.unwrap_or(usize::MAX);
-                    if values.len() < min || values.len() > max {
+                    if !(min..=max).contains(&values.len()) {
                         return Err(asn1::WriteError::AllocationError);
                     }
                 }
