@@ -453,8 +453,8 @@ jobs:
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Oct 15, 2025.
-            REF: 294d462643de938ffb80ca648d63fc068240318d
+            # Latest commit on the certbot-josepy main branch, as of Nov 20, 2025.
+            REF: 4b747476703fe4fff1aaccd76ebe570698bbf4f0
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
