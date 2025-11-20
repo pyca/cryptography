@@ -19,6 +19,8 @@ pub enum Type {
     /// The first element is the Python class that represents the sequence,
     /// the second element is a dict of the (already converted) fields of the class.
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
+    /// SEQUENCEOF (`list[`T`]`)
+    SequenceOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
 
@@ -285,6 +287,7 @@ pub(crate) fn python_class_to_annotated<'p>(
 pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> asn1::Tag {
     let inner_tag = match t {
         Type::Sequence(_, _) => asn1::Sequence::TAG,
+        Type::SequenceOf(_) => asn1::Sequence::TAG,
         Type::Option(t) => type_to_tag(t.get().inner.get(), encoding),
         Type::PyBool() => bool::TAG,
         Type::PyInt() => asn1::BigInt::TAG,

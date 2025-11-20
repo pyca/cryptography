@@ -4,6 +4,7 @@
 
 use asn1::{SimpleAsn1Writable, Writer};
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyListMethods;
 
 use crate::declarative_asn1::types::{
     AnnotatedType, AnnotatedTypeObject, Encoding, GeneralizedTime, PrintableString, Type, UtcTime,
@@ -70,6 +71,18 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 }),
                 encoding,
             ),
+            Type::SequenceOf(cls) => {
+                let values: Vec<AnnotatedTypeObject<'_>> = value
+                    .cast::<pyo3::types::PyList>()
+                    .map_err(|_| asn1::WriteError::AllocationError)?
+                    .iter()
+                    .map(|e| AnnotatedTypeObject {
+                        annotated_type: cls.get(),
+                        value: e,
+                    })
+                    .collect();
+                write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
+            }
             Type::Option(cls) => {
                 if !value.is_none() {
                     let inner_object = AnnotatedTypeObject {

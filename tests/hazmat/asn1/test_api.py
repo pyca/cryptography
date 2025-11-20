@@ -274,6 +274,9 @@ class TestSequenceAPI:
         opt = declarative_asn1.Type.Option(ann_type)
         assert opt._0 == ann_type
 
+        seq_of = declarative_asn1.Type.SequenceOf(ann_type)
+        assert seq_of._0 is ann_type
+
     def test_fields_of_variant_encoding(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1
 
