@@ -64,6 +64,7 @@ def _extract_annotation(
 ) -> declarative_asn1.Annotation:
     default = None
     encoding = None
+    size = None
     for raw_annotation in metadata:
         if isinstance(raw_annotation, Default):
             if default is not None:
@@ -79,10 +80,18 @@ def _extract_annotation(
                     f"'{field_name}'"
                 )
             encoding = raw_annotation
+        elif isinstance(raw_annotation, declarative_asn1.Size):
+            if size is not None:
+                raise TypeError(
+                    f"multiple SIZE annotations found in field '{field_name}'"
+                )
+            size = raw_annotation
         else:
             raise TypeError(f"unsupported annotation: {raw_annotation}")
 
-    return declarative_asn1.Annotation(default=default, encoding=encoding)
+    return declarative_asn1.Annotation(
+        default=default, encoding=encoding, size=size
+    )
 
 
 def _normalize_field_type(
@@ -217,6 +226,7 @@ class Default(typing.Generic[U]):
 
 Explicit = declarative_asn1.Encoding.Explicit
 Implicit = declarative_asn1.Encoding.Implicit
+Size = declarative_asn1.Size
 
 PrintableString = declarative_asn1.PrintableString
 UtcTime = declarative_asn1.UtcTime

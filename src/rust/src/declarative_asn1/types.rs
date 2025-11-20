@@ -74,22 +74,29 @@ pub struct Annotation {
     pub(crate) default: Option<pyo3::Py<pyo3::types::PyAny>>,
     #[pyo3(get)]
     pub(crate) encoding: Option<pyo3::Py<Encoding>>,
+    #[pyo3(get)]
+    pub(crate) size: Option<pyo3::Py<Size>>,
 }
 
 #[pyo3::pymethods]
 impl Annotation {
     #[new]
-    #[pyo3(signature = (default = None, encoding = None))]
+    #[pyo3(signature = (default = None, encoding = None, size = None))]
     fn new(
         default: Option<pyo3::Py<pyo3::types::PyAny>>,
         encoding: Option<pyo3::Py<Encoding>>,
+        size: Option<pyo3::Py<Size>>,
     ) -> Self {
-        Self { default, encoding }
+        Self {
+            default,
+            encoding,
+            size,
+        }
     }
 
     #[pyo3(signature = ())]
     fn is_empty(&self) -> bool {
-        self.default.is_none() && self.encoding.is_none()
+        self.default.is_none() && self.encoding.is_none() && self.size.is_none()
     }
 }
 
@@ -97,6 +104,28 @@ impl Annotation {
 pub enum Encoding {
     Implicit(u32),
     Explicit(u32),
+}
+
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct Size {
+    pub min: usize,
+    pub max: Option<usize>,
+}
+
+#[pyo3::pymethods]
+impl Size {
+    #[new]
+    fn new(min: usize, max: Option<usize>) -> Self {
+        Size { min, max }
+    }
+
+    #[staticmethod]
+    fn exact(n: usize) -> Self {
+        Size {
+            min: n,
+            max: Some(n),
+        }
+    }
 }
 
 #[derive(pyo3::FromPyObject)]
@@ -263,6 +292,7 @@ fn non_root_type_to_annotated<'p>(
         annotation: Annotation {
             default: None,
             encoding: None,
+            size: None,
         }
         .into_pyobject(py)?
         .unbind(),
@@ -328,6 +358,7 @@ mod tests {
                     annotation: Annotation {
                         default: None,
                         encoding: None,
+                        size: None,
                     }
                     .into_pyobject(py)
                     .unwrap()
@@ -342,6 +373,7 @@ mod tests {
                     annotation: Annotation {
                         default: None,
                         encoding: None,
+                        size: None,
                     }
                     .into_pyobject(py)
                     .unwrap()
