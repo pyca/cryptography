@@ -19,7 +19,7 @@ pub enum Type {
     /// The first element is the Python class that represents the sequence,
     /// the second element is a dict of the (already converted) fields of the class.
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
-    /// SEQUENCEOF (`list[`T`]`)
+    /// SEQUENCE OF (`list[`T`]`)
     SequenceOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
@@ -40,6 +40,8 @@ pub enum Type {
     UtcTime(),
     /// GeneralizedTime (`datetime`)
     GeneralizedTime(),
+    /// BIT STRING (`bytes`)
+    BitString(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -249,6 +251,54 @@ impl GeneralizedTime {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct BitString {
+    pub(crate) data: pyo3::Py<pyo3::types::PyBytes>,
+    pub(crate) padding_bits: u8,
+}
+
+#[pyo3::pymethods]
+impl BitString {
+    #[new]
+    #[pyo3(signature = (data, padding_bits,))]
+    fn new(
+        py: pyo3::Python<'_>,
+        data: pyo3::Py<pyo3::types::PyBytes>,
+        padding_bits: u8,
+    ) -> pyo3::PyResult<Self> {
+        if asn1::BitString::new(data.as_bytes(py), padding_bits).is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid BIT STRING: data: {data}, padding_bits: {padding_bits}"
+            )));
+        }
+
+        Ok(BitString { data, padding_bits })
+    }
+
+    #[pyo3(signature = ())]
+    pub fn as_bytes(&self, py: pyo3::Python<'_>) -> pyo3::Py<pyo3::types::PyBytes> {
+        self.data.clone_ref(py)
+    }
+
+    #[pyo3(signature = ())]
+    pub fn padding_bits(&self) -> u8 {
+        self.padding_bits
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        Ok((**self.data.bind(py)).eq(other.data.bind(py))?
+            && self.padding_bits == other.padding_bits)
+    }
+
+    pub fn __repr__(&self) -> pyo3::PyResult<String> {
+        Ok(format!(
+            "BitString(data: {}, padding_bits: {})",
+            self.data, self.padding_bits,
+        ))
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -270,6 +320,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::UtcTime().into_pyobject(py)
     } else if class.is(GeneralizedTime::type_object(py)) {
         Type::GeneralizedTime().into_pyobject(py)
+    } else if class.is(BitString::type_object(py)) {
+        Type::BitString().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -326,6 +378,7 @@ pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> as
         Type::PrintableString() => asn1::PrintableString::TAG,
         Type::UtcTime() => asn1::UtcTime::TAG,
         Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
+        Type::BitString() => asn1::BitString::TAG,
     };
 
     match encoding {

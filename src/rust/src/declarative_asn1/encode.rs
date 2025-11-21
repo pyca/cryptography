@@ -7,7 +7,8 @@ use pyo3::types::PyAnyMethods;
 use pyo3::types::PyListMethods;
 
 use crate::declarative_asn1::types::{
-    AnnotatedType, AnnotatedTypeObject, Encoding, GeneralizedTime, PrintableString, Type, UtcTime,
+    AnnotatedType, AnnotatedTypeObject, BitString, Encoding, GeneralizedTime, PrintableString,
+    Type, UtcTime,
 };
 
 fn write_value<T: SimpleAsn1Writable>(
@@ -170,6 +171,16 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let generalized_time = asn1::GeneralizedTime::new(datetime, nanoseconds)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &generalized_time, encoding)
+            }
+            Type::BitString() => {
+                let val: &pyo3::Bound<'_, BitString> = value
+                    .cast()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+
+                let bitstring: asn1::BitString<'_> =
+                    asn1::BitString::new(val.get().data.as_bytes(py), val.get().padding_bits)
+                        .ok_or(asn1::WriteError::AllocationError)?;
+                write_value(writer, &bitstring, encoding)
             }
         }
     }
