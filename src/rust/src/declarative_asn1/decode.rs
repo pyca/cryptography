@@ -162,6 +162,19 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
+                if let Some(size) = &ann_type.annotation.get().size {
+                    let list_len = list.len();
+                    let min = size.get().min;
+                    let max = size.get().max.unwrap_or(usize::MAX);
+                    if !(min..=max).contains(&list_len) {
+                        return Err(CryptographyError::Py(
+                            pyo3::exceptions::PyValueError::new_err(format!(
+                                "SEQUENCE OF has size {0}, expected size in [{1}, {2}]",
+                                list_len, min, max
+                            )),
+                        ));
+                    }
+                }
                 Ok(list.into_any())
             })?
         }

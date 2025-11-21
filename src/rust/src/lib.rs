@@ -152,7 +152,7 @@ mod _rust {
         #[pymodule_export]
         use crate::declarative_asn1::types::{
             non_root_python_to_rust, AnnotatedType, Annotation, Encoding, GeneralizedTime,
-            PrintableString, Type, UtcTime,
+            PrintableString, Size, Type, UtcTime,
         };
     }
 

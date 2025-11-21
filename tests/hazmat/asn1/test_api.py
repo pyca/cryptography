@@ -194,6 +194,17 @@ class TestSequenceAPI:
             class Example:
                 invalid: Annotated[int, "some annotation"]
 
+    def test_fail_unsupported_size_annotation(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="field invalid has a SIZE annotation, but SIZE "
+            "annotations are only supported for SEQUENCE OF fields",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[int, asn1.Size(min=0, max=3)]
+
     def test_fail_multiple_default_annotations(self) -> None:
         with pytest.raises(
             TypeError,
@@ -227,6 +238,18 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: Annotated[int, asn1.Explicit(0), asn1.Explicit(1)]
+
+    def test_fail_multiple_size_annotations(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="multiple SIZE annotations found in field 'invalid'",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[
+                    int, asn1.Size(min=1, max=2), asn1.Size(min=1, max=2)
+                ]
 
     def test_fail_optional_with_default_field(self) -> None:
         with pytest.raises(

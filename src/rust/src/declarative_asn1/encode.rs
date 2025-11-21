@@ -81,6 +81,14 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                         value: e,
                     })
                     .collect();
+
+                if let Some(size) = &annotated_type.annotation.get().size {
+                    let min = size.get().min;
+                    let max = size.get().max.unwrap_or(usize::MAX);
+                    if !(min..=max).contains(&values.len()) {
+                        return Err(asn1::WriteError::AllocationError);
+                    }
+                }
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
             Type::Option(cls) => {

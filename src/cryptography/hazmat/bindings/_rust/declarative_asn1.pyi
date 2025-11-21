@@ -23,10 +23,12 @@ class Type:
 class Annotation:
     default: typing.Any | None
     encoding: Encoding | None
+    size: Size | None
     def __new__(
         cls,
         default: typing.Any | None = None,
         encoding: Encoding | None = None,
+        size: Size | None = None,
     ) -> Annotation: ...
     def is_empty(self) -> bool: ...
 
@@ -35,6 +37,14 @@ class Annotation:
 class Encoding:
     Implicit: typing.ClassVar[type]
     Explicit: typing.ClassVar[type]
+
+class Size:
+    min: int
+    max: int | None
+
+    def __new__(cls, min: int, max: int | None) -> Size: ...
+    @staticmethod
+    def exact(n: int) -> Size: ...
 
 class AnnotatedType:
     inner: Type
