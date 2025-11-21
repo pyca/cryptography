@@ -448,8 +448,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Nov 05, 2025.
-            REF: ada2c547cfa5a7d7850042d1179229b45065074e
+            # Latest commit on the certbot main branch, as of Nov 21, 2025.
+            REF: b02deb339ab738889bac20970da769376b23d983
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -468,8 +468,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Nov 19, 2025.
-            REF: 01676ebf99b9d6d16e05896d0923888b9e127529
+            # Latest commit on the sigstore-python main branch, as of Nov 21, 2025.
+            REF: 85f54ecee53f8edd82384f92cae2cd4117ecf02f
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
