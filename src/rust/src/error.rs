@@ -4,8 +4,6 @@
 
 use std::fmt;
 
-#[cfg(Py_3_11)]
-use pyo3::types::PyAnyMethods;
 use pyo3::types::PyListMethods;
 
 use crate::exceptions;
@@ -240,12 +238,10 @@ impl CryptographyError {
 
     pub(crate) fn add_note(self, py: pyo3::Python<'_>, note: &str) -> Self {
         let pyerr: pyo3::PyErr = self.into();
-        // If we fail to add a note, silently ignore it.
         #[cfg(Py_3_11)]
         {
-            _ = pyerr
-                .value(py)
-                .call_method1(pyo3::intern!(py, "add_note"), (note,));
+            // If we fail to add a note, silently ignore it.
+            _ = pyerr.add_note(py, note);
         }
         #[cfg(not(Py_3_11))]
         {
