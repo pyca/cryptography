@@ -226,7 +226,7 @@ class NameAttribute(typing.Generic[NameAttributeValueType]):
 
 
 class RelativeDistinguishedName:
-    def __init__(self, attributes: Iterable[NameAttribute]):
+    def __init__(self, attributes: Iterable[NameAttribute[str | bytes]]):
         attributes = list(attributes)
         if not attributes:
             raise ValueError("a relative distinguished name cannot be empty")
@@ -269,7 +269,7 @@ class RelativeDistinguishedName:
     def __hash__(self) -> int:
         return hash(self._attribute_set)
 
-    def __iter__(self) -> Iterator[NameAttribute]:
+    def __iter__(self) -> Iterator[NameAttribute[str | bytes]]:
         return iter(self._attributes)
 
     def __len__(self) -> int:
@@ -281,7 +281,9 @@ class RelativeDistinguishedName:
 
 class Name:
     @typing.overload
-    def __init__(self, attributes: Iterable[NameAttribute]) -> None: ...
+    def __init__(
+        self, attributes: Iterable[NameAttribute[str | bytes]]
+    ) -> None: ...
 
     @typing.overload
     def __init__(
@@ -290,7 +292,9 @@ class Name:
 
     def __init__(
         self,
-        attributes: Iterable[NameAttribute | RelativeDistinguishedName],
+        attributes: Iterable[
+            NameAttribute[str | bytes] | RelativeDistinguishedName
+        ],
     ) -> None:
         attributes = list(attributes)
         if all(isinstance(x, NameAttribute) for x in attributes):
@@ -358,7 +362,7 @@ class Name:
         # for you, consider optimizing!
         return hash(tuple(self._attributes))
 
-    def __iter__(self) -> Iterator[NameAttribute]:
+    def __iter__(self) -> Iterator[NameAttribute[str | bytes]]:
         for rdn in self._attributes:
             yield from rdn
 
@@ -454,7 +458,7 @@ class _RFC4514NameParser:
 
         return RelativeDistinguishedName(nas)
 
-    def _parse_na(self) -> NameAttribute:
+    def _parse_na(self) -> NameAttribute[str]:
         try:
             oid_value = self._read_re(self._OID_RE)
         except ValueError:
