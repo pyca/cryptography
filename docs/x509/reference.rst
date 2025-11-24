@@ -248,7 +248,7 @@ Loading Certificate Revocation Lists
         >>> from cryptography import x509
         >>> from cryptography.hazmat.primitives import hashes
         >>> crl = x509.load_pem_x509_crl(pem_crl_data)
-        >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+        >>> crl.signature_hash_algorithm == hashes.SHA256()
         True
 
 .. function:: load_der_x509_crl(data)
@@ -287,7 +287,7 @@ Loading Certificate Signing Requests
         >>> from cryptography import x509
         >>> from cryptography.hazmat.primitives import hashes
         >>> csr = x509.load_pem_x509_csr(pem_req_data)
-        >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
+        >>> csr.signature_hash_algorithm == hashes.SHA256()
         True
 
 .. function:: load_der_x509_csr(data)
@@ -477,7 +477,7 @@ X.509 Certificate Object
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import hashes
-            >>> isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+            >>> cert.signature_hash_algorithm == hashes.SHA256()
             True
 
     .. attribute:: signature_algorithm_oid
@@ -716,7 +716,7 @@ X.509 CRL (Certificate Revocation List) Object
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import hashes
-            >>> isinstance(crl.signature_hash_algorithm, hashes.SHA256)
+            >>> crl.signature_hash_algorithm == hashes.SHA256()
             True
 
     .. attribute:: signature_algorithm_oid
@@ -1119,7 +1119,7 @@ X.509 CSR (Certificate Signing Request) Object
         .. doctest::
 
             >>> from cryptography.hazmat.primitives import hashes
-            >>> isinstance(csr.signature_hash_algorithm, hashes.SHA256)
+            >>> csr.signature_hash_algorithm == hashes.SHA256()
             True
 
     .. attribute:: signature_algorithm_oid
