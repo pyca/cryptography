@@ -48,9 +48,9 @@ def _load_all_params(path, file_names, param_loader):
     return all_params
 
 
-def compute_rsa_hash_digest(backend, hash_alg, msg):
-    oid = _hash_alg_oids[hash_alg.name]
-    h = hashes.Hash(hash_alg, backend=backend)
+def compute_rsa_hash_digest_sha256(backend, msg):
+    oid = binascii.unhexlify(b"3031300d060960864801650304020105000420")
+    h = hashes.Hash(hashes.SHA256(), backend=backend)
     h.update(binascii.unhexlify(msg))
     return binascii.hexlify(oid) + binascii.hexlify(h.finalize())
 
@@ -519,8 +519,8 @@ def generate_rsa_verification_without_digest_test(
         ]
         for params in all_params:
             with subtests.test():
-                params["msg"] = compute_rsa_hash_digest(
-                    backend, hash_alg, params["msg"]
+                params["msg"] = compute_rsa_hash_digest_sha256(
+                    backend, params["msg"]
                 )
                 rsa_verification_test(
                     backend, params, asym_utils.NoDigestInfo(), pad_factory
