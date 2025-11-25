@@ -51,7 +51,7 @@ from .fixtures_rsa import (
 )
 from .utils import (
     _check_rsa_private_numbers,
-    compute_rsa_hash_digest,
+    compute_rsa_hash_digest_sha256,
     generate_rsa_verification_test,
     generate_rsa_verification_without_digest_test,
     skip_fips_traditional_openssl,
@@ -488,9 +488,7 @@ class TestRSASignature:
                 ).private_key(backend, unsafe_skip_rsa_key_validation=True)
                 signature = private_key.sign(
                     binascii.unhexlify(
-                        compute_rsa_hash_digest(
-                            backend, hashes.SHA256(), params["msg"]
-                        )
+                        compute_rsa_hash_digest_sha256(backend, params["msg"])
                     ),
                     padding.PKCS1v15(),
                     asym_utils.NoDigestInfo(),
