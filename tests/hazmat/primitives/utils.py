@@ -448,7 +448,11 @@ def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
         break_location=brk_loc,
     )
 
-    ko = ctrkdf.derive(binascii.unhexlify(params["ki"]))
+    ki = binascii.unhexlify(params["ki"])
+    # TripleDES requires 24-byte keys. Expand 16-byte (2-key) to 24-byte.
+    if prf == "cmac_tdes2":
+        ki = ki + ki[:8]
+    ko = ctrkdf.derive(ki)
     assert binascii.hexlify(ko) == params["ko"]
 
 
