@@ -30,7 +30,6 @@ Asymmetric ciphers
 * FIPS 186-2 and FIPS 186-3 DSA test vectors from `NIST CAVP`_.
 * FIPS 186-2 and FIPS 186-3 ECDSA test vectors from `NIST CAVP`_.
 * DH and ECDH and ECDH+KDF(17.4) test vectors from `NIST CAVP`_.
-* `BoringSSL ML-KEM test vectors`_.
 * Ed25519 test vectors from the `Ed25519 website`_.
 * ``asymmetric/PEM_Serialization/rsa-bad-1025-q-is-2.pem`` from `badkeys`_.
 * OpenSSL PEM DSA serialization vectors from the `GnuTLS example keys`_.
@@ -1268,4 +1267,3 @@ header format (substituting the correct information):
 .. _`badkeys`: https://github.com/vcsjones/badkeys/tree/50f1cc5f8d13bf3a2046d689f6452decb15d9c3c
 .. _`evpkdf_argon2.txt`: https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/1dbe8a6e1c56d010c271a80eafb2c7fd1b92fbda/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
-.. _`BoringSSL ML-KEM test vectors`: https://boringssl.googlesource.com/boringssl/+/945f4a5d8fd6abf0c7471242151c727e02e889a2/crypto/mlkem/
