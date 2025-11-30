@@ -290,8 +290,16 @@ impl RsaPrivateKey {
         padding: &pyo3::Bound<'p, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyAny>> {
-        let (data, algorithm) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
+        let (data, algorithm) = {
+            if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
+                (
+                    utils::BytesOrPyBytes::Bytes(data.as_bytes()),
+                    pyo3::types::PyNone::get(py).to_owned().into_any(),
+                )
+            } else {
+                utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?
+            }
+        };
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.sign_init().map_err(|_| {
@@ -441,8 +449,16 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        let (data, algorithm) =
-            utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?;
+        let (data, algorithm) = {
+            if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
+                (
+                    utils::BytesOrPyBytes::Bytes(data.as_bytes()),
+                    pyo3::types::PyNone::get(py).to_owned().into_any(),
+                )
+            } else {
+                utils::calculate_digest_and_algorithm(py, data.as_bytes(), algorithm)?
+            }
+        };
 
         let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         ctx.verify_init()?;
@@ -488,6 +504,11 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'_, pyo3::PyAny>,
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let algorithm = if algorithm.is_instance(&types::NO_DIGEST_INFO.get(py)?)? {
+            &pyo3::types::PyNone::get(py).to_owned().into_any()
+        } else {
+            algorithm
+        };
         if algorithm.is_instance(&types::PREHASHED.get(py)?)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(

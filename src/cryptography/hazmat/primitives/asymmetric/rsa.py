@@ -40,7 +40,9 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         self,
         data: bytes,
         padding: AsymmetricPadding,
-        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+        algorithm: asym_utils.Prehashed
+        | hashes.HashAlgorithm
+        | asym_utils.NoDigestInfo,
     ) -> bytes:
         """
         Signs the data.
@@ -127,7 +129,7 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm | None,
+        algorithm: hashes.HashAlgorithm | asym_utils.NoDigestInfo | None,
     ) -> bytes:
         """
         Recovers the original data from the signature.
