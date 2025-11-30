@@ -54,9 +54,16 @@ object along with the appropriate :mod:`~cryptography.hazmat.primitives.ciphers.
     :param key: The secret key. This must be kept secret. Either ``64``,
         ``128``, or ``192`` :term:`bits` long. DES only uses ``56``, ``112``,
         or ``168`` bits of the key as there is a parity byte in each component
-        of the key.  Some writing refers to there being up to three separate
+        of the key. Some writing refers to there being up to three separate
         keys that are each ``56`` bits long, they can simply be concatenated
         to produce the full key.
+
+        .. deprecated:: 47.0.0
+
+            Passing 64-bit or 128-bit keys is deprecated. In a future release,
+            only 192-bit (24-byte) keys will be accepted. Users should expand
+            shorter keys themselves (e.g., for single DES: ``key + key + key``,
+            for two-key: ``key + key[:8]``).
     :type key: :term:`bytes-like`
 
 .. class:: CAST5(key)

@@ -4,6 +4,9 @@
 
 from __future__ import annotations
 
+import warnings
+
+from cryptography import utils
 from cryptography.hazmat.primitives._cipheralgorithm import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
@@ -30,9 +33,23 @@ class TripleDES(BlockCipherAlgorithm):
 
     def __init__(self, key: bytes):
         if len(key) == 8:
-            key += key + key
+            warnings.warn(
+                "Single-key TripleDES (8-byte keys) is deprecated and "
+                "support will be removed in a future release. Use 24-byte "
+                "keys instead (e.g., key + key + key).",
+                utils.DeprecatedIn47,
+                stacklevel=2,
+            )
+            key = key + key + key
         elif len(key) == 16:
-            key += key[:8]
+            warnings.warn(
+                "Two-key TripleDES (16-byte keys) is deprecated and "
+                "support will be removed in a future release. Use 24-byte "
+                "keys instead (e.g., key + key[:8]).",
+                utils.DeprecatedIn47,
+                stacklevel=2,
+            )
+            key = key + key[:8]
         self.key = _verify_key_size(self, key)
 
     @property

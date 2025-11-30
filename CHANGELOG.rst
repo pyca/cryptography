@@ -27,6 +27,11 @@ Changelog
   such keys are impossible to process in a constant-time manner. We do not
   believe keys with this problem are in wide use, however we may revert this
   change based on the feedback we receive.
+* Deprecated passing 64-bit (8-byte) and 128-bit (16-byte) keys to
+  :class:`~cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES`. In a
+  future release, only 192-bit (24-byte) keys will be accepted. Users should
+  expand shorter keys themselves (e.g., for single DES: ``key + key + key``,
+  for two-key: ``key + key[:8]``).
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.

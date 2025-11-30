@@ -81,7 +81,7 @@ class TestCMAC:
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
-            TripleDES(fake_key)
+            TripleDES(b"\x00" * 24)
         ),
         skip_message="Does not support CMAC.",
     )
@@ -102,7 +102,7 @@ class TestCMAC:
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(
-            TripleDES(fake_key)
+            TripleDES(b"\x00" * 24)
         ),
         skip_message="Does not support CMAC.",
     )
