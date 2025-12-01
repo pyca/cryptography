@@ -75,8 +75,8 @@ class _ModuleWithDeprecations(types.ModuleType):
         super().__init__(module.__name__)
         self.__dict__["_module"] = module
 
-    def __getattr__(self, attr: str) -> typing.Any:
-        obj = getattr(self._module, attr)
+    def __getattr__(self, name: str) -> typing.Any:
+        obj = getattr(self._module, name)
         if isinstance(obj, _DeprecatedValue):
             warnings.warn(obj.message, obj.warning_class, stacklevel=2)
             obj = obj.value
