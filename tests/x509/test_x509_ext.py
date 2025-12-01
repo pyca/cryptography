@@ -9,7 +9,6 @@ import ipaddress
 import os
 import typing
 
-import pretend
 import pytest
 
 from cryptography import x509
@@ -36,6 +35,7 @@ from cryptography.x509.oid import (
     SubjectInformationAccessOID,
 )
 
+from ..doubles import DummyEd25519PublicKey
 from ..hazmat.primitives.test_ec import _skip_curve_unsupported
 from ..hazmat.primitives.test_rsa import rsa_key_2048
 from ..utils import load_vectors_from_file
@@ -1762,20 +1762,18 @@ class TestSubjectKeyIdentifierExtension:
             loader=lambda data: data.read(),
             mode="rb",
         )
-        pretend_key = pretend.stub(public_bytes=lambda x, y: data)
+        fake_key = DummyEd25519PublicKey(data)
         with pytest.raises(ValueError):
-            _key_identifier_from_public_key(pretend_key)
+            _key_identifier_from_public_key(fake_key)
 
         # The previous value is invalid for 2 reasons: a) it's got non-zero
         # padding bits (i.e. the first byte of the value is not zero), b) the
         # padding bits aren't all set to zero (i.e. the last bits of the value)
         # Here we swap the last byte out with zeros so we can hit both error
         # checks.
-        pretend_key = pretend.stub(
-            public_bytes=lambda x, y: data[:-1] + b"\x00"
-        )
+        fake_key = DummyEd25519PublicKey(data[:-1] + b"\x00")
         with pytest.raises(ValueError, match="Invalid public key encoding"):
-            _key_identifier_from_public_key(pretend_key)
+            _key_identifier_from_public_key(fake_key)
 
     def test_from_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP384R1())
