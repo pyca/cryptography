@@ -8,6 +8,7 @@ import os
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.decrepit.ciphers.algorithms import (
     ARC4,
@@ -72,9 +73,8 @@ def test_invalid_mode_algorithm():
 
 
 class TestTripleDES:
-    @pytest.mark.parametrize("key", [b"0" * 16, b"0" * 32, b"0" * 48])
-    def test_key_size(self, key):
-        cipher = TripleDES(binascii.unhexlify(key))
+    def test_key_size(self):
+        cipher = TripleDES(binascii.unhexlify(b"0" * 48))
         assert cipher.key_size == 192
 
     def test_invalid_key_size(self):
@@ -84,6 +84,16 @@ class TestTripleDES:
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
             TripleDES("0" * 16)  # type: ignore[arg-type]
+
+    def test_single_key_deprecated(self):
+        with pytest.warns(utils.DeprecatedIn47):
+            cipher = TripleDES(binascii.unhexlify(b"0" * 16))
+        assert cipher.key_size == 192
+
+    def test_two_key_deprecated(self):
+        with pytest.warns(utils.DeprecatedIn47):
+            cipher = TripleDES(binascii.unhexlify(b"0" * 32))
+        assert cipher.key_size == 192
 
 
 class TestBlowfish:
