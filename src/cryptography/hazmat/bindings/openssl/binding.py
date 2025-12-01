@@ -58,7 +58,7 @@ class Binding:
     """
 
     lib: typing.ClassVar[typing.Any] = None
-    ffi = _openssl.ffi
+    ffi: typing.Any = _openssl.ffi
     _lib_loaded = False
     _init_lock = threading.Lock()
 
