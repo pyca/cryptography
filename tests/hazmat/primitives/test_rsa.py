@@ -486,6 +486,9 @@ class TestRSASignature:
                         e=params["public_exponent"], n=params["modulus"]
                     ),
                 ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+
+                _check_fips_key_length(backend, private_key)
+
                 signature = private_key.sign(
                     binascii.unhexlify(
                         compute_rsa_hash_digest_sha256(backend, params["msg"])
