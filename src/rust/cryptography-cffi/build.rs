@@ -93,6 +93,11 @@ fn main() {
 
     if cfg!(windows) {
         build.define("WIN32_LEAN_AND_MEAN", None);
+        // python.h doesn't set this on the Windows free-threaded build
+        // see https://github.com/python/cpython/issues/127294
+        if is_free_threaded {
+            build.define("Py_GIL_DISABLED", "1");
+        }
     }
 
     build.compile("_openssl.a");
