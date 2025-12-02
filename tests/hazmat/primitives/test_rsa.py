@@ -562,6 +562,52 @@ class TestRSASignature:
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(
+                mgf=padding.MGF1(hashes.SHA1()),
+                salt_length=padding.PSS.MAX_LENGTH,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
+    def test_pss_signing_without_digest(self, backend, subtests):
+        for private, public, example in _flatten_pkcs1_examples(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"
+                ),
+                load_pkcs1_vectors,
+            )
+        ):
+            with subtests.test():
+                private_key = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                with pytest.raises(TypeError):
+                    private_key.sign(
+                        binascii.unhexlify(example["message"]),
+                        padding.PSS(
+                            mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                            salt_length=padding.PSS.MAX_LENGTH,
+                        ),
+                        asym_utils.NoDigestInfo(),
+                    )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
                 mgf=padding.MGF1(hashes.SHA256()),
                 salt_length=padding.PSS.MAX_LENGTH,
             )
