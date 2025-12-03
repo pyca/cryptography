@@ -2424,7 +2424,8 @@ class TestGeneralNames:
             x509.GeneralNames(
                 [
                     x509.DNSName("cryptography.io"),
-                    "invalid",  # type:ignore[list-item]
+                    # Invalid cast, to test error handling
+                    typing.cast(x509.GeneralName, "invalid"),
                 ]
             )
 
@@ -2487,7 +2488,8 @@ class TestIssuerAlternativeName:
             x509.IssuerAlternativeName(
                 [
                     x509.DNSName("cryptography.io"),
-                    "invalid",  # type:ignore[list-item]
+                    # Invalid cast, to test error handling
+                    typing.cast(x509.GeneralName, "invalid"),
                 ]
             )
 
@@ -2611,7 +2613,8 @@ class TestSubjectAlternativeName:
             x509.SubjectAlternativeName(
                 [
                     x509.DNSName("cryptography.io"),
-                    "invalid",  # type:ignore[list-item]
+                    # Invalid cast, to test error handling.
+                    typing.cast(x509.GeneralName, "invalid"),
                 ]
             )
 
