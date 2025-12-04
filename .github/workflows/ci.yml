@@ -423,8 +423,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Dec 03, 2025.
-            REF: e1548ed8528526f82d181b76deecd4a9694df152
+            # Latest commit on the pyopenssl main branch, as of Dec 04, 2025.
+            REF: 7f6dbdea674feb897ab24d5b40d5a5f50f87531e
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -448,8 +448,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Nov 27, 2025.
-            REF: 259dfadb43cc52cb06ba57883766497faaf72b59
+            # Latest commit on the certbot main branch, as of Dec 04, 2025.
+            REF: 8c4e3080ddd72123420f8882c8b96921c8d33304
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
