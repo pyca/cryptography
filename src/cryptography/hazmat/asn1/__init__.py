@@ -3,6 +3,7 @@
 # for complete details.
 
 from cryptography.hazmat.asn1.asn1 import (
+    BitString,
     Default,
     Explicit,
     GeneralizedTime,
@@ -16,6 +17,7 @@ from cryptography.hazmat.asn1.asn1 import (
 )
 
 __all__ = [
+    "BitString",
     "Default",
     "Explicit",
     "GeneralizedTime",

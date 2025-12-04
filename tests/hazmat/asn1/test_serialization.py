@@ -224,6 +224,51 @@ class TestGeneralizedTime:
         )
 
 
+class TestBitString:
+    def test_ok_bitstring(self) -> None:
+        assert_roundtrips(
+            [
+                (
+                    asn1.BitString(data=b"\x6e\x5d\xc0", padding_bits=6),
+                    b"\x03\x04\x06\x6e\x5d\xc0",
+                ),
+                (
+                    asn1.BitString(data=b"", padding_bits=0),
+                    b"\x03\x01\x00",
+                ),
+                (
+                    asn1.BitString(data=b"\x00", padding_bits=7),
+                    b"\x03\x02\x07\x00",
+                ),
+                (
+                    asn1.BitString(data=b"\x80", padding_bits=7),
+                    b"\x03\x02\x07\x80",
+                ),
+                (
+                    asn1.BitString(data=b"\x81\xf0", padding_bits=4),
+                    b"\x03\x03\x04\x81\xf0",
+                ),
+            ]
+        )
+
+    def test_fail_bitstring(self) -> None:
+        with pytest.raises(ValueError, match="error parsing asn1 value"):
+            # Prefix with number of padding bits missing
+            asn1.decode_der(asn1.BitString, b"\x03\x00")
+
+        with pytest.raises(ValueError, match="error parsing asn1 value"):
+            # Non-zero padding bits
+            asn1.decode_der(asn1.BitString, b"\x03\x02\x07\x01")
+
+        with pytest.raises(ValueError, match="error parsing asn1 value"):
+            # Non-zero padding bits
+            asn1.decode_der(asn1.BitString, b"\x03\x02\x07\x40")
+
+        with pytest.raises(ValueError, match="error parsing asn1 value"):
+            # Padding bits > 7
+            asn1.decode_der(asn1.BitString, b"\x03\x02\x08\x00")
+
+
 class TestSequence:
     def test_ok_sequence_single_field(self) -> None:
         @asn1.sequence
@@ -492,12 +537,20 @@ class TestSequence:
             e: typing.Union[asn1.UtcTime, None]
             f: typing.Union[asn1.GeneralizedTime, None]
             g: typing.Union[typing.List[int], None]
+            h: typing.Union[asn1.BitString, None]
 
         assert_roundtrips(
             [
                 (
                     Example(
-                        a=None, b=None, c=None, d=None, e=None, f=None, g=None
+                        a=None,
+                        b=None,
+                        c=None,
+                        d=None,
+                        e=None,
+                        f=None,
+                        g=None,
+                        h=None,
                     ),
                     b"\x30\x00",
                 )
