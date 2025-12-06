@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import typing
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding
@@ -40,6 +41,12 @@ class DummyHashAlgorithm(hashes.HashAlgorithm):
 
     def __init__(self, digest_size: int = 32) -> None:
         self._digest_size = digest_size
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return (
+            isinstance(other, DummyHashAlgorithm)
+            and self._digest_size == other._digest_size
+        )
 
     @property
     def digest_size(self) -> int:
