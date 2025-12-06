@@ -11,6 +11,10 @@ decode_dss_signature = asn1.decode_dss_signature
 encode_dss_signature = asn1.encode_dss_signature
 
 
+class NoDigestInfo:
+    pass
+
+
 class Prehashed:
     def __init__(self, algorithm: hashes.HashAlgorithm):
         if not isinstance(algorithm, hashes.HashAlgorithm):
