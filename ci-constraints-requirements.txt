@@ -134,7 +134,7 @@ platformdirs==4.3.6 ; python_full_version < '3.9'
     # via virtualenv
 platformdirs==4.4.0 ; python_full_version == '3.9.*'
     # via virtualenv
-platformdirs==4.5.0 ; python_full_version >= '3.10'
+platformdirs==4.5.1 ; python_full_version >= '3.10'
     # via virtualenv
 pluggy==1.5.0 ; python_full_version < '3.9'
     # via pytest
@@ -175,7 +175,7 @@ pytest==8.4.2 ; python_full_version == '3.9.*'
     #   pytest-cov
     #   pytest-randomly
     #   pytest-xdist
-pytest==9.0.1 ; python_full_version >= '3.10'
+pytest==9.0.2 ; python_full_version >= '3.10'
     # via
     #   cryptography (pyproject.toml)
     #   pytest-benchmark
