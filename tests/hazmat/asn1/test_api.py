@@ -118,7 +118,7 @@ class TestTypesAPI:
         data = b"\x01\x02\x30"
         assert (
             repr(asn1.BitString(data, 2))
-            == f"BitString(data: {data!r}, padding_bits: 2)"
+            == f"BitString(data={data!r}, padding_bits=2)"
         )
 
     def test_invalid_bitstring(self) -> None:

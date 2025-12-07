@@ -293,7 +293,7 @@ impl BitString {
 
     pub fn __repr__(&self) -> pyo3::PyResult<String> {
         Ok(format!(
-            "BitString(data: {}, padding_bits: {})",
+            "BitString(data={}, padding_bits={})",
             self.data, self.padding_bits,
         ))
     }
