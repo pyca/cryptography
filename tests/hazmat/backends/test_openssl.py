@@ -4,6 +4,7 @@
 
 
 import itertools
+import typing
 
 import pytest
 
@@ -31,6 +32,9 @@ __all__ = ["rsa_key_2048"]
 class DummyMGF(padding.MGF):
     _salt_length = 0
     _algorithm = hashes.SHA1()
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, DummyMGF)
 
 
 class TestOpenSSL:
@@ -193,6 +197,11 @@ class TestOpenSSLRSA:
             )
             is False
         )
+
+    def test_dummy_mgf_eq(self):
+        """This test just exists to fix code coverage for the dummy class."""
+        assert DummyMGF() == DummyMGF()
+        assert DummyMGF() != padding.MGF1(hashes.SHA256())
 
     def test_unsupported_mgf1_hash_algorithm_md5_decrypt(self, rsa_key_2048):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_PADDING):
