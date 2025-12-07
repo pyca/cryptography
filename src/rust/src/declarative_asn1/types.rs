@@ -96,7 +96,6 @@ impl Annotation {
         }
     }
 
-    #[pyo3(signature = ())]
     fn is_empty(&self) -> bool {
         self.default.is_none() && self.encoding.is_none() && self.size.is_none()
     }
@@ -150,7 +149,6 @@ impl PrintableString {
         Ok(PrintableString { inner })
     }
 
-    #[pyo3(signature = ())]
     pub fn as_str(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyString>> {
         Ok(self.inner.clone_ref(py))
     }
@@ -194,7 +192,6 @@ impl UtcTime {
         Ok(UtcTime { inner })
     }
 
-    #[pyo3(signature = ())]
     pub fn as_datetime(
         &self,
         py: pyo3::Python<'_>,
@@ -234,7 +231,6 @@ impl GeneralizedTime {
         Ok(GeneralizedTime { inner })
     }
 
-    #[pyo3(signature = ())]
     pub fn as_datetime(
         &self,
         py: pyo3::Python<'_>,
@@ -276,12 +272,10 @@ impl BitString {
         Ok(BitString { data, padding_bits })
     }
 
-    #[pyo3(signature = ())]
     pub fn as_bytes(&self, py: pyo3::Python<'_>) -> pyo3::Py<pyo3::types::PyBytes> {
         self.data.clone_ref(py)
     }
 
-    #[pyo3(signature = ())]
     pub fn padding_bits(&self) -> u8 {
         self.padding_bits
     }
