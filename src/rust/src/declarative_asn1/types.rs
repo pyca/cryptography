@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use asn1::IA5String as Asn1IA5String;
 use asn1::PrintableString as Asn1PrintableString;
 use asn1::SimpleAsn1Readable;
 use asn1::UtcTime as Asn1UtcTime;
@@ -36,6 +37,8 @@ pub enum Type {
     PyStr(),
     /// PrintableString (`str`)
     PrintableString(),
+    /// IA5String (`str`)
+    IA5String(),
     /// UtcTime (`datetime`)
     UtcTime(),
     /// GeneralizedTime (`datetime`)
@@ -159,6 +162,39 @@ impl PrintableString {
 
     pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         Ok(format!("PrintableString({})", self.inner.bind(py).repr()?))
+    }
+}
+
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct IA5String {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyString>,
+}
+
+#[pyo3::pymethods]
+impl IA5String {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyString>) -> pyo3::PyResult<Self> {
+        if Asn1IA5String::new(&inner.to_cow(py)?).is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid IA5String: {inner}"
+            )));
+        }
+
+        Ok(IA5String { inner })
+    }
+
+    pub fn as_str(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyString>> {
+        Ok(self.inner.clone_ref(py))
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("IA5String({})", self.inner.bind(py).repr()?))
     }
 }
 
@@ -310,6 +346,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::PyBytes().into_pyobject(py)
     } else if class.is(PrintableString::type_object(py)) {
         Type::PrintableString().into_pyobject(py)
+    } else if class.is(IA5String::type_object(py)) {
+        Type::IA5String().into_pyobject(py)
     } else if class.is(UtcTime::type_object(py)) {
         Type::UtcTime().into_pyobject(py)
     } else if class.is(GeneralizedTime::type_object(py)) {
@@ -370,6 +408,7 @@ pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> as
         Type::PyBytes() => <&[u8] as SimpleAsn1Readable>::TAG,
         Type::PyStr() => asn1::Utf8String::TAG,
         Type::PrintableString() => asn1::PrintableString::TAG,
+        Type::IA5String() => asn1::IA5String::TAG,
         Type::UtcTime() => asn1::UtcTime::TAG,
         Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
         Type::BitString() => asn1::BitString::TAG,

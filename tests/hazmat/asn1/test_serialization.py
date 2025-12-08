@@ -127,6 +127,17 @@ class TestPrintableString:
         )
 
 
+class TestIA5String:
+    def test_ok_ia5_string(self) -> None:
+        assert_roundtrips(
+            [
+                (asn1.IA5String(""), b"\x16\x00"),
+                (asn1.IA5String("hello"), b"\x16\x05hello"),
+                (asn1.IA5String("Test User 1"), b"\x16\x0bTest User 1"),
+            ]
+        )
+
+
 class TestUtcTime:
     def test_utc_time(self) -> None:
         assert_roundtrips(
@@ -538,6 +549,7 @@ class TestSequence:
             f: typing.Union[asn1.GeneralizedTime, None]
             g: typing.Union[typing.List[int], None]
             h: typing.Union[asn1.BitString, None]
+            i: typing.Union[asn1.IA5String, None]
 
         assert_roundtrips(
             [
@@ -551,6 +563,7 @@ class TestSequence:
                         f=None,
                         g=None,
                         h=None,
+                        i=None,
                     ),
                     b"\x30\x00",
                 )

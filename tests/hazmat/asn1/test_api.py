@@ -33,6 +33,18 @@ class TestTypesAPI:
         with pytest.raises(ValueError, match="invalid PrintableString: café"):
             asn1.PrintableString("café")
 
+    def test_repr_ia5_string(self) -> None:
+        my_string = "MyString"
+        assert repr(asn1.IA5String(my_string)) == f"IA5String({my_string!r})"
+
+    def test_ia5_string_as_str(self) -> None:
+        my_string = "MyString"
+        assert asn1.IA5String(my_string).as_str() == my_string
+
+    def test_invalid_ia5_string(self) -> None:
+        with pytest.raises(ValueError, match="invalid IA5String: café"):
+            asn1.IA5String("café")
+
     def test_utc_time_as_datetime(self) -> None:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
