@@ -21,6 +21,7 @@ from cryptography.hazmat.decrepit.ciphers import (
 )
 from cryptography.hazmat.primitives import hashes, hmac, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
     Cipher,
@@ -45,6 +46,13 @@ def _load_all_params(path, file_names, param_loader):
             load_vectors_from_file(os.path.join(path, file_name), param_loader)
         )
     return all_params
+
+
+def compute_rsa_hash_digest_sha256(backend, msg):
+    oid = binascii.unhexlify(b"3031300d060960864801650304020105000420")
+    h = hashes.Hash(hashes.SHA256(), backend=backend)
+    h.update(binascii.unhexlify(msg))
+    return binascii.hexlify(oid) + binascii.hexlify(h.finalize())
 
 
 def generate_encrypt_test(
@@ -497,6 +505,26 @@ def generate_rsa_verification_test(
         for params in all_params:
             with subtests.test():
                 rsa_verification_test(backend, params, hash_alg, pad_factory)
+
+    return test_rsa_verification
+
+
+def generate_rsa_verification_without_digest_test(
+    param_loader, path, file_names, hash_alg, pad_factory
+):
+    def test_rsa_verification(self, backend, subtests):
+        all_params = _load_all_params(path, file_names, param_loader)
+        all_params = [
+            i for i in all_params if i["algorithm"] == hash_alg.name.upper()
+        ]
+        for params in all_params:
+            with subtests.test():
+                params["msg"] = compute_rsa_hash_digest_sha256(
+                    backend, params["msg"]
+                )
+                rsa_verification_test(
+                    backend, params, asym_utils.NoDigestInfo(), pad_factory
+                )
 
     return test_rsa_verification
 

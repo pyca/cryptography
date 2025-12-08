@@ -29,6 +29,19 @@ Asymmetric Utilities
 
     :return bytes: The encoded signature.
 
+.. class:: NoDigestInfo()
+
+    .. versionadded:: 47.0.0
+
+    Use a non-standard RSA signature formats where the PKCS #1-padded data is without DigestInfo.
+
+    ``NoDigestInfo`` can be passed as the ``algorithm`` in the RSA
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey.sign`,
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.verify`
+    and
+    :meth:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey.recover_data_from_signature`
+    methods.
+
 .. class:: Prehashed(algorithm)
 
     .. versionadded:: 1.6

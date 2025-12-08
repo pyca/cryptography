@@ -78,6 +78,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.ciphers.aead.AESSIV`, and
   :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305` to
   allow encrypting directly into a pre-allocated buffer.
+* Added support for PKCS1v15 signing without DigestInfo using
+  :class:`~cryptography.hazmat.primitives.asymmetric.utils.NoDigestInfo`.
 
 .. _v46-0-3:
 

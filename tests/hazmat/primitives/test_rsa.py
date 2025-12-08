@@ -51,7 +51,9 @@ from .fixtures_rsa import (
 )
 from .utils import (
     _check_rsa_private_numbers,
+    compute_rsa_hash_digest_sha256,
     generate_rsa_verification_test,
+    generate_rsa_verification_without_digest_test,
     skip_fips_traditional_openssl,
 )
 
@@ -444,6 +446,60 @@ class TestRSASignature:
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PKCS1v15()
+        ),
+        skip_message="Does not support PKCS1v1.5.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA256()
+        ),
+        skip_message="Does not support SHA256 signature.",
+    )
+    def test_pkcs1v15_signing_without_digest(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "RSA", "FIPS_186-2", "SigVer15_186-3.rsp"
+            ),
+            load_rsa_nist_vectors,
+        )
+        for params in vectors:
+            if params["fail"] or params["algorithm"] != "SHA256":
+                continue
+            with subtests.test():
+                dmp1 = rsa.rsa_crt_dmp1(
+                    params["private_exponent"], params["p"]
+                )
+                dmq1 = rsa.rsa_crt_dmq1(
+                    params["private_exponent"], params["q"]
+                )
+                iqmp = rsa.rsa_crt_iqmp(params["p"], params["q"])
+
+                private_key = rsa.RSAPrivateNumbers(
+                    p=params["p"],
+                    q=params["q"],
+                    d=params["private_exponent"],
+                    dmp1=dmp1,
+                    dmq1=dmq1,
+                    iqmp=iqmp,
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=params["public_exponent"], n=params["modulus"]
+                    ),
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+
+                _check_fips_key_length(backend, private_key)
+
+                signature = private_key.sign(
+                    binascii.unhexlify(
+                        compute_rsa_hash_digest_sha256(backend, params["msg"])
+                    ),
+                    padding.PKCS1v15(),
+                    asym_utils.NoDigestInfo(),
+                )
+                assert binascii.hexlify(signature) == params["s"]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA1()),
                 salt_length=padding.PSS.MAX_LENGTH,
@@ -502,6 +558,52 @@ class TestRSASignature:
                     ),
                     hashes.SHA1(),
                 )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.rsa_padding_supported(
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA1()),
+                salt_length=padding.PSS.MAX_LENGTH,
+            )
+        ),
+        skip_message="Does not support PSS.",
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.signature_hash_supported(
+            hashes.SHA1()
+        ),
+        skip_message="Does not support SHA1 signature.",
+    )
+    def test_pss_signing_without_digest(self, backend, subtests):
+        for private, public, example in _flatten_pkcs1_examples(
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric", "RSA", "pkcs-1v2-1d2-vec", "pss-vect.txt"
+                ),
+                load_pkcs1_vectors,
+            )
+        ):
+            with subtests.test():
+                private_key = rsa.RSAPrivateNumbers(
+                    p=private["p"],
+                    q=private["q"],
+                    d=private["private_exponent"],
+                    dmp1=private["dmp1"],
+                    dmq1=private["dmq1"],
+                    iqmp=private["iqmp"],
+                    public_numbers=rsa.RSAPublicNumbers(
+                        e=private["public_exponent"], n=private["modulus"]
+                    ),
+                ).private_key(backend, unsafe_skip_rsa_key_validation=True)
+                with pytest.raises(TypeError):
+                    private_key.sign(
+                        binascii.unhexlify(example["message"]),
+                        padding.PSS(
+                            mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                            salt_length=padding.PSS.MAX_LENGTH,
+                        ),
+                        asym_utils.NoDigestInfo(),
+                    )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.rsa_padding_supported(
@@ -910,7 +1012,7 @@ class TestRSAVerification:
                 # Test recovery of all data (full DigestInfo) with hash alg. as
                 # None
                 rec_sig_data = public_key.recover_data_from_signature(
-                    signature, padding.PKCS1v15(), None
+                    signature, padding.PKCS1v15(), asym_utils.NoDigestInfo()
                 )
                 assert len(rec_sig_data) > len(msg_digest)
                 assert msg_digest == rec_sig_data[-len(msg_digest) :]
@@ -1518,6 +1620,26 @@ class TestRSAPKCS1Verification:
                 "SigVer15_186-3.rsp",
             ],
             hashes.SHA1(),
+            lambda params, hash_alg: padding.PKCS1v15(),
+        )
+    )
+
+    test_rsa_pkcs1v15_verify_sha256_without_digest = pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.signature_hash_supported(hashes.SHA256())
+            and backend.rsa_padding_supported(padding.PKCS1v15())
+        ),
+        skip_message="Does not support SHA256 and PKCS1v1.5.",
+    )(
+        generate_rsa_verification_without_digest_test(
+            load_rsa_nist_vectors,
+            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+            [
+                "SigGen15_186-2.rsp",
+                "SigGen15_186-3.rsp",
+                "SigVer15_186-3.rsp",
+            ],
+            hashes.SHA256(),
             lambda params, hash_alg: padding.PKCS1v15(),
         )
     )
