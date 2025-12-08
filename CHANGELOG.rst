@@ -33,8 +33,6 @@ Changelog
   expand shorter keys themselves (e.g., for single DES: ``key + key + key``,
   for two-key: ``key + key[:8]``).
 * Updated the minimum supported Rust version (MSRV) to 1.83.0, from 1.74.0.
-* Added support for loading elliptic curve keys that contain explicit encodings
-  of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.
 * Support for ``x86_64`` macOS (including publishing wheels) is deprecated
   and will be removed in the next release. We will switch to publishing an
   ``arm64`` only wheel for macOS.
@@ -55,6 +53,8 @@ Changelog
 * Added :meth:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF.extract`
   to :class:`~cryptography.hazmat.primitives.kdf.hkdf.HKDF`. The previous
   private implementation will be removed in 49.0.0.
+* Added support for loading elliptic curve keys that contain explicit encodings
+  of the curves ``secp256r1``, ``secp384r1``, and ``secp521r1``.
 * Added support for :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2d`
   and :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2i`
   when using OpenSSL 3.2.0+.
