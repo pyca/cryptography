@@ -8,7 +8,8 @@ use pyo3::types::PyListMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    type_to_tag, AnnotatedType, Encoding, GeneralizedTime, PrintableString, Type, UtcTime,
+    type_to_tag, AnnotatedType, BitString, Encoding, GeneralizedTime, PrintableString, Type,
+    UtcTime,
 };
 use crate::error::CryptographyError;
 
@@ -118,6 +119,22 @@ fn decode_generalized_time<'a>(
     Ok(pyo3::Bound::new(py, GeneralizedTime { inner })?)
 }
 
+fn decode_bitstring<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, BitString>> {
+    let value = read_value::<asn1::BitString<'a>>(parser, encoding)?;
+    let data = pyo3::types::PyBytes::new(py, value.as_bytes()).unbind();
+    Ok(pyo3::Bound::new(
+        py,
+        BitString {
+            data,
+            padding_bits: value.padding_bits(),
+        },
+    )?)
+}
+
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -201,6 +218,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PrintableString() => decode_printable_string(py, parser, encoding)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
+        Type::BitString() => decode_bitstring(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {

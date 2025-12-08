@@ -107,6 +107,35 @@ class TestTypesAPI:
             # We don't allow naive datetime objects
             asn1.GeneralizedTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
 
+    def test_bitstring_getters(self) -> None:
+        data = b"\x01\x02\x30"
+        bt = asn1.BitString(data=data, padding_bits=2)
+
+        assert bt.as_bytes() == data
+        assert bt.padding_bits() == 2
+
+    def test_repr_bitstring(self) -> None:
+        data = b"\x01\x02\x30"
+        assert (
+            repr(asn1.BitString(data, 2))
+            == f"BitString(data={data!r}, padding_bits=2)"
+        )
+
+    def test_invalid_bitstring(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match="invalid BIT STRING",
+        ):
+            # Padding bits cannot be > 7
+            asn1.BitString(data=b"\x01\x02\x03", padding_bits=8)
+
+        with pytest.raises(
+            ValueError,
+            match="invalid BIT STRING",
+        ):
+            # Padding bits have to be zero
+            asn1.BitString(data=b"\x01\x02\x03", padding_bits=2)
+
 
 class TestSequenceAPI:
     def test_fail_unsupported_field(self) -> None:
