@@ -7,8 +7,8 @@ use pyo3::types::PyAnyMethods;
 use pyo3::types::PyListMethods;
 
 use crate::declarative_asn1::types::{
-    AnnotatedType, AnnotatedTypeObject, BitString, Encoding, GeneralizedTime, PrintableString,
-    Type, UtcTime,
+    AnnotatedType, AnnotatedTypeObject, BitString, Encoding, GeneralizedTime, IA5String,
+    PrintableString, Type, UtcTime,
 };
 
 fn write_value<T: SimpleAsn1Writable>(
@@ -147,6 +147,19 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     asn1::PrintableString::new(&inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &printable_string, encoding)
+            }
+            Type::IA5String() => {
+                let val: &pyo3::Bound<'_, IA5String> = value
+                    .cast()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let inner_str = val
+                    .get()
+                    .inner
+                    .to_cow(py)
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let ia5_string: asn1::IA5String<'_> =
+                    asn1::IA5String::new(&inner_str).ok_or(asn1::WriteError::AllocationError)?;
+                write_value(writer, &ia5_string, encoding)
             }
             Type::UtcTime() => {
                 let val: &pyo3::Bound<'_, UtcTime> = value

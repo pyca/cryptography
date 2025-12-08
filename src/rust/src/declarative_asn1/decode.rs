@@ -8,8 +8,8 @@ use pyo3::types::PyListMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    type_to_tag, AnnotatedType, BitString, Encoding, GeneralizedTime, PrintableString, Type,
-    UtcTime,
+    type_to_tag, AnnotatedType, BitString, Encoding, GeneralizedTime, IA5String, PrintableString,
+    Type, UtcTime,
 };
 use crate::error::CryptographyError;
 
@@ -75,6 +75,16 @@ fn decode_printable_string<'a>(
     let value = read_value::<asn1::PrintableString<'a>>(parser, encoding)?.as_str();
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, PrintableString { inner })?)
+}
+
+fn decode_ia5_string<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, IA5String>> {
+    let value = read_value::<asn1::IA5String<'a>>(parser, encoding)?.as_str();
+    let inner = pyo3::types::PyString::new(py, value).unbind();
+    Ok(pyo3::Bound::new(py, IA5String { inner })?)
 }
 
 fn decode_utc_time<'a>(
@@ -216,6 +226,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyBytes() => decode_pybytes(py, parser, encoding)?.into_any(),
         Type::PyStr() => decode_pystr(py, parser, encoding)?.into_any(),
         Type::PrintableString() => decode_printable_string(py, parser, encoding)?.into_any(),
+        Type::IA5String() => decode_ia5_string(py, parser, encoding)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, encoding)?.into_any(),

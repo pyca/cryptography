@@ -238,6 +238,7 @@ Implicit = declarative_asn1.Encoding.Implicit
 Size = declarative_asn1.Size
 
 PrintableString = declarative_asn1.PrintableString
+IA5String = declarative_asn1.IA5String
 UtcTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
