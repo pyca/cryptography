@@ -138,6 +138,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, PrintableString> = value
                     .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
+                // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val
                     .get()
                     .inner
@@ -152,6 +153,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, IA5String> = value
                     .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
+                // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val
                     .get()
                     .inner

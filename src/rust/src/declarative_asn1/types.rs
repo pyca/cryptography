@@ -143,6 +143,7 @@ impl PrintableString {
     #[new]
     #[pyo3(signature = (inner,))]
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyString>) -> pyo3::PyResult<Self> {
+        // TODO: Switch this to `to_str()` once our minimum version is py310+
         if Asn1PrintableString::new(&inner.to_cow(py)?).is_none() {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "invalid PrintableString: {inner}"
@@ -176,6 +177,7 @@ impl IA5String {
     #[new]
     #[pyo3(signature = (inner,))]
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyString>) -> pyo3::PyResult<Self> {
+        // TODO: Switch this to `to_str()` once our minimum version is py310+
         if Asn1IA5String::new(&inner.to_cow(py)?).is_none() {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "invalid IA5String: {inner}"
