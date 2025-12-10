@@ -238,8 +238,11 @@ class TestSequenceAPI:
     def test_fail_unsupported_size_annotation(self) -> None:
         with pytest.raises(
             TypeError,
-            match="field invalid has a SIZE annotation, but SIZE "
-            "annotations are only supported for SEQUENCE OF fields",
+            match=re.escape(
+                "field invalid has a SIZE annotation, but SIZE "
+                "annotations are only supported for fields of types: "
+                "[SEQUENCE OF, BIT STRING]"
+            ),
         ):
 
             @asn1.sequence

@@ -8,8 +8,8 @@ use pyo3::types::PyListMethods;
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    type_to_tag, AnnotatedType, BitString, Encoding, GeneralizedTime, IA5String, PrintableString,
-    Type, UtcTime,
+    check_size_constraint, type_to_tag, AnnotatedType, Annotation, BitString, Encoding,
+    GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
 };
 use crate::error::CryptographyError;
 
@@ -132,9 +132,12 @@ fn decode_generalized_time<'a>(
 fn decode_bitstring<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
-    encoding: &Option<pyo3::Py<Encoding>>,
+    annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, BitString>> {
-    let value = read_value::<asn1::BitString<'a>>(parser, encoding)?;
+    let value = read_value::<asn1::BitString<'a>>(parser, &annotation.encoding)?;
+    let n_bits = value.as_bytes().len() * 8 - (value.padding_bits() as usize);
+    check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+
     let data = pyo3::types::PyBytes::new(py, value.as_bytes()).unbind();
     Ok(pyo3::Bound::new(
         py,
@@ -151,7 +154,8 @@ pub(crate) fn decode_annotated_type<'a>(
     ann_type: &AnnotatedType,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let inner = ann_type.inner.get();
-    let encoding = &ann_type.annotation.get().encoding;
+    let annotation = &ann_type.annotation.get();
+    let encoding = &annotation.encoding;
 
     // Handle DEFAULT annotation if field is not present (by
     // returning the default value)
@@ -189,19 +193,7 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
-                if let Some(size) = &ann_type.annotation.get().size {
-                    let list_len = list.len();
-                    let min = size.get().min;
-                    let max = size.get().max.unwrap_or(usize::MAX);
-                    if !(min..=max).contains(&list_len) {
-                        return Err(CryptographyError::Py(
-                            pyo3::exceptions::PyValueError::new_err(format!(
-                                "SEQUENCE OF has size {0}, expected size in [{1}, {2}]",
-                                list_len, min, max
-                            )),
-                        ));
-                    }
-                }
+                check_size_constraint(&annotation.size, list.len(), "SEQUENCE OF")?;
                 Ok(list.into_any())
             })?
         }
@@ -229,7 +221,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::IA5String() => decode_ia5_string(py, parser, encoding)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
-        Type::BitString() => decode_bitstring(py, parser, encoding)?.into_any(),
+        Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {

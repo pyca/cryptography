@@ -7,8 +7,8 @@ use pyo3::types::PyAnyMethods;
 use pyo3::types::PyListMethods;
 
 use crate::declarative_asn1::types::{
-    AnnotatedType, AnnotatedTypeObject, BitString, Encoding, GeneralizedTime, IA5String,
-    PrintableString, Type, UtcTime,
+    check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
+    GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
 };
 
 fn write_value<T: SimpleAsn1Writable>(
@@ -46,7 +46,8 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
         }
 
-        let encoding = &annotated_type.annotation.get().encoding;
+        let annotation = &annotated_type.annotation.get();
+        let encoding = &annotation.encoding;
         let inner = annotated_type.inner.get();
         match &inner {
             Type::Sequence(_cls, fields) => write_value(
@@ -83,13 +84,9 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                if let Some(size) = &annotated_type.annotation.get().size {
-                    let min = size.get().min;
-                    let max = size.get().max.unwrap_or(usize::MAX);
-                    if !(min..=max).contains(&values.len()) {
-                        return Err(asn1::WriteError::AllocationError);
-                    }
-                }
+                check_size_constraint(&annotation.size, values.len(), "SEQUENCE OF")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
             Type::Option(cls) => {
@@ -191,10 +188,12 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, BitString> = value
                     .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-
                 let bitstring: asn1::BitString<'_> =
                     asn1::BitString::new(val.get().data.as_bytes(py), val.get().padding_bits)
                         .ok_or(asn1::WriteError::AllocationError)?;
+                let n_bits = bitstring.as_bytes().len() * 8 - (bitstring.padding_bits() as usize);
+                check_size_constraint(&annotation.size, n_bits, "BIT STRING")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &bitstring, encoding)
             }
         }

@@ -10,6 +10,8 @@ use pyo3::types::PyAnyMethods;
 use pyo3::types::PyTzInfoAccess;
 use pyo3::{IntoPyObject, PyTypeInfo};
 
+use crate::error::CryptographyError;
+
 /// Internal type representation for mapping between
 /// Python and ASN.1.
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
@@ -423,6 +425,26 @@ pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> as
         },
         None => inner_tag,
     }
+}
+
+pub(crate) fn check_size_constraint(
+    size_annotation: &Option<pyo3::Py<Size>>,
+    data_length: usize,
+    field_type: &str,
+) -> Result<(), CryptographyError> {
+    if let Some(size) = size_annotation {
+        let min = size.get().min;
+        let max = size.get().max.unwrap_or(usize::MAX);
+        if !(min..=max).contains(&data_length) {
+            return Err(CryptographyError::Py(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "{0} has size {1}, expected size in [{2}, {3}]",
+                    field_type, data_length, min, max
+                )),
+            ));
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
