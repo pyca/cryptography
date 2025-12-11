@@ -10,7 +10,7 @@ license.workspace = true
 [dependencies]
 asn1.workspace = true
 cryptography-x509 = { path = "../cryptography-x509" }
-cryptography-key-parsing = { path = "../cryptography-key-parsing" }
+pkcs1 = "0.7.5"
 
 [dev-dependencies]
 pem.workspace = true
