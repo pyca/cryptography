@@ -191,7 +191,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let bitstring: asn1::BitString<'_> =
                     asn1::BitString::new(val.get().data.as_bytes(py), val.get().padding_bits)
                         .ok_or(asn1::WriteError::AllocationError)?;
-                let n_bits = bitstring.as_bytes().len() * 8 - (bitstring.padding_bits() as usize);
+                let n_bits = bitstring.as_bytes().len() * 8 - usize::from(bitstring.padding_bits());
                 check_size_constraint(&annotation.size, n_bits, "BIT STRING")
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &bitstring, encoding)

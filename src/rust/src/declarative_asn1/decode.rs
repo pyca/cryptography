@@ -135,7 +135,7 @@ fn decode_bitstring<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, BitString>> {
     let value = read_value::<asn1::BitString<'a>>(parser, &annotation.encoding)?;
-    let n_bits = value.as_bytes().len() * 8 - (value.padding_bits() as usize);
+    let n_bits = value.as_bytes().len() * 8 - usize::from(value.padding_bits());
     check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
 
     let data = pyo3::types::PyBytes::new(py, value.as_bytes()).unbind();
