@@ -105,13 +105,14 @@ def _normalize_field_type(
     else:
         annotation = declarative_asn1.Annotation()
 
-    if (
-        annotation.size is not None
-        and get_type_origin(field_type) is not builtins.list
+    if annotation.size is not None and (
+        get_type_origin(field_type) is not builtins.list
+        and field_type is not BitString
     ):
         raise TypeError(
             f"field {field_name} has a SIZE annotation, but SIZE annotations "
-            f"are only supported for SEQUENCE OF fields"
+            f"are only supported for fields of types: [SEQUENCE OF, "
+            "BIT STRING]"
         )
 
     if hasattr(field_type, "__asn1_root__"):
