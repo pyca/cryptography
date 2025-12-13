@@ -8,8 +8,8 @@ use std::collections::HashSet;
 use std::ops::{Deref, Range};
 use std::sync::{Arc, LazyLock};
 
+use pkcs1::der::Decode;
 use asn1::ObjectIdentifier;
-use cryptography_key_parsing::rsa::Pkcs1RsaPublicKey;
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, EcParameters, RsaPssParameters, Time,
@@ -555,10 +555,13 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             issuer_spki.algorithm.params,
             AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_)
         ) {
-            let rsa_key: Pkcs1RsaPublicKey<'_> =
-                asn1::parse_single(issuer_spki.subject_public_key.as_bytes())?;
+            let rsa_key: pkcs1::RsaPublicKey<'_> = pkcs1::RsaPublicKey::from_der(issuer_spki.subject_public_key.as_bytes()).map_err(|e| {
+                ValidationError::new(ValidationErrorKind::Other(
+                    format!("subject public RSA key could not be parsed: {}", e)
+                ))
+            })?;
 
-            if rsa_key.n.as_bytes().len() * 8 < self.minimum_rsa_modulus {
+            if rsa_key.modulus.as_bytes().len() * 8 < self.minimum_rsa_modulus {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
                     "RSA key is too weak".into(),
                 )));
