@@ -375,6 +375,10 @@ def process_rust_coverage(
             external=True,
         )
         assert isinstance(lcov_data, str)
+        u = uuid.uuid4()
+        with open(f"{u}.lcov", "w") as f:
+            f.write(lcov_data)
+        print(f"RAW COVERAGE DATA: {u}")
         lcov_data = LCOV_SOURCEFILE_RE.sub(
             lambda m: "SF:src/rust/" + m.group(1).replace("\\", "/"),
             lcov_data.replace("\r\n", "\n"),
