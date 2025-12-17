@@ -642,7 +642,7 @@ mod ca {
                 Ok(())
             } else {
                 Err(ValidationError::new(ValidationErrorKind::Other(
-                    "EKU and anyEKU not found".to_string(),
+                    "Neither EKU nor anyEKU could be found".to_string(),
                 )))
             }
         } else {
