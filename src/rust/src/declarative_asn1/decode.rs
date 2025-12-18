@@ -52,9 +52,10 @@ fn decode_pyint<'a>(
 fn decode_pybytes<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
-    encoding: &Option<pyo3::Py<Encoding>>,
+    annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
-    let value = read_value::<&[u8]>(parser, encoding)?;
+    let value = read_value::<&[u8]>(parser, &annotation.encoding)?;
+    check_size_constraint(&annotation.size, value.len(), "OCTET STRING")?;
     Ok(pyo3::types::PyBytes::new(py, value))
 }
 
@@ -215,7 +216,7 @@ pub(crate) fn decode_annotated_type<'a>(
         }
         Type::PyBool() => decode_pybool(py, parser, encoding)?.into_any(),
         Type::PyInt() => decode_pyint(py, parser, encoding)?.into_any(),
-        Type::PyBytes() => decode_pybytes(py, parser, encoding)?.into_any(),
+        Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
         Type::PyStr() => decode_pystr(py, parser, encoding)?.into_any(),
         Type::PrintableString() => decode_printable_string(py, parser, encoding)?.into_any(),
         Type::IA5String() => decode_ia5_string(py, parser, encoding)?.into_any(),
