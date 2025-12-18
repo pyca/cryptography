@@ -134,6 +134,13 @@ impl Size {
     }
 }
 
+// TODO: Once the minimum Python version is >= 3.10, use a `self_cell`
+// to store the owned PyString along with the dependent Asn1PrintableString
+// in order to avoid verifying the string twice (once during construction,
+// and again during serialization).
+// This is because for Python < 3.10 getting an Asn1PrintableString object
+// from a PyString requires calling `to_cow()`, which creates an intermediate
+// `Cow` object with a different lifetime from the PyString.
 #[derive(pyo3::FromPyObject)]
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct PrintableString {
@@ -168,6 +175,13 @@ impl PrintableString {
     }
 }
 
+// TODO: Once the minimum Python version is >= 3.10, use a `self_cell`
+// to store the owned PyString along with the dependent Asn1IA5String
+// in order to avoid verifying the string twice (once during construction,
+// and again during serialization).
+// This is because for Python < 3.10 getting an Asn1IA5String object
+// from a PyString requires calling `to_cow()`, which creates an intermediate
+// `Cow` object with a different lifetime from the PyString.
 #[derive(pyo3::FromPyObject)]
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct IA5String {
