@@ -214,7 +214,7 @@ roman-numerals==4.0.0 ; python_full_version >= '3.11'
     # via roman-numerals-py
 roman-numerals-py==4.0.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.14.9
+ruff==0.14.10
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
