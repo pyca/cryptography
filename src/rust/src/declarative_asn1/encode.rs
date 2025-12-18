@@ -122,6 +122,8 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &[u8] = value
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
+                check_size_constraint(&annotation.size, val.len(), "OCTET STRING")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &val, encoding)
             }
             Type::PyStr() => {
