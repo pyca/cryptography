@@ -107,12 +107,12 @@ def _normalize_field_type(
 
     if annotation.size is not None and (
         get_type_origin(field_type) is not builtins.list
-        and field_type not in (builtins.bytes, BitString)
+        and field_type not in (builtins.bytes, builtins.str, BitString)
     ):
         raise TypeError(
             f"field {field_name} has a SIZE annotation, but SIZE annotations "
             f"are only supported for fields of types: [SEQUENCE OF, "
-            "BIT STRING, OCTET STRING]"
+            "BIT STRING, OCTET STRING, UTF8String]"
         )
 
     if hasattr(field_type, "__asn1_root__"):

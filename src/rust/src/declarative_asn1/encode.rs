@@ -131,6 +131,8 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .extract()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
+                check_size_constraint(&annotation.size, val.len(), "UTF8String")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &asn1_string, encoding)
             }
             Type::PrintableString() => {

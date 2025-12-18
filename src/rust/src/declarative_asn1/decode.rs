@@ -62,9 +62,10 @@ fn decode_pybytes<'a>(
 fn decode_pystr<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
-    encoding: &Option<pyo3::Py<Encoding>>,
+    annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyString>> {
-    let value = read_value::<asn1::Utf8String<'a>>(parser, encoding)?;
+    let value = read_value::<asn1::Utf8String<'a>>(parser, &annotation.encoding)?;
+    check_size_constraint(&annotation.size, value.as_str().len(), "UTF8String")?;
     Ok(pyo3::types::PyString::new(py, value.as_str()))
 }
 
@@ -217,7 +218,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyBool() => decode_pybool(py, parser, encoding)?.into_any(),
         Type::PyInt() => decode_pyint(py, parser, encoding)?.into_any(),
         Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
-        Type::PyStr() => decode_pystr(py, parser, encoding)?.into_any(),
+        Type::PyStr() => decode_pystr(py, parser, annotation)?.into_any(),
         Type::PrintableString() => decode_printable_string(py, parser, encoding)?.into_any(),
         Type::IA5String() => decode_ia5_string(py, parser, encoding)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
