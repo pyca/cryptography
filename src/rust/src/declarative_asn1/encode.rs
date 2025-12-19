@@ -162,6 +162,8 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .inner
                     .to_cow(py)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
+                check_size_constraint(&annotation.size, inner_str.len(), "IA5String")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
                 let ia5_string: asn1::IA5String<'_> =
                     asn1::IA5String::new(&inner_str).ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &ia5_string, encoding)
