@@ -145,6 +145,8 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .inner
                     .to_cow(py)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
+                check_size_constraint(&annotation.size, inner_str.len(), "PrintableString")
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
                 let printable_string: asn1::PrintableString<'_> =
                     asn1::PrintableString::new(&inner_str)
                         .ok_or(asn1::WriteError::AllocationError)?;
