@@ -796,6 +796,111 @@ class TestSize:
         ):
             asn1.encode_der(Example(a=b"\x01\x02\x03\x04"))
 
+    def test_ok_string_size_restriction(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=1, max=4)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a="abcd"),
+                    b"\x30\x06\x0c\x04abcd",
+                )
+            ]
+        )
+
+    def test_ok_string_size_restriction_no_max(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=1, max=None)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a="abcd"),
+                    b"\x30\x06\x0c\x04abcd",
+                )
+            ]
+        )
+
+    def test_ok_string_size_restriction_exact(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size.exact(4)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a="abcd"),
+                    b"\x30\x06\x0c\x04abcd",
+                )
+            ]
+        )
+
+    def test_fail_string_size_too_big(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=1, max=2)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("UTF8String has size 4, expected size in [1, 2]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x06\x0c\x04abcd",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a="abcd"))
+
+    def test_fail_string_size_too_small(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=5, max=6)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("UTF8String has size 4, expected size in [5, 6]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x06\x0c\x04abcd",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a="abcd"))
+
+    def test_fail_string_size_not_exact(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size.exact(5)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("UTF8String has size 4, expected size in [5, 5]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x06\x0c\x04abcd",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a="abcd"))
+
     def test_ok_bitstring_size_restriction(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
