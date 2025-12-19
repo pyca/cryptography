@@ -83,9 +83,10 @@ fn decode_printable_string<'a>(
 fn decode_ia5_string<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
-    encoding: &Option<pyo3::Py<Encoding>>,
+    annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, IA5String>> {
-    let value = read_value::<asn1::IA5String<'a>>(parser, encoding)?.as_str();
+    let value = read_value::<asn1::IA5String<'a>>(parser, &annotation.encoding)?.as_str();
+    check_size_constraint(&annotation.size, value.len(), "IA5String")?;
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, IA5String { inner })?)
 }
@@ -221,7 +222,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
         Type::PyStr() => decode_pystr(py, parser, annotation)?.into_any(),
         Type::PrintableString() => decode_printable_string(py, parser, annotation)?.into_any(),
-        Type::IA5String() => decode_ia5_string(py, parser, encoding)?.into_any(),
+        Type::IA5String() => decode_ia5_string(py, parser, annotation)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
