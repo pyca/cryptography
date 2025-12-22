@@ -246,7 +246,7 @@ sphinx==8.2.3 ; python_full_version >= '3.11'
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
     #   sphinxcontrib-spelling
-sphinx-inline-tabs==2023.4.21
+sphinx-inline-tabs==2025.12.21.14
     # via cryptography (pyproject.toml)
 sphinx-rtd-theme==3.0.2
     # via cryptography (pyproject.toml)
