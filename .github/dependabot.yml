@@ -11,6 +11,8 @@ updates:
       time: "06:00"
       timezone: "America/New_York"
     open-pull-requests-limit: 1024
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: cargo
     directory: "/"
