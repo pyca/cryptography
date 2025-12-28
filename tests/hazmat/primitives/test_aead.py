@@ -807,6 +807,37 @@ class TestAESDNDKGCM:
             buf = bytearray(16)
             aesdndk.decrypt_into(b"\x00" * 25, b"x" * 32, None, buf)
 
+    def test_encrypt_into_buffer_incorrect_size(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        nonce = os.urandom(24)
+        pt = b"x" * 10
+        buf = bytearray(len(pt) + 15)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesdndk.encrypt_into(nonce, pt, None, buf)
+
+    def test_decrypt_into_buffer_incorrect_size(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        nonce = os.urandom(24)
+        ct = b"x" * 26
+        buf = bytearray(9)
+        with pytest.raises(ValueError, match="buffer must be"):
+            aesdndk.decrypt_into(nonce, ct, None, buf)
+
+    def test_decrypt_into_invalid_tag(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        nonce = os.urandom(24)
+        pt = b"some data"
+        ad = b"additional"
+        ct = aesdndk.encrypt(nonce, pt, ad)
+        corrupted_ct = bytearray(ct)
+        corrupted_ct[0] ^= 1
+        buf = bytearray(len(pt))
+        with pytest.raises(InvalidTag):
+            aesdndk.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
             AESDNDKGCM(object())  # type:ignore[arg-type]

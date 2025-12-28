@@ -56,11 +56,7 @@ fn aes256_ecb_block(key: &[u8], block: &[u8; 16]) -> CryptographyResult<[u8; 16]
 }
 
 fn derive_dndk_gcm_key_iv(key: &[u8], nonce: &[u8]) -> CryptographyResult<([u8; 12], [u8; 32])> {
-    if key.len() != DNDK_GCM_KEY_LEN {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("AESDNDKGCM key must be 256 bits."),
-        ));
-    }
+    debug_assert_eq!(key.len(), DNDK_GCM_KEY_LEN);
     if nonce.len() != DNDK_GCM_NONCE_LEN {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Nonce must be 24 bytes long"),
