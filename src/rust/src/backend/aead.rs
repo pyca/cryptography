@@ -8,6 +8,13 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
+const DNDK_GCM_KEY_LEN: usize = 32;
+const DNDK_GCM_NONCE_LEN: usize = 24;
+const DNDK_GCM_TAG_LEN: usize = 16;
+const DNDK_GCM_NPADDED_LEN: usize = 27;
+const DNDK_GCM_NHEAD_LEN: usize = 15;
+const DNDK_GCM_CONFIG_BYTE: u8 = 0x60;
+
 fn check_length(data: &[u8]) -> CryptographyResult<()> {
     if data.len() > (i32::MAX as usize) {
         // This is OverflowError to match what cffi would raise
@@ -24,6 +31,70 @@ fn check_length(data: &[u8]) -> CryptographyResult<()> {
 enum Aad<'a> {
     Single(CffiBuf<'a>),
     List(pyo3::Bound<'a, pyo3::types::PyList>),
+}
+
+fn aes256_ecb_block(key: &[u8], block: &[u8; 16]) -> CryptographyResult<[u8; 16]> {
+    let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+    ctx.encrypt_init(
+        Some(openssl::cipher::Cipher::aes_256_ecb()),
+        Some(key),
+        None,
+    )?;
+    ctx.set_padding(false);
+
+    let mut out = [0u8; 32];
+    let n = ctx.cipher_update(block, Some(&mut out))?;
+    assert_eq!(n, 16);
+
+    let mut final_block = [0u8; 16];
+    let n = ctx.cipher_final(&mut final_block)?;
+    assert_eq!(n, 0);
+
+    let mut result = [0u8; 16];
+    result.copy_from_slice(&out[..16]);
+    Ok(result)
+}
+
+fn derive_dndk_gcm_key_iv(
+    key: &[u8],
+    nonce: &[u8],
+) -> CryptographyResult<([u8; 12], [u8; 32])> {
+    if key.len() != DNDK_GCM_KEY_LEN {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("AESDNDKGCM key must be 256 bits."),
+        ));
+    }
+    if nonce.len() != DNDK_GCM_NONCE_LEN {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Nonce must be 24 bytes long"),
+        ));
+    }
+
+    let mut npadded = [0u8; DNDK_GCM_NPADDED_LEN];
+    npadded[..DNDK_GCM_NONCE_LEN].copy_from_slice(nonce);
+    let nhead = &npadded[..DNDK_GCM_NHEAD_LEN];
+    let ntail = &npadded[DNDK_GCM_NHEAD_LEN..];
+
+    let mut gcm_iv = [0u8; 12];
+    gcm_iv.copy_from_slice(ntail);
+
+    let mut block = [0u8; 16];
+    block[..DNDK_GCM_NHEAD_LEN].copy_from_slice(nhead);
+
+    block[15] = DNDK_GCM_CONFIG_BYTE;
+    let x0 = aes256_ecb_block(key, &block)?;
+    block[15] = DNDK_GCM_CONFIG_BYTE + 1;
+    let x1 = aes256_ecb_block(key, &block)?;
+    block[15] = DNDK_GCM_CONFIG_BYTE + 2;
+    let x2 = aes256_ecb_block(key, &block)?;
+
+    let mut derived_key = [0u8; 32];
+    for i in 0..16 {
+        derived_key[i] = x1[i] ^ x0[i];
+        derived_key[i + 16] = x2[i] ^ x0[i];
+    }
+
+    Ok((gcm_iv, derived_key))
 }
 
 struct EvpCipherAead {
@@ -614,6 +685,191 @@ impl ChaCha20Poly1305 {
 
         self.ctx
             .decrypt_into(py, data_bytes, aad, Some(nonce_bytes), buf.as_mut_bytes())?;
+
+        Ok(expected_len)
+    }
+}
+
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.aead",
+    name = "AESDNDKGCM"
+)]
+// NO-COVERAGE-END
+struct AesDndkGcm {
+    key: Vec<u8>,
+}
+
+#[pyo3::pymethods]
+impl AesDndkGcm {
+    #[new]
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesDndkGcm> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        if key_buf.as_bytes().len() != DNDK_GCM_KEY_LEN {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "AESDNDKGCM key must be 256 bits.",
+                ),
+            ));
+        }
+
+        Ok(AesDndkGcm {
+            key: key_buf.as_bytes().to_vec(),
+        })
+    }
+
+    #[staticmethod]
+    fn generate_key(
+        py: pyo3::Python<'_>,
+        bit_length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
+        if bit_length != 256 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("bit_length must be 256"),
+            ));
+        }
+
+        crate::backend::rand::get_rand_bytes(py, bit_length / 8)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let data_bytes = data.as_bytes();
+        check_length(data_bytes)?;
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() + DNDK_GCM_TAG_LEN,
+            |b| {
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.encrypt_into(py, nonce, data, associated_data, buf)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn encrypt_into(
+        &self,
+        _py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        let (gcm_iv, derived_key) = derive_dndk_gcm_key_iv(&self.key, nonce_bytes)?;
+
+        check_length(data_bytes)?;
+        let expected_len = data_bytes.len() + DNDK_GCM_TAG_LEN;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.encrypt_init(
+            Some(openssl::cipher::Cipher::aes_256_gcm()),
+            Some(&derived_key),
+            None,
+        )?;
+        EvpCipherAead::encrypt_with_context(
+            ctx,
+            data_bytes,
+            aad,
+            Some(&gcm_iv),
+            DNDK_GCM_TAG_LEN,
+            false,
+            false,
+            buf.as_mut_bytes(),
+        )?;
+
+        Ok(expected_len)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data))]
+    fn decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let data_bytes = data.as_bytes();
+
+        if data_bytes.len() < DNDK_GCM_TAG_LEN {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            data_bytes.len() - DNDK_GCM_TAG_LEN,
+            |b| {
+                let buf = CffiMutBuf::from_bytes(py, b);
+                self.decrypt_into(py, nonce, data, associated_data, buf)?;
+                Ok(())
+            },
+        )?)
+    }
+
+    #[pyo3(signature = (nonce, data, associated_data, buf))]
+    fn decrypt_into(
+        &self,
+        _py: pyo3::Python<'_>,
+        nonce: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+        associated_data: Option<CffiBuf<'_>>,
+        mut buf: CffiMutBuf<'_>,
+    ) -> CryptographyResult<usize> {
+        let nonce_bytes = nonce.as_bytes();
+        let data_bytes = data.as_bytes();
+        let aad = associated_data.map(Aad::Single);
+
+        let (gcm_iv, derived_key) = derive_dndk_gcm_key_iv(&self.key, nonce_bytes)?;
+
+        if data_bytes.len() < DNDK_GCM_TAG_LEN {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let expected_len = data_bytes.len() - DNDK_GCM_TAG_LEN;
+        if buf.as_mut_bytes().len() != expected_len {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "buffer must be {} bytes",
+                    expected_len
+                )),
+            ));
+        }
+
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.decrypt_init(
+            Some(openssl::cipher::Cipher::aes_256_gcm()),
+            Some(&derived_key),
+            None,
+        )?;
+        EvpCipherAead::decrypt_with_context(
+            ctx,
+            data_bytes,
+            aad,
+            Some(&gcm_iv),
+            DNDK_GCM_TAG_LEN,
+            false,
+            false,
+            buf.as_mut_bytes(),
+        )?;
 
         Ok(expected_len)
     }
@@ -1659,5 +1915,7 @@ impl AesGcmSiv {
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod aead {
     #[pymodule_export]
-    use super::{AesCcm, AesGcm, AesGcmSiv, AesOcb3, AesSiv, ChaCha20Poly1305};
+    use super::{
+        AesCcm, AesDndkGcm, AesGcm, AesGcmSiv, AesOcb3, AesSiv, ChaCha20Poly1305,
+    };
 }

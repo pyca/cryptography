@@ -14,6 +14,7 @@ from cryptography.exceptions import InvalidTag, UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.ciphers.aead import (
     AESCCM,
+    AESDNDKGCM,
     AESGCM,
     AESGCMSIV,
     AESOCB3,
@@ -753,6 +754,70 @@ class TestAESGCM:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+
+
+class TestAESDNDKGCM:
+    def test_roundtrip(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        nonce = os.urandom(24)
+        pt = b"encrypt me"
+        ad = b"additional"
+        ct = aesdndk.encrypt(nonce, pt, ad)
+        assert aesdndk.decrypt(nonce, ct, ad) == pt
+
+    def test_decrypt_data_too_short(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        with pytest.raises(InvalidTag):
+            aesdndk.decrypt(b"0" * 24, b"0", None)
+
+        with pytest.raises(InvalidTag):
+            buf = bytearray(16)
+            aesdndk.decrypt_into(b"0" * 24, b"0", None, buf)
+
+    def test_vector_a2(self, backend):
+        key = binascii.unhexlify(
+            "0100000000000000000000000000000000000000000000000000000000000000"
+        )
+        nonce = binascii.unhexlify("000102030405060708090a0b0c0d0e0f1011121314151617")
+        aad = binascii.unhexlify("0100000011")
+        pt = binascii.unhexlify("11000001")
+        expected = binascii.unhexlify(
+            "7f6e39ccb61df0a502c167164e99fa23b7d12b9d"
+        )
+        aesdndk = AESDNDKGCM(key)
+        ct = aesdndk.encrypt(nonce, pt, aad)
+        assert ct == expected
+        assert aesdndk.decrypt(nonce, ct, aad) == pt
+
+    def test_invalid_nonce_length(self, backend):
+        key = AESDNDKGCM.generate_key(256)
+        aesdndk = AESDNDKGCM(key)
+        with pytest.raises(ValueError, match="Nonce must be 24 bytes long"):
+            aesdndk.encrypt(b"\x00" * 23, b"hi", None)
+        with pytest.raises(ValueError, match="Nonce must be 24 bytes long"):
+            buf = bytearray(18)
+            aesdndk.encrypt_into(b"\x00" * 25, b"hi", None, buf)
+        with pytest.raises(ValueError, match="Nonce must be 24 bytes long"):
+            aesdndk.decrypt(b"\x00" * 23, b"x" * 16, None)
+        with pytest.raises(ValueError, match="Nonce must be 24 bytes long"):
+            buf = bytearray(16)
+            aesdndk.decrypt_into(b"\x00" * 25, b"x" * 32, None, buf)
+
+    def test_bad_key(self, backend):
+        with pytest.raises(TypeError):
+            AESDNDKGCM(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESDNDKGCM(b"0" * 31)
+
+    def test_bad_generate_key(self, backend):
+        with pytest.raises(TypeError):
+            AESDNDKGCM.generate_key(object())  # type:ignore[arg-type]
+
+        with pytest.raises(ValueError):
+            AESDNDKGCM.generate_key(128)
 
 
 @pytest.mark.skipif(

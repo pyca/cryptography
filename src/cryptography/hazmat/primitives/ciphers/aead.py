@@ -8,6 +8,7 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 __all__ = [
     "AESCCM",
+    "AESDNDKGCM",
     "AESGCM",
     "AESGCMSIV",
     "AESOCB3",
@@ -15,6 +16,7 @@ __all__ = [
     "ChaCha20Poly1305",
 ]
 
+AESDNDKGCM = rust_openssl.aead.AESDNDKGCM
 AESGCM = rust_openssl.aead.AESGCM
 ChaCha20Poly1305 = rust_openssl.aead.ChaCha20Poly1305
 AESCCM = rust_openssl.aead.AESCCM

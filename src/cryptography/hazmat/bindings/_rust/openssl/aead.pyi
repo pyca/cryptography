@@ -37,6 +37,37 @@ class AESGCM:
         buf: Buffer,
     ) -> int: ...
 
+class AESDNDKGCM:
+    def __init__(self, key: Buffer) -> None: ...
+    @staticmethod
+    def generate_key(bit_length: int) -> bytes: ...
+    def encrypt(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+    ) -> bytes: ...
+    def decrypt(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+    ) -> bytes: ...
+    def encrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
+    def decrypt_into(
+        self,
+        nonce: Buffer,
+        data: Buffer,
+        associated_data: Buffer | None,
+        buf: Buffer,
+    ) -> int: ...
+
 class ChaCha20Poly1305:
     def __init__(self, key: Buffer) -> None: ...
     @staticmethod
