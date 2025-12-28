@@ -55,10 +55,7 @@ fn aes256_ecb_block(key: &[u8], block: &[u8; 16]) -> CryptographyResult<[u8; 16]
     Ok(result)
 }
 
-fn derive_dndk_gcm_key_iv(
-    key: &[u8],
-    nonce: &[u8],
-) -> CryptographyResult<([u8; 12], [u8; 32])> {
+fn derive_dndk_gcm_key_iv(key: &[u8], nonce: &[u8]) -> CryptographyResult<([u8; 12], [u8; 32])> {
     if key.len() != DNDK_GCM_KEY_LEN {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("AESDNDKGCM key must be 256 bits."),
@@ -708,9 +705,7 @@ impl AesDndkGcm {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         if key_buf.as_bytes().len() != DNDK_GCM_KEY_LEN {
             return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "AESDNDKGCM key must be 256 bits.",
-                ),
+                pyo3::exceptions::PyValueError::new_err("AESDNDKGCM key must be 256 bits."),
             ));
         }
 
@@ -1915,7 +1910,5 @@ impl AesGcmSiv {
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod aead {
     #[pymodule_export]
-    use super::{
-        AesCcm, AesDndkGcm, AesGcm, AesGcmSiv, AesOcb3, AesSiv, ChaCha20Poly1305,
-    };
+    use super::{AesCcm, AesDndkGcm, AesGcm, AesGcmSiv, AesOcb3, AesSiv, ChaCha20Poly1305};
 }

@@ -780,7 +780,9 @@ class TestAESDNDKGCM:
         key = binascii.unhexlify(
             "0100000000000000000000000000000000000000000000000000000000000000"
         )
-        nonce = binascii.unhexlify("000102030405060708090a0b0c0d0e0f1011121314151617")
+        nonce = binascii.unhexlify(
+            "000102030405060708090a0b0c0d0e0f1011121314151617"
+        )
         aad = binascii.unhexlify("0100000011")
         pt = binascii.unhexlify("11000001")
         expected = binascii.unhexlify(
