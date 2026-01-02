@@ -1119,6 +1119,16 @@ class TestECDSASSHSerialization:
         with pytest.raises(NotImplementedError):
             load_ssh_public_key(ssh_key, backend)
 
+    def test_load_ssh_public_key_ecdsa_nist_p256_empty_point(self, backend):
+        # Malformed key with empty point data should raise ValueError,
+        # not IndexError.
+        ssh_key = (
+            b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
+            b"NTYAAAAA"
+        )
+        with pytest.raises(ValueError):
+            load_ssh_public_key(ssh_key, backend)
+
     def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self, backend):
         ssh_key = (
             # The curve name in here is changed to be "nistp255".
