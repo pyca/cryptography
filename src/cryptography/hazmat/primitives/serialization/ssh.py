@@ -472,6 +472,8 @@ class _SSHFormatECDSA:
         point, data = _get_sshstr(data)
         if curve != self.ssh_curve_name:
             raise ValueError("Curve name mismatch")
+        if len(point) == 0:
+            raise ValueError("Invalid EC point: empty data")
         if point[0] != 4:
             raise NotImplementedError("Need uncompressed point")
         return (curve, point), data
