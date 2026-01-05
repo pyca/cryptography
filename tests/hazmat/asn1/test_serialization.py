@@ -15,8 +15,8 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-import cryptography.hazmat.asn1 as asn1
-import cryptography.x509 as x509
+from cryptography import x509
+from cryptography.hazmat import asn1
 
 U = typing.TypeVar("U")
 
