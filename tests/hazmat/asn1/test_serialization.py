@@ -15,7 +15,8 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-import cryptography.hazmat.asn1 as asn1
+from cryptography import x509
+from cryptography.hazmat import asn1
 
 U = typing.TypeVar("U")
 
@@ -134,6 +135,26 @@ class TestIA5String:
                 (asn1.IA5String(""), b"\x16\x00"),
                 (asn1.IA5String("hello"), b"\x16\x05hello"),
                 (asn1.IA5String("Test User 1"), b"\x16\x0bTest User 1"),
+            ]
+        )
+
+
+class TestObjectIdentifier:
+    def test_ok_object_identifier(self) -> None:
+        assert_roundtrips(
+            [
+                (
+                    x509.ObjectIdentifier("1.3.6.1.4.1.343"),
+                    b"\x06\x07\x2b\x06\x01\x04\x01\x82\x57",
+                ),
+                (
+                    x509.ObjectIdentifier("1.2.840.113549.1.1.1"),
+                    b"\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01",
+                ),
+                (
+                    x509.ObjectIdentifier("1.3.6.1.4.1.55738.3"),
+                    b"\x06\x09\x2b\x06\x01\x04\x01\x83\xb3\x3a\x03",
+                ),
             ]
         )
 
@@ -445,6 +466,7 @@ class TestSequence:
             g: typing.Union[typing.List[int], None]
             h: typing.Union[asn1.BitString, None]
             i: typing.Union[asn1.IA5String, None]
+            j: typing.Union[x509.ObjectIdentifier, None]
 
         assert_roundtrips(
             [
@@ -459,6 +481,7 @@ class TestSequence:
                         g=None,
                         h=None,
                         i=None,
+                        j=None,
                     ),
                     b"\x30\x00",
                 )

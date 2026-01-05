@@ -14,7 +14,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-import cryptography.hazmat.asn1 as asn1
+from cryptography.hazmat import asn1
 
 
 class TestTypesAPI:

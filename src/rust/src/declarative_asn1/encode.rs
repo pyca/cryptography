@@ -168,6 +168,12 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     asn1::IA5String::new(&inner_str).ok_or(asn1::WriteError::AllocationError)?;
                 write_value(writer, &ia5_string, encoding)
             }
+            Type::ObjectIdentifier() => {
+                let val: &pyo3::Bound<'_, crate::oid::ObjectIdentifier> = value
+                    .cast()
+                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                write_value(writer, &val.get().oid, encoding)
+            }
             Type::UtcTime() => {
                 let val: &pyo3::Bound<'_, UtcTime> = value
                     .cast()
