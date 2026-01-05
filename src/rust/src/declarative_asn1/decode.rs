@@ -91,6 +91,15 @@ fn decode_ia5_string<'a>(
     Ok(pyo3::Bound::new(py, IA5String { inner })?)
 }
 
+fn decode_oid<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    annotation: &Annotation,
+) -> ParseResult<pyo3::Bound<'a, crate::oid::ObjectIdentifier>> {
+    let oid = read_value::<asn1::ObjectIdentifier>(parser, &annotation.encoding)?;
+    Ok(pyo3::Bound::new(py, crate::oid::ObjectIdentifier { oid })?)
+}
+
 fn decode_utc_time<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -223,6 +232,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::PyStr() => decode_pystr(py, parser, annotation)?.into_any(),
         Type::PrintableString() => decode_printable_string(py, parser, annotation)?.into_any(),
         Type::IA5String() => decode_ia5_string(py, parser, annotation)?.into_any(),
+        Type::ObjectIdentifier() => decode_oid(py, parser, annotation)?.into_any(),
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),

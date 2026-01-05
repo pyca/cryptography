@@ -41,6 +41,8 @@ pub enum Type {
     PrintableString(),
     /// IA5String (`str`)
     IA5String(),
+    /// ObjectIdentifier
+    ObjectIdentifier(),
     /// UtcTime (`datetime`)
     UtcTime(),
     /// GeneralizedTime (`datetime`)
@@ -366,6 +368,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::PrintableString().into_pyobject(py)
     } else if class.is(IA5String::type_object(py)) {
         Type::IA5String().into_pyobject(py)
+    } else if class.is(crate::oid::ObjectIdentifier::type_object(py)) {
+        Type::ObjectIdentifier().into_pyobject(py)
     } else if class.is(UtcTime::type_object(py)) {
         Type::UtcTime().into_pyobject(py)
     } else if class.is(GeneralizedTime::type_object(py)) {
@@ -427,6 +431,7 @@ pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> as
         Type::PyStr() => asn1::Utf8String::TAG,
         Type::PrintableString() => asn1::PrintableString::TAG,
         Type::IA5String() => asn1::IA5String::TAG,
+        Type::ObjectIdentifier() => asn1::ObjectIdentifier::TAG,
         Type::UtcTime() => asn1::UtcTime::TAG,
         Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
         Type::BitString() => asn1::BitString::TAG,
