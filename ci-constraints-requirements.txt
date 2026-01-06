@@ -132,7 +132,7 @@ pathspec==0.12.1
     #   mypy
 platformdirs==4.3.6 ; python_full_version < '3.9'
     # via virtualenv
-platformdirs==4.4.0 ; python_full_version == '3.9.*'
+platformdirs==4.5.1 ; python_full_version == '3.9.*'
     # via virtualenv
 platformdirs==4.5.1 ; python_full_version >= '3.10'
     # via virtualenv
