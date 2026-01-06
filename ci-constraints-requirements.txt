@@ -126,7 +126,9 @@ packaging==25.0
     #   nox
     #   pytest
     #   sphinx
-pathspec==0.12.1
+pathspec==0.12.1 ; python_full_version < '3.9'
+    # via check-sdist
+pathspec==1.0.0 ; python_full_version >= '3.9'
     # via
     #   check-sdist
     #   mypy
