@@ -71,7 +71,7 @@ execnet==2.1.2
     # via pytest-xdist
 filelock==3.16.1 ; python_full_version < '3.9'
     # via virtualenv
-filelock==3.19.1 ; python_full_version == '3.9.*'
+filelock==3.20.2 ; python_full_version == '3.9.*'
     # via virtualenv
 filelock==3.20.2 ; python_full_version >= '3.10'
     # via virtualenv
