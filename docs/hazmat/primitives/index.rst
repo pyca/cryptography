@@ -8,6 +8,7 @@ Primitives
 
     aead
     asymmetric/index
+    hpke
     constant-time
     key-derivation-functions
     keywrap
