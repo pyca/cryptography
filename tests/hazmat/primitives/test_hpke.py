@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives.hpke import (
     Suite,
 )
 
-
 # Nenc for X25519
 NENC = 32
 

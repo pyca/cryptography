@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import enum
 import hmac
-from typing import Union
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -227,7 +226,8 @@ class Suite:
         ciphertext = sender.encrypt(b"secret message")  # returns enc || ct
 
         # Recipient side
-        recipient = suite.recipient(ciphertext[:32], private_key, info=b"app info")
+        enc = ciphertext[:32]
+        recipient = suite.recipient(enc, private_key, info=b"app info")
         plaintext = recipient.decrypt(ciphertext[32:])
     """
 
@@ -366,7 +366,8 @@ class Suite:
             secret, b"key", key_schedule_context, self._aead_params["nk"]
         )
         base_nonce = self._hpke_labeled_expand(
-            secret, b"base_nonce", key_schedule_context, self._aead_params["nn"]
+            secret, b"base_nonce", key_schedule_context,
+            self._aead_params["nn"]
         )
 
         return key, base_nonce
@@ -421,9 +422,9 @@ class Suite:
 
 __all__ = [
     "AEAD",
-    "HPKEError",
     "KDF",
     "KEM",
+    "HPKEError",
     "MessageLimitReachedError",
     "RecipientContext",
     "SenderContext",
