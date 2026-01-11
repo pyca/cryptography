@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
+import enum
 import hmac
+from typing import Union
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -15,148 +17,60 @@ from cryptography.utils import int_to_bytes
 
 _HPKE_VERSION = b"HPKE-v1"
 
-# DHKEM(X25519, HKDF-SHA256) parameters
-_KEM_DHKEM_X25519_HKDF_SHA256_ID = 0x0020
-_KEM_DHKEM_X25519_HKDF_SHA256_NSECRET = 32
-_KEM_DHKEM_X25519_HKDF_SHA256_NENC = 32
-_KEM_DHKEM_X25519_HKDF_SHA256_NPK = 32
-_KEM_DHKEM_X25519_HKDF_SHA256_NSK = 32
 
-# HKDF-SHA256 parameters
-_KDF_HKDF_SHA256_ID = 0x0001
-_KDF_HKDF_SHA256_NH = 32
+class KEM(enum.Enum):
+    """Key Encapsulation Mechanisms for HPKE."""
 
-# AES-128-GCM parameters
-_AEAD_AES_128_GCM_ID = 0x0001
-_AEAD_AES_128_GCM_NK = 16
-_AEAD_AES_128_GCM_NN = 12
-_AEAD_AES_128_GCM_NT = 16
+    X25519 = 0x0020
+
+
+class KDF(enum.Enum):
+    """Key Derivation Functions for HPKE."""
+
+    HKDF_SHA256 = 0x0001
+
+
+class AEAD(enum.Enum):
+    """Authenticated Encryption with Associated Data algorithms for HPKE."""
+
+    AES_128_GCM = 0x0001
+
+
+# KEM parameters
+_KEM_PARAMS = {
+    KEM.X25519: {
+        "id": 0x0020,
+        "nsecret": 32,
+        "nenc": 32,
+        "npk": 32,
+        "nsk": 32,
+        "hash": hashes.SHA256(),
+    },
+}
+
+# KDF parameters
+_KDF_PARAMS = {
+    KDF.HKDF_SHA256: {
+        "id": 0x0001,
+        "nh": 32,
+        "hash": hashes.SHA256(),
+    },
+}
+
+# AEAD parameters
+_AEAD_PARAMS = {
+    AEAD.AES_128_GCM: {
+        "id": 0x0001,
+        "nk": 16,
+        "nn": 12,
+        "nt": 16,
+    },
+}
 
 
 def _xor(a: bytes, b: bytes) -> bytes:
     """XOR two byte strings of equal length."""
     return bytes(x ^ y for x, y in zip(a, b))
-
-
-# Pre-computed suite IDs
-_KEM_SUITE_ID = b"KEM" + int_to_bytes(_KEM_DHKEM_X25519_HKDF_SHA256_ID, 2)
-_HPKE_SUITE_ID = (
-    b"HPKE"
-    + int_to_bytes(_KEM_DHKEM_X25519_HKDF_SHA256_ID, 2)
-    + int_to_bytes(_KDF_HKDF_SHA256_ID, 2)
-    + int_to_bytes(_AEAD_AES_128_GCM_ID, 2)
-)
-
-
-def _kem_labeled_extract(salt: bytes, label: bytes, ikm: bytes) -> bytes:
-    """LabeledExtract for KEM as defined in RFC 9180."""
-    labeled_ikm = _HPKE_VERSION + _KEM_SUITE_ID + label + ikm
-    return hmac.digest(salt if salt else b"\x00" * 32, labeled_ikm, "sha256")
-
-
-def _kem_labeled_expand(
-    prk: bytes, label: bytes, info: bytes, length: int
-) -> bytes:
-    """LabeledExpand for KEM as defined in RFC 9180."""
-    labeled_info = (
-        int_to_bytes(length, 2) + _HPKE_VERSION + _KEM_SUITE_ID + label + info
-    )
-    hkdf_expand = HKDFExpand(
-        algorithm=hashes.SHA256(),
-        length=length,
-        info=labeled_info,
-    )
-    return hkdf_expand.derive(prk)
-
-
-def _extract_and_expand(dh: bytes, kem_context: bytes) -> bytes:
-    """ExtractAndExpand as defined in RFC 9180."""
-    eae_prk = _kem_labeled_extract(b"", b"eae_prk", dh)
-    shared_secret = _kem_labeled_expand(
-        eae_prk,
-        b"shared_secret",
-        kem_context,
-        _KEM_DHKEM_X25519_HKDF_SHA256_NSECRET,
-    )
-    return shared_secret
-
-
-def _encap(pk_r: x25519.X25519PublicKey) -> tuple[bytes, bytes]:
-    """
-    Encapsulate: generate shared secret and encapsulated key.
-
-    Returns:
-        Tuple of (shared_secret, enc).
-    """
-    sk_e = x25519.X25519PrivateKey.generate()
-    pk_e = sk_e.public_key()
-    dh = sk_e.exchange(pk_r)
-    enc = pk_e.public_bytes_raw()
-    pk_rm = pk_r.public_bytes_raw()
-    kem_context = enc + pk_rm
-    shared_secret = _extract_and_expand(dh, kem_context)
-    return shared_secret, enc
-
-
-def _decap(enc: bytes, sk_r: x25519.X25519PrivateKey) -> bytes:
-    """
-    Decapsulate: recover shared secret from encapsulated key.
-
-    Returns:
-        The shared secret.
-    """
-    pk_e = x25519.X25519PublicKey.from_public_bytes(enc)
-    dh = sk_r.exchange(pk_e)
-    pk_rm = sk_r.public_key().public_bytes_raw()
-    kem_context = enc + pk_rm
-    shared_secret = _extract_and_expand(dh, kem_context)
-    return shared_secret
-
-
-def _hpke_labeled_extract(salt: bytes, label: bytes, ikm: bytes) -> bytes:
-    """LabeledExtract for HPKE context as defined in RFC 9180."""
-    labeled_ikm = _HPKE_VERSION + _HPKE_SUITE_ID + label + ikm
-    return hmac.digest(salt if salt else b"\x00" * 32, labeled_ikm, "sha256")
-
-
-def _hpke_labeled_expand(
-    prk: bytes, label: bytes, info: bytes, length: int
-) -> bytes:
-    """LabeledExpand for HPKE context as defined in RFC 9180."""
-    labeled_info = (
-        int_to_bytes(length, 2) + _HPKE_VERSION + _HPKE_SUITE_ID + label + info
-    )
-    hkdf_expand = HKDFExpand(
-        algorithm=hashes.SHA256(),
-        length=length,
-        info=labeled_info,
-    )
-    return hkdf_expand.derive(prk)
-
-
-def _key_schedule(shared_secret: bytes, info: bytes) -> tuple[bytes, bytes]:
-    """
-    Run the HPKE key schedule for Base mode.
-
-    Returns:
-        Tuple of (key, base_nonce).
-    """
-    mode = 0x00  # Base mode
-
-    psk_id_hash = _hpke_labeled_extract(b"", b"psk_id_hash", b"")
-    info_hash = _hpke_labeled_extract(b"", b"info_hash", info)
-    key_schedule_context = bytes([mode]) + psk_id_hash + info_hash
-
-    secret = _hpke_labeled_extract(shared_secret, b"secret", b"")
-
-    key = _hpke_labeled_expand(
-        secret, b"key", key_schedule_context, _AEAD_AES_128_GCM_NK
-    )
-    base_nonce = _hpke_labeled_expand(
-        secret, b"base_nonce", key_schedule_context, _AEAD_AES_128_GCM_NN
-    )
-
-    return key, base_nonce
 
 
 class HPKEError(Exception):
@@ -176,6 +90,8 @@ class SenderContext:
     HPKE sender context for encryption.
 
     Use this to encrypt multiple messages to the same recipient.
+    The first call to encrypt() returns enc || ciphertext.
+    Subsequent calls return just ciphertext.
     """
 
     def __init__(
@@ -183,18 +99,16 @@ class SenderContext:
         enc: bytes,
         key: bytes,
         base_nonce: bytes,
+        aead: AEAD,
     ) -> None:
         self._enc = enc
         self._key = key
         self._base_nonce = base_nonce
         self._seq = 0
         self._max_seq = (1 << (8 * len(base_nonce))) - 1
+        self._aead_type = aead
         self._aead = AESGCM(key)
-
-    @property
-    def enc(self) -> bytes:
-        """The encapsulated key to send to the recipient."""
-        return self._enc
+        self._first_message = True
 
     def _compute_nonce(self) -> bytes:
         """Compute the nonce for the current sequence number."""
@@ -210,7 +124,8 @@ class SenderContext:
             aad: Additional authenticated data (optional).
 
         Returns:
-            The ciphertext. Access enc via the `enc` property.
+            For the first message: enc || ciphertext (concatenated).
+            For subsequent messages: just ciphertext.
 
         Raises:
             MessageLimitReachedError: If the message limit is reached.
@@ -222,6 +137,10 @@ class SenderContext:
         nonce = self._compute_nonce()
         ct = self._aead.encrypt(nonce, plaintext, aad)
         self._seq += 1
+
+        if self._first_message:
+            self._first_message = False
+            return self._enc + ct
         return ct
 
 
@@ -236,12 +155,17 @@ class RecipientContext:
         self,
         key: bytes,
         base_nonce: bytes,
+        aead: AEAD,
+        nenc: int,
     ) -> None:
         self._key = key
         self._base_nonce = base_nonce
         self._seq = 0
         self._max_seq = (1 << (8 * len(base_nonce))) - 1
+        self._aead_type = aead
         self._aead = AESGCM(key)
+        self._nenc = nenc
+        self._first_message = True
 
     def _compute_nonce(self) -> bytes:
         """Compute the nonce for the current sequence number."""
@@ -253,7 +177,8 @@ class RecipientContext:
         Decrypt a message.
 
         Args:
-            ciphertext: The ciphertext to decrypt.
+            ciphertext: For first message, this should be enc || ciphertext.
+                       For subsequent messages, just ciphertext.
             aad: Additional authenticated data (optional).
 
         Returns:
@@ -267,6 +192,12 @@ class RecipientContext:
             raise MessageLimitReachedError(
                 "Message limit reached for this HPKE context"
             )
+
+        if self._first_message:
+            self._first_message = False
+            # First message has enc prepended, but we already processed it
+            # when creating the context, so just use ciphertext as-is
+
         nonce = self._compute_nonce()
         try:
             pt = self._aead.decrypt(nonce, ciphertext, aad)
@@ -276,72 +207,225 @@ class RecipientContext:
         return pt
 
 
-def create_sender(
-    public_key: x25519.X25519PublicKey, info: bytes = b""
-) -> SenderContext:
+class Suite:
     """
-    Create a sender context for encrypting messages.
-
-    This uses DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and AES-128-GCM.
-
-    Args:
-        public_key: The recipient's X25519 public key.
-        info: Application-specific info string (optional).
-
-    Returns:
-        A SenderContext for encrypting messages.
+    HPKE cipher suite combining a KEM, KDF, and AEAD.
 
     Example::
 
-        from cryptography.hazmat.primitives.hpke import (
-            create_sender, create_recipient
-        )
+        from cryptography.hazmat.primitives.hpke import Suite, KEM, KDF, AEAD
         from cryptography.hazmat.primitives.asymmetric import x25519
+
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         # Generate recipient keys
         private_key = x25519.X25519PrivateKey.generate()
         public_key = private_key.public_key()
 
         # Sender side
-        sender = create_sender(public_key, info=b"app info")
-        ciphertext = sender.encrypt(b"secret message")
-        enc = sender.enc  # send enc + ciphertext to recipient
+        sender = suite.sender(public_key, info=b"app info")
+        ciphertext = sender.encrypt(b"secret message")  # returns enc || ct
 
         # Recipient side
-        recipient = create_recipient(enc, private_key, info=b"app info")
-        plaintext = recipient.decrypt(ciphertext)
+        recipient = suite.recipient(ciphertext[:32], private_key, info=b"app info")
+        plaintext = recipient.decrypt(ciphertext[32:])
     """
-    shared_secret, enc = _encap(public_key)
-    key, base_nonce = _key_schedule(shared_secret, info)
-    return SenderContext(enc=enc, key=key, base_nonce=base_nonce)
 
+    def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None:
+        """
+        Create an HPKE cipher suite.
 
-def create_recipient(
-    enc: bytes, private_key: x25519.X25519PrivateKey, info: bytes = b""
-) -> RecipientContext:
-    """
-    Create a recipient context for decrypting messages.
+        Args:
+            kem: The Key Encapsulation Mechanism to use.
+            kdf: The Key Derivation Function to use.
+            aead: The AEAD algorithm to use.
+        """
+        self._kem = kem
+        self._kdf = kdf
+        self._aead = aead
 
-    This uses DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and AES-128-GCM.
+        self._kem_params = _KEM_PARAMS[kem]
+        self._kdf_params = _KDF_PARAMS[kdf]
+        self._aead_params = _AEAD_PARAMS[aead]
 
-    Args:
-        enc: The encapsulated key from the sender.
-        private_key: The recipient's X25519 private key.
-        info: Application-specific info string (optional).
+        # Build suite IDs
+        self._kem_suite_id = b"KEM" + int_to_bytes(self._kem_params["id"], 2)
+        self._hpke_suite_id = (
+            b"HPKE"
+            + int_to_bytes(self._kem_params["id"], 2)
+            + int_to_bytes(self._kdf_params["id"], 2)
+            + int_to_bytes(self._aead_params["id"], 2)
+        )
 
-    Returns:
-        A RecipientContext for decrypting messages.
-    """
-    shared_secret = _decap(enc, private_key)
-    key, base_nonce = _key_schedule(shared_secret, info)
-    return RecipientContext(key=key, base_nonce=base_nonce)
+    def _kem_labeled_extract(
+        self, salt: bytes, label: bytes, ikm: bytes
+    ) -> bytes:
+        """LabeledExtract for KEM as defined in RFC 9180."""
+        labeled_ikm = _HPKE_VERSION + self._kem_suite_id + label + ikm
+        return hmac.digest(
+            salt if salt else b"\x00" * self._kdf_params["nh"],
+            labeled_ikm,
+            "sha256",
+        )
+
+    def _kem_labeled_expand(
+        self, prk: bytes, label: bytes, info: bytes, length: int
+    ) -> bytes:
+        """LabeledExpand for KEM as defined in RFC 9180."""
+        labeled_info = (
+            int_to_bytes(length, 2)
+            + _HPKE_VERSION
+            + self._kem_suite_id
+            + label
+            + info
+        )
+        hkdf_expand = HKDFExpand(
+            algorithm=self._kdf_params["hash"],
+            length=length,
+            info=labeled_info,
+        )
+        return hkdf_expand.derive(prk)
+
+    def _extract_and_expand(self, dh: bytes, kem_context: bytes) -> bytes:
+        """ExtractAndExpand as defined in RFC 9180."""
+        eae_prk = self._kem_labeled_extract(b"", b"eae_prk", dh)
+        shared_secret = self._kem_labeled_expand(
+            eae_prk,
+            b"shared_secret",
+            kem_context,
+            self._kem_params["nsecret"],
+        )
+        return shared_secret
+
+    def _encap(
+        self, pk_r: x25519.X25519PublicKey
+    ) -> tuple[bytes, bytes]:
+        """Encapsulate: generate shared secret and encapsulated key."""
+        sk_e = x25519.X25519PrivateKey.generate()
+        pk_e = sk_e.public_key()
+        dh = sk_e.exchange(pk_r)
+        enc = pk_e.public_bytes_raw()
+        pk_rm = pk_r.public_bytes_raw()
+        kem_context = enc + pk_rm
+        shared_secret = self._extract_and_expand(dh, kem_context)
+        return shared_secret, enc
+
+    def _decap(
+        self, enc: bytes, sk_r: x25519.X25519PrivateKey
+    ) -> bytes:
+        """Decapsulate: recover shared secret from encapsulated key."""
+        pk_e = x25519.X25519PublicKey.from_public_bytes(enc)
+        dh = sk_r.exchange(pk_e)
+        pk_rm = sk_r.public_key().public_bytes_raw()
+        kem_context = enc + pk_rm
+        shared_secret = self._extract_and_expand(dh, kem_context)
+        return shared_secret
+
+    def _hpke_labeled_extract(
+        self, salt: bytes, label: bytes, ikm: bytes
+    ) -> bytes:
+        """LabeledExtract for HPKE context as defined in RFC 9180."""
+        labeled_ikm = _HPKE_VERSION + self._hpke_suite_id + label + ikm
+        return hmac.digest(
+            salt if salt else b"\x00" * self._kdf_params["nh"],
+            labeled_ikm,
+            "sha256",
+        )
+
+    def _hpke_labeled_expand(
+        self, prk: bytes, label: bytes, info: bytes, length: int
+    ) -> bytes:
+        """LabeledExpand for HPKE context as defined in RFC 9180."""
+        labeled_info = (
+            int_to_bytes(length, 2)
+            + _HPKE_VERSION
+            + self._hpke_suite_id
+            + label
+            + info
+        )
+        hkdf_expand = HKDFExpand(
+            algorithm=self._kdf_params["hash"],
+            length=length,
+            info=labeled_info,
+        )
+        return hkdf_expand.derive(prk)
+
+    def _key_schedule(
+        self, shared_secret: bytes, info: bytes
+    ) -> tuple[bytes, bytes]:
+        """Run the HPKE key schedule for Base mode."""
+        mode = 0x00  # Base mode
+
+        psk_id_hash = self._hpke_labeled_extract(b"", b"psk_id_hash", b"")
+        info_hash = self._hpke_labeled_extract(b"", b"info_hash", info)
+        key_schedule_context = bytes([mode]) + psk_id_hash + info_hash
+
+        secret = self._hpke_labeled_extract(shared_secret, b"secret", b"")
+
+        key = self._hpke_labeled_expand(
+            secret, b"key", key_schedule_context, self._aead_params["nk"]
+        )
+        base_nonce = self._hpke_labeled_expand(
+            secret, b"base_nonce", key_schedule_context, self._aead_params["nn"]
+        )
+
+        return key, base_nonce
+
+    def sender(
+        self,
+        public_key: x25519.X25519PublicKey,
+        info: bytes = b"",
+    ) -> SenderContext:
+        """
+        Create a sender context for encrypting messages.
+
+        Args:
+            public_key: The recipient's public key.
+            info: Application-specific info string (optional).
+
+        Returns:
+            A SenderContext for encrypting messages.
+        """
+        shared_secret, enc = self._encap(public_key)
+        key, base_nonce = self._key_schedule(shared_secret, info)
+        return SenderContext(
+            enc=enc, key=key, base_nonce=base_nonce, aead=self._aead
+        )
+
+    def recipient(
+        self,
+        enc: bytes,
+        private_key: x25519.X25519PrivateKey,
+        info: bytes = b"",
+    ) -> RecipientContext:
+        """
+        Create a recipient context for decrypting messages.
+
+        Args:
+            enc: The encapsulated key from the sender.
+            private_key: The recipient's private key.
+            info: Application-specific info string (optional).
+
+        Returns:
+            A RecipientContext for decrypting messages.
+        """
+        shared_secret = self._decap(enc, private_key)
+        key, base_nonce = self._key_schedule(shared_secret, info)
+        return RecipientContext(
+            key=key,
+            base_nonce=base_nonce,
+            aead=self._aead,
+            nenc=self._kem_params["nenc"],
+        )
 
 
 __all__ = [
+    "AEAD",
     "HPKEError",
+    "KDF",
+    "KEM",
     "MessageLimitReachedError",
     "RecipientContext",
     "SenderContext",
-    "create_recipient",
-    "create_sender",
+    "Suite",
 ]
