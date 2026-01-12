@@ -67,39 +67,36 @@ def _xor(a: bytes, b: bytes) -> bytes:
 
 def _get_kem_params(kem: KEM) -> _KEMParams:
     """Get parameters for a KEM."""
-    if kem == KEM.X25519:
-        return _KEMParams(
-            id=0x0020,
-            nsecret=32,
-            nenc=32,
-            npk=32,
-            nsk=32,
-            hash=hashes.SHA256(),
-        )
-    raise ValueError(f"Unsupported KEM: {kem}")
+    assert kem == KEM.X25519
+    return _KEMParams(
+        id=0x0020,
+        nsecret=32,
+        nenc=32,
+        npk=32,
+        nsk=32,
+        hash=hashes.SHA256(),
+    )
 
 
 def _get_kdf_params(kdf: KDF) -> _KDFParams:
     """Get parameters for a KDF."""
-    if kdf == KDF.HKDF_SHA256:
-        return _KDFParams(
-            id=0x0001,
-            nh=32,
-            hash=hashes.SHA256(),
-        )
-    raise ValueError(f"Unsupported KDF: {kdf}")
+    assert kdf == KDF.HKDF_SHA256
+    return _KDFParams(
+        id=0x0001,
+        nh=32,
+        hash=hashes.SHA256(),
+    )
 
 
 def _get_aead_params(aead: AEAD) -> _AEADParams:
     """Get parameters for an AEAD."""
-    if aead == AEAD.AES_128_GCM:
-        return _AEADParams(
-            id=0x0001,
-            nk=16,
-            nn=12,
-            nt=16,
-        )
-    raise ValueError(f"Unsupported AEAD: {aead}")
+    assert aead == AEAD.AES_128_GCM
+    return _AEADParams(
+        id=0x0001,
+        nk=16,
+        nn=12,
+        nt=16,
+    )
 
 
 class MessageLimitReachedError(Exception):
