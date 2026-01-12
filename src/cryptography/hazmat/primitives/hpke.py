@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import enum
 import hmac
+import typing
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -35,8 +36,30 @@ class AEAD(enum.Enum):
     AES_128_GCM = 0x0001
 
 
+class _KEMParams(typing.TypedDict):
+    id: int
+    nsecret: int
+    nenc: int
+    npk: int
+    nsk: int
+    hash: hashes.HashAlgorithm
+
+
+class _KDFParams(typing.TypedDict):
+    id: int
+    nh: int
+    hash: hashes.HashAlgorithm
+
+
+class _AEADParams(typing.TypedDict):
+    id: int
+    nk: int
+    nn: int
+    nt: int
+
+
 # KEM parameters
-_KEM_PARAMS = {
+_KEM_PARAMS: dict[KEM, _KEMParams] = {
     KEM.X25519: {
         "id": 0x0020,
         "nsecret": 32,
@@ -48,7 +71,7 @@ _KEM_PARAMS = {
 }
 
 # KDF parameters
-_KDF_PARAMS = {
+_KDF_PARAMS: dict[KDF, _KDFParams] = {
     KDF.HKDF_SHA256: {
         "id": 0x0001,
         "nh": 32,
@@ -57,7 +80,7 @@ _KDF_PARAMS = {
 }
 
 # AEAD parameters
-_AEAD_PARAMS = {
+_AEAD_PARAMS: dict[AEAD, _AEADParams] = {
     AEAD.AES_128_GCM: {
         "id": 0x0001,
         "nk": 16,
