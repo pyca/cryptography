@@ -1122,6 +1122,14 @@ Key derivation functions
 * argon2 variants (argon2d, argon2i, and argon2id) from :rfc:`9106`, OpenSSL's `evpkdf_argon2.txt`_, and the
   argon2 command line application.
 
+HPKE (Hybrid Public Key Encryption)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* HPKE test vectors from :rfc:`9180`, obtained from the `IETF CFRG HPKE repository`_.
+  These vectors cover all four modes (Base, PSK, Auth, AuthPSK), multiple KEMs
+  (X25519, X448, P-256, P-521), KDFs (HKDF-SHA256, HKDF-SHA512), and AEADs
+  (AES-128-GCM, AES-256-GCM, ChaCha20Poly1305).
+
 Key wrapping
 ~~~~~~~~~~~~
 
@@ -1267,3 +1275,4 @@ header format (substituting the correct information):
 .. _`badkeys`: https://github.com/vcsjones/badkeys/tree/50f1cc5f8d13bf3a2046d689f6452decb15d9c3c
 .. _`evpkdf_argon2.txt`: https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/1dbe8a6e1c56d010c271a80eafb2c7fd1b92fbda/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
+.. _`IETF CFRG HPKE repository`: https://github.com/cfrg/draft-irtf-cfrg-hpke
