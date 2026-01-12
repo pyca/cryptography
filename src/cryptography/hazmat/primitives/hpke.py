@@ -4,15 +4,14 @@
 
 from __future__ import annotations
 
+import dataclasses
 import enum
-import hmac
-import typing
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.utils import int_to_bytes
 
 _HPKE_VERSION = b"HPKE-v1"
@@ -36,7 +35,8 @@ class AEAD(enum.Enum):
     AES_128_GCM = 0x0001
 
 
-class _KEMParams(typing.TypedDict):
+@dataclasses.dataclass(frozen=True)
+class _KEMParams:
     id: int
     nsecret: int
     nenc: int
@@ -45,49 +45,19 @@ class _KEMParams(typing.TypedDict):
     hash: hashes.HashAlgorithm
 
 
-class _KDFParams(typing.TypedDict):
+@dataclasses.dataclass(frozen=True)
+class _KDFParams:
     id: int
     nh: int
     hash: hashes.HashAlgorithm
 
 
-class _AEADParams(typing.TypedDict):
+@dataclasses.dataclass(frozen=True)
+class _AEADParams:
     id: int
     nk: int
     nn: int
     nt: int
-
-
-# KEM parameters
-_KEM_PARAMS: dict[KEM, _KEMParams] = {
-    KEM.X25519: {
-        "id": 0x0020,
-        "nsecret": 32,
-        "nenc": 32,
-        "npk": 32,
-        "nsk": 32,
-        "hash": hashes.SHA256(),
-    },
-}
-
-# KDF parameters
-_KDF_PARAMS: dict[KDF, _KDFParams] = {
-    KDF.HKDF_SHA256: {
-        "id": 0x0001,
-        "nh": 32,
-        "hash": hashes.SHA256(),
-    },
-}
-
-# AEAD parameters
-_AEAD_PARAMS: dict[AEAD, _AEADParams] = {
-    AEAD.AES_128_GCM: {
-        "id": 0x0001,
-        "nk": 16,
-        "nn": 12,
-        "nt": 16,
-    },
-}
 
 
 def _xor(a: bytes, b: bytes) -> bytes:
@@ -95,13 +65,44 @@ def _xor(a: bytes, b: bytes) -> bytes:
     return bytes(x ^ y for x, y in zip(a, b))
 
 
-class HPKEError(Exception):
-    """Base exception for HPKE errors."""
+def _get_kem_params(kem: KEM) -> _KEMParams:
+    """Get parameters for a KEM."""
+    if kem == KEM.X25519:
+        return _KEMParams(
+            id=0x0020,
+            nsecret=32,
+            nenc=32,
+            npk=32,
+            nsk=32,
+            hash=hashes.SHA256(),
+        )
+    raise ValueError(f"Unsupported KEM: {kem}")
 
-    pass
+
+def _get_kdf_params(kdf: KDF) -> _KDFParams:
+    """Get parameters for a KDF."""
+    if kdf == KDF.HKDF_SHA256:
+        return _KDFParams(
+            id=0x0001,
+            nh=32,
+            hash=hashes.SHA256(),
+        )
+    raise ValueError(f"Unsupported KDF: {kdf}")
 
 
-class MessageLimitReachedError(HPKEError):
+def _get_aead_params(aead: AEAD) -> _AEADParams:
+    """Get parameters for an AEAD."""
+    if aead == AEAD.AES_128_GCM:
+        return _AEADParams(
+            id=0x0001,
+            nk=16,
+            nn=12,
+            nt=16,
+        )
+    raise ValueError(f"Unsupported AEAD: {aead}")
+
+
+class MessageLimitReachedError(Exception):
     """Raised when the message limit for a context is reached."""
 
     pass
@@ -267,17 +268,17 @@ class Suite:
         self._kdf = kdf
         self._aead = aead
 
-        self._kem_params = _KEM_PARAMS[kem]
-        self._kdf_params = _KDF_PARAMS[kdf]
-        self._aead_params = _AEAD_PARAMS[aead]
+        self._kem_params = _get_kem_params(kem)
+        self._kdf_params = _get_kdf_params(kdf)
+        self._aead_params = _get_aead_params(aead)
 
         # Build suite IDs
-        self._kem_suite_id = b"KEM" + int_to_bytes(self._kem_params["id"], 2)
+        self._kem_suite_id = b"KEM" + int_to_bytes(self._kem_params.id, 2)
         self._hpke_suite_id = (
             b"HPKE"
-            + int_to_bytes(self._kem_params["id"], 2)
-            + int_to_bytes(self._kdf_params["id"], 2)
-            + int_to_bytes(self._aead_params["id"], 2)
+            + int_to_bytes(self._kem_params.id, 2)
+            + int_to_bytes(self._kdf_params.id, 2)
+            + int_to_bytes(self._aead_params.id, 2)
         )
 
     def _kem_labeled_extract(
@@ -285,10 +286,10 @@ class Suite:
     ) -> bytes:
         """LabeledExtract for KEM as defined in RFC 9180."""
         labeled_ikm = _HPKE_VERSION + self._kem_suite_id + label + ikm
-        return hmac.digest(
-            salt if salt else b"\x00" * self._kdf_params["nh"],
+        return HKDF.extract(
+            self._kdf_params.hash,
+            salt if salt else None,
             labeled_ikm,
-            "sha256",
         )
 
     def _kem_labeled_expand(
@@ -303,7 +304,7 @@ class Suite:
             + info
         )
         hkdf_expand = HKDFExpand(
-            algorithm=self._kdf_params["hash"],
+            algorithm=self._kdf_params.hash,
             length=length,
             info=labeled_info,
         )
@@ -316,7 +317,7 @@ class Suite:
             eae_prk,
             b"shared_secret",
             kem_context,
-            self._kem_params["nsecret"],
+            self._kem_params.nsecret,
         )
         return shared_secret
 
@@ -345,10 +346,10 @@ class Suite:
     ) -> bytes:
         """LabeledExtract for HPKE context as defined in RFC 9180."""
         labeled_ikm = _HPKE_VERSION + self._hpke_suite_id + label + ikm
-        return hmac.digest(
-            salt if salt else b"\x00" * self._kdf_params["nh"],
+        return HKDF.extract(
+            self._kdf_params.hash,
+            salt if salt else None,
             labeled_ikm,
-            "sha256",
         )
 
     def _hpke_labeled_expand(
@@ -363,7 +364,7 @@ class Suite:
             + info
         )
         hkdf_expand = HKDFExpand(
-            algorithm=self._kdf_params["hash"],
+            algorithm=self._kdf_params.hash,
             length=length,
             info=labeled_info,
         )
@@ -382,13 +383,13 @@ class Suite:
         secret = self._hpke_labeled_extract(shared_secret, b"secret", b"")
 
         key = self._hpke_labeled_expand(
-            secret, b"key", key_schedule_context, self._aead_params["nk"]
+            secret, b"key", key_schedule_context, self._aead_params.nk
         )
         base_nonce = self._hpke_labeled_expand(
             secret,
             b"base_nonce",
             key_schedule_context,
-            self._aead_params["nn"],
+            self._aead_params.nn,
         )
 
         return key, base_nonce
@@ -437,7 +438,7 @@ class Suite:
             key=key,
             base_nonce=base_nonce,
             aead=self._aead,
-            nenc=self._kem_params["nenc"],
+            nenc=self._kem_params.nenc,
         )
 
 
@@ -445,7 +446,6 @@ __all__ = [
     "AEAD",
     "KDF",
     "KEM",
-    "HPKEError",
     "MessageLimitReachedError",
     "RecipientContext",
     "SenderContext",
