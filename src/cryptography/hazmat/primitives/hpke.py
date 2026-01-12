@@ -297,9 +297,7 @@ class Suite:
         )
         return shared_secret
 
-    def _encap(
-        self, pk_r: x25519.X25519PublicKey
-    ) -> tuple[bytes, bytes]:
+    def _encap(self, pk_r: x25519.X25519PublicKey) -> tuple[bytes, bytes]:
         """Encapsulate: generate shared secret and encapsulated key."""
         sk_e = x25519.X25519PrivateKey.generate()
         pk_e = sk_e.public_key()
@@ -310,9 +308,7 @@ class Suite:
         shared_secret = self._extract_and_expand(dh, kem_context)
         return shared_secret, enc
 
-    def _decap(
-        self, enc: bytes, sk_r: x25519.X25519PrivateKey
-    ) -> bytes:
+    def _decap(self, enc: bytes, sk_r: x25519.X25519PrivateKey) -> bytes:
         """Decapsulate: recover shared secret from encapsulated key."""
         pk_e = x25519.X25519PublicKey.from_public_bytes(enc)
         dh = sk_r.exchange(pk_e)
@@ -366,8 +362,10 @@ class Suite:
             secret, b"key", key_schedule_context, self._aead_params["nk"]
         )
         base_nonce = self._hpke_labeled_expand(
-            secret, b"base_nonce", key_schedule_context,
-            self._aead_params["nn"]
+            secret,
+            b"base_nonce",
+            key_schedule_context,
+            self._aead_params["nn"],
         )
 
         return key, base_nonce
