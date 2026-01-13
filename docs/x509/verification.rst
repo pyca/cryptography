@@ -354,7 +354,7 @@ the root of trust:
 
         Specifies that the extension identified by `extension_type` must not be present (must be absent).
 
-        :param type[ExtensionType] extension_type: The extension_type of the extension that must not be present.
+        :param extension_type: The extension type of the extension that must not be present.
 
         :returns: An instance of :class:`ExtensionPolicy`
 
@@ -368,7 +368,7 @@ the root of trust:
         when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier
         that uses the extension policy. For details on the callback signature, see :type:`MaybeExtensionValidatorCallback`.
 
-        :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
+        :param extension_type: A concrete class derived from :class:`~cryptography.x509.ExtensionType`
             indicating which extension may be present.
         :param Criticality criticality: The criticality of the extension
         :param validator_cb: An optional Python callback to validate the extension value.
@@ -386,7 +386,7 @@ the root of trust:
         when :meth:`ClientVerifier.verify` or :meth:`ServerVerifier.verify` is called on a verifier
         that uses the extension policy. For details on the callback signature, see :type:`PresentExtensionValidatorCallback`.
 
-        :param type[ExtensionType] extension_type: A concrete class derived from :type:`~cryptography.x509.ExtensionType`
+        :param extension_type: A concrete class derived from :class:`~cryptography.x509.ExtensionType`
             indicating which extension is required to be present.
         :param Criticality criticality: The criticality of the extension
         :param validator_cb: An optional Python callback to validate the extension value.
