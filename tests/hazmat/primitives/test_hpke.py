@@ -331,3 +331,9 @@ class TestHPKEVectors:
 
             pt = recipient.decrypt(ct, aad)
             assert pt == pt_expected
+
+
+def test_load_vectors_missing_file(monkeypatch):
+    """Test that load_vectors returns empty list when file doesn't exist."""
+    monkeypatch.setattr(os.path, "exists", lambda path: False)
+    assert load_vectors() == []
