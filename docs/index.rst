@@ -95,6 +95,10 @@ hazmat layer only when necessary.
     community
     glossary
 
+.. toctree::
+    :maxdepth: 1
+
+    statements/index
 
 .. note::
 
