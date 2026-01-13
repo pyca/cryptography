@@ -7,7 +7,6 @@ from __future__ import annotations
 import dataclasses
 import enum
 
-from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -110,8 +109,7 @@ class SenderContext:
     HPKE sender context for encryption.
 
     Use this to encrypt multiple messages to the same recipient.
-    The first call to encrypt() returns enc || ciphertext.
-    Subsequent calls return just ciphertext.
+    Access the encapsulated key via the `enc` property.
     """
 
     def __init__(
@@ -128,7 +126,11 @@ class SenderContext:
         self._max_seq = (1 << (8 * len(base_nonce))) - 1
         self._aead_type = aead
         self._aead = AESGCM(key)
-        self._first_message = True
+
+    @property
+    def enc(self) -> bytes:
+        """The encapsulated key to send to the recipient."""
+        return self._enc
 
     def _compute_nonce(self) -> bytes:
         """Compute the nonce for the current sequence number."""
@@ -144,8 +146,7 @@ class SenderContext:
             aad: Additional authenticated data (optional).
 
         Returns:
-            For the first message: enc || ciphertext (concatenated).
-            For subsequent messages: just ciphertext.
+            The ciphertext.
 
         Raises:
             MessageLimitReachedError: If the message limit is reached.
@@ -157,10 +158,6 @@ class SenderContext:
         nonce = self._compute_nonce()
         ct = self._aead.encrypt(nonce, plaintext, aad)
         self._seq += 1
-
-        if self._first_message:
-            self._first_message = False
-            return self._enc + ct
         return ct
 
 
@@ -176,7 +173,6 @@ class RecipientContext:
         key: bytes,
         base_nonce: bytes,
         aead: AEAD,
-        nenc: int,
     ) -> None:
         self._key = key
         self._base_nonce = base_nonce
@@ -184,8 +180,6 @@ class RecipientContext:
         self._max_seq = (1 << (8 * len(base_nonce))) - 1
         self._aead_type = aead
         self._aead = AESGCM(key)
-        self._nenc = nenc
-        self._first_message = True
 
     def _compute_nonce(self) -> bytes:
         """Compute the nonce for the current sequence number."""
@@ -197,8 +191,7 @@ class RecipientContext:
         Decrypt a message.
 
         Args:
-            ciphertext: For first message, this should be enc || ciphertext.
-                       For subsequent messages, just ciphertext.
+            ciphertext: The ciphertext to decrypt.
             aad: Additional authenticated data (optional).
 
         Returns:
@@ -213,16 +206,8 @@ class RecipientContext:
                 "Message limit reached for this HPKE context"
             )
 
-        if self._first_message:
-            self._first_message = False
-            # First message has enc prepended, but we already processed it
-            # when creating the context, so just use ciphertext as-is
-
         nonce = self._compute_nonce()
-        try:
-            pt = self._aead.decrypt(nonce, ciphertext, aad)
-        except Exception as e:
-            raise InvalidTag() from e
+        pt = self._aead.decrypt(nonce, ciphertext, aad)
         self._seq += 1
         return pt
 
@@ -244,12 +229,12 @@ class Suite:
 
         # Sender side
         sender = suite.sender(public_key, info=b"app info")
-        ciphertext = sender.encrypt(b"secret message")  # returns enc || ct
+        enc = sender.enc  # encapsulated key to send to recipient
+        ciphertext = sender.encrypt(b"secret message")
 
         # Recipient side
-        enc = ciphertext[:32]
         recipient = suite.recipient(enc, private_key, info=b"app info")
-        plaintext = recipient.decrypt(ciphertext[32:])
+        plaintext = recipient.decrypt(ciphertext)
     """
 
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None:
@@ -435,7 +420,6 @@ class Suite:
             key=key,
             base_nonce=base_nonce,
             aead=self._aead,
-            nenc=self._kem_params.nenc,
         )
 
 
