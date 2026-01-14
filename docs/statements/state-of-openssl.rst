@@ -58,7 +58,7 @@ Memory Safety
 
 At the time OpenSSL was created, there were no meaningful programming languages that meaningfully provided performance, embeddability, and memory safety — if you wanted a memory safe language, you were committing to giving up performance and adding a garbage collector.
 
-The world has changed. Nearly 5 years ago, ``pyca/cryptography`` issued our first release incorporating Rust code, and since then we have migrated significant nearly all functionality to Rust, using a mix of pure-Rust for all parsing and X.509 operations combined with using OpenSSL for providing cryptographic algorithms — gaining performance wins and avoiding several OpenSSL CVEs. `We know these transitions are possible`_.
+The world has changed. Nearly 5 years ago, ``pyca/cryptography`` issued our first release incorporating Rust code, and since then we have migrated nearly all functionality to Rust, using a mix of pure-Rust for all parsing and X.509 operations combined with using OpenSSL for providing cryptographic algorithms — gaining performance wins and avoiding several OpenSSL CVEs. `We know these transitions are possible`_.
 
 A library committed to security needs to make a long-term commitment to a migration to a memory safe programming language. OpenSSL has shown no initiative at all on this issue.
 
