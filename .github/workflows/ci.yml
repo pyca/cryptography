@@ -353,6 +353,9 @@ jobs:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
+        exclude:
+          - PYTHON: {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
+            WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
