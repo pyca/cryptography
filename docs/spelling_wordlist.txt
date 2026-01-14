@@ -5,6 +5,7 @@ argon2
 argon2id
 Authenticator
 authenticator
+AVX
 backend
 Backends
 backends
@@ -54,6 +55,7 @@ Django
 Docstrings
 duplicative
 El
+embeddability
 Encodings
 endian
 Euler
@@ -63,8 +65,11 @@ fallback
 Fernet
 fernet
 FIPS
+Gaynor
 Google
+Graviola
 hazmat
+Heartbleed
 Homebrew
 hostname
 hostnames
@@ -84,6 +89,7 @@ kibibyte
 kibibytes
 Koblitz
 Lange
+lede
 logins
 Mbed
 metadata
@@ -99,6 +105,7 @@ nilpotent
 Nonces
 nonces
 online
+OpenSSL
 paddings
 Parallelization
 personalization
@@ -123,6 +130,7 @@ pytest
 relicensed
 responder
 runtime
+runtimes
 RustCrypto
 Schneier
 scrypt
