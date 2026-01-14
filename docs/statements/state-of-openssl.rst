@@ -1,13 +1,13 @@
 ===============================================
-The State of OpenSSL for pyca/cryptography
+The State of OpenSSL for ``pyca/cryptography``
 ===============================================
 **Published: January 14, 2026**
 
-For the past 12 years, we (Paul Kehrer and Alex Gaynor) have maintained the Python ``cryptography`` library (also known as pyca/cryptography or `cryptography.io`_). For that entire period, we've relied on OpenSSL to provide core cryptographic algorithms. This past October, `we gave a talk at the OpenSSL Conference`_ describing our experiences. This talk focuses on the growing problems we have with OpenSSL's direction. The mistakes we see in OpenSSL's development have become so significant that we believe substantial changes are required — either to OpenSSL, or to our reliance on it.
+For the past 12 years, we (Paul Kehrer and Alex Gaynor) have maintained the Python ``cryptography`` library (also known as ``pyca/cryptography`` or `cryptography.io`_). For that entire period, we've relied on OpenSSL to provide core cryptographic algorithms. This past October, `we gave a talk at the OpenSSL Conference`_ describing our experiences. This talk focuses on the growing problems we have with OpenSSL's direction. The mistakes we see in OpenSSL's development have become so significant that we believe substantial changes are required — either to OpenSSL, or to our reliance on it.
 
 Fundamentally, OpenSSL's trajectory can be understood as a play in three acts:
 
-* In the pre-Heartbleed era (pre-2014), OpenSSL was undermaintained and languishing, substantially lagging behind expectations.
+* In the pre-Heartbleed era (pre-2014), OpenSSL was under-maintained and languishing, substantially lagging behind expectations.
 * In the immediate post-Heartbleed era, OpenSSL's maintenance was reinvigorated and it made substantial progress and improvements. It grew a real code review process, began running tests in CI, adopted fuzz testing, and matured its release process.
 * Finally, in 2021 OpenSSL 3 was released. OpenSSL 3 introduced new APIs and had large internal refactors. Relative to previous OpenSSL versions, OpenSSL 3 had significant regressions in performance, complexity, API ergonomics, and didn't make needed improvements in areas like testing, verification, and memory safety. Over the same period, OpenSSL's forks have all made progress in these areas. Many of our concerns about OpenSSL's direction in this time have substantial overlap with `those highlighted by HAProxy`_.
 
@@ -20,7 +20,7 @@ Compared to OpenSSL 1.1.1, OpenSSL 3 has significant performance regressions in 
 
 Several years ago, we filed a bug reporting that elliptic curve public key loading had regressed 5-8x between OpenSSL 1.1.1 and 3.0.7. The reason we had noticed this is that performance had gotten so bad that we'd seen it in our test suite runtimes. Since then, OpenSSL has improved performance such that it's *only* 3x slower than it used to be. But more significantly, the response to the issue was that, 'regression was expected with OpenSSL 3, and while there might be some optimizations, we shouldn't expect it to ever get back to 1.1.1 levels'. Performance regressions can be acceptable, and even appropriate, when they improve other areas of the library, however as we'll describe, the cause of these regressions has been *other* mistakes, and not offsetting improvements.
 
-As a result of these sorts of regressions, when pyca/cryptography migrated X.509 certificate parsing from OpenSSL to our own Rust code, we got a 10x performance improvement relative to OpenSSL 3 (n.b., some of this improvement is attributable to advantages in our own code, but much is explainable by the OpenSSL 3 regressions). Later, moving public key parsing to our own Rust code made end-to-end X.509 path validation 60% faster — just improving key loading led to a 60% end-to-end improvement, that's how extreme the overhead of key parsing in OpenSSL was.
+As a result of these sorts of regressions, when ``pyca/cryptography`` migrated X.509 certificate parsing from OpenSSL to our own Rust code, we got a 10x performance improvement relative to OpenSSL 3 (n.b., some of this improvement is attributable to advantages in our own code, but much is explainable by the OpenSSL 3 regressions). Later, moving public key parsing to our own Rust code made end-to-end X.509 path validation 60% faster — just improving key loading led to a 60% end-to-end improvement, that's how extreme the overhead of key parsing in OpenSSL was.
 
 The fact that we are able to achieve better performance doing our own parsing makes clear that doing better is practical. And indeed, our performance is not a result of clever SIMD micro-optimizations, it's the result of doing simple things that work: we avoid copies, allocations, hash tables, indirect calls, and locks — none of which should be required for parsing basic DER structures.
 
@@ -35,17 +35,15 @@ In addition to making public APIs more frustrating and error prone to use, OpenS
 
 OpenSSL also 3 introduced the notion of "providers" (obsoleting, but not replacing, the previous ENGINE APIs), which allow for external implementations of algorithms (including algorithms provided by OpenSSL itself). This was the source of innumerable performance regressions, due to poorly designed APIs. In particular, OpenSSL allowed replacing any algorithm at any point in program execution, which necessitated adding innumerable allocations and locks to nearly every operation. To mitigate this, OpenSSL then added more caches, and ultimately RCU (Read-Copy-Update) — a complex memory management strategy which had difficult to diagnose bugs.
 
-From our perspective, this is a cycle of compounding bad decisions: the providers API was mis-designed (there is no need to be able to redefine SHA-256 at arbitrary points in program execution) leading to performance regressions. This led to additional complexity to mitigate those regressions in the form of caching and RCU, which in term led to more bugs. And after all that, performance was *still* worse than it had been at the beginning.
+From our perspective, this is a cycle of compounding bad decisions: the providers API was incorrectly designed (there is no need to be able to redefine SHA-256 at arbitrary points in program execution) leading to performance regressions. This led to additional complexity to mitigate those regressions in the form of caching and RCU, which in term led to more bugs. And after all that, performance was *still* worse than it had been at the beginning.
 
-Finally, taking an OpenSSL public API and attempting to trace the implementation to see how it is implemented has become an exercise in self-flagellation. Being able to read the source to understand how something works is important both as part of `self-improvement in software engineering`_, but also because as sophisticated consumers there are inevitably things about how an implementation works that aren't documented, and reading the source gives you ground truth. The number of indirect calls, optional paths, #ifdef, and other obstacles to comprehension is astounding. We cannot overstate the extent to which just reading the OpenSSL source code has become miserable — in a way that both wasn't true previously, and isn't true in LibreSSL, BoringSSL, or AWS-LC.
+Finally, taking an OpenSSL public API and attempting to trace the implementation to see how it is implemented has become an exercise in self-flagellation. Being able to read the source to understand how something works is important both as part of `self-improvement in software engineering`_, but also because as sophisticated consumers there are inevitably things about how an implementation works that aren't documented, and reading the source gives you ground truth. The number of indirect calls, optional paths, ``#ifdef``, and other obstacles to comprehension is astounding. We cannot overstate the extent to which just reading the OpenSSL source code has become miserable — in a way that both wasn't true previously, and isn't true in LibreSSL, BoringSSL, or AWS-LC.
 
 
 Testing and Verification
 =========================
 
 We joke that the Python Cryptographic Authority is a CI engineering project that incidentally produces a cryptography library. The joke reflects our real belief that investment in testing and automation enables `Pareto improvements`_ in development speed and correctness — to the point that it can make other work look trivial.
-
-.. _Pareto improvements: https://en.wikipedia.org/wiki/Pareto_efficiency
 
 The OpenSSL project does not sufficiently prioritize testing. While OpenSSL's testing has improved substantially since the pre-Heartbleed era there are quite significant gaps. The gaps in OpenSSL's test coverage were acutely visible during the OpenSSL 3.0 development cycle — where the project was extremely reliant on the community to report regressions experienced during the extended alpha and beta period (covering 19 pre-releases over the course of 16 months), because their own tests were insufficient to catch unintended real-world breakages. Despite the known gaps in OpenSSL's test coverage, it's still common for bug fixes to land without an accompanying regression test.
 
@@ -60,7 +58,7 @@ Memory Safety
 
 At the time OpenSSL was created, there were no meaningful programming languages that meaningfully provided performance, embeddability, and memory safety — if you wanted a memory safe language, you were committing to giving up performance and adding a garbage collector.
 
-The world has changed. Nearly 5 years ago, pyca/cryptography issued our first release incorporating Rust code, and since then we have migrated significant nearly all functionality to Rust, using a mix of pure-Rust for all parsing and X.509 operations combined with using OpenSSL for providing cryptographic algorithms — gaining performance wins and avoiding several OpenSSL CVEs. `We know these transitions are possible`_.
+The world has changed. Nearly 5 years ago, ``pyca/cryptography`` issued our first release incorporating Rust code, and since then we have migrated significant nearly all functionality to Rust, using a mix of pure-Rust for all parsing and X.509 operations combined with using OpenSSL for providing cryptographic algorithms — gaining performance wins and avoiding several OpenSSL CVEs. `We know these transitions are possible`_.
 
 A library committed to security needs to make a long-term commitment to a migration to a memory safe programming language. OpenSSL has shown no initiative at all on this issue.
 
@@ -84,10 +82,11 @@ If we are able to successfully switch to one of OpenSSL's forks for our binary w
 
 Lastly, in the long term, we are actively tracking non-OpenSSL derived cryptography libraries such as Graviola as potential alternatives.
 
-We recognize that changes in which libraries we use to provide cryptographic implementations have substantial impact on our users — particularly redistributors. We do not contemplate these steps lightly, nor do we anticipate making them hastily. However, due to the gravity of our concerns, we are compelled to act. If you rely on pyca/cryptography's support for OpenSSL, the best way to avoid the most drastic steps contemplated here is to engage with the OpenSSL project and contribute to improvements on these axes.
+We recognize that changes in which libraries we use to provide cryptographic implementations have substantial impact on our users — particularly redistributors. We do not contemplate these steps lightly, nor do we anticipate making them hastily. However, due to the gravity of our concerns, we are compelled to act. If you rely on ``pyca/cryptography``'s support for OpenSSL, the best way to avoid the most drastic steps contemplated here is to engage with the OpenSSL project and contribute to improvements on these axes.
 
 .. _`cryptography.io`: http://cryptography.io
 .. _`we gave a talk at the OpenSSL Conference`: https://www.youtube.com/watch?v=RUIguklWwx0
 .. _`those highlighted by HAProxy`: https://www.haproxy.com/blog/state-of-ssl-stacks
+.. _`Pareto improvements`: https://en.wikipedia.org/wiki/Pareto_efficiency
 .. _`self-improvement in software engineering`: https://alexgaynor.net/2019/jul/11/read-code-more/
 .. _`We know these transitions are possible`: https://www.youtube.com/watch?v=z_Eiy2W0APU
