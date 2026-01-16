@@ -357,6 +357,9 @@ jobs:
           # incompatibility
           - PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
             WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+          # XXX: just for testing
+          - PYTHON: {VERSION: "3.13t", NOXSESSION: "tests-nocoverage"}
+            WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
           - PYTHON: {VERSION: "3.14t", NOXSESSION: "tests-nocoverage"}
             WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
