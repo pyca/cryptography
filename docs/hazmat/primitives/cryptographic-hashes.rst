@@ -67,6 +67,28 @@ Message digests (Hashing)
 
         :return bytes: The message digest as bytes.
 
+    .. staticmethod:: hash(algorithm, data)
+
+        .. versionadded:: 47.0.0
+
+        A one-shot method to compute the digest for the provided ``data``.
+
+        .. doctest::
+
+            >>> from cryptography.hazmat.primitives.hashes import Hash
+            >>> Hash.hash(hashes.SHA256(), b"my data")
+            b'\xb2\x16{\n\xa7\xefw\x94t\x0b\x05Z\xc7\xa8\x80\xa5)4\xaag\xef\x1c\xa6\x88z\xd8\x1d\xcc\xef\xd5\xb9\xde'
+
+        :param algorithm: A
+            :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+            instance.
+        :param data: The bytes to be hashed.
+        :return bytes: The message digest as bytes.
+        :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if
+            the provided ``algorithm`` is unsupported.
+        :raises TypeError: This exception is raised if ``data`` is not
+            ``bytes``.
+
 .. class:: XOFHash(algorithm)
 
     An extendable output function (XOF) is a cryptographic hash function that

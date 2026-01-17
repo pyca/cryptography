@@ -135,6 +135,33 @@ impl Hash {
             ctx: Some(self.get_ctx()?.clone()),
         })
     }
+
+    #[staticmethod]
+    fn hash<'p>(
+        py: pyo3::Python<'p>,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+        data: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let md = message_digest_from_algorithm(py, algorithm)?;
+
+        #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
+        {
+            if algorithm.is_instance(&types::EXTENDABLE_OUTPUT_FUNCTION.get(py)?)? {
+                let digest_size = algorithm
+                    .getattr(pyo3::intern!(py, "digest_size"))?
+                    .extract::<usize>()?;
+                let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
+                    openssl::hash::hash_xof(md, data.as_bytes(), b)
+                        .map_err(CryptographyError::from)?;
+                    Ok(())
+                })?;
+                return Ok(result);
+            }
+        }
+
+        let digest = openssl::hash::hash(md, data.as_bytes())?;
+        Ok(pyo3::types::PyBytes::new(py, &digest))
+    }
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.hashes")]
