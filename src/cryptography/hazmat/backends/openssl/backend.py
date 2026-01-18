@@ -299,5 +299,8 @@ class Backend:
     def pkcs7_supported(self) -> bool:
         return True
 
+    def mldsa44_supported(self) -> bool:
+        return rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+
 
 backend = Backend()

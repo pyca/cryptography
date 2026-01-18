@@ -185,6 +185,9 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::PBE_WITH_SHA_AND_40_BIT_RC2_CBC)]
     PbeWithShaAnd40BitRc2Cbc(Pkcs12PbeParams<'a>),
 
+    #[defined_by(oid::ML_DSA_44_OID)]
+    MlDsa44,
+
     #[default]
     Other(asn1::ObjectIdentifier, Option<asn1::Tlv<'a>>),
 }

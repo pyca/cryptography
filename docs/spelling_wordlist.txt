@@ -50,6 +50,7 @@ Deserialization
 deserializing
 Diffie
 Diffie
+digestAlgorithm
 disambiguating
 Django
 Docstrings
