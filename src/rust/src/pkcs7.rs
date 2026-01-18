@@ -509,6 +509,15 @@ fn sign_and_serialize<'p>(
     let ka_vec = cryptography_keepalive::KeepAlive::new();
     let ka_bytes = cryptography_keepalive::KeepAlive::new();
     for (cert, py_private_key, py_hash_alg, rsa_padding) in py_signers.iter() {
+        // For ML-DSA, py_hash_alg is None, and we have to use SHA-512 for message digest
+        // per RFC 9882 Section 3.3
+        let hash_alg_for_digest = if py_hash_alg.is_none()
+            && (py_private_key.is_instance(&types::ML_DSA_44_PRIVATE_KEY.get(py)?)?)
+        {
+            types::HASHES_MODULE.get(py)?.getattr("SHA512")?.call0()?
+        } else {
+            py_hash_alg.clone()
+        };
         let (authenticated_attrs, signature) =
             if options.contains(&types::PKCS7_NO_ATTRIBUTES.get(py)?)? {
                 (
@@ -538,7 +547,7 @@ fn sign_and_serialize<'p>(
                     },
                 ];
 
-                let digest = x509::ocsp::hash_data(py, py_hash_alg, &data_with_header)?;
+                let digest = x509::ocsp::hash_data(py, &hash_alg_for_digest, &data_with_header)?;
                 let digest_wrapped = ka_vec.add(asn1::write_single(&digest.as_bytes())?);
                 authenticated_attrs.push(Attribute {
                     type_id: PKCS7_MESSAGE_DIGEST_OID,
@@ -574,7 +583,7 @@ fn sign_and_serialize<'p>(
                 )
             };
 
-        let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[&*py_hash_alg
+        let digest_alg = x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS[&*hash_alg_for_digest
             .getattr(pyo3::intern!(py, "name"))?
             .extract::<pyo3::pybacked::PyBackedStr>()?]
             .clone();

@@ -12,6 +12,31 @@ use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 use crate::MIN_DH_MODULUS_SIZE;
 use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult};
 
+// RFC 9881 Section 6: ML-DSA Private Key Format
+// ML-DSA-44-PrivateKey ::= CHOICE {
+//   seed [0] OCTET STRING (SIZE (32)),
+//   expandedKey OCTET STRING (SIZE (2560)),
+//   both SEQUENCE {
+//       seed OCTET STRING (SIZE (32)),
+//       expandedKey OCTET STRING (SIZE (2560))
+//   }
+// }
+#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+enum MlDsa44PrivateKeyValue<'a> {
+    #[implicit(0)]
+    Seed(&'a [u8]),
+    ExpandedKey(&'a [u8]),
+    Both(MlDsa44PrivateKeyBoth<'a>),
+}
+
+#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct MlDsa44PrivateKeyBoth<'a> {
+    seed: &'a [u8],
+    expanded_key: &'a [u8],
+}
+
 // RFC 5208 Section 5
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct PrivateKeyInfo<'a> {
@@ -105,6 +130,47 @@ pub fn parse_private_key(
             Ok(openssl::pkey::PKey::private_key_from_raw_bytes(
                 key_bytes,
                 openssl::pkey::Id::ED448,
+            )?)
+        }
+        #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+        AlgorithmParameters::Mldsa44 => {
+            // RFC 9881 Section 6 defines three CHOICE formats for ML-DSA private keys:
+            // 1. seed [0] IMPLICIT OCTET STRING (SIZE (32)) - recommended
+            // 2. expandedKey OCTET STRING (SIZE (2560))
+            // 3. both SEQUENCE { seed, expandedKey }
+
+            let key_value = asn1::parse_single::<MlDsa44PrivateKeyValue<'_>>(k.private_key)?;
+
+            let seed_bytes = match key_value {
+                MlDsa44PrivateKeyValue::Seed(seed) => {
+                    // Validate seed size
+                    if seed.len() != 32 {
+                        return Err(KeyParsingError::InvalidKey);
+                    }
+                    seed
+                }
+                MlDsa44PrivateKeyValue::ExpandedKey(expanded) => {
+                    // Validate expanded key size
+                    if expanded.len() != 2560 {
+                        return Err(KeyParsingError::InvalidKey);
+                    }
+                    // For now, we don't have a way to load from expanded key
+                    // This would require OpenSSL API support
+                    return Err(KeyParsingError::InvalidKey);
+                }
+                MlDsa44PrivateKeyValue::Both(both) => {
+                    // Validate sizes
+                    if both.seed.len() != 32 || both.expanded_key.len() != 2560 {
+                        return Err(KeyParsingError::InvalidKey);
+                    }
+                    // Use the seed from the both format
+                    both.seed
+                }
+            };
+
+            Ok(openssl::pkey::PKey::private_key_from_seed(
+                openssl::pkey_ml_dsa::Variant::MlDsa44,
+                seed_bytes,
             )?)
         }
 
@@ -441,6 +507,22 @@ pub fn serialize_private_key(
             (params, private_key_der)
         }
         _ => {
+            // If pkey type is implemented in a provider in OpenSSL, EVP_KEY_id() will return -1
+            // meaning that the type is not really registered. Use different method to detect ML-DSA
+            #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+            {
+                if let Some(ml_dsa_params) = pkey.ml_dsa(openssl::pkey_ml_dsa::Variant::MlDsa44)? {
+                    // RFC 9881 Section 6: Use seed-only format (recommended for storage efficiency)
+                    // Encode as [0] IMPLICIT OCTET STRING (SIZE (32))
+                    let seed = ml_dsa_params.private_key_seed()?;
+                    let key_value = MlDsa44PrivateKeyValue::Seed(&seed);
+                    let private_key_der = asn1::write_single(&key_value)?;
+                    (AlgorithmParameters::Mldsa44, private_key_der)
+                } else {
+                    unimplemented!("Unknown key type");
+                }
+            }
+            #[cfg(not(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
             unimplemented!("Unknown key type");
         }
     };

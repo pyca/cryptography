@@ -17,6 +17,13 @@ fn main() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
     }
 
+    if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {
+        let version = u64::from_str_radix(&version, 16).unwrap();
+        if version >= 0x3050_0000 {
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_350_OR_GREATER");
+        }
+    }
+
     if let Ok(vars) = env::var("DEP_OPENSSL_CONF") {
         for var in vars.split(',') {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OSSLCONF=\"{var}\"");

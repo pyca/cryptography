@@ -117,6 +117,18 @@ fn private_key_from_pkey<'p>(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    // Check for ML-DSA keys using the ml_dsa() method
+    #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+    {
+        if pkey
+            .ml_dsa(openssl::pkey_ml_dsa::Variant::MlDsa44)?
+            .is_some()
+        {
+            return Ok(crate::backend::mldsa44::private_key_from_pkey(pkey)
+                .into_pyobject(py)?
+                .into_any());
+        }
+    }
     match pkey.id() {
         openssl::pkey::Id::RSA => Ok(crate::backend::rsa::private_key_from_pkey(
             pkey,
@@ -245,6 +257,19 @@ fn public_key_from_pkey<'p>(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
     id: openssl::pkey::Id,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    // Check for ML-DSA keys using the ml_dsa() method
+    #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+    {
+        if pkey
+            .ml_dsa(openssl::pkey_ml_dsa::Variant::MlDsa44)?
+            .is_some()
+        {
+            return Ok(crate::backend::mldsa44::public_key_from_pkey(pkey)
+                .into_pyobject(py)?
+                .into_any());
+        }
+    }
+
     // `id` is a separate argument so we can test this while passing something
     // unsupported.
     match id {
