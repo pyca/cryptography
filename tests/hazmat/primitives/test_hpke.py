@@ -17,9 +17,11 @@ from cryptography.hazmat.primitives.hpke import (
     AEAD,
     KDF,
     KEM,
-    MessageLimitReachedError,
     Suite,
 )
+
+# X25519 enc size
+NENC = 32
 
 
 def load_vectors():
@@ -75,14 +77,12 @@ class TestHPKEBasicFunctionality:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        # Sender side
-        sender = suite.sender(pk_r, info=b"test")
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"Hello, HPKE!", b"additional data")
-
-        # Recipient side
-        recipient = suite.recipient(enc, sk_r, info=b"test")
-        plaintext = recipient.decrypt(ciphertext, b"additional data")
+        ciphertext = suite.encrypt(
+            b"Hello, HPKE!", pk_r, info=b"test", aad=b"additional data"
+        )
+        plaintext = suite.decrypt(
+            ciphertext, sk_r, info=b"test", aad=b"additional data"
+        )
 
         assert plaintext == b"Hello, HPKE!"
 
@@ -93,12 +93,8 @@ class TestHPKEBasicFunctionality:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"Hello!")
-
-        recipient = suite.recipient(enc, sk_r)
-        plaintext = recipient.decrypt(ciphertext)
+        ciphertext = suite.encrypt(b"Hello!", pk_r)
+        plaintext = suite.decrypt(ciphertext, sk_r)
 
         assert plaintext == b"Hello!"
 
@@ -110,13 +106,10 @@ class TestHPKEBasicFunctionality:
         pk_r = sk_r.public_key()
         sk_wrong = x25519.X25519PrivateKey.generate()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"Secret message")
+        ciphertext = suite.encrypt(b"Secret message", pk_r)
 
-        recipient = suite.recipient(enc, sk_wrong)
         with pytest.raises(InvalidTag):
-            recipient.decrypt(ciphertext)
+            suite.decrypt(ciphertext, sk_wrong)
 
     def test_wrong_aad_fails(self):
         """Test that decryption with wrong AAD fails."""
@@ -125,32 +118,10 @@ class TestHPKEBasicFunctionality:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"Secret message", b"correct aad")
+        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
 
-        recipient = suite.recipient(enc, sk_r)
         with pytest.raises(InvalidTag):
-            recipient.decrypt(ciphertext, b"wrong aad")
-
-    def test_multiple_messages(self):
-        """Test encrypting/decrypting multiple messages with same context."""
-        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-
-        ct1 = sender.encrypt(b"Message 1")
-        ct2 = sender.encrypt(b"Message 2")
-        ct3 = sender.encrypt(b"Message 3")
-
-        recipient = suite.recipient(enc, sk_r)
-        assert recipient.decrypt(ct1) == b"Message 1"
-        assert recipient.decrypt(ct2) == b"Message 2"
-        assert recipient.decrypt(ct3) == b"Message 3"
+            suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
 
     def test_info_mismatch_fails(self):
         """Test that mismatched info strings cause decryption failure."""
@@ -159,28 +130,22 @@ class TestHPKEBasicFunctionality:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r, info=b"sender info")
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"Secret")
+        ciphertext = suite.encrypt(b"Secret", pk_r, info=b"sender info")
 
-        recipient = suite.recipient(enc, sk_r, info=b"different info")
         with pytest.raises(InvalidTag):
-            recipient.decrypt(ciphertext)
+            suite.decrypt(ciphertext, sk_r, info=b"different info")
 
-    def test_enc_property(self):
-        """Test that enc property returns the encapsulated key."""
+    def test_ciphertext_format(self):
+        """Test that ciphertext is enc || ct format."""
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
+        ciphertext = suite.encrypt(b"test", pk_r)
 
-        # X25519 enc is 32 bytes
-        assert len(enc) == 32
-        # enc should be consistent
-        assert sender.enc == enc
+        # ciphertext should be: enc (32 bytes) + ct (4 bytes pt + 16 bytes tag)
+        assert len(ciphertext) == NENC + 4 + 16
 
     def test_empty_plaintext(self):
         """Test encryption/decryption of empty plaintext."""
@@ -189,12 +154,8 @@ class TestHPKEBasicFunctionality:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"")
-
-        recipient = suite.recipient(enc, sk_r)
-        plaintext = recipient.decrypt(ciphertext)
+        ciphertext = suite.encrypt(b"", pk_r)
+        plaintext = suite.decrypt(ciphertext, sk_r)
 
         assert plaintext == b""
 
@@ -207,12 +168,8 @@ class TestHPKEBasicFunctionality:
 
         large_message = b"A" * 100000
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(large_message)
-
-        recipient = suite.recipient(enc, sk_r)
-        plaintext = recipient.decrypt(ciphertext)
+        ciphertext = suite.encrypt(large_message, pk_r)
+        plaintext = suite.decrypt(ciphertext, sk_r)
 
         assert plaintext == large_message
 
@@ -224,38 +181,6 @@ class TestHPKEBasicFunctionality:
 class TestHPKEErrorCases:
     """Test error handling in HPKE."""
 
-    def test_message_limit_sender(self):
-        """Test that message limit is enforced for sender."""
-        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        sender = suite.sender(pk_r)
-        # Manually set seq to max to trigger limit
-        sender._seq = sender._max_seq
-
-        with pytest.raises(MessageLimitReachedError):
-            sender.encrypt(b"test")
-
-    def test_message_limit_recipient(self):
-        """Test that message limit is enforced for recipient."""
-        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"test")
-
-        recipient = suite.recipient(enc, sk_r)
-        # Manually set seq to max to trigger limit
-        recipient._seq = recipient._max_seq
-
-        with pytest.raises(MessageLimitReachedError):
-            recipient.decrypt(ciphertext)
-
     def test_corrupted_ciphertext(self):
         """Test that corrupted ciphertext fails decryption."""
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -263,16 +188,14 @@ class TestHPKEErrorCases:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"test")
+        ciphertext = suite.encrypt(b"test", pk_r)
 
-        # Corrupt the ciphertext
-        corrupted = bytes([ciphertext[0] ^ 0xFF]) + ciphertext[1:]
+        # Corrupt the ciphertext (after enc)
+        corrupted = ciphertext[:NENC] + bytes([ciphertext[NENC] ^ 0xFF]) + \
+            ciphertext[NENC + 1:]
 
-        recipient = suite.recipient(enc, sk_r)
         with pytest.raises(InvalidTag):
-            recipient.decrypt(corrupted)
+            suite.decrypt(corrupted, sk_r)
 
     def test_truncated_ciphertext(self):
         """Test that truncated ciphertext fails decryption."""
@@ -281,16 +204,13 @@ class TestHPKEErrorCases:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        sender = suite.sender(pk_r)
-        enc = sender.enc
-        ciphertext = sender.encrypt(b"test")
+        ciphertext = suite.encrypt(b"test", pk_r)
 
         # Truncate the ciphertext
         truncated = ciphertext[:-1]
 
-        recipient = suite.recipient(enc, sk_r)
         with pytest.raises(InvalidTag):
-            recipient.decrypt(truncated)
+            suite.decrypt(truncated, sk_r)
 
 
 @pytest.mark.supported(
@@ -320,16 +240,17 @@ class TestHPKEVectors:
         enc = bytes.fromhex(vector["enc"])
         info = bytes.fromhex(vector["info"])
 
-        # Create recipient context
-        recipient = suite.recipient(enc, sk_r, info=info)
-
-        # Test each encryption in the vector
-        for encryption in vector.get("encryptions", []):
+        # Test first encryption only (single-shot API)
+        encryptions = vector.get("encryptions", [])
+        if encryptions:
+            encryption = encryptions[0]
             aad = bytes.fromhex(encryption["aad"])
             ct = bytes.fromhex(encryption["ct"])
             pt_expected = bytes.fromhex(encryption["pt"])
 
-            pt = recipient.decrypt(ct, aad)
+            # Combine enc || ct for single-shot decrypt
+            ciphertext = enc + ct
+            pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
             assert pt == pt_expected
 
 

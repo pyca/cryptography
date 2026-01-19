@@ -19,19 +19,19 @@ _HPKE_VERSION = b"HPKE-v1"
 class KEM(enum.Enum):
     """Key Encapsulation Mechanisms for HPKE."""
 
-    X25519 = 0x0020
+    X25519 = "X25519"
 
 
 class KDF(enum.Enum):
     """Key Derivation Functions for HPKE."""
 
-    HKDF_SHA256 = 0x0001
+    HKDF_SHA256 = "HKDF_SHA256"
 
 
 class AEAD(enum.Enum):
     """Authenticated Encryption with Associated Data algorithms for HPKE."""
 
-    AES_128_GCM = 0x0001
+    AES_128_GCM = "AES_128_GCM"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -57,11 +57,6 @@ class _AEADParams:
     nk: int
     nn: int
     nt: int
-
-
-def _xor(a: bytes, b: bytes) -> bytes:
-    """XOR two byte strings of equal length."""
-    return bytes(x ^ y for x, y in zip(a, b))
 
 
 def _get_kem_params(kem: KEM) -> _KEMParams:
@@ -98,123 +93,11 @@ def _get_aead_params(aead: AEAD) -> _AEADParams:
     )
 
 
-class MessageLimitReachedError(Exception):
-    """Raised when the message limit for a context is reached."""
-
-    pass
-
-
-class SenderContext:
-    """
-    HPKE sender context for encryption.
-
-    Use this to encrypt multiple messages to the same recipient.
-    Access the encapsulated key via the `enc` property.
-    """
-
-    def __init__(
-        self,
-        enc: bytes,
-        key: bytes,
-        base_nonce: bytes,
-        aead: AEAD,
-    ) -> None:
-        self._enc = enc
-        self._key = key
-        self._base_nonce = base_nonce
-        self._seq = 0
-        self._max_seq = (1 << (8 * len(base_nonce))) - 1
-        self._aead_type = aead
-        self._aead = AESGCM(key)
-
-    @property
-    def enc(self) -> bytes:
-        """The encapsulated key to send to the recipient."""
-        return self._enc
-
-    def _compute_nonce(self) -> bytes:
-        """Compute the nonce for the current sequence number."""
-        seq_bytes = int_to_bytes(self._seq, len(self._base_nonce))
-        return _xor(self._base_nonce, seq_bytes)
-
-    def encrypt(self, plaintext: bytes, aad: bytes = b"") -> bytes:
-        """
-        Encrypt a message.
-
-        Args:
-            plaintext: The plaintext to encrypt.
-            aad: Additional authenticated data (optional).
-
-        Returns:
-            The ciphertext.
-
-        Raises:
-            MessageLimitReachedError: If the message limit is reached.
-        """
-        if self._seq >= self._max_seq:
-            raise MessageLimitReachedError(
-                "Message limit reached for this HPKE context"
-            )
-        nonce = self._compute_nonce()
-        ct = self._aead.encrypt(nonce, plaintext, aad)
-        self._seq += 1
-        return ct
-
-
-class RecipientContext:
-    """
-    HPKE recipient context for decryption.
-
-    Use this to decrypt multiple messages from the same sender.
-    """
-
-    def __init__(
-        self,
-        key: bytes,
-        base_nonce: bytes,
-        aead: AEAD,
-    ) -> None:
-        self._key = key
-        self._base_nonce = base_nonce
-        self._seq = 0
-        self._max_seq = (1 << (8 * len(base_nonce))) - 1
-        self._aead_type = aead
-        self._aead = AESGCM(key)
-
-    def _compute_nonce(self) -> bytes:
-        """Compute the nonce for the current sequence number."""
-        seq_bytes = int_to_bytes(self._seq, len(self._base_nonce))
-        return _xor(self._base_nonce, seq_bytes)
-
-    def decrypt(self, ciphertext: bytes, aad: bytes = b"") -> bytes:
-        """
-        Decrypt a message.
-
-        Args:
-            ciphertext: The ciphertext to decrypt.
-            aad: Additional authenticated data (optional).
-
-        Returns:
-            The plaintext.
-
-        Raises:
-            MessageLimitReachedError: If the message limit is reached.
-            InvalidTag: If decryption fails (authentication failure).
-        """
-        if self._seq >= self._max_seq:
-            raise MessageLimitReachedError(
-                "Message limit reached for this HPKE context"
-            )
-
-        nonce = self._compute_nonce()
-        pt = self._aead.decrypt(nonce, ciphertext, aad)
-        self._seq += 1
-        return pt
-
-
 class Suite:
     """
     HPKE cipher suite combining a KEM, KDF, and AEAD.
+
+    This provides a single-shot API for HPKE encryption and decryption.
 
     Example::
 
@@ -227,14 +110,11 @@ class Suite:
         private_key = x25519.X25519PrivateKey.generate()
         public_key = private_key.public_key()
 
-        # Sender side
-        sender = suite.sender(public_key, info=b"app info")
-        enc = sender.enc  # encapsulated key to send to recipient
-        ciphertext = sender.encrypt(b"secret message")
+        # Encrypt
+        ciphertext = suite.encrypt(b"secret message", public_key, info=b"app")
 
-        # Recipient side
-        recipient = suite.recipient(enc, private_key, info=b"app info")
-        plaintext = recipient.decrypt(ciphertext)
+        # Decrypt
+        plaintext = suite.decrypt(ciphertext, private_key, info=b"app")
     """
 
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None:
@@ -376,59 +256,66 @@ class Suite:
 
         return key, base_nonce
 
-    def sender(
+    def encrypt(
         self,
+        plaintext: bytes,
         public_key: x25519.X25519PublicKey,
         info: bytes = b"",
-    ) -> SenderContext:
+        aad: bytes = b"",
+    ) -> bytes:
         """
-        Create a sender context for encrypting messages.
+        Encrypt a message using HPKE.
 
         Args:
+            plaintext: The plaintext to encrypt.
             public_key: The recipient's public key.
             info: Application-specific info string (optional).
+            aad: Additional authenticated data (optional).
 
         Returns:
-            A SenderContext for encrypting messages.
+            The encapsulated key concatenated with ciphertext (enc || ct).
         """
         shared_secret, enc = self._encap(public_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
-        return SenderContext(
-            enc=enc, key=key, base_nonce=base_nonce, aead=self._aead
-        )
+        aead_impl = AESGCM(key)
+        ct = aead_impl.encrypt(base_nonce, plaintext, aad)
+        return enc + ct
 
-    def recipient(
+    def decrypt(
         self,
-        enc: bytes,
+        ciphertext: bytes,
         private_key: x25519.X25519PrivateKey,
         info: bytes = b"",
-    ) -> RecipientContext:
+        aad: bytes = b"",
+    ) -> bytes:
         """
-        Create a recipient context for decrypting messages.
+        Decrypt a message using HPKE.
 
         Args:
-            enc: The encapsulated key from the sender.
+            ciphertext: The encapsulated key concatenated with ciphertext
+                (enc || ct) as returned by encrypt().
             private_key: The recipient's private key.
             info: Application-specific info string (optional).
+            aad: Additional authenticated data (optional).
 
         Returns:
-            A RecipientContext for decrypting messages.
+            The decrypted plaintext.
+
+        Raises:
+            InvalidTag: If decryption fails (authentication failure).
         """
+        nenc = self._kem_params.nenc
+        enc = ciphertext[:nenc]
+        ct = ciphertext[nenc:]
         shared_secret = self._decap(enc, private_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
-        return RecipientContext(
-            key=key,
-            base_nonce=base_nonce,
-            aead=self._aead,
-        )
+        aead_impl = AESGCM(key)
+        return aead_impl.decrypt(base_nonce, ct, aad)
 
 
 __all__ = [
     "AEAD",
     "KDF",
     "KEM",
-    "MessageLimitReachedError",
-    "RecipientContext",
-    "SenderContext",
     "Suite",
 ]
