@@ -2,12 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use asn1::IA5String as Asn1IA5String;
-use asn1::PrintableString as Asn1PrintableString;
-use asn1::SimpleAsn1Readable;
-use asn1::UtcTime as Asn1UtcTime;
-use pyo3::types::PyAnyMethods;
-use pyo3::types::PyTzInfoAccess;
+use asn1::{
+    IA5String as Asn1IA5String, PrintableString as Asn1PrintableString, SimpleAsn1Readable,
+    UtcTime as Asn1UtcTime,
+};
+use pyo3::types::{PyAnyMethods, PyTzInfoAccess};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
 use crate::error::CryptographyError;

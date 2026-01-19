@@ -267,6 +267,9 @@ def rust(session: nox.Session) -> None:
 
 @nox.session
 def local(session: nox.Session):
+    if "CARGO_INCREMENTAL" not in os.environ:
+        session.env["CARGO_INCREMENTAL"] = "1"
+
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "./vectors", verbose=False)
     install(

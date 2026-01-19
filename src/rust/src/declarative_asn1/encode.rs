@@ -3,8 +3,7 @@
 // for complete details.
 
 use asn1::{SimpleAsn1Writable, Writer};
-use pyo3::types::PyAnyMethods;
-use pyo3::types::PyListMethods;
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::declarative_asn1::types::{
     check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
