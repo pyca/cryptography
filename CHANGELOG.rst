@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Support for Python 3.8 is deprecated and will be removed in the next
+  ``cryptography`` release.
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
