@@ -244,17 +244,15 @@ class TestHPKEVectors:
         info = bytes.fromhex(vector["info"])
 
         # Test first encryption only (single-shot API)
-        encryptions = vector.get("encryptions", [])
-        if encryptions:
-            encryption = encryptions[0]
-            aad = bytes.fromhex(encryption["aad"])
-            ct = bytes.fromhex(encryption["ct"])
-            pt_expected = bytes.fromhex(encryption["pt"])
+        encryption = vector["encryptions"][0]
+        aad = bytes.fromhex(encryption["aad"])
+        ct = bytes.fromhex(encryption["ct"])
+        pt_expected = bytes.fromhex(encryption["pt"])
 
-            # Combine enc || ct for single-shot decrypt
-            ciphertext = enc + ct
-            pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
-            assert pt == pt_expected
+        # Combine enc || ct for single-shot decrypt
+        ciphertext = enc + ct
+        pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
+        assert pt == pt_expected
 
 
 def test_load_vectors_missing_file(monkeypatch):
