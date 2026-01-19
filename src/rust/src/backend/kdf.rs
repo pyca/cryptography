@@ -14,8 +14,7 @@ use crate::backend::hmac::Hmac;
 use crate::backend::{cmac, hashes};
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
-use crate::types;
+use crate::{exceptions, types};
 
 // NO-COVERAGE-START
 #[pyo3::pyclass(

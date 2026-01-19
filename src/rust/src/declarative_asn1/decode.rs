@@ -3,8 +3,7 @@
 // for complete details.
 
 use asn1::Parser;
-use pyo3::types::PyAnyMethods;
-use pyo3::types::PyListMethods;
+use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
