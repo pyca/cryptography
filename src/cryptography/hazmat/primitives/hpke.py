@@ -17,20 +17,14 @@ _HPKE_VERSION = b"HPKE-v1"
 
 
 class KEM(enum.Enum):
-    """Key Encapsulation Mechanisms for HPKE."""
-
     X25519 = "X25519"
 
 
 class KDF(enum.Enum):
-    """Key Derivation Functions for HPKE."""
-
     HKDF_SHA256 = "HKDF_SHA256"
 
 
 class AEAD(enum.Enum):
-    """Authenticated Encryption with Associated Data algorithms for HPKE."""
-
     AES_128_GCM = "AES_128_GCM"
 
 
@@ -60,7 +54,6 @@ class _AEADParams:
 
 
 def _get_kem_params(kem: KEM) -> _KEMParams:
-    """Get parameters for a KEM."""
     assert kem == KEM.X25519
     return _KEMParams(
         id=0x0020,
@@ -73,7 +66,6 @@ def _get_kem_params(kem: KEM) -> _KEMParams:
 
 
 def _get_kdf_params(kdf: KDF) -> _KDFParams:
-    """Get parameters for a KDF."""
     assert kdf == KDF.HKDF_SHA256
     return _KDFParams(
         id=0x0001,
@@ -83,7 +75,6 @@ def _get_kdf_params(kdf: KDF) -> _KDFParams:
 
 
 def _get_aead_params(aead: AEAD) -> _AEADParams:
-    """Get parameters for an AEAD."""
     assert aead == AEAD.AES_128_GCM
     return _AEADParams(
         id=0x0001,
@@ -94,38 +85,7 @@ def _get_aead_params(aead: AEAD) -> _AEADParams:
 
 
 class Suite:
-    """
-    HPKE cipher suite combining a KEM, KDF, and AEAD.
-
-    This provides a single-shot API for HPKE encryption and decryption.
-
-    Example::
-
-        from cryptography.hazmat.primitives.hpke import Suite, KEM, KDF, AEAD
-        from cryptography.hazmat.primitives.asymmetric import x25519
-
-        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-
-        # Generate recipient keys
-        private_key = x25519.X25519PrivateKey.generate()
-        public_key = private_key.public_key()
-
-        # Encrypt
-        ciphertext = suite.encrypt(b"secret message", public_key, info=b"app")
-
-        # Decrypt
-        plaintext = suite.decrypt(ciphertext, private_key, info=b"app")
-    """
-
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None:
-        """
-        Create an HPKE cipher suite.
-
-        Args:
-            kem: The Key Encapsulation Mechanism to use.
-            kdf: The Key Derivation Function to use.
-            aead: The AEAD algorithm to use.
-        """
         self._kem = kem
         self._kdf = kdf
         self._aead = aead
@@ -146,7 +106,6 @@ class Suite:
     def _kem_labeled_extract(
         self, salt: bytes, label: bytes, ikm: bytes
     ) -> bytes:
-        """LabeledExtract for KEM as defined in RFC 9180."""
         labeled_ikm = _HPKE_VERSION + self._kem_suite_id + label + ikm
         return HKDF.extract(
             self._kdf_params.hash,
@@ -157,7 +116,6 @@ class Suite:
     def _kem_labeled_expand(
         self, prk: bytes, label: bytes, info: bytes, length: int
     ) -> bytes:
-        """LabeledExpand for KEM as defined in RFC 9180."""
         labeled_info = (
             int_to_bytes(length, 2)
             + _HPKE_VERSION
@@ -173,7 +131,6 @@ class Suite:
         return hkdf_expand.derive(prk)
 
     def _extract_and_expand(self, dh: bytes, kem_context: bytes) -> bytes:
-        """ExtractAndExpand as defined in RFC 9180."""
         eae_prk = self._kem_labeled_extract(b"", b"eae_prk", dh)
         shared_secret = self._kem_labeled_expand(
             eae_prk,
@@ -184,7 +141,6 @@ class Suite:
         return shared_secret
 
     def _encap(self, pk_r: x25519.X25519PublicKey) -> tuple[bytes, bytes]:
-        """Encapsulate: generate shared secret and encapsulated key."""
         sk_e = x25519.X25519PrivateKey.generate()
         pk_e = sk_e.public_key()
         dh = sk_e.exchange(pk_r)
@@ -195,7 +151,6 @@ class Suite:
         return shared_secret, enc
 
     def _decap(self, enc: bytes, sk_r: x25519.X25519PrivateKey) -> bytes:
-        """Decapsulate: recover shared secret from encapsulated key."""
         pk_e = x25519.X25519PublicKey.from_public_bytes(enc)
         dh = sk_r.exchange(pk_e)
         pk_rm = sk_r.public_key().public_bytes_raw()
@@ -206,7 +161,6 @@ class Suite:
     def _hpke_labeled_extract(
         self, salt: bytes, label: bytes, ikm: bytes
     ) -> bytes:
-        """LabeledExtract for HPKE context as defined in RFC 9180."""
         labeled_ikm = _HPKE_VERSION + self._hpke_suite_id + label + ikm
         return HKDF.extract(
             self._kdf_params.hash,
@@ -217,7 +171,6 @@ class Suite:
     def _hpke_labeled_expand(
         self, prk: bytes, label: bytes, info: bytes, length: int
     ) -> bytes:
-        """LabeledExpand for HPKE context as defined in RFC 9180."""
         labeled_info = (
             int_to_bytes(length, 2)
             + _HPKE_VERSION
@@ -235,7 +188,6 @@ class Suite:
     def _key_schedule(
         self, shared_secret: bytes, info: bytes
     ) -> tuple[bytes, bytes]:
-        """Run the HPKE key schedule for Base mode."""
         mode = 0x00  # Base mode
 
         psk_id_hash = self._hpke_labeled_extract(b"", b"psk_id_hash", b"")
@@ -263,18 +215,6 @@ class Suite:
         info: bytes = b"",
         aad: bytes = b"",
     ) -> bytes:
-        """
-        Encrypt a message using HPKE.
-
-        Args:
-            plaintext: The plaintext to encrypt.
-            public_key: The recipient's public key.
-            info: Application-specific info string (optional).
-            aad: Additional authenticated data (optional).
-
-        Returns:
-            The encapsulated key concatenated with ciphertext (enc || ct).
-        """
         shared_secret, enc = self._encap(public_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
         aead_impl = AESGCM(key)
@@ -288,22 +228,6 @@ class Suite:
         info: bytes = b"",
         aad: bytes = b"",
     ) -> bytes:
-        """
-        Decrypt a message using HPKE.
-
-        Args:
-            ciphertext: The encapsulated key concatenated with ciphertext
-                (enc || ct) as returned by encrypt().
-            private_key: The recipient's private key.
-            info: Application-specific info string (optional).
-            aad: Additional authenticated data (optional).
-
-        Returns:
-            The decrypted plaintext.
-
-        Raises:
-            InvalidTag: If decryption fails (authentication failure).
-        """
         nenc = self._kem_params.nenc
         enc = ciphertext[:nenc]
         ct = ciphertext[nenc:]
