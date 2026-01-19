@@ -191,8 +191,11 @@ class TestHPKEErrorCases:
         ciphertext = suite.encrypt(b"test", pk_r)
 
         # Corrupt the ciphertext (after enc)
-        corrupted = ciphertext[:NENC] + bytes([ciphertext[NENC] ^ 0xFF]) + \
-            ciphertext[NENC + 1:]
+        corrupted = (
+            ciphertext[:NENC]
+            + bytes([ciphertext[NENC] ^ 0xFF])
+            + ciphertext[NENC + 1 :]
+        )
 
         with pytest.raises(InvalidTag):
             suite.decrypt(corrupted, sk_r)
