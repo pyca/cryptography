@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - '*.*.x'
+      - 'abbra-*'
 
 permissions:
   contents: read
