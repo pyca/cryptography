@@ -36,3 +36,7 @@ self_cell = "1"
 
 [profile.release]
 overflow-checks = true
+
+[patch.crates-io]
+openssl-sys = { git = "https://github.com/abbra/rust-openssl.git", branch = "pqc-prs" }
+openssl = { git = "https://github.com/abbra/rust-openssl.git", branch = "pqc-prs" }

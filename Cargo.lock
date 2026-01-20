@@ -186,8 +186,7 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 [[package]]
 name = "openssl"
 version = "0.10.76"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "951c002c75e16ea2c65b8c7e4d3d51d5530d8dfa7d060b4776828c88cfb18ecf"
+source = "git+https://github.com/abbra/rust-openssl.git?branch=pqc-prs#0e197fafdf18ac30f97bef6cf809a6d5e3ad8db6"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -201,8 +200,7 @@ dependencies = [
 [[package]]
 name = "openssl-macros"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
+source = "git+https://github.com/abbra/rust-openssl.git?branch=pqc-prs#0e197fafdf18ac30f97bef6cf809a6d5e3ad8db6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -212,8 +210,7 @@ dependencies = [
 [[package]]
 name = "openssl-sys"
 version = "0.9.112"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57d55af3b3e226502be1526dfdba67ab0e9c96fc293004e79576b2b9edb0dbdb"
+source = "git+https://github.com/abbra/rust-openssl.git?branch=pqc-prs#0e197fafdf18ac30f97bef6cf809a6d5e3ad8db6"
 dependencies = [
  "cc",
  "libc",
