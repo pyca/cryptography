@@ -59,9 +59,8 @@ class TestHPKE:
 
         assert plaintext == b"Hello!"
 
-    @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_wrong_key_fails(self, kem, kdf, aead):
-        suite = Suite(kem, kdf, aead)
+    def test_wrong_key_fails(self):
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -72,9 +71,8 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_wrong)
 
-    @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_wrong_aad_fails(self, kem, kdf, aead):
-        suite = Suite(kem, kdf, aead)
+    def test_wrong_aad_fails(self):
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -84,9 +82,8 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
 
-    @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_info_mismatch_fails(self, kem, kdf, aead):
-        suite = Suite(kem, kdf, aead)
+    def test_info_mismatch_fails(self):
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -107,9 +104,8 @@ class TestHPKE:
         # ciphertext should be: enc (32 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == NENC + 4 + 16
 
-    @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_empty_plaintext(self, kem, kdf, aead):
-        suite = Suite(kem, kdf, aead)
+    def test_empty_plaintext(self):
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -119,9 +115,8 @@ class TestHPKE:
 
         assert plaintext == b""
 
-    @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_large_plaintext(self, kem, kdf, aead):
-        suite = Suite(kem, kdf, aead)
+    def test_large_plaintext(self):
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -166,13 +161,10 @@ class TestHPKE:
             suite.decrypt(truncated, sk_r)
 
     def test_vector_decryption(self, subtests):
-        try:
-            vectors = load_vectors_from_file(
-                os.path.join("HPKE", "test-vectors.json"),
-                lambda f: json.load(f),
-            )
-        except FileNotFoundError:
-            pytest.skip("HPKE test vectors not available")
+        vectors = load_vectors_from_file(
+            os.path.join("HPKE", "test-vectors.json"),
+            lambda f: json.load(f),
+        )
 
         for vector in vectors:
             # Currently support: mode 0 (Base), X25519, HKDF-SHA256, AES-GCM

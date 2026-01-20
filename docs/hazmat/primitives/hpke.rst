@@ -12,98 +12,85 @@ Encryption with Associated Data (AEAD) scheme. It is defined in :rfc:`9180`.
 This implementation supports Base mode with DHKEM(X25519, HKDF-SHA256),
 HKDF-SHA256, and AES-128-GCM.
 
-Quick Start
------------
+Example
+-------
 
 .. code-block:: python
 
-    from cryptography.hazmat.primitives.hpke import create_sender, create_recipient
+    from cryptography.hazmat.primitives.hpke import Suite, KEM, KDF, AEAD
     from cryptography.hazmat.primitives.asymmetric import x25519
+
+    suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
     # Generate recipient key pair
     private_key = x25519.X25519PrivateKey.generate()
     public_key = private_key.public_key()
 
-    # Sender: encrypt a message
-    sender = create_sender(public_key, info=b"application info")
-    ciphertext = sender.encrypt(b"secret message", aad=b"authenticated data")
-    enc = sender.enc  # Send enc + ciphertext to recipient
+    # Encrypt
+    ciphertext = suite.encrypt(b"secret message", public_key, info=b"app info")
 
-    # Recipient: decrypt the message
-    recipient = create_recipient(enc, private_key, info=b"application info")
-    plaintext = recipient.decrypt(ciphertext, aad=b"authenticated data")
+    # Decrypt
+    plaintext = suite.decrypt(ciphertext, private_key, info=b"app info")
 
-Functions
----------
+Classes
+-------
 
-.. function:: create_sender(public_key, info=b"")
+.. class:: Suite(kem, kdf, aead)
 
-    Create a sender context for encrypting messages.
+    An HPKE cipher suite combining a KEM, KDF, and AEAD.
 
-    This uses DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and AES-128-GCM.
+    :param kem: The key encapsulation mechanism.
+    :type kem: :class:`KEM`
+    :param kdf: The key derivation function.
+    :type kdf: :class:`KDF`
+    :param aead: The authenticated encryption algorithm.
+    :type aead: :class:`AEAD`
 
-    :param public_key: The recipient's X25519 public key.
-    :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
-    :param bytes info: Optional application-specific info string.
-    :returns: A :class:`SenderContext` for encrypting messages.
+    .. method:: encrypt(plaintext, public_key, info=b"", aad=b"")
 
-.. function:: create_recipient(enc, private_key, info=b"")
-
-    Create a recipient context for decrypting messages.
-
-    This uses DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, and AES-128-GCM.
-
-    :param bytes enc: The encapsulated key from the sender.
-    :param private_key: The recipient's X25519 private key.
-    :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
-    :param bytes info: Optional application-specific info string.
-    :returns: A :class:`RecipientContext` for decrypting messages.
-
-SenderContext
--------------
-
-.. class:: SenderContext
-
-    Context for encrypting messages. Obtained from :func:`create_sender`.
-
-    .. attribute:: enc
-
-        The encapsulated key (bytes). Send this to the recipient along with
-        the ciphertext.
-
-    .. method:: encrypt(plaintext, aad=b"")
-
-        Encrypt a message.
+        Encrypt a message using HPKE.
 
         :param bytes plaintext: The message to encrypt.
-        :param bytes aad: Optional additional authenticated data.
-        :returns: The ciphertext.
+        :param public_key: The recipient's public key.
+        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+        :param bytes info: Application-specific info string.
+        :param bytes aad: Additional authenticated data.
+        :returns: The encapsulated key concatenated with ciphertext (enc || ct).
         :rtype: bytes
 
-RecipientContext
-----------------
+    .. method:: decrypt(ciphertext, private_key, info=b"", aad=b"")
 
-.. class:: RecipientContext
+        Decrypt a message using HPKE.
 
-    Context for decrypting messages. Obtained from :func:`create_recipient`.
-
-    .. method:: decrypt(ciphertext, aad=b"")
-
-        Decrypt a message.
-
-        :param bytes ciphertext: The ciphertext to decrypt.
-        :param bytes aad: Optional additional authenticated data.
-        :returns: The plaintext.
+        :param bytes ciphertext: The enc || ct value from :meth:`encrypt`.
+        :param private_key: The recipient's private key.
+        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+        :param bytes info: Application-specific info string.
+        :param bytes aad: Additional authenticated data.
+        :returns: The decrypted plaintext.
         :rtype: bytes
         :raises cryptography.exceptions.InvalidTag: If decryption fails.
 
-Exceptions
-----------
+.. class:: KEM
 
-.. class:: HPKEError
+    An enumeration of key encapsulation mechanisms.
 
-    Base exception for HPKE errors.
+    .. attribute:: X25519
 
-.. class:: MessageLimitReachedError
+        DHKEM(X25519, HKDF-SHA256)
 
-    Raised when the message limit for a context is reached.
+.. class:: KDF
+
+    An enumeration of key derivation functions.
+
+    .. attribute:: HKDF_SHA256
+
+        HKDF-SHA256
+
+.. class:: AEAD
+
+    An enumeration of authenticated encryption algorithms.
+
+    .. attribute:: AES_128_GCM
+
+        AES-128-GCM

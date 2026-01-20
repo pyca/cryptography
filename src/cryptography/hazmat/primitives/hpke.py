@@ -188,7 +188,7 @@ class Suite:
     def _key_schedule(
         self, shared_secret: bytes, info: bytes
     ) -> tuple[bytes, bytes]:
-        mode = 0x00  # Base mode
+        mode = 0x00
 
         psk_id_hash = self._hpke_labeled_extract(b"", b"psk_id_hash", b"")
         info_hash = self._hpke_labeled_extract(b"", b"info_hash", info)
