@@ -16,7 +16,7 @@ HPKE provides authenticated encryption: the recipient can be certain that the
 message was encrypted by someone who knows the recipient's public key, but
 the sender is anonymous. Each call to :meth:`Suite.encrypt` generates a fresh
 ephemeral key pair, so encrypting the same plaintext twice will produce
-different ciphertexts.
+different ciphertext.
 
 The ``info`` parameter should be used to bind the encryption to a specific
 context (e.g., "MyApp-v1-UserMessages"). The ``aad`` parameter provides
