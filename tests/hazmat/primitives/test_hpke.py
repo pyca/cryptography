@@ -39,7 +39,9 @@ class TestHPKE:
             Suite(KEM.X25519, "not a kdf", AEAD.AES_128_GCM)
 
     def test_invalid_aead_type(self):
-        with pytest.raises(TypeError, match="aead must be an instance of AEAD"):
+        with pytest.raises(
+            TypeError, match="aead must be an instance of AEAD"
+        ):
             Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
