@@ -221,12 +221,11 @@ class Suite:
         plaintext: bytes,
         public_key: x25519.X25519PublicKey,
         info: bytes = b"",
-        aad: bytes = b"",
     ) -> bytes:
         shared_secret, enc = self._encap(public_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
         aead_impl = AESGCM(key)
-        ct = aead_impl.encrypt(base_nonce, plaintext, aad)
+        ct = aead_impl.encrypt(base_nonce, plaintext, b"")
         return enc + ct
 
     def decrypt(
@@ -234,7 +233,6 @@ class Suite:
         ciphertext: bytes,
         private_key: x25519.X25519PrivateKey,
         info: bytes = b"",
-        aad: bytes = b"",
     ) -> bytes:
         nenc = self._kem_params.nenc
         enc = ciphertext[:nenc]
@@ -242,7 +240,7 @@ class Suite:
         shared_secret = self._decap(enc, private_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
         aead_impl = AESGCM(key)
-        return aead_impl.decrypt(base_nonce, ct, aad)
+        return aead_impl.decrypt(base_nonce, ct, b"")
 
 
 __all__ = [

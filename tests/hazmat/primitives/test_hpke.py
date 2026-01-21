@@ -51,17 +51,13 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(
-            b"Hello, HPKE!", pk_r, info=b"test", aad=b"additional data"
-        )
-        plaintext = suite.decrypt(
-            ciphertext, sk_r, info=b"test", aad=b"additional data"
-        )
+        ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
+        plaintext = suite.decrypt(ciphertext, sk_r, info=b"test")
 
         assert plaintext == b"Hello, HPKE!"
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_roundtrip_no_aad(self, kem, kdf, aead):
+    def test_roundtrip_no_info(self, kem, kdf, aead):
         suite = Suite(kem, kdf, aead)
 
         sk_r = x25519.X25519PrivateKey.generate()
@@ -83,17 +79,6 @@ class TestHPKE:
 
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_wrong)
-
-    def test_wrong_aad_fails(self):
-        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
-
-        with pytest.raises(InvalidTag):
-            suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
 
     def test_info_mismatch_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -189,6 +174,11 @@ class TestHPKE:
             ):
                 continue
 
+            # Single-shot API uses empty aad, so skip vectors with non-empty aad
+            encryption = vector["encryptions"][0]
+            if encryption["aad"] != "":
+                continue
+
             with subtests.test():
                 suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
@@ -197,13 +187,10 @@ class TestHPKE:
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])
 
-                # Test first encryption only (single-shot API)
-                encryption = vector["encryptions"][0]
-                aad = bytes.fromhex(encryption["aad"])
                 ct = bytes.fromhex(encryption["ct"])
                 pt_expected = bytes.fromhex(encryption["pt"])
 
                 # Combine enc || ct for single-shot decrypt
                 ciphertext = enc + ct
-                pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
+                pt = suite.decrypt(ciphertext, sk_r, info=info)
                 assert pt == pt_expected
