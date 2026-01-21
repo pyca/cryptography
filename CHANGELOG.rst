@@ -82,6 +82,8 @@ Changelog
   allow encrypting directly into a pre-allocated buffer.
 * Added support for PKCS1v15 signing without DigestInfo using
   :class:`~cryptography.hazmat.primitives.asymmetric.utils.NoDigestInfo`.
+* Added :meth:`~cryptography.hazmat.primitives.hashes.Hash.hash`, a one-shot
+  method for computing hashes.
 
 .. _v46-0-3:
 

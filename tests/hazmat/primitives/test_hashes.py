@@ -8,6 +8,7 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes
 
 from ...doubles import DummyHashAlgorithm
@@ -162,6 +163,38 @@ def test_buffer_protocol_hash(backend):
     assert h.finalize() == binascii.unhexlify(
         b"dff2e73091f6c05e528896c4c831b9448653dc2ff043528f6769437bc7b975c2"
     )
+
+
+class TestHashHash:
+    def test_hash(self):
+        digest = hashes.Hash.hash(hashes.SHA256(), b"hello world")
+        assert digest == (
+            b"\xb9M'\xb9\x93M>\x08\xa5.R\xd7\xda}\xab\xfa\xc4\x84\xef\xe3zS"
+            b"\x80\xee\x90\x88\xf7\xac\xe2\xef\xcd\xe9"
+        )
+
+    def test_hash_algorithm_instance(self):
+        with pytest.raises(TypeError):
+            hashes.Hash.hash(hashes.SHA1, b"data")  # type: ignore[arg-type]
+
+    def test_hash_reject_unicode(self):
+        with pytest.raises(TypeError):
+            hashes.Hash.hash(hashes.SHA256(), "\u00fc")  # type: ignore[arg-type]
+
+    def test_hash_unsupported_algorithm(self):
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            hashes.Hash.hash(DummyHashAlgorithm(), b"data")
+
+    @pytest.mark.supported(
+        only_if=lambda _: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+        skip_message="Requires backend with XOF support",
+    )
+    def test_hash_xof(self):
+        digest = hashes.Hash.hash(hashes.SHAKE256(32), b"data")
+        assert digest == (
+            b"\xc7=\xbe\xd8R\x7fZ\xe0V\x86y\xf3\x0e\xcc\\\xb6\x97\x8b!\x08"
+            b"\xe9\\\x86\x08\x84\xa6\\\x13\x1f\x99\xb9\xb9"
+        )
 
 
 class TestSHAKE:
