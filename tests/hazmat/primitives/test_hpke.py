@@ -30,6 +30,18 @@ SUPPORTED_SUITES = [
     skip_message="Requires OpenSSL with X25519 support",
 )
 class TestHPKE:
+    def test_invalid_kem_type(self):
+        with pytest.raises(TypeError, match="kem must be an instance of KEM"):
+            Suite("not a kem", KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+
+    def test_invalid_kdf_type(self):
+        with pytest.raises(TypeError, match="kdf must be an instance of KDF"):
+            Suite(KEM.X25519, "not a kdf", AEAD.AES_128_GCM)
+
+    def test_invalid_aead_type(self):
+        with pytest.raises(TypeError, match="aead must be an instance of AEAD"):
+            Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")
+
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
     def test_roundtrip(self, kem, kdf, aead):
         suite = Suite(kem, kdf, aead)
