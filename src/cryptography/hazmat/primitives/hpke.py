@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF, HKDFExpand
 from cryptography.utils import int_to_bytes
 
 _HPKE_VERSION = b"HPKE-v1"
+_HPKE_MODE_BASE = 0x00
 
 
 class KEM(enum.Enum):
@@ -86,6 +87,13 @@ def _get_aead_params(aead: AEAD) -> _AEADParams:
 
 class Suite:
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None:
+        if not isinstance(kem, KEM):
+            raise TypeError("kem must be an instance of KEM")
+        if not isinstance(kdf, KDF):
+            raise TypeError("kdf must be an instance of KDF")
+        if not isinstance(aead, AEAD):
+            raise TypeError("aead must be an instance of AEAD")
+
         self._kem = kem
         self._kdf = kdf
         self._aead = aead
@@ -188,7 +196,7 @@ class Suite:
     def _key_schedule(
         self, shared_secret: bytes, info: bytes
     ) -> tuple[bytes, bytes]:
-        mode = 0x00
+        mode = _HPKE_MODE_BASE
 
         psk_id_hash = self._hpke_labeled_extract(b"", b"psk_id_hash", b"")
         info_hash = self._hpke_labeled_extract(b"", b"info_hash", info)

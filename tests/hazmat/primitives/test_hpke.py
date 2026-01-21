@@ -18,8 +18,7 @@ from cryptography.hazmat.primitives.hpke import (
 
 from ...utils import load_vectors_from_file
 
-# X25519 enc size
-NENC = 32
+X25519_ENC_LENGTH = 32
 
 SUPPORTED_SUITES = [
     (KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM),
@@ -102,7 +101,7 @@ class TestHPKE:
         ciphertext = suite.encrypt(b"test", pk_r)
 
         # ciphertext should be: enc (32 bytes) + ct (4 bytes pt + 16 bytes tag)
-        assert len(ciphertext) == NENC + 4 + 16
+        assert len(ciphertext) == X25519_ENC_LENGTH + 4 + 16
 
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -138,9 +137,9 @@ class TestHPKE:
 
         # Corrupt the ciphertext (after enc)
         corrupted = (
-            ciphertext[:NENC]
-            + bytes([ciphertext[NENC] ^ 0xFF])
-            + ciphertext[NENC + 1 :]
+            ciphertext[:X25519_ENC_LENGTH]
+            + bytes([ciphertext[X25519_ENC_LENGTH] ^ 0xFF])
+            + ciphertext[X25519_ENC_LENGTH + 1 :]
         )
 
         with pytest.raises(InvalidTag):

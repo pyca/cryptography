@@ -12,8 +12,16 @@ Encryption with Associated Data (AEAD) scheme. It is defined in :rfc:`9180`.
 This implementation supports Base mode with DHKEM(X25519, HKDF-SHA256),
 HKDF-SHA256, and AES-128-GCM.
 
-Example
--------
+HPKE provides authenticated encryption: the recipient can be certain that the
+message was encrypted by someone who knows the recipient's public key, but
+the sender is anonymous. Each call to :meth:`Suite.encrypt` generates a fresh
+ephemeral key pair, so encrypting the same plaintext twice will produce
+different ciphertexts.
+
+The ``info`` parameter should be used to bind the encryption to a specific
+context (e.g., "MyApp-v1-UserMessages"). The ``aad`` parameter provides
+additional authenticated data that is not encrypted but is authenticated
+along with the ciphertext.
 
 .. code-block:: python
 
@@ -31,9 +39,6 @@ Example
 
     # Decrypt
     plaintext = suite.decrypt(ciphertext, private_key, info=b"app info")
-
-Classes
--------
 
 .. class:: Suite(kem, kdf, aead)
 
