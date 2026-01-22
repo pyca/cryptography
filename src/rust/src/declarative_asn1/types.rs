@@ -25,6 +25,9 @@ pub enum Type {
     SequenceOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
+    /// CHOICE (`T | U | ...`)
+    /// The list contains elements of type Variant
+    Choice(pyo3::Py<pyo3::types::PyList>),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -55,6 +58,7 @@ pub enum Type {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub struct AnnotatedType {
+    #[pyo3(get)]
     pub inner: pyo3::Py<Type>,
     #[pyo3(get)]
     pub annotation: pyo3::Py<Annotation>,
@@ -131,6 +135,32 @@ impl Size {
         Size {
             min: n,
             max: Some(n),
+        }
+    }
+}
+
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct Variant {
+    #[pyo3(get)]
+    pub python_class: pyo3::Py<pyo3::types::PyType>,
+    #[pyo3(get)]
+    pub ann_type: pyo3::Py<AnnotatedType>,
+    #[pyo3(get)]
+    pub tag_name: Option<String>,
+}
+
+#[pyo3::pymethods]
+impl Variant {
+    #[new]
+    fn new(
+        python_class: pyo3::Py<pyo3::types::PyType>,
+        ann_type: pyo3::Py<AnnotatedType>,
+        tag_name: Option<String>,
+    ) -> Self {
+        Self {
+            python_class,
+            ann_type,
+            tag_name,
         }
     }
 }
@@ -419,29 +449,54 @@ pub(crate) fn python_class_to_annotated<'p>(
     }
 }
 
-pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> asn1::Tag {
-    let inner_tag = match t {
-        Type::Sequence(_, _) => asn1::Sequence::TAG,
-        Type::SequenceOf(_) => asn1::Sequence::TAG,
-        Type::Option(t) => type_to_tag(t.get().inner.get(), encoding),
-        Type::PyBool() => bool::TAG,
-        Type::PyInt() => asn1::BigInt::TAG,
-        Type::PyBytes() => <&[u8] as SimpleAsn1Readable>::TAG,
-        Type::PyStr() => asn1::Utf8String::TAG,
-        Type::PrintableString() => asn1::PrintableString::TAG,
-        Type::IA5String() => asn1::IA5String::TAG,
-        Type::ObjectIdentifier() => asn1::ObjectIdentifier::TAG,
-        Type::UtcTime() => asn1::UtcTime::TAG,
-        Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
-        Type::BitString() => asn1::BitString::TAG,
+// Utility function to get the expected tags for an unnanotated variant.
+pub(crate) fn expected_tags_for_variant(py: pyo3::Python<'_>, variant: &Variant) -> Vec<asn1::Tag> {
+    let ann_type = variant.ann_type.get();
+    expected_tags_for_type(
+        py,
+        ann_type.inner.get(),
+        &ann_type.annotation.get().encoding,
+    )
+}
+
+// Given a type, return the set of possible tags that we would expect
+// to see when decoding it. This is usually a single tag per type, except
+// when decoding a CHOICE value.
+pub(crate) fn expected_tags_for_type(
+    py: pyo3::Python<'_>,
+    t: &Type,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> Vec<asn1::Tag> {
+    let inner_tags = match t {
+        Type::Sequence(_, _) => vec![asn1::Sequence::TAG],
+        Type::SequenceOf(_) => vec![asn1::Sequence::TAG],
+        Type::Option(t) => expected_tags_for_type(py, t.get().inner.get(), encoding),
+        Type::Choice(variants) => variants
+            .bind(py)
+            .into_iter()
+            .flat_map(|v| expected_tags_for_variant(py, v.cast::<Variant>().unwrap().get()))
+            .collect(),
+        Type::PyBool() => vec![bool::TAG],
+        Type::PyInt() => vec![asn1::BigInt::TAG],
+        Type::PyBytes() => vec![<&[u8] as SimpleAsn1Readable>::TAG],
+        Type::PyStr() => vec![asn1::Utf8String::TAG],
+        Type::PrintableString() => vec![asn1::PrintableString::TAG],
+        Type::IA5String() => vec![asn1::IA5String::TAG],
+        Type::ObjectIdentifier() => vec![asn1::ObjectIdentifier::TAG],
+        Type::UtcTime() => vec![asn1::UtcTime::TAG],
+        Type::GeneralizedTime() => vec![asn1::GeneralizedTime::TAG],
+        Type::BitString() => vec![asn1::BitString::TAG],
     };
 
     match encoding {
         Some(e) => match e.get() {
-            Encoding::Implicit(n) => asn1::implicit_tag(*n, inner_tag),
-            Encoding::Explicit(n) => asn1::explicit_tag(*n),
+            Encoding::Implicit(n) => inner_tags
+                .into_iter()
+                .map(|x| asn1::implicit_tag(*n, x))
+                .collect(),
+            Encoding::Explicit(n) => vec![asn1::explicit_tag(*n)],
         },
-        None => inner_tag,
+        None => inner_tags,
     }
 }
 
@@ -470,12 +525,12 @@ mod tests {
 
     use pyo3::IntoPyObject;
 
-    use super::{type_to_tag, AnnotatedType, Annotation, Type};
+    use super::{expected_tags_for_type, AnnotatedType, Annotation, Type};
 
     #[test]
-    // Needed for coverage of `type_to_tag(Type::Option(..))`, since
-    // `type_to_tag` is never called with an optional value.
-    fn test_option_type_to_tag() {
+    // Needed for coverage of `expected_tags_for_type(Type::Option(..))`, since
+    // `expected_tags_for_type` is never called with an optional value.
+    fn test_option_expected_tags_for_type() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
@@ -509,8 +564,11 @@ mod tests {
                 },
             )
             .unwrap();
-            let expected_tag = type_to_tag(&Type::Option(optional_type), &None);
-            assert_eq!(expected_tag, type_to_tag(&Type::PyInt(), &None))
+            let expected_tags = expected_tags_for_type(py, &Type::Option(optional_type), &None);
+            assert_eq!(
+                expected_tags,
+                expected_tags_for_type(py, &Type::PyInt(), &None)
+            )
         })
     }
 }

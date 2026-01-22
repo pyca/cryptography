@@ -215,17 +215,6 @@ class TestSequenceAPI:
             class Example:
                 foo: Invalid
 
-    def test_fail_unsupported_union_field(self) -> None:
-        with pytest.raises(
-            TypeError,
-            match="union types other than `X \\| None` are currently not "
-            "supported",
-        ):
-
-            @asn1.sequence
-            class Example:
-                invalid: typing.Union[int, str]
-
     def test_fail_unsupported_annotation(self) -> None:
         with pytest.raises(
             TypeError, match="unsupported annotation: some annotation"
@@ -341,6 +330,10 @@ class TestSequenceAPI:
         seq_of = declarative_asn1.Type.SequenceOf(ann_type)
         assert seq_of._0 is ann_type
 
+        my_list: typing.List[int] = list()
+        choice = declarative_asn1.Type.Choice(my_list)
+        assert choice._0 is my_list
+
     def test_fields_of_variant_encoding(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1
 
@@ -350,3 +343,16 @@ class TestSequenceAPI:
         explicit = declarative_asn1.Encoding.Explicit(0)
         assert implicit._0 == 0
         assert explicit._0 == 0
+
+    def test_fail_choice_with_implicit_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "CHOICE (`X | Y | ...`) types should not have an IMPLICIT "
+                "annotation"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[typing.Union[int, bool], asn1.Implicit(0)]
