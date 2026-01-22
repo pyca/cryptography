@@ -25,23 +25,40 @@ U = typing.TypeVar("U")
 # to `sequence`, except that it also adds an __eq__ method.
 # We use it for the objects under test in order to easily
 # compare them with their expected values.
-def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]:
-    if sys.version_info >= (3, 10):
-        return dataclasses.dataclass(
-            repr=False,
-            eq=True,
-            # `match_args` was added in Python 3.10 and defaults
-            # to True
-            match_args=False,
-            # `kw_only` was added in Python 3.10 and defaults to
-            # False
-            kw_only=True,
-        )(cls)
-    else:
-        return dataclasses.dataclass(
-            repr=False,
-            eq=True,
-        )(cls)
+@typing.overload
+def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]: ...
+@typing.overload
+def _comparable_dataclass(
+    *, kw_only: bool = True
+) -> typing.Callable[[typing.Type[U]], typing.Type[U]]: ...
+
+
+def _comparable_dataclass(
+    cls: typing.Optional[typing.Type[U]] = None, *, kw_only: bool = True
+) -> typing.Union[
+    typing.Type[U], typing.Callable[[typing.Type[U]], typing.Type[U]]
+]:
+    def decorator(cls: typing.Type[U]) -> typing.Type[U]:
+        if sys.version_info >= (3, 10):
+            return dataclasses.dataclass(
+                repr=False,
+                eq=True,
+                # `match_args` was added in Python 3.10 and defaults
+                # to True
+                match_args=False,
+                # `kw_only` was added in Python 3.10 and defaults to
+                # False
+                kw_only=kw_only,
+            )(cls)
+        else:
+            return dataclasses.dataclass(
+                repr=False,
+                eq=True,
+            )(cls)
+
+    if cls is None:
+        return decorator
+    return decorator(cls)
 
 
 # Checks that the encoding-decoding roundtrip results
@@ -600,6 +617,230 @@ class TestSequence:
             ),
         ):
             asn1.decode_der(Example, b"\x30\x05\xa2\x03\x02\x01\x09")
+
+    def test_sequence_with_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[int, bool, str]
+
+        assert_roundtrips([(Example(foo=9), b"\x30\x03\x02\x01\x09")])
+        assert_roundtrips([(Example(foo=True), b"\x30\x03\x01\x01\xff")])
+        assert_roundtrips([(Example(foo="a"), b"\x30\x03\x0c\x01a")])
+
+    def test_sequence_with_optional_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str, None]
+            bar: int
+
+        assert_roundtrips(
+            [(Example(foo=True, bar=1), b"\x30\x06\x01\x01\xff\x02\x01\x01")]
+        )
+
+        assert_roundtrips(
+            [(Example(foo=None, bar=1), b"\x30\x03\x02\x01\x01")]
+        )
+
+    def test_fail_sequence_with_choice_decode_nonexistent_variant(
+        self,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "could not find matching variant when parsing CHOICE field"
+            ),
+        ):
+            asn1.decode_der(Example, b"\x30\x03\x02\x01\x09")
+
+    def test_fail_sequence_with_choice_encode_nonexistent_variant(
+        self,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str]
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(foo=3))  # type: ignore[arg-type]
+
+    def test_sequence_with_explicit_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: Annotated[typing.Union[int, bool, str], asn1.Explicit(3)]
+
+        assert_roundtrips([(Example(foo=9), b"\x30\x05\xa3\x03\x02\x01\x09")])
+        assert_roundtrips(
+            [(Example(foo=True), b"\x30\x05\xa3\x03\x01\x01\xff")]
+        )
+        assert_roundtrips([(Example(foo="a"), b"\x30\x05\xa3\x03\x0c\x01a")])
+
+    def test_sequence_with_choice_implicit_simple_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[int, asn1.Implicit(0)],
+                Annotated[bool, asn1.Implicit(1)],
+                Annotated[str, asn1.Implicit(2)],
+            ]
+
+        assert_roundtrips([(Example(foo=9), b"\x30\x03\x80\x01\x09")])
+        assert_roundtrips([(Example(foo=True), b"\x30\x03\x81\x01\xff")])
+        assert_roundtrips([(Example(foo="a"), b"\x30\x03\x82\x01a")])
+
+    def test_sequence_with_choice_explicit_simple_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[int, asn1.Explicit(0)],
+                Annotated[bool, asn1.Explicit(1)],
+                Annotated[str, asn1.Explicit(2)],
+            ]
+
+        assert_roundtrips([(Example(foo=9), b"\x30\x05\xa0\x03\x02\x01\x09")])
+        assert_roundtrips(
+            [(Example(foo=True), b"\x30\x05\xa1\x03\x01\x01\xff")]
+        )
+        assert_roundtrips([(Example(foo="a"), b"\x30\x05\xa2\x03\x0c\x01a")])
+
+    def test_sequence_with_choice_with_custom_variants(self) -> None:
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyIntA:
+            value: int
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyIntB:
+            value: int
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyIntC:
+            value: int
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[MyIntA, asn1.Implicit(0)],
+                Annotated[MyIntB, asn1.Implicit(1)],
+                Annotated[MyIntC, asn1.Implicit(2)],
+            ]
+
+        assert_roundtrips([(Example(foo=MyIntA(9)), b"\x30\x03\x80\x01\x09")])
+        assert_roundtrips([(Example(foo=MyIntB(9)), b"\x30\x03\x81\x01\x09")])
+        assert_roundtrips([(Example(foo=MyIntC(9)), b"\x30\x03\x82\x01\x09")])
+
+    def test_sequence_with_choice_with_custom_variants_bool(self) -> None:
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyBoolA:
+            value: bool
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyBoolB:
+            value: bool
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyBoolC:
+            value: bool
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[MyBoolA, asn1.Implicit(0)],
+                Annotated[MyBoolB, asn1.Implicit(1)],
+                Annotated[MyBoolC, asn1.Implicit(2)],
+            ]
+
+        assert_roundtrips(
+            [(Example(foo=MyBoolA(True)), b"\x30\x03\x80\x01\xff")]
+        )
+        assert_roundtrips(
+            [(Example(foo=MyBoolB(True)), b"\x30\x03\x81\x01\xff")]
+        )
+        assert_roundtrips(
+            [(Example(foo=MyBoolC(True)), b"\x30\x03\x82\x01\xff")]
+        )
+
+    def test_sequence_with_choice_with_sequence_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: int
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyExampleA:
+            value: Example
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyExampleB:
+            value: Example
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class ExampleUnion:
+            field: typing.Union[
+                Annotated[MyExampleA, asn1.Implicit(0)],
+                Annotated[MyExampleB, asn1.Implicit(1)],
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    ExampleUnion(field=MyExampleA(Example(foo=9))),
+                    b"\x30\x05\xa0\x03\x02\x01\x09",
+                )
+            ]
+        )
+        assert_roundtrips(
+            [
+                (
+                    ExampleUnion(field=MyExampleB(Example(foo=9))),
+                    b"\x30\x05\xa1\x03\x02\x01\x09",
+                )
+            ]
+        )
+
+    def test_sequence_with_choice_with_non_annotated_custom_variants(
+        self,
+    ) -> None:
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyInt:
+            value: int
+
+        @asn1.variant
+        @_comparable_dataclass(kw_only=False)
+        class MyBool:
+            value: bool
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[MyInt, MyBool]
+
+        assert_roundtrips([(Example(foo=MyInt(9)), b"\x30\x03\x02\x01\x09")])
+        assert_roundtrips(
+            [(Example(foo=MyBool(True)), b"\x30\x03\x01\x01\xff")]
+        )
 
 
 class TestSize:

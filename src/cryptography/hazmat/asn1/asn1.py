@@ -150,10 +150,31 @@ def _normalize_field_type(
                 )
 
             rust_field_type = declarative_asn1.Type.Option(annotated_type)
+
         else:
-            raise TypeError(
-                "union types other than `X | None` are currently not supported"
+            # Otherwise, the Union is a CHOICE
+            if isinstance(annotation.encoding, Implicit):
+                raise TypeError(
+                    "CHOICE (`X | Y | ...`) types should not have an IMPLICIT "
+                    "annotation"
+                )
+            variants = [
+                _type_to_variant(arg, field_name)
+                for arg in union_args
+                if arg is not type(None)
+            ]
+            rust_choice_type = declarative_asn1.Type.Choice(variants)
+            # If None is part of the union types, this is an OPTIONAL CHOICE
+            rust_field_type = (
+                declarative_asn1.Type.Option(
+                    declarative_asn1.AnnotatedType(
+                        rust_choice_type, declarative_asn1.Annotation()
+                    )
+                )
+                if NoneType in union_args
+                else rust_choice_type
             )
+
     elif get_type_origin(field_type) is builtins.list:
         inner_type = _normalize_field_type(
             get_type_args(field_type)[0], field_name
@@ -163,6 +184,41 @@ def _normalize_field_type(
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 
     return declarative_asn1.AnnotatedType(rust_field_type, annotation)
+
+
+# Convert a type to a Variant. Used with types inside Union
+# annotations (T1, T2, etc in `Union[T1, T2, ...]`).
+def _type_to_variant(
+    t: typing.Any, field_name: str
+) -> declarative_asn1.Variant:
+    python_class = t
+    is_wrapped = False
+
+    is_annotated = get_type_origin(t) is Annotated
+
+    if is_annotated:
+        python_class, _ = get_type_args(t)
+
+    if hasattr(python_class, "__asn1_variant__"):
+        variant = python_class.__asn1_variant__
+        is_wrapped = variant.is_wrapped
+        if is_annotated:
+            # We 'move' the annotation of the type `t` into the
+            # new Variant's annotated type.
+            ann_type = declarative_asn1.AnnotatedType(
+                variant.ann_type.inner,
+                _extract_annotation(t.__metadata__, field_name),
+            )
+        else:
+            ann_type = variant.ann_type
+    else:
+        ann_type = _normalize_field_type(t, field_name)
+
+    return declarative_asn1.Variant(
+        python_class,
+        ann_type,
+        is_wrapped,
+    )
 
 
 def _annotate_fields(
@@ -186,6 +242,32 @@ def _register_asn1_sequence(cls: type[U]) -> None:
     )
 
     setattr(cls, "__asn1_root__", root)
+
+
+def _register_asn1_variant(cls: type[U]) -> None:
+    raw_fields = get_type_hints(cls, include_extras=True)
+    if len(raw_fields) != 1:
+        raise TypeError(
+            f"variant class '{cls.__name__}' can only have a single field"
+        )
+    if "value" not in raw_fields.keys():
+        raise TypeError(
+            f"the field in variant class '{cls.__name__}' must be named "
+            "'value'"
+        )
+
+    annotated_fields = _annotate_fields(raw_fields)
+    annotated_value_field = annotated_fields["value"]
+    if not annotated_value_field.annotation.is_empty():
+        raise TypeError(
+            f"variant class '{cls.__name__}' should not have its 'value' "
+            "field annotated"
+        )
+    setattr(
+        cls,
+        "__asn1_variant__",
+        declarative_asn1.Variant(cls, annotated_value_field, True),
+    )
 
 
 # Due to https://github.com/python/mypy/issues/19731, we can't define an alias
@@ -219,6 +301,31 @@ if sys.version_info < (3, 11):
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
 
+    @typing_extensions.dataclass_transform(kw_only_default=False)
+    def variant(cls: type[U]) -> type[U]:
+        # We use `dataclasses.dataclass` to add an __init__ method
+        # to the class. We allow non-kw arguments since we want
+        # to make it easier for users to initialize their variant
+        # class with just a value (e.g: `VariantClass(5)`).
+        if sys.version_info >= (3, 10):
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+                # `match_args` was added in Python 3.10 and defaults
+                # to True
+                match_args=False,
+                # `kw_only` was added in Python 3.10 and defaults to
+                # False
+                kw_only=False,
+            )(cls)
+        else:
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+            )(cls)
+        _register_asn1_variant(dataclass_cls)
+        return dataclass_cls
+
 else:
 
     @typing.dataclass_transform(kw_only_default=True)
@@ -232,6 +339,17 @@ else:
             kw_only=True,
         )(cls)
         _register_asn1_sequence(dataclass_cls)
+        return dataclass_cls
+
+    @typing.dataclass_transform(kw_only_default=False)
+    def variant(cls: type[U]) -> type[U]:
+        dataclass_cls = dataclasses.dataclass(
+            repr=False,
+            eq=False,
+            match_args=False,
+            kw_only=False,
+        )(cls)
+        _register_asn1_variant(dataclass_cls)
         return dataclass_cls
 
 
