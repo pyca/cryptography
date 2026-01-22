@@ -20,7 +20,7 @@ use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlterna
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
     BASIC_CONSTRAINTS_OID, EC_SECP256R1, EC_SECP384R1, EC_SECP521R1, EKU_CLIENT_AUTH_OID,
-    EKU_SERVER_AUTH_OID, SUBJECT_ALTERNATIVE_NAME_OID,
+    EKU_EMAIL_PROTECTION_OID, EKU_SERVER_AUTH_OID, SUBJECT_ALTERNATIVE_NAME_OID,
 };
 
 use crate::ops::CryptoOps;
@@ -31,8 +31,11 @@ pub use crate::policy::extension::{
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
-// RSA key constraints, as defined in CA/B 6.1.5.
+// RSA key constraints, as defined in CA/B Server TLS 6.1.5
 const WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
+
+// RSA key constraints, as defined in CA/B S/MIME BR 6.1.5
+const SMIME_MINIMUM_RSA_MODULUS: usize = 2048;
 
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
@@ -60,6 +63,18 @@ const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP521R1)),
 };
 
+// Curve25519
+const SPKI_CURVE25519: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Ed25519,
+};
+
+// Curve448
+const SPKI_CURVE448: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Ed448,
+};
+
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
 pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
@@ -69,6 +84,27 @@ pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdent
             SPKI_SECP256R1.clone(),
             SPKI_SECP384R1.clone(),
             SPKI_SECP521R1.clone(),
+        ]))
+    });
+
+/// Permitted algorithms, from CA/B Forum's S/MIME Baseline Requirements, section 7.1.3 (page 65)
+/// https://cabforum.org/uploads/CA-Browser-Forum-SMIMEBR-1.0.12.pdf
+pub static SMIME_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
+    LazyLock::new(|| {
+        Arc::new(HashSet::from([
+            SPKI_RSA.clone(),
+            SPKI_SECP256R1.clone(),
+            SPKI_SECP384R1.clone(),
+            SPKI_SECP521R1.clone(),
+            SPKI_CURVE25519.clone(),
+            SPKI_CURVE448.clone(),
+            // Allowed, but not currently supported
+            // ML‐DSA‐44
+            // ML‐DSA‐65
+            // ML‐DSA‐87
+            // ML‐KEM‐512
+            // ML‐KEM‐768
+            // ML‐KEM‐1024
         ]))
     });
 
@@ -146,6 +182,18 @@ const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     params: AlgorithmParameters::EcDsaWithSha512(None),
 };
 
+// Ed25519
+const ED25519: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Ed25519,
+};
+
+// Ed448
+const ED448: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+    oid: asn1::DefinedByMarker::marker(),
+    params: AlgorithmParameters::Ed448,
+};
+
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
 pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
@@ -160,6 +208,29 @@ pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<Algorithm
             ECDSA_SHA256.clone(),
             ECDSA_SHA384.clone(),
             ECDSA_SHA512.clone(),
+        ]))
+    });
+
+/// Permitted algorithms, from CA/B Forum's S/MIME Baseline Requirements 7.1.3.2 (page 67)
+/// https://cabforum.org/uploads/CA-Browser-Forum-SMIMEBR-1.0.12.pdf
+pub static SMIME_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
+    LazyLock::new(|| {
+        Arc::new(HashSet::from([
+            RSASSA_PKCS1V15_SHA256.clone(),
+            RSASSA_PKCS1V15_SHA384.clone(),
+            RSASSA_PKCS1V15_SHA512.clone(),
+            RSASSA_PSS_SHA256.clone(),
+            RSASSA_PSS_SHA384.clone(),
+            RSASSA_PSS_SHA512.clone(),
+            ECDSA_SHA256.clone(),
+            ECDSA_SHA384.clone(),
+            ECDSA_SHA512.clone(),
+            ED25519.clone(),
+            ED448.clone(),
+            // Allowed, but not currently supported
+            // ML-DSA-44
+            // ML-DSA-65
+            // ML-DSA-87
         ]))
     });
 
@@ -291,6 +362,54 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
 
         Ok(retval)
     }
+    fn new_smime(
+        ops: B,
+        subject: Option<Subject<'a>>,
+        time: asn1::DateTime,
+        max_chain_depth: Option<u8>,
+        extended_key_usage: ObjectIdentifier,
+        ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+    ) -> Result<Self, &'static str> {
+        let retval = Self {
+            ops,
+            max_chain_depth: max_chain_depth.unwrap_or(DEFAULT_MAX_CHAIN_DEPTH),
+            subject,
+            validation_time: time,
+            extended_key_usage,
+            minimum_rsa_modulus: SMIME_MINIMUM_RSA_MODULUS,
+            permitted_public_key_algorithms: Arc::clone(&*SMIME_PERMITTED_SPKI_ALGORITHMS),
+            permitted_signature_algorithms: Arc::clone(&*SMIME_PERMITTED_SIGNATURE_ALGORITHMS),
+            ca_extension_policy: ca_extension_policy
+                .unwrap_or_else(ExtensionPolicy::new_default_smime_ca),
+            ee_extension_policy: ee_extension_policy
+                .unwrap_or_else(ExtensionPolicy::new_default_smime_ee),
+        };
+
+        // Even without the following checks, verification would fail,
+        // but we want to fail early and provide a more specific error message.
+        if !matches!(
+            retval.ca_extension_policy.basic_constraints,
+            ExtensionValidator::Present { .. }
+        ) {
+            return Err(
+                "A CA extension policy must require the basicConstraints extension to be present.",
+            );
+        }
+
+        if retval.subject.is_some()
+            && !matches!(
+                retval.ee_extension_policy.subject_alternative_name,
+                ExtensionValidator::Present { .. }
+            )
+        {
+            return Err(
+                "An EE extension policy used for S/MIME verification must require the subjectAltName extension to be present.",
+            );
+        }
+
+        Ok(retval)
+    }
 
     /// Create a new policy with suitable defaults for client certification
     /// validation.
@@ -332,6 +451,30 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             time,
             max_chain_depth,
             EKU_SERVER_AUTH_OID.clone(),
+            ca_extension_policy,
+            ee_extension_policy,
+        )
+    }
+
+    /// Create a new policy with suitable defaults for S/MIME subscriber
+    /// certificate validation.
+    ///
+    /// **IMPORTANT**: This is **not** the appropriate API for verifying
+    /// website or end-user (i.e. client or server) certificates. For that,
+    /// you **must** use [`Policy::server`] or [`Policy::client`].
+    pub fn email(
+        ops: B,
+        time: asn1::DateTime,
+        max_chain_depth: Option<u8>,
+        ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+    ) -> Result<Self, &'static str> {
+        Self::new_smime(
+            ops,
+            None,
+            time,
+            max_chain_depth,
+            EKU_EMAIL_PROTECTION_OID.clone(),
             ca_extension_policy,
             ee_extension_policy,
         )

@@ -7,8 +7,8 @@ use std::sync::Arc;
 use cryptography_x509::extensions::{Extension, Extensions};
 use cryptography_x509::oid::{
     AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_KEY_IDENTIFIER_OID,
+    CRL_DISTRIBUTION_POINTS_OID, EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID,
+    SUBJECT_ALTERNATIVE_NAME_OID, SUBJECT_KEY_IDENTIFIER_OID,
 };
 
 use crate::ops::{CryptoOps, VerificationCertificate};
@@ -25,6 +25,7 @@ pub struct ExtensionPolicy<'cb, B: CryptoOps> {
     pub basic_constraints: ExtensionValidator<'cb, B>,
     pub name_constraints: ExtensionValidator<'cb, B>,
     pub extended_key_usage: ExtensionValidator<'cb, B>,
+    pub crl_distribution_points: ExtensionValidator<'cb, B>,
 }
 
 impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
@@ -50,6 +51,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             basic_constraints: make_permissive_validator(BASIC_CONSTRAINTS_OID),
             name_constraints: make_permissive_validator(NAME_CONSTRAINTS_OID),
             extended_key_usage: make_permissive_validator(EXTENDED_KEY_USAGE_OID),
+            crl_distribution_points: make_permissive_validator(CRL_DISTRIBUTION_POINTS_OID),
         }
     }
 
@@ -112,6 +114,11 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 Criticality::NonCritical,
                 Some(Arc::new(ca::extended_key_usage)),
             ),
+            crl_distribution_points: ExtensionValidator::maybe_present(
+                CRL_DISTRIBUTION_POINTS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::crl_distribution_points)),
+            ),
         }
     }
 
@@ -167,6 +174,126 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 EXTENDED_KEY_USAGE_OID,
                 Criticality::NonCritical,
                 Some(Arc::new(ee::extended_key_usage)),
+            ),
+            // CA/B: 7.1.2.11.2: CRL Distribution Points
+            crl_distribution_points: ExtensionValidator::maybe_present(
+                CRL_DISTRIBUTION_POINTS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::crl_distribution_points)),
+            ),
+        }
+    }
+
+    pub fn new_default_smime_ca() -> Self {
+        // CABF S/MIME BR 1.0.12
+        ExtensionPolicy {
+            // 7.1.2.2.c: authorityInformationAccess (SHOULD be present)
+            authority_information_access: ExtensionValidator::maybe_present(
+                AUTHORITY_INFORMATION_ACCESS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::authority_information_access)),
+            ),
+            // 7.1.2.2.h: authorityKeyIdentifier (SHALL be present)
+            authority_key_identifier: ExtensionValidator::maybe_present(
+                AUTHORITY_KEY_IDENTIFIER_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(ca::authority_key_identifier)),
+            ),
+            // 7.1.2.1.e: subjectKeyIdentifier (SHALL be present)
+            subject_key_identifier: ExtensionValidator::maybe_present(
+                SUBJECT_KEY_IDENTIFIER_OID,
+                Criticality::NonCritical,
+                None,
+            ),
+            // 7.1.2.1.b: keyUsage (SHALL be present)
+            key_usage: ExtensionValidator::present(
+                KEY_USAGE_OID,
+                Criticality::Critical,
+                Some(Arc::new(ca::key_usage)),
+            ),
+            // N/A
+            subject_alternative_name: ExtensionValidator::maybe_present(
+                SUBJECT_ALTERNATIVE_NAME_OID,
+                Criticality::Agnostic,
+                None,
+            ),
+            // 7.1.2.1.a: basicConstraints (SHALL be present)
+            basic_constraints: ExtensionValidator::present(
+                BASIC_CONSTRAINTS_OID,
+                Criticality::Critical,
+                None,
+            ),
+            // 7.1.2.2.f: nameConstraints (MAY be present)
+            name_constraints: ExtensionValidator::maybe_present(
+                NAME_CONSTRAINTS_OID,
+                Criticality::Agnostic,
+                Some(Arc::new(ca::name_constraints)),
+            ),
+            // 7.1.2.2.b: extKeyUsage (MAY be present for Cross Certificates; SHALL be present otherwise)
+            extended_key_usage: ExtensionValidator::maybe_present(
+                EXTENDED_KEY_USAGE_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(ca::extended_key_usage)),
+            ),
+            // 7.1.2.2.b cRLDistributionPoints (SHALL be present)
+            crl_distribution_points: ExtensionValidator::maybe_present(
+                CRL_DISTRIBUTION_POINTS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::crl_distribution_points)),
+            ),
+        }
+    }
+    pub fn new_default_smime_ee() -> Self {
+        // CABF S/MIME BR 1.0.12
+        ExtensionPolicy {
+            // 7.1.2.3.c: authorityInformationAccess (SHOULD be present)
+            authority_information_access: ExtensionValidator::maybe_present(
+                AUTHORITY_INFORMATION_ACCESS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::authority_information_access)),
+            ),
+            // 7.1.2.3.g: authorityKeyIdentifier (SHALL be present)
+            authority_key_identifier: ExtensionValidator::maybe_present(
+                AUTHORITY_KEY_IDENTIFIER_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(ca::authority_key_identifier)),
+            ),
+            // 7.1.2.3.n: subjectKeyIdentifier (SHOULD be present)
+            subject_key_identifier: ExtensionValidator::maybe_present(
+                SUBJECT_KEY_IDENTIFIER_OID,
+                Criticality::NonCritical,
+                None,
+            ),
+            // 7.1.2.3.e: keyUsage (SHALL be present)
+            key_usage: ExtensionValidator::present(
+                KEY_USAGE_OID,
+                Criticality::Critical,
+                Some(Arc::new(ca::key_usage)),
+            ),
+            // 7.1.2.3.g: subjectAlternativeName (SHALL be present)
+            subject_alternative_name: ExtensionValidator::maybe_present(
+                SUBJECT_ALTERNATIVE_NAME_OID,
+                Criticality::Agnostic,
+                None,
+            ),
+            // 7.1.2.3.d: basicConstraints (optional)
+            basic_constraints: ExtensionValidator::maybe_present(
+                BASIC_CONSTRAINTS_OID,
+                Criticality::Critical,
+                None,
+            ),
+            name_constraints: ExtensionValidator::not_present(NAME_CONSTRAINTS_OID),
+            // 7.1.2.3.f: extKeyUsage (SHALL be present)
+            extended_key_usage: ExtensionValidator::present(
+                EXTENDED_KEY_USAGE_OID,
+                Criticality::NonCritical,
+                None,
+            ),
+            // 7.1.2.3.b: cRLDistributionPoints (SHALL be present)
+            crl_distribution_points: ExtensionValidator::maybe_present(
+                CRL_DISTRIBUTION_POINTS_OID,
+                Criticality::NonCritical,
+                Some(Arc::new(common::crl_distribution_points)),
             ),
         }
     }
@@ -652,11 +779,14 @@ mod ca {
 }
 
 mod common {
-    use cryptography_x509::common::Asn1Read;
-    use cryptography_x509::extensions::{Extension, SequenceOfAccessDescriptions};
-
     use crate::ops::{CryptoOps, VerificationCertificate};
     use crate::policy::{Policy, ValidationResult};
+    use crate::{ValidationError, ValidationErrorKind};
+    use cryptography_x509::common::Asn1Read;
+    use cryptography_x509::extensions::{
+        DistributionPoint, DistributionPointName, Extension, SequenceOfAccessDescriptions,
+    };
+    use cryptography_x509::name::GeneralName;
 
     pub(crate) fn authority_information_access<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
@@ -669,6 +799,72 @@ mod common {
             let _: SequenceOfAccessDescriptions<'_, Asn1Read> = extn.value()?;
         }
 
+        Ok(())
+    }
+
+    pub(crate) fn crl_distribution_points<'chain, B: CryptoOps>(
+        _policy: &Policy<'_, B>,
+        _cert: &VerificationCertificate<'chain, B>,
+        extn: Option<&Extension<'_>>,
+    ) -> ValidationResult<'chain, (), B> {
+        if let Some(extn) = extn {
+            let crl_points: asn1::SequenceOf<'_, DistributionPoint<'_, Asn1Read>> = extn.value()?;
+            // CABF S/MIME (version 1.0.12): 7.1.2.2.b/7.1.2.3.c
+            //
+            // It SHALL contain at least one distributionPoint whose fullName value includes a GeneralName of type
+            // uniformResourceIdentifier that includes a URI where the Issuing CA’s CRL can be retrieved.
+            //
+            // Generation | Allowed URI scheme
+            // Strict and Multipurpose | Every uniformResourceIdentifier SHALL have the URI scheme HTTP. Other schemes
+            // SHALL NOT be present.
+            // Legacy | At least one uniformResourceIdentifier SHALL have the URI scheme HTTP. Other
+            // schemes (LDAP, FTP, …) MAY be present.
+
+            // CABF Server TLS (version 2.2.2): 7.1.2.11.2
+            //
+            // When present, the CRL Distribution Points extension MUST contain at least one DistributionPoint
+            // A fullName MUST contain at least one GeneralName; it MAY contain more than one. All
+            // GeneralNames MUST be of type uniformResourceIdentifier, and the scheme of each MUST
+            // be “http”. The first GeneralName must contain the HTTP URL of the Issuing CA’s CRL service for
+            // this certificate.
+
+            // NOTE: This validator is satisfied if there is at least one DistributionPoint, with at least one
+            // FullName, with at least one URI, which is HTTP.
+            // This is the lowest common denominator and avoids being too strict.
+            let mut has_http_uri = false;
+            for cdp in crl_points {
+                if cdp.distribution_point.is_none() {
+                    break;
+                }
+                match &cdp.distribution_point.unwrap() {
+                    DistributionPointName::FullName(names) => {
+                        for name in names.clone() {
+                            match &name {
+                                GeneralName::UniformResourceIdentifier(uri) => {
+                                    if uri.0.to_lowercase().starts_with("http://") {
+                                        has_http_uri = true;
+                                        break;
+                                    }
+                                }
+                                _ => {
+                                    // Anything besides UniformResourceIdentifier is technically not allowed
+                                }
+                            }
+                        }
+                    }
+                    _ => {
+                        // Distribution point might not be FullName, that's ok
+                    }
+                }
+            }
+
+            if !has_http_uri {
+                return Err(ValidationError::new(ValidationErrorKind::ExtensionError {
+                    oid: extn.extn_id.clone(),
+                    reason: "cRLDistributionPoints MUST contain at least one fullName that contains an HTTP URI",
+                }));
+            }
+        }
         Ok(())
     }
 }
