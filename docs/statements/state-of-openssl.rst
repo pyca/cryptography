@@ -11,7 +11,7 @@ Fundamentally, OpenSSL's trajectory can be understood as a play in three acts:
 * In the immediate post-Heartbleed era, OpenSSL's maintenance was reinvigorated and it made substantial progress and improvements. It grew a real code review process, began running tests in CI, adopted fuzz testing, and matured its release process.
 * Finally, in 2021 OpenSSL 3 was released. OpenSSL 3 introduced new APIs and had large internal refactors. Relative to previous OpenSSL versions, OpenSSL 3 had significant regressions in performance, complexity, API ergonomics, and didn't make needed improvements in areas like testing, verification, and memory safety. Over the same period, OpenSSL's forks have all made progress in these areas. Many of our concerns about OpenSSL's direction in this time have substantial overlap with `those highlighted by HAProxy`_.
 
-The remainder of this post describes the problems we have with OpenSSL in more detail, and concludes with the changes we are making to our own policies in response. To avoid burying the lede, we intend to pursue several approaches to reducing our reliance on OpenSSL.
+The remainder of this post describes the problems we have with OpenSSL in more detail, and concludes with the changes we are making to our own policies in response. To avoid burying the lead, we intend to pursue several approaches to reducing our reliance on OpenSSL.
 
 Performance
 ===========
