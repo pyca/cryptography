@@ -124,7 +124,7 @@ nh3==0.3.2
     # via readme-renderer
 nox==2025.11.12
     # via cryptography (pyproject.toml)
-packaging==25.0
+packaging==26.0
     # via
     #   build
     #   dependency-groups
