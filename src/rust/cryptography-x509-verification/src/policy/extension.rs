@@ -265,10 +265,10 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 None,
             ),
             // 7.1.2.3.e: keyUsage (SHALL be present)
-            key_usage: ExtensionValidator::present(
+            key_usage: ExtensionValidator::maybe_present(
                 KEY_USAGE_OID,
                 Criticality::Critical,
-                Some(Arc::new(ca::key_usage)),
+                Some(Arc::new(ee::key_usage)),
             ),
             // 7.1.2.3.g: subjectAlternativeName (SHALL be present)
             subject_alternative_name: ExtensionValidator::maybe_present(
