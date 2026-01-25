@@ -187,6 +187,27 @@ def _normalize_field_type(
                 for arg in union_args
                 if arg is not type(None)
             ]
+
+            # Union types should either be all Variants
+            # (`Variant[..] | Variant[..] | etc`) or all non Variants
+            are_union_types_tagged = variants[0].tag_name is not None
+            if any(
+                (v.tag_name is not None) != are_union_types_tagged
+                for v in variants
+            ):
+                raise TypeError(
+                    "When using `asn1.Variant` in a union, all the other "
+                    "types in the union must also be `asn1.Variant`"
+                )
+
+            if are_union_types_tagged:
+                tags = [v.tag_name for v in variants]
+                if len(tags) != len(set(tags)):
+                    raise TypeError(
+                        "When using `asn1.Variant` in a union, the tags used "
+                        "must be unique"
+                    )
+
             rust_choice_type = declarative_asn1.Type.Choice(variants)
             # If None is part of the union types, this is an OPTIONAL CHOICE
             rust_field_type = (

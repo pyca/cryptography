@@ -312,6 +312,37 @@ class TestSequenceAPI:
                     Annotated[int, asn1.Default(value=9)], None
                 ]
 
+    def test_fail_choice_with_inconsistent_types(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "When using `asn1.Variant` in a union, all the other "
+                "types in the union must also be `asn1.Variant`"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example2:
+                invalid: typing.Union[
+                    int, asn1.Variant[bool, typing.Literal["myTag"]]
+                ]
+
+    def test_fail_choice_with_duplicate_tags(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "When using `asn1.Variant` in a union, the tags used "
+                "must be unique"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example2:
+                invalid: typing.Union[
+                    asn1.Variant[int, typing.Literal["myTag"]],
+                    asn1.Variant[bool, typing.Literal["myTag"]],
+                ]
+
     def test_fields_of_variant_type(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1
 
