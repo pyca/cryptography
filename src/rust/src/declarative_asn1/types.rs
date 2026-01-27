@@ -550,9 +550,12 @@ pub(crate) fn check_size_constraint(
 mod tests {
 
     use asn1::SimpleAsn1Readable;
-    use pyo3::IntoPyObject;
+    use pyo3::{IntoPyObject, PyTypeInfo};
 
-    use super::{is_tag_valid_for_type, AnnotatedType, Annotation, Type};
+    use super::{
+        is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType, Annotation, Encoding, Type,
+        Variant,
+    };
 
     #[test]
     // Needed for coverage of `is_tag_valid_for_type(Type::Option(..))`, since
@@ -596,6 +599,43 @@ mod tests {
                 asn1::BigInt::TAG,
                 &Type::Option(optional_type),
                 &None
+            ));
+        })
+    }
+    #[test]
+    // Needed for coverage of
+    // `is_tag_valid_for_variant(..., encoding=Encoding::Implicit)`, since
+    // `is_tag_valid_for_variant` is never called with an implicit encoding.
+    fn test_is_tag_valid_for_implicit_variant() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let ann_type = pyo3::Py::new(
+                py,
+                AnnotatedType {
+                    inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
+                    annotation: Annotation {
+                        default: None,
+                        encoding: None,
+                        size: None,
+                    }
+                    .into_pyobject(py)
+                    .unwrap()
+                    .unbind(),
+                },
+            )
+            .unwrap();
+            let variant = Variant {
+                python_class: pyo3::types::PyInt::type_object(py).unbind(),
+                ann_type,
+                tag_name: None,
+            };
+            let encoding = pyo3::Py::new(py, Encoding::Implicit(3)).ok();
+            assert!(is_tag_valid_for_variant(
+                py,
+                asn1::BigInt::TAG,
+                &variant,
+                &encoding
             ));
         })
     }

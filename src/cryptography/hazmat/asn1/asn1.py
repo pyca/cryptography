@@ -125,7 +125,7 @@ def _normalize_field_type(
     # from it if it exists.
     if get_type_origin(field_type) is Annotated:
         annotation = _extract_annotation(field_type.__metadata__, field_name)
-        field_type, _ = get_type_args(field_type)
+        field_type, *_ = get_type_args(field_type)
     else:
         annotation = declarative_asn1.Annotation()
 

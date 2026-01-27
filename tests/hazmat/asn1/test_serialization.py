@@ -488,6 +488,76 @@ class TestSequence:
             ]
         )
 
+    def test_ok_sequence_all_types_default(self) -> None:
+        default_time = datetime.datetime(
+            2019,
+            12,
+            16,
+            3,
+            2,
+            10,
+            tzinfo=datetime.timezone.utc,
+        )
+        default_oid = x509.ObjectIdentifier("1.3.6.1.4.1.343")
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[int, asn1.Default(3)]
+            b: Annotated[bytes, asn1.Default(b"\x00")]
+            c: Annotated[
+                asn1.PrintableString, asn1.Default(asn1.PrintableString("a"))
+            ]
+            d: Annotated[
+                asn1.UtcTime,
+                asn1.Default(asn1.UtcTime(default_time)),
+            ]
+            e: Annotated[
+                asn1.GeneralizedTime,
+                asn1.Default(asn1.GeneralizedTime(default_time)),
+            ]
+            f: Annotated[typing.List[int], asn1.Default([1])]
+            g: Annotated[
+                asn1.BitString,
+                asn1.Default(
+                    asn1.BitString(data=b"", padding_bits=0),
+                ),
+            ]
+            h: Annotated[asn1.IA5String, asn1.Default(asn1.IA5String("a"))]
+            i: Annotated[
+                x509.ObjectIdentifier,
+                asn1.Default(default_oid),
+            ]
+            j: Annotated[
+                typing.Union[int, bool], asn1.Default(3), asn1.Explicit(0)
+            ]
+            k: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
+            only_field_present: Annotated[
+                str, asn1.Default("a"), asn1.Implicit(1)
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(
+                        a=3,
+                        b=b"\x00",
+                        c=asn1.PrintableString("a"),
+                        d=asn1.UtcTime(default_time),
+                        e=asn1.GeneralizedTime(default_time),
+                        f=[1],
+                        g=asn1.BitString(data=b"", padding_bits=0),
+                        h=asn1.IA5String("a"),
+                        i=default_oid,
+                        j=3,
+                        k="a",
+                        only_field_present="b",
+                    ),
+                    b"\x30\x03\x81\x01b",
+                )
+            ]
+        )
+
     def test_ok_sequence_with_default_annotations(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
