@@ -308,13 +308,13 @@ jobs:
 
   windows:
     needs: [sdist]
-    runs-on: windows-latest
+    runs-on: ${{ matrix.WINDOWS.RUNNER }}
     strategy:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-          - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
+          - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc', RUNNER: 'windows-latest'}
+          - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
           - {VERSION: "3.14", "ABI_VERSION": "py38"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
