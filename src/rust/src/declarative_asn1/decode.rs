@@ -7,7 +7,7 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    check_size_constraint, expected_tags_for_type, expected_tags_for_variant, AnnotatedType,
+    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
     Annotation, BitString, Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
     Variant,
 };
@@ -214,9 +214,8 @@ pub(crate) fn decode_annotated_type<'a>(
     // Handle DEFAULT annotation if field is not present (by
     // returning the default value)
     if let Some(default) = &ann_type.annotation.get().default {
-        let expected_tags = expected_tags_for_type(py, inner, encoding);
         match parser.peek_tag() {
-            Some(next_tag) if expected_tags.contains(&next_tag) => (),
+            Some(next_tag) if is_tag_valid_for_type(py, next_tag, inner, encoding) => (),
             _ => return Ok(default.clone_ref(py).into_bound(py)),
         }
     }
@@ -252,9 +251,8 @@ pub(crate) fn decode_annotated_type<'a>(
             })?
         }
         Type::Option(cls) => {
-            let expected_tags = expected_tags_for_type(py, cls.get().inner.get(), encoding);
             match parser.peek_tag() {
-                Some(t) if expected_tags.contains(&t) => {
+                Some(t) if is_tag_valid_for_type(py, t, cls.get().inner.get(), encoding) => {
                     // For optional types, annotations will always be associated to the `Optional` type
                     // i.e: `Annotated[Optional[T], annotation]`, as opposed to the inner `T` type.
                     // Therefore, when decoding the inner type `T` we must pass the annotation of the `Optional`
@@ -272,9 +270,8 @@ pub(crate) fn decode_annotated_type<'a>(
             None => {
                 for t in ts.bind(py) {
                     let variant = t.cast::<Variant>()?.get();
-                    let expected_tags = expected_tags_for_variant(py, variant);
                     match parser.peek_tag() {
-                        Some(tag) if expected_tags.contains(&tag) => {
+                        Some(tag) if is_tag_valid_for_variant(py, tag, variant, encoding) => {
                             let decoded_value =
                                 decode_annotated_type(py, parser, variant.ann_type.get())?;
                             return match &variant.tag_name {

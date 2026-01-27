@@ -449,54 +449,80 @@ pub(crate) fn python_class_to_annotated<'p>(
     }
 }
 
-// Utility function to get the expected tags for an unnanotated variant.
-pub(crate) fn expected_tags_for_variant(py: pyo3::Python<'_>, variant: &Variant) -> Vec<asn1::Tag> {
-    let ann_type = variant.ann_type.get();
-    expected_tags_for_type(
-        py,
-        ann_type.inner.get(),
-        &ann_type.annotation.get().encoding,
-    )
+// Checks if encoding `tag_without_encoding` using `encoding` results
+// in `tag`
+fn check_tag_with_encoding(
+    tag_without_encoding: asn1::Tag,
+    encoding: &Option<pyo3::Py<Encoding>>,
+    tag: asn1::Tag,
+) -> bool {
+    let tag_with_encoding = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(n) => asn1::implicit_tag(*n, tag_without_encoding),
+            Encoding::Explicit(n) => asn1::explicit_tag(*n),
+        },
+        None => tag_without_encoding,
+    };
+    tag_with_encoding == tag
 }
 
-// Given a type, return the set of possible tags that we would expect
-// to see when decoding it. This is usually a single tag per type, except
-// when decoding a CHOICE value.
-pub(crate) fn expected_tags_for_type(
+// Utility function to see if a tag matches an unnanotated variant.
+pub(crate) fn is_tag_valid_for_variant(
     py: pyo3::Python<'_>,
-    t: &Type,
+    tag: asn1::Tag,
+    variant: &Variant,
     encoding: &Option<pyo3::Py<Encoding>>,
-) -> Vec<asn1::Tag> {
-    let inner_tags = match t {
-        Type::Sequence(_, _) => vec![asn1::Sequence::TAG],
-        Type::SequenceOf(_) => vec![asn1::Sequence::TAG],
-        Type::Option(t) => expected_tags_for_type(py, t.get().inner.get(), encoding),
-        Type::Choice(variants) => variants
-            .bind(py)
-            .into_iter()
-            .flat_map(|v| expected_tags_for_variant(py, v.cast::<Variant>().unwrap().get()))
-            .collect(),
-        Type::PyBool() => vec![bool::TAG],
-        Type::PyInt() => vec![asn1::BigInt::TAG],
-        Type::PyBytes() => vec![<&[u8] as SimpleAsn1Readable>::TAG],
-        Type::PyStr() => vec![asn1::Utf8String::TAG],
-        Type::PrintableString() => vec![asn1::PrintableString::TAG],
-        Type::IA5String() => vec![asn1::IA5String::TAG],
-        Type::ObjectIdentifier() => vec![asn1::ObjectIdentifier::TAG],
-        Type::UtcTime() => vec![asn1::UtcTime::TAG],
-        Type::GeneralizedTime() => vec![asn1::GeneralizedTime::TAG],
-        Type::BitString() => vec![asn1::BitString::TAG],
+) -> bool {
+    let ann_type = variant.ann_type.get();
+
+    // There are two encodings at play here: the encoding of the CHOICE itself,
+    // and the encoding of each of the variants. The encoding of the CHOICE will
+    // only affect the tag if it's EXPLICIT (where it adds a wrapper). Otherwise,
+    // we use the encoding of the variant.
+    let encoding_to_match = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => &ann_type.annotation.get().encoding,
+            Encoding::Explicit(_) => encoding,
+        },
+        None => &ann_type.annotation.get().encoding,
     };
 
-    match encoding {
-        Some(e) => match e.get() {
-            Encoding::Implicit(n) => inner_tags
-                .into_iter()
-                .map(|x| asn1::implicit_tag(*n, x))
-                .collect(),
-            Encoding::Explicit(n) => vec![asn1::explicit_tag(*n)],
-        },
-        None => inner_tags,
+    is_tag_valid_for_type(py, tag, ann_type.inner.get(), encoding_to_match)
+}
+
+// Given `tag` and `encoding`, returns whether that tag with that encoding
+// matches what one would expect to see when decoding `type_`
+pub(crate) fn is_tag_valid_for_type(
+    py: pyo3::Python<'_>,
+    tag: asn1::Tag,
+    type_: &Type,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> bool {
+    match type_ {
+        Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
+        Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
+            is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
+        }),
+        Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
+        Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
+        Type::PyBytes() => {
+            check_tag_with_encoding(<&[u8] as SimpleAsn1Readable>::TAG, encoding, tag)
+        }
+        Type::PyStr() => check_tag_with_encoding(asn1::Utf8String::TAG, encoding, tag),
+        Type::PrintableString() => {
+            check_tag_with_encoding(asn1::PrintableString::TAG, encoding, tag)
+        }
+        Type::IA5String() => check_tag_with_encoding(asn1::IA5String::TAG, encoding, tag),
+        Type::ObjectIdentifier() => {
+            check_tag_with_encoding(asn1::ObjectIdentifier::TAG, encoding, tag)
+        }
+        Type::UtcTime() => check_tag_with_encoding(asn1::UtcTime::TAG, encoding, tag),
+        Type::GeneralizedTime() => {
+            check_tag_with_encoding(asn1::GeneralizedTime::TAG, encoding, tag)
+        }
+        Type::BitString() => check_tag_with_encoding(asn1::BitString::TAG, encoding, tag),
     }
 }
 
@@ -523,14 +549,15 @@ pub(crate) fn check_size_constraint(
 #[cfg(test)]
 mod tests {
 
+    use asn1::SimpleAsn1Readable;
     use pyo3::IntoPyObject;
 
-    use super::{expected_tags_for_type, AnnotatedType, Annotation, Type};
+    use super::{is_tag_valid_for_type, AnnotatedType, Annotation, Type};
 
     #[test]
-    // Needed for coverage of `expected_tags_for_type(Type::Option(..))`, since
-    // `expected_tags_for_type` is never called with an optional value.
-    fn test_option_expected_tags_for_type() {
+    // Needed for coverage of `is_tag_valid_for_type(Type::Option(..))`, since
+    // `is_tag_valid_for_type` is never called with an optional value.
+    fn test_option_is_tag_valid_for_type() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
@@ -564,11 +591,12 @@ mod tests {
                 },
             )
             .unwrap();
-            let expected_tags = expected_tags_for_type(py, &Type::Option(optional_type), &None);
-            assert_eq!(
-                expected_tags,
-                expected_tags_for_type(py, &Type::PyInt(), &None)
-            )
+            assert!(is_tag_valid_for_type(
+                py,
+                asn1::BigInt::TAG,
+                &Type::Option(optional_type),
+                &None
+            ));
         })
     }
 }
