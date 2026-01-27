@@ -607,9 +607,13 @@ class TestSequence:
         class Example:
             foo: typing.Union[int, bool, str]
 
-        assert_roundtrips([(Example(foo=9), b"\x30\x03\x02\x01\x09")])
-        assert_roundtrips([(Example(foo=True), b"\x30\x03\x01\x01\xff")])
-        assert_roundtrips([(Example(foo="a"), b"\x30\x03\x0c\x01a")])
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x03\x0c\x01a"),
+            ]
+        )
 
     def test_sequence_with_optional_choice(self) -> None:
         @asn1.sequence
@@ -661,11 +665,13 @@ class TestSequence:
         class Example:
             foo: Annotated[typing.Union[int, bool, str], asn1.Explicit(3)]
 
-        assert_roundtrips([(Example(foo=9), b"\x30\x05\xa3\x03\x02\x01\x09")])
         assert_roundtrips(
-            [(Example(foo=True), b"\x30\x05\xa3\x03\x01\x01\xff")]
+            [
+                (Example(foo=9), b"\x30\x05\xa3\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x05\xa3\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x05\xa3\x03\x0c\x01a"),
+            ]
         )
-        assert_roundtrips([(Example(foo="a"), b"\x30\x05\xa3\x03\x0c\x01a")])
 
     def test_sequence_with_choice_implicit_simple_variants(self) -> None:
         @asn1.sequence
@@ -677,9 +683,13 @@ class TestSequence:
                 Annotated[str, asn1.Implicit(2)],
             ]
 
-        assert_roundtrips([(Example(foo=9), b"\x30\x03\x80\x01\x09")])
-        assert_roundtrips([(Example(foo=True), b"\x30\x03\x81\x01\xff")])
-        assert_roundtrips([(Example(foo="a"), b"\x30\x03\x82\x01a")])
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x03\x80\x01\x09"),
+                (Example(foo=True), b"\x30\x03\x81\x01\xff"),
+                (Example(foo="a"), b"\x30\x03\x82\x01a"),
+            ]
+        )
 
     def test_sequence_with_choice_explicit_simple_variants(self) -> None:
         @asn1.sequence
@@ -691,11 +701,13 @@ class TestSequence:
                 Annotated[str, asn1.Explicit(2)],
             ]
 
-        assert_roundtrips([(Example(foo=9), b"\x30\x05\xa0\x03\x02\x01\x09")])
         assert_roundtrips(
-            [(Example(foo=True), b"\x30\x05\xa1\x03\x01\x01\xff")]
+            [
+                (Example(foo=9), b"\x30\x05\xa0\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x05\xa1\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x05\xa2\x03\x0c\x01a"),
+            ]
         )
-        assert_roundtrips([(Example(foo="a"), b"\x30\x05\xa2\x03\x0c\x01a")])
 
     def test_sequence_with_choice_with_custom_variants(self) -> None:
         @asn1.sequence
@@ -714,13 +726,20 @@ class TestSequence:
             ]
 
         assert_roundtrips(
-            [(Example(foo=asn1.Variant(9, "IntA")), b"\x30\x03\x80\x01\x09")]
-        )
-        assert_roundtrips(
-            [(Example(foo=asn1.Variant(9, "IntB")), b"\x30\x03\x81\x01\x09")]
-        )
-        assert_roundtrips(
-            [(Example(foo=asn1.Variant(9, "IntC")), b"\x30\x03\x82\x01\x09")]
+            [
+                (
+                    Example(foo=asn1.Variant(9, "IntA")),
+                    b"\x30\x03\x80\x01\x09",
+                ),
+                (
+                    Example(foo=asn1.Variant(9, "IntB")),
+                    b"\x30\x03\x81\x01\x09",
+                ),
+                (
+                    Example(foo=asn1.Variant(9, "IntC")),
+                    b"\x30\x03\x82\x01\x09",
+                ),
+            ]
         )
 
     def test_sequence_with_choice_with_custom_variants_bool(self) -> None:
@@ -747,23 +766,15 @@ class TestSequence:
                 (
                     Example(foo=asn1.Variant(True, "BoolA")),
                     b"\x30\x03\x80\x01\xff",
-                )
-            ]
-        )
-        assert_roundtrips(
-            [
+                ),
                 (
                     Example(foo=asn1.Variant(True, "BoolB")),
                     b"\x30\x03\x81\x01\xff",
-                )
-            ]
-        )
-        assert_roundtrips(
-            [
+                ),
                 (
                     Example(foo=asn1.Variant(True, "BoolC")),
                     b"\x30\x03\x82\x01\xff",
-                )
+                ),
             ]
         )
 
@@ -794,17 +805,13 @@ class TestSequence:
                         field=asn1.Variant(Example(foo=9), "ExampleA")
                     ),
                     b"\x30\x05\xa0\x03\x02\x01\x09",
-                )
-            ]
-        )
-        assert_roundtrips(
-            [
+                ),
                 (
                     ExampleUnion(
                         field=asn1.Variant(Example(foo=9), "ExampleB")
                     ),
                     b"\x30\x05\xa1\x03\x02\x01\x09",
-                )
+                ),
             ]
         )
 
@@ -820,14 +827,15 @@ class TestSequence:
             ]
 
         assert_roundtrips(
-            [(Example(foo=asn1.Variant(9, "MyInt")), b"\x30\x03\x02\x01\x09")]
-        )
-        assert_roundtrips(
             [
+                (
+                    Example(foo=asn1.Variant(9, "MyInt")),
+                    b"\x30\x03\x02\x01\x09",
+                ),
                 (
                     Example(foo=asn1.Variant(True, "MyBool")),
                     b"\x30\x03\x01\x01\xff",
-                )
+                ),
             ]
         )
 
