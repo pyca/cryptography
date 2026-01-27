@@ -175,7 +175,7 @@ jobs:
 
   macos:
     needs: [sdist]
-    runs-on: macos-13
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
