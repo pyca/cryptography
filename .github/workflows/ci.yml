@@ -286,16 +286,16 @@ jobs:
       fail-fast: false
       matrix:
         RUNNER:
-          - {OS: 'macos-13', ARCH: 'x86_64'}
-          - {OS: 'macos-14', ARCH: 'arm64'}
+          - {OS: 'macos-15-intel', ARCH: 'x86_64'}
+          - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.8", NOXSESSION: "tests"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
-          - {VERSION: "3.14t-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.14t", NOXSESSION: "tests"}
         exclude:
           # We only test latest Python on arm64. py38 won't work since there's no universal2 binary
           - PYTHON: {VERSION: "3.8", NOXSESSION: "tests"}
-            RUNNER: {OS: 'macos-14', ARCH: 'arm64'}
+            RUNNER: {OS: 'macos-15', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -361,11 +361,6 @@ jobs:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.13", NOXSESSION: "tests"}
           - {VERSION: "3.14t-dev", NOXSESSION: "tests"}
-        include:
-          # Not in the main matrix because we want tests-nocoverage on Python
-          # 3.13
-          - PYTHON: {VERSION: "3.13", NOXSESSION: "tests-nocoverage"}
-            WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
