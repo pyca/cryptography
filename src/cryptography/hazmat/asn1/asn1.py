@@ -201,8 +201,8 @@ def _normalize_field_type(
                 )
 
             if are_union_types_tagged:
-                tags = [v.tag_name for v in variants]
-                if len(tags) != len(set(tags)):
+                tags = {v.tag_name for v in variants}
+                if len(variants) != len(tags):
                     raise TypeError(
                         "When using `asn1.Variant` in a union, the tags used "
                         "must be unique"
