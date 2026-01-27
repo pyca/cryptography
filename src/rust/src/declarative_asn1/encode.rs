@@ -143,7 +143,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                         };
                         match encoding {
                             Some(e) => match e.get() {
-                                // CHOICE cannot be encoded as IMPLICIT
+                                // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
                                 Encoding::Implicit(_) => {
                                     return Err(asn1::WriteError::AllocationError)
                                 }

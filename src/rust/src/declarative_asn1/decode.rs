@@ -171,6 +171,7 @@ fn decode_choice_with_encoding<'a>(
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     match encoding {
         Encoding::Implicit(_) => Err(CryptographyError::Py(
+            // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
             pyo3::exceptions::PyValueError::new_err(
                 "invalid type definition: CHOICE fields cannot be implicitly encoded".to_string(),
             ),

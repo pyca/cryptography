@@ -178,6 +178,7 @@ def _normalize_field_type(
         else:
             # Otherwise, the Union is a CHOICE
             if isinstance(annotation.encoding, Implicit):
+                # CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
                 raise TypeError(
                     "CHOICE (`X | Y | ...`) types should not have an IMPLICIT "
                     "annotation"
