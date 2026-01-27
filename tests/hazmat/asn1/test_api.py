@@ -387,3 +387,23 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: Annotated[typing.Union[int, bool], asn1.Implicit(0)]
+
+    def test_fail_choice_with_non_literal_tag(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "When using `asn1.Variant` in a type annotation, the second "
+                "type parameter must be a `typing.Literal` type. E.g: "
+                '`Variant[int, typing.Literal["MyInt"]]`.'
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                foo: typing.Union[
+                    Annotated[asn1.Variant[int, bool], asn1.Implicit(0)],
+                    Annotated[
+                        asn1.Variant[int, typing.Literal["IntB"]],
+                        asn1.Implicit(1),
+                    ],
+                ]

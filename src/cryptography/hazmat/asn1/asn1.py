@@ -53,8 +53,8 @@ class Variant(typing.Generic[U, Tag]):
     and need to distinguish between them:
 
         foo: (
-            Annotated[Variant[int, "IntA"], Implicit(0)]
-            | Annotated[Variant[int, "IntB"], Implicit(1)]
+            Annotated[Variant[int, typing.Literal["IntA"]], Implicit(0)]
+            | Annotated[Variant[int, typing.Literal["IntB"]], Implicit(1)]
         )
 
     Usage:
@@ -243,6 +243,12 @@ def _type_to_variant(
     # Check if this is a Variant[T, Tag] type
     if get_type_origin(inner_type) is Variant:
         value_type, tag_literal = get_type_args(inner_type)
+        if get_type_origin(tag_literal) is not typing.Literal:
+            raise TypeError(
+                "When using `asn1.Variant` in a type annotation, the second "
+                "type parameter must be a `typing.Literal` type. E.g: "
+                '`Variant[int, typing.Literal["MyInt"]]`.'
+            )
         tag_name = get_type_args(tag_literal)[0]
 
         if hasattr(value_type, "__asn1_root__"):
