@@ -60,16 +60,6 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
     Ok(X25519PublicKey { pkey })
 }
 
-impl X25519PrivateKey {
-    // Internal method for use by other Rust modules (e.g., HPKE)
-    pub(crate) fn private_bytes_raw_internal(
-        &self,
-        _py: pyo3::Python<'_>,
-    ) -> CryptographyResult<Vec<u8>> {
-        Ok(self.pkey.raw_private_key()?)
-    }
-}
-
 #[pyo3::pymethods]
 impl X25519PrivateKey {
     fn exchange<'p>(
@@ -135,16 +125,6 @@ impl X25519PrivateKey {
         _memo: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> pyo3::PyRef<'p, Self> {
         slf
-    }
-}
-
-impl X25519PublicKey {
-    // Internal method for use by other Rust modules (e.g., HPKE)
-    pub(crate) fn public_bytes_raw_internal(
-        &self,
-        _py: pyo3::Python<'_>,
-    ) -> CryptographyResult<Vec<u8>> {
-        Ok(self.pkey.raw_public_key()?)
     }
 }
 
