@@ -91,7 +91,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~~
 
 * `Dropped support for win_arm64 wheels`_.
-* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.4.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.5.
 
 .. _v46-0-3:
 
