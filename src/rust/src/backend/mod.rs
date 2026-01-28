@@ -18,6 +18,7 @@ pub(crate) mod ed25519;
 pub(crate) mod ed448;
 pub(crate) mod hashes;
 pub(crate) mod hmac;
+pub(crate) mod hpke;
 pub(crate) mod kdf;
 pub(crate) mod keys;
 pub(crate) mod poly1305;
