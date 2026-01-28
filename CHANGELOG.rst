@@ -85,6 +85,14 @@ Changelog
 * Added :meth:`~cryptography.hazmat.primitives.hashes.Hash.hash`, a one-shot
   method for computing hashes.
 
+.. v46-0-4:
+
+46.0.4 - 2026-01-27
+~~~~~~~~~~~~~~~~~~~
+
+* `Dropped support for win_arm64 wheels`_.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.4.
+
 .. _v46-0-3:
 
 46.0.3 - 2025-10-15
@@ -2847,3 +2855,4 @@ Changelog
 .. _`main`: https://github.com/pyca/cryptography/
 .. _`cffi`: https://cffi.readthedocs.io/
 .. _`aws-lc`: https://github.com/aws/aws-lc
+.. _`Dropped support for win_arm64 wheels`: https://github.com/pyca/cryptography/pull/14216
