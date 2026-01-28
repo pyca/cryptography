@@ -15,6 +15,7 @@ class Type:
     Sequence: typing.ClassVar[type]
     SequenceOf: typing.ClassVar[type]
     Option: typing.ClassVar[type]
+    Choice: typing.ClassVar[type]
     PyBool: typing.ClassVar[type]
     PyInt: typing.ClassVar[type]
     PyBytes: typing.ClassVar[type]
@@ -59,6 +60,18 @@ class AnnotatedTypeObject:
     def __new__(
         cls, annotated_type: AnnotatedType, value: typing.Any
     ) -> AnnotatedTypeObject: ...
+
+class Variant:
+    python_class: type
+    ann_type: AnnotatedType
+    tag_name: str | None
+
+    def __new__(
+        cls,
+        python_class: type,
+        ann_type: AnnotatedType,
+        tag_name: str | None,
+    ) -> Variant: ...
 
 class PrintableString:
     def __new__(cls, inner: str) -> PrintableString: ...
