@@ -7,7 +7,7 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    check_size_constraint, type_to_tag, AnnotatedType, Annotation, BitString, Encoding,
+    check_size_constraint, is_tag_valid_for_type, AnnotatedType, Annotation, BitString, Encoding,
     GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
 };
 use crate::error::CryptographyError;
@@ -172,10 +172,9 @@ pub(crate) fn decode_annotated_type<'a>(
     // Handle DEFAULT annotation if field is not present (by
     // returning the default value)
     if let Some(default) = &ann_type.annotation.get().default {
-        let expected_tag = type_to_tag(inner, encoding);
-        let next_tag = parser.peek_tag();
-        if next_tag != Some(expected_tag) {
-            return Ok(default.clone_ref(py).into_bound(py));
+        match parser.peek_tag() {
+            Some(next_tag) if is_tag_valid_for_type(next_tag, inner, encoding) => (),
+            _ => return Ok(default.clone_ref(py).into_bound(py)),
         }
     }
 
@@ -210,9 +209,8 @@ pub(crate) fn decode_annotated_type<'a>(
             })?
         }
         Type::Option(cls) => {
-            let inner_tag = type_to_tag(cls.get().inner.get(), encoding);
             match parser.peek_tag() {
-                Some(t) if t == inner_tag => {
+                Some(t) if is_tag_valid_for_type(t, cls.get().inner.get(), encoding) => {
                     // For optional types, annotations will always be associated to the `Optional` type
                     // i.e: `Annotated[Optional[T], annotation]`, as opposed to the inner `T` type.
                     // Therefore, when decoding the inner type `T` we must pass the annotation of the `Optional`

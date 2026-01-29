@@ -419,29 +419,52 @@ pub(crate) fn python_class_to_annotated<'p>(
     }
 }
 
-pub(crate) fn type_to_tag(t: &Type, encoding: &Option<pyo3::Py<Encoding>>) -> asn1::Tag {
-    let inner_tag = match t {
-        Type::Sequence(_, _) => asn1::Sequence::TAG,
-        Type::SequenceOf(_) => asn1::Sequence::TAG,
-        Type::Option(t) => type_to_tag(t.get().inner.get(), encoding),
-        Type::PyBool() => bool::TAG,
-        Type::PyInt() => asn1::BigInt::TAG,
-        Type::PyBytes() => <&[u8] as SimpleAsn1Readable>::TAG,
-        Type::PyStr() => asn1::Utf8String::TAG,
-        Type::PrintableString() => asn1::PrintableString::TAG,
-        Type::IA5String() => asn1::IA5String::TAG,
-        Type::ObjectIdentifier() => asn1::ObjectIdentifier::TAG,
-        Type::UtcTime() => asn1::UtcTime::TAG,
-        Type::GeneralizedTime() => asn1::GeneralizedTime::TAG,
-        Type::BitString() => asn1::BitString::TAG,
-    };
-
-    match encoding {
+// Checks if encoding `tag_without_encoding` using `encoding` results
+// in `tag`
+fn check_tag_with_encoding(
+    tag_without_encoding: asn1::Tag,
+    encoding: &Option<pyo3::Py<Encoding>>,
+    tag: asn1::Tag,
+) -> bool {
+    let tag_with_encoding = match encoding {
         Some(e) => match e.get() {
-            Encoding::Implicit(n) => asn1::implicit_tag(*n, inner_tag),
+            Encoding::Implicit(n) => asn1::implicit_tag(*n, tag_without_encoding),
             Encoding::Explicit(n) => asn1::explicit_tag(*n),
         },
-        None => inner_tag,
+        None => tag_without_encoding,
+    };
+    tag_with_encoding == tag
+}
+
+// Given `tag` and `encoding`, returns whether that tag with that encoding
+// matches what one would expect to see when decoding `type_`
+pub(crate) fn is_tag_valid_for_type(
+    tag: asn1::Tag,
+    type_: &Type,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> bool {
+    match type_ {
+        Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::Option(t) => is_tag_valid_for_type(tag, t.get().inner.get(), encoding),
+        Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
+        Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
+        Type::PyBytes() => {
+            check_tag_with_encoding(<&[u8] as SimpleAsn1Readable>::TAG, encoding, tag)
+        }
+        Type::PyStr() => check_tag_with_encoding(asn1::Utf8String::TAG, encoding, tag),
+        Type::PrintableString() => {
+            check_tag_with_encoding(asn1::PrintableString::TAG, encoding, tag)
+        }
+        Type::IA5String() => check_tag_with_encoding(asn1::IA5String::TAG, encoding, tag),
+        Type::ObjectIdentifier() => {
+            check_tag_with_encoding(asn1::ObjectIdentifier::TAG, encoding, tag)
+        }
+        Type::UtcTime() => check_tag_with_encoding(asn1::UtcTime::TAG, encoding, tag),
+        Type::GeneralizedTime() => {
+            check_tag_with_encoding(asn1::GeneralizedTime::TAG, encoding, tag)
+        }
+        Type::BitString() => check_tag_with_encoding(asn1::BitString::TAG, encoding, tag),
     }
 }
 
@@ -468,14 +491,15 @@ pub(crate) fn check_size_constraint(
 #[cfg(test)]
 mod tests {
 
+    use asn1::SimpleAsn1Readable;
     use pyo3::IntoPyObject;
 
-    use super::{type_to_tag, AnnotatedType, Annotation, Type};
+    use super::{is_tag_valid_for_type, AnnotatedType, Annotation, Type};
 
     #[test]
-    // Needed for coverage of `type_to_tag(Type::Option(..))`, since
-    // `type_to_tag` is never called with an optional value.
-    fn test_option_type_to_tag() {
+    // Needed for coverage of `is_tag_valid_for_type(Type::Option(..))`, since
+    // `is_tag_valid_for_type` is never called with an optional value.
+    fn test_option_is_tag_valid_for_type() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
@@ -509,8 +533,11 @@ mod tests {
                 },
             )
             .unwrap();
-            let expected_tag = type_to_tag(&Type::Option(optional_type), &None);
-            assert_eq!(expected_tag, type_to_tag(&Type::PyInt(), &None))
+            assert!(is_tag_valid_for_type(
+                asn1::BigInt::TAG,
+                &Type::Option(optional_type),
+                &None
+            ));
         })
     }
 }
