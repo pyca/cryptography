@@ -207,6 +207,8 @@ linkcheck_ignore = [
     r"https://wiki.sei.cmu.edu",
     # GitHub has started heavily rate-limiting causing job failures
     r"https://github.com",
+    # 403s
+    r"https://e-trust.gosuslugi.ru/",
 ]
 
 autosectionlabel_prefix_document = True
