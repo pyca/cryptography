@@ -486,15 +486,6 @@ pub static ED448_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["Ed448PublicKey"],
 );
 
-pub static X25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.x25519",
-    &["X25519PrivateKey"],
-);
-pub static X25519_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.asymmetric.x25519",
-    &["X25519PublicKey"],
-);
-
 pub static DSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
     &["DSAPrivateKey"],
@@ -621,12 +612,6 @@ pub static KBKDF_COUNTER_LOCATION: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.kdf.kbkdf",
     &["CounterLocation"],
 );
-
-pub static HKDF_EXPAND: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.kdf.hkdf", &["HKDFExpand"]);
-
-pub static AESGCM: LazyPyImport =
-    LazyPyImport::new("cryptography.hazmat.primitives.ciphers.aead", &["AESGCM"]);
 
 #[cfg(test)]
 mod tests {

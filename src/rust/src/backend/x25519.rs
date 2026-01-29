@@ -17,7 +17,7 @@ pub(crate) struct X25519PublicKey {
 }
 
 #[pyo3::pyfunction]
-fn generate_key() -> CryptographyResult<X25519PrivateKey> {
+pub(crate) fn generate_key() -> CryptographyResult<X25519PrivateKey> {
     Ok(X25519PrivateKey {
         pkey: openssl::pkey::PKey::generate_x25519()?,
     })
@@ -52,7 +52,7 @@ fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
 }
 
 #[pyo3::pyfunction]
-fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
+pub(crate) fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> {
     let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::X25519)
         .map_err(|_| {
             pyo3::exceptions::PyValueError::new_err("An X25519 public key is 32 bytes long")

@@ -626,7 +626,7 @@ impl ChaCha20Poly1305 {
     name = "AESGCM"
 )]
 // NO-COVERAGE-END
-struct AesGcm {
+pub(crate) struct AesGcm {
     #[cfg(any(
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
         CRYPTOGRAPHY_IS_LIBRESSL,
@@ -647,7 +647,10 @@ struct AesGcm {
 #[pyo3::pymethods]
 impl AesGcm {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
+    pub(crate) fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<AesGcm> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         let cipher = match key_buf.as_bytes().len() {
             16 => openssl::cipher::Cipher::aes_128_gcm(),
@@ -696,7 +699,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn encrypt<'p>(
+    pub(crate) fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -754,7 +757,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn decrypt<'p>(
+    pub(crate) fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,

@@ -2,17 +2,18 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::backend::kdf::hkdf_extract;
+use crate::backend::aead::AesGcm;
+use crate::backend::kdf::{hkdf_extract, HkdfExpand};
+use crate::backend::x25519;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 use crate::types;
-use pyo3::types::PyAnyMethods;
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 const HPKE_VERSION: &[u8] = b"HPKE-v1";
 const HPKE_MODE_BASE: u8 = 0x00;
 
-// Algorithm parameters organized by type for easy extension
 mod kem_params {
     pub const X25519_ID: u16 = 0x0020;
     pub const X25519_NSECRET: usize = 32;
@@ -74,30 +75,28 @@ pub(crate) struct Suite {
 }
 
 impl Suite {
-    fn hkdf_expand(
+    fn hkdf_expand<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         prk: &[u8],
         info: &[u8],
         length: usize,
-    ) -> CryptographyResult<Vec<u8>> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let algorithm = types::SHA256.get(py)?.call0()?;
-        let hkdf_expand = types::HKDF_EXPAND.get(py)?.call1((
-            &algorithm,
+
+        let mut hkdf_expand = HkdfExpand::new(
+            py,
+            algorithm.unbind(),
             length,
-            pyo3::types::PyBytes::new(py, info),
-        ))?;
-        let result = hkdf_expand.call_method1(
-            pyo3::intern!(py, "derive"),
-            (pyo3::types::PyBytes::new(py, prk),),
+            Some(pyo3::types::PyBytes::new(py, info).unbind()),
+            None,
         )?;
-        Ok(result.extract::<Vec<u8>>()?)
+        hkdf_expand.derive(py, CffiBuf::from_bytes(py, prk))
     }
 
     fn kem_labeled_extract(
         &self,
         py: pyo3::Python<'_>,
-        salt: &[u8],
         label: &[u8],
         ikm: &[u8],
     ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
@@ -109,22 +108,17 @@ impl Suite {
 
         let algorithm = types::SHA256.get(py)?.call0()?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
-        let salt_py = if salt.is_empty() {
-            None
-        } else {
-            Some(pyo3::types::PyBytes::new(py, salt).unbind())
-        };
-        hkdf_extract(py, &algorithm.unbind(), salt_py.as_ref(), &buf)
+        hkdf_extract(py, &algorithm.unbind(), None, &buf)
     }
 
-    fn kem_labeled_expand(
+    fn kem_labeled_expand<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         prk: &[u8],
         label: &[u8],
         info: &[u8],
         length: usize,
-    ) -> CryptographyResult<Vec<u8>> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut labeled_info =
             Vec::with_capacity(2 + HPKE_VERSION.len() + 5 + label.len() + info.len());
         labeled_info.extend_from_slice(&(length as u16).to_be_bytes());
@@ -135,13 +129,13 @@ impl Suite {
         self.hkdf_expand(py, prk, &labeled_info, length)
     }
 
-    fn extract_and_expand(
+    fn extract_and_expand<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         dh: &[u8],
         kem_context: &[u8],
-    ) -> CryptographyResult<Vec<u8>> {
-        let eae_prk = self.kem_labeled_extract(py, b"", b"eae_prk", dh)?;
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let eae_prk = self.kem_labeled_extract(py, b"eae_prk", dh)?;
         self.kem_labeled_expand(
             py,
             &eae_prk,
@@ -151,57 +145,46 @@ impl Suite {
         )
     }
 
-    fn encap(
+    fn encap<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         pk_r: &pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> CryptographyResult<(Vec<u8>, Vec<u8>)> {
-        // Generate ephemeral key pair
-        let sk_e = types::X25519_PRIVATE_KEY
-            .get(py)?
-            .call_method0(pyo3::intern!(py, "generate"))?;
+    ) -> CryptographyResult<(
+        pyo3::Bound<'p, pyo3::types::PyBytes>,
+        pyo3::Bound<'p, pyo3::types::PyBytes>,
+    )> {
+        let sk_e = pyo3::Bound::new(py, x25519::generate_key()?)?;
         let pk_e = sk_e.call_method0(pyo3::intern!(py, "public_key"))?;
 
-        // Get ephemeral public key raw bytes
-        let pk_e_bytes = pk_e.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
-        let pk_e_raw = pk_e_bytes.extract::<&[u8]>()?;
+        let pk_e_bytes: pyo3::Bound<'p, pyo3::types::PyBytes> = pk_e
+            .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
+            .extract()?;
 
-        // Get recipient's public key raw bytes
         let pk_r_bytes = pk_r.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
         let pk_r_raw = pk_r_bytes.extract::<&[u8]>()?;
 
-        // Perform ECDH via Python API
         let dh_result = sk_e.call_method1(pyo3::intern!(py, "exchange"), (pk_r,))?;
         let dh = dh_result.extract::<&[u8]>()?;
 
         let mut kem_context = [0u8; 64];
-        kem_context[..32].copy_from_slice(pk_e_raw);
+        kem_context[..32].copy_from_slice(pk_e_bytes.as_bytes());
         kem_context[32..].copy_from_slice(pk_r_raw);
         let shared_secret = self.extract_and_expand(py, dh, &kem_context)?;
-        Ok((shared_secret, pk_e_raw.to_vec()))
+        Ok((shared_secret, pk_e_bytes))
     }
 
-    fn decap(
+    fn decap<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         enc: &[u8],
         sk_r: &pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> CryptographyResult<Vec<u8>> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         // Reconstruct pk_e from enc
-        let pk_e = types::X25519_PUBLIC_KEY
-            .get(py)?
-            .call_method1(pyo3::intern!(py, "from_public_bytes"), (enc,))
-            .map_err(|_| {
-                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "Invalid encapsulated key",
-                ))
-            })?;
+        let pk_e = pyo3::Bound::new(py, x25519::from_public_bytes(enc)?)?;
 
-        // Perform ECDH via Python API
         let dh_result = sk_r.call_method1(pyo3::intern!(py, "exchange"), (&pk_e,))?;
         let dh = dh_result.extract::<&[u8]>()?;
 
-        // Get our public key
         let pk_rm = sk_r.call_method0(pyo3::intern!(py, "public_key"))?;
         let pk_rm_bytes = pk_rm.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
         let pk_rm_raw = pk_rm_bytes.extract::<&[u8]>()?;
@@ -215,7 +198,7 @@ impl Suite {
     fn hpke_labeled_extract(
         &self,
         py: pyo3::Python<'_>,
-        salt: &[u8],
+        salt: Option<&[u8]>,
         label: &[u8],
         ikm: &[u8],
     ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
@@ -227,22 +210,17 @@ impl Suite {
 
         let algorithm = types::SHA256.get(py)?.call0()?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
-        let salt_py = if salt.is_empty() {
-            None
-        } else {
-            Some(pyo3::types::PyBytes::new(py, salt).unbind())
-        };
-        hkdf_extract(py, &algorithm.unbind(), salt_py.as_ref(), &buf)
+        hkdf_extract(py, &algorithm.unbind(), salt, &buf)
     }
 
-    fn hpke_labeled_expand(
+    fn hpke_labeled_expand<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         prk: &[u8],
         label: &[u8],
         info: &[u8],
         length: usize,
-    ) -> CryptographyResult<Vec<u8>> {
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut labeled_info =
             Vec::with_capacity(2 + HPKE_VERSION.len() + 10 + label.len() + info.len());
         labeled_info.extend_from_slice(&(length as u16).to_be_bytes());
@@ -262,13 +240,13 @@ impl Suite {
         [u8; aead_params::AES_128_GCM_NK],
         [u8; aead_params::AES_128_GCM_NN],
     )> {
-        let psk_id_hash = self.hpke_labeled_extract(py, b"", b"psk_id_hash", b"")?;
-        let info_hash = self.hpke_labeled_extract(py, b"", b"info_hash", info)?;
+        let psk_id_hash = self.hpke_labeled_extract(py, None, b"psk_id_hash", b"")?;
+        let info_hash = self.hpke_labeled_extract(py, None, b"info_hash", info)?;
         let mut key_schedule_context = vec![HPKE_MODE_BASE];
         key_schedule_context.extend_from_slice(&psk_id_hash);
         key_schedule_context.extend_from_slice(&info_hash);
 
-        let secret = self.hpke_labeled_extract(py, shared_secret, b"secret", b"")?;
+        let secret = self.hpke_labeled_extract(py, Some(shared_secret), b"secret", b"")?;
 
         let key_vec = self.hpke_labeled_expand(
             py,
@@ -287,8 +265,8 @@ impl Suite {
 
         let mut key = [0u8; aead_params::AES_128_GCM_NK];
         let mut base_nonce = [0u8; aead_params::AES_128_GCM_NN];
-        key.copy_from_slice(&key_vec);
-        base_nonce.copy_from_slice(&nonce_vec);
+        key.copy_from_slice(key_vec.as_bytes());
+        base_nonce.copy_from_slice(nonce_vec.as_bytes());
 
         Ok((key, base_nonce))
     }
@@ -325,40 +303,21 @@ impl Suite {
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
-        let aad_bytes: &[u8] = aad.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
 
         let (shared_secret, enc) = self.encap(py, public_key)?;
-        let (key, base_nonce) = self.key_schedule(py, &shared_secret, info_bytes)?;
+        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
-        // Create AESGCM with the derived key
-        let aesgcm = types::AESGCM
-            .get(py)?
-            .call1((pyo3::types::PyBytes::new(py, &key),))?;
+        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
+        let ct = aesgcm.encrypt(py, CffiBuf::from_bytes(py, &base_nonce), plaintext, aad)?;
 
-        // Encrypt using AESGCM
-        let aad_arg = if aad_bytes.is_empty() {
-            py.None().into_bound(py)
-        } else {
-            pyo3::types::PyBytes::new(py, aad_bytes).into_any()
-        };
-
-        let ct = aesgcm.call_method1(
-            pyo3::intern!(py, "encrypt"),
-            (
-                pyo3::types::PyBytes::new(py, &base_nonce),
-                pyo3::types::PyBytes::new(py, plaintext.as_bytes()),
-                aad_arg,
-            ),
-        )?;
-        let ct_bytes = ct.extract::<&[u8]>()?;
-
-        // Combine enc + ct
+        let enc_bytes = enc.as_bytes();
+        let ct_bytes = ct.as_bytes();
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            enc.len() + ct_bytes.len(),
+            enc_bytes.len() + ct_bytes.len(),
             |buf| {
-                buf[..enc.len()].copy_from_slice(&enc);
-                buf[enc.len()..].copy_from_slice(ct_bytes);
+                buf[..enc_bytes.len()].copy_from_slice(enc_bytes);
+                buf[enc_bytes.len()..].copy_from_slice(ct_bytes);
                 Ok(())
             },
         )?)
@@ -379,37 +338,19 @@ impl Suite {
         }
 
         let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
-        let aad_bytes: &[u8] = aad.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
 
         let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
 
         let shared_secret = self.decap(py, enc, private_key)?;
-        let (key, base_nonce) = self.key_schedule(py, &shared_secret, info_bytes)?;
+        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
-        // Create AESGCM with the derived key
-        let aesgcm = types::AESGCM
-            .get(py)?
-            .call1((pyo3::types::PyBytes::new(py, &key),))?;
-
-        // Decrypt using AESGCM
-        let aad_arg = if aad_bytes.is_empty() {
-            py.None().into_bound(py)
-        } else {
-            pyo3::types::PyBytes::new(py, aad_bytes).into_any()
-        };
-
-        let pt = aesgcm
-            .call_method1(
-                pyo3::intern!(py, "decrypt"),
-                (
-                    pyo3::types::PyBytes::new(py, &base_nonce),
-                    pyo3::types::PyBytes::new(py, ct),
-                    aad_arg,
-                ),
-            )
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-
-        Ok(pt.extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?)
+        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
+        aesgcm.decrypt(
+            py,
+            CffiBuf::from_bytes(py, &base_nonce),
+            CffiBuf::from_bytes(py, ct),
+            aad,
+        )
     }
 }
 
