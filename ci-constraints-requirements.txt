@@ -124,7 +124,7 @@ nh3==0.3.2
     # via readme-renderer
 nox==2025.11.12
     # via cryptography (pyproject.toml)
-packaging==25.0
+packaging==26.0
     # via
     #   build
     #   dependency-groups
@@ -133,7 +133,7 @@ packaging==25.0
     #   sphinx
 pathspec==0.12.1 ; python_full_version < '3.9'
     # via check-sdist
-pathspec==1.0.3 ; python_full_version >= '3.9'
+pathspec==1.0.4 ; python_full_version >= '3.9'
     # via
     #   check-sdist
     #   mypy
@@ -219,7 +219,7 @@ requests==2.32.5 ; python_full_version >= '3.9'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.14.13
+ruff==0.14.14
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
@@ -316,7 +316,7 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.6.3 ; python_full_version >= '3.9'
     # via requests
-uv==0.9.26
+uv==0.9.27
     # via nox
 virtualenv==20.36.1
     # via nox

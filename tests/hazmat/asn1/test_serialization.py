@@ -467,6 +467,10 @@ class TestSequence:
             h: typing.Union[asn1.BitString, None]
             i: typing.Union[asn1.IA5String, None]
             j: typing.Union[x509.ObjectIdentifier, None]
+            k: Annotated[typing.Union[str, None], asn1.Implicit(0)]
+            only_field_present: Annotated[
+                typing.Union[str, None], asn1.Implicit(1)
+            ]
 
         assert_roundtrips(
             [
@@ -482,8 +486,10 @@ class TestSequence:
                         h=None,
                         i=None,
                         j=None,
+                        k=None,
+                        only_field_present="a",
                     ),
-                    b"\x30\x00",
+                    b"\x30\x03\x81\x01a",
                 )
             ]
         )

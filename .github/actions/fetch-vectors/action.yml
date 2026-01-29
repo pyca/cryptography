@@ -5,15 +5,15 @@ runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: "C2SP/wycheproof"
         path: "wycheproof"
-        # Latest commit on the wycheproof main branch, as of Jan 20, 2026.
-        ref: "0fd0ec1cf2114f456f5c3e7c61ba807fb1311b45" # wycheproof-ref
+        # Latest commit on the wycheproof main branch, as of Jan 28, 2026.
+        ref: "ad6ac186a990529963a1750e2aaa120f5f289cbc" # wycheproof-ref
         persist-credentials: false
 
-    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: "C2SP/x509-limbo"
         path: "x509-limbo"
