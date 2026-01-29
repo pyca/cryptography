@@ -170,6 +170,8 @@ class TestHPKE:
 
         with pytest.raises(InvalidTag):
             suite.decrypt(truncated, sk_r)
+        with pytest.raises(InvalidTag):
+            suite.decrypt(b"\x00")
 
     def test_vector_decryption(self, subtests):
         vectors = load_vectors_from_file(
