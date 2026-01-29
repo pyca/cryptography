@@ -41,7 +41,7 @@ from cryptography.hazmat.bindings._rust import declarative_asn1
 
 T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")
-Tag = typing.TypeVar("Tag")
+Tag = typing.TypeVar("Tag", bound=typing.LiteralString)
 
 
 @dataclasses.dataclass(frozen=True)

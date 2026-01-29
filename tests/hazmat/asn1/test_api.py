@@ -401,7 +401,10 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 foo: typing.Union[
-                    Annotated[asn1.Variant[int, bool], asn1.Implicit(0)],
+                    Annotated[
+                        asn1.Variant[int, str],
+                        asn1.Implicit(0),
+                    ],
                     Annotated[
                         asn1.Variant[int, typing.Literal["IntB"]],
                         asn1.Implicit(1),
