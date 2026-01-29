@@ -954,7 +954,7 @@ struct Hkdf {
     used: bool,
 }
 
-fn hkdf_extract(
+pub(crate) fn hkdf_extract(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::Py<pyo3::PyAny>,
     salt: Option<&pyo3::Py<pyo3::types::PyBytes>>,

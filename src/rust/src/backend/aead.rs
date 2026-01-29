@@ -21,12 +21,12 @@ fn check_length(data: &[u8]) -> CryptographyResult<()> {
     Ok(())
 }
 
-enum Aad<'a> {
+pub(crate) enum Aad<'a> {
     Single(CffiBuf<'a>),
     List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
-struct EvpCipherAead {
+pub(crate) struct EvpCipherAead {
     base_encryption_ctx: openssl::cipher_ctx::CipherCtx,
     base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
@@ -34,7 +34,7 @@ struct EvpCipherAead {
 }
 
 impl EvpCipherAead {
-    fn new(
+    pub(crate) fn new(
         cipher: &openssl::cipher::CipherRef,
         key: &[u8],
         tag_len: usize,
@@ -127,7 +127,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
-    fn encrypt_into(
+    pub(crate) fn encrypt_into(
         &self,
         // We have this arg so we have consistent arguments with encrypt_into in
         // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
@@ -192,7 +192,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
-    fn decrypt_into(
+    pub(crate) fn decrypt_into(
         &self,
         // We have this arg so we have consistent arguments with decrypt_into in
         // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.

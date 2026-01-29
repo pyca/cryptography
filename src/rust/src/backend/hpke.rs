@@ -2,29 +2,34 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::backend::aead::EvpCipherAead;
 use crate::backend::hmac::Hmac;
+use crate::backend::kdf::hkdf_extract;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
-use crate::types;
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 const HPKE_VERSION: &[u8] = b"HPKE-v1";
 const HPKE_MODE_BASE: u8 = 0x00;
 
-// KEM parameters for X25519 (DHKEM(X25519, HKDF-SHA256))
-const KEM_ID: u16 = 0x0020;
-const KEM_NSECRET: usize = 32;
-const KEM_NENC: usize = 32;
+// Algorithm parameters organized by type for easy extension
+mod kem_params {
+    pub const X25519_ID: u16 = 0x0020;
+    pub const X25519_NSECRET: usize = 32;
+    pub const X25519_NENC: usize = 32;
+}
 
-// KDF parameters for HKDF-SHA256
-const KDF_ID: u16 = 0x0001;
+mod kdf_params {
+    pub const HKDF_SHA256_ID: u16 = 0x0001;
+}
 
-// AEAD parameters for AES-128-GCM
-const AEAD_ID: u16 = 0x0001;
-const AEAD_NK: usize = 16;
-const AEAD_NN: usize = 12;
-const AEAD_NT: usize = 16;
+mod aead_params {
+    pub const AES_128_GCM_ID: u16 = 0x0001;
+    pub const AES_128_GCM_NK: usize = 16;
+    pub const AES_128_GCM_NN: usize = 12;
+    pub const AES_128_GCM_NT: usize = 16;
+}
 
 #[allow(clippy::upper_case_acronyms)]
 #[pyo3::pyclass(
@@ -37,9 +42,6 @@ const AEAD_NT: usize = 16;
 pub(crate) enum KEM {
     X25519,
 }
-
-#[pyo3::pymethods]
-impl KEM {}
 
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
@@ -54,9 +56,6 @@ pub(crate) enum KDF {
     HKDF_SHA256,
 }
 
-#[pyo3::pymethods]
-impl KDF {}
-
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
 #[pyo3::pyclass(
@@ -70,9 +69,6 @@ pub(crate) enum AEAD {
     AES_128_GCM,
 }
 
-#[pyo3::pymethods]
-impl AEAD {}
-
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.hpke")]
 pub(crate) struct Suite {
     kem_suite_id: [u8; 5],
@@ -80,23 +76,6 @@ pub(crate) struct Suite {
 }
 
 impl Suite {
-    fn hkdf_extract(
-        &self,
-        py: pyo3::Python<'_>,
-        salt: &[u8],
-        ikm: &[u8],
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
-        let sha256 = types::SHA256.get(py)?.call0()?;
-        let digest_size = sha256
-            .getattr(pyo3::intern!(py, "digest_size"))?
-            .extract::<usize>()?;
-        let default_salt = vec![0u8; digest_size];
-        let salt_bytes = if salt.is_empty() { &default_salt } else { salt };
-        let mut hmac = Hmac::new_bytes(py, salt_bytes, &sha256)?;
-        hmac.update_bytes(ikm)?;
-        hmac.finalize_bytes()
-    }
-
     fn hkdf_expand(
         &self,
         py: pyo3::Python<'_>,
@@ -104,12 +83,12 @@ impl Suite {
         info: &[u8],
         length: usize,
     ) -> CryptographyResult<Vec<u8>> {
-        let sha256 = types::SHA256.get(py)?.call0()?;
-        let digest_size = sha256
+        let algorithm = crate::types::SHA256.get(py)?.call0()?;
+        let digest_size = algorithm
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
 
-        let h_prime = Hmac::new_bytes(py, prk, &sha256)?;
+        let h_prime = Hmac::new_bytes(py, prk, &algorithm)?;
 
         let mut output = vec![0u8; length];
         let mut pos = 0usize;
@@ -147,7 +126,15 @@ impl Suite {
         labeled_ikm.extend_from_slice(&self.kem_suite_id);
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
-        self.hkdf_extract(py, salt, &labeled_ikm)
+
+        let algorithm = crate::types::SHA256.get(py)?.call0()?;
+        let buf = CffiBuf::from_bytes(py, &labeled_ikm);
+        let salt_py = if salt.is_empty() {
+            None
+        } else {
+            Some(pyo3::types::PyBytes::new(py, salt).unbind())
+        };
+        hkdf_extract(py, &algorithm.unbind(), salt_py.as_ref(), &buf)
     }
 
     fn kem_labeled_expand(
@@ -175,7 +162,13 @@ impl Suite {
         kem_context: &[u8],
     ) -> CryptographyResult<Vec<u8>> {
         let eae_prk = self.kem_labeled_extract(py, b"", b"eae_prk", dh)?;
-        self.kem_labeled_expand(py, &eae_prk, b"shared_secret", kem_context, KEM_NSECRET)
+        self.kem_labeled_expand(
+            py,
+            &eae_prk,
+            b"shared_secret",
+            kem_context,
+            kem_params::X25519_NSECRET,
+        )
     }
 
     fn encap(
@@ -183,30 +176,33 @@ impl Suite {
         py: pyo3::Python<'_>,
         pk_r: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<(Vec<u8>, Vec<u8>)> {
-        // Generate ephemeral key pair using OpenSSL directly
-        let sk_e_pkey = openssl::pkey::PKey::generate_x25519()?;
-        let pk_e_raw = sk_e_pkey.raw_public_key()?;
+        // Generate ephemeral key pair using x25519 module
+        let x25519_mod = py.import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.asymmetric.x25519"
+        ))?;
+        let sk_e = x25519_mod
+            .getattr(pyo3::intern!(py, "X25519PrivateKey"))?
+            .call_method0(pyo3::intern!(py, "generate"))?;
+        let pk_e = sk_e.call_method0(pyo3::intern!(py, "public_key"))?;
 
-        // Get recipient's public key raw bytes via Python API
+        // Get ephemeral public key raw bytes
+        let pk_e_bytes = pk_e.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
+        let pk_e_raw = pk_e_bytes.extract::<&[u8]>()?;
+
+        // Get recipient's public key raw bytes
         let pk_r_bytes = pk_r.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
         let pk_r_raw = pk_r_bytes.extract::<&[u8]>()?;
 
-        // Create recipient public key from raw bytes
-        let pk_r_pkey =
-            openssl::pkey::PKey::public_key_from_raw_bytes(pk_r_raw, openssl::pkey::Id::X25519)?;
-
-        // Perform ECDH
-        let mut deriver = openssl::derive::Deriver::new(&sk_e_pkey)?;
-        deriver.set_peer(&pk_r_pkey)?;
-        let mut dh = vec![0u8; deriver.len()?];
-        let n = deriver.derive(&mut dh)?;
-        assert_eq!(n, dh.len());
+        // Perform ECDH via Python API
+        let dh_result = sk_e.call_method1(pyo3::intern!(py, "exchange"), (pk_r,))?;
+        let dh = dh_result.extract::<&[u8]>()?;
 
         let mut kem_context = [0u8; 64];
-        kem_context[..32].copy_from_slice(&pk_e_raw);
+        kem_context[..32].copy_from_slice(pk_e_raw);
         kem_context[32..].copy_from_slice(pk_r_raw);
-        let shared_secret = self.extract_and_expand(py, &dh, &kem_context)?;
-        Ok((shared_secret, pk_e_raw))
+        let shared_secret = self.extract_and_expand(py, dh, &kem_context)?;
+        Ok((shared_secret, pk_e_raw.to_vec()))
     }
 
     fn decap(
@@ -215,37 +211,33 @@ impl Suite {
         enc: &[u8],
         sk_r: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<Vec<u8>> {
-        // Reconstruct pk_e from enc
-        let pk_e_pkey =
-            openssl::pkey::PKey::public_key_from_raw_bytes(enc, openssl::pkey::Id::X25519)
-                .map_err(|_| {
-                    CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                        "Invalid encapsulated key",
-                    ))
-                })?;
+        // Reconstruct pk_e from enc via Python
+        let x25519_mod = py.import(pyo3::intern!(
+            py,
+            "cryptography.hazmat.primitives.asymmetric.x25519"
+        ))?;
+        let pk_e = x25519_mod
+            .getattr(pyo3::intern!(py, "X25519PublicKey"))?
+            .call_method1(pyo3::intern!(py, "from_public_bytes"), (enc,))
+            .map_err(|_| {
+                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "Invalid encapsulated key",
+                ))
+            })?;
 
-        // Get our private key raw bytes via Python API
-        let sk_r_bytes = sk_r.call_method0(pyo3::intern!(py, "private_bytes_raw"))?;
-        let sk_r_raw = sk_r_bytes.extract::<&[u8]>()?;
-
-        // Reconstruct private key from raw bytes
-        let sk_r_pkey =
-            openssl::pkey::PKey::private_key_from_raw_bytes(sk_r_raw, openssl::pkey::Id::X25519)?;
-
-        // Perform ECDH
-        let mut deriver = openssl::derive::Deriver::new(&sk_r_pkey)?;
-        deriver.set_peer(&pk_e_pkey)?;
-        let mut dh = vec![0u8; deriver.len()?];
-        let n = deriver.derive(&mut dh)?;
-        assert_eq!(n, dh.len());
+        // Perform ECDH via Python API
+        let dh_result = sk_r.call_method1(pyo3::intern!(py, "exchange"), (&pk_e,))?;
+        let dh = dh_result.extract::<&[u8]>()?;
 
         // Get our public key
-        let pk_rm = sk_r_pkey.raw_public_key()?;
+        let pk_rm = sk_r.call_method0(pyo3::intern!(py, "public_key"))?;
+        let pk_rm_bytes = pk_rm.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
+        let pk_rm_raw = pk_rm_bytes.extract::<&[u8]>()?;
 
         let mut kem_context = [0u8; 64];
         kem_context[..32].copy_from_slice(enc);
-        kem_context[32..].copy_from_slice(&pk_rm);
-        self.extract_and_expand(py, &dh, &kem_context)
+        kem_context[32..].copy_from_slice(pk_rm_raw);
+        self.extract_and_expand(py, dh, &kem_context)
     }
 
     fn hpke_labeled_extract(
@@ -260,7 +252,15 @@ impl Suite {
         labeled_ikm.extend_from_slice(&self.hpke_suite_id);
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
-        self.hkdf_extract(py, salt, &labeled_ikm)
+
+        let algorithm = crate::types::SHA256.get(py)?.call0()?;
+        let buf = CffiBuf::from_bytes(py, &labeled_ikm);
+        let salt_py = if salt.is_empty() {
+            None
+        } else {
+            Some(pyo3::types::PyBytes::new(py, salt).unbind())
+        };
+        hkdf_extract(py, &algorithm.unbind(), salt_py.as_ref(), &buf)
     }
 
     fn hpke_labeled_expand(
@@ -286,7 +286,10 @@ impl Suite {
         py: pyo3::Python<'_>,
         shared_secret: &[u8],
         info: &[u8],
-    ) -> CryptographyResult<([u8; AEAD_NK], [u8; AEAD_NN])> {
+    ) -> CryptographyResult<(
+        [u8; aead_params::AES_128_GCM_NK],
+        [u8; aead_params::AES_128_GCM_NN],
+    )> {
         let psk_id_hash = self.hpke_labeled_extract(py, b"", b"psk_id_hash", b"")?;
         let info_hash = self.hpke_labeled_extract(py, b"", b"info_hash", info)?;
         let mut key_schedule_context = vec![HPKE_MODE_BASE];
@@ -295,92 +298,27 @@ impl Suite {
 
         let secret = self.hpke_labeled_extract(py, shared_secret, b"secret", b"")?;
 
-        let key_vec =
-            self.hpke_labeled_expand(py, &secret, b"key", &key_schedule_context, AEAD_NK)?;
-        let nonce_vec =
-            self.hpke_labeled_expand(py, &secret, b"base_nonce", &key_schedule_context, AEAD_NN)?;
+        let key_vec = self.hpke_labeled_expand(
+            py,
+            &secret,
+            b"key",
+            &key_schedule_context,
+            aead_params::AES_128_GCM_NK,
+        )?;
+        let nonce_vec = self.hpke_labeled_expand(
+            py,
+            &secret,
+            b"base_nonce",
+            &key_schedule_context,
+            aead_params::AES_128_GCM_NN,
+        )?;
 
-        let mut key = [0u8; AEAD_NK];
-        let mut base_nonce = [0u8; AEAD_NN];
+        let mut key = [0u8; aead_params::AES_128_GCM_NK];
+        let mut base_nonce = [0u8; aead_params::AES_128_GCM_NN];
         key.copy_from_slice(&key_vec);
         base_nonce.copy_from_slice(&nonce_vec);
 
         Ok((key, base_nonce))
-    }
-
-    fn aead_encrypt(
-        &self,
-        key: &[u8],
-        nonce: &[u8],
-        plaintext: &[u8],
-        aad: &[u8],
-    ) -> CryptographyResult<Vec<u8>> {
-        let cipher = openssl::cipher::Cipher::aes_128_gcm();
-
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.encrypt_init(Some(cipher), Some(key), None)?;
-        ctx.set_iv_length(nonce.len())?;
-        ctx.encrypt_init(None, None, Some(nonce))?;
-
-        // Process AAD
-        if !aad.is_empty() {
-            ctx.cipher_update(aad, None)?;
-        }
-
-        // Encrypt plaintext
-        let mut ciphertext = vec![0u8; plaintext.len() + AEAD_NT];
-        let n = ctx.cipher_update(plaintext, Some(&mut ciphertext[..plaintext.len()]))?;
-        assert_eq!(n, plaintext.len());
-
-        let mut final_block = [0u8; 0];
-        let n = ctx.cipher_final(&mut final_block)?;
-        assert_eq!(n, 0);
-
-        // Get tag
-        ctx.tag(&mut ciphertext[plaintext.len()..])
-            .map_err(CryptographyError::from)?;
-
-        Ok(ciphertext)
-    }
-
-    fn aead_decrypt(
-        &self,
-        key: &[u8],
-        nonce: &[u8],
-        ciphertext: &[u8],
-        aad: &[u8],
-    ) -> CryptographyResult<Vec<u8>> {
-        if ciphertext.len() < AEAD_NT {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
-
-        let cipher = openssl::cipher::Cipher::aes_128_gcm();
-
-        let ct_len = ciphertext.len() - AEAD_NT;
-        let (ct_data, tag) = ciphertext.split_at(ct_len);
-
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.decrypt_init(Some(cipher), Some(key), None)?;
-        ctx.set_iv_length(nonce.len())?;
-        ctx.decrypt_init(None, None, Some(nonce))?;
-        ctx.set_tag(tag)?;
-
-        // Process AAD
-        if !aad.is_empty() {
-            ctx.cipher_update(aad, None)?;
-        }
-
-        // Decrypt ciphertext
-        let mut plaintext = vec![0u8; ct_len];
-        let n = ctx
-            .cipher_update(ct_data, Some(&mut plaintext))
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-        assert_eq!(n, ct_len);
-
-        ctx.cipher_final(&mut [])
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
-
-        Ok(plaintext)
     }
 }
 
@@ -391,13 +329,13 @@ impl Suite {
         // Build suite IDs
         let mut kem_suite_id = [0u8; 5];
         kem_suite_id[..3].copy_from_slice(b"KEM");
-        kem_suite_id[3..].copy_from_slice(&KEM_ID.to_be_bytes());
+        kem_suite_id[3..].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
 
         let mut hpke_suite_id = [0u8; 10];
         hpke_suite_id[..4].copy_from_slice(b"HPKE");
-        hpke_suite_id[4..6].copy_from_slice(&KEM_ID.to_be_bytes());
-        hpke_suite_id[6..8].copy_from_slice(&KDF_ID.to_be_bytes());
-        hpke_suite_id[8..10].copy_from_slice(&AEAD_ID.to_be_bytes());
+        hpke_suite_id[4..6].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
+        hpke_suite_id[6..8].copy_from_slice(&kdf_params::HKDF_SHA256_ID.to_be_bytes());
+        hpke_suite_id[8..10].copy_from_slice(&aead_params::AES_128_GCM_ID.to_be_bytes());
 
         Ok(Suite {
             kem_suite_id,
@@ -419,15 +357,33 @@ impl Suite {
 
         let (shared_secret, enc) = self.encap(py, public_key)?;
         let (key, base_nonce) = self.key_schedule(py, &shared_secret, info_bytes)?;
-        let ct = self.aead_encrypt(&key, &base_nonce, plaintext.as_bytes(), aad_bytes)?;
 
-        // Combine enc + ct
+        // Create AEAD with the derived key
+        let cipher = openssl::cipher::Cipher::aes_128_gcm();
+        let aead = EvpCipherAead::new(cipher, &key, aead_params::AES_128_GCM_NT, false)?;
+
+        let pt_bytes = plaintext.as_bytes();
+        let ct_len = pt_bytes.len() + aead_params::AES_128_GCM_NT;
+
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            enc.len() + ct.len(),
+            enc.len() + ct_len,
             |buf| {
                 buf[..enc.len()].copy_from_slice(&enc);
-                buf[enc.len()..].copy_from_slice(&ct);
+                let aad_opt = if aad_bytes.is_empty() {
+                    None
+                } else {
+                    Some(crate::backend::aead::Aad::Single(CffiBuf::from_bytes(
+                        py, aad_bytes,
+                    )))
+                };
+                aead.encrypt_into(
+                    py,
+                    pt_bytes,
+                    aad_opt,
+                    Some(&base_nonce),
+                    &mut buf[enc.len()..],
+                )?;
                 Ok(())
             },
         )?)
@@ -443,20 +399,38 @@ impl Suite {
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let ct_bytes = ciphertext.as_bytes();
-        if ct_bytes.len() < KEM_NENC {
+        if ct_bytes.len() < kem_params::X25519_NENC {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
         let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
         let aad_bytes: &[u8] = aad.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
 
-        let (enc, ct) = ct_bytes.split_at(KEM_NENC);
+        let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
 
         let shared_secret = self.decap(py, enc, private_key)?;
         let (key, base_nonce) = self.key_schedule(py, &shared_secret, info_bytes)?;
-        let plaintext = self.aead_decrypt(&key, &base_nonce, ct, aad_bytes)?;
 
-        Ok(pyo3::types::PyBytes::new(py, &plaintext))
+        // Create AEAD with the derived key
+        let cipher = openssl::cipher::Cipher::aes_128_gcm();
+        let aead = EvpCipherAead::new(cipher, &key, aead_params::AES_128_GCM_NT, false)?;
+
+        if ct.len() < aead_params::AES_128_GCM_NT {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+        let pt_len = ct.len() - aead_params::AES_128_GCM_NT;
+
+        Ok(pyo3::types::PyBytes::new_with(py, pt_len, |buf| {
+            let aad_opt = if aad_bytes.is_empty() {
+                None
+            } else {
+                Some(crate::backend::aead::Aad::Single(CffiBuf::from_bytes(
+                    py, aad_bytes,
+                )))
+            };
+            aead.decrypt_into(py, ct, aad_opt, Some(&base_nonce), buf)?;
+            Ok(())
+        })?)
     }
 }
 
