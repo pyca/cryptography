@@ -51,17 +51,13 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(
-            b"Hello, HPKE!", pk_r, info=b"test", aad=b"additional data"
-        )
-        plaintext = suite.decrypt(
-            ciphertext, sk_r, info=b"test", aad=b"additional data"
-        )
+        ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
+        plaintext = suite.decrypt(ciphertext, sk_r, info=b"test")
 
         assert plaintext == b"Hello, HPKE!"
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_roundtrip_no_aad(self, kem, kdf, aead):
+    def test_roundtrip_no_info(self, kem, kdf, aead):
         suite = Suite(kem, kdf, aead)
 
         sk_r = x25519.X25519PrivateKey.generate()
@@ -84,16 +80,19 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_wrong)
 
-    def test_wrong_aad_fails(self):
+    def test_wrong_aad_fails_internal(self):
+        """Test that wrong AAD fails using internal API."""
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
+        ciphertext = suite._encrypt(
+            b"Secret message", pk_r, info=b"", aad=b"correct aad"
+        )
 
         with pytest.raises(InvalidTag):
-            suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
+            suite._decrypt(ciphertext, sk_r, info=b"", aad=b"wrong aad")
 
     def test_info_mismatch_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -204,6 +203,7 @@ class TestHPKE:
                 pt_expected = bytes.fromhex(encryption["pt"])
 
                 # Combine enc || ct for single-shot decrypt
+                # Use internal API with AAD for test vector validation
                 ciphertext = enc + ct
-                pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
+                pt = suite._decrypt(ciphertext, sk_r, info=info, aad=aad)
                 assert pt == pt_expected

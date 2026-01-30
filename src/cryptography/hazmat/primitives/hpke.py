@@ -216,26 +216,28 @@ class Suite:
 
         return key, base_nonce
 
-    def encrypt(
+    def _encrypt(
         self,
         plaintext: bytes,
         public_key: x25519.X25519PublicKey,
-        info: bytes = b"",
-        aad: bytes = b"",
+        info: bytes,
+        aad: bytes,
     ) -> bytes:
+        """Internal encrypt method with AAD support for test vectors."""
         shared_secret, enc = self._encap(public_key)
         key, base_nonce = self._key_schedule(shared_secret, info)
         aead_impl = AESGCM(key)
         ct = aead_impl.encrypt(base_nonce, plaintext, aad)
         return enc + ct
 
-    def decrypt(
+    def _decrypt(
         self,
         ciphertext: bytes,
         private_key: x25519.X25519PrivateKey,
-        info: bytes = b"",
-        aad: bytes = b"",
+        info: bytes,
+        aad: bytes,
     ) -> bytes:
+        """Internal decrypt method with AAD support for test vectors."""
         nenc = self._kem_params.nenc
         enc = ciphertext[:nenc]
         ct = ciphertext[nenc:]
@@ -243,6 +245,22 @@ class Suite:
         key, base_nonce = self._key_schedule(shared_secret, info)
         aead_impl = AESGCM(key)
         return aead_impl.decrypt(base_nonce, ct, aad)
+
+    def encrypt(
+        self,
+        plaintext: bytes,
+        public_key: x25519.X25519PublicKey,
+        info: bytes = b"",
+    ) -> bytes:
+        return self._encrypt(plaintext, public_key, info, aad=b"")
+
+    def decrypt(
+        self,
+        ciphertext: bytes,
+        private_key: x25519.X25519PrivateKey,
+        info: bytes = b"",
+    ) -> bytes:
+        return self._decrypt(ciphertext, private_key, info, aad=b"")
 
 
 __all__ = [
