@@ -433,8 +433,8 @@ jobs:
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Jan 27, 2026.
-            REF: b441d84460e7bb9ffff67e7fe52ccd0f857c5b86
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Jan 30, 2026.
+            REF: 20ec402e08da8f8277601b57912a6ba9e529263e
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: aws-dynamodb-encryption-python
             REPO: awslabs/aws-dynamodb-encryption-python
@@ -443,8 +443,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Jan 28, 2026.
-            REF: bd7b64f1e7932901cfb407e68c76d12de3b7637f
+            # Latest commit on the certbot main branch, as of Jan 30, 2026.
+            REF: 1b7c11e6a58c7adaf64be7a6bd5bb4df2fc3ce4d
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -463,8 +463,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Jan 28, 2026.
-            REF: 59c7a08cd4519bedb0058ff42a573f5a3315a6e0
+            # Latest commit on the sigstore-python main branch, as of Jan 30, 2026.
+            REF: 0c4e87d0a88e1717c0e8c630016809818bae6ac9
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
