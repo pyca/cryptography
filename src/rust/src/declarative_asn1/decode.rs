@@ -7,8 +7,9 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    check_size_constraint, is_tag_valid_for_type, AnnotatedType, Annotation, BitString, Encoding,
-    GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
+    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
+    Annotation, BitString, Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
+    Variant,
 };
 use crate::error::CryptographyError;
 
@@ -160,6 +161,47 @@ fn decode_bitstring<'a>(
     )?)
 }
 
+// Utility function to handle explicit encoding when parsing
+// CHOICE fields.
+fn decode_choice_with_encoding<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    ann_type: &AnnotatedType,
+    encoding: &Encoding,
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    match encoding {
+        Encoding::Implicit(_) => Err(CryptographyError::Py(
+            // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
+            pyo3::exceptions::PyValueError::new_err(
+                "invalid type definition: CHOICE fields cannot be implicitly encoded".to_string(),
+            ),
+        ))?,
+        Encoding::Explicit(n) => {
+            // Since we don't know which of the variants is present for this
+            // CHOICE field, we'll parse this as a generic TLV encoded with
+            // EXPLICIT, so `read_explicit_element` will consume the EXPLICIT
+            // wrapper tag, and the TLV data will contain the variant.
+            let tlv = parser.read_explicit_element::<asn1::Tlv<'_>>(*n)?;
+            let type_without_explicit = AnnotatedType {
+                inner: ann_type.inner.clone_ref(py),
+                annotation: pyo3::Py::new(
+                    py,
+                    Annotation {
+                        default: None,
+                        encoding: None,
+                        size: None,
+                    },
+                )?,
+            };
+            // Parse the TLV data (which contains the field without the EXPLICIT
+            // wrapper)
+            asn1::parse(tlv.full_data(), |d| {
+                decode_annotated_type(py, d, &type_without_explicit)
+            })
+        }
+    }
+}
+
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -173,7 +215,7 @@ pub(crate) fn decode_annotated_type<'a>(
     // returning the default value)
     if let Some(default) = &ann_type.annotation.get().default {
         match parser.peek_tag() {
-            Some(next_tag) if is_tag_valid_for_type(next_tag, inner, encoding) => (),
+            Some(next_tag) if is_tag_valid_for_type(py, next_tag, inner, encoding) => (),
             _ => return Ok(default.clone_ref(py).into_bound(py)),
         }
     }
@@ -210,7 +252,7 @@ pub(crate) fn decode_annotated_type<'a>(
         }
         Type::Option(cls) => {
             match parser.peek_tag() {
-                Some(t) if is_tag_valid_for_type(t, cls.get().inner.get(), encoding) => {
+                Some(t) if is_tag_valid_for_type(py, t, cls.get().inner.get(), encoding) => {
                     // For optional types, annotations will always be associated to the `Optional` type
                     // i.e: `Annotated[Optional[T], annotation]`, as opposed to the inner `T` type.
                     // Therefore, when decoding the inner type `T` we must pass the annotation of the `Optional`
@@ -223,6 +265,33 @@ pub(crate) fn decode_annotated_type<'a>(
                 _ => pyo3::types::PyNone::get(py).to_owned().into_any(),
             }
         }
+        Type::Choice(ts) => match encoding {
+            Some(e) => decode_choice_with_encoding(py, parser, ann_type, e.get())?,
+            None => {
+                for t in ts.bind(py) {
+                    let variant = t.cast::<Variant>()?.get();
+                    match parser.peek_tag() {
+                        Some(tag) if is_tag_valid_for_variant(py, tag, variant, encoding) => {
+                            let decoded_value =
+                                decode_annotated_type(py, parser, variant.ann_type.get())?;
+                            return match &variant.tag_name {
+                                Some(tag_name) => Ok(variant
+                                    .python_class
+                                    .call1(py, (decoded_value, tag_name))?
+                                    .into_bound(py)),
+                                None => Ok(decoded_value),
+                            };
+                        }
+                        _ => continue,
+                    }
+                }
+                Err(CryptographyError::Py(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "could not find matching variant when parsing CHOICE field".to_string(),
+                    ),
+                ))?
+            }
+        },
         Type::PyBool() => decode_pybool(py, parser, encoding)?.into_any(),
         Type::PyInt() => decode_pyint(py, parser, encoding)?.into_any(),
         Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
@@ -242,5 +311,35 @@ pub(crate) fn decode_annotated_type<'a>(
             ),
         )),
         _ => Ok(decoded),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::declarative_asn1::types::{AnnotatedType, Annotation, Encoding, Type, Variant};
+    #[test]
+    fn test_decode_implicit_choice() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let result = asn1::parse(&[], |parser| {
+                let variants: Vec<Variant> = vec![];
+                let choice = Type::Choice(pyo3::types::PyList::new(py, variants)?.unbind());
+                let annotation = Annotation {
+                    default: None,
+                    encoding: None,
+                    size: None,
+                };
+                let ann_type = AnnotatedType {
+                    inner: pyo3::Py::new(py, choice)?,
+                    annotation: pyo3::Py::new(py, annotation)?,
+                };
+                let encoding = Encoding::Implicit(0);
+                super::decode_choice_with_encoding(py, parser, &ann_type, &encoding)
+            });
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}")
+                .contains("invalid type definition: CHOICE fields cannot be implicitly encoded"));
+        });
     }
 }

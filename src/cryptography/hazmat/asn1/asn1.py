@@ -13,6 +13,8 @@ import typing
 if sys.version_info < (3, 11):
     import typing_extensions
 
+    LiteralString = typing_extensions.LiteralString
+
     # We use the `include_extras` parameter of `get_type_hints`, which was
     # added in Python 3.9. This can be replaced by the `typing` version
     # once the min version is >= 3.9
@@ -31,6 +33,7 @@ else:
     get_type_args = typing.get_args
     get_type_origin = typing.get_origin
     Annotated = typing.Annotated
+    LiteralString = typing.LiteralString
 
 if sys.version_info < (3, 10):
     NoneType = type(None)
@@ -41,6 +44,30 @@ from cryptography.hazmat.bindings._rust import declarative_asn1
 
 T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")
+Tag = typing.TypeVar("Tag", bound=LiteralString)
+
+
+@dataclasses.dataclass(frozen=True)
+class Variant(typing.Generic[U, Tag]):
+    """
+    A tagged variant for CHOICE fields with the same underlying type.
+
+    Use this when you have multiple CHOICE alternatives with the same type
+    and need to distinguish between them:
+
+        foo: (
+            Annotated[Variant[int, typing.Literal["IntA"]], Implicit(0)]
+            | Annotated[Variant[int, typing.Literal["IntB"]], Implicit(1)]
+        )
+
+    Usage:
+        example = Example(foo=Variant(5, "IntA"))
+        decoded.foo.value  # The int value
+        decoded.foo.tag    # "IntA" or "IntB"
+    """
+
+    value: U
+    tag: str
 
 
 decode_der = declarative_asn1.decode_der
@@ -101,7 +128,7 @@ def _normalize_field_type(
     # from it if it exists.
     if get_type_origin(field_type) is Annotated:
         annotation = _extract_annotation(field_type.__metadata__, field_name)
-        field_type, _ = get_type_args(field_type)
+        field_type, *_ = get_type_args(field_type)
     else:
         annotation = declarative_asn1.Annotation()
 
@@ -150,10 +177,53 @@ def _normalize_field_type(
                 )
 
             rust_field_type = declarative_asn1.Type.Option(annotated_type)
+
         else:
-            raise TypeError(
-                "union types other than `X | None` are currently not supported"
+            # Otherwise, the Union is a CHOICE
+            if isinstance(annotation.encoding, Implicit):
+                # CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
+                raise TypeError(
+                    "CHOICE (`X | Y | ...`) types should not have an IMPLICIT "
+                    "annotation"
+                )
+            variants = [
+                _type_to_variant(arg, field_name)
+                for arg in union_args
+                if arg is not type(None)
+            ]
+
+            # Union types should either be all Variants
+            # (`Variant[..] | Variant[..] | etc`) or all non Variants
+            are_union_types_tagged = variants[0].tag_name is not None
+            if any(
+                (v.tag_name is not None) != are_union_types_tagged
+                for v in variants
+            ):
+                raise TypeError(
+                    "When using `asn1.Variant` in a union, all the other "
+                    "types in the union must also be `asn1.Variant`"
+                )
+
+            if are_union_types_tagged:
+                tags = {v.tag_name for v in variants}
+                if len(variants) != len(tags):
+                    raise TypeError(
+                        "When using `asn1.Variant` in a union, the tags used "
+                        "must be unique"
+                    )
+
+            rust_choice_type = declarative_asn1.Type.Choice(variants)
+            # If None is part of the union types, this is an OPTIONAL CHOICE
+            rust_field_type = (
+                declarative_asn1.Type.Option(
+                    declarative_asn1.AnnotatedType(
+                        rust_choice_type, declarative_asn1.Annotation()
+                    )
+                )
+                if NoneType in union_args
+                else rust_choice_type
             )
+
     elif get_type_origin(field_type) is builtins.list:
         inner_type = _normalize_field_type(
             get_type_args(field_type)[0], field_name
@@ -163,6 +233,51 @@ def _normalize_field_type(
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 
     return declarative_asn1.AnnotatedType(rust_field_type, annotation)
+
+
+# Convert a type to a Variant. Used with types inside Union
+# annotations (T1, T2, etc in `Union[T1, T2, ...]`).
+def _type_to_variant(
+    t: typing.Any, field_name: str
+) -> declarative_asn1.Variant:
+    is_annotated = get_type_origin(t) is Annotated
+    inner_type = get_type_args(t)[0] if is_annotated else t
+
+    # Check if this is a Variant[T, Tag] type
+    if get_type_origin(inner_type) is Variant:
+        value_type, tag_literal = get_type_args(inner_type)
+        if get_type_origin(tag_literal) is not typing.Literal:
+            raise TypeError(
+                "When using `asn1.Variant` in a type annotation, the second "
+                "type parameter must be a `typing.Literal` type. E.g: "
+                '`Variant[int, typing.Literal["MyInt"]]`.'
+            )
+        tag_name = get_type_args(tag_literal)[0]
+
+        if hasattr(value_type, "__asn1_root__"):
+            rust_type = value_type.__asn1_root__.inner
+        else:
+            rust_type = declarative_asn1.non_root_python_to_rust(value_type)
+
+        if is_annotated:
+            ann_type = declarative_asn1.AnnotatedType(
+                rust_type,
+                _extract_annotation(t.__metadata__, field_name),
+            )
+        else:
+            ann_type = declarative_asn1.AnnotatedType(
+                rust_type,
+                declarative_asn1.Annotation(),
+            )
+
+        return declarative_asn1.Variant(Variant, ann_type, tag_name)
+    else:
+        # Plain type (not a tagged Variant)
+        return declarative_asn1.Variant(
+            inner_type,
+            _normalize_field_type(t, field_name),
+            None,
+        )
 
 
 def _annotate_fields(

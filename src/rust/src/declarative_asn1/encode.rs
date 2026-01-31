@@ -7,7 +7,7 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 use crate::declarative_asn1::types::{
     check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
-    GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
+    GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
 };
 
 fn write_value<T: SimpleAsn1Writable>(
@@ -104,6 +104,59 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     // Missing OPTIONAL values are omitted from DER encoding
                     Ok(())
                 }
+            }
+            Type::Choice(ts) => {
+                for t in ts.bind(py) {
+                    let variant = t
+                        .cast::<Variant>()
+                        .map_err(|_| asn1::WriteError::AllocationError)?
+                        .get();
+
+                    if !value.is_exact_instance(variant.python_class.bind(py)) {
+                        continue;
+                    }
+
+                    // Check if this variant matches the value
+                    let matches = match &variant.tag_name {
+                        Some(expected_tag) => {
+                            let value_tag: String = value
+                                .getattr("tag")
+                                .map_err(|_| asn1::WriteError::AllocationError)?
+                                .extract()
+                                .map_err(|_| asn1::WriteError::AllocationError)?;
+                            &value_tag == expected_tag
+                        }
+                        None => true,
+                    };
+
+                    if matches {
+                        let val = if variant.tag_name.is_some() {
+                            value
+                                .getattr("value")
+                                .map_err(|_| asn1::WriteError::AllocationError)?
+                        } else {
+                            value
+                        };
+                        let object = AnnotatedTypeObject {
+                            annotated_type: variant.ann_type.get(),
+                            value: val,
+                        };
+                        match encoding {
+                            Some(e) => match e.get() {
+                                // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
+                                Encoding::Implicit(_) => {
+                                    return Err(asn1::WriteError::AllocationError)
+                                }
+                                Encoding::Explicit(n) => {
+                                    return writer.write_explicit_element(&object, *n)
+                                }
+                            },
+                            None => return object.write(writer),
+                        }
+                    }
+                }
+                // No matching variant found
+                Err(asn1::WriteError::AllocationError)
             }
             Type::PyBool() => {
                 let val: bool = value
@@ -210,5 +263,55 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 write_value(writer, &bitstring, encoding)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::declarative_asn1::types::{
+        AnnotatedType, AnnotatedTypeObject, Annotation, Encoding, Type, Variant,
+    };
+    use asn1::Asn1Writable;
+    use pyo3::PyTypeInfo;
+    #[test]
+    fn test_encode_implicit_choice() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let annotation = Annotation {
+                default: None,
+                encoding: None,
+                size: None,
+            };
+            let ann_type_variant = AnnotatedType {
+                inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
+                annotation: pyo3::Py::new(py, annotation).unwrap(),
+            };
+            let variant = Variant {
+                python_class: pyo3::types::PyInt::type_object(py).unbind(),
+                ann_type: pyo3::Py::new(py, ann_type_variant).unwrap(),
+                tag_name: None,
+            };
+
+            let variants = vec![variant];
+            let choice = Type::Choice(pyo3::types::PyList::new(py, variants).unwrap().unbind());
+            let annotation = Annotation {
+                default: None,
+                encoding: Some(pyo3::Py::new(py, Encoding::Implicit(0)).unwrap()),
+                size: None,
+            };
+            let ann_type = AnnotatedType {
+                inner: pyo3::Py::new(py, choice).unwrap(),
+                annotation: pyo3::Py::new(py, annotation).unwrap(),
+            };
+
+            let value = pyo3::types::PyInt::new(py, 3).into_any();
+            let object = AnnotatedTypeObject {
+                annotated_type: &ann_type,
+                value,
+            };
+
+            let result = asn1::write(|writer| object.write(writer));
+            assert!(result.is_err());
+        });
     }
 }

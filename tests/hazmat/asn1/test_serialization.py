@@ -494,6 +494,76 @@ class TestSequence:
             ]
         )
 
+    def test_ok_sequence_all_types_default(self) -> None:
+        default_time = datetime.datetime(
+            2019,
+            12,
+            16,
+            3,
+            2,
+            10,
+            tzinfo=datetime.timezone.utc,
+        )
+        default_oid = x509.ObjectIdentifier("1.3.6.1.4.1.343")
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[int, asn1.Default(3)]
+            b: Annotated[bytes, asn1.Default(b"\x00")]
+            c: Annotated[
+                asn1.PrintableString, asn1.Default(asn1.PrintableString("a"))
+            ]
+            d: Annotated[
+                asn1.UtcTime,
+                asn1.Default(asn1.UtcTime(default_time)),
+            ]
+            e: Annotated[
+                asn1.GeneralizedTime,
+                asn1.Default(asn1.GeneralizedTime(default_time)),
+            ]
+            f: Annotated[typing.List[int], asn1.Default([1])]
+            g: Annotated[
+                asn1.BitString,
+                asn1.Default(
+                    asn1.BitString(data=b"", padding_bits=0),
+                ),
+            ]
+            h: Annotated[asn1.IA5String, asn1.Default(asn1.IA5String("a"))]
+            i: Annotated[
+                x509.ObjectIdentifier,
+                asn1.Default(default_oid),
+            ]
+            j: Annotated[
+                typing.Union[int, bool], asn1.Default(3), asn1.Explicit(0)
+            ]
+            k: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
+            only_field_present: Annotated[
+                str, asn1.Default("a"), asn1.Implicit(1)
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(
+                        a=3,
+                        b=b"\x00",
+                        c=asn1.PrintableString("a"),
+                        d=asn1.UtcTime(default_time),
+                        e=asn1.GeneralizedTime(default_time),
+                        f=[1],
+                        g=asn1.BitString(data=b"", padding_bits=0),
+                        h=asn1.IA5String("a"),
+                        i=default_oid,
+                        j=3,
+                        k="a",
+                        only_field_present="b",
+                    ),
+                    b"\x30\x03\x81\x01b",
+                )
+            ]
+        )
+
     def test_ok_sequence_with_default_annotations(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
@@ -606,6 +676,246 @@ class TestSequence:
             ),
         ):
             asn1.decode_der(Example, b"\x30\x05\xa2\x03\x02\x01\x09")
+
+    def test_sequence_with_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[int, bool, str]
+
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x03\x0c\x01a"),
+            ]
+        )
+
+    def test_sequence_with_optional_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str, None]
+            bar: int
+
+        assert_roundtrips(
+            [
+                (
+                    Example(foo=True, bar=1),
+                    b"\x30\x06\x01\x01\xff\x02\x01\x01",
+                ),
+                (Example(foo=None, bar=1), b"\x30\x03\x02\x01\x01"),
+            ]
+        )
+
+    def test_fail_sequence_with_choice_decode_nonexistent_variant(
+        self,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "could not find matching variant when parsing CHOICE field"
+            ),
+        ):
+            asn1.decode_der(Example, b"\x30\x03\x02\x01\x09")
+
+    def test_fail_sequence_with_choice_encode_nonexistent_variant(
+        self,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[bool, str]
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(foo=3))  # type: ignore[arg-type]
+
+    def test_sequence_with_explicit_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: Annotated[typing.Union[int, bool, str], asn1.Explicit(3)]
+
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x05\xa3\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x05\xa3\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x05\xa3\x03\x0c\x01a"),
+            ]
+        )
+
+    def test_sequence_with_choice_implicit_simple_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[int, asn1.Implicit(0)],
+                Annotated[bool, asn1.Implicit(1)],
+                Annotated[str, asn1.Implicit(2)],
+            ]
+
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x03\x80\x01\x09"),
+                (Example(foo=True), b"\x30\x03\x81\x01\xff"),
+                (Example(foo="a"), b"\x30\x03\x82\x01a"),
+            ]
+        )
+
+    def test_sequence_with_choice_explicit_simple_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[int, asn1.Explicit(0)],
+                Annotated[bool, asn1.Explicit(1)],
+                Annotated[str, asn1.Explicit(2)],
+            ]
+
+        assert_roundtrips(
+            [
+                (Example(foo=9), b"\x30\x05\xa0\x03\x02\x01\x09"),
+                (Example(foo=True), b"\x30\x05\xa1\x03\x01\x01\xff"),
+                (Example(foo="a"), b"\x30\x05\xa2\x03\x0c\x01a"),
+            ]
+        )
+
+    def test_sequence_with_choice_with_custom_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[
+                    asn1.Variant[int, typing.Literal["IntA"]], asn1.Implicit(0)
+                ],
+                Annotated[
+                    asn1.Variant[int, typing.Literal["IntB"]], asn1.Implicit(1)
+                ],
+                Annotated[
+                    asn1.Variant[int, typing.Literal["IntC"]], asn1.Implicit(2)
+                ],
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(foo=asn1.Variant(9, "IntA")),
+                    b"\x30\x03\x80\x01\x09",
+                ),
+                (
+                    Example(foo=asn1.Variant(9, "IntB")),
+                    b"\x30\x03\x81\x01\x09",
+                ),
+                (
+                    Example(foo=asn1.Variant(9, "IntC")),
+                    b"\x30\x03\x82\x01\x09",
+                ),
+            ]
+        )
+
+    def test_sequence_with_choice_with_custom_variants_bool(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                Annotated[
+                    asn1.Variant[bool, typing.Literal["BoolA"]],
+                    asn1.Implicit(0),
+                ],
+                Annotated[
+                    asn1.Variant[bool, typing.Literal["BoolB"]],
+                    asn1.Implicit(1),
+                ],
+                Annotated[
+                    asn1.Variant[bool, typing.Literal["BoolC"]],
+                    asn1.Implicit(2),
+                ],
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(foo=asn1.Variant(True, "BoolA")),
+                    b"\x30\x03\x80\x01\xff",
+                ),
+                (
+                    Example(foo=asn1.Variant(True, "BoolB")),
+                    b"\x30\x03\x81\x01\xff",
+                ),
+                (
+                    Example(foo=asn1.Variant(True, "BoolC")),
+                    b"\x30\x03\x82\x01\xff",
+                ),
+            ]
+        )
+
+    def test_sequence_with_choice_with_sequence_variants(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: int
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class ExampleUnion:
+            field: typing.Union[
+                Annotated[
+                    asn1.Variant[Example, typing.Literal["ExampleA"]],
+                    asn1.Implicit(0),
+                ],
+                Annotated[
+                    asn1.Variant[Example, typing.Literal["ExampleB"]],
+                    asn1.Implicit(1),
+                ],
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    ExampleUnion(
+                        field=asn1.Variant(Example(foo=9), "ExampleA")
+                    ),
+                    b"\x30\x05\xa0\x03\x02\x01\x09",
+                ),
+                (
+                    ExampleUnion(
+                        field=asn1.Variant(Example(foo=9), "ExampleB")
+                    ),
+                    b"\x30\x05\xa1\x03\x02\x01\x09",
+                ),
+            ]
+        )
+
+    def test_sequence_with_choice_with_non_annotated_custom_variants(
+        self,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            foo: typing.Union[
+                asn1.Variant[int, typing.Literal["MyInt"]],
+                asn1.Variant[bool, typing.Literal["MyBool"]],
+            ]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(foo=asn1.Variant(9, "MyInt")),
+                    b"\x30\x03\x02\x01\x09",
+                ),
+                (
+                    Example(foo=asn1.Variant(True, "MyBool")),
+                    b"\x30\x03\x01\x01\xff",
+                ),
+            ]
+        )
 
 
 class TestSize:

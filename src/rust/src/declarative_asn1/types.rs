@@ -25,6 +25,9 @@ pub enum Type {
     SequenceOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
+    /// CHOICE (`T | U | ...`)
+    /// The list contains elements of type Variant
+    Choice(pyo3::Py<pyo3::types::PyList>),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -55,6 +58,7 @@ pub enum Type {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 #[derive(Debug)]
 pub struct AnnotatedType {
+    #[pyo3(get)]
     pub inner: pyo3::Py<Type>,
     #[pyo3(get)]
     pub annotation: pyo3::Py<Annotation>,
@@ -131,6 +135,32 @@ impl Size {
         Size {
             min: n,
             max: Some(n),
+        }
+    }
+}
+
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct Variant {
+    #[pyo3(get)]
+    pub python_class: pyo3::Py<pyo3::types::PyType>,
+    #[pyo3(get)]
+    pub ann_type: pyo3::Py<AnnotatedType>,
+    #[pyo3(get)]
+    pub tag_name: Option<String>,
+}
+
+#[pyo3::pymethods]
+impl Variant {
+    #[new]
+    fn new(
+        python_class: pyo3::Py<pyo3::types::PyType>,
+        ann_type: pyo3::Py<AnnotatedType>,
+        tag_name: Option<String>,
+    ) -> Self {
+        Self {
+            python_class,
+            ann_type,
+            tag_name,
         }
     }
 }
@@ -436,9 +466,34 @@ fn check_tag_with_encoding(
     tag_with_encoding == tag
 }
 
+// Utility function to see if a tag matches an unnanotated variant.
+pub(crate) fn is_tag_valid_for_variant(
+    py: pyo3::Python<'_>,
+    tag: asn1::Tag,
+    variant: &Variant,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> bool {
+    let ann_type = variant.ann_type.get();
+
+    // There are two encodings at play here: the encoding of the CHOICE itself,
+    // and the encoding of each of the variants. The encoding of the CHOICE will
+    // only affect the tag if it's EXPLICIT (where it adds a wrapper). Otherwise,
+    // we use the encoding of the variant.
+    let encoding_to_match = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => &ann_type.annotation.get().encoding,
+            Encoding::Explicit(_) => encoding,
+        },
+        None => &ann_type.annotation.get().encoding,
+    };
+
+    is_tag_valid_for_type(py, tag, ann_type.inner.get(), encoding_to_match)
+}
+
 // Given `tag` and `encoding`, returns whether that tag with that encoding
 // matches what one would expect to see when decoding `type_`
 pub(crate) fn is_tag_valid_for_type(
+    py: pyo3::Python<'_>,
     tag: asn1::Tag,
     type_: &Type,
     encoding: &Option<pyo3::Py<Encoding>>,
@@ -446,7 +501,10 @@ pub(crate) fn is_tag_valid_for_type(
     match type_ {
         Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
         Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
-        Type::Option(t) => is_tag_valid_for_type(tag, t.get().inner.get(), encoding),
+        Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
+        Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
+            is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
+        }),
         Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
         Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
         Type::PyBytes() => {
@@ -492,9 +550,12 @@ pub(crate) fn check_size_constraint(
 mod tests {
 
     use asn1::SimpleAsn1Readable;
-    use pyo3::IntoPyObject;
+    use pyo3::{IntoPyObject, PyTypeInfo};
 
-    use super::{is_tag_valid_for_type, AnnotatedType, Annotation, Type};
+    use super::{
+        is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType, Annotation, Encoding, Type,
+        Variant,
+    };
 
     #[test]
     // Needed for coverage of `is_tag_valid_for_type(Type::Option(..))`, since
@@ -534,9 +595,47 @@ mod tests {
             )
             .unwrap();
             assert!(is_tag_valid_for_type(
+                py,
                 asn1::BigInt::TAG,
                 &Type::Option(optional_type),
                 &None
+            ));
+        })
+    }
+    #[test]
+    // Needed for coverage of
+    // `is_tag_valid_for_variant(..., encoding=Encoding::Implicit)`, since
+    // `is_tag_valid_for_variant` is never called with an implicit encoding.
+    fn test_is_tag_valid_for_implicit_variant() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let ann_type = pyo3::Py::new(
+                py,
+                AnnotatedType {
+                    inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
+                    annotation: Annotation {
+                        default: None,
+                        encoding: None,
+                        size: None,
+                    }
+                    .into_pyobject(py)
+                    .unwrap()
+                    .unbind(),
+                },
+            )
+            .unwrap();
+            let variant = Variant {
+                python_class: pyo3::types::PyInt::type_object(py).unbind(),
+                ann_type,
+                tag_name: None,
+            };
+            let encoding = pyo3::Py::new(py, Encoding::Implicit(3)).ok();
+            assert!(is_tag_valid_for_variant(
+                py,
+                asn1::BigInt::TAG,
+                &variant,
+                &encoding
             ));
         })
     }
