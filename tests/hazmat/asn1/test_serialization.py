@@ -699,11 +699,13 @@ class TestSequence:
             bar: int
 
         assert_roundtrips(
-            [(Example(foo=True, bar=1), b"\x30\x06\x01\x01\xff\x02\x01\x01")]
-        )
-
-        assert_roundtrips(
-            [(Example(foo=None, bar=1), b"\x30\x03\x02\x01\x01")]
+            [
+                (
+                    Example(foo=True, bar=1),
+                    b"\x30\x06\x01\x01\xff\x02\x01\x01",
+                ),
+                (Example(foo=None, bar=1), b"\x30\x03\x02\x01\x01"),
+            ]
         )
 
     def test_fail_sequence_with_choice_decode_nonexistent_variant(
