@@ -115,7 +115,9 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC
 )))]
+// NO-COVERAGE-START
 #[pyo3::pyfunction]
+// NO-COVERAGE-END
 fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
     providers.fips = Some(provider::Provider::load(None, "fips")?);
     cryptography_openssl::fips::enable()?;
