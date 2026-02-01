@@ -230,7 +230,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, UtcTime> = value
                     .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                let py_datetime = val.get().inner.clone_ref(py).into_bound(py);
+                let py_datetime = val.get().inner.bind(py).clone();
                 let datetime = crate::x509::py_to_datetime(py, py_datetime)
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 let utc_time =
@@ -241,7 +241,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, GeneralizedTime> = value
                     .cast()
                     .map_err(|_| asn1::WriteError::AllocationError)?;
-                let py_datetime = val.get().inner.clone_ref(py).into_bound(py);
+                let py_datetime = val.get().inner.bind(py).clone();
                 let (datetime, microseconds) =
                     crate::x509::py_to_datetime_with_microseconds(py, py_datetime)
                         .map_err(|_| asn1::WriteError::AllocationError)?;

@@ -216,7 +216,7 @@ pub(crate) fn decode_annotated_type<'a>(
     if let Some(default) = &ann_type.annotation.get().default {
         match parser.peek_tag() {
             Some(next_tag) if is_tag_valid_for_type(py, next_tag, inner, encoding) => (),
-            _ => return Ok(default.clone_ref(py).into_bound(py)),
+            _ => return Ok(default.bind(py).clone()),
         }
     }
 
