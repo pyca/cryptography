@@ -24,6 +24,7 @@ use crate::x509::certificate::parse_cert_ext;
 #[pyo3::pyclass(
     frozen,
     eq,
+    from_py_object,
     module = "cryptography.x509.verification",
     name = "Criticality"
 )]
