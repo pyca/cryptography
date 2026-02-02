@@ -673,13 +673,17 @@ impl EllipticCurvePublicNumbers {
         Ok(hasher.finish())
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let x = self.x.bind(py);
         let y = self.y.bind(py);
         let curve_name = self.curve.bind(py).getattr(pyo3::intern!(py, "name"))?;
-        Ok(format!(
-            "<EllipticCurvePublicNumbers(curve={curve_name}, x={x}, y={y})>"
-        ))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("<EllipticCurvePublicNumbers(curve={curve_name}, x={x}, y={y})>"),
+        )
     }
 }
 

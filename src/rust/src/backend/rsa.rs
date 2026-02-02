@@ -852,10 +852,13 @@ impl RsaPublicNumbers {
         Ok(hasher.finish())
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let e = self.e.bind(py);
         let n = self.n.bind(py);
-        Ok(format!("<RSAPublicNumbers(e={e}, n={n})>"))
+        pyo3::types::PyString::from_fmt(py, format_args!("<RSAPublicNumbers(e={e}, n={n})>"))
     }
 }
 
