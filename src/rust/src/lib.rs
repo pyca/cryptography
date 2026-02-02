@@ -92,7 +92,7 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
         let legacy_result = provider::Provider::load(None, "legacy");
         if legacy_result.is_err() {
             let message = c"OpenSSL 3's legacy provider failed to load. Legacy algorithms will not be available. If you need those algorithms, check your OpenSSL configuration.";
-            let warning_cls = pyo3::exceptions::PyWarning::type_object(py).into_any();
+            let warning_cls = pyo3::exceptions::PyWarning::type_object(py);
             pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
 
             None
@@ -115,7 +115,9 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC
 )))]
+// NO-COVERAGE-START
 #[pyo3::pyfunction]
+// NO-COVERAGE-END
 fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
     providers.fips = Some(provider::Provider::load(None, "fips")?);
     cryptography_openssl::fips::enable()?;

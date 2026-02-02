@@ -264,7 +264,7 @@ impl UtcTime {
             ));
         }
         let (datetime, microseconds) =
-            crate::x509::py_to_datetime_with_microseconds(py, inner.clone_ref(py).into_bound(py))?;
+            crate::x509::py_to_datetime_with_microseconds(py, inner.bind(py).clone())?;
 
         if microseconds.is_some() {
             return Err(pyo3::exceptions::PyValueError::new_err(
