@@ -454,8 +454,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Feb 01, 2026.
-            REF: ef48ecbc14bb0968606e02ece3104da3e0663519
+            # Latest commit on the mitmproxy main branch, as of Feb 02, 2026.
+            REF: c4f81b711898ab25a919c3af0e79f2fe50e492c3
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
