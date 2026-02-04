@@ -498,12 +498,12 @@ class TestDERSerialization:
         assert key.key_size == 2048
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        )
-        and not (
-            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        only_if=lambda backend: (
+            backend.cipher_supported(RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8))
+            and not (
+                rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+                or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            )
         ),
         skip_message="Does not support RC2 CBC",
     )
@@ -517,12 +517,12 @@ class TestDERSerialization:
         assert key.key_size == 1024
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8)
-        )
-        and not (
-            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        only_if=lambda backend: (
+            backend.cipher_supported(RC2(b"\x00" * 16), modes.CBC(b"\x00" * 8))
+            and not (
+                rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+                or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            )
         ),
         skip_message="Does not support RC2 CBC",
     )
@@ -591,8 +591,10 @@ class TestDERSerialization:
         assert isinstance(key, ed25519.Ed25519PrivateKey)
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(MD5())
-        and backend.cipher_supported(_DES(), modes.CBC(b"\x00" * 8)),
+        only_if=lambda backend: (
+            backend.hash_supported(MD5())
+            and backend.cipher_supported(_DES(), modes.CBC(b"\x00" * 8))
+        ),
         skip_message="Does not support DES MD5",
     )
     def test_load_pkcs8_pbe_with_md5_and_des_cbc(self):
