@@ -1911,8 +1911,10 @@ class TestSSHKeyFingerprint:
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.MD5())
-        and backend.ed25519_supported(),
+        only_if=lambda backend: (
+            backend.hash_supported(hashes.MD5())
+            and backend.ed25519_supported()
+        ),
         skip_message="Does not support MD5 or Ed25519",
     )
     def test_ssh_key_fingerprint_ed25519_md5(self):

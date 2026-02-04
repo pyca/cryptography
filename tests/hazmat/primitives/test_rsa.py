@@ -1439,13 +1439,15 @@ class TestRSAVerification:
 
 class TestRSAPSSMGF1Verification:
     test_rsa_pss_mgf1_sha1 = pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA1()),
-                salt_length=padding.PSS.MAX_LENGTH,
+        only_if=lambda backend: (
+            backend.rsa_padding_supported(
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA1()),
+                    salt_length=padding.PSS.MAX_LENGTH,
+                )
             )
-        )
-        and backend.signature_hash_supported(hashes.SHA1()),
+            and backend.signature_hash_supported(hashes.SHA1())
+        ),
         skip_message=(
             "Does not support PSS using MGF1 with SHA1 or SHA1 signature."
         ),

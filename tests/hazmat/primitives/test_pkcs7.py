@@ -163,9 +163,11 @@ def _load_cert_key():
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: not (
-        rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+    only_if=lambda backend: (
+        not (
+            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        )
     ),
     skip_message="Requires OpenSSL with PKCS7 verification test support",
 )
@@ -903,8 +905,10 @@ def _load_rsa_cert_key():
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported()
-    and backend.rsa_encryption_supported(padding.PKCS1v15()),
+    only_if=lambda backend: (
+        backend.pkcs7_supported()
+        and backend.rsa_encryption_supported(padding.PKCS1v15())
+    ),
     skip_message="Requires OpenSSL with PKCS7 support and PKCS1 v1.5 padding "
     "support",
 )
@@ -1137,8 +1141,10 @@ class TestPKCS7EnvelopeBuilder:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported()
-    and backend.rsa_encryption_supported(padding.PKCS1v15()),
+    only_if=lambda backend: (
+        backend.pkcs7_supported()
+        and backend.rsa_encryption_supported(padding.PKCS1v15())
+    ),
     skip_message="Requires OpenSSL with PKCS7 support and PKCS1 v1.5 padding "
     "support",
 )
@@ -1510,8 +1516,10 @@ class TestPKCS7SerializeCerts:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported()
-    and not backend.rsa_encryption_supported(padding.PKCS1v15()),
+    only_if=lambda backend: (
+        backend.pkcs7_supported()
+        and not backend.rsa_encryption_supported(padding.PKCS1v15())
+    ),
     skip_message="Requires OpenSSL with no PKCS1 v1.5 padding support",
 )
 class TestPKCS7EnvelopeBuilderUnsupported:
@@ -1521,8 +1529,10 @@ class TestPKCS7EnvelopeBuilderUnsupported:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported()
-    and not backend.rsa_encryption_supported(padding.PKCS1v15()),
+    only_if=lambda backend: (
+        backend.pkcs7_supported()
+        and not backend.rsa_encryption_supported(padding.PKCS1v15())
+    ),
     skip_message="Requires OpenSSL with no PKCS1 v1.5 padding support",
 )
 class TestPKCS7DecryptUnsupported:
