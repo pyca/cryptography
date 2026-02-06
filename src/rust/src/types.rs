@@ -32,6 +32,9 @@ impl LazyPyImport {
     }
 }
 
+pub static FFI: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.bindings._rust", &["_openssl", "ffi"]);
+
 pub static DATETIME_DATETIME: LazyPyImport = LazyPyImport::new("datetime", &["datetime"]);
 pub static DATETIME_TIMEZONE_UTC: LazyPyImport =
     LazyPyImport::new("datetime", &["timezone", "utc"]);
