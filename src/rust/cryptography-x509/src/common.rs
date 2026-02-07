@@ -192,6 +192,12 @@ pub struct SubjectPublicKeyInfo<'a> {
     pub subject_public_key: asn1::BitString<'a>,
 }
 
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct Pkcs1RsaPublicKey<'a> {
+    pub n: asn1::BigUint<'a>,
+    pub e: asn1::BigUint<'a>,
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct AttributeTypeValue<'a> {
     pub type_id: asn1::ObjectIdentifier,
