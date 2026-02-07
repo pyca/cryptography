@@ -55,10 +55,16 @@ impl Certificate {
         self.raw.borrow_dependent() == other.raw.borrow_dependent()
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let subject = self.subject(py)?;
         let subject_repr = subject.repr()?.extract::<pyo3::pybacked::PyBackedStr>()?;
-        Ok(format!("<Certificate(subject={subject_repr}, ...)>"))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("<Certificate(subject={subject_repr}, ...)>"),
+        )
     }
 
     fn __deepcopy__(

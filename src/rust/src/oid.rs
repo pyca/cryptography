@@ -46,13 +46,19 @@ impl ObjectIdentifier {
         slf
     }
 
-    fn __repr__(slf: &pyo3::Bound<'_, Self>, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        slf: &pyo3::Bound<'py, Self>,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let name = Self::_name(slf.borrow(), py)?;
-        Ok(format!(
-            "<ObjectIdentifier(oid={}, name={})>",
-            slf.get().oid,
-            name.extract::<pyo3::pybacked::PyBackedStr>()?
-        ))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!(
+                "<ObjectIdentifier(oid={}, name={})>",
+                slf.get().oid,
+                name.extract::<pyo3::pybacked::PyBackedStr>()?
+            ),
+        )
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, ObjectIdentifier>) -> bool {
