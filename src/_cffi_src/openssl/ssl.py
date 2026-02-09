@@ -346,6 +346,13 @@ int SSL_version(const SSL *);
 
 const char *SSL_get0_group_name(SSL *);
 
+/* both functions are have int return type according to the man page but
+ * long in its implementation. Newer versions also have the set1_groups
+ * function but the curves variants are available on all forks and OpenSSL
+ * variants */
+long SSL_CTX_set1_curves_list(SSL_CTX *, char *);
+long SSL_set1_curves_list(SSL *, char *);
+
 void SSL_set_tlsext_host_name(SSL *, char *);
 void SSL_CTX_set_tlsext_servername_callback(
     SSL_CTX *,
