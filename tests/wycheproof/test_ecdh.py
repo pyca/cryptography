@@ -46,12 +46,6 @@ _CURVES: typing.Dict[str, typing.Union[ec.EllipticCurve, None]] = {
     "ecdh_secp256r1_test.json",
     "ecdh_secp384r1_test.json",
     "ecdh_secp521r1_test.json",
-    "ecdh_sect283k1_test.json",
-    "ecdh_sect283r1_test.json",
-    "ecdh_sect409k1_test.json",
-    "ecdh_sect409r1_test.json",
-    "ecdh_sect571k1_test.json",
-    "ecdh_sect571r1_test.json",
 )
 def test_ecdh(backend, wycheproof):
     curve = _CURVES[wycheproof.testgroup["curve"]]

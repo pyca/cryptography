@@ -376,7 +376,13 @@ impl ECPublicKey {
     ) -> CryptographyResult<ECPublicKey> {
         let ec = pkey.ec_key()?;
         check_key_infinity(&ec)?;
-
+        let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+        let mut cofactor = openssl::bn::BigNum::new()?;
+        ec.group().cofactor(&mut cofactor, &mut bn_ctx)?;
+        let one = openssl::bn::BigNum::from_u32(1)?;
+        // We only support curves with a cofactor of 1.
+        // Any change here requires more careful key checking
+        assert!(cofactor == one);
         Ok(ECPublicKey { pkey, curve })
     }
 }
