@@ -373,7 +373,7 @@ impl ECPublicKey {
         let mut cofactor = openssl::bn::BigNum::new()?;
         ec.group().cofactor(&mut cofactor, &mut bn_ctx)?;
         let one = openssl::bn::BigNum::from_u32(1)?;
-        if cofactor.ucmp(&one) != std::cmp::Ordering::Equal {
+        if cofactor != one {
             ec.check_key().map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err(
                     "Invalid EC key (key out of range, infinity, etc.)",
