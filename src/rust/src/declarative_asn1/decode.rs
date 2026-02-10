@@ -371,4 +371,18 @@ mod tests {
                 .contains("invalid type definition: CHOICE fields cannot be implicitly encoded"));
         });
     }
+    #[test]
+    fn test_decode_implicit_tlv() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let result = asn1::parse(&[], |parser| {
+                let encoding = pyo3::Py::new(py, Encoding::Implicit(0)).ok();
+                super::decode_tlv(py, parser, &encoding)
+            });
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}")
+                .contains("invalid type definition: TLV/ANY fields cannot be implicitly encoded"));
+        });
+    }
 }

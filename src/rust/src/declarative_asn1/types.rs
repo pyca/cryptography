@@ -682,4 +682,35 @@ mod tests {
             ));
         })
     }
+    #[test]
+    // Needed for coverage of `is_tag_valid_for_type(Type::Tlv())`, since
+    // `is_tag_valid_for_type` is never called with a TLV type.
+    fn test_tlv_is_tag_valid_for_type() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            assert!(is_tag_valid_for_type(
+                py,
+                asn1::BigInt::TAG,
+                &Type::Tlv(),
+                &None
+            ));
+
+            let implicit_encoding = pyo3::Py::new(py, Encoding::Implicit(3)).ok();
+            assert!(!is_tag_valid_for_type(
+                py,
+                asn1::BigInt::TAG,
+                &Type::Tlv(),
+                &implicit_encoding
+            ));
+
+            let explicit_encoding = pyo3::Py::new(py, Encoding::Explicit(3)).ok();
+            assert!(is_tag_valid_for_type(
+                py,
+                asn1::explicit_tag(3),
+                &Type::Tlv(),
+                &explicit_encoding
+            ));
+        })
+    }
 }

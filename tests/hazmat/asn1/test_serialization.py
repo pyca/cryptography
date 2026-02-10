@@ -963,6 +963,23 @@ class TestSequence:
         assert decoded.bar.tag == 2
         assert decoded.bar.data == b"\x09"
 
+    def test_fail_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.Tlv, asn1.Explicit(0)]
+            # explicit tag does not match data
+            bar: Annotated[asn1.Tlv, asn1.Explicit(3)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("error parsing asn1 value"),
+        ):
+            asn1.decode_der(
+                Example, b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+            )
+
 
 class TestSize:
     def test_ok_sequenceof_size_restriction(self) -> None:
