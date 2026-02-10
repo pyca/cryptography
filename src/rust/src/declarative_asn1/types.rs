@@ -171,8 +171,6 @@ impl Variant {
 pub struct Tlv {
     #[pyo3(get)]
     pub tag: u32,
-    #[pyo3(get)]
-    pub length: usize,
 
     // We store the bytes of the entire TLV, and to access the Value part
     // we store the index where it starts.

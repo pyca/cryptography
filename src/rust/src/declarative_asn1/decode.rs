@@ -183,7 +183,6 @@ fn decode_tlv<'a>(
         py,
         Tlv {
             tag: tlv.tag().value(),
-            length: tlv.data().len(),
             data_index: tlv.full_data().len() - tlv.data().len(),
             full_data: pyo3::types::PyBytes::new(py, tlv.full_data()).unbind(),
         },
