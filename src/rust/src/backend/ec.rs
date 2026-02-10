@@ -135,12 +135,10 @@ pub(crate) fn public_key_from_pkey(
 ) -> CryptographyResult<ECPublicKey> {
     let ec = pkey.ec_key()?;
     let curve = py_curve_from_curve(py, ec.group())?;
-    check_key_infinity(&ec)?;
-    Ok(ECPublicKey {
-        pkey: pkey.to_owned(),
-        curve: curve.into(),
-    })
+
+    ECPublicKey::new(pkey.to_owned(), curve.into())
 }
+
 #[pyo3::pyfunction]
 #[pyo3(signature = (curve, backend=None))]
 fn generate_private_key(
@@ -198,10 +196,7 @@ fn from_public_bytes(
     let ec = openssl::ec::EcKey::from_public_key(&curve, &point)?;
     let pkey = openssl::pkey::PKey::from_ec_key(ec)?;
 
-    Ok(ECPublicKey {
-        pkey,
-        curve: py_curve.into(),
-    })
+    ECPublicKey::new(pkey, py_curve.into())
 }
 
 #[pyo3::pymethods]
@@ -364,6 +359,18 @@ impl ECPrivateKey {
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
+    }
+}
+
+impl ECPublicKey {
+    fn new(
+        pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+        curve: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<ECPublicKey> {
+        let ec = pkey.ec_key()?;
+        check_key_infinity(&ec)?;
+
+        Ok(ECPublicKey { pkey, curve })
     }
 }
 
@@ -606,10 +613,7 @@ impl EllipticCurvePublicNumbers {
 
         let pkey = openssl::pkey::PKey::from_ec_key(public_key)?;
 
-        Ok(ECPublicKey {
-            pkey,
-            curve: self.curve.clone_ref(py),
-        })
+        ECPublicKey::new(pkey, self.curve.clone_ref(py))
     }
 
     fn __eq__(
