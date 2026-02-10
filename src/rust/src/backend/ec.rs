@@ -362,14 +362,6 @@ impl ECPrivateKey {
     }
 }
 
-fn cofactor_check(group: &openssl::ec::EcGroupRef) -> CryptographyResult<bool> {
-    let mut bn_ctx = openssl::bn::BigNumContext::new()?;
-    let mut cofactor = openssl::bn::BigNum::new()?;
-    group.cofactor(&mut cofactor, &mut bn_ctx)?;
-    let one = openssl::bn::BigNum::from_u32(1)?;
-    Ok(cofactor.ucmp(&one) == std::cmp::Ordering::Greater)
-}
-
 impl ECPublicKey {
     fn new(
         pkey: openssl::pkey::PKey<openssl::pkey::Public>,
@@ -377,7 +369,11 @@ impl ECPublicKey {
     ) -> CryptographyResult<ECPublicKey> {
         let ec = pkey.ec_key()?;
         check_key_infinity(&ec)?;
-        if cofactor_check(ec.group())? {
+        let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+        let mut cofactor = openssl::bn::BigNum::new()?;
+        ec.group().cofactor(&mut cofactor, &mut bn_ctx)?;
+        let one = openssl::bn::BigNum::from_u32(1)?;
+        if cofactor.ucmp(&one) != std::cmp::Ordering::Equal {
             ec.check_key().map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err(
                     "Invalid EC key (key out of range, infinity, etc.)",

@@ -6,8 +6,13 @@ Changelog
 46.0.5 - 2026-02-10
 ~~~~~~~~~~~~~~~~~~~
 
-* Support for ``SECT*`` elliptic curves is deprecated and will be removed in
-  the next release.
+* An attacker could create a malicious public key that reveals portions of your
+  private key when using certain uncommon elliptic curves (binary curves).
+  This version now includes additional security checks to prevent this attack.
+  This issue only affects binary elliptic curves, which are rarely used in
+  real-world applications. **CVE-PLACEHOLDER Credit placeholder**
+* Support for ``SECT*`` binary elliptic curves is deprecated and will be
+  removed in the next release.
 
 .. v46-0-4:
 
