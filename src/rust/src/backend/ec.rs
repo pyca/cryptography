@@ -47,19 +47,6 @@ fn curve_from_py_curve(
 
         "secp256k1" => openssl::nid::Nid::SECP256K1,
 
-        "sect233r1" => openssl::nid::Nid::SECT233R1,
-        "sect283r1" => openssl::nid::Nid::SECT283R1,
-        "sect409r1" => openssl::nid::Nid::SECT409R1,
-        "sect571r1" => openssl::nid::Nid::SECT571R1,
-
-        "sect163r2" => openssl::nid::Nid::SECT163R2,
-
-        "sect163k1" => openssl::nid::Nid::SECT163K1,
-        "sect233k1" => openssl::nid::Nid::SECT233K1,
-        "sect283k1" => openssl::nid::Nid::SECT283K1,
-        "sect409k1" => openssl::nid::Nid::SECT409K1,
-        "sect571k1" => openssl::nid::Nid::SECT571K1,
-
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         "brainpoolP256r1" => openssl::nid::Nid::BRAINPOOL_P256R1,
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]

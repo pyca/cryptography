@@ -58,19 +58,6 @@ pub const EC_SECP521R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 35);
 
 pub const EC_SECP256K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 10);
 
-pub const EC_SECT233R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 27);
-pub const EC_SECT283R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 17);
-pub const EC_SECT409R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 37);
-pub const EC_SECT571R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 39);
-
-pub const EC_SECT163R2: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 15);
-
-pub const EC_SECT163K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 1);
-pub const EC_SECT233K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 26);
-pub const EC_SECT283K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 16);
-pub const EC_SECT409K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 36);
-pub const EC_SECT571K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 38);
-
 pub const EC_BRAINPOOLP256R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 7);
 pub const EC_BRAINPOOLP384R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 11);
 pub const EC_BRAINPOOLP512R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 13);
