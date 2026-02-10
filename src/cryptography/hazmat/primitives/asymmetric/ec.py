@@ -445,3 +445,26 @@ def get_curve_for_oid(oid: ObjectIdentifier) -> type[EllipticCurve]:
             "The provided object identifier has no matching elliptic "
             "curve class"
         )
+
+
+_SECT_CURVES: tuple[type[EllipticCurve], ...] = (
+    SECT163K1,
+    SECT163R2,
+    SECT233K1,
+    SECT233R1,
+    SECT283K1,
+    SECT283R1,
+    SECT409K1,
+    SECT409R1,
+    SECT571K1,
+    SECT571R1,
+)
+
+for _curve_cls in _SECT_CURVES:
+    utils.deprecated(
+        _curve_cls,
+        __name__,
+        f"{_curve_cls.__name__} will be removed in the next release.",
+        utils.DeprecatedIn46,
+        name=_curve_cls.__name__,
+    )
