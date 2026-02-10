@@ -419,8 +419,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Jan 23, 2026.
-            REF: bcac7d2545320f4042fc7f8be384fba978381359
+            # Latest commit on the pyopenssl main branch, as of Feb 10, 2026.
+            REF: 7b29beba7759f0b810b5d5375a50469c4f8947b3
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -444,8 +444,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Feb 06, 2026.
-            REF: 420f526062b70b7c8436837cffa9490cd5e42533
+            # Latest commit on the certbot main branch, as of Feb 10, 2026.
+            REF: e710fb0488c902e30d08e17f41be8b689177c229
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -459,8 +459,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Feb 09, 2026.
-            REF: fec8617090be86c375577c23b96718efa0f4c654
+            # Latest commit on the scapy master branch, as of Feb 10, 2026.
+            REF: ded1d73d7c779099964338803ad7b366c99d6820
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
