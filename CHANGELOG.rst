@@ -85,6 +85,21 @@ Changelog
 * Added :meth:`~cryptography.hazmat.primitives.hashes.Hash.hash`, a one-shot
   method for computing hashes.
 
+.. _v46-0-5:
+
+46.0.5 - 2026-02-10
+~~~~~~~~~~~~~~~~~~~
+
+* An attacker could create a malicious public key that reveals portions of your
+  private key when using certain uncommon elliptic curves (binary curves).
+  This version now includes additional security checks to prevent this attack.
+  This issue only affects binary elliptic curves, which are rarely used in
+  real-world applications. Credit to **XlabAI Team of Tencent Xuanwu Lab and
+  Atuin Automated Vulnerability Discovery Engine** for reporting the issue.
+  **CVE-2026-26007**
+* Support for ``SECT*`` binary elliptic curves is deprecated and will be
+  removed in the next release.
+
 .. v46-0-4:
 
 46.0.4 - 2026-01-27
