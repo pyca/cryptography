@@ -10,7 +10,9 @@ Changelog
   private key when using certain uncommon elliptic curves (binary curves).
   This version now includes additional security checks to prevent this attack.
   This issue only affects binary elliptic curves, which are rarely used in
-  real-world applications. **CVE-PLACEHOLDER Credit placeholder**
+  real-world applications. Credit to **XlabAI Team of Tencent Xuanwu Lab and
+  Atuin Automated Vulnerability Discovery Engine** for reporting the issue.
+  **CVE-2026-26007**
 * Support for ``SECT*`` binary elliptic curves is deprecated and will be
   removed in the next release.
 
