@@ -1542,3 +1542,10 @@ class TestECDH:
 
         with pytest.raises(ValueError):
             key.exchange(ec.ECDH(), public_key)
+
+
+def test_invalid_point(backend):
+    _skip_curve_unsupported(backend, ec.SECT571K1())
+    public_numbers = ec.EllipticCurvePublicNumbers(1, 1, ec.SECT571K1())
+    with pytest.raises(ValueError):
+        public_numbers.public_key()

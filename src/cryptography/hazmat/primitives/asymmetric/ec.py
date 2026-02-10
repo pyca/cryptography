@@ -214,6 +214,7 @@ EllipticCurvePublicKey.register(rust_openssl.ec.ECPublicKey)
 EllipticCurvePrivateNumbers = rust_openssl.ec.EllipticCurvePrivateNumbers
 EllipticCurvePublicNumbers = rust_openssl.ec.EllipticCurvePublicNumbers
 
+
 class SECT571R1(EllipticCurve):
     name = "sect571r1"
     key_size = 570
