@@ -51,7 +51,7 @@ jobs:
       - run: |
           find tmpdist/ -type f -name 'cryptography*' -exec mv {} dist/ \;
 
-      - uses: astral-sh/attest-action@2c727738cea36d6c97dd85eb133ea0e0e8fe754b # v0.0.4
+      - uses: astral-sh/attest-action@f35111fb79f1e4f0150a1ee16cfd4399e3151bdb # v0.0.5
         # Do not perform attestation for things for TestPyPI. This is
         # because there's nothing that would prevent a malicious PyPI from
         # serving a signed TestPyPI asset in place of a release intended for
