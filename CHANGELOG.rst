@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _v46-0-5:
+
+46.0.5 - 2026-02-10
+~~~~~~~~~~~~~~~~~~~
+
+* Support for ``SECT*`` elliptic curves is deprecated and will be removed in
+  the next release.
+
 .. v46-0-4:
 
 46.0.4 - 2026-01-27
