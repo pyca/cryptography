@@ -43,6 +43,10 @@ jobs:
           echo "PYPI_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
 
+      - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+        with:
+          save-cache: false
+
       - uses: dawidd6/action-download-artifact@5c98f0b039f36ef966fdb7dfa9779262785ecb05 # v14
         with:
           path: tmpdist/
