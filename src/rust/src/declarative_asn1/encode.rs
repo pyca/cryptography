@@ -262,6 +262,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     .map_err(|_| asn1::WriteError::AllocationError)?;
                 write_value(writer, &bitstring, encoding)
             }
+            Type::Tlv() => Err(asn1::WriteError::AllocationError),
         }
     }
 }

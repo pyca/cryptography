@@ -227,7 +227,7 @@ class TestSequenceAPI:
     def test_fail_unsupported_size_annotation(self) -> None:
         with pytest.raises(
             TypeError,
-            match="field invalid has a SIZE annotation, but SIZE "
+            match="field 'invalid' has a SIZE annotation, but SIZE "
             "annotations are only supported for fields of types: ",
         ):
 
@@ -410,3 +410,41 @@ class TestSequenceAPI:
                         asn1.Implicit(1),
                     ],
                 ]
+
+    def test_fail_tlv_with_implicit_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has an IMPLICIT annotation, but IMPLICIT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.Tlv, asn1.Implicit(0)]
+
+    def test_fail_tlv_with_default_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has a DEFAULT annotation, but DEFAULT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.Tlv, asn1.Default(value=9)]
+
+    def test_fail_optional_tlv(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional TLV types (`TLV | None`) are not currently supported"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: typing.Union[asn1.Tlv, None]

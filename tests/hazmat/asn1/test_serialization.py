@@ -301,6 +301,34 @@ class TestBitString:
             asn1.decode_der(asn1.BitString, b"\x03\x02\x08\x00")
 
 
+class TestTlv:
+    def test_ok_decode_tlv(self) -> None:
+        decoded = asn1.decode_der(asn1.Tlv, b"\x03\x02\x07\x40")
+        assert isinstance(decoded, asn1.Tlv)
+        assert decoded.tag == 3
+        assert decoded.length == 2
+        assert decoded.data == b"\x07\x40"
+
+    def test_ok_tlv_parse_method(self) -> None:
+        decoded_tlv = asn1.decode_der(asn1.Tlv, b"\x30\x03\x02\x01\x09")
+        assert isinstance(decoded_tlv, asn1.Tlv)
+
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        decoded_example = decoded_tlv.parse(Example)
+        assert isinstance(decoded_example, Example)
+        assert decoded_example.foo == 9
+
+    def test_fail_encode_tlv(self) -> None:
+        tlv = asn1.decode_der(asn1.Tlv, b"\x03\x02\x07\x40")
+        assert isinstance(tlv, asn1.Tlv)
+
+        with pytest.raises(ValueError, match="allocation error"):
+            asn1.encode_der(tlv)
+
+
 class TestSequence:
     def test_ok_sequence_single_field(self) -> None:
         @asn1.sequence
@@ -916,6 +944,27 @@ class TestSequence:
                 ),
             ]
         )
+
+    def test_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.Tlv, asn1.Explicit(0)]
+            bar: Annotated[asn1.Tlv, asn1.Explicit(1)]
+
+        encoded = b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+        decoded = asn1.decode_der(Example, encoded)
+
+        assert isinstance(decoded.foo, asn1.Tlv)
+        assert decoded.foo.tag == 2
+        assert decoded.foo.length == 1
+        assert decoded.foo.data == b"\x08"
+
+        assert isinstance(decoded.bar, asn1.Tlv)
+        assert decoded.bar.tag == 2
+        assert decoded.bar.length == 1
+        assert decoded.bar.data == b"\x09"
 
 
 class TestSize:

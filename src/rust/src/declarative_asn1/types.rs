@@ -51,6 +51,8 @@ pub enum Type {
     GeneralizedTime(),
     /// BIT STRING (`bytes`)
     BitString(),
+    /// ANY (parsed as a TLV)
+    Tlv(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -162,6 +164,35 @@ impl Variant {
             ann_type,
             tag_name,
         }
+    }
+}
+
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct Tlv {
+    #[pyo3(get)]
+    pub tag: u32,
+    #[pyo3(get)]
+    pub length: usize,
+
+    // We store the bytes of the entire TLV, and to access the Value part
+    // we store the index where it starts.
+    pub data_index: usize,
+    pub full_data: pyo3::Py<pyo3::types::PyBytes>,
+}
+
+#[pyo3::pymethods]
+impl Tlv {
+    pub fn parse<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+        class: &pyo3::Bound<'p, pyo3::types::PyType>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        crate::declarative_asn1::asn1::decode_der(py, class, self.full_data.as_bytes(py))
+    }
+
+    #[getter]
+    pub fn data<'p>(&self, py: pyo3::Python<'p>) -> pyo3::Bound<'p, pyo3::types::PyBytes> {
+        pyo3::types::PyBytes::new(py, &self.full_data.as_bytes(py)[self.data_index..])
     }
 }
 
@@ -405,6 +436,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::GeneralizedTime().into_pyobject(py)
     } else if class.is(BitString::type_object(py)) {
         Type::BitString().into_pyobject(py)
+    } else if class.is(Tlv::type_object(py)) {
+        Type::Tlv().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -523,6 +556,18 @@ pub(crate) fn is_tag_valid_for_type(
             check_tag_with_encoding(asn1::GeneralizedTime::TAG, encoding, tag)
         }
         Type::BitString() => check_tag_with_encoding(asn1::BitString::TAG, encoding, tag),
+        Type::Tlv() => {
+            match encoding {
+                Some(e) => match e.get() {
+                    // TLVs with implicit annotations are not supported
+                    // (they are caught first at the Python level)
+                    Encoding::Implicit(_) => false,
+                    Encoding::Explicit(n) => tag == asn1::explicit_tag(*n),
+                },
+                // When reading TLVs we accept any tag
+                None => true,
+            }
+        }
     }
 }
 

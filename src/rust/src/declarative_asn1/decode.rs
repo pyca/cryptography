@@ -8,8 +8,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
     check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
-    Variant,
+    Annotation, BitString, Encoding, GeneralizedTime, IA5String, PrintableString, Tlv, Type,
+    UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -161,6 +161,35 @@ fn decode_bitstring<'a>(
     )?)
 }
 
+fn decode_tlv<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, Tlv>> {
+    let tlv = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => Err(CryptographyError::Py(
+                // We don't support IMPLICIT TLV
+                pyo3::exceptions::PyValueError::new_err(
+                    "invalid type definition: TLV/ANY fields cannot be implicitly encoded"
+                        .to_string(),
+                ),
+            ))?,
+            Encoding::Explicit(n) => parser.read_explicit_element::<asn1::Tlv<'_>>(*n),
+        },
+        None => parser.read_element::<asn1::Tlv<'_>>(),
+    }?;
+    Ok(pyo3::Bound::new(
+        py,
+        Tlv {
+            tag: tlv.tag().value(),
+            length: tlv.data().len(),
+            data_index: tlv.full_data().len() - tlv.data().len(),
+            full_data: pyo3::types::PyBytes::new(py, tlv.full_data()).unbind(),
+        },
+    )?)
+}
+
 // Utility function to handle explicit encoding when parsing
 // CHOICE fields.
 fn decode_choice_with_encoding<'a>(
@@ -302,6 +331,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
+        Type::Tlv() => decode_tlv(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {

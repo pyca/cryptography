@@ -144,10 +144,23 @@ def _normalize_field_type(
         )
     ):
         raise TypeError(
-            f"field {field_name} has a SIZE annotation, but SIZE annotations "
-            f"are only supported for fields of types: [SEQUENCE OF, "
-            "BIT STRING, OCTET STRING, UTF8String, PrintableString, IA5String]"
+            f"field '{field_name}' has a SIZE annotation, but SIZE "
+            "annotations are only supported for fields of types: "
+            "[SEQUENCE OF, BIT STRING, OCTET STRING, UTF8String, "
+            "PrintableString, IA5String]"
         )
+
+    if field_type is Tlv:
+        if isinstance(annotation.encoding, Implicit):
+            raise TypeError(
+                f"field '{field_name}' has an IMPLICIT annotation, but "
+                "IMPLICIT annotations are not supported for TLV types."
+            )
+        elif annotation.default is not None:
+            raise TypeError(
+                f"field '{field_name}' has a DEFAULT annotation, but "
+                "DEFAULT annotations are not supported for TLV types."
+            )
 
     if hasattr(field_type, "__asn1_root__"):
         annotated_root = field_type.__asn1_root__
@@ -161,6 +174,11 @@ def _normalize_field_type(
             optional_type = (
                 union_args[0] if union_args[1] is type(None) else union_args[1]
             )
+            if optional_type is Tlv:
+                raise TypeError(
+                    "optional TLV types (`TLV | None`) are not "
+                    "currently supported"
+                )
             annotated_type = _normalize_field_type(optional_type, field_name)
 
             if not annotated_type.annotation.is_empty():
@@ -365,3 +383,4 @@ IA5String = declarative_asn1.IA5String
 UtcTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
+Tlv = declarative_asn1.Tlv
