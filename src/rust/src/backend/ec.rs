@@ -382,7 +382,7 @@ impl ECPublicKey {
         let one = openssl::bn::BigNum::from_u32(1)?;
         // We only support curves with a cofactor of 1.
         // Any change here requires more careful key checking
-        assert!(cofactor == one);
+        assert_eq!(cofactor, one, "cofactor must be 1");
         Ok(ECPublicKey { pkey, curve })
     }
 }
