@@ -68,7 +68,7 @@ fn serialize_certificates<'p>(
         version: 1,
         digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
         content_info: pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(None),
         },
         certificates: Some(common::Asn1ReadableOrWritable::new_write(
@@ -79,7 +79,7 @@ fn serialize_certificates<'p>(
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let content_info_bytes = asn1::write_single(&content_info)?;
@@ -173,7 +173,7 @@ fn encrypt_and_serialize<'p>(
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::EnvelopedData(asn1::Explicit::new(Box::new(enveloped_data))),
     };
     let ci_bytes = asn1::write_single(&content_info)?;
@@ -617,7 +617,7 @@ fn sign_and_serialize<'p>(
             &digest_algs,
         )),
         content_info: pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
         certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
@@ -634,7 +634,7 @@ fn sign_and_serialize<'p>(
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let ci_bytes = asn1::write_single(&content_info)?;

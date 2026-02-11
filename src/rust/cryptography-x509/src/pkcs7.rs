@@ -11,9 +11,9 @@ pub const PKCS7_ENCRYPTED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 84
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct ContentInfo<'a> {
-    pub _content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    pub content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
 
-    #[defined_by(_content_type)]
+    #[defined_by(content_type)]
     pub content: Content<'a>,
 }
 

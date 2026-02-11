@@ -318,7 +318,7 @@ fn serialize_safebags<'p>(
             )?;
 
             auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-                _content_type: asn1::DefinedByMarker::marker(),
+                content_type: asn1::DefinedByMarker::marker(),
                 content: cryptography_x509::pkcs7::Content::EncryptedData(asn1::Explicit::new(
                     cryptography_x509::pkcs7::EncryptedData {
                         version: 0,
@@ -339,7 +339,7 @@ fn serialize_safebags<'p>(
             shrouded_safebag_contents =
                 asn1::write_single(&asn1::SequenceOfWriter::new(shrouded_safebags))?;
             auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-                _content_type: asn1::DefinedByMarker::marker(),
+                content_type: asn1::DefinedByMarker::marker(),
                 content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
                     &shrouded_safebag_contents,
                 ))),
@@ -348,7 +348,7 @@ fn serialize_safebags<'p>(
     } else {
         plain_safebag_contents = asn1::write_single(&asn1::SequenceOfWriter::new(safebags))?;
         auth_safe_contents.push(cryptography_x509::pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
                 &plain_safebag_contents,
             ))),
@@ -384,7 +384,7 @@ fn serialize_safebags<'p>(
     let p12 = cryptography_x509::pkcs12::Pfx {
         version: 3,
         auth_safe: cryptography_x509::pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: cryptography_x509::pkcs7::Content::Data(Some(asn1::Explicit::new(
                 &auth_safe_content,
             ))),
