@@ -6,7 +6,7 @@ use asn1::{
     IA5String as Asn1IA5String, PrintableString as Asn1PrintableString, SimpleAsn1Readable,
     UtcTime as Asn1UtcTime,
 };
-use pyo3::types::{PyAnyMethods, PyTzInfoAccess};
+use pyo3::types::{PyAnyMethods, PySequenceMethods, PyTzInfoAccess};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
 use crate::error::CryptographyError;
@@ -189,8 +189,14 @@ impl Tlv {
     }
 
     #[getter]
-    pub fn data<'p>(&self, py: pyo3::Python<'p>) -> pyo3::Bound<'p, pyo3::types::PyBytes> {
-        pyo3::types::PyBytes::new(py, &self.full_data.as_bytes(py)[self.data_index..])
+    pub fn data<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyMemoryView>> {
+        let mem_view = pyo3::types::PyMemoryView::from(self.full_data.bind(py))?;
+        let seq = mem_view.cast::<pyo3::types::PySequence>().unwrap();
+        let slice = seq.get_slice(self.data_index, seq.len()?)?;
+        pyo3::types::PyMemoryView::from(&slice)
     }
 }
 
