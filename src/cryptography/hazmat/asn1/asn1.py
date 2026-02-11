@@ -150,7 +150,7 @@ def _normalize_field_type(
             "PrintableString, IA5String]"
         )
 
-    if field_type is Tlv:
+    if field_type is TLV:
         if isinstance(annotation.encoding, Implicit):
             raise TypeError(
                 f"field '{field_name}' has an IMPLICIT annotation, but "
@@ -174,7 +174,7 @@ def _normalize_field_type(
             optional_type = (
                 union_args[0] if union_args[1] is type(None) else union_args[1]
             )
-            if optional_type is Tlv:
+            if optional_type is TLV:
                 raise TypeError(
                     "optional TLV types (`TLV | None`) are not "
                     "currently supported"
@@ -380,7 +380,7 @@ Size = declarative_asn1.Size
 
 PrintableString = declarative_asn1.PrintableString
 IA5String = declarative_asn1.IA5String
-UtcTime = declarative_asn1.UtcTime
+UTCTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
-Tlv = declarative_asn1.Tlv
+TLV = declarative_asn1.Tlv
