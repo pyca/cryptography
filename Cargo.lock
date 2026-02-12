@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "asn1"
-version = "0.23.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcb25db9258497df3a24e939c160b4fa3477d0a4f22402a73e610a4c056786fe"
+checksum = "ca7444bb097e58fd76ae2b3929d8f5bdb3748000eb51b79141ed7c7b6a9dcdbc"
 dependencies = [
  "asn1_derive",
  "itoa",
@@ -14,9 +14,9 @@ dependencies = [
 
 [[package]]
 name = "asn1_derive"
-version = "0.23.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1663403ad39c8f68bba1d051181a53f12344b08c4f7af0f382baca8fdbd5c9bf"
+checksum = "d0dcd11549aa9d043141c7d54839771cbf9a8d38084808c6fa00e62b46b114f0"
 dependencies = [
  "proc-macro2",
  "quote",
