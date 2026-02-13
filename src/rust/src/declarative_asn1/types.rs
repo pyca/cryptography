@@ -51,6 +51,8 @@ pub enum Type {
     GeneralizedTime(),
     /// BIT STRING (`bytes`)
     BitString(),
+    /// NULL
+    Null(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -378,6 +380,21 @@ impl BitString {
     }
 }
 
+#[pyo3::pyclass(frozen, eq, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[derive(PartialEq)]
+pub struct Null;
+
+#[pyo3::pymethods]
+impl Null {
+    #[new]
+    fn new() -> Self {
+        Null
+    }
+    pub fn __repr__(&self) -> String {
+        "Null()".to_string()
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -405,6 +422,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::GeneralizedTime().into_pyobject(py)
     } else if class.is(BitString::type_object(py)) {
         Type::BitString().into_pyobject(py)
+    } else if class.is(Null::type_object(py)) {
+        Type::Null().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -523,6 +542,7 @@ pub(crate) fn is_tag_valid_for_type(
             check_tag_with_encoding(asn1::GeneralizedTime::TAG, encoding, tag)
         }
         Type::BitString() => check_tag_with_encoding(asn1::BitString::TAG, encoding, tag),
+        Type::Null() => check_tag_with_encoding(asn1::Null::TAG, encoding, tag),
     }
 }
 

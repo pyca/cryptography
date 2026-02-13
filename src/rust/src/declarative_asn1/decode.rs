@@ -8,8 +8,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
     check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime,
-    Variant,
+    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, Type,
+    UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -161,6 +161,15 @@ fn decode_bitstring<'a>(
     )?)
 }
 
+fn decode_null<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, Null>> {
+    read_value::<asn1::Null>(parser, encoding)?;
+    Ok(pyo3::Bound::new(py, Null {})?)
+}
+
 // Utility function to handle explicit encoding when parsing
 // CHOICE fields.
 fn decode_choice_with_encoding<'a>(
@@ -302,6 +311,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
+        Type::Null() => decode_null(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {
