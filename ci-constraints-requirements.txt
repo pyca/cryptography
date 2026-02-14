@@ -120,7 +120,7 @@ mypy==1.19.1 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
-nh3==0.3.2
+nh3==0.3.3
     # via readme-renderer
 nox==2026.2.9
     # via cryptography (pyproject.toml)
