@@ -465,12 +465,16 @@ impl DsaPublicNumbers {
                 .eq(other.parameter_numbers.bind(py))?)
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let y = self.y.bind(py);
         let parameter_numbers = self.parameter_numbers.bind(py).repr()?;
-        Ok(format!(
-            "<DSAPublicNumbers(y={y}, parameter_numbers={parameter_numbers})>"
-        ))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("<DSAPublicNumbers(y={y}, parameter_numbers={parameter_numbers})>"),
+        )
     }
 }
 
@@ -514,11 +518,17 @@ impl DsaParameterNumbers {
             && (**self.g.bind(py)).eq(other.g.bind(py))?)
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let p = self.p.bind(py);
         let q = self.q.bind(py);
         let g = self.g.bind(py);
-        Ok(format!("<DSAParameterNumbers(p={p}, q={q}, g={g})>"))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("<DSAParameterNumbers(p={p}, q={q}, g={g})>"),
+        )
     }
 }
 
