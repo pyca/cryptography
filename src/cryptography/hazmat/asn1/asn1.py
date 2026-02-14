@@ -365,3 +365,4 @@ IA5String = declarative_asn1.IA5String
 UtcTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
+Null = declarative_asn1.Null

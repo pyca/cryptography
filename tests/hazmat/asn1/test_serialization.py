@@ -301,6 +301,11 @@ class TestBitString:
             asn1.decode_der(asn1.BitString, b"\x03\x02\x08\x00")
 
 
+class TestNull:
+    def test_ok_null(self) -> None:
+        assert_roundtrips([(asn1.Null(), b"\x05\x00")])
+
+
 class TestSequence:
     def test_ok_sequence_single_field(self) -> None:
         @asn1.sequence
@@ -467,7 +472,8 @@ class TestSequence:
             h: typing.Union[asn1.BitString, None]
             i: typing.Union[asn1.IA5String, None]
             j: typing.Union[x509.ObjectIdentifier, None]
-            k: Annotated[typing.Union[str, None], asn1.Implicit(0)]
+            k: typing.Union[asn1.Null, None]
+            z: Annotated[typing.Union[str, None], asn1.Implicit(0)]
             only_field_present: Annotated[
                 typing.Union[str, None], asn1.Implicit(1)
             ]
@@ -487,6 +493,7 @@ class TestSequence:
                         i=None,
                         j=None,
                         k=None,
+                        z=None,
                         only_field_present="a",
                     ),
                     b"\x30\x03\x81\x01a",
@@ -537,7 +544,11 @@ class TestSequence:
             j: Annotated[
                 typing.Union[int, bool], asn1.Default(3), asn1.Explicit(0)
             ]
-            k: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
+            k: Annotated[
+                asn1.Null,
+                asn1.Default(asn1.Null()),
+            ]
+            z: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
             only_field_present: Annotated[
                 str, asn1.Default("a"), asn1.Implicit(1)
             ]
@@ -556,7 +567,8 @@ class TestSequence:
                         h=asn1.IA5String("a"),
                         i=default_oid,
                         j=3,
-                        k="a",
+                        k=asn1.Null(),
+                        z="a",
                         only_field_present="b",
                     ),
                     b"\x30\x03\x81\x01b",

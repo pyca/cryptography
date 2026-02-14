@@ -148,6 +148,9 @@ class TestTypesAPI:
             # Padding bits have to be zero
             asn1.BitString(data=b"\x01\x02\x03", padding_bits=2)
 
+    def test_repr_null(self) -> None:
+        assert repr(asn1.Null()) == "Null()"
+
 
 class TestSequenceAPI:
     def test_fail_unsupported_field(self) -> None:
