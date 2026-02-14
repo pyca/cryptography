@@ -384,3 +384,4 @@ UTCTime = declarative_asn1.UtcTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
 TLV = declarative_asn1.Tlv
+Null = declarative_asn1.Null
