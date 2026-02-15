@@ -106,10 +106,10 @@ module-name = "cryptography.hazmat.bindings._rust"
 locked = true
 sdist-generator = "git"
 include = [
-    "CHANGELOG.rst",
-    "CONTRIBUTING.rst",
+    { path = "CHANGELOG.rst", format = "sdist" },
+    { path = "CONTRIBUTING.rst", format = "sdist" },
 
-    "docs/**/*",
+    { path = "docs/**/*", format = "sdist" },
 
     { path = "src/_cffi_src/**/*.py", format = "sdist" },
     { path = "src/_cffi_src/**/*.c", format = "sdist" },
@@ -121,7 +121,7 @@ include = [
     { path = "src/rust/**/Cargo.lock", format = "sdist" },
     { path = "src/rust/**/*.rs", format = "sdist" },
 
-    "tests/**/*.py",
+    { path = "tests/**/*.py", format = "sdist" },
 ]
 exclude = [
     "vectors/**/*",
