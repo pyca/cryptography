@@ -3,16 +3,16 @@ description: Tests a built cryptography wheel by installing it and verifying bas
 
 inputs:
   python-path:
-    description: 'Optional path to a specific Python interpreter to use for creating the venv'
+    description: "Optional path to a specific Python interpreter to use for creating the venv"
     required: false
-    default: ''
+    default: ""
   build-requirements-path:
-    description: 'Path to the build requirements file'
+    description: "Path to the build requirements file"
     required: true
   test-pip:
-    description: 'Optional flag to also test installation with pip'
+    description: "Optional flag to also test installation with pip"
     required: false
-    default: 'false'
+    default: "false"
 
 runs:
   using: "composite"
@@ -20,15 +20,19 @@ runs:
   steps:
     - name: Create virtual environment
       run: |
-        if [ -n "${{ inputs.python-path }}" ]; then
-          uv venv --python="${{ inputs.python-path }}"
+        if [ -n "${PYTHON_PATH}" ]; then
+          uv venv --python="${PYTHON_PATH}"
         else
           uv venv
         fi
+      env:
+        PYTHON_PATH: ${{ inputs.python-path }}
       shell: bash
 
     - name: Install build requirements
-      run: uv pip install --require-hashes -r "${{ inputs.build-requirements-path }}"
+      run: uv pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
+      env:
+        BUILD_REQUIREMENTS_PATH: ${{ inputs.build-requirements-path }}
       shell: bash
 
     - name: Install cryptography wheel
@@ -53,16 +57,20 @@ runs:
     - name: Create virtual environment for pip testing
       if: inputs.test-pip == 'true'
       run: |
-        if [ -n "${{ inputs.python-path }}" ]; then
-          "${{ inputs.python-path }}" -m venv .venv-pip-test
+        if [ -n "${PYTHON_PATH}" ]; then
+          "${PYTHON_PATH}" -m venv .venv-pip-test
         else
           python3 -m venv .venv-pip-test
         fi
+      env:
+        PYTHON_PATH: ${{ inputs.python-path }}
       shell: bash
 
     - name: Install build requirements with pip
       if: inputs.test-pip == 'true'
-      run: .venv-pip-test/bin/pip install --require-hashes -r "${{ inputs.build-requirements-path }}"
+      run: .venv-pip-test/bin/pip install --require-hashes -r "${BUILD_REQUIREMENTS_PATH}"
+      env:
+        BUILD_REQUIREMENTS_PATH: ${{ inputs.build-requirements-path }}
       shell: bash
 
     - name: Install cryptography wheel with pip
