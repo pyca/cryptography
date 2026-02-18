@@ -70,6 +70,7 @@ static const long SSL_OP_NETSCAPE_CA_DN_BUG;
 static const long SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG;
 static const long SSL_OP_NO_QUERY_MTU;
 static const long SSL_OP_COOKIE_EXCHANGE;
+static const long DTLS1_COOKIE_LENGTH;
 static const long SSL_OP_NO_TICKET;
 static const long SSL_OP_ALL;
 static const long SSL_OP_SINGLE_ECDH_USE;
@@ -627,6 +628,7 @@ static const long Cryptography_HAS_SSL_VERIFY_CLIENT_POST_HANDSHAKE = 1;
 static const long Cryptography_HAS_SSL_COOKIE = 0;
 
 static const long SSL_OP_COOKIE_EXCHANGE = 0;
+static const long DTLS1_COOKIE_LENGTH = 0;
 int (*DTLSv1_listen)(SSL *, BIO_ADDR *) = NULL;
 void (*SSL_CTX_set_cookie_generate_cb)(SSL_CTX *,
                                        int (*)(
