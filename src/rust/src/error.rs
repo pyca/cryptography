@@ -284,14 +284,20 @@ impl OpenSSLError {
         self.e.reason().unwrap_or("").as_bytes()
     }
 
-    fn __repr__(&self) -> pyo3::PyResult<String> {
-        Ok(format!(
-            "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",
-            self.e.code(),
-            self.e.library_code(),
-            self.e.reason_code(),
-            self.e.reason().unwrap_or("")
-        ))
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!(
+                "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",
+                self.e.code(),
+                self.e.library_code(),
+                self.e.reason_code(),
+                self.e.reason().unwrap_or("")
+            ),
+        )
     }
 }
 

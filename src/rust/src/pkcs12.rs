@@ -63,7 +63,10 @@ impl PKCS12Certificate {
         Ok(hasher.finish())
     }
 
-    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+    fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         let py_friendly_name_repr;
         let friendly_name_repr = match &self.friendly_name {
             Some(v) => {
@@ -75,11 +78,14 @@ impl PKCS12Certificate {
             }
             None => "None",
         };
-        Ok(format!(
-            "<PKCS12Certificate({}, friendly_name={})>",
-            self.certificate.bind(py).str()?,
-            friendly_name_repr
-        ))
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!(
+                "<PKCS12Certificate({}, friendly_name={})>",
+                self.certificate.bind(py).str()?,
+                friendly_name_repr
+            ),
+        )
     }
 }
 

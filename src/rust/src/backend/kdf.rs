@@ -514,13 +514,13 @@ impl BaseArgon2 {
             Argon2Variant::Argon2id => "argon2id",
         };
 
-        // Format the PHC string
-        let phc_string = format!(
-            "${}$v=19$m={},t={},p={}${}${}",
-            variant_id, self.memory_cost, self.iterations, self.lanes, salt_b64, hash_b64
-        );
-
-        Ok(pyo3::types::PyString::new(py, &phc_string))
+        Ok(pyo3::types::PyString::from_fmt(
+            py,
+            format_args!(
+                "${}$v=19$m={},t={},p={}${}${}",
+                variant_id, self.memory_cost, self.iterations, self.lanes, salt_b64, hash_b64
+            ),
+        )?)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]

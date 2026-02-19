@@ -40,8 +40,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          # Latest commit on the BoringSSL main branch, as of Feb 14, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "9c95ec797c65fde9e8ddffc3888f0b8c1460fe4c"}}
+          # Latest commit on the BoringSSL main branch, as of Feb 19, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "75186f6b2aa6c18b9ae91923eaa005657be33c9b"}}
           # Latest tag of AWS-LC main branch, as of Jan 23, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.67.0"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
@@ -419,8 +419,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Feb 10, 2026.
-            REF: 7b29beba7759f0b810b5d5375a50469c4f8947b3
+            # Latest commit on the pyopenssl main branch, as of Feb 19, 2026.
+            REF: 57f09bb4bb051d3bc2a1abd36e9525313d5cd408
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -429,8 +429,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Dec 12, 2025.
-            REF: d1da93654b14ba6870ce77ce77daf584451c2e8f
+            # Latest commit on the twisted trunk branch, as of Feb 19, 2026.
+            REF: b9c85232a76e1a7658c23116fbed37a34825406f
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -459,13 +459,13 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Feb 10, 2026.
-            REF: ded1d73d7c779099964338803ad7b366c99d6820
+            # Latest commit on the scapy master branch, as of Feb 19, 2026.
+            REF: a686d238ca7674e8eb00f9883f4d71b56f2f4194
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Feb 13, 2026.
-            REF: a5a6deacf2f5c62e62f55233236313b457c56e5b
+            # Latest commit on the sigstore-python main branch, as of Feb 18, 2026.
+            REF: aea00077f1bd14f24284f8ccef0f21a6d3adea4a
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15

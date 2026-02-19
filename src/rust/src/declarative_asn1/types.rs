@@ -238,8 +238,14 @@ impl PrintableString {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
-    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        Ok(format!("PrintableString({})", self.inner.bind(py).repr()?))
+    pub fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("PrintableString({})", self.inner.bind(py).repr()?),
+        )
     }
 }
 
@@ -279,8 +285,14 @@ impl IA5String {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
-    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        Ok(format!("IA5String({})", self.inner.bind(py).repr()?))
+    pub fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("IA5String({})", self.inner.bind(py).repr()?),
+        )
     }
 }
 
@@ -325,8 +337,14 @@ impl UtcTime {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
-    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        Ok(format!("UTCTime({})", self.inner.bind(py).repr()?))
+    pub fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("UTCTime({})", self.inner.bind(py).repr()?),
+        )
     }
 }
 
@@ -364,8 +382,14 @@ impl GeneralizedTime {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
-    pub fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
-        Ok(format!("GeneralizedTime({})", self.inner.bind(py).repr()?))
+    pub fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!("GeneralizedTime({})", self.inner.bind(py).repr()?),
+        )
     }
 }
 
@@ -407,11 +431,17 @@ impl BitString {
             && self.padding_bits == other.padding_bits)
     }
 
-    pub fn __repr__(&self) -> pyo3::PyResult<String> {
-        Ok(format!(
-            "BitString(data={}, padding_bits={})",
-            self.data, self.padding_bits,
-        ))
+    pub fn __repr__<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+    ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
+        pyo3::types::PyString::from_fmt(
+            py,
+            format_args!(
+                "BitString(data={}, padding_bits={})",
+                self.data, self.padding_bits,
+            ),
+        )
     }
 }
 

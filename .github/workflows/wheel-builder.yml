@@ -149,7 +149,7 @@ jobs:
           # docker running on an arm64 CPU
           OPENSSL_DIR="/opt/pyca/cryptography/openssl" \
               OPENSSL_STATIC=1 \
-              manylinux-entrypoint uv build --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o tmpwheelhouse/
+              manylinux-entrypoint uv build --python=/opt/python/${{ matrix.PYTHON.VERSION }}/bin/python --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include=/opt/pyca/cryptography/openssl/sbom.json cryptography*.tar.gz -o tmpwheelhouse/
         env:
           RUSTUP_HOME: /root/.rustup
       - run: auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/cryptography*.whl -w wheelhouse/
@@ -288,7 +288,7 @@ jobs:
 
           OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
               OPENSSL_STATIC=1 \
-              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API cryptography*.tar.gz -o wheelhouse/
+              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-universal2/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
@@ -376,7 +376,7 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
+          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API --config-settings=build-args=--sbom-include=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/sbom.json -o wheelhouse/
         shell: bash
 
       - name: Smoketest
