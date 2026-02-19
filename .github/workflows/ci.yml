@@ -353,6 +353,11 @@ jobs:
           - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
+        include:
+          # Not in the main matrix because we want tests-nocoverage on Python
+          # 3.14
+          - PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
+            WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -368,12 +373,36 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
+        if: matrix.WINDOWS.ARCH != 'arm64'
+      - name: Setup Python ${{ matrix.PYTHON.VERSION }}-${{ matrix.WINDOWS.ARCH }} via PyManager
+        if: matrix.WINDOWS.ARCH == 'arm64'
+        shell: pwsh
+        run: |
+          winget install Python.PythonInstallManager --source winget --accept-package-agreements --accept-source-agreements
+          if ($LASTEXITCODE -ne 0) { throw "Failed to install PyManager" }
+
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+          $pyVersion = "${{ matrix.PYTHON.VERSION }}-${{ matrix.WINDOWS.ARCH }}"
+          pymanager install $pyVersion
+          if ($LASTEXITCODE -ne 0) { throw "Failed to install Python $pyVersion" }
+
+          $pythonExe = pymanager exec -V:$pyVersion -c "import sys; print(sys.executable)"
+          if ($LASTEXITCODE -ne 0) { throw "Failed to resolve Python path" }
+          $pythonExe = $pythonExe.Trim()
+          $pythonDir = Split-Path $pythonExe
+          $scriptsDir = Join-Path $pythonDir "Scripts"
+
+          echo "Python executable: $pythonExe"
+          echo "Python directory:  $pythonDir"
+          echo "$pythonDir" >> $env:GITHUB_PATH
+          echo "$scriptsDir" >> $env:GITHUB_PATH
+          echo "UV_PYTHON=$pythonExe" >> $env:GITHUB_ENV
       - run: rustup component add llvm-tools-preview
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version || matrix.PYTHON.VERSION }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
 
       - uses: dawidd6/action-download-artifact@5c98f0b039f36ef966fdb7dfa9779262785ecb05 # v14

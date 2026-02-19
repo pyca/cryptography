@@ -315,6 +315,7 @@ jobs:
         WINDOWS:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
+          - {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
         PYTHON:
           - {VERSION: "3.14", "ABI_VERSION": "py38"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
@@ -323,6 +324,9 @@ jobs:
         exclude:
           # We need to exclude the below configuration because there is no 32-bit pypy3
           - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
+            PYTHON: {VERSION: "pypy-3.11"}
+          # We need to exclude the below configuration because there is no ARM64 pypy3
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "pypy-3.11"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
@@ -348,6 +352,30 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
         timeout-minutes: 3
+        if: matrix.WINDOWS.ARCH != 'arm64'
+      - name: Setup Python ${{ matrix.PYTHON.VERSION }}-${{ matrix.WINDOWS.ARCH }} via PyManager
+        if: matrix.WINDOWS.ARCH == 'arm64'
+        shell: pwsh
+        run: |
+          winget install Python.PythonInstallManager --source winget --accept-package-agreements --accept-source-agreements
+          if ($LASTEXITCODE -ne 0) { throw "Failed to install PyManager" }
+
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+          $pyVersion = "${{ matrix.PYTHON.VERSION }}-${{ matrix.WINDOWS.ARCH }}"
+          pymanager install $pyVersion
+          if ($LASTEXITCODE -ne 0) { throw "Failed to install Python $pyVersion" }
+
+          $pythonExe = pymanager exec -V:$pyVersion -c "import sys; print(sys.executable)"
+          if ($LASTEXITCODE -ne 0) { throw "Failed to resolve Python path" }
+          $pythonExe = $pythonExe.Trim()
+          $pythonDir = Split-Path $pythonExe
+          $scriptsDir = Join-Path $pythonDir "Scripts"
+
+          echo "Python executable: $pythonExe"
+          echo "Python directory:  $pythonDir"
+          echo "$pythonDir" >> $env:GITHUB_PATH
+          echo "$scriptsDir" >> $env:GITHUB_PATH
+          echo "UV_PYTHON=$pythonExe" >> $env:GITHUB_ENV
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           toolchain: stable
