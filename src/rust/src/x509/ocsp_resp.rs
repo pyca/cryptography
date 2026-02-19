@@ -2,20 +2,17 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use std::sync::Arc;
-
-use cryptography_x509::ocsp_resp::{
-    self, OCSPResponse as RawOCSPResponse, SingleResponse, SingleResponse as RawSingleResponse,
-};
-use cryptography_x509::{common, oid};
-use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-
 use crate::asn1::{big_byte_slice_to_py_int, oid_to_py_oid, py_uint_to_big_endian_bytes};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::x509::{certificate, crl, extensions, ocsp, py_to_datetime, sct};
 use crate::{exceptions, types, x509};
-
-const BASIC_RESPONSE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
+use cryptography_x509::ocsp_resp::{
+    self, OCSPResponse as RawOCSPResponse, Response, SingleResponse,
+    SingleResponse as RawSingleResponse,
+};
+use cryptography_x509::{common, oid};
+use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
+use std::sync::Arc;
 
 #[pyo3::pyfunction]
 pub(crate) fn load_der_ocsp_response(
@@ -27,15 +24,7 @@ pub(crate) fn load_der_ocsp_response(
     let response = raw.borrow_dependent();
     match response.response_status.value() {
         SUCCESSFUL_RESPONSE => match response.response_bytes {
-            Some(ref bytes) => {
-                if bytes.response_type != BASIC_RESPONSE_OID {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyValueError::new_err(
-                            "Successful OCSP response does not contain a BasicResponse",
-                        ),
-                    ));
-                }
-            }
+            Some(ref _b) => {}
             None => {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
@@ -81,7 +70,9 @@ pub(crate) struct OCSPResponse {
 impl OCSPResponse {
     fn requires_successful_response(&self) -> pyo3::PyResult<&ocsp_resp::BasicOCSPResponse<'_>> {
         match self.raw.borrow_dependent().response_bytes.as_ref() {
-            Some(b) => Ok(b.response.get()),
+            Some(b) => match &b.response {
+                Response::Basic(b) => Ok(b.get()),
+            },
             None => Err(pyo3::exceptions::PyValueError::new_err(
                 "OCSP response status is not successful so the property has no value",
             )),
@@ -104,18 +95,17 @@ impl OCSPResponse {
         self.requires_successful_response()?;
         Ok(OCSPResponseIterator {
             contents: OwnedOCSPResponseIteratorData::try_new(Arc::clone(&self.raw), |v| {
-                Ok::<_, ()>(
-                    v.borrow_dependent()
-                        .response_bytes
-                        .as_ref()
-                        .unwrap()
-                        .response
-                        .get()
-                        .tbs_response_data
-                        .responses
-                        .unwrap_read()
-                        .clone(),
-                )
+                Ok::<_, ()>({
+                    let rb = v.borrow_dependent().response_bytes.as_ref().unwrap();
+                    match &rb.response {
+                        Response::Basic(basic) => basic
+                            .get()
+                            .tbs_response_data
+                            .responses
+                            .unwrap_read()
+                            .clone(),
+                    }
+                })
             })
             .unwrap(),
         })
@@ -259,18 +249,17 @@ impl OCSPResponse {
         for i in 0..certs.len() {
             // TODO: O(n^2), don't have too many certificates!
             let raw_cert = map_arc_data_ocsp_response(py, &self.raw, |_data, resp| {
-                resp.response_bytes
-                    .as_ref()
-                    .unwrap()
-                    .response
-                    .get()
-                    .certs
-                    .as_ref()
-                    .unwrap()
-                    .unwrap_read()
-                    .clone()
-                    .nth(i)
-                    .unwrap()
+                match &resp.response_bytes.as_ref().unwrap().response {
+                    Response::Basic(b) => b,
+                }
+                .get()
+                .certs
+                .as_ref()
+                .unwrap()
+                .unwrap_read()
+                .clone()
+                .nth(i)
+                .unwrap()
             });
             py_certs.append(pyo3::Bound::new(
                 py,
@@ -410,15 +399,16 @@ impl OCSPResponse {
     fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         self.requires_successful_response()?;
 
-        let response_data = &self
+        let response_data = match &self
             .raw
             .borrow_dependent()
             .response_bytes
             .as_ref()
             .unwrap()
             .response
-            .get()
-            .tbs_response_data;
+        {
+            Response::Basic(b) => &b.get().tbs_response_data,
+        };
 
         x509::parse_and_cache_extensions(
             py,
@@ -446,13 +436,16 @@ impl OCSPResponse {
     fn single_extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         self.requires_successful_response()?;
         let single_resp = single_response(
-            self.raw
+            match &self
+                .raw
                 .borrow_dependent()
                 .response_bytes
                 .as_ref()
                 .unwrap()
                 .response
-                .get(),
+            {
+                Response::Basic(b) => b.get(),
+            },
         )?;
 
         x509::parse_and_cache_extensions(
@@ -711,7 +704,7 @@ pub(crate) fn create_ocsp_response(
                 .get(py)?
                 .get_item(py_single_resp.getattr(pyo3::intern!(py, "_revocation_reason"))?)?
                 .extract::<u32>()?;
-            Some(asn1::Enumerated::new(value))
+            Some(cryptography_x509::crl::CRLReason::new(value))
         } else {
             None
         };
@@ -871,8 +864,8 @@ pub(crate) fn create_ocsp_response(
         certs,
     };
     let response_bytes = Some(ocsp_resp::ResponseBytes {
-        response_type: (BASIC_RESPONSE_OID).clone(),
-        response: asn1::OctetStringEncoded::new(basic_resp),
+        response_type: asn1::DefinedByMarker::marker(),
+        response: ocsp_resp::Response::Basic(asn1::OctetStringEncoded::new(basic_resp)),
     });
 
     let resp = ocsp_resp::OCSPResponse {
