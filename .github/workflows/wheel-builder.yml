@@ -328,6 +328,9 @@ jobs:
           # We need to exclude the below configuration because there is no ARM64 pypy3
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "pypy-3.11"}
+          # We need to exclude the below configuration because there is no ARM64 py38
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "py38"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
