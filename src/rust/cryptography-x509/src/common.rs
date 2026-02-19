@@ -335,6 +335,9 @@ impl<T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1W
 }
 
 pub trait Asn1Operation {
+    type SequenceOf<'a, T>
+    where
+        T: 'a;
     type SequenceOfVec<'a, T>
     where
         T: 'a;
@@ -348,6 +351,10 @@ pub struct Asn1Read;
 pub struct Asn1Write;
 
 impl Asn1Operation for Asn1Read {
+    type SequenceOf<'a, T>
+        = asn1::SequenceOf<'a, T>
+    where
+        T: 'a;
     type SequenceOfVec<'a, T>
         = asn1::SequenceOf<'a, T>
     where
@@ -359,6 +366,10 @@ impl Asn1Operation for Asn1Read {
     type OwnedBitString<'a> = asn1::BitString<'a>;
 }
 impl Asn1Operation for Asn1Write {
+    type SequenceOf<'a, T>
+        = asn1::SequenceOfWriter<'a, T>
+    where
+        T: 'a;
     type SequenceOfVec<'a, T>
         = asn1::SequenceOfWriter<'a, T, Vec<T>>
     where

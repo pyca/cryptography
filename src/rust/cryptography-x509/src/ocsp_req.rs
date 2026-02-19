@@ -2,19 +2,17 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::common::Asn1Operation;
 use crate::{common, extensions, name};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct TBSRequest<'a> {
+pub struct TBSRequest<'a, Op: Asn1Operation> {
     #[explicit(0)]
     #[default(0)]
     pub version: u8,
     #[explicit(1)]
     pub requestor_name: Option<name::GeneralName<'a>>,
-    pub request_list: common::Asn1ReadableOrWritable<
-        asn1::SequenceOf<'a, Request<'a>>,
-        asn1::SequenceOfWriter<'a, Request<'a>>,
-    >,
+    pub request_list: Op::SequenceOf<'a, Request<'a>>,
     #[explicit(2)]
     pub raw_request_extensions: Option<extensions::RawExtensions<'a>>,
 }
@@ -35,8 +33,8 @@ pub struct CertID<'a> {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct OCSPRequest<'a> {
-    pub tbs_request: TBSRequest<'a>,
+pub struct OCSPRequest<'a, Op: Asn1Operation> {
+    pub tbs_request: TBSRequest<'a, Op>,
     // Parsing out the full structure, which includes the entirety of a
     // certificate is more trouble than it's worth, since it's not in the
     // Python API.
