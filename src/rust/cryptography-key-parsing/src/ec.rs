@@ -29,16 +29,6 @@ pub(crate) fn group_to_curve_oid(
         openssl::nid::Nid::SECP384R1 => Some(cryptography_x509::oid::EC_SECP384R1),
         openssl::nid::Nid::SECP521R1 => Some(cryptography_x509::oid::EC_SECP521R1),
         openssl::nid::Nid::SECP256K1 => Some(cryptography_x509::oid::EC_SECP256K1),
-        openssl::nid::Nid::SECT233R1 => Some(cryptography_x509::oid::EC_SECT233R1),
-        openssl::nid::Nid::SECT283R1 => Some(cryptography_x509::oid::EC_SECT283R1),
-        openssl::nid::Nid::SECT409R1 => Some(cryptography_x509::oid::EC_SECT409R1),
-        openssl::nid::Nid::SECT571R1 => Some(cryptography_x509::oid::EC_SECT571R1),
-        openssl::nid::Nid::SECT163R2 => Some(cryptography_x509::oid::EC_SECT163R2),
-        openssl::nid::Nid::SECT163K1 => Some(cryptography_x509::oid::EC_SECT163K1),
-        openssl::nid::Nid::SECT233K1 => Some(cryptography_x509::oid::EC_SECT233K1),
-        openssl::nid::Nid::SECT283K1 => Some(cryptography_x509::oid::EC_SECT283K1),
-        openssl::nid::Nid::SECT409K1 => Some(cryptography_x509::oid::EC_SECT409K1),
-        openssl::nid::Nid::SECT571K1 => Some(cryptography_x509::oid::EC_SECT571K1),
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
@@ -62,19 +52,6 @@ pub(crate) fn ec_params_to_group(
                 &cryptography_x509::oid::EC_SECP521R1 => openssl::nid::Nid::SECP521R1,
 
                 &cryptography_x509::oid::EC_SECP256K1 => openssl::nid::Nid::SECP256K1,
-
-                &cryptography_x509::oid::EC_SECT233R1 => openssl::nid::Nid::SECT233R1,
-                &cryptography_x509::oid::EC_SECT283R1 => openssl::nid::Nid::SECT283R1,
-                &cryptography_x509::oid::EC_SECT409R1 => openssl::nid::Nid::SECT409R1,
-                &cryptography_x509::oid::EC_SECT571R1 => openssl::nid::Nid::SECT571R1,
-
-                &cryptography_x509::oid::EC_SECT163R2 => openssl::nid::Nid::SECT163R2,
-
-                &cryptography_x509::oid::EC_SECT163K1 => openssl::nid::Nid::SECT163K1,
-                &cryptography_x509::oid::EC_SECT233K1 => openssl::nid::Nid::SECT233K1,
-                &cryptography_x509::oid::EC_SECT283K1 => openssl::nid::Nid::SECT283K1,
-                &cryptography_x509::oid::EC_SECT409K1 => openssl::nid::Nid::SECT409K1,
-                &cryptography_x509::oid::EC_SECT571K1 => openssl::nid::Nid::SECT571K1,
 
                 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,

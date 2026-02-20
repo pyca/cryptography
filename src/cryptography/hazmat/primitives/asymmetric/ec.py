@@ -25,16 +25,6 @@ class EllipticCurveOID:
     BRAINPOOLP256R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.7")
     BRAINPOOLP384R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.11")
     BRAINPOOLP512R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.13")
-    SECT163K1 = ObjectIdentifier("1.3.132.0.1")
-    SECT163R2 = ObjectIdentifier("1.3.132.0.15")
-    SECT233K1 = ObjectIdentifier("1.3.132.0.26")
-    SECT233R1 = ObjectIdentifier("1.3.132.0.27")
-    SECT283K1 = ObjectIdentifier("1.3.132.0.16")
-    SECT283R1 = ObjectIdentifier("1.3.132.0.17")
-    SECT409K1 = ObjectIdentifier("1.3.132.0.36")
-    SECT409R1 = ObjectIdentifier("1.3.132.0.37")
-    SECT571K1 = ObjectIdentifier("1.3.132.0.38")
-    SECT571R1 = ObjectIdentifier("1.3.132.0.39")
 
 
 class EllipticCurve(metaclass=abc.ABCMeta):
@@ -227,66 +217,6 @@ EllipticCurvePrivateNumbers = rust_openssl.ec.EllipticCurvePrivateNumbers
 EllipticCurvePublicNumbers = rust_openssl.ec.EllipticCurvePublicNumbers
 
 
-class SECT571R1(EllipticCurve):
-    name = "sect571r1"
-    key_size = 570
-    group_order = 0x3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE661CE18FF55987308059B186823851EC7DD9CA1161DE93D5174D66E8382E9BB2FE84E47  # noqa: E501
-
-
-class SECT409R1(EllipticCurve):
-    name = "sect409r1"
-    key_size = 409
-    group_order = 0x10000000000000000000000000000000000000000000000000001E2AAD6A612F33307BE5FA47C3C9E052F838164CD37D9A21173  # noqa: E501
-
-
-class SECT283R1(EllipticCurve):
-    name = "sect283r1"
-    key_size = 282
-    group_order = 0x3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEF90399660FC938A90165B042A7CEFADB307  # noqa: E501
-
-
-class SECT233R1(EllipticCurve):
-    name = "sect233r1"
-    key_size = 233
-    group_order = 0x1000000000000000000000000000013E974E72F8A6922031D2603CFE0D7
-
-
-class SECT163R2(EllipticCurve):
-    name = "sect163r2"
-    key_size = 163
-    group_order = 0x40000000000000000000292FE77E70C12A4234C33
-
-
-class SECT571K1(EllipticCurve):
-    name = "sect571k1"
-    key_size = 570
-    group_order = 0x20000000000000000000000000000000000000000000000000000000000000000000000131850E1F19A63E4B391A8DB917F4138B630D84BE5D639381E91DEB45CFE778F637C1001  # noqa: E501
-
-
-class SECT409K1(EllipticCurve):
-    name = "sect409k1"
-    key_size = 407
-    group_order = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE5F83B2D4EA20400EC4557D5ED3E3E7CA5B4B5C83B8E01E5FCF  # noqa: E501
-
-
-class SECT283K1(EllipticCurve):
-    name = "sect283k1"
-    key_size = 281
-    group_order = 0x1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE9AE2ED07577265DFF7F94451E061E163C61  # noqa: E501
-
-
-class SECT233K1(EllipticCurve):
-    name = "sect233k1"
-    key_size = 232
-    group_order = 0x8000000000000000000000000000069D5BB915BCD46EFB1AD5F173ABDF
-
-
-class SECT163K1(EllipticCurve):
-    name = "sect163k1"
-    key_size = 163
-    group_order = 0x4000000000000000000020108A2E0CC0D99F8A5EF
-
-
 class SECP521R1(EllipticCurve):
     name = "secp521r1"
     key_size = 521
@@ -356,16 +286,6 @@ _CURVE_TYPES: dict[str, EllipticCurve] = {
     "secp384r1": SECP384R1(),
     "secp521r1": SECP521R1(),
     "secp256k1": SECP256K1(),
-    "sect163k1": SECT163K1(),
-    "sect233k1": SECT233K1(),
-    "sect283k1": SECT283K1(),
-    "sect409k1": SECT409K1(),
-    "sect571k1": SECT571K1(),
-    "sect163r2": SECT163R2(),
-    "sect233r1": SECT233R1(),
-    "sect283r1": SECT283R1(),
-    "sect409r1": SECT409R1(),
-    "sect571r1": SECT571R1(),
     "brainpoolP256r1": BrainpoolP256R1(),
     "brainpoolP384r1": BrainpoolP384R1(),
     "brainpoolP512r1": BrainpoolP512R1(),
@@ -436,16 +356,6 @@ _OID_TO_CURVE = {
     EllipticCurveOID.BRAINPOOLP256R1: BrainpoolP256R1,
     EllipticCurveOID.BRAINPOOLP384R1: BrainpoolP384R1,
     EllipticCurveOID.BRAINPOOLP512R1: BrainpoolP512R1,
-    EllipticCurveOID.SECT163K1: SECT163K1,
-    EllipticCurveOID.SECT163R2: SECT163R2,
-    EllipticCurveOID.SECT233K1: SECT233K1,
-    EllipticCurveOID.SECT233R1: SECT233R1,
-    EllipticCurveOID.SECT283K1: SECT283K1,
-    EllipticCurveOID.SECT283R1: SECT283R1,
-    EllipticCurveOID.SECT409K1: SECT409K1,
-    EllipticCurveOID.SECT409R1: SECT409R1,
-    EllipticCurveOID.SECT571K1: SECT571K1,
-    EllipticCurveOID.SECT571R1: SECT571R1,
 }
 
 

@@ -252,7 +252,10 @@ class TestECWithNumbers:
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve = ec._CURVE_TYPES[vector["curve"]]
+                try:
+                    curve = ec._CURVE_TYPES[vector["curve"]]
+                except KeyError:
+                    pytest.skip(f"Curve {vector['curve']} is not supported")
 
                 _skip_ecdsa_vector(backend, curve, hash_type)
 
@@ -284,7 +287,10 @@ class TestECDSAVectors:
         )
         for vector, hash_type in vectors:
             with subtests.test():
-                curve = ec._CURVE_TYPES[vector["curve"]]
+                try:
+                    curve = ec._CURVE_TYPES[vector["curve"]]
+                except KeyError:
+                    pytest.skip(f"Curve {vector['curve']} is not supported")
 
                 _skip_ecdsa_vector(backend, curve, hash_type)
 
@@ -507,7 +513,10 @@ class TestECDSAVectors:
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve = ec._CURVE_TYPES[vector["curve"]]
+                try:
+                    curve = ec._CURVE_TYPES[vector["curve"]]
+                except KeyError:
+                    pytest.skip(f"Curve {vector['curve']} is not supported")
 
                 _skip_ecdsa_vector(backend, curve, hash_type)
 
@@ -527,7 +536,10 @@ class TestECDSAVectors:
         for vector in vectors:
             with subtests.test():
                 hash_type = _HASH_TYPES[vector["digest_algorithm"]]
-                curve = ec._CURVE_TYPES[vector["curve"]]
+                try:
+                    curve = ec._CURVE_TYPES[vector["curve"]]
+                except KeyError:
+                    pytest.skip(f"Curve {vector['curve']} is not supported")
 
                 _skip_ecdsa_vector(backend, curve, hash_type)
 
@@ -571,16 +583,6 @@ class TestECDSAVectors:
             "SHA512": hashes.SHA512(),
         }
         curves = {
-            "B-163": ec.SECT163R2(),
-            "B-233": ec.SECT233R1(),
-            "B-283": ec.SECT283R1(),
-            "B-409": ec.SECT409R1(),
-            "B-571": ec.SECT571R1(),
-            "K-163": ec.SECT163K1(),
-            "K-233": ec.SECT233K1(),
-            "K-283": ec.SECT283K1(),
-            "K-409": ec.SECT409K1(),
-            "K-571": ec.SECT571K1(),
             "P-192": ec.SECP192R1(),
             "P-224": ec.SECP224R1(),
             "P-256": ec.SECP256R1(),
@@ -599,7 +601,12 @@ class TestECDSAVectors:
                 input = bytes(vector["input"], "utf-8")
                 output = bytes.fromhex(vector["output"])
                 key = bytes("\n".join(vector["key"]), "utf-8")
-                curve = curves[vector["key_name"].split("_")[0]]
+                curve_name = vector["key_name"].split("_")[0]
+                try:
+                    curve = curves[curve_name]
+                except KeyError:
+                    pytest.skip(f"Curve {curve_name} is not supported")
+
                 _skip_curve_unsupported(backend, curve)
 
                 if "digest_sign" in vector:
@@ -1098,22 +1105,6 @@ class TestECSerialization:
                 mode="rb",
             )
 
-        with pytest.raises(
-            exceptions.UnsupportedAlgorithm, match="explicit parameters"
-        ):
-            # This vector encodes SECT233R1 explicitly
-            load_vectors_from_file(
-                os.path.join(
-                    "asymmetric",
-                    "EC",
-                    "explicit_parameters_wap_wsg_idm_ecid_wtls11_private_key.pem",
-                ),
-                lambda pemfile: serialization.load_pem_private_key(
-                    pemfile.read(), password=None
-                ),
-                mode="rb",
-            )
-
     @pytest.mark.parametrize(
         ("curve", "file"),
         [
@@ -1167,27 +1158,6 @@ class TestECSerialization:
                 ),
                 mode="rb",
             )
-
-    @pytest.mark.parametrize(
-        ("key_file", "curve"),
-        [
-            ("sect163k1-spki.pem", ec.SECT163K1),
-            ("sect163r2-spki.pem", ec.SECT163R2),
-            ("sect233k1-spki.pem", ec.SECT233K1),
-            ("sect233r1-spki.pem", ec.SECT233R1),
-        ],
-    )
-    def test_load_public_keys(self, key_file, curve, backend):
-        _skip_curve_unsupported(backend, curve())
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "EC", key_file),
-            lambda pemfile: serialization.load_pem_public_key(
-                pemfile.read(),
-            ),
-            mode="rb",
-        )
-        assert isinstance(key, ec.EllipticCurvePublicKey)
-        assert isinstance(key.curve, curve)
 
     def test_pkcs8_inconsistent_curve(self):
         # The curve can appear twice in a PKCS8 EC key, error if they're not
