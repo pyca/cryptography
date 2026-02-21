@@ -32,6 +32,7 @@ operating systems.
 * x86-64 Debian Bookworm (12.x), Trixie (13.x), and Sid (unstable)
 * x86-64 and ARM64 Alpine (latest)
 * 32-bit and 64-bit Python on 64-bit Windows Server 2022
+* ARM64 Windows 11
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases in addition to distribution provided releases from the
