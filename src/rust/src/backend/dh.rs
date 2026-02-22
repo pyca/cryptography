@@ -220,7 +220,7 @@ impl DHPrivateKey {
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
         format: &pyo3::Bound<'p, pyo3::PyAny>,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
@@ -266,7 +266,7 @@ impl DHPublicKey {
     fn public_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
         format: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if !format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
@@ -359,7 +359,7 @@ impl DHParameters {
     fn parameter_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
         format: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if !format.is(&types::PARAMETER_FORMAT_PKCS3.get(py)?) {
@@ -386,7 +386,7 @@ impl DHParameters {
         } else {
             "X9.42 DH PARAMETERS"
         };
-        encode_der_data(py, tag.to_string(), data, &encoding)
+        encode_der_data(py, tag.to_string(), data, encoding)
     }
 }
 

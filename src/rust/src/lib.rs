@@ -41,6 +41,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs12;
 mod pkcs7;
+pub(crate) mod serialization;
 mod test_support;
 pub(crate) mod types;
 mod x509;
@@ -143,6 +144,8 @@ mod _rust {
     use crate::pkcs12::pkcs12;
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
+    #[pymodule_export]
+    use crate::serialization::Encoding;
     #[pymodule_export]
     use crate::test_support::test_support;
 

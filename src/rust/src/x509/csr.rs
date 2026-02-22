@@ -120,7 +120,7 @@ impl CertificateSigningRequest {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
@@ -255,11 +255,13 @@ pub(crate) fn create_x509_csr(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get(py)?;
     let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = private_key
         .call_method0(pyo3::intern!(py, "public_key"))?
-        .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
+        .call_method1(
+            pyo3::intern!(py, "public_bytes"),
+            (crate::serialization::Encoding::DER, spki),
+        )?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();

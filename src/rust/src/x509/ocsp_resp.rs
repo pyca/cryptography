@@ -477,9 +477,9 @@ impl OCSPResponse {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: pyo3::Bound<'_, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !encoding.is(&types::ENCODING_DER.get(py)?) {
+        if encoding != crate::serialization::Encoding::DER {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "The only allowed encoding value is Encoding.DER",
             )

@@ -47,35 +47,6 @@ pub static DEPRECATED_IN_42: LazyPyImport =
 pub static DEPRECATED_IN_43: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn43"]);
 
-pub static ENCODING: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding"],
-);
-pub static ENCODING_DER: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "DER"],
-);
-pub static ENCODING_OPENSSH: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "OpenSSH"],
-);
-pub static ENCODING_PEM: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "PEM"],
-);
-pub static ENCODING_RAW: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "Raw"],
-);
-pub static ENCODING_SMIME: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "SMIME"],
-);
-pub static ENCODING_X962: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["Encoding", "X962"],
-);
-
 pub static PRIVATE_FORMAT: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["PrivateFormat"],

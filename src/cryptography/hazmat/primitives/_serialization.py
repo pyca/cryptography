@@ -7,6 +7,7 @@ from __future__ import annotations
 import abc
 
 from cryptography import utils
+from cryptography.hazmat.bindings._rust import Encoding as Encoding
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 # This exists to break an import cycle. These classes are normally accessible
@@ -16,15 +17,6 @@ from cryptography.hazmat.primitives.hashes import HashAlgorithm
 class PBES(utils.Enum):
     PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
     PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
-
-
-class Encoding(utils.Enum):
-    PEM = "PEM"
-    DER = "DER"
-    OpenSSH = "OpenSSH"
-    Raw = "Raw"
-    X962 = "ANSI X9.62"
-    SMIME = "S/MIME"
 
 
 class PrivateFormat(utils.Enum):

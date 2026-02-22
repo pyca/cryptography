@@ -195,7 +195,7 @@ class TestOCSPRequest:
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             req.public_bytes("invalid")
         with pytest.raises(ValueError):
             req.public_bytes(serialization.Encoding.PEM)
@@ -1577,7 +1577,7 @@ class TestOCSPResponse:
             os.path.join("x509", "ocsp", "resp-revoked.der"),
             ocsp.load_der_ocsp_response,
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             resp.public_bytes("invalid")
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)

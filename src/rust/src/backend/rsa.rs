@@ -411,7 +411,7 @@ impl RsaPrivateKey {
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
         format: &pyo3::Bound<'p, pyo3::PyAny>,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
@@ -550,7 +550,7 @@ impl RsaPublicKey {
     fn public_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
         format: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
