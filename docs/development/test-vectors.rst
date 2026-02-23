@@ -69,7 +69,7 @@ Asymmetric ciphers
   258. This is an invalid key.
 * ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
   encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
-* FIPS 204 ML-DSA-65 test vectors from `NIST ACVP`_.
+* FIPS 204 ML-DSA-65 KAT vectors from `post-quantum-cryptography/KAT`_.
 
 Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1231,7 +1231,7 @@ header format (substituting the correct information):
 .. _`NIST`: https://www.nist.gov/
 .. _`IETF`: https://www.ietf.org/
 .. _`Project Wycheproof`: https://github.com/C2SP/wycheproof
-.. _`NIST ACVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
+.. _`post-quantum-cryptography/KAT`: https://github.com/post-quantum-cryptography/KAT
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
