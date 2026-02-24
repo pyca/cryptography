@@ -221,10 +221,10 @@ impl DHPrivateKey {
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
-        format: &pyo3::Bound<'p, pyo3::PyAny>,
+        format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PRIVATE_FORMAT_PKCS8.get(py)?) {
+        if format != crate::serialization::PrivateFormat::PKCS8 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH private keys support only PKCS8 serialization",

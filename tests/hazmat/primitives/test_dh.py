@@ -701,7 +701,7 @@ class TestDHPrivateKeySerialization:
     def test_private_bytes_invalid_format(self, backend):
         parameters = FFDH3072_P.parameters(backend)
         key = parameters.generate_private_key()
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 "invalidformat",  # type:ignore[arg-type]

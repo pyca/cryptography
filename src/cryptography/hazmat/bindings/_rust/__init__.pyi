@@ -5,6 +5,9 @@
 import typing
 
 from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives._serialization import (
+    KeySerializationEncryptionBuilder,
+)
 from cryptography.utils import Buffer
 
 class PKCS7PaddingContext(padding.PaddingContext):
@@ -34,6 +37,14 @@ class Encoding:
     Raw: typing.ClassVar[Encoding]
     X962: typing.ClassVar[Encoding]
     SMIME: typing.ClassVar[Encoding]
+
+class PrivateFormat:
+    PKCS8: typing.ClassVar[PrivateFormat]
+    TraditionalOpenSSL: typing.ClassVar[PrivateFormat]
+    Raw: typing.ClassVar[PrivateFormat]
+    OpenSSH: typing.ClassVar[PrivateFormat]
+    PKCS12: typing.ClassVar[PrivateFormat]
+    def encryption_builder(self) -> KeySerializationEncryptionBuilder: ...
 
 class ObjectIdentifier:
     def __init__(self, value: str) -> None: ...

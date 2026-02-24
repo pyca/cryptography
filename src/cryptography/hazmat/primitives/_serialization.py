@@ -8,6 +8,7 @@ import abc
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import Encoding as Encoding
+from cryptography.hazmat.bindings._rust import PrivateFormat as PrivateFormat
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 # This exists to break an import cycle. These classes are normally accessible
@@ -17,22 +18,6 @@ from cryptography.hazmat.primitives.hashes import HashAlgorithm
 class PBES(utils.Enum):
     PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
     PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
-
-
-class PrivateFormat(utils.Enum):
-    PKCS8 = "PKCS8"
-    TraditionalOpenSSL = "TraditionalOpenSSL"
-    Raw = "Raw"
-    OpenSSH = "OpenSSH"
-    PKCS12 = "PKCS12"
-
-    def encryption_builder(self) -> KeySerializationEncryptionBuilder:
-        if self not in (PrivateFormat.OpenSSH, PrivateFormat.PKCS12):
-            raise ValueError(
-                "encryption_builder only supported with PrivateFormat.OpenSSH"
-                " and PrivateFormat.PKCS12"
-            )
-        return KeySerializationEncryptionBuilder(self)
 
 
 class PublicFormat(utils.Enum):
