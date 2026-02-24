@@ -8,7 +8,7 @@ use pyo3::types::PyAnyMethods;
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{types, x509};
+use crate::x509;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
@@ -360,12 +360,10 @@ impl DHParameters {
         &self,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
-        format: pyo3::Bound<'p, pyo3::PyAny>,
+        format: crate::serialization::ParameterFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PARAMETER_FORMAT_PKCS3.get(py)?) {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
-            ));
+        match format {
+            crate::serialization::ParameterFormat::PKCS3 => {}
         }
 
         let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.prime_p())?;

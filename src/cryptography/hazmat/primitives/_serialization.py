@@ -8,6 +8,9 @@ import abc
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import Encoding as Encoding
+from cryptography.hazmat.bindings._rust import (
+    ParameterFormat as ParameterFormat,
+)
 from cryptography.hazmat.bindings._rust import PrivateFormat as PrivateFormat
 from cryptography.hazmat.bindings._rust import PublicFormat as PublicFormat
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
@@ -19,10 +22,6 @@ from cryptography.hazmat.primitives.hashes import HashAlgorithm
 class PBES(utils.Enum):
     PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
     PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
-
-
-class ParameterFormat(utils.Enum):
-    PKCS3 = "PKCS3"
 
 
 class KeySerializationEncryption(metaclass=abc.ABCMeta):
