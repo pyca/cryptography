@@ -149,10 +149,8 @@ fn generate_private_key(
     let _ = backend;
 
     let ossl_curve = curve_from_py_curve(py, curve)?;
-    let pkey = py.detach(|| {
-        let key = openssl::ec::EcKey::generate(&ossl_curve)?;
-        openssl::pkey::PKey::from_ec_key(key)
-    })?;
+    let key = openssl::ec::EcKey::generate(&ossl_curve)?;
+    let pkey = openssl::pkey::PKey::from_ec_key(key)?;
 
     Ok(ECPrivateKey {
         pkey,
