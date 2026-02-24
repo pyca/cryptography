@@ -54,6 +54,9 @@ class PublicFormat:
     CompressedPoint: typing.ClassVar[PublicFormat]
     UncompressedPoint: typing.ClassVar[PublicFormat]
 
+class ParameterFormat:
+    PKCS3: typing.ClassVar[ParameterFormat]
+
 class ObjectIdentifier:
     def __init__(self, value: str) -> None: ...
     @property

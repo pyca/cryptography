@@ -47,11 +47,6 @@ pub static DEPRECATED_IN_42: LazyPyImport =
 pub static DEPRECATED_IN_43: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn43"]);
 
-pub static PARAMETER_FORMAT_PKCS3: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["ParameterFormat", "PKCS3"],
-);
-
 pub static KEY_SERIALIZATION_ENCRYPTION_BUILDER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives._serialization",
     &["KeySerializationEncryptionBuilder"],

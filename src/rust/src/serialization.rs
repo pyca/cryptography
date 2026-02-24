@@ -58,6 +58,19 @@ pub enum PublicFormat {
     UncompressedPoint,
 }
 
+#[pyo3::pyclass(
+    frozen,
+    eq,
+    hash,
+    from_py_object,
+    module = "cryptography.hazmat.primitives._serialization"
+)]
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ParameterFormat {
+    PKCS3,
+}
+
 #[pyo3::pymethods]
 impl PrivateFormat {
     fn encryption_builder<'p>(

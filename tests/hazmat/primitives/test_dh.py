@@ -1018,7 +1018,7 @@ class TestDHParameterSerialization:
 
     def test_parameter_bytes_invalid_format(self, backend):
         parameters = FFDH3072_P.parameters(backend)
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 serialization.Encoding.PEM,
                 "notformat",  # type: ignore[arg-type]
