@@ -43,6 +43,10 @@ jobs:
           echo "PYPI_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
 
+      - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+        with:
+          save-cache: false
+
       - uses: dawidd6/action-download-artifact@5c98f0b039f36ef966fdb7dfa9779262785ecb05 # v14
         with:
           path: tmpdist/
@@ -51,13 +55,16 @@ jobs:
       - run: |
           find tmpdist/ -type f -name 'cryptography*' -exec mv {} dist/ \;
 
+      - uses: astral-sh/attest-action@f35111fb79f1e4f0150a1ee16cfd4399e3151bdb # v0.0.5
+        # Do not perform attestation for things for TestPyPI. This is
+        # because there's nothing that would prevent a malicious PyPI from
+        # serving a signed TestPyPI asset in place of a release intended for
+        # PyPI.
+        if: env.PYPI_URL == 'https://upload.pypi.org/legacy/'
+
       - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # v1.13.0
-        with:
-          repository-url: ${{ env.PYPI_URL }}
-          skip-existing: true
-          # Do not perform attestation for things for TestPyPI. This is
-          # because there's nothing that would prevent a malicious PyPI from
-          # serving a signed TestPyPI asset in place of a release intended for
-          # PyPI.
-          attestations: ${{ env.PYPI_URL == 'https://upload.pypi.org/legacy/' }}
+        # uv is present because attest-action installs it.
+        run: |
+          uv publish --trusted-publishing=always dist/*
+        env:
+          UV_PUBLISH_URL: ${{ env.PYPI_URL }}
