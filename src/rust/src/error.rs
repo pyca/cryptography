@@ -190,6 +190,12 @@ impl fmt::Display for CryptographyError {
                     "failed to allocate memory while performing ASN.1 serialization"
                 )
             }
+            CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering) => {
+                write!(
+                    f,
+                    "invalid SET ordering while performing ASN.1 serialization"
+                )
+            }
             CryptographyError::KeyParsing(asn1_error) => {
                 write!(
                     f,
@@ -221,6 +227,9 @@ impl From<CryptographyError> for pyo3::PyErr {
             }
             CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
                 pyo3::exceptions::PyMemoryError::new_err(e.to_string())
+            }
+            CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering) => {
+                pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::attach(|py| {
