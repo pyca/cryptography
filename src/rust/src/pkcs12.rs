@@ -493,14 +493,13 @@ fn serialize_key_and_certificates<'p>(
     }
 
     if let Some(key) = key {
-        let der = types::ENCODING_DER.get(py)?;
         let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
         let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
 
         pkcs8_bytes = key
             .call_method1(
                 pyo3::intern!(py, "private_bytes"),
-                (der, pkcs8, no_encryption),
+                (crate::serialization::Encoding::DER, pkcs8, no_encryption),
             )?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 

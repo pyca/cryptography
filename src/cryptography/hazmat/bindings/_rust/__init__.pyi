@@ -27,6 +27,14 @@ class ANSIX923UnpaddingContext(padding.PaddingContext):
     def update(self, data: Buffer) -> bytes: ...
     def finalize(self) -> bytes: ...
 
+class Encoding:
+    PEM: typing.ClassVar[Encoding]
+    DER: typing.ClassVar[Encoding]
+    OpenSSH: typing.ClassVar[Encoding]
+    Raw: typing.ClassVar[Encoding]
+    X962: typing.ClassVar[Encoding]
+    SMIME: typing.ClassVar[Encoding]
+
 class ObjectIdentifier:
     def __init__(self, value: str) -> None: ...
     @property
