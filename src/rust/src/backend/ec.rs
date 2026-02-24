@@ -251,11 +251,9 @@ impl ECPrivateKey {
 
         let len = deriver.len()?;
         Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = py
-                .detach(|| deriver.derive(b))
-                .map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-                })?;
+            let n = py.detach(|| deriver.derive(b)).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
+            })?;
             assert_eq!(n, b.len());
             Ok(())
         })?)
