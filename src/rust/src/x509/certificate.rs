@@ -1021,12 +1021,14 @@ pub(crate) fn create_x509_certificate(
         rsa_padding.clone(),
     )?;
 
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
         .call_method1(
             pyo3::intern!(py, "public_bytes"),
-            (crate::serialization::Encoding::DER, spki),
+            (
+                crate::serialization::Encoding::DER,
+                crate::serialization::PublicFormat::SubjectPublicKeyInfo,
+            ),
         )?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 

@@ -6,7 +6,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::serialization::{Encoding, PrivateFormat};
+use crate::serialization::{Encoding, PrivateFormat, PublicFormat};
 use crate::types;
 
 pub(crate) fn py_int_to_bn(
@@ -211,20 +211,12 @@ pub(crate) fn pkey_public_bytes<'p>(
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Public>,
     encoding: Encoding,
-    format: &pyo3::Bound<'p, pyo3::PyAny>,
+    format: PublicFormat,
     openssh_allowed: bool,
     raw_allowed: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    if !format.is_instance(&types::PUBLIC_FORMAT.get(py)?)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "format must be an item from the PublicFormat enum",
-            ),
-        ));
-    }
-
-    if raw_allowed && (encoding == Encoding::Raw || format.is(&types::PUBLIC_FORMAT_RAW.get(py)?)) {
-        if encoding != Encoding::Raw || !format.is(&types::PUBLIC_FORMAT_RAW.get(py)?) {
+    if raw_allowed && (encoding == Encoding::Raw || format == PublicFormat::Raw) {
+        if encoding != Encoding::Raw || format != PublicFormat::Raw {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "When using Raw both encoding and format must be Raw",
@@ -236,7 +228,7 @@ pub(crate) fn pkey_public_bytes<'p>(
     }
 
     // SubjectPublicKeyInfo + PEM/DER
-    if format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
+    if format == PublicFormat::SubjectPublicKeyInfo {
         let der_bytes = cryptography_key_parsing::spki::serialize_public_key(pkey)?;
 
         return crate::asn1::encode_der_data(py, "PUBLIC KEY".to_string(), der_bytes, encoding);
@@ -244,16 +236,16 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     if let Ok(ec) = pkey.ec_key() {
         if encoding == Encoding::X962 {
-            let point_form = if format.is(&types::PUBLIC_FORMAT_UNCOMPRESSED_POINT.get(py)?) {
-                openssl::ec::PointConversionForm::UNCOMPRESSED
-            } else if format.is(&types::PUBLIC_FORMAT_COMPRESSED_POINT.get(py)?) {
-                openssl::ec::PointConversionForm::COMPRESSED
-            } else {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "X962 encoding must be used with CompressedPoint or UncompressedPoint format"
-                    )
-                ));
+            let point_form = match format {
+                PublicFormat::UncompressedPoint => openssl::ec::PointConversionForm::UNCOMPRESSED,
+                PublicFormat::CompressedPoint => openssl::ec::PointConversionForm::COMPRESSED,
+                _ => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "X962 encoding must be used with CompressedPoint or UncompressedPoint format"
+                        )
+                    ));
+                }
             };
             let mut bn_ctx = openssl::bn::BigNumContext::new()?;
             let data = ec
@@ -264,7 +256,7 @@ pub(crate) fn pkey_public_bytes<'p>(
     }
 
     if let Ok(rsa) = pkey.rsa() {
-        if format.is(&types::PUBLIC_FORMAT_PKCS1.get(py)?) {
+        if format == PublicFormat::PKCS1 {
             let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_public_key(&rsa)?;
 
             return crate::asn1::encode_der_data(
@@ -277,7 +269,7 @@ pub(crate) fn pkey_public_bytes<'p>(
     }
 
     // OpenSSH + OpenSSH
-    if openssh_allowed && format.is(&types::PUBLIC_FORMAT_OPENSSH.get(py)?) {
+    if openssh_allowed && format == PublicFormat::OpenSSH {
         if encoding == Encoding::OpenSSH {
             return Ok(types::SERIALIZE_SSH_PUBLIC_KEY
                 .get(py)?

@@ -46,6 +46,14 @@ class PrivateFormat:
     PKCS12: typing.ClassVar[PrivateFormat]
     def encryption_builder(self) -> KeySerializationEncryptionBuilder: ...
 
+class PublicFormat:
+    SubjectPublicKeyInfo: typing.ClassVar[PublicFormat]
+    PKCS1: typing.ClassVar[PublicFormat]
+    OpenSSH: typing.ClassVar[PublicFormat]
+    Raw: typing.ClassVar[PublicFormat]
+    CompressedPoint: typing.ClassVar[PublicFormat]
+    UncompressedPoint: typing.ClassVar[PublicFormat]
+
 class ObjectIdentifier:
     def __init__(self, value: str) -> None: ...
     @property

@@ -9,6 +9,7 @@ import abc
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import Encoding as Encoding
 from cryptography.hazmat.bindings._rust import PrivateFormat as PrivateFormat
+from cryptography.hazmat.bindings._rust import PublicFormat as PublicFormat
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 # This exists to break an import cycle. These classes are normally accessible
@@ -18,15 +19,6 @@ from cryptography.hazmat.primitives.hashes import HashAlgorithm
 class PBES(utils.Enum):
     PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
     PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
-
-
-class PublicFormat(utils.Enum):
-    SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
-    PKCS1 = "Raw PKCS#1"
-    OpenSSH = "OpenSSH"
-    Raw = "Raw"
-    CompressedPoint = "X9.62 Compressed Point"
-    UncompressedPoint = "X9.62 Uncompressed Point"
 
 
 class ParameterFormat(utils.Enum):

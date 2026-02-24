@@ -267,9 +267,9 @@ impl DHPublicKey {
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
-        format: &pyo3::Bound<'p, pyo3::PyAny>,
+        format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
+        if format != crate::serialization::PublicFormat::SubjectPublicKeyInfo {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH public keys support only SubjectPublicKeyInfo serialization",
