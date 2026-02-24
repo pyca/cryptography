@@ -64,11 +64,6 @@ Asymmetric ciphers
   encrypted with ``AES-192-CBC``. The password is ``PolarSSLTest``.
 * ``asymmetric/PKCS8/ed25519-scrypt.pem`` a PKCS8 encoded Ed25519 key from
   RustCrypto using scrypt as the KDF. The password is ``hunter42``.
-* ``asymmetric/PKCS8/rsa-rc2-cbc-effective-key-length.pem`` a PKCS8 encoded key
-  encrypted with ``RC2-CBC`` with the ``effectiveKeyLength`` parameter set to
-  258. This is an invalid key.
-* ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
-  encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
 
 
 Custom asymmetric vectors
@@ -298,6 +293,11 @@ Custom asymmetric vectors
   private key value has its high bit set.
 * ``asymmetric/EC/truncated-private-key.der`` - A PKCS#1 encoded EC key where
   the private key value is not encoded to the order's length.
+* ``asymmetric/PKCS8/rsa-rc2-cbc-effective-key-length.pem`` a PKCS8 encoded key
+  encrypted with ``RC2-CBC`` with the ``effectiveKeyLength`` parameter set to
+  258. This is an invalid key.
+* ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
+  encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
 
 Key exchange
 ~~~~~~~~~~~~
