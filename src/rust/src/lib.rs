@@ -145,7 +145,7 @@ mod _rust {
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
     #[pymodule_export]
-    use crate::serialization::Encoding;
+    use crate::serialization::{Encoding, PrivateFormat};
     #[pymodule_export]
     use crate::test_support::test_support;
 

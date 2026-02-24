@@ -6,7 +6,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::serialization::Encoding;
+use crate::serialization::{Encoding, PrivateFormat};
 use crate::types;
 
 pub(crate) fn py_int_to_bn(
@@ -44,18 +44,11 @@ pub(crate) fn pkey_private_bytes<'p>(
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
     pkey: &openssl::pkey::PKey<openssl::pkey::Private>,
     encoding: Encoding,
-    format: &pyo3::Bound<'p, pyo3::PyAny>,
+    format: PrivateFormat,
     encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     openssh_allowed: bool,
     raw_allowed: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    if !format.is_instance(&types::PRIVATE_FORMAT.get(py)?)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "format must be an item from the PrivateFormat enum",
-            ),
-        ));
-    }
     if !encryption_algorithm.is_instance(&types::KEY_SERIALIZATION_ENCRYPTION.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
@@ -64,10 +57,9 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
-    if raw_allowed && (encoding == Encoding::Raw || format.is(&types::PRIVATE_FORMAT_RAW.get(py)?))
-    {
+    if raw_allowed && (encoding == Encoding::Raw || format == PrivateFormat::Raw) {
         if encoding != Encoding::Raw
-            || !format.is(&types::PRIVATE_FORMAT_RAW.get(py)?)
+            || format != PrivateFormat::Raw
             || !encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)?
         {
             return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
@@ -85,7 +77,8 @@ pub(crate) fn pkey_private_bytes<'p>(
         || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
             && encryption_algorithm
                 .getattr(pyo3::intern!(py, "_format"))?
-                .is(format))
+                .extract::<PrivateFormat>()?
+                == format)
     {
         py_password = encryption_algorithm
             .getattr(pyo3::intern!(py, "password"))?
@@ -105,7 +98,7 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
-    if format.is(&types::PRIVATE_FORMAT_PKCS8.get(py)?) {
+    if format == PrivateFormat::PKCS8 {
         let (tag, der_bytes) = if password.is_empty() {
             (
                 "PRIVATE KEY",
@@ -121,7 +114,7 @@ pub(crate) fn pkey_private_bytes<'p>(
         return crate::asn1::encode_der_data(py, tag.to_string(), der_bytes, encoding);
     }
 
-    if format.is(&types::PRIVATE_FORMAT_TRADITIONAL_OPENSSL.get(py)?) {
+    if format == PrivateFormat::TraditionalOpenSSL {
         if cryptography_openssl::fips::is_enabled() && !password.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
@@ -193,7 +186,7 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     // OpenSSH + PEM
-    if openssh_allowed && format.is(&types::PRIVATE_FORMAT_OPENSSH.get(py)?) {
+    if openssh_allowed && format == PrivateFormat::OpenSSH {
         if encoding == Encoding::PEM {
             return Ok(types::SERIALIZE_SSH_PRIVATE_KEY
                 .get(py)?
