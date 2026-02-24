@@ -149,10 +149,13 @@ fn generate_private_key(
     let _ = backend;
 
     let ossl_curve = curve_from_py_curve(py, curve)?;
-    let key = openssl::ec::EcKey::generate(&ossl_curve)?;
+    let pkey = py.detach(|| {
+        let key = openssl::ec::EcKey::generate(&ossl_curve)?;
+        openssl::pkey::PKey::from_ec_key(key)
+    })?;
 
     Ok(ECPrivateKey {
-        pkey: openssl::pkey::PKey::from_ec_key(key)?,
+        pkey,
         curve: py_curve_from_curve(py, &ossl_curve)?.into(),
     })
 }
@@ -248,9 +251,11 @@ impl ECPrivateKey {
 
         let len = deriver.len()?;
         Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = deriver.derive(b).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-            })?;
+            let n = py
+                .detach(|| deriver.derive(b))
+                .map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
+                })?;
             assert_eq!(n, b.len());
             Ok(())
         })?)
@@ -302,8 +307,12 @@ impl ECPrivateKey {
         // `PyBytes::new_with` because the exact length of the signature isn't
         // easily known a priori (if `r` or `s` has a leading 0, the signature
         // will be a byte or two shorter than the maximum possible length).
-        let mut sig = vec![];
-        signer.sign_to_vec(data.as_bytes(), &mut sig)?;
+        let data_bytes = data.as_bytes();
+        let sig = py.detach(|| {
+            let mut sig = vec![];
+            signer.sign_to_vec(data_bytes, &mut sig)?;
+            Ok::<_, openssl::error::ErrorStack>(sig)
+        })?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -423,9 +432,9 @@ impl ECPublicKey {
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
-        let valid = verifier
-            .verify(data.as_bytes(), signature.as_bytes())
-            .unwrap_or(false);
+        let data_bytes = data.as_bytes();
+        let sig_bytes = signature.as_bytes();
+        let valid = py.detach(|| verifier.verify(data_bytes, sig_bytes).unwrap_or(false));
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
