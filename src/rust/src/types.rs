@@ -47,35 +47,6 @@ pub static DEPRECATED_IN_42: LazyPyImport =
 pub static DEPRECATED_IN_43: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn43"]);
 
-pub static PUBLIC_FORMAT: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat"],
-);
-pub static PUBLIC_FORMAT_COMPRESSED_POINT: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "CompressedPoint"],
-);
-pub static PUBLIC_FORMAT_OPENSSH: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "OpenSSH"],
-);
-pub static PUBLIC_FORMAT_PKCS1: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "PKCS1"],
-);
-pub static PUBLIC_FORMAT_RAW: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "Raw"],
-);
-pub static PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "SubjectPublicKeyInfo"],
-);
-pub static PUBLIC_FORMAT_UNCOMPRESSED_POINT: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.primitives.serialization",
-    &["PublicFormat", "UncompressedPoint"],
-);
-
 pub static PARAMETER_FORMAT_PKCS3: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization",
     &["ParameterFormat", "PKCS3"],

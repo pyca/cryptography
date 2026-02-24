@@ -41,6 +41,23 @@ pub enum PrivateFormat {
     PKCS12,
 }
 
+#[pyo3::pyclass(
+    frozen,
+    eq,
+    hash,
+    from_py_object,
+    module = "cryptography.hazmat.primitives._serialization"
+)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PublicFormat {
+    SubjectPublicKeyInfo,
+    PKCS1,
+    OpenSSH,
+    Raw,
+    CompressedPoint,
+    UncompressedPoint,
+}
+
 #[pyo3::pymethods]
 impl PrivateFormat {
     fn encryption_builder<'p>(
