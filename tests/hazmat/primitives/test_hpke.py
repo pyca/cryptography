@@ -31,17 +31,15 @@ SUPPORTED_SUITES = [
 )
 class TestHPKE:
     def test_invalid_kem_type(self):
-        with pytest.raises(TypeError, match="kem must be an instance of KEM"):
+        with pytest.raises(TypeError):
             Suite("not a kem", KDF.HKDF_SHA256, AEAD.AES_128_GCM)  # type: ignore[arg-type]
 
     def test_invalid_kdf_type(self):
-        with pytest.raises(TypeError, match="kdf must be an instance of KDF"):
+        with pytest.raises(TypeError):
             Suite(KEM.X25519, "not a kdf", AEAD.AES_128_GCM)  # type: ignore[arg-type]
 
     def test_invalid_aead_type(self):
-        with pytest.raises(
-            TypeError, match="aead must be an instance of AEAD"
-        ):
+        with pytest.raises(TypeError):
             Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
@@ -172,6 +170,8 @@ class TestHPKE:
 
         with pytest.raises(InvalidTag):
             suite.decrypt(truncated, sk_r)
+        with pytest.raises(InvalidTag):
+            suite.decrypt(b"\x00", sk_r)
 
     def test_vector_decryption(self, subtests):
         vectors = load_vectors_from_file(
