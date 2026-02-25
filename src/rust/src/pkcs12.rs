@@ -215,7 +215,8 @@ fn decode_encryption_algorithm<'a>(
     } else if encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
         && encryption_algorithm
             .getattr(pyo3::intern!(py, "_format"))?
-            .is(&types::PRIVATE_FORMAT_PKCS12.get(py)?)
+            .extract::<crate::serialization::PrivateFormat>()?
+            == crate::serialization::PrivateFormat::PKCS12
     {
         let key_cert_alg =
             encryption_algorithm.getattr(pyo3::intern!(py, "_key_cert_algorithm"))?;
@@ -493,14 +494,16 @@ fn serialize_key_and_certificates<'p>(
     }
 
     if let Some(key) = key {
-        let der = types::ENCODING_DER.get(py)?;
-        let pkcs8 = types::PRIVATE_FORMAT_PKCS8.get(py)?;
         let no_encryption = types::NO_ENCRYPTION.get(py)?.call0()?;
 
         pkcs8_bytes = key
             .call_method1(
                 pyo3::intern!(py, "private_bytes"),
-                (der, pkcs8, no_encryption),
+                (
+                    crate::serialization::Encoding::DER,
+                    crate::serialization::PrivateFormat::PKCS8,
+                    no_encryption,
+                ),
             )?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 

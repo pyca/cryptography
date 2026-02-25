@@ -219,7 +219,7 @@ requests==2.32.5 ; python_full_version >= '3.9'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.15.1
+ruff==0.15.2
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
@@ -316,9 +316,9 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.6.3 ; python_full_version >= '3.9'
     # via requests
-uv==0.10.4
+uv==0.10.5
     # via nox
-virtualenv==20.37.0
+virtualenv==20.39.0
     # via nox
 zipp==3.20.2 ; python_full_version < '3.9'
     # via

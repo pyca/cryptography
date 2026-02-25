@@ -110,7 +110,7 @@ impl Certificate {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
@@ -1021,11 +1021,15 @@ pub(crate) fn create_x509_certificate(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get(py)?;
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
-        .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
+        .call_method1(
+            pyo3::intern!(py, "public_bytes"),
+            (
+                crate::serialization::Encoding::DER,
+                crate::serialization::PublicFormat::SubjectPublicKeyInfo,
+            ),
+        )?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
     let py_serial = builder

@@ -46,6 +46,12 @@ impl From<pyo3::CastIntoError<'_>> for CryptographyError {
     }
 }
 
+impl From<pyo3::pyclass::PyClassGuardError<'_, '_>> for CryptographyError {
+    fn from(e: pyo3::pyclass::PyClassGuardError<'_, '_>) -> CryptographyError {
+        CryptographyError::Py(e.into())
+    }
+}
+
 impl From<openssl::error::ErrorStack> for CryptographyError {
     fn from(e: openssl::error::ErrorStack) -> CryptographyError {
         CryptographyError::OpenSSL(e)
@@ -314,6 +320,7 @@ pub(crate) fn capture_error_stack(
 
 #[cfg(test)]
 mod tests {
+    use pyo3::types::PyAnyMethods;
     use pyo3::PyTypeInfo;
 
     use super::CryptographyError;
@@ -358,6 +365,14 @@ mod tests {
                 pyo3::types::PyString::type_object(py).into_any(),
             )
             .into();
+            assert!(matches!(e, CryptographyError::Py(_)));
+
+            let none = py.None();
+            let guard_err = none
+                .bind(py)
+                .extract::<crate::serialization::PrivateFormat>();
+            assert!(guard_err.is_err());
+            let e: CryptographyError = guard_err.err().unwrap().into();
             assert!(matches!(e, CryptographyError::Py(_)));
         })
     }

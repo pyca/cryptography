@@ -173,9 +173,9 @@ def load_pkcs1_vectors(
             ("# PSS Example", "# OAEP Example", "# PKCS#1 v1.5")
         ):
             if example_vector:
-                for key, value in example_vector.items():
+                for k, value in example_vector.items():
                     hex_bytes = "".join(value).replace(" ", "").encode("ascii")
-                    example_vector[key] = hex_bytes
+                    example_vector[k] = hex_bytes
                 examples.append(example_vector)
 
             attr = None
@@ -199,9 +199,9 @@ def load_pkcs1_vectors(
         elif example_vector and line.startswith(
             "# ============================================="
         ):
-            for key, value in example_vector.items():
+            for k, value in example_vector.items():
                 hex_bytes = "".join(value).replace(" ", "").encode("ascii")
-                example_vector[key] = hex_bytes
+                example_vector[k] = hex_bytes
             examples.append(example_vector)
             example_vector = None
             attr = None

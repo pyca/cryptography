@@ -50,7 +50,7 @@ static OIDS_TO_MIC_NAME: LazyLock<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if py_certs.is_empty() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
@@ -92,7 +92,7 @@ fn encrypt_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
     content_encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
@@ -178,7 +178,7 @@ fn encrypt_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
+    if encoding == crate::serialization::Encoding::SMIME {
         Ok(types::SMIME_ENVELOPED_ENCODE
             .get(py)?
             .call1((&*ci_bytes,))?
@@ -460,7 +460,7 @@ pub(crate) fn symmetric_decrypt(
 fn sign_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
@@ -639,7 +639,7 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
+    if encoding == crate::serialization::Encoding::SMIME {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
