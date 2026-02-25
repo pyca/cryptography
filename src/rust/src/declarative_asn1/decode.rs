@@ -8,8 +8,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
     check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, Type,
-    UtcTime, Variant,
+    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, SetOf,
+    Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -257,6 +257,26 @@ pub(crate) fn decode_annotated_type<'a>(
                 }
                 check_size_constraint(&annotation.size, list.len(), "SEQUENCE OF")?;
                 Ok(list.into_any())
+            })?
+        }
+        Type::SetOf(cls) => {
+            let setof_parse_result = read_value::<asn1::Set<'_>>(parser, encoding)?;
+
+            setof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+                let inner_ann_type = cls.get();
+                let list = pyo3::types::PyList::empty(py);
+                while !d.is_empty() {
+                    let val = decode_annotated_type(py, d, inner_ann_type)?;
+                    list.append(val)?;
+                }
+                check_size_constraint(&annotation.size, list.len(), "SET OF")?;
+                Ok(pyo3::Bound::new(
+                    py,
+                    SetOf {
+                        inner: list.unbind(),
+                    },
+                )?
+                .into_any())
             })?
         }
         Type::Option(cls) => {

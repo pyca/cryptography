@@ -78,6 +78,23 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
+            Type::SetOf(cls) => {
+                let setof = value.cast::<super::types::SetOf>()?;
+                let values: Vec<AnnotatedTypeObject<'_>> = setof
+                    .get()
+                    .inner
+                    .bind(py)
+                    .iter()
+                    .map(|e| AnnotatedTypeObject {
+                        annotated_type: cls.get(),
+                        value: e,
+                    })
+                    .collect();
+
+                check_size_constraint(&annotation.size, values.len(), "SET OF")?;
+
+                write_value(writer, &asn1::SetOfWriter::new(values), encoding)
+            }
             Type::Option(cls) => {
                 if !value.is_none() {
                     let inner_object = AnnotatedTypeObject {

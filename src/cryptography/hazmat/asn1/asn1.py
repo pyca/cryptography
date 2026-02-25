@@ -133,7 +133,7 @@ def _normalize_field_type(
         annotation = declarative_asn1.Annotation()
 
     if annotation.size is not None and (
-        get_type_origin(field_type) is not builtins.list
+        get_type_origin(field_type) not in (builtins.list, SetOf)
         and field_type
         not in (
             builtins.bytes,
@@ -145,7 +145,7 @@ def _normalize_field_type(
     ):
         raise TypeError(
             f"field {field_name} has a SIZE annotation, but SIZE annotations "
-            f"are only supported for fields of types: [SEQUENCE OF, "
+            f"are only supported for fields of types: [SEQUENCE OF, SET OF, "
             "BIT STRING, OCTET STRING, UTF8String, PrintableString, IA5String]"
         )
 
@@ -229,6 +229,11 @@ def _normalize_field_type(
             get_type_args(field_type)[0], field_name
         )
         rust_field_type = declarative_asn1.Type.SequenceOf(inner_type)
+    elif get_type_origin(field_type) is SetOf:
+        inner_type = _normalize_field_type(
+            get_type_args(field_type)[0], field_name
+        )
+        rust_field_type = declarative_asn1.Type.SetOf(inner_type)
     else:
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 
@@ -355,6 +360,8 @@ else:
 class Default(typing.Generic[U]):
     value: U
 
+
+SetOf = declarative_asn1.SetOf
 
 Explicit = declarative_asn1.Encoding.Explicit
 Implicit = declarative_asn1.Encoding.Implicit
