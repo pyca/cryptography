@@ -235,6 +235,66 @@ impl Suite {
         self.hkdf_expand(py, prk, &labeled_info, length)
     }
 
+    fn encrypt_inner<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        plaintext: CffiBuf<'_>,
+        public_key: &pyo3::Bound<'_, pyo3::PyAny>,
+        info: Option<CffiBuf<'_>>,
+        aad: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
+
+        let (shared_secret, enc) = self.encap(py, public_key)?;
+        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
+
+        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
+        let ct = aesgcm.encrypt(py, CffiBuf::from_bytes(py, &base_nonce), plaintext, aad)?;
+
+        let enc_bytes = enc.as_bytes();
+        let ct_bytes = ct.as_bytes();
+        Ok(pyo3::types::PyBytes::new_with(
+            py,
+            enc_bytes.len() + ct_bytes.len(),
+            |buf| {
+                buf[..enc_bytes.len()].copy_from_slice(enc_bytes);
+                buf[enc_bytes.len()..].copy_from_slice(ct_bytes);
+                Ok(())
+            },
+        )?)
+    }
+
+    fn decrypt_inner<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        ciphertext: CffiBuf<'_>,
+        private_key: &pyo3::Bound<'_, pyo3::PyAny>,
+        info: Option<CffiBuf<'_>>,
+        aad: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let ct_bytes = ciphertext.as_bytes();
+        if ct_bytes.len() < kem_params::X25519_NENC + aead_params::AES_128_GCM_NT {
+            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+        }
+
+        let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
+
+        let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
+
+        let shared_secret = self
+            .decap(py, enc, private_key)
+            .map_err(|_| CryptographyError::from(exceptions::InvalidTag::new_err(())))?;
+        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
+
+        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
+        aesgcm.decrypt(
+            py,
+            CffiBuf::from_bytes(py, &base_nonce),
+            CffiBuf::from_bytes(py, ct),
+            aad,
+        )
+    }
+
     fn key_schedule(
         &self,
         py: pyo3::Python<'_>,
@@ -297,71 +357,57 @@ impl Suite {
         })
     }
 
-    #[pyo3(signature = (plaintext, public_key, info=None, aad=None))]
+    #[pyo3(signature = (plaintext, public_key, info=None))]
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         plaintext: CffiBuf<'_>,
         public_key: &pyo3::Bound<'_, pyo3::PyAny>,
         info: Option<CffiBuf<'_>>,
-        aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
-
-        let (shared_secret, enc) = self.encap(py, public_key)?;
-        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
-
-        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
-        let ct = aesgcm.encrypt(py, CffiBuf::from_bytes(py, &base_nonce), plaintext, aad)?;
-
-        let enc_bytes = enc.as_bytes();
-        let ct_bytes = ct.as_bytes();
-        Ok(pyo3::types::PyBytes::new_with(
-            py,
-            enc_bytes.len() + ct_bytes.len(),
-            |buf| {
-                buf[..enc_bytes.len()].copy_from_slice(enc_bytes);
-                buf[enc_bytes.len()..].copy_from_slice(ct_bytes);
-                Ok(())
-            },
-        )?)
+        self.encrypt_inner(py, plaintext, public_key, info, None)
     }
 
-    #[pyo3(signature = (ciphertext, private_key, info=None, aad=None))]
+    #[pyo3(signature = (ciphertext, private_key, info=None))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         ciphertext: CffiBuf<'_>,
         private_key: &pyo3::Bound<'_, pyo3::PyAny>,
         info: Option<CffiBuf<'_>>,
-        aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let ct_bytes = ciphertext.as_bytes();
-        if ct_bytes.len() < kem_params::X25519_NENC + aead_params::AES_128_GCM_NT {
-            return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-        }
-
-        let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
-
-        let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
-
-        let shared_secret = self
-            .decap(py, enc, private_key)
-            .map_err(|_| CryptographyError::from(exceptions::InvalidTag::new_err(())))?;
-        let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
-
-        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
-        aesgcm.decrypt(
-            py,
-            CffiBuf::from_bytes(py, &base_nonce),
-            CffiBuf::from_bytes(py, ct),
-            aad,
-        )
+        self.decrypt_inner(py, ciphertext, private_key, info, None)
     }
+}
+
+#[pyo3::pyfunction]
+#[pyo3(signature = (suite, plaintext, public_key, info=None, aad=None))]
+fn _encrypt_with_aad<'p>(
+    py: pyo3::Python<'p>,
+    suite: &Suite,
+    plaintext: CffiBuf<'_>,
+    public_key: &pyo3::Bound<'_, pyo3::PyAny>,
+    info: Option<CffiBuf<'_>>,
+    aad: Option<CffiBuf<'_>>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    suite.encrypt_inner(py, plaintext, public_key, info, aad)
+}
+
+#[pyo3::pyfunction]
+#[pyo3(signature = (suite, ciphertext, private_key, info=None, aad=None))]
+fn _decrypt_with_aad<'p>(
+    py: pyo3::Python<'p>,
+    suite: &Suite,
+    ciphertext: CffiBuf<'_>,
+    private_key: &pyo3::Bound<'_, pyo3::PyAny>,
+    info: Option<CffiBuf<'_>>,
+    aad: Option<CffiBuf<'_>>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    suite.decrypt_inner(py, ciphertext, private_key, info, aad)
 }
 
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod hpke {
     #[pymodule_export]
-    use super::{Suite, AEAD, KDF, KEM};
+    use super::{Suite, _decrypt_with_aad, _encrypt_with_aad, AEAD, KDF, KEM};
 }

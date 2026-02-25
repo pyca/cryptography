@@ -19,9 +19,9 @@ ephemeral key pair, so encrypting the same plaintext twice will produce
 different ciphertext.
 
 The ``info`` parameter should be used to bind the encryption to a specific
-context (e.g., "MyApp-v1-UserMessages"). The ``aad`` parameter provides
-additional authenticated data that is not encrypted but is authenticated
-along with the ciphertext.
+context (e.g., "MyApp-v1-UserMessages"). Per :rfc:`9180#section-8.1`,
+applications using single-shot APIs should use the ``info`` parameter for
+specifying auxiliary authenticated information.
 
 .. code-block:: python
 
@@ -51,27 +51,27 @@ along with the ciphertext.
     :param aead: The authenticated encryption algorithm.
     :type aead: :class:`AEAD`
 
-    .. method:: encrypt(plaintext, public_key, info=b"", aad=b"")
+    .. method:: encrypt(plaintext, public_key, info=b"")
 
         Encrypt a message using HPKE.
 
         :param bytes plaintext: The message to encrypt.
         :param public_key: The recipient's public key.
         :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
-        :param bytes info: Application-specific info string.
-        :param bytes aad: Additional authenticated data.
+        :param bytes info: Application-specific context string for binding the
+            encryption to a specific application or protocol.
         :returns: The encapsulated key concatenated with ciphertext (enc || ct).
         :rtype: bytes
 
-    .. method:: decrypt(ciphertext, private_key, info=b"", aad=b"")
+    .. method:: decrypt(ciphertext, private_key, info=b"")
 
         Decrypt a message using HPKE.
 
         :param bytes ciphertext: The enc || ct value from :meth:`encrypt`.
         :param private_key: The recipient's private key.
         :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
-        :param bytes info: Application-specific info string.
-        :param bytes aad: Additional authenticated data.
+        :param bytes info: Application-specific context string (must match the
+            value used during encryption).
         :returns: The decrypted plaintext.
         :rtype: bytes
         :raises cryptography.exceptions.InvalidTag: If decryption fails.

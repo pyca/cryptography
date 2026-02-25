@@ -84,6 +84,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.utils.NoDigestInfo`.
 * Added :meth:`~cryptography.hazmat.primitives.hashes.Hash.hash`, a one-shot
   method for computing hashes.
+* Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
+  hybrid authenticated encryption.
 
 .. _v46-0-5:
 
