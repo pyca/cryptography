@@ -315,7 +315,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - uses: dawidd6/action-download-artifact@5c98f0b039f36ef966fdb7dfa9779262785ecb05 # v14
+      - uses: dawidd6/action-download-artifact@fe9d59ce33ce92db8a6ac90b2c8be6b6d90417c8 # v15
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -376,7 +376,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
 
-      - uses: dawidd6/action-download-artifact@5c98f0b039f36ef966fdb7dfa9779262785ecb05 # v14
+      - uses: dawidd6/action-download-artifact@fe9d59ce33ce92db8a6ac90b2c8be6b6d90417c8 # v15
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
