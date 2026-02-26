@@ -35,6 +35,7 @@ mod aead_params {
     frozen,
     eq,
     hash,
+    from_py_object,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke"
 )]
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -48,6 +49,7 @@ pub(crate) enum KEM {
     frozen,
     eq,
     hash,
+    from_py_object,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke"
 )]
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -61,6 +63,7 @@ pub(crate) enum KDF {
     frozen,
     eq,
     hash,
+    from_py_object,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke"
 )]
 #[derive(Clone, PartialEq, Eq, Hash)]
