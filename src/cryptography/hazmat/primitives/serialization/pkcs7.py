@@ -21,6 +21,13 @@ from cryptography.hazmat.primitives.ciphers import (
     algorithms,
 )
 from cryptography.utils import _check_byteslike
+from cryptography.x509 import Certificate
+from cryptography.x509.oid import ExtendedKeyUsageOID
+from cryptography.x509.verification import (
+    Criticality,
+    ExtensionPolicy,
+    Policy,
+)
 
 load_pem_pkcs7_certificates = rust_pkcs7.load_pem_pkcs7_certificates
 
@@ -51,6 +58,120 @@ class PKCS7Options(utils.Enum):
     NoCapabilities = "Don't embed SMIME capabilities"
     NoAttributes = "Don't embed authenticatedAttributes"
     NoCerts = "Don't embed signer certificate"
+
+
+def pkcs7_x509_extension_policies() -> tuple[ExtensionPolicy, ExtensionPolicy]:
+    """
+    Gets the default X.509 extension policy for S/MIME, based on RFC 8550.
+    Visit https://www.rfc-editor.org/rfc/rfc8550#section-4.4 for more info.
+    """
+    # CA policy
+    ca_policy = ExtensionPolicy.webpki_defaults_ca()
+
+    # EE policy
+    def _validate_basic_constraints(
+        policy: Policy, cert: Certificate, bc: x509.BasicConstraints | None
+    ) -> None:
+        """
+        We check that Certificates used as EE (i.e., the cert used to sign
+        a PKCS#7/SMIME message) must not have ca=true in their basic
+        constraints extension. RFC 5280 doesn't impose this requirement, but we
+        firmly agree about it being best practice.
+        """
+        if bc is not None and bc.ca:
+            raise ValueError("Basic Constraints CA must be False.")
+
+    def _validate_key_usage(
+        policy: Policy, cert: Certificate, ku: x509.KeyUsage | None
+    ) -> None:
+        """
+        Checks that the Key Usage extension, if present, has at least one of
+        the digital signature or content commitment (formerly non-repudiation)
+        bits set.
+        """
+        if (
+            ku is not None
+            and not ku.digital_signature
+            and not ku.content_commitment
+        ):
+            raise ValueError(
+                "Key Usage, if specified, must have at least one of the "
+                "digital signature or content commitment (formerly non "
+                "repudiation) bits set."
+            )
+
+    def _validate_subject_alternative_name(
+        policy: Policy,
+        cert: Certificate,
+        san: x509.SubjectAlternativeName,
+    ) -> None:
+        """
+        For each general name in the SAN, for those which are email addresses:
+        - If it is an RFC822Name, general part must be ascii.
+        - If it is an OtherName, general part must be non-ascii.
+        """
+        for general_name in san:
+            if (
+                isinstance(general_name, x509.RFC822Name)
+                and "@" in general_name.value
+                and not general_name.value.split("@")[0].isascii()
+            ):
+                raise ValueError(
+                    f"RFC822Name {general_name.value} contains non-ASCII "
+                    "characters."
+                )
+            if (
+                isinstance(general_name, x509.OtherName)
+                and "@" in general_name.value.decode()
+                and general_name.value.decode().split("@")[0].isascii()
+            ):
+                raise ValueError(
+                    f"OtherName {general_name.value.decode()} is ASCII, "
+                    "so must be stored in RFC822Name."
+                )
+
+    def _validate_extended_key_usage(
+        policy: Policy, cert: Certificate, eku: x509.ExtendedKeyUsage | None
+    ) -> None:
+        """
+        Checks that the Extended Key Usage extension, if present,
+        includes either emailProtection or anyExtendedKeyUsage bits.
+        """
+        if (
+            eku is not None
+            and ExtendedKeyUsageOID.EMAIL_PROTECTION not in eku
+            and ExtendedKeyUsageOID.ANY_EXTENDED_KEY_USAGE not in eku
+        ):
+            raise ValueError(
+                "Extended Key Usage, if specified, must include "
+                "emailProtection or anyExtendedKeyUsage."
+            )
+
+    ee_policy = (
+        ExtensionPolicy.webpki_defaults_ee()
+        .may_be_present(
+            x509.BasicConstraints,
+            Criticality.AGNOSTIC,
+            _validate_basic_constraints,
+        )
+        .may_be_present(
+            x509.KeyUsage,
+            Criticality.CRITICAL,
+            _validate_key_usage,
+        )
+        .require_present(
+            x509.SubjectAlternativeName,
+            Criticality.AGNOSTIC,
+            _validate_subject_alternative_name,
+        )
+        .may_be_present(
+            x509.ExtendedKeyUsage,
+            Criticality.AGNOSTIC,
+            _validate_extended_key_usage,
+        )
+    )
+
+    return ca_policy, ee_policy
 
 
 class PKCS7SignatureBuilder:
