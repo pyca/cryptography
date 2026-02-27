@@ -28,6 +28,7 @@ mod aead_params {
     pub const AES_128_GCM_ID: u16 = 0x0001;
     pub const AES_128_GCM_NK: usize = 16;
     pub const AES_128_GCM_NN: usize = 12;
+    pub const AES_128_GCM_NT: usize = 16;
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -336,7 +337,7 @@ impl Suite {
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let ct_bytes = ciphertext.as_bytes();
-        if ct_bytes.len() < kem_params::X25519_NENC {
+        if ct_bytes.len() < kem_params::X25519_NENC + aead_params::AES_128_GCM_NT {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
