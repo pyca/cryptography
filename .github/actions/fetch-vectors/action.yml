@@ -9,8 +9,8 @@ runs:
       with:
         repository: "C2SP/wycheproof"
         path: "wycheproof"
-        # Latest commit on the wycheproof main branch, as of Feb 21, 2026.
-        ref: "d544ce0881731f28eaa98e946db430880d216fd5" # wycheproof-ref
+        # Latest commit on the wycheproof main branch, as of Feb 27, 2026.
+        ref: "0a84a6f82127289d4fe7d935fd697886cb61c90b" # wycheproof-ref
         persist-credentials: false
 
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
